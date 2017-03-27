@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ import joynr.JoynrMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,8 +63,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
     private List<Thread> outstandingRequestThreads = Collections.synchronizedList(new ArrayList<Thread>());
     private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>> requestQueue = new ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>>();
-    private ConcurrentHashMap<String, ConcurrentLinkedQueue<OneWayCallable>> oneWayRequestQueue =
-            new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, ConcurrentLinkedQueue<OneWayCallable>> oneWayRequestQueue = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Request, ProviderCallback<Reply>> replyCallbacks = new ConcurrentHashMap<Request, ProviderCallback<Reply>>();
 
     private ReplyCallerDirectory replyCallerDirectory;
@@ -97,21 +98,24 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
      */
 
     @Override
-    public void sendRequest(final String fromParticipantId, final String toParticipantId, Request request, MessagingQos messagingQos) {
+    public void sendRequest(final String fromParticipantId,
+                            final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                            Request request,
+                            MessagingQos messagingQos) {
 
         logger.trace("SEND USING RequestReplySenderImpl with Id: " + System.identityHashCode(this));
 
         JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
-                                                                 toParticipantId,
+                                                                 toDiscoveryEntry.getParticipantId(),
                                                                  request,
                                                                  messagingQos);
-
+        message.setLocalMessage(toDiscoveryEntry.getIsLocal());
         messageRouter.route(message);
     }
 
     @Override
     public Object sendSyncRequest(String fromParticipantId,
-                                  String toParticipantId,
+                                  DiscoveryEntryWithMetaInfo toDiscoveryEntry,
                                   Request request,
                                   SynchronizedReplyCaller synchronizedReplyCaller,
                                   MessagingQos messagingQos) {
@@ -125,23 +129,24 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         // the synchronizedReplyCaller will call notify on the responsePayloadContainer when a message arrives
         synchronizedReplyCaller.setResponseContainer(responsePayloadContainer);
 
-        sendRequest(fromParticipantId, toParticipantId, request, messagingQos);
+        sendRequest(fromParticipantId, toDiscoveryEntry, request, messagingQos);
 
         long entryTime = System.currentTimeMillis();
 
         // saving all calling threads so that they can be interrupted at shutdown
         outstandingRequestThreads.add(Thread.currentThread());
         synchronized (responsePayloadContainer) {
-            while (running && responsePayloadContainer.isEmpty() && entryTime + messagingQos.getRoundTripTtl_ms() > System.currentTimeMillis()) {
+            while (running && responsePayloadContainer.isEmpty()
+                    && entryTime + messagingQos.getRoundTripTtl_ms() > System.currentTimeMillis()) {
                 try {
                     responsePayloadContainer.wait(messagingQos.getRoundTripTtl_ms());
                 } catch (InterruptedException e) {
                     if (running) {
                         throw new JoynrRequestInterruptedException("Request: " + request.getRequestReplyId()
-                        + " interrupted.");
+                                + " interrupted.");
                     }
                     throw new JoynrShutdownException("Request: " + request.getRequestReplyId()
-                    + " interrupted by shutdown");
+                            + " interrupted by shutdown");
 
                 }
             }
@@ -150,7 +155,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
         if (responsePayloadContainer.isEmpty()) {
             throw new JoynrCommunicationException("Request: " + request.getRequestReplyId()
-            + " failed. The response didn't arrive in time");
+                    + " failed. The response didn't arrive in time");
         }
 
         Object response = responsePayloadContainer.get(0);
@@ -164,11 +169,13 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     }
 
     @Override
-    public void sendOneWayRequest(String fromParticipantId, Set<String> toParticipantIds, OneWayRequest oneWayRequest,
+    public void sendOneWayRequest(String fromParticipantId,
+                                  Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
+                                  OneWayRequest oneWayRequest,
                                   MessagingQos messagingQos) {
-        for (String toParticipantId : toParticipantIds) {
+        for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
             JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
-                                                                           toParticipantId,
+                                                                           toDiscoveryEntry.getParticipantId(),
                                                                            oneWayRequest,
                                                                            messagingQos);
             messageRouter.route(message);
@@ -204,11 +211,14 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         Callable<Void> requestHandler = new Callable<Void>() {
             @Override
             public Void call() {
-                requestInterpreter.invokeMethod(providerDirectory.get(providerParticipantId).getRequestCaller(), request);
+                requestInterpreter.invokeMethod(providerDirectory.get(providerParticipantId).getRequestCaller(),
+                                                request);
                 return null;
             }
         };
-        OneWayCallable oneWayCallable = new OneWayCallable(requestHandler, ExpiryDate.fromAbsolute(expiryDate), String.valueOf(request));
+        OneWayCallable oneWayCallable = new OneWayCallable(requestHandler,
+                                                           ExpiryDate.fromAbsolute(expiryDate),
+                                                           String.valueOf(request));
         if (providerDirectory.contains(providerParticipantId)) {
             oneWayCallable.call();
         } else {
@@ -233,7 +243,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     }
 
     private void handleRequest(ProviderCallback<Reply> replyCallback, RequestCaller requestCaller, Request request) {
-        logger.debug("executing request {}", request.getRequestReplyId());
+        logger.trace("executing request {}", request.getRequestReplyId());
         requestInterpreter.execute(replyCallback, requestCaller, request);
     }
 
@@ -267,8 +277,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
             ConcurrentLinkedQueue<ContentWithExpiryDate<Request>> newRequestList = new ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>();
             requestQueue.putIfAbsent(providerParticipantId, newRequestList);
         }
-        final ContentWithExpiryDate<Request> requestItem = new ContentWithExpiryDate<Request>(request,
-                expiryDate);
+        final ContentWithExpiryDate<Request> requestItem = new ContentWithExpiryDate<Request>(request, expiryDate);
         requestQueue.get(providerParticipantId).add(requestItem);
         replyCallbacks.put(request, replyCallback);
         cleanupScheduler.schedule(new Runnable() {

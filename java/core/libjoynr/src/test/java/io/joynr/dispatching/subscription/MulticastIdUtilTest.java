@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,12 +43,8 @@ public class MulticastIdUtilTest {
 
     @Test
     public void testCreateIdWithMultilevelWildcard() {
-        assertEquals("id/name/one/two/three/*", MulticastIdUtil.createMulticastId("id",
-                                                                                  "name",
-                                                                                  "one",
-                                                                                  "two",
-                                                                                  "three",
-                                                                                  "*"));
+        assertEquals("id/name/one/two/three/*",
+                     MulticastIdUtil.createMulticastId("id", "name", "one", "two", "three", "*"));
     }
 
     @Test(expected = JoynrIllegalStateException.class)

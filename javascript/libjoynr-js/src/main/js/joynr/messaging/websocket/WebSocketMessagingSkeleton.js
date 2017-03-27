@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,10 +44,8 @@ define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
                 var listener;
 
                 settings.sharedWebSocket.onmessage =
-                        function(event) {
-                            var received = event.data;
-                            if (listener !== undefined && typeof event.data === "string") {
-                                var joynrMessage = new JoynrMessage(JSON.parse(event.data));
+                        function(joynrMessage) {
+                            if (listener !== undefined) {
                                 if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
                                     && settings.mainTransport) {
                                     joynrMessage.setReceivedFromGlobal(true);

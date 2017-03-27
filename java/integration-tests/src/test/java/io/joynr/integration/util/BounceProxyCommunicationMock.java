@@ -3,7 +3,7 @@ package io.joynr.integration.util;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -249,7 +249,7 @@ public class BounceProxyCommunicationMock {
     public void deleteChannel(final String myChannelId, final int timeout_ms, final int statusCode) {
         onrequest(timeout_ms)// .expect()
                              // .statusCode(statusCode)
-                             .log()
+        .log()
                              .all()
                              .when()
                              .delete("/channels/" + myChannelId + "/");

@@ -4,7 +4,7 @@ package io.joynr.messaging.service;
  * #%L
  * joynr::java::messaging::channel-service
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .put(serverUrl + "/channel-123?bp=0.0&status=rejecting_long_polls");
 
         assertEquals(201 /* Created */, response.getStatusCode());
@@ -105,7 +105,7 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .put(serverUrl + "/channel-123?bp=A.B&status=rejecting_long_polls");
 
         assertEquals(200 /* OK */, response.getStatusCode());
@@ -126,7 +126,7 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                . //
                header(ChannelServiceConstants.X_ATMOSPHERE_TRACKING_ID, "trackingId-xyz")
                . //
@@ -150,7 +150,7 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .put(serverUrl + "/channel-123?bp=X.Y&status=unreachable");
 
         assertEquals(201 /* Created */, response.getStatusCode());
@@ -170,7 +170,7 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .put(serverUrl + "/channel-123?bp=A.B&status=unreachable");
 
         assertEquals(200 /* OK */, response.getStatusCode());
@@ -190,7 +190,7 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
 
         Response response = //
         given(). //
-               queryParam("bp", "X.Y")
+        queryParam("bp", "X.Y")
                .and()
                .queryParam("status", "unreachable")
                .when()
@@ -221,7 +221,7 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
 
         Response response = //
         given(). //
-               queryParam("bp", "X.Y")
+        queryParam("bp", "X.Y")
                .and()
                .queryParam("status", "unreachable")
                .when()

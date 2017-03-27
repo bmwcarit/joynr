@@ -28,218 +28,46 @@ endif(${WIN32})
 include(AddGtestGmock)
 
 ### copy test resources and settings ##########################################
+macro(CONFIGURE_TEST_FILES targetDirectory)
+    set(TEST_FILES
+        "AccessControlNoPermission.entries"
+        "AccessControlYesPermission.entries"
+        "integrationtest.settings"
+        "websocket-cc-tls.settings"
+        "websocket-libjoynr-tls.settings"
+        "websocket-libjoynr-non-tls.settings"
+        "MessagingWithAccessControlDisabled.settings"
+        "MessagingWithAccessControlEnabled.settings"
+        "HttpSystemIntegrationTest1.settings"
+        "HttpSystemIntegrationTest2.settings"
+        "HttpJoynrClusterControllerRuntimeTest.settings"
+        "MqttSystemIntegrationTest1.settings"
+        "MqttSystemIntegrationTest2.settings"
+        "MqttOverTLSSystemIntegrationTest1.settings"
+        "MqttOverTLSSystemIntegrationTest2.settings"
+        "MqttJoynrClusterControllerRuntimeTest.settings"
+        "HttpMessagingSettingsTest.settings"
+        "MqttMessagingSettingsTest.settings"
+        "libjoynrSystemIntegration1.settings"
+        "libjoynrSystemIntegration2.settings"
+        "ca.crt"
+        "testclient.pem"
+    )
+
+    foreach(testFile ${TEST_FILES})
+        configure_file(
+            "resources/${testFile}"
+            "${targetDirectory}/test-resources/${testFile}"
+            @ONLY
+        )
+    endforeach()
+endmacro(CONFIGURE_TEST_FILES)
+
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-    configure_file(
-        "resources/integrationtest.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/integrationtest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/sslintegrationtest.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/sslintegrationtest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/HttpSystemIntegrationTest1.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/HttpSystemIntegrationTest1.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/HttpSystemIntegrationTest2.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/HttpSystemIntegrationTest2.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/HttpMessagingSettingsTest.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/HttpMessagingSettingsTest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttMessagingSettingsTest.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttMessagingSettingsTest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttWithHttpBackendMessagingSettingsTest.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/MqttWithHttpBackendMessagingSettingsTest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/libjoynrSystemIntegration1.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration1.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/libjoynrSystemIntegration2.settings"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/libjoynrSystemIntegration2.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/ca.crt"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/ca.crt"
-        @ONLY
-    )
-    configure_file(
-        "resources/testclient.pem"
-        "${JOYNR_BINARY_DIR}/Debug/test-resources/testclient.pem"
-        @ONLY
-    )
-    configure_file(
-        "resources/integrationtest.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/integrationtest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/sslintegrationtest.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/sslintegrationtest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/HttpSystemIntegrationTest1.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/HttpSystemIntegrationTest1.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/HttpSystemIntegrationTest2.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/HttpSystemIntegrationTest2.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/HttpMessagingSettingsTest.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/HttpMessagingSettingsTest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttMessagingSettingsTest.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttMessagingSettingsTest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttWithHttpBackendMessagingSettingsTest.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/MqttWithHttpBackendMessagingSettingsTest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/libjoynrSystemIntegration1.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrSystemIntegration1.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/libjoynrSystemIntegration2.settings"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/libjoynrSystemIntegration2.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/ca.crt"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/ca.crt"
-        @ONLY
-    )
-    configure_file(
-        "resources/testclient.pem"
-        "${JOYNR_BINARY_DIR}/Release/test-resources/testclient.pem"
-        @ONLY
-    )
+    CONFIGURE_TEST_FILES("${JOYNR_BINARY_DIR}/Debug")
+    CONFIGURE_TEST_FILES("${JOYNR_BINARY_DIR}/Release")
 else()
-    configure_file(
-        "resources/integrationtest.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/integrationtest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/sslintegrationtest.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/sslintegrationtest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/HttpSystemIntegrationTest1.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/HttpSystemIntegrationTest1.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/HttpSystemIntegrationTest2.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/HttpSystemIntegrationTest2.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/HttpMessagingSettingsTest.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/HttpMessagingSettingsTest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttMessagingSettingsTest.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/MqttMessagingSettingsTest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/MqttWithHttpBackendMessagingSettingsTest.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/MqttWithHttpBackendMessagingSettingsTest.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/libjoynrSystemIntegration1.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/libjoynrSystemIntegration1.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/libjoynrSystemIntegration2.settings"
-        "${JOYNR_BINARY_DIR}/test-resources/libjoynrSystemIntegration2.settings"
-        @ONLY
-    )
-    configure_file(
-        "resources/ca.crt"
-        "${JOYNR_BINARY_DIR}/test-resources/ca.crt"
-        @ONLY
-    )
-    configure_file(
-        "resources/testclient.pem"
-        "${JOYNR_BINARY_DIR}/test-resources/testclient.pem"
-        @ONLY
-    )
+    CONFIGURE_TEST_FILES(${JOYNR_BINARY_DIR})
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 file(COPY "resources/ListOfCapabilitiesToInject.json"
@@ -297,25 +125,25 @@ file(
     "gen/*.h"
 )
 
-add_library(JoynrTestGenerated SHARED
+add_library(TestGenerated SHARED
     ${JoynrTest_GENSOURCES}
     ${JoynrTest_GENHEADERS}
 )
 
 # add needed dependencies by linking to target joynr
-target_link_libraries(JoynrTestGenerated Joynr)
+target_link_libraries(TestGenerated Joynr)
 
 if(NOT USE_PLATFORM_SPDLOG)
-    add_dependencies(JoynrTestGenerated spdlog)
+    add_dependencies(TestGenerated spdlog)
 endif(NOT USE_PLATFORM_SPDLOG)
 
 target_include_directories(
-    JoynrTestGenerated
+    TestGenerated
     PUBLIC ${JoynrTest_INCLUDE_DIRECTORIES}
 )
 
 target_include_directories(
-    JoynrTestGenerated
+    TestGenerated
     SYSTEM PUBLIC
     ${JoynrTest_SYSTEM_INCLUDE_DIRECTORIES}
 )
@@ -400,6 +228,7 @@ set(
     "utils/TimeUtils.h"
     "utils/TestRunnable.h"
     "utils/LibJoynrMockObjects.h"
+    "utils/TestLibJoynrWebSocketRuntime.h"
     ${JoynrTest_GENHEADERS}
 )
 
@@ -418,6 +247,12 @@ set(
     "TestMain.cpp"
 )
 
+list(APPEND JOYNR_BOOST_REQUIRED_COMPONENTS filesystem regex)
+find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
+    COMPONENTS ${JOYNR_BOOST_REQUIRED_COMPONENTS}
+)
+include(CheckBoostImportTargets)
+
 if(${BUILD_CLUSTER_CONTROLLER})
     ###############
     # g_UnitTests #
@@ -432,6 +267,11 @@ if(${BUILD_CLUSTER_CONTROLLER})
         "unit-tests/serializer/*.cpp"
     )
 
+    file(
+        GLOB g_UnitTests_HEADERS
+        "unit-tests/*.h"
+    )
+
     if(${USE_DBUS_COMMONAPI_COMMUNICATION})
         list(
             APPEND g_UnitTests_SOURCES
@@ -444,12 +284,13 @@ if(${BUILD_CLUSTER_CONTROLLER})
             g_UnitTests
             ${cluster_controller_test_HEADERS}
             ${cluster_controller_test_SOURCES}
+            ${g_UnitTests_HEADERS}
             ${g_UnitTests_SOURCES}
         )
 
         target_link_libraries(
             g_UnitTests
-            JoynrTestGenerated
+            TestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -458,8 +299,9 @@ if(${BUILD_CLUSTER_CONTROLLER})
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
         )
 
-        install(TARGETS g_UnitTests
-            DESTINATION ${INSTALL_TEST_DIR}
+        install(TARGETS g_UnitTests TestGenerated
+            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif(${BUILD_UNIT_TESTS})
 
@@ -490,7 +332,7 @@ if(${BUILD_CLUSTER_CONTROLLER})
 
         target_link_libraries(
             g_IntegrationTests
-            JoynrTestGenerated
+            TestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
         )
 
@@ -499,8 +341,9 @@ if(${BUILD_CLUSTER_CONTROLLER})
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
         )
 
-        install(TARGETS g_IntegrationTests
-            DESTINATION ${INSTALL_TEST_DIR}
+        install(TARGETS g_IntegrationTests TestGenerated
+            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif(${BUILD_INTEGRATION_TESTS})
 
@@ -526,12 +369,17 @@ if(${BUILD_CLUSTER_CONTROLLER})
            ${cluster_controller_test_HEADERS}
            ${cluster_controller_test_SOURCES}
            ${g_SystemIntegrationTests_SOURCES}
+           "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+           "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
+           "../runtimes/libjoynr-runtime/LibJoynrRuntime.cpp"
         )
 
         target_link_libraries(
             g_SystemIntegrationTests
-            JoynrTestGenerated
+            TestGenerated
             ${cluster_controller_test_TARGET_LIBRARIES}
+            Boost::filesystem
+            Boost::regex
         )
 
         set_target_properties(
@@ -549,10 +397,12 @@ if(${BUILD_CLUSTER_CONTROLLER})
         target_include_directories(
             g_SystemIntegrationTests
             PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
+            PRIVATE ${BOOST_INCLUDE_DIRS}
         )
 
-        install(TARGETS g_SystemIntegrationTests
-            DESTINATION ${INSTALL_TEST_DIR}
+        install(TARGETS g_SystemIntegrationTests TestGenerated
+            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
 
@@ -578,7 +428,7 @@ else()
 
     target_link_libraries(
             g_UnitTests
-            JoynrTestGenerated
+            TestGenerated
             ${libjoynr_test_TARGET_LIBRARIES}
         )
 
@@ -587,9 +437,10 @@ else()
             PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
         )
 
-    install(TARGETS g_UnitTests
-            DESTINATION ${INSTALL_TEST_DIR}
-        )
+    install(TARGETS g_UnitTests TestGenerated
+        RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
     endif(${BUILD_UNIT_TESTS})
 
     ############################
@@ -614,17 +465,21 @@ else()
 
         target_link_libraries(
             g_SystemIntegrationTests
-            JoynrTestGenerated
+            TestGenerated
             ${libjoynr_test_TARGET_LIBRARIES}
+            Boost::filesystem
+            Boost::regex
         )
 
         target_include_directories(
             g_SystemIntegrationTests
             PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
+            PRIVATE ${BOOST_INCLUDE_DIRS}
         )
 
-        install(TARGETS g_SystemIntegrationTests
-            DESTINATION ${INSTALL_TEST_DIR}
+        install(TARGETS g_SystemIntegrationTests TestGenerated
+            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
     endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
 

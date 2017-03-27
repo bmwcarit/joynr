@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 #include <memory>
 #include <vector>
 
-#include "cluster-controller/mqtt/MqttSettings.h"
+#include "cluster-controller/access-control/LocalDomainAccessController.h"
 
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrRuntime.h"
@@ -56,7 +56,6 @@ class InProcessConnectorFactory;
 class JoynrMessagingConnectorFactory;
 class IDispatcher;
 class InProcessPublicationSender;
-class WebSocketCcMessagingSkeleton;
 class InProcessMessagingSkeleton;
 class HttpMessagingSkeleton;
 class MqttMessagingSkeleton;
@@ -65,6 +64,9 @@ class IPlatformSecurityManager;
 class Settings;
 class JoynrMessageSender;
 class IMessaging;
+class CcMessageRouter;
+class WebSocketMessagingStubFactory;
+class MosquittoConnection;
 
 namespace infrastructure
 {
@@ -86,7 +88,6 @@ public:
 
     ~JoynrClusterControllerRuntime() override;
 
-    void unregisterProvider(const std::string& participantId) override;
     void start();
     void stop(bool deleteChannel = false);
 
@@ -98,6 +99,7 @@ public:
     void deleteChannel();
     void registerRoutingProvider();
     void registerDiscoveryProvider();
+    void registerMessageNotificationProvider();
 
     /*
      * Inject predefined capabilities stored in a JSON file.
@@ -109,9 +111,14 @@ protected:
     void initializeAllDependencies();
     void importPersistedLocalCapabilitiesDirectory();
 
+    std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> getProvisionedEntries()
+            const final;
+
+    std::shared_ptr<IMessageRouter> getMessageRouter() final;
+
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
-    IDispatcher* ccDispatcher;
+
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     IMessaging* joynrMessagingSendSkeleton;
     std::shared_ptr<JoynrMessageSender> joynrMessageSender;
@@ -120,23 +127,21 @@ protected:
 
     std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
-    std::shared_ptr<HttpMessagingSkeleton> httpMessagingSkeleton;
-    std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
-
     std::shared_ptr<IMessageReceiver> httpMessageReceiver;
     std::shared_ptr<IMessageSender> httpMessageSender;
+    std::shared_ptr<HttpMessagingSkeleton> httpMessagingSkeleton;
 
+    std::shared_ptr<MosquittoConnection> mosquittoConnection;
     std::shared_ptr<IMessageReceiver> mqttMessageReceiver;
     std::shared_ptr<IMessageSender> mqttMessageSender;
+    std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
 
     std::vector<IDispatcher*> dispatcherList;
-    InProcessConnectorFactory* inProcessConnectorFactory;
     InProcessPublicationSender* inProcessPublicationSender;
-    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
-    ConnectorFactory* connectorFactory;
-    // take ownership, so a pointer is used
+
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
+    std::unique_ptr<LocalDomainAccessController> localDomainAccessController;
     ClusterControllerSettings clusterControllerSettings;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
@@ -144,19 +149,27 @@ protected:
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
-    std::shared_ptr<WebSocketCcMessagingSkeleton> wsCcMessagingSkeleton;
+    std::shared_ptr<IMessaging> wsCcMessagingSkeleton;
+    std::shared_ptr<IMessaging> wsTLSCcMessagingSkeleton;
     bool httpMessagingIsRunning;
     bool mqttMessagingIsRunning;
     bool doMqttMessaging;
     bool doHttpMessaging;
+    std::shared_ptr<WebSocketMessagingStubFactory> wsMessagingStubFactory;
 
     ADD_LOGGER(JoynrClusterControllerRuntime);
 
 private:
+    void createWsCCMessagingSkeletons();
+
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
-    MqttSettings mqttSettings;
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
 
+    std::shared_ptr<CcMessageRouter> ccMessageRouter;
+
+    void enableAccessController(
+            MessagingSettings& messagingSettings,
+            const std::map<std::string, types::DiscoveryEntryWithMetaInfo>& provisionedEntries);
     friend class ::JoynrClusterControllerRuntimeTest;
 };
 

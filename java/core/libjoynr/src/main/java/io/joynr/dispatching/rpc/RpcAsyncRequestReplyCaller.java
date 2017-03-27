@@ -3,7 +3,7 @@ package io.joynr.dispatching.rpc;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,10 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
         Object[] response = null;
         try {
             if (payload.getError() != null) {
+                logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                             method.getName(),
+                             payload.getError(),
+                             requestReplyId);
                 // Callback must be called first before releasing the future
                 errorCallback(payload.getError());
 
@@ -72,6 +76,10 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
                 }
             } else {
                 response = RpcUtils.reconstructCallbackReplyObject(method, methodMetaInformation, payload);
+                logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: {}",
+                             requestReplyId,
+                             method.getName(),
+                             response);
                 // Callback must be called first before releasing the future
                 if (callback != null) {
                     callback.resolve(response);

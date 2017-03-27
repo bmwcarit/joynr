@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,7 +113,11 @@ define([
         it("calls websocket.send correctly", function(done) {
             websocket.readyState = WebSocket.OPEN;
             sharedWebSocket.send(joynrMessage);
-            expect(websocket.send).toHaveBeenCalledWith(JSON.stringify(joynrMessage));
+            expect(websocket.send).toHaveBeenCalledWith(
+                    WebSocket.marshalJoynrMessage(joynrMessage),
+                    {
+                        binary : true
+                    });
 
             websocket.send.calls.reset();
             websocket.readyState = WebSocket.CLOSING;

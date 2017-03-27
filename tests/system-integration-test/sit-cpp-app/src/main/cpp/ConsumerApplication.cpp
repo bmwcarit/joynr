@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
     } catch (const exceptions::JoynrException& e) {
         // exception sink
         success = false;
-        JOYNR_LOG_INFO(
+        JOYNR_LOG_ERROR(
                 logger, "SIT RESULT error: \"{}\" : C++ consumer -> {}", e.what(), providerDomain);
     }
 

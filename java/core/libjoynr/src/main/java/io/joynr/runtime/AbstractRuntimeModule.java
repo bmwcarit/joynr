@@ -3,7 +3,7 @@ package io.joynr.runtime;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,10 +54,12 @@ import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.RequestReplyManagerImpl;
 import io.joynr.dispatching.rpc.RpcUtils;
+import io.joynr.dispatching.subscription.FileSubscriptionRequestStorage;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.PublicationManagerImpl;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.dispatching.subscription.SubscriptionManagerImpl;
+import io.joynr.dispatching.subscription.SubscriptionRequestStorage;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
@@ -128,7 +130,9 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         // other address types must be added to the Multibinder to support global addressing. Created here to make
         // sure the Set exists, even if empty.
         Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-        });
+        }, Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_PROVIDER));
+        Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
+        }, Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_PROVIDER));
 
         multicastAddressCalculators = Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
         });
@@ -142,6 +146,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(DiscoveryAsync.class).to(LocalDiscoveryAggregator.class);
         bind(CapabilitiesRegistrar.class).to(CapabilitiesRegistrarImpl.class);
         bind(ParticipantIdStorage.class).to(PropertiesFileParticipantIdStorage.class);
+        bind(SubscriptionRequestStorage.class).to(FileSubscriptionRequestStorage.class);
         bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
         bind(MulticastReceiverRegistry.class).to(InMemoryMulticastReceiverRegistry.class).asEagerSingleton();

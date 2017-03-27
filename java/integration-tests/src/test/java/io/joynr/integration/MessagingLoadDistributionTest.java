@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,15 +101,13 @@ public class MessagingLoadDistributionTest {
         List<JoynrMessage> messages1 = getMessagesFromBounceProxy(bpMock1, channelUrl1, channelId1);
 
         assertEquals(3, messages1.size());
-        assertThat(messages1, allOf(containsMessage("message-1_1"),
-                                    containsMessage("message-1_2"),
-                                    containsMessage("message-1_3")));
+        assertThat(messages1,
+                   allOf(containsMessage("message-1_1"), containsMessage("message-1_2"), containsMessage("message-1_3")));
 
         List<JoynrMessage> messages2 = getMessagesFromBounceProxy(bpMock2, channelUrl2, channelId2);
         assertEquals(3, messages2.size());
-        assertThat(messages2, allOf(containsMessage("message-2_1"),
-                                    containsMessage("message-2_2"),
-                                    containsMessage("message-2_3")));
+        assertThat(messages2,
+                   allOf(containsMessage("message-2_1"), containsMessage("message-2_2"), containsMessage("message-2_3")));
     }
 
     @Test
@@ -148,8 +146,13 @@ public class MessagingLoadDistributionTest {
 
         String serializedMessage = bpMock.createSerializedJoynrMessage(relativeTtlMs, msgId, msgId);
         /* @formatter:off */
-        bpMock.onrequest().with().body(serializedMessage).expect().statusCode(201).when().post("message;jsessionid="
-                + sessionId);
+        bpMock.onrequest()
+              .with()
+              .body(serializedMessage)
+              .expect()
+              .statusCode(201)
+              .when()
+              .post("message;jsessionid=" + sessionId);
         /* @formatter:on */
         RestAssured.baseURI = previousBaseUri;
     }

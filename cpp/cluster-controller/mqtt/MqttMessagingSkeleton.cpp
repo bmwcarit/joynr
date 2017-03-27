@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/MessageRouter.h"
+#include "joynr/IMessageRouter.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/Util.h"
@@ -42,14 +42,16 @@ std::string MqttMessagingSkeleton::translateMulticastWildcard(std::string topic)
     return topic;
 }
 
-MqttMessagingSkeleton::MqttMessagingSkeleton(MessageRouter& messageRouter,
+MqttMessagingSkeleton::MqttMessagingSkeleton(IMessageRouter& messageRouter,
                                              std::shared_ptr<MqttReceiver> mqttReceiver,
+                                             const std::string& multicastTopicPrefix,
                                              uint64_t ttlUplift)
         : messageRouter(messageRouter),
           mqttReceiver(mqttReceiver),
           ttlUplift(ttlUplift),
           multicastSubscriptionCount(),
-          multicastSubscriptionCountMutex()
+          multicastSubscriptionCountMutex(),
+          multicastTopicPrefix(multicastTopicPrefix)
 {
 }
 
@@ -58,7 +60,7 @@ void MqttMessagingSkeleton::registerMulticastSubscription(const std::string& mul
     std::string mqttTopic = translateMulticastWildcard(multicastId);
     std::lock_guard<std::mutex> lock(multicastSubscriptionCountMutex);
     if (multicastSubscriptionCount.find(mqttTopic) == multicastSubscriptionCount.cend()) {
-        mqttReceiver->subscribeToTopic(mqttTopic);
+        mqttReceiver->subscribeToTopic(multicastTopicPrefix + mqttTopic);
         multicastSubscriptionCount[mqttTopic] = 1;
     } else {
         multicastSubscriptionCount[mqttTopic]++;
@@ -75,7 +77,7 @@ void MqttMessagingSkeleton::unregisterMulticastSubscription(const std::string& m
                 logger, "unregister multicast subscription called for non existing subscription");
     } else if (countIterator->second == 1) {
         multicastSubscriptionCount.erase(mqttTopic);
-        mqttReceiver->unsubscribeFromTopic(mqttTopic);
+        mqttReceiver->unsubscribeFromTopic(multicastTopicPrefix + mqttTopic);
     } else {
         countIterator->second--;
     }
@@ -118,50 +120,51 @@ void MqttMessagingSkeleton::transmit(
 
 void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
 {
+    JoynrMessage msg;
     try {
-        JoynrMessage msg;
         joynr::serializer::deserializeFromJson(msg, message);
-
-        if (msg.getType().empty()) {
-            JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
-            return;
-        }
-        if (msg.getPayload().empty()) {
-            JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
-            return;
-        }
-        if (!msg.containsHeaderExpiryDate()) {
-            JOYNR_LOG_ERROR(logger,
-                            "received message [msgId=[{}] without decay time - dropping message",
-                            msg.getHeaderMessageId());
-            return;
-        }
-        JOYNR_LOG_TRACE(logger, "<<< INCOMING <<< {}", message);
-
-        const JoynrTimePoint maxAbsoluteTime = DispatcherUtils::getMaxAbsoluteTime();
-        JoynrTimePoint msgExpiryDate = msg.getHeaderExpiryDate();
-        std::int64_t maxDiff = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                       maxAbsoluteTime - msgExpiryDate).count();
-        if (static_cast<std::int64_t>(ttlUplift) > maxDiff) {
-            msg.setHeaderExpiryDate(maxAbsoluteTime);
-        } else {
-            JoynrTimePoint newExpiryDate = msgExpiryDate + std::chrono::milliseconds(ttlUplift);
-            msg.setHeaderExpiryDate(newExpiryDate);
-        }
-
-        auto onFailure = [msg](const exceptions::JoynrRuntimeException& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "Incoming Message with ID {} could not be sent! reason: {}",
-                            msg.getHeaderMessageId(),
-                            e.getMessage());
-        };
-        transmit(msg, onFailure);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(logger,
                         "Unable to deserialize message. Raw message: {} - error: {}",
                         message,
                         e.what());
     }
+
+    if (msg.getType().empty()) {
+        JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
+        return;
+    }
+    if (msg.getPayload().empty()) {
+        JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
+        return;
+    }
+    if (!msg.containsHeaderExpiryDate()) {
+        JOYNR_LOG_ERROR(logger,
+                        "received message [msgId=[{}] without decay time - dropping message",
+                        msg.getHeaderMessageId());
+        return;
+    }
+    JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", msg.toLogMessage());
+
+    const JoynrTimePoint maxAbsoluteTime = DispatcherUtils::getMaxAbsoluteTime();
+    JoynrTimePoint msgExpiryDate = msg.getHeaderExpiryDate();
+    std::int64_t maxDiff = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                   maxAbsoluteTime - msgExpiryDate).count();
+    if (static_cast<std::int64_t>(ttlUplift) > maxDiff) {
+        msg.setHeaderExpiryDate(maxAbsoluteTime);
+    } else {
+        JoynrTimePoint newExpiryDate = msgExpiryDate + std::chrono::milliseconds(ttlUplift);
+        msg.setHeaderExpiryDate(newExpiryDate);
+    }
+
+    auto onFailure = [msg](const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(logger,
+                        "Incoming Message with ID {} could not be sent! reason: {}",
+                        msg.getHeaderMessageId(),
+                        e.getMessage());
+    };
+
+    transmit(msg, onFailure);
 }
 
 } // namespace joynr

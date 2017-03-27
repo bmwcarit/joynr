@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,6 +100,7 @@ public:
      */
     static const std::string& HEADER_EFFORT();
 
+    static const std::string CUSTOM_HEADER_REQUEST_REPLY_ID;
     static const std::string VALUE_MESSAGE_TYPE_ONE_WAY;
     static const std::string VALUE_MESSAGE_TYPE_REQUEST;
     static const std::string VALUE_MESSAGE_TYPE_REPLY;
@@ -382,11 +383,31 @@ public:
      */
     void setReceivedFromGlobal(bool receivedFromGlobal);
 
+    /**
+     * @return Returns whether the message is send to a provider that is registered on the local
+     * cluster-controller.
+     */
+    bool isLocalMessage() const;
+
+    /**
+     * Sets a flag which indiciates whether the message is send to a provider that is registered on
+     * the local cluster-controller.
+     * Won't be transmitted over the network (transient flag). Default is false.
+     * @param localMessage
+     */
+    void setLocalMessage(bool localMessage);
+
     template <class Archive>
     void serialize(Archive& archive)
     {
         archive(MUESLI_NVP(type), MUESLI_NVP(header), MUESLI_NVP(payload));
     }
+
+    /**
+     * @brief toLogMessage Used to print log messages.
+     * @return a string representing this message used for logging.
+     */
+    std::string toLogMessage() const;
 
 private:
     /**
@@ -413,6 +434,10 @@ private:
     // receivedFromGlobal is a transient attribute which will not be serialized.
     // It is only used locally for routing decisions.
     bool receivedFromGlobal;
+
+    // Transient flag which marks message that are send to a provider which is registered
+    // on the local cluster-controller.
+    bool localMessage;
     ADD_LOGGER(JoynrMessage);
 
     void generateAndSetMsgIdHeaderIfAbsent();

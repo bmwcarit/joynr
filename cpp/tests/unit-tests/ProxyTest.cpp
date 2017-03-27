@@ -22,6 +22,7 @@
 #include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/tests/TestWithoutVersionProxy.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "AbstractSyncAsyncTest.cpp"
 
 using ::testing::A;
@@ -52,9 +53,10 @@ public:
     {}
     void SetUp() override {
         AbstractSyncAsyncTest::SetUp();
-        mockInProcessConnectorFactory = new MockInProcessConnectorFactory();
-        JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, nullptr);
-        mockConnectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
+        auto mockInProcessConnectorFactoryPtr = std::make_unique<MockInProcessConnectorFactory>();
+        mockInProcessConnectorFactory = mockInProcessConnectorFactoryPtr.get();
+        auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(mockJoynrMessageSender, nullptr);
+        mockConnectorFactory = new ConnectorFactory(std::move(mockInProcessConnectorFactoryPtr), std::move(joynrMessagingConnectorFactory));
     }
 
     void TearDown() override {
@@ -68,7 +70,8 @@ public:
             const std::string&, // receiver participant ID
             const MessagingQos&, // messaging QoS
             const Request&, // request object to send
-            std::shared_ptr<IReplyCaller> // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller>, // reply caller to notify when reply is received
+            bool isLocalMessage
     )>& setExpectationsForSendRequestCall(std::string methodName) override {
         return EXPECT_CALL(
                     *mockJoynrMessageSender,
@@ -77,7 +80,8 @@ public:
                         Eq(providerParticipantId), // receiver participant ID
                         _, // messaging QoS
                         Property(&Request::getMethodName, Eq(methodName)), // request object to send
-                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()) // reply caller to notify when reply is received
+                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()), // reply caller to notify when reply is received
+                        _ // isLocalFlag
                     )
         );
     }
@@ -90,7 +94,10 @@ public:
                     "myDomain",
                     MessagingQos());
         const bool useInProcessCommunication = false;
-        proxy->handleArbitrationFinished(providerParticipantId, useInProcessCommunication);
+        types::DiscoveryEntryWithMetaInfo discoveryEntry;
+        discoveryEntry.setParticipantId(providerParticipantId);
+        discoveryEntry.setIsLocal(true);
+        proxy->handleArbitrationFinished(discoveryEntry, useInProcessCommunication);
         return proxy;
     }
 

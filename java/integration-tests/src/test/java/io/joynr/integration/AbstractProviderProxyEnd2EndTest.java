@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -236,6 +236,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         if (providerRuntime != null) {
             providerRuntime.unregisterProvider(domain, provider);
             providerRuntime.unregisterProvider(domainAsync, provider);
+            // wait grace period for the unregister (remove) message to get
+            // sent to global discovery
+            Thread.sleep(1000);
             providerRuntime.shutdown(true);
         }
         if (consumerRuntime != null) {
@@ -888,12 +891,12 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         try {
             future.get();
             fail("Should throw ApplicationException");
-        } catch (JoynrRuntimeException|InterruptedException e) {
+        } catch (JoynrRuntimeException | InterruptedException e) {
             fail(e.toString());
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackWithApplicationExceptionErrorEnumBase).onFailure((ErrorEnumBase)(expected.getError()));
+        verify(callbackWithApplicationExceptionErrorEnumBase).onFailure((ErrorEnumBase) (expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -955,12 +958,12 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         try {
             future.get();
             fail("Should throw ApplicationException");
-        } catch (JoynrRuntimeException|InterruptedException e) {
+        } catch (JoynrRuntimeException | InterruptedException e) {
             fail(e.toString());
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackWithApplicationExceptionMethodWithErrorEnumExtendedErrorEnum).onFailure((MethodWithErrorEnumExtendedErrorEnum)(expected.getError()));
+        verify(callbackWithApplicationExceptionMethodWithErrorEnumExtendedErrorEnum).onFailure((MethodWithErrorEnumExtendedErrorEnum) (expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -989,12 +992,12 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         try {
             future.get();
             fail("Should throw ApplicationException");
-        } catch (JoynrRuntimeException|InterruptedException e) {
+        } catch (JoynrRuntimeException | InterruptedException e) {
             fail(e.toString());
         } catch (ApplicationException e) {
             assertEquals(expected, e);
         }
-        verify(callbackWithApplicationExceptionMethodWithImplicitErrorEnumErrorEnum).onFailure((MethodWithImplicitErrorEnumErrorEnum)(expected.getError()));
+        verify(callbackWithApplicationExceptionMethodWithImplicitErrorEnumErrorEnum).onFailure((MethodWithImplicitErrorEnumErrorEnum) (expected.getError()));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)

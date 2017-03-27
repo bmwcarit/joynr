@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,7 +147,7 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
     joynr::types::DiscoveryQos discoveryQos(
@@ -172,7 +172,7 @@ TEST_F(SystemServicesDiscoveryTest, add)
             ->setDiscoveryQos(discoveryQos)
             ->build();
 
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
     std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
@@ -189,8 +189,8 @@ TEST_F(SystemServicesDiscoveryTest, add)
                 false                                   // provider supports on change subscriptions
     );
     joynr::types::Version providerVersion(47, 11);
-    std::vector<joynr::types::DiscoveryEntry> expectedResult;
-    joynr::types::DiscoveryEntry discoveryEntry(
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedResult;
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry(
                 providerVersion,
                 domain,
                 interfaceName,
@@ -198,7 +198,8 @@ TEST_F(SystemServicesDiscoveryTest, add)
                 providerQos,
                 lastSeenDateMs,
                 expiryDateMs,
-                publicKeyId
+                publicKeyId,
+                true
     );
     expectedResult.push_back(discoveryEntry);
 
@@ -246,8 +247,8 @@ TEST_F(SystemServicesDiscoveryTest, remove)
                 false                                   // provider supports on change subscriptions
     );
     joynr::types::Version providerVersion(47, 11);
-    std::vector<joynr::types::DiscoveryEntry> expectedResult;
-    joynr::types::DiscoveryEntry discoveryEntry(
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedResult;
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry(
                 providerVersion,
                 domain,
                 interfaceName,
@@ -255,7 +256,8 @@ TEST_F(SystemServicesDiscoveryTest, remove)
                 providerQos,
                 lastSeenDateMs,
                 expiryDateMs,
-                publicKeyId
+                publicKeyId,
+                true
     );
     expectedResult.push_back(discoveryEntry);
 
@@ -265,7 +267,7 @@ TEST_F(SystemServicesDiscoveryTest, remove)
         ADD_FAILURE()<< "add was not successful";
     }
 
-    std::vector<joynr::types::DiscoveryEntry> result;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     try {
         discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQos);
     } catch (const exceptions::JoynrException& e) {

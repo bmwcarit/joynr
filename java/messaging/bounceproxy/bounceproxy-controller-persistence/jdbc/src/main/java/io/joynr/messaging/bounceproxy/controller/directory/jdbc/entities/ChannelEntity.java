@@ -4,7 +4,7 @@ package io.joynr.messaging.bounceproxy.controller.directory.jdbc.entities;
  * #%L
  * joynr::java::messaging::bounceproxy::bounceproxy-controller
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,8 @@ public class ChannelEntity {
         return new Channel(bpInfo.convertToBounceProxyInformation(), this.channelId, URI.create(this.location));
     }
 
-    @SuppressFBWarnings(justification = "generated code from Eclipse", value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    @SuppressFBWarnings(justification = "generated code from Eclipse",
+                        value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -98,7 +99,8 @@ public class ChannelEntity {
         return result;
     }
 
-    @SuppressFBWarnings(justification = "generated code from Eclipse", value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    @SuppressFBWarnings(justification = "generated code from Eclipse",
+                        value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
     public boolean equals(Object obj) {
         if (this == obj)

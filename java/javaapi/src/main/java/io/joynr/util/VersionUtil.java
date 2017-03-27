@@ -3,7 +3,7 @@ package io.joynr.util;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class VersionUtil {
             throw new IllegalStateException("No @JoynrVersion found on " + annotatedClass);
         }
         Version version = new Version(versionAnnotation.major(), versionAnnotation.minor());
-        logger.debug("Created version {} for interface class {}", version, annotatedClass);
+        logger.trace("Created version {} for interface class {}", version, annotatedClass);
         return version;
     }
 

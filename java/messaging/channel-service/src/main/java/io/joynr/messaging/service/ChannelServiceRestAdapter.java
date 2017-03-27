@@ -4,7 +4,7 @@ package io.joynr.messaging.service;
  * #%L
  * joynr::java::messaging::channel-service
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,8 @@ public class ChannelServiceRestAdapter {
     @GET
     @Path("/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}")
     @Produces({ MediaType.APPLICATION_JSON })
-    @Suspend(resumeOnBroadcast = true, period = ChannelServiceConstants.EXPIRE_TIME_CONNECTION, timeUnit = TimeUnit.SECONDS, contentType = MediaType.APPLICATION_JSON)
+    @Suspend(resumeOnBroadcast = true, period = ChannelServiceConstants.EXPIRE_TIME_CONNECTION,
+             timeUnit = TimeUnit.SECONDS, contentType = MediaType.APPLICATION_JSON)
     public Broadcastable open(@PathParam("ccid") String ccid,
                               @HeaderParam("X-Cache-Index") Integer cacheIndex,
                               @HeaderParam(ChannelServiceConstants.X_ATMOSPHERE_TRACKING_ID) String atmosphereTrackingId) {

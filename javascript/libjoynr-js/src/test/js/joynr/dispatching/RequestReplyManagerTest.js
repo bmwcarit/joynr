@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,14 +32,33 @@ define(
             "joynr/util/JSONSerializer",
             "joynr/exceptions/MethodInvocationException",
             "joynr/types/Version",
+            "joynr/types/DiscoveryEntryWithMetaInfo",
+            "joynr/types/ProviderQos",
+            "joynr/messaging/MessagingQos",
             "global/Promise",
             "global/WaitsFor"
         ],
-        function(RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing, UtilInternal, JSONSerializer, MethodInvocationException, Version, Promise, waitsFor) {
+        function(
+                RequestReplyManager,
+                OneWayRequest,
+                Request,
+                Reply,
+                TypeRegistrySingleton,
+                Typing,
+                UtilInternal,
+                JSONSerializer,
+                MethodInvocationException,
+                Version,
+                DiscoveryEntryWithMetaInfo,
+                ProviderQos,
+                MessagingQos,
+                Promise,
+                waitsFor) {
             describe(
                     "libjoynr-js.joynr.dispatching.RequestReplyManager",
                     function() {
 
+                        var dispatcherSpy;
                         var requestReplyManager;
                         var typeRegistry;
                         var ttl_ms = 50;
@@ -49,6 +68,18 @@ define(
                         var reply = new Reply({
                             requestReplyId : requestReplyId,
                             response : testResponse
+                        });
+
+                        var providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
+                            providerVersion : new Version({majorVersion : 0, minorVersion : 23}),
+                            domain : "testProviderDomain",
+                            interfaceName : "interfaceName",
+                            participantId : "providerParticipantId",
+                            qos : new ProviderQos(),
+                            lastSeenDateMs : Date.now(),
+                            expiryDateMs : Date.now() + 60000,
+                            publicKeyId : "publicKeyId",
+                            isLocal : true
                         });
 
                         function RadioStation(name, station, source) {
@@ -124,12 +155,16 @@ define(
                          * Called before each test.
                          */
                         beforeEach(function() {
+                            dispatcherSpy = jasmine.createSpyObj("DispatcherSpy", [
+                                "sendOneWayRequest",
+                                "sendRequest"
+                            ]);
                             typeRegistry = TypeRegistrySingleton.getInstance();
                             typeRegistry.addType("test.RadioStation", RadioStation);
                             typeRegistry.addType(
                                     "test.ComplexTypeWithComplexAndSimpleProperties",
                                     ComplexTypeWithComplexAndSimpleProperties);
-                            requestReplyManager = new RequestReplyManager({}, typeRegistry);
+                            requestReplyManager = new RequestReplyManager(dispatcherSpy, typeRegistry);
                         });
 
                         it("is instantiable", function(done) {
@@ -869,5 +904,27 @@ define(
                             done();
                         });
 
+                        it("sendOneWayRequest calls dispatcher with correct arguments", function(done) {
+                            var parameters = {
+                                from: "fromParticipantId",
+                                toDiscoveryEntry: providerDiscoveryEntry,
+                                messagingQos: new MessagingQos({
+                                    ttl: 1024
+                                }),
+                                request: new OneWayRequest({
+                                    methodName: "testMethodName"
+                                })
+                            };
+                            var expectedArguments = UtilInternal.extendDeep({}, parameters);
+                            expectedArguments.messagingQos = new MessagingQos(parameters.messagingQos);
+                            expectedArguments.toDiscoveryEntry = new DiscoveryEntryWithMetaInfo(parameters.toDiscoveryEntry);
+                            expectedArguments.request = new OneWayRequest(parameters.request);
+
+                            requestReplyManager.sendOneWayRequest(parameters);
+
+                            expect(dispatcherSpy.sendOneWayRequest).toHaveBeenCalledWith(
+                                    expectedArguments);
+                            done();
+                        });
                     });
         }); // require

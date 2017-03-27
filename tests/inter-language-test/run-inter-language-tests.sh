@@ -6,7 +6,8 @@ JOYNR_SOURCE_DIR=""
 ILT_BUILD_DIR=""
 ILT_RESULTS_DIR=""
 CC_LANGUAGE=""
-while getopts "b:c:r:s:" OPTIONS;
+BACKEND_SERVICES=""
+while getopts "b:c:r:s:B:" OPTIONS;
 do
 	case $OPTIONS in
 		c)
@@ -28,9 +29,12 @@ do
 				echo "JOYNR_SOURCE_DIR=$OPTARG"
 			fi
 			;;
+		B)
+			BACKEND_SERVICES=$OPTARG
+			;;
 		\?)
 			echo "Illegal option found."
-			echo "Synopsis: run-inter-language-tests.sh [-b <ilt-build-dir>] [-c <cluster-controller-language (CPP|JAVA)>] [-r <ilt-results-dir>] [-s <joynr-source-dir>]"
+			echo "Synopsis: run-inter-language-tests.sh [-b <ilt-build-dir>] [-c <cluster-controller-language (CPP|JAVA)>] [-r <ilt-results-dir>] [-s <joynr-source-dir>] [-B <backend-services> (MQTT|HTTP)"
 			exit 1
 			;;
 	esac
@@ -73,6 +77,16 @@ fi
 if [ -z "$ILT_RESULTS_DIR" ]
 then
 	ILT_RESULTS_DIR=$ILT_DIR/ilt-results-$(date "+%Y-%m-%d-%H:%M:%S")
+fi
+
+if [ -z "$BACKEND_SERVICES" ]
+then
+	# use default (MQTT/JEE) Discovery and Access Control
+	BACKEND_SERVICES=MQTT
+elif [ "$BACKEND_SERVICES" != "MQTT" ] && [ "$BACKEND_SERVICES" != "HTTP" ]
+then
+	log 'Invalid value for backend services: $BACKEND_SERVICES.'
+	exit 1
 fi
 
 # process ids for background stuff
@@ -151,18 +165,34 @@ function prechecks {
 	fi
 }
 
-function start_services {
-	cd $ILT_DIR
-	rm -f joynr.properties
-	rm -f joynr_participantIds.properties
-	log '# starting services'
+function start_payara {
+	DISCOVERY_WAR_FILE=$ILT_DIR/target/discovery-jee.war
+	ACCESS_CONTROL_WAR_FILE=$ILT_DIR/target/accesscontrol-jee.war
 
-	echo "Starting mosquitto"
-	mosquitto -c /etc/mosquitto/mosquitto.conf > $ILT_RESULTS_DIR/mosquitt-$1.log 2>&1 &
-	MOSQUITTO_PID=$!
-	echo "Mosquitto started with PID $MOSQUITTO_PID"
-	sleep 2
+    echo "Starting payara"
 
+	asadmin start-database
+	asadmin start-domain
+
+	asadmin deploy --force=true $DISCOVERY_WAR_FILE
+	asadmin deploy --force=true $ACCESS_CONTROL_WAR_FILE
+
+    echo "payara started"
+}
+
+function stop_payara {
+    echo "stopping payara"
+	for app in `asadmin list-applications | egrep '(discovery|access)' | cut -d" " -f1`;
+	do
+		echo "undeploy $app";
+		asadmin undeploy --droptables=true $app;
+	done
+
+	asadmin stop-domain
+	asadmin stop-database
+}
+
+function start_jetty {
 	mvn $SPECIAL_MAVEN_OPTIONS jetty:run-war --quiet > $ILT_RESULTS_DIR/jetty-$1.log 2>&1 &
 	JETTY_PID=$!
 	echo "Starting Jetty with PID $JETTY_PID"
@@ -182,12 +212,9 @@ function start_services {
 		stopall
 	fi
 	echo "Jetty successfully started."
-	sleep 5
 }
 
-function stop_services {
-	log '# stopping services'
-
+function stop_jetty {
 	if [ -n "$JETTY_PID" ]
 	then
 		cd $ILT_DIR
@@ -195,6 +222,38 @@ function stop_services {
 		wait $JETTY_PID
 		echo "Stopped Jetty with PID $JETTY_PID"
 		JETTY_PID=""
+	fi
+}
+
+function start_services {
+	cd $ILT_DIR
+	rm -f joynr.properties
+	rm -f joynr_participantIds.properties
+	log '# starting services'
+
+	echo "Starting mosquitto"
+	mosquitto -c /etc/mosquitto/mosquitto.conf > $ILT_RESULTS_DIR/mosquitto-$1.log 2>&1 &
+	MOSQUITTO_PID=$!
+	echo "Mosquitto started with PID $MOSQUITTO_PID"
+	sleep 2
+
+	if [ "$BACKEND_SERVICES" = "HTTP" ]
+	then
+		start_jetty
+	else
+		start_payara
+	fi
+	sleep 5
+}
+
+function stop_services {
+	log '# stopping services'
+
+	if [ "$BACKEND_SERVICES" = "HTTP" ]
+	then
+		stop_jetty
+	else
+		stop_payara
 	fi
 
 	if [ -n "$MOSQUITTO_PID" ]
@@ -213,7 +272,12 @@ function start_cluster_controller {
 		log '# starting JAVA clustercontroller'
 		CLUSTER_CONTROLLER_DIR=$JOYNR_SOURCE_DIR/java/core/clustercontroller-standalone
 		cd $CLUSTER_CONTROLLER_DIR
-		mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="http::mqtt" -Djoynr.messaging.primaryglobaltransport="mqtt" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
+		if [ "$BACKEND_SERVICES" = "HTTP" ]
+		then
+			mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="http" -Djoynr.messaging.discoverydirectoryurl="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
+		else
+			mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="mqtt" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
+		fi
 	else
 		log '# starting C++ clustercontroller'
 		if [ ! -d $ILT_BUILD_DIR -o ! -d $ILT_BUILD_DIR/bin ]
@@ -227,7 +291,12 @@ function start_cluster_controller {
 		cp -a $ILT_BUILD_DIR/bin $CLUSTER_CONTROLLER_DIR
 		cd $CLUSTER_CONTROLLER_DIR
 		[[ $? == "0" ]] && echo "cd $CLUSTER_CONTROLLER_DIR OK"
-		./cluster-controller > $ILT_RESULTS_DIR/clustercontroller-cpp-$1.log 2>&1 &
+		if [ "$BACKEND_SERVICES" = "HTTP" ]
+		then
+			./cluster-controller resources/cc.http.messaging.settings > $ILT_RESULTS_DIR/clustercontroller-cpp-$1.log 2>&1 &
+		else
+			./cluster-controller resources/cc.mqtt.messaging.settings > $ILT_RESULTS_DIR/clustercontroller-cpp-$1.log 2>&1 &
+		fi
 	fi
 	CLUSTER_CONTROLLER_PID=$!
 	echo "Started external cluster controller with PID $CLUSTER_CONTROLLER_PID in directory $CLUSTER_CONTROLLER_DIR"
@@ -255,7 +324,12 @@ function start_java_provider_cc {
 	log 'Starting Java provider CC (with in process clustercontroller).'
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
-	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http:mqtt" -Djoynr.messaging.primaryglobaltransport="mqtt" > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
+	if [ "$BACKEND_SERVICES" = "HTTP" ]
+	then
+		mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http" -Djoynr.messaging.discoverydirectoryurl="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
+	else
+		mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN mqtt" > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
+	fi
 	PROVIDER_PID=$!
 	echo "Started Java provider cc with PID $PROVIDER_PID"
 	# Allow some time for startup
@@ -316,7 +390,12 @@ function start_java_consumer_cc {
 	rm -f java-consumer.persistence_file
 	mkdir $ILT_RESULTS_DIR/consumer-java-cc-$1
 	rm -fr $ILT_DIR/target/surefire-reports
-	mvn $SPECIAL_MAVEN_OPTIONS surefire:test -Dtransport=mqtt:http -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-cc-$1.log 2>&1
+	if [ "$BACKEND_SERVICES" = "HTTP" ]
+	then
+		mvn $SPECIAL_MAVEN_OPTIONS surefire:test -Dtransport=http -Djoynr.messaging.discoverydirectoryurl="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-cc-$1.log 2>&1
+	else
+		mvn $SPECIAL_MAVEN_OPTIONS surefire:test -Dtransport=mqtt -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-cc-$1.log 2>&1
+	fi
 	SUCCESS=$?
 	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-cc-$1
 	if [ "$SUCCESS" != 0 ]
@@ -424,6 +503,7 @@ function clean_up {
 }
 
 # prepare JavaScript
+npm run-script preinstall
 npm install
 npm install jasmine-node
 

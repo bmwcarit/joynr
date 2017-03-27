@@ -262,7 +262,7 @@ bool «className»::usesClusterController() const{
 				// Visual C++ requires a return value
 				return std::make_shared<Future<std::string>>();
 			«ELSE»
-				JOYNR_LOG_DEBUG(logger, "Subscribing to «attributeName».");
+				JOYNR_LOG_TRACE(logger, "Subscribing to «attributeName».");
 				assert(subscriptionManager != nullptr);
 				std::string attributeName("«attributeName»");
 				auto future = std::make_shared<Future<std::string>>();
@@ -275,7 +275,7 @@ bool «className»::usesClusterController() const{
 						subscriptionListener,
 						subscriptionQos,
 						subscriptionRequest);
-				JOYNR_LOG_DEBUG(logger, "Registered subscription: {}", subscriptionRequest.toString());
+				JOYNR_LOG_TRACE(logger, "Registered subscription: {}", subscriptionRequest.toString());
 				assert(address);
 				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(caller);
@@ -306,12 +306,12 @@ bool «className»::usesClusterController() const{
 				JOYNR_LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
 			«ELSE»
-				JOYNR_LOG_DEBUG(logger, "Unsubscribing. Id={}", subscriptionId);
+				JOYNR_LOG_TRACE(logger, "Unsubscribing. Id={}", subscriptionId);
 				assert(publicationManager != nullptr);
-				JOYNR_LOG_DEBUG(logger, "Stopping publications by publication manager.");
+				JOYNR_LOG_TRACE(logger, "Stopping publications by publication manager.");
 				publicationManager->stopPublication(subscriptionId);
 				assert(subscriptionManager != nullptr);
-				JOYNR_LOG_DEBUG(logger, "Unregistering attribute subscription.");
+				JOYNR_LOG_TRACE(logger, "Unregistering attribute subscription.");
 				subscriptionManager->unregisterSubscription(subscriptionId);
 			«ENDIF»
 		}
@@ -390,7 +390,7 @@ bool «className»::usesClusterController() const{
 	«val broadcastName = broadcast.joynrName»
 
 	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
-		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
+		JOYNR_LOG_TRACE(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != nullptr);
 		«IF broadcast.selective»
 			joynr::BroadcastSubscriptionRequest subscriptionRequest;
@@ -440,7 +440,7 @@ bool «className»::usesClusterController() const{
 				const std::vector<std::string>& partitions
 			«ENDIF»
 	) {
-		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
+		JOYNR_LOG_TRACE(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != nullptr);
 		std::string broadcastName("«broadcastName»");
 
@@ -456,7 +456,7 @@ bool «className»::usesClusterController() const{
 						subscriptionListener,
 						subscriptionQos,
 						subscriptionRequest);
-			JOYNR_LOG_DEBUG(
+			JOYNR_LOG_TRACE(
 					logger,
 					"Registered broadcast subscription: {}",
 					subscriptionRequest.toString());
@@ -490,7 +490,7 @@ bool «className»::usesClusterController() const{
 			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager);
 			std::function<void()> onSuccess =
 					[this, subscriptionRequest] () {
-						JOYNR_LOG_DEBUG(
+						JOYNR_LOG_TRACE(
 								logger,
 								"Registered broadcast subscription: {}",
 								subscriptionRequest->toString());
@@ -532,12 +532,12 @@ bool «className»::usesClusterController() const{
 	}
 
 	«produceUnsubscribeFromBroadcastSignature(broadcast, className)» {
-		JOYNR_LOG_DEBUG(logger, "Unsubscribing broadcast. Id={}", subscriptionId);
+		JOYNR_LOG_TRACE(logger, "Unsubscribing broadcast. Id={}", subscriptionId);
 		assert(publicationManager != nullptr);
-		JOYNR_LOG_DEBUG(logger, "Stopping publications by publication manager.");
+		JOYNR_LOG_TRACE(logger, "Stopping publications by publication manager.");
 		publicationManager->stopPublication(subscriptionId);
 		assert(subscriptionManager != nullptr);
-		JOYNR_LOG_DEBUG(logger, "Unregistering broadcast subscription.");
+		JOYNR_LOG_TRACE(logger, "Unregistering broadcast subscription.");
 		subscriptionManager->unregisterSubscription(subscriptionId);
 	}
 «ENDFOR»

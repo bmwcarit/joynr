@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ define([
             "joynr/types/DiscoveryQos",
             "joynr/system/DiscoveryProxy",
             "joynr/system/RoutingProxy",
-            "joynr/system/RoutingProvider",
             "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/system/RoutingTypes/BrowserAddress",
             "joynr/system/RoutingTypes/WebSocketAddress",
@@ -37,8 +36,9 @@ define([
             "joynr/vehicle/RadioProvider",
             "joynr/vehicle/radiotypes/RadioStation",
             "joynr/datatypes/exampleTypes/Country",
-            "joynr/datatypes/exampleTypes/StringMap",
             "joynr/provisioning/provisioning_libjoynr",
+            "joynr/provisioning/provisioning_cc",
+            "joynr/system/RoutingTypes/MqttAddress",
             "integration/IntegrationUtils",
         ],
         function(
@@ -49,7 +49,6 @@ define([
                 DiscoveryQosGen,
                 DiscoveryProxy,
                 RoutingProxy,
-                RoutingProvider,
                 ChannelAddress,
                 BrowserAddress,
                 WebSocketAddress,
@@ -58,8 +57,9 @@ define([
                 RadioProvider,
                 RadioStation,
                 Country,
-                StringMap,
                 provisioning,
+                provisioning_cc,
+                MqttAddress,
                 IntegrationUtils) {
             describe(
                     "libjoynr-js.integration.intertab",
@@ -591,7 +591,7 @@ define([
                                                 });
                                     }).then(function(newRadioProxy) {
                                         expect(newRadioProxy).toBeDefined();
-                                        expect(newRadioProxy.providerParticipantId).toEqual(joynr.participantIdStorage.getParticipantId(domain, radioProvider));
+                                        expect(newRadioProxy.providerDiscoveryEntry.participantId).toEqual(joynr.participantIdStorage.getParticipantId(domain, radioProvider));
                                         radioProxy = newRadioProxy;
                                         return radioProxy.addFavoriteStation({
                                             radioStation : "radioStation"
@@ -1009,6 +1009,28 @@ define([
                                     }).then(function(opArgs) {
                                         var success = opArgs.resolved;
                                         expect(success).toBeFalsy();
+
+                                        // test routing provider returns correct global address
+                                        return routingProxy.globalAddress.get();
+                                    }).then(function(globalAddressString) {
+                                        expect(globalAddressString).toBeDefined();
+                                        expect(globalAddressString).not.toBeNull();
+                                        var globalAddress = JSON.parse(globalAddressString);
+                                        /*jslint nomen: true*/
+                                        expect(globalAddress._typeName).toEqual(MqttAddress._typeName);
+                                        /*jslint nomen: false*/
+                                        expect(globalAddress.brokerUri).toEqual(provisioning_cc.brokerUri);
+
+                                        // test routing provider returns correct replyTo address
+                                        return routingProxy.replyToAddress.get();
+                                    }).then(function(replyToAddressString) {
+                                        expect(replyToAddressString).toBeDefined();
+                                        expect(replyToAddressString).not.toBeNull();
+                                        var replyToAddress = JSON.parse(replyToAddressString);
+                                        /*jslint nomen: true*/
+                                        expect(replyToAddress._typeName).toEqual(MqttAddress._typeName);
+                                        /*jslint nomen: false*/
+                                        expect(replyToAddress.brokerUri).toEqual(provisioning_cc.brokerUri);
                                         done();
                                         return null;
                                     }).catch(function(error) {

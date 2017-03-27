@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public:
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(100);
         auto integrationSettings = std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
-        Settings settings("test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings");
+        Settings settings("test-resources/MqttSystemIntegrationTest1.settings");
         Settings::merge(settings, *integrationSettings, false);
         runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(integrationSettings));
 

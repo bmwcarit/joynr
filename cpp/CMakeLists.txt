@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.23.2)
+project(joynr-0.24.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 23)
-set(JOYNR_PATCH_VERSION 2)
+set(JOYNR_MINOR_VERSION 24)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -314,6 +314,11 @@ if(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
 endif(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
 message(STATUS "variable JOYNR_SERVER_MQTT_PORT=" ${JOYNR_SERVER_MQTT_PORT})
 
+if(NOT DEFINED JOYNR_SERVER_MQTT_TLS_PORT)
+    set(JOYNR_SERVER_MQTT_TLS_PORT "8883")
+endif(NOT DEFINED JOYNR_SERVER_MQTT_TLS_PORT)
+message(STATUS "variable JOYNR_SERVER_MQTT_TLS_PORT=" ${JOYNR_SERVER_MQTT_TLS_PORT})
+
 # Set the binary directory
 set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 message(STATUS "variable JOYNR_BINARY_DIR=" ${JOYNR_BINARY_DIR})
@@ -352,10 +357,12 @@ endif(ENABLE_DOXYGEN)
 
 ######## Add Boost ########
 
-find_package(Boost 1.58.0 REQUIRED
-    COMPONENTS
+set(JOYNR_BOOST_REQUIRED_COMPONENTS
     system
-    thread
+    thread)
+set(JOYNR_BOOST_REQUIRED_VERSION 1.58.0)
+find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
+    COMPONENTS ${JOYNR_BOOST_REQUIRED_COMPONENTS}
 )
 include(CheckBoostImportTargets)
 
@@ -498,6 +505,11 @@ include(SetCppStandard)
 #-Wpedantic
 #-Wpadded
 #-Wswitch-default
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    # Mac OS X
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,dynamic_lookup")
+endif()
 
 message(STATUS "CMAKE_GENERATOR=" ${CMAKE_GENERATOR})
 message(STATUS "compiler CMAKE_C_COMPILER=" ${CMAKE_C_COMPILER})
@@ -655,18 +667,19 @@ endif(JOYNR_ENABLE_DLT_LOGGING)
 
 ### Add muesli ############################################################
 if (USE_PLATFORM_MUESLI)
-    find_package(muesli 0.2.0 REQUIRED CONFIG)
+    find_package(muesli 0.3.1 REQUIRED CONFIG)
 else(USE_PLATFORM_MUESLI)
     message(STATUS "############ Download: muesli ############")
 
     AddExternalProject(
         muesli
         GIT_REPOSITORY https://github.com/bmwcarit/muesli
-        GIT_TAG 0.2.0
+        GIT_TAG 0.3.1
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
-        CMAKE_ARGS -DBUILD_MUESLI_TESTS=Off
+        CMAKE_ARGS "-DBUILD_MUESLI_TESTS=Off;"
+                   "-DENABLE_CLANG_FORMATTER=${ENABLE_CLANG_FORMATTER}"
         # Disable build step
         #BUILD_COMMAND ""
     )

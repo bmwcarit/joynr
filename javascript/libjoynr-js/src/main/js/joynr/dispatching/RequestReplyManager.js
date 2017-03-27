@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,8 +100,8 @@ define(
                  *            settings
                  * @param {String}
                  *            settings.from participantId of the sender
-                 * @param {String}
-                 *            settings.to participantId of the receiver
+                 * @param {DiscoveryEntryWithMetaInfo}
+                 *            settings.toDiscoveryEntry DiscoveryEntry of the receiver
                  * @param {MessagingQos}
                  *            settings.messagingQos quality-of-service parameters such as time-to-live
                  * @param {Request}
@@ -132,8 +132,8 @@ define(
                  *            settings
                  * @param {String}
                  *            settings.from participantId of the sender
-                 * @param {String}
-                 *            settings.to participantId of the receiver
+                 * @param {DiscoveryEntryWithMetaInfo}
+                 *            settings.toDiscoveryEntry DiscoveryEntry of the receiver
                  * @param {MessagingQos}
                  *            settings.messagingQos quality-of-service parameters such as time-to-live
                  * @param {OneWayRequest}

@@ -4,7 +4,7 @@ package io.joynr.messaging.service;
  * #%L
  * joynr::java::messaging::bounceproxy-controller-service
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class BounceProxyMigrationTest extends AbstractServiceInterfaceTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .delete(serverUrl + "/clusters/cluster0");
 
         assertEquals(202 /* Accepted */, response.getStatusCode());
@@ -83,7 +83,7 @@ public class BounceProxyMigrationTest extends AbstractServiceInterfaceTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .delete(serverUrl + "/bps/cluster0.instance0");
 
         assertEquals(501 /* Not Implemented */, response.getStatusCode());
@@ -95,7 +95,7 @@ public class BounceProxyMigrationTest extends AbstractServiceInterfaceTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .delete(serverUrl + "/channels/channel-123");
 
         assertEquals(501 /* Not Implemented */, response.getStatusCode());

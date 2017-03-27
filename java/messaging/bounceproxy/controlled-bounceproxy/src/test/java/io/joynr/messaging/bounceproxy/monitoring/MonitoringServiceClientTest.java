@@ -4,7 +4,7 @@ package io.joynr.messaging.bounceproxy.monitoring;
  * #%L
  * joynr::java::messaging::bounceproxy::controlled-bounceproxy
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -318,9 +318,9 @@ public class MonitoringServiceClientTest {
         // HttpResponse is set as out parameter of the handle method. The way to
         // set out parameters with Mockito is to use doAnswer
         Answer<Void> answerForHttpResponse = MockitoTestUtils.createAnswerForHttpResponse(httpStatus);
-        Mockito.doAnswer(answerForHttpResponse).when(handler).handle(any(HttpRequest.class),
-                                                                     any(HttpResponse.class),
-                                                                     any(HttpContext.class));
+        Mockito.doAnswer(answerForHttpResponse)
+               .when(handler)
+               .handle(any(HttpRequest.class), any(HttpResponse.class), any(HttpContext.class));
     }
 
     /**

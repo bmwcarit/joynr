@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,34 +28,30 @@ define(
         [
             "global/Promise",
             "joynr/types/GlobalDiscoveryEntry",
-            "joynr/system/RoutingTypes/ChannelAddress",
-            "joynr/types/DiscoveryEntry",
             "joynr/proxy/DiscoveryQos",
             "joynr/types/DiscoveryScope",
             "joynr/types/ProviderScope",
-            "joynr/types/Version",
             "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy",
             "joynr/types/TypeRegistrySingleton",
             "joynr/util/Typing",
             "joynr/system/LoggerFactory",
             "joynr/util/UtilInternal",
-            "joynr/exceptions/ProviderRuntimeException"
+            "joynr/exceptions/ProviderRuntimeException",
+            "joynr/util/CapabilitiesUtil"
         ],
         function(
                 Promise,
                 GlobalDiscoveryEntry,
-                ChannelAddress,
-                DiscoveryEntry,
                 DiscoveryQos,
                 DiscoveryScope,
                 ProviderScope,
-                Version,
                 GlobalCapabilitiesDirectoryProxy,
                 TypeRegistrySingleton,
                 Typing,
                 LoggerFactory,
                 Util,
-                ProviderRuntimeException) {
+                ProviderRuntimeException,
+                CapabilitiesUtil) {
 
             /**
              * The CapabilitiesDiscovery looks up the local and global capabilities directory
@@ -175,7 +171,7 @@ define(
                                         messageRouterPromises.push(messageRouter.addNextHop(
                                                 globalDiscoveryEntry.participantId,
                                                 globalAddress));
-                                        capabilities.push(globalDiscoveryEntry);
+                                        capabilities.push(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(false, globalDiscoveryEntry));
                                     }
                                 }
                             }
@@ -299,10 +295,11 @@ define(
 
                                 // only interested in local results
                                 case DiscoveryScope.LOCAL_ONLY.value:
-                                    return Promise.resolve(localCapabilitiesStore.lookup({
+                                    localCapabilities = localCapabilitiesStore.lookup({
                                         domains : domains,
                                         interfaceName : interfaceName
-                                    }));
+                                    });
+                                    return Promise.resolve(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(true, localCapabilities));
 
                                     // if anything local use it. Otherwise lookup global.
                                 case DiscoveryScope.LOCAL_THEN_GLOBAL.value:
@@ -311,7 +308,7 @@ define(
                                         interfaceName : interfaceName
                                     });
                                     if (localCapabilities.length > 0) {
-                                        return Promise.resolve(localCapabilities);
+                                        return Promise.resolve(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(true, localCapabilities));
                                     }
                                     globalCapabilities = globalCapabilitiesCache.lookup({
                                         domains : domains,
@@ -319,7 +316,7 @@ define(
                                         cacheMaxAge : discoveryQos.cacheMaxAge
                                     });
                                     if (globalCapabilities.length > 0) {
-                                        return Promise.resolve(globalCapabilities);
+                                        return Promise.resolve(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(false, globalCapabilities));
                                     }
                                     return lookupGlobalCapabilities(
                                             domains,
@@ -343,10 +340,10 @@ define(
                                                 domains,
                                                 interfaceName,
                                                 TTL_30DAYS_IN_MS,
-                                                localCapabilities);
+                                                CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(true, localCapabilities));
                                     }
-                                    return Promise.resolve(localCapabilities
-                                            .concat(globalCapabilities));
+                                    return Promise.resolve(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(true, localCapabilities)
+                                            .concat(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(false, globalCapabilities)));
 
                                 case DiscoveryScope.GLOBAL_ONLY.value:
                                     globalCapabilities = globalCapabilitiesCache.lookup({
@@ -355,7 +352,7 @@ define(
                                         cacheMaxAge : discoveryQos.cacheMaxAge
                                     });
                                     if (globalCapabilities.length > 0) {
-                                        return Promise.resolve(globalCapabilities);
+                                        return Promise.resolve(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(false, globalCapabilities));
                                     }
                                     return lookupGlobalCapabilities(
                                             domains,

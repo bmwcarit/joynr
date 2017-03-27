@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,23 @@ using namespace infrastructure::DacTypes;
 
 INIT_LOGGER(LocalDomainAccessStore);
 
-LocalDomainAccessStore::LocalDomainAccessStore(bool clearDatabaseOnStartup)
+LocalDomainAccessStore::LocalDomainAccessStore() : persistenceFileName()
 {
-    if (clearDatabaseOnStartup) {
-        reset();
+}
+
+LocalDomainAccessStore::LocalDomainAccessStore(std::string fileName)
+        : persistenceFileName(std::move(fileName))
+{
+    try {
+        joynr::serializer::deserializeFromJson(
+                *this, joynr::util::loadStringFromFile(persistenceFileName));
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
+    } catch (const std::invalid_argument& ex) {
+        JOYNR_LOG_ERROR(logger,
+                        "Could not deserialize persisted access control entries from {}: {}",
+                        persistenceFileName,
+                        ex.what());
     }
 }
 
@@ -280,7 +293,6 @@ bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
     if (aceValidator.isOwnerValid()) {
         updateSuccess = insertOrReplace(ownerTable, updatedOwnerAce);
     }
-
     return updateSuccess;
 }
 
@@ -309,14 +321,19 @@ bool LocalDomainAccessStore::onlyWildcardOperations(const std::string& userId,
            checkOnlyWildcardOperations(ownerTable, userId, domain, interfaceName);
 }
 
-void LocalDomainAccessStore::reset()
+void LocalDomainAccessStore::persistToFile() const
 {
-    JOYNR_LOG_TRACE(logger, "execute: entering reset store");
-
-    masterTable.clear();
-    mediatorTable.clear();
-    ownerTable.clear();
-    domainRoleTable.clear();
+    if (persistenceFileName.empty()) {
+        return;
+    }
+    try {
+        joynr::util::saveStringToFile(
+                persistenceFileName, joynr::serializer::serializeToJson(*this));
+    } catch (const std::invalid_argument& ex) {
+        JOYNR_LOG_ERROR(logger, "serializing to JSON failed: {}", ex.what());
+    } catch (const std::runtime_error& ex) {
+        JOYNR_LOG_ERROR(logger, ex.what());
+    }
 }
 
 } // namespace joynr

@@ -61,7 +61,7 @@ RUN cd /opt \
 ###################################################
 
 RUN cd /opt \
-    && git clone http://git.projects.genivi.org/dlt-daemon.git \
+    && git clone https://github.com/GENIVI/dlt-daemon \
     && cd dlt-daemon \
     && git checkout v2.15.0 \
     && sed -i 's/libdir=${exec_prefix}\/lib/libdir=@CMAKE_INSTALL_FULL_LIBDIR@/' automotive-dlt.pc.in \

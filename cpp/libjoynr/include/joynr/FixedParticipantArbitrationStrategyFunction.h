@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,9 @@ class FixedParticipantArbitrationStrategyFunction : public ArbitrationStrategyFu
 public:
     ~FixedParticipantArbitrationStrategyFunction() = default;
     FixedParticipantArbitrationStrategyFunction() = default;
-    std::string select(const std::map<std::string, types::CustomParameter> customParameters,
-                       const std::vector<types::DiscoveryEntry>& discoveryEntries) const final;
+    types::DiscoveryEntryWithMetaInfo select(
+            const std::map<std::string, types::CustomParameter> customParameters,
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const final;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(FixedParticipantArbitrationStrategyFunction);

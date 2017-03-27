@@ -3,7 +3,7 @@ package io.joynr.dispatching.rpc;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
+import io.joynr.JoynrVersion;
+import io.joynr.context.JoynrMessageScope;
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.exceptions.JoynrException;
@@ -39,14 +41,12 @@ import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.proxy.MethodSignature;
+import io.joynr.util.AnnotationUtil;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.MethodInvocationException;
 import joynr.exceptions.ProviderRuntimeException;
-import io.joynr.JoynrVersion;
-import io.joynr.context.JoynrMessageScope;
-import io.joynr.util.AnnotationUtil;
 import joynr.types.Version;
 
 public class RequestInterpreter {
@@ -77,25 +77,35 @@ public class RequestInterpreter {
 
     public void execute(final ProviderCallback<Reply> callback, RequestCaller requestCaller, final Request request) {
         Promise<? extends AbstractDeferred> promise;
+        logger.debug("execute request on provider: {}", request);
         try {
             promise = (Promise<?>) invokeMethod(requestCaller, request);
         } catch (MethodInvocationException | ProviderRuntimeException e) {
+            logger.warn("execute request on provider failed with exception: {}, request: {}", e, request);
             callback.onFailure(e);
             return;
         } catch (Exception e) {
             JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getClass(), JoynrVersion.class);
-            callback.onFailure(new MethodInvocationException(e, new Version(joynrVersion.major(), joynrVersion.minor())));
+            MethodInvocationException methodInvocationException = new MethodInvocationException(e,
+                                                                                                new Version(joynrVersion.major(),
+                                                                                                            joynrVersion.minor()));
+            logger.warn("execute request on provider failed with exception: {}, request: {}",
+                        methodInvocationException,
+                        request);
+            callback.onFailure(methodInvocationException);
             return;
         }
         promise.then(new PromiseListener() {
 
             @Override
             public void onRejection(JoynrException error) {
+                logger.debug("execute request on provider onRejection: {}, request: {}", error, request);
                 callback.onFailure(error);
             }
 
             @Override
             public void onFulfillment(Object... values) {
+                logger.debug("execute request on provider onFulfillment: {}, request: {}", values, request);
                 callback.onSuccess(createReply(request, values));
             }
         });
@@ -120,6 +130,7 @@ public class RequestInterpreter {
             }
             joynrMessageScope.activate();
             joynrMessageCreatorProvider.get().setMessageCreatorId(request.getCreatorUserId());
+            logger.trace("invoke provider method {}({})", method.getName(), params == null ? "" : params);
             return method.invoke(requestCaller, params);
         } catch (IllegalAccessException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non public method {}", request);

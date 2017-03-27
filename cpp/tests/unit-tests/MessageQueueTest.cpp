@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ TEST_F(MessageQueueTest, queueDequeueMessages) {
     EXPECT_EQ(messageQueue.getQueueLength(), 2);
 
     // get messages from queue
-    MessageQueueItem* item = messageQueue.getNextMessageForParticipant("TEST1");
+    auto item = messageQueue.getNextMessageForParticipant("TEST1");
     EXPECT_EQ(item->getContent(), msg1);
     EXPECT_EQ(messageQueue.getQueueLength(), 1);
 
@@ -98,7 +98,7 @@ TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant) {
     EXPECT_EQ(messageQueue.getQueueLength(), 2);
 
     // get messages from queue
-    MessageQueueItem* item = messageQueue.getNextMessageForParticipant("TEST");
+    auto item = messageQueue.getNextMessageForParticipant("TEST");
     EXPECT_EQ(item->getContent(), msg);
     EXPECT_EQ(messageQueue.getQueueLength(), 1);
 

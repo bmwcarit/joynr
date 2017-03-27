@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,16 +30,16 @@ public:
     MockLocalCapabilitiesDirectoryCallback();
 
     void capabilitiesReceived(
-            const std::vector<joynr::types::DiscoveryEntry>& capabilities) override;
+            const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& capabilities) override;
     void onError(const joynr::exceptions::JoynrRuntimeException&) override;
 
-    std::vector<joynr::types::DiscoveryEntry> getResults(int timeout);
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> getResults(int timeout);
     void clearResults();
 
     virtual ~MockLocalCapabilitiesDirectoryCallback();
 
 private:
-    std::vector<joynr::types::DiscoveryEntry> results;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> results;
     joynr::Semaphore semaphore;
 };
 

@@ -29,14 +29,7 @@ using namespace ::testing;
 class IltConsumerFilteredBroadcastSubscriptionTest : public IltAbstractConsumerTest<::testing::Test>
 {
 public:
-    IltConsumerFilteredBroadcastSubscriptionTest()
-            : subscriptionIdFutureTimeout(10000), publicationTimeout(10000)
-    {
-    }
-
-protected:
-    std::uint16_t subscriptionIdFutureTimeout;
-    std::chrono::milliseconds publicationTimeout;
+    IltConsumerFilteredBroadcastSubscriptionTest() = default;
 };
 
 joynr::Logger iltConsumerFilteredBroadcastSubscriptionTestLogger(
@@ -163,7 +156,7 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
                 validity, publicationTtl, minInterval_ms);
         testInterfaceProxy->subscribeToBroadcastWithFilteringBroadcast(
                                     filterParameters, listener, subscriptionQos)
-                ->get(subscriptionIdFutureTimeout, subscriptionId);
+                ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithFiltering - subscription registered");
@@ -172,7 +165,7 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
                        "callSubscribeBroadcastWithFiltering - fire broadast \"fireBroadcast\"");
         std::string stringArg = "fireBroadcast";
         testInterfaceProxy->methodToFireBroadcastWithFiltering(stringArg);
-        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         EXPECT_TRUE(IltUtil::checkStringArray(stringArrayOut));
         EXPECT_TRUE(IltUtil::checkStructWithStringArray(structWithStringArrayOut));
@@ -183,8 +176,9 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
                 "callSubscribeBroadcastWithFiltering - fire broadast \"doNotFireBroadcast\"");
         stringArg = "doNotFireBroadcast";
         testInterfaceProxy->methodToFireBroadcastWithFiltering(stringArg);
-        ASSERT_FALSE(publicationSemaphore.waitFor(publicationTimeout));
+        ASSERT_FALSE(publicationSemaphore.waitFor(publicationTimeoutMs));
 
         testInterfaceProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     });
 }

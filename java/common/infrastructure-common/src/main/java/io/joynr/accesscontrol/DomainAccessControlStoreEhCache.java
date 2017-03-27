@@ -14,7 +14,7 @@ import com.google.inject.Inject;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -491,7 +491,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         try {
             removeResult = cache.remove(aceKey);
         } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
-            logger.error("remove " +  cacheId + " failed.", e);
+            logger.error("remove " + cacheId + " failed.", e);
         }
 
         return removeResult;

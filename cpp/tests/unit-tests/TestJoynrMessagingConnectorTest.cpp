@@ -28,6 +28,7 @@
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -79,7 +80,8 @@ public:
             const std::string&, // receiver participant ID
             const MessagingQos&, // messaging QoS
             const Request&, // request object to send
-            std::shared_ptr<IReplyCaller> // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller>, // reply caller to notify when reply is received
+            bool isLocalMessage
     )>& setExpectationsForSendRequestCall(std::string methodName) override {
         return EXPECT_CALL(
                     *mockJoynrMessageSender,
@@ -88,7 +90,8 @@ public:
                         Eq(providerParticipantId), // receiver participant ID
                         _, // messaging QoS
                         Property(&Request::getMethodName, Eq(methodName)), // request object to send
-                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()) // reply caller to notify when reply is received
+                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()), // reply caller to notify when reply is received
+                        _ // isLocalMessage flag
                     )
         );
     }
@@ -100,13 +103,18 @@ public:
     Semaphore semaphore;
 
     tests::testJoynrMessagingConnector* createConnector() {
+        types::DiscoveryEntryWithMetaInfo discoveryEntry;
+
+        discoveryEntry.setParticipantId(providerParticipantId);
+        discoveryEntry.setIsLocal(false);
+
         return new tests::testJoynrMessagingConnector(
                     mockJoynrMessageSender,
                     mockSubscriptionManager,
                     "myDomain",
                     proxyParticipantId,
-                    providerParticipantId,
-                    MessagingQos());
+                    MessagingQos(),
+                    discoveryEntry);
     }
 
     tests::Itest* createFixture() override {

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ namespace joynr
 
 namespace types
 {
-class DiscoveryEntry;
+class DiscoveryEntryWithMetaInfo;
 class CustomParameter;
 } // namespace types
 
@@ -46,8 +46,10 @@ class LastSeenArbitrationStrategyFunction : public ArbitrationStrategyFunction
 public:
     ~LastSeenArbitrationStrategyFunction() = default;
     LastSeenArbitrationStrategyFunction() = default;
-    std::string select(std::map<std::string, types::CustomParameter> customParameters,
-                       const std::vector<types::DiscoveryEntry>& discoveryEntries) const final;
+
+    types::DiscoveryEntryWithMetaInfo select(
+            std::map<std::string, types::CustomParameter> customParameters,
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const final;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LastSeenArbitrationStrategyFunction);

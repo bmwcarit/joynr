@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -133,7 +134,8 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        cleanupScheduler);
+                                                        cleanupScheduler,
+                                                        Mockito.mock(SubscriptionRequestStorage.class));
 
         requestCaller = new RequestCallerFactory().create(provider);
         when(providerContainer.getRequestCaller()).thenReturn(requestCaller);
@@ -168,7 +170,8 @@ public class PublicationManagerTest {
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
                                                                            requestCallerDirectory,
-                                                                           cleanupScheduler);
+                                                                           cleanupScheduler,
+                                                                           Mockito.mock(SubscriptionRequestStorage.class));
 
         when(requestCallerDirectory.get(eq(providerId))).thenReturn(providerContainer);
         when(requestCallerDirectory.contains(eq(providerId))).thenReturn(true);
@@ -222,7 +225,8 @@ public class PublicationManagerTest {
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
                                                                            providerDirectory,
-                                                                           cleanupScheduler);
+                                                                           cleanupScheduler,
+                                                                           Mockito.mock(SubscriptionRequestStorage.class));
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
         when(providerDirectory.contains(eq(providerId))).thenReturn(true);
@@ -274,16 +278,18 @@ public class PublicationManagerTest {
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
                                                                            providerDirectory,
-                                                                           cleanupScheduler);
+                                                                           cleanupScheduler,
+                                                                           Mockito.mock(SubscriptionRequestStorage.class));
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
         when(providerDirectory.contains(eq(providerId))).thenReturn(true);
 
         final Semaphore onReceiveSemaphore = new Semaphore(0);
         doAnswer(new Answer<Object>() {
+            @Override
             public Object answer(InvocationOnMock invocation) {
                 onReceiveSemaphore.release();
-                return (Void) null;
+                return null;
             }
         }).when(dispatcher).sendSubscriptionPublication(eq(providerId),
                                                         (Set<String>) argThat(contains(proxyId)),
@@ -499,7 +505,8 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        cleanupScheduler);
+                                                        cleanupScheduler,
+                                                        Mockito.mock(SubscriptionRequestStorage.class));
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -548,7 +555,8 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        cleanupScheduler);
+                                                        cleanupScheduler,
+                                                        Mockito.mock(SubscriptionRequestStorage.class));
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -606,7 +614,8 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        cleanupScheduler);
+                                                        cleanupScheduler,
+                                                        Mockito.mock(SubscriptionRequestStorage.class));
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -657,7 +666,8 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        cleanupScheduler);
+                                                        cleanupScheduler,
+                                                        Mockito.mock(SubscriptionRequestStorage.class));
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -704,7 +714,8 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        cleanupScheduler);
+                                                        cleanupScheduler,
+                                                        Mockito.mock(SubscriptionRequestStorage.class));
         int period = 200;
         int testLengthMax = 3000;
         long validityMs = testLengthMax;
@@ -754,5 +765,75 @@ public class PublicationManagerTest {
         verify(dispatcher).sendMulticast(eq(providerParticipantId),
                                          Mockito.<MulticastPublication> any(),
                                          Mockito.<MessagingQos> any());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 3000000)
+    public void persistedSubscriptionRequestsAreQueued() throws Exception {
+        String persistenceFileName = "target/" + PublicationManagerTest.class.getCanonicalName()
+                + ".test_persistenceSubscriptionRequests";
+
+        String providerParticipantId = "providerParticipantId";
+        String proxyParticipantId = "proxyParticipantId";
+        int period = 200;
+        int times = 5;
+        int validityMs = (period * times) + period;
+        long publicationTtl = validityMs;
+        SubscriptionQos qos = new PeriodicSubscriptionQos().setPeriodMs(period)
+                                                           .setValidityMs(validityMs)
+                                                           .setPublicationTtlMs(publicationTtl);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
+
+        new File(persistenceFileName).delete();
+
+        // pre-fill the persistence file
+        FileSubscriptionRequestStorage fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
+        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
+
+        // no providers are currently registered
+        ProviderDirectory myProviderDirectory = new ProviderDirectory();
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        myProviderDirectory,
+                                                        cleanupScheduler,
+                                                        fileSubscriptionRequestStorage);
+
+        publicationManager.addSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest);
+        assertEquals(1, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
+
+        publicationManager.shutdown();
+
+        // open the persistence file that should now contain one element
+        fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
+        assertEquals(1, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        myProviderDirectory,
+                                                        cleanupScheduler,
+                                                        fileSubscriptionRequestStorage);
+
+        // when the provider is registered, persisted subscription requests should be activated
+        myProviderDirectory.add(providerParticipantId, providerContainer);
+
+        verify(dispatcher, timeout(validityMs).atLeast(times)).sendSubscriptionPublication(any(String.class),
+                                                                                           any(Set.class),
+                                                                                           any(SubscriptionPublication.class),
+                                                                                           any(MessagingQos.class));
+        ;
+
+        Thread.sleep(validityMs + 1000);
+        publicationManager.shutdown();
+
+        // Start again with the same file, that should now be empty as all persisted subscriptions were already queued
+        reset(dispatcher);
+        fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        myProviderDirectory,
+                                                        cleanupScheduler,
+                                                        fileSubscriptionRequestStorage);
+        verifyNoMoreInteractions(dispatcher);
+        fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
+        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
     }
 }

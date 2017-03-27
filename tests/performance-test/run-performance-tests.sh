@@ -2,7 +2,7 @@
 ###
 # #%L
 # %%
-# Copyright (C) 2016 BMW Car IT GmbH
+# Copyright (C) 2017 BMW Car IT GmbH
 # %%
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -71,6 +71,84 @@ PROVIDER_PID=""
 ADDITIONAL_CC_ARGS=""
 
 SKIPBYTEARRAYSIZETIMESK=false
+
+function getCpuTime {
+    PID=$1
+    UTIME=$(cat /proc/$PID/stat | cut -d" " -f 14)
+    STIME=$(cat /proc/$PID/stat | cut -d" " -f 15)
+    SUM_CPU_TIME=$(echo $UTIME $STIME | awk '{ printf "%f", $1 + $2 }')
+    echo $SUM_CPU_TIME
+}
+
+function minus {
+    echo $1 $2 | awk '{ printf "%f", $1 - $2 }'
+}
+
+function startMeasureCpuUsage {
+    START_TIME=$(cat /proc/uptime | cut -d" " -f 1)
+
+    #get cluster-controller & provider initial cputime
+    if [ -n "$JETTY_PID" ]
+    then
+        JETTY_CPU_TIME_1=$(getCpuTime $JETTY_PID)
+    fi
+    if [ -n "$MOSQUITTO_PID" ]
+    then
+        MOSQUITTO_CPU_TIME_1=$(getCpuTime $MOSQUITTO_PID)
+    fi
+    CC_CPU_TIME_1=$(getCpuTime $CLUSTER_CONTROLLER_PID)
+    PROVIDER_CPU_TIME_1=$(getCpuTime $PROVIDER_PID)
+}
+
+function stopMeasureCpuUsage {
+    REPORTFILE_PARAM=$1
+
+    echo "----- overall statistics -----" | tee -a $REPORTFILE_PARAM
+    echo "startTime:         $START_TIME" | tee -a $REPORTFILE_PARAM
+    if [ -n "$JETTY_PID" ]
+    then
+        JETTY_CPU_TIME_2=$(getCpuTime $JETTY_PID)
+        JETTY_CPU_TIME=$(minus $JETTY_CPU_TIME_2 $JETTY_CPU_TIME_1)
+    else
+        JETTY_CPU_TIME=0
+    fi
+    if [ -n "$MOSQUITTO_PID" ]
+    then
+        MOSQUITTO_CPU_TIME_2=$(getCpuTime $MOSQUITTO_PID)
+        MOSQUITTO_CPU_TIME=$(minus $MOSQUITTO_CPU_TIME_2 $MOSQUITTO_CPU_TIME_1)
+    else
+        MOSQUITTO_CPU_TIME=0
+    fi
+    CC_CPU_TIME_2=$(getCpuTime $CLUSTER_CONTROLLER_PID)
+    PROVIDER_CPU_TIME_2=$(getCpuTime $PROVIDER_PID)
+
+    END_TIME=$(cat /proc/uptime | cut -d" " -f 1)
+    echo "endTime:           $END_TIME" | tee -a $REPORTFILE_PARAM
+    WALL_CLOCK_DURATION=$(echo $END_TIME $START_TIME | awk '{ printf "%f", 1000*($1 - $2) }')
+    echo "wallClockDuration: $WALL_CLOCK_DURATION" | tee -a $REPORTFILE_PARAM
+
+    # cluster-controller & provider net cputime
+    CC_CPU_TIME=$(minus $CC_CPU_TIME_2 $CC_CPU_TIME_1)
+    PROVIDER_CPU_TIME=$(minus $PROVIDER_CPU_TIME_2 $PROVIDER_CPU_TIME_1)
+
+    #get child cputime
+    #here we need to access different values than for "non-waited-for" processes
+    TEST_UTIME=$(cat /proc/$$/stat | cut -d" " -f 16)
+    TEST_STIME=$(cat /proc/$$/stat | cut -d" " -f 17)
+
+    #sum up all cputime values
+    TEST_CPU_TIME=$(echo -e "$TEST_UTIME\n$TEST_STIME" | awk '{sum+=$1};END{print sum}')
+    TOTAL_CPU_TIME=$(echo -e "$CC_CPU_TIME\n$PROVIDER_CPU_TIME\n$JETTY_CPU_TIME\n$MOSQUITTO_CPU_TIME\n$TEST_UTIME\n$TEST_STIME" | awk '{sum+=$1};END{print sum}')
+    echo "ccCpuTime:         $CC_CPU_TIME" | tee -a $REPORTFILE_PARAM
+    echo "providerCpuTime:   $PROVIDER_CPU_TIME" | tee -a $REPORTFILE_PARAM
+    echo "jettyCpuTime:      $JETTY_CPU_TIME" | tee -a $REPORTFILE_PARAM
+    echo "mosquittoCpuTime:  $MOSQUITTO_CPU_TIME" | tee -a $REPORTFILE_PARAM
+    echo "testCpuTime:       $TEST_CPU_TIME" | tee -a $REPORTFILE_PARAM
+    echo "totalCpuTime:      $TOTAL_CPU_TIME" | tee -a $REPORTFILE_PARAM
+    CLOCK_TICK_DURATION=10 # milliseconds; we can get number of clock ticks per second from "getconf CLK_TCK", by default this is 100
+    CPU_PERCENT=$(echo $TOTAL_CPU_TIME $CLOCK_TICK_DURATION $WALL_CLOCK_DURATION | awk '{ printf "%f", 100*($1 * $2 / $3) }')
+    echo "cpuPercent:        $CPU_PERCENT" | tee -a $REPORTFILE_PARAM
+}
 
 function waitUntilJettyStarted {
     started=0
@@ -141,6 +219,7 @@ function startCppClusterController {
     rm -Rf *.persist joynr.settings
 
     ./cluster-controller $ADDITIONAL_CC_ARGS 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
+    CLUSTER_CONTROLLER_CPU_TIME_1=$(getCpuTime $CLUSTER_CONTROLLER_PID)
 
     # Wait long enough in order to allow the cluster controller finish its start procedure
     sleep 5
@@ -156,6 +235,7 @@ function startCppPerformanceTestProvider {
 
     cd $PERFORMANCETESTS_BIN_DIR
     ./performance-provider-app --globalscope on --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    PROVIDER_CPU_TIME_1=$(getCpuTime $PROVIDER_PID)
 
     # Wait long enough in order to allow the provider to finish the registration procedure
     sleep 5
@@ -181,6 +261,7 @@ function startJavaPerformanceTestProvider {
         mvn exec:java -o -Dexec.mainClass="$PROVIDERCLASS" -Dexec.args="$PROVIDERARGS" \
             1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     fi
+    PROVIDER_CPU_TIME_1=$(getCpuTime $PROVIDER_PID)
 
     sleep 5
 
@@ -311,6 +392,8 @@ function performJsConsumerTest {
 function stopJetty {
     echo "Stopping jetty"
 
+    JETTY_CPU_TIME_2=$(getCpuTime $JETTY_PID)
+    JETTY_CPU_TIME=$(minus $PROVIDER_CPU_TIME_2 $PROVIDER_CPU_TIME_1)
     if [ "$USE_MAVEN" != "ON" ]
     then
         kill $JETTY_PID
@@ -325,6 +408,8 @@ function stopJetty {
 
 function stopMosquitto {
     echo "Stopping mosquitto"
+    MOSQUITTO_CPU_TIME_2=$(getCpuTime $MOSQUITTO_PID)
+    MOSQUITTO_CPU_TIME=$(minus $MOSQUITTO_CPU_TIME_2 $MOSQUITTO_CPU_TIME_1)
     kill $MOSQUITTO_PID
     wait $MOSQUITTO_PID
     MOSQUITTO_PID=""
@@ -332,6 +417,8 @@ function stopMosquitto {
 
 function stopCppClusterController {
     echo "Killing C++ CC"
+    CC_CPU_TIME_2=$(getCpuTime $CLUSTER_CONTROLLER_PID)
+    CC_CPU_TIME=$(minus $CC_CPU_TIME_2 $CC_CPU_TIME_1)
     kill $CLUSTER_CONTROLLER_PID
     wait $CLUSTER_CONTROLLER_PID
     CLUSTER_CONTROLLER_PID=""
@@ -341,6 +428,8 @@ function stopAnyProvider {
     echo "Killing provider"
     if [ "$PROVIDER_PID" != "" ]
     then
+        PROVIDER_CPU_TIME_2=$(getCpuTime $PROVIDER_PID)
+        PROVIDER_CPU_TIME=$(minus $PROVIDER_CPU_TIME_2 $PROVIDER_CPU_TIME_1)
         echo "USE_MAVEN: $USE_MAVEN"
         if [ "$USE_MAVEN" != "ON" ]
         then
@@ -433,7 +522,7 @@ if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
    [ "$TESTCASE" != "JS_CONSUMER" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
    [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
    [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ] && \
-   [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ] 
+   [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ]
 then
     echo "\"$TESTCASE\" is not a valid testcase"
     echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, \
@@ -464,6 +553,7 @@ fi
 if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ]
 then
     startCppClusterController
+    startMeasureCpuUsage
 
     echo "### Starting performance tests ###"
 
@@ -540,6 +630,7 @@ then
         sleep 100000000
     fi
 
+    stopMeasureCpuUsage $REPORTFILE
     stopAnyProvider
     stopCppClusterController
 fi
@@ -551,12 +642,14 @@ then
     startMosquitto
     startCppClusterController
     startJavaPerformanceTestProvider
+    startMeasureCpuUsage
 
     echo "### Starting performance tests ###"
 
     echo "Testcase: OAP_TO_BACKEND_MOSQ" | tee -a $REPORTFILE
     performJsConsumerTest $STDOUT $REPORTFILE true OFF $SKIPBYTEARRAYSIZETIMESK
 
+    stopMeasureCpuUsage $REPORTFILE
     stopAnyProvider
     stopCppClusterController
     stopMosquitto

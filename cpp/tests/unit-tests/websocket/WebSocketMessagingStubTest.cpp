@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ class WebSocketServer
     using ConnectionHandle = websocketpp::connection_hdl;
 
 public:
-    WebSocketServer() : port(), thread(), textMessageReceivedCallback()
+    WebSocketServer() : port(), thread(), messageReceivedCallback()
     {
         endpoint.clear_access_channels(websocketpp::log::alevel::all);
         endpoint.clear_error_channels(websocketpp::log::alevel::all);
@@ -67,9 +67,9 @@ public:
         return port;
     }
 
-    void registerTextMessageReceivedCallback(std::function<void(const std::string&)> callback)
+    void registerMessageReceivedCallback(std::function<void(const std::string&)> callback)
     {
-        textMessageReceivedCallback = std::move(callback);
+        messageReceivedCallback = std::move(callback);
     }
 
     void start()
@@ -96,15 +96,15 @@ private:
     {
         std::ignore = hdl;
         JOYNR_LOG_DEBUG(logger, "received message of size {}", msg->get_payload().size());
-        if(textMessageReceivedCallback)
+        if(messageReceivedCallback)
         {
-            textMessageReceivedCallback(msg->get_payload());
+            messageReceivedCallback(msg->get_payload());
         }
     }
     Server endpoint;
     std::uint32_t port;
     std::thread thread;
-    std::function<void(const std::string&)> textMessageReceivedCallback;
+    std::function<void(const std::string&)> messageReceivedCallback;
     ADD_LOGGER(WebSocketServer);
 };
 
@@ -138,7 +138,7 @@ public:
         );
         JOYNR_LOG_DEBUG(logger, "server URL: {}",serverAddress.toString());
         joynr::Semaphore connected(0);
-        webSocket = std::make_shared<joynr::WebSocketPpClient>(wsSettings, singleThreadedIOService.getIOService());
+        webSocket = std::make_shared<joynr::WebSocketPpClient<websocketpp::config::asio_client>>(wsSettings, singleThreadedIOService.getIOService());
         webSocket->registerConnectCallback([&connected](){connected.notify();});
         webSocket->connect(serverAddress);
 
@@ -154,7 +154,7 @@ protected:
     WebSocketServer server;
     joynr::system::RoutingTypes::WebSocketAddress serverAddress;
     joynr::SingleThreadedIOService singleThreadedIOService;
-    std::shared_ptr<joynr::WebSocketPpClient> webSocket;
+    std::shared_ptr<joynr::IWebSocketPpClient> webSocket;
 };
 
 INIT_LOGGER(WebSocketMessagingStubTest);
@@ -174,7 +174,7 @@ TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
         receivedMessage = msg;
         sem.notify();
     };
-    server.registerTextMessageReceivedCallback(callback);
+    server.registerMessageReceivedCallback(callback);
 
     // send message using messaging stub
     joynr::WebSocketMessagingStub messagingStub(webSocket->getSender());

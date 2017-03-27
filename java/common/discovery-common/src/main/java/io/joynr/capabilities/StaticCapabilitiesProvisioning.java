@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,12 +71,12 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
         discoveryEntries = new HashSet<DiscoveryEntry>();
         this.resourceContentProvider = resourceContentProvider;
         addEntriesFromJson(provisionedCapabilitiesFile, objectMapper, localChannelId);
-        logger.debug("{} provisioned discovery entries loaded from JSON: {}", discoveryEntries.size(), discoveryEntries);
+        logger.trace("{} provisioned discovery entries loaded from JSON: {}", discoveryEntries.size(), discoveryEntries);
         overrideEntriesFromLegacySettings(legacyCapabilitiesProvisioning);
-        logger.debug("{} provisioned discovery entries after adding legacy entries: {}",
+        logger.trace("{} provisioned discovery entries after adding legacy entries: {}",
                      discoveryEntries.size(),
                      discoveryEntries);
-        logger.info("Statically provisioned discovery entries loaded: {}", discoveryEntries);
+        logger.debug("Statically provisioned discovery entries loaded: {}", discoveryEntries);
         addAddressesToRoutingTable(routingTable);
     }
 
@@ -121,7 +121,7 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
                                     ObjectMapper objectMapper,
                                     String localChannelId) {
         String provisionedCapabilitiesJsonString = resourceContentProvider.readFromFileOrResourceOrUrl(provisionedCapabilitiesJsonFilename);
-        logger.debug("Statically provisioned capabilities JSON read: {}", provisionedCapabilitiesJsonString);
+        logger.trace("Statically provisioned capabilities JSON read: {}", provisionedCapabilitiesJsonString);
         List<GlobalDiscoveryEntry> newEntries = null;
         try {
             newEntries = objectMapper.readValue(provisionedCapabilitiesJsonString,

@@ -142,7 +142,7 @@ if(NOT USE_PLATFORM_WEBSOCKETPP)
     add_dependencies(Joynr websocketpp)
 endif(NOT USE_PLATFORM_WEBSOCKETPP)
 
-AddClangFormat(Joynr)
+AddClangFormat(Joynr ${JoynrLib_EXPORT_HEADER})
 
 AddIncludeWhatYouUse(Joynr)
 

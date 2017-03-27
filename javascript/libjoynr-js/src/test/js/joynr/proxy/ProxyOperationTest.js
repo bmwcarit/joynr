@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,10 @@ define([
             "global/Promise",
             "joynr/tests/testTypes/TestEnum",
             "joynr/vehicle/radiotypes/RadioStation",
-            "global/WaitsFor"
+            "global/WaitsFor",
+            "joynr/types/DiscoveryEntryWithMetaInfo",
+            "joynr/types/Version",
+            "joynr/types/ProviderQos"
         ],
         function(
                 ProxyAttribute,
@@ -45,7 +48,11 @@ define([
                 testDataOperation,
                 Promise,
                 TestEnum,
-                RadioStation, waitsFor) {
+                RadioStation,
+                waitsFor,
+                DiscoveryEntryWithMetaInfo,
+                Version,
+                ProviderQos) {
 
             var asyncTimeout = 5000;
 
@@ -61,6 +68,7 @@ define([
                         var operationName;
                         var proxyParticipantId;
                         var providerParticipantId;
+                        var providerDiscoveryEntry;
                         var proxy;
                         var requestReplyManagerSpy;
 
@@ -89,9 +97,20 @@ define([
                             operationName = "myOperation";
                             proxyParticipantId = "proxyParticipantId";
                             providerParticipantId = "providerParticipantId";
+                            providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
+                                providerVersion : new Version({majorVersion : 0, minorVersion : 23}),
+                                domain : "testProviderDomain",
+                                interfaceName : "interfaceName",
+                                participantId : providerParticipantId,
+                                qos : new ProviderQos(),
+                                lastSeenDateMs : Date.now(),
+                                expiryDateMs : Date.now() + 60000,
+                                publicKeyId : "publicKeyId",
+                                isLocal : true
+                            });
                             proxy = {
                                 proxyParticipantId : proxyParticipantId,
-                                providerParticipantId : providerParticipantId
+                                providerDiscoveryEntry : providerDiscoveryEntry
                             };
 
                             addFavoriteStation = new ProxyOperation(proxy, {
@@ -220,7 +239,7 @@ define([
                            ]);
                            var proxy = {
                                proxyParticipantId : proxyParticipantId,
-                               providerParticipantId : providerParticipantId
+                               providerDiscoveryEntry : providerDiscoveryEntry
                            };
 
                            requestReplyManagerSpy.sendRequest.and.returnValue(Promise.resolve(replyResponse));
@@ -504,7 +523,7 @@ define([
                                 var requestReplyId =
                                         requestReplyManagerSpy.sendRequest.calls.argsFor(0)[0].request.requestReplyId;
                                 expect(requestReplyManagerSpy.sendRequest).toHaveBeenCalledWith({
-                                    to : providerParticipantId,
+                                    toDiscoveryEntry : providerDiscoveryEntry,
                                     from : proxyParticipantId,
                                     messagingQos : new MessagingQos(),
                                     request : new Request({
@@ -539,7 +558,7 @@ define([
                                 // check if requestReplyManager has been called correctly
                                 expect(requestReplyManagerSpy.sendOneWayRequest).toHaveBeenCalled();
                                 expect(requestReplyManagerSpy.sendOneWayRequest).toHaveBeenCalledWith({
-                                    to : providerParticipantId,
+                                    toDiscoveryEntry : providerDiscoveryEntry,
                                     from : proxyParticipantId,
                                     messagingQos : new MessagingQos(),
                                     request : new OneWayRequest({

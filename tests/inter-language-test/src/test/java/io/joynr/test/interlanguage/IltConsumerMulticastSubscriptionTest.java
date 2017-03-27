@@ -3,7 +3,7 @@ package io.joynr.test.interlanguage;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,8 +75,8 @@ public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
                                                                                                                                  new MulticastSubscriptionQos(),
                                                                                                                                  subscribeToPartitions);
 
-            String subscriptionId = subscriptionIdFuture.get();
-            LOG.info(name.getMethodName() + " - subscription successful");
+            String subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
 
             LOG.info(name.getMethodName() + " - Invoking fire method with not matching partitions");
             testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter(broadcastPartitions);

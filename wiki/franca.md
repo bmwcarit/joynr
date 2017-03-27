@@ -25,6 +25,7 @@ Name | Meaning
 *Boolean* | boolean value
 *Float*, *Double* | single / double precision floating point number
 *String* | String
+*ByteBuffer* | buffer of bytes
 
 ### Complex data types
 

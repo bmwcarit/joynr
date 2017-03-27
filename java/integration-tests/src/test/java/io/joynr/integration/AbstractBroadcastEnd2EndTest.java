@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -309,16 +309,16 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
         Future<String> subscriptionId = proxy.subscribeToLocationUpdateWithSpeedBroadcast(new testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter() {
 
-                                                                                      @Override
-                                                                                      public void onReceive(GpsLocation location,
-                                                                                                            Float speed) {
-                                                                                          assertEquals(expectedLocation,
-                                                                                                       location);
-                                                                                          assertEquals(expectedSpeed,
-                                                                                                       speed);
-                                                                                          broadcastReceived.release();
-                                                                                      }
-                                                                                  },
+                                                                                              @Override
+                                                                                              public void onReceive(GpsLocation location,
+                                                                                                                    Float speed) {
+                                                                                                  assertEquals(expectedLocation,
+                                                                                                               location);
+                                                                                                  assertEquals(expectedSpeed,
+                                                                                                               speed);
+                                                                                                  broadcastReceived.release();
+                                                                                              }
+                                                                                          },
                                                                                           new MulticastSubscriptionQos());
 
         Thread.sleep(300);

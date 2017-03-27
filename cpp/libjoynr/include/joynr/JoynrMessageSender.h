@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@
 namespace joynr
 {
 
-class MessageRouter;
+class IMessageRouter;
 class IReplyCaller;
 class IDispatcher;
 class Request;
@@ -71,7 +71,7 @@ class SubscriptionPublication;
 class JOYNR_EXPORT JoynrMessageSender : public IJoynrMessageSender
 {
 public:
-    JoynrMessageSender(std::shared_ptr<MessageRouter> messagingRouter,
+    JoynrMessageSender(std::shared_ptr<IMessageRouter> messagingRouter,
                        std::uint64_t ttlUpliftMs = 0);
 
     ~JoynrMessageSender() override = default;
@@ -85,14 +85,16 @@ public:
                      const std::string& receiverParticipantId,
                      const MessagingQos& qos,
                      const Request& request,
-                     std::shared_ptr<IReplyCaller> callback) override;
+                     std::shared_ptr<IReplyCaller> callback,
+                     bool isLocalMessage) override;
     /*
      * Prepares and sends a single message
      */
     virtual void sendOneWayRequest(const std::string& senderParticipantId,
                                    const std::string& receiverParticipantId,
                                    const MessagingQos& qos,
-                                   const OneWayRequest& request) override;
+                                   const OneWayRequest& request,
+                                   bool isLocalMessage) override;
     /*
      * Prepares and sends a reply message (an answer to a request)
      */
@@ -104,19 +106,20 @@ public:
     void sendSubscriptionRequest(const std::string& senderParticipantId,
                                  const std::string& receiverParticipantId,
                                  const MessagingQos& qos,
-                                 const SubscriptionRequest& subscriptionRequest) override;
+                                 const SubscriptionRequest& subscriptionRequest,
+                                 bool isLocalMessage) override;
 
-    void sendBroadcastSubscriptionRequest(
-            const std::string& senderParticipantId,
-            const std::string& receiverParticipantId,
-            const MessagingQos& qos,
-            const BroadcastSubscriptionRequest& subscriptionRequest) override;
+    void sendBroadcastSubscriptionRequest(const std::string& senderParticipantId,
+                                          const std::string& receiverParticipantId,
+                                          const MessagingQos& qos,
+                                          const BroadcastSubscriptionRequest& subscriptionRequest,
+                                          bool isLocalMessage) override;
 
-    void sendMulticastSubscriptionRequest(
-            const std::string& senderParticipantId,
-            const std::string& receiverParticipantId,
-            const MessagingQos& qos,
-            const MulticastSubscriptionRequest& subscriptionRequest) override;
+    void sendMulticastSubscriptionRequest(const std::string& senderParticipantId,
+                                          const std::string& receiverParticipantId,
+                                          const MessagingQos& qos,
+                                          const MulticastSubscriptionRequest& subscriptionRequest,
+                                          bool isLocalMessage) override;
 
     void sendSubscriptionReply(const std::string& senderParticipantId,
                                const std::string& receiverParticipantId,
@@ -140,7 +143,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrMessageSender);
     IDispatcher* dispatcher;
-    std::shared_ptr<MessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> messageRouter;
     JoynrMessageFactory messageFactory;
     ADD_LOGGER(JoynrMessageSender);
 };

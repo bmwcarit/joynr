@@ -4,7 +4,7 @@ package io.joynr.messaging.bounceproxy.controller;
  * #%L
  * joynr::java::messaging::bounceproxy::bounceproxy-controller
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -235,8 +235,8 @@ public class RemoteBounceProxyFacadeTest {
                 return null;
             }
         };
-        Mockito.doAnswer(answerForHttpResponse).when(handler).handle(any(HttpRequest.class),
-                                                                     any(HttpResponse.class),
-                                                                     any(HttpContext.class));
+        Mockito.doAnswer(answerForHttpResponse)
+               .when(handler)
+               .handle(any(HttpRequest.class), any(HttpResponse.class), any(HttpContext.class));
     }
 }

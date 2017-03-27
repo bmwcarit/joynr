@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@
  */
 #include "joynr/QosArbitrationStrategyFunction.h"
 
-#include "joynr/types/DiscoveryEntry.h"
+#include <sstream>
+
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -30,32 +32,35 @@ namespace joynr
 
 INIT_LOGGER(QosArbitrationStrategyFunction);
 
-std::string QosArbitrationStrategyFunction::select(
+types::DiscoveryEntryWithMetaInfo QosArbitrationStrategyFunction::select(
         const std::map<std::string, types::CustomParameter> customParameters,
-        const std::vector<types::DiscoveryEntry>& discoveryEntries) const
+        const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const
 {
     std::ignore = customParameters;
-    std::string selectedParticipantId;
-    std::int64_t highestPriority = -1;
+    auto selectedDiscoveryEntryIt = discoveryEntries.cend();
+    std::int64_t highestPriority = types::ProviderQos().getPriority(); // get default value
 
-    for (const auto& discoveryEntry : discoveryEntries) {
-        types::ProviderQos providerQos = discoveryEntry.getQos();
-        JOYNR_LOG_TRACE(logger, "Looping over discoveryEntry: {}", discoveryEntry.toString());
+    for (auto it = discoveryEntries.cbegin(); it != discoveryEntries.cend(); ++it) {
+        types::ProviderQos providerQos = it->getQos();
+        JOYNR_LOG_TRACE(logger, "Looping over discoveryEntry: {}", it->toString());
 
-        if (providerQos.getPriority() > highestPriority) {
-            selectedParticipantId = discoveryEntry.getParticipantId();
-            JOYNR_LOG_TRACE(logger, "setting selectedParticipantId to {}", selectedParticipantId);
+        if (providerQos.getPriority() >= highestPriority) {
+            selectedDiscoveryEntryIt = it;
+            JOYNR_LOG_TRACE(logger,
+                            "setting selectedParticipantId to {}",
+                            selectedDiscoveryEntryIt->getParticipantId());
             highestPriority = providerQos.getPriority();
         }
     }
 
-    if (selectedParticipantId.empty()) {
-        std::string errorMsg;
-        errorMsg = "There was more than one entries in capabilitiesEntries, but none of the "
-                   "compatible entries had a priority > -1";
-        JOYNR_LOG_WARN(logger, errorMsg);
-        throw exceptions::DiscoveryException(errorMsg);
+    if (selectedDiscoveryEntryIt == discoveryEntries.cend()) {
+        std::stringstream errorMsg;
+        errorMsg << "There was more than one entry in capabilitiesEntries, but none of the "
+                    "compatible entries had a priority >= " << types::ProviderQos().getPriority();
+        JOYNR_LOG_WARN(logger, errorMsg.str());
+        throw exceptions::DiscoveryException(errorMsg.str());
     }
-    return selectedParticipantId;
+
+    return *selectedDiscoveryEntryIt;
 }
 } // namespace joynr

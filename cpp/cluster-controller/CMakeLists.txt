@@ -191,7 +191,7 @@ list(
 )
 
 
-AddClangFormat(JoynrClusterController)
+AddClangFormat(JoynrClusterController ${JoynrClusterController_EXPORT_HEADER})
 
 AddIncludeWhatYouUse(JoynrClusterController)
 
@@ -261,6 +261,16 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-websocket.settings
         @ONLY
     )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-clustercontroller.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-websocket.settings
+        @ONLY
+    )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-clustercontroller.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-websocket.settings
+        @ONLY
+    )
 else()
     # copy resources for build tree
     configure_file(
@@ -278,12 +288,18 @@ else()
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
         @ONLY
     )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-clustercontroller.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-clustercontroller.settings
+        @ONLY
+    )
     # ...and for install tree
     install(
         FILES
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-dbus.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-clustercontroller.settings
         DESTINATION ${JOYNR_INSTALL_FULL_SYSCONFDIR}
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")

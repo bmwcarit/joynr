@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ namespace exceptions
 class JoynrRuntimeException;
 } // namespace exceptions
 
-class MessageRouter;
+class IMessageRouter;
 class MqttReceiver;
 class JoynrMessage;
 
@@ -50,8 +50,9 @@ public:
      */
     static std::string translateMulticastWildcard(std::string multicastId);
 
-    MqttMessagingSkeleton(MessageRouter& messageRouter,
+    MqttMessagingSkeleton(IMessageRouter& messageRouter,
                           std::shared_ptr<MqttReceiver> mqttReceiver,
+                          const std::string& multicastTopicPrefix,
                           std::uint64_t ttlUplift = 0);
 
     ~MqttMessagingSkeleton() override = default;
@@ -68,13 +69,15 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingSkeleton);
     ADD_LOGGER(MqttMessagingSkeleton);
-    MessageRouter& messageRouter;
+
+    IMessageRouter& messageRouter;
     std::shared_ptr<MqttReceiver> mqttReceiver;
 
     std::uint64_t ttlUplift;
 
     std::unordered_map<std::string, std::uint64_t> multicastSubscriptionCount;
     std::mutex multicastSubscriptionCountMutex;
+    std::string multicastTopicPrefix;
 };
 
 } // namespace joynr

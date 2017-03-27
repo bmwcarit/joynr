@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.contains;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,7 +107,8 @@ public class PushingPublicationTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        cleanupScheduler);
+                                                        cleanupScheduler,
+                                                        Mockito.mock(SubscriptionRequestStorage.class));
         subscriptionId = "subscriptionId";
         proxyId = "proxyId";
         providerId = "providerId";
@@ -143,8 +144,9 @@ public class PushingPublicationTest {
         Deferred<Integer> testAttributeDeferred = new Deferred<Integer>();
         testAttributeDeferred.resolve(testAttribute);
         Promise<Deferred<Integer>> testAttributePromise = new Promise<Deferred<Integer>>(testAttributeDeferred);
-        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
-                                                                                      any(Method.class));
+        Mockito.doReturn(testAttributePromise)
+               .when(attributePollInterpreter)
+               .execute(any(ProviderContainer.class), any(Method.class));
 
         doAnswer(new Answer<Object>() {
             @Override

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,15 @@
 #define SHORTCIRCUITRUNTIME_H
 
 #include <memory>
+#include <tuple> // for std::ignore
 
 #include "joynr/JoynrRuntime.h"
+#include "joynr/IMessageRouter.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/CapabilityUtils.h"
 
 namespace joynr
 {
@@ -35,32 +38,76 @@ class InProcessMessagingSkeleton;
 class Settings;
 class SubscriptionManager;
 
-class DummyDiscovery : public joynr::system::IDiscoverySync
+class DummyDiscovery : public joynr::system::IDiscoveryAsync
 {
+
+private:
+    template <typename T, typename F>
+    auto resolve(T value, F onSuccess)
+    {
+        auto future = std::make_shared<Future<T>>();
+        future->onSuccess(value);
+        if (onSuccess) {
+            onSuccess(value);
+        }
+        return future;
+    }
+
+    template <typename F>
+    auto resolve(F onSuccess)
+    {
+        auto future = std::make_shared<Future<void>>();
+        future->onSuccess();
+        if (onSuccess) {
+            onSuccess();
+        }
+        return future;
+    }
+
 public:
-    void add(const joynr::types::DiscoveryEntry& discoveryEntry) override
+    std::shared_ptr<joynr::Future<void>> addAsync(
+            const joynr::types::DiscoveryEntry& discoveryEntry,
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr) override
     {
+        std::ignore = onRuntimeError;
         entry = discoveryEntry;
+        return resolve(onSuccess);
     }
 
-    void lookup(std::vector<joynr::types::DiscoveryEntry>& result,
-                const std::vector<std::string>& domains,
-                const std::string& interfaceName,
-                const joynr::types::DiscoveryQos& discoveryQos) override
+    std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>
+    lookupAsync(
+            const std::vector<std::string>& domains,
+            const std::string& interfaceName,
+            const joynr::types::DiscoveryQos& discoveryQos,
+            std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
+                    onSuccess = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr) override
     {
-        result.push_back(entry);
+        std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
+        result.push_back(joynr::util::convert(true, entry));
+        return resolve(result, onSuccess);
     }
 
-    void lookup(
-
-            joynr::types::DiscoveryEntry& result,
-            const std::string& participantId) override
+    std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
+            const std::string& participantId,
+            std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
+                    nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr) override
     {
-        result = entry;
+        return resolve(joynr::util::convert(true, entry), onSuccess);
     }
 
-    void remove(const std::string& participantId) override
+    std::shared_ptr<joynr::Future<void>> removeAsync(
+            const std::string& participantId,
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr) override
     {
+        return resolve(onSuccess);
     }
 
 private:
@@ -99,14 +146,24 @@ public:
                                  std::shared_ptr<TIntfProvider> provider,
                                  const types::ProviderQos& providerQos)
     {
-        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider, providerQos);
+        return capabilitiesRegistrar->addAsync<TIntfProvider>(
+                domain, provider, providerQos, nullptr, nullptr);
     }
 
     template <class TIntfProvider>
     std::string unregisterProvider(const std::string& domain,
                                    std::shared_ptr<TIntfProvider> provider)
     {
-        return capabilitiesRegistrar->remove<TIntfProvider>(domain, provider);
+        Future<void> future;
+        auto onSuccess = [&future]() { future.onSuccess(); };
+        auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+            future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+        };
+
+        std::string participantId = capabilitiesRegistrar->removeAsync<TIntfProvider>(
+                domain, provider, std::move(onSuccess), std::move(onError));
+        future.get();
+        return participantId;
     }
 
     template <class TIntfProxy>
@@ -123,8 +180,8 @@ public:
 
 private:
     SingleThreadedIOService singleThreadedIOService;
-    std::shared_ptr<MessageRouter> messageRouter;
-    std::unique_ptr<joynr::system::IDiscoverySync> discoveryProxy;
+    std::shared_ptr<IMessageRouter> messageRouter;
+    std::unique_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     std::shared_ptr<JoynrMessageSender> joynrMessageSender;
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
@@ -133,8 +190,6 @@ private:
     PublicationManager* publicationManager;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::unique_ptr<InProcessPublicationSender> inProcessPublicationSender;
-    InProcessConnectorFactory* inProcessConnectorFactory;
-    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
     std::unique_ptr<ProxyFactory> proxyFactory;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;

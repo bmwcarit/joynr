@@ -3,7 +3,7 @@ package io.joynr.demo;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,9 +82,9 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         Properties joynrConfig = new Properties();
         Module runtimeModule = getRuntimeModule(args, joynrConfig);
         final ProviderScope providerScope = getProviderScope(args);
-        LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
-        LOG.debug("Registering provider with the following scope: " + providerScope.name());
-        LOG.debug("Registering provider on domain \"{}\"", localDomain);
+        LOG.info("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
+        LOG.info("Registering provider with the following scope: " + providerScope.name());
+        LOG.info("Registering provider on domain \"{}\"", localDomain);
 
         // joynr config properties are used to set joynr configuration at
         // compile time. They are set on the

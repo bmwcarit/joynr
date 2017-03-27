@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,13 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/capabilities/arbitration/Arbitrator",
     "joynr/provider/ProviderBuilder",
     "joynr/proxy/ProxyBuilder",
-    "joynr/types/GlobalDiscoveryEntry",
     "joynr/capabilities/CapabilitiesRegistrar",
     "joynr/capabilities/ParticipantIdStorage",
     "joynr/dispatching/RequestReplyManager",
     "joynr/dispatching/subscription/PublicationManager",
     "joynr/dispatching/subscription/SubscriptionManager",
     "joynr/dispatching/Dispatcher",
+    "joynr/exceptions/JoynrException",
     "joynr/security/PlatformSecurityManager",
     "joynr/messaging/websocket/SharedWebSocket",
     "joynr/messaging/websocket/WebSocketMessagingSkeleton",
@@ -56,6 +56,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
     "joynr/types/TypeRegistrySingleton",
     "joynr/types/DiscoveryScope",
     "joynr/types/DiscoveryEntry",
+    "joynr/types/DiscoveryEntryWithMetaInfo",
     "joynr/util/UtilInternal",
     "joynr/util/CapabilitiesUtil",
     "joynr/util/Typing",
@@ -75,13 +76,13 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         Arbitrator,
         ProviderBuilder,
         ProxyBuilder,
-        GlobalDiscoveryEntry,
         CapabilitiesRegistrar,
         ParticipantIdStorage,
         RequestReplyManager,
         PublicationManager,
         SubscriptionManager,
         Dispatcher,
+        JoynrException,
         PlatformSecurityManager,
         SharedWebSocket,
         WebSocketMessagingSkeleton,
@@ -106,6 +107,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         TypeRegistrySingleton,
         DiscoveryScope,
         DiscoveryEntry,
+        DiscoveryEntryWithMetaInfo,
         Util,
         CapabilitiesUtil,
         Typing,
@@ -315,7 +317,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
                     typedCapabilities = [];
                     for (i = 0; i < untypedCapabilities.length; i++) {
-                        var capability = new GlobalDiscoveryEntry(untypedCapabilities[i]);
+                        var capability = new DiscoveryEntryWithMetaInfo(untypedCapabilities[i]);
                         initialRoutingTable[capability.participantId] = ccAddress;
                         typedCapabilities.push(capability);
                     }
@@ -414,7 +416,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                         loggingManager : loggingManager
                     }));
 
-                    arbitrator = new Arbitrator(discovery, CapabilitiesUtil.toDiscoveryEntries(typedCapabilities));
+                    arbitrator = new Arbitrator(discovery, typedCapabilities);
 
                     providerBuilder = Object.freeze(new ProviderBuilder());
 
@@ -473,11 +475,13 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                                 discoveryScope : DiscoveryScope.LOCAL_ONLY
                             }),
                             staticArbitration : true
+                        }).catch(function(error) {
+                            throw new Error("Failed to create routing proxy: "
+                                    + error
+                                    + (error instanceof JoynrException ? " " + error.detailMessage : ""));
                         }).then(function(newRoutingProxy) {
                             messageRouter.setRoutingProxy(newRoutingProxy);
                             return newRoutingProxy;
-                        }).catch(function(error) {
-                            throw new Error("Failed to create routing proxy: " + error);
                         });
 
                     // when everything's ready we can trigger the app

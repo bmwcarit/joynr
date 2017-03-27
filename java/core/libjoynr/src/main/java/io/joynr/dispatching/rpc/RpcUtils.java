@@ -3,7 +3,7 @@ package io.joynr.dispatching.rpc;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class RpcUtils {
     @CheckForNull
     public static Object reconstructReturnedObject(Method method,
                                                    MethodMetaInformation methodMetaInformation,
-                                                   Object... response)  {
+                                                   Object... response) {
 
         Object responsePayload = null;
 
@@ -54,15 +54,16 @@ public class RpcUtils {
 
                 final Class<?>[] constructorParameterTypes = { Object[].class };
                 responsePayload = method.getReturnType()
-                        .getConstructor(constructorParameterTypes)
-                        .newInstance((Object) response);
+                                        .getConstructor(constructorParameterTypes)
+                                        .newInstance((Object) response);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                logger.error("error calling multi-out method: {}. Unable to recreate return object. Returning NULL instead: " + method.getName(), e);
+                logger.error("error calling multi-out method: {}. Unable to recreate return object. Returning NULL instead: "
+                                     + method.getName(),
+                             e);
 
             }
         }
-
 
         return responsePayload;
     }
@@ -98,8 +99,7 @@ public class RpcUtils {
         return responsePayload;
     }
 
-    private static void convertMultioutResponseToCorrectTypes(Method method,
-                                                              Object... response) {
+    private static void convertMultioutResponseToCorrectTypes(Method method, Object... response) {
         Method getDatatypes;
         try {
             getDatatypes = method.getReturnType().getMethod("getDatatypes");
@@ -107,8 +107,10 @@ public class RpcUtils {
             for (int i = 0; i < response.length; i++) {
                 response[i] = objectMapper.convertValue(response[i], responseDatatypes[i]);
             }
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            logger.error("error calling method. Unable to recreate response for callback: Returning NULL instead: " + method.getName(), e);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            logger.error("error calling method. Unable to recreate response for callback: Returning NULL instead: "
+                    + method.getName(), e);
         }
     }
 }

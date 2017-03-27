@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,11 @@ package io.joynr.capabilities;
 import static java.lang.String.format;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +41,7 @@ import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 /**
  * Conversion helpers for CapabilityInformation, CapabilityEntry and DiscoveryEntry
@@ -53,7 +59,7 @@ public class CapabilityUtils {
                                   globalDiscoveryEntry.getInterfaceName(),
                                   globalDiscoveryEntry.getParticipantId(),
                                   globalDiscoveryEntry.getQos(),
-                                  System.currentTimeMillis(),
+                                  globalDiscoveryEntry.getLastSeenDateMs(),
                                   globalDiscoveryEntry.getExpiryDateMs(),
                                   globalDiscoveryEntry.getPublicKeyId());
     }
@@ -88,7 +94,7 @@ public class CapabilityUtils {
                                         discoveryEntry.getInterfaceName(),
                                         discoveryEntry.getParticipantId(),
                                         discoveryEntry.getQos(),
-                                        System.currentTimeMillis(),
+                                        discoveryEntry.getLastSeenDateMs(),
                                         discoveryEntry.getExpiryDateMs(),
                                         discoveryEntry.getPublicKeyId(),
                                         serializeAddress(globalAddress));
@@ -118,5 +124,55 @@ public class CapabilityUtils {
             throw new JoynrRuntimeException(e);
         }
         return serializedAddress;
+    }
+
+    public static DiscoveryEntry convertToDiscoveryEntry(DiscoveryEntryWithMetaInfo entry) {
+        return new DiscoveryEntry(entry);
+    }
+
+    public static List<DiscoveryEntry> convertToDiscoveryEntryList(Collection<DiscoveryEntryWithMetaInfo> entriesWithMetaInfo) {
+        List<DiscoveryEntry> entries = new ArrayList<DiscoveryEntry>(entriesWithMetaInfo.size());
+        for (DiscoveryEntryWithMetaInfo entry : entriesWithMetaInfo) {
+            entries.add(convertToDiscoveryEntry(entry));
+        }
+        return entries;
+    }
+
+    public static Set<DiscoveryEntry> convertToDiscoveryEntrySet(Collection<DiscoveryEntryWithMetaInfo> entriesWithMetaInfo) {
+        Set<DiscoveryEntry> entries = new HashSet<DiscoveryEntry>(entriesWithMetaInfo.size());
+        for (DiscoveryEntryWithMetaInfo entry : entriesWithMetaInfo) {
+            entries.add(convertToDiscoveryEntry(entry));
+        }
+        return entries;
+    }
+
+    public static DiscoveryEntryWithMetaInfo convertToDiscoveryEntryWithMetaInfo(boolean isLocal, DiscoveryEntry entry) {
+        return new DiscoveryEntryWithMetaInfo(entry.getProviderVersion(),
+                                              entry.getDomain(),
+                                              entry.getInterfaceName(),
+                                              entry.getParticipantId(),
+                                              entry.getQos(),
+                                              entry.getLastSeenDateMs(),
+                                              entry.getExpiryDateMs(),
+                                              entry.getPublicKeyId(),
+                                              isLocal);
+    }
+
+    public static List<DiscoveryEntryWithMetaInfo> convertToDiscoveryEntryWithMetaInfoList(boolean isLocal,
+                                                                                           Collection<? extends DiscoveryEntry> entries) {
+        List<DiscoveryEntryWithMetaInfo> entriesWithMetaInfo = new ArrayList<DiscoveryEntryWithMetaInfo>(entries.size());
+        for (DiscoveryEntry entry : entries) {
+            entriesWithMetaInfo.add(convertToDiscoveryEntryWithMetaInfo(isLocal, entry));
+        }
+        return entriesWithMetaInfo;
+    }
+
+    public static Set<DiscoveryEntryWithMetaInfo> convertToDiscoveryEntryWithMetaInfoSet(boolean isLocal,
+                                                                                         Collection<? extends DiscoveryEntry> entries) {
+        Set<DiscoveryEntryWithMetaInfo> entriesWithMetaInfo = new HashSet<DiscoveryEntryWithMetaInfo>(entries.size());
+        for (DiscoveryEntry entry : entries) {
+            entriesWithMetaInfo.add(convertToDiscoveryEntryWithMetaInfo(isLocal, entry));
+        }
+        return entriesWithMetaInfo;
     }
 }

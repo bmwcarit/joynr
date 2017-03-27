@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,8 +101,7 @@ public class SubscriptionTestsPublisher extends testSubscriptionPublisherImpl {
     }
 
     @Override
-    public void registerAttributeListener(String attributeName,
-                                          AttributeListener attributeListener) {
+    public void registerAttributeListener(String attributeName, AttributeListener attributeListener) {
         super.registerAttributeListener(attributeName, attributeListener);
         synchronized (this) {
             if (!attributeSubscriptionArrived.contains(attributeName)) {
@@ -113,8 +112,7 @@ public class SubscriptionTestsPublisher extends testSubscriptionPublisherImpl {
     }
 
     @Override
-    public void unregisterAttributeListener(String attributeName,
-                                            AttributeListener attributeListener) {
+    public void unregisterAttributeListener(String attributeName, AttributeListener attributeListener) {
         super.unregisterAttributeListener(attributeName, attributeListener);
         synchronized (this) {
             if (attributeSubscriptionArrived.contains(attributeName)) {

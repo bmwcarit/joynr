@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,12 +30,12 @@
 namespace joynr
 {
 
-class MessageRouter;
+class IMessageRouter;
 
 class WebSocketLibJoynrMessagingSkeleton : public IMessaging
 {
 public:
-    explicit WebSocketLibJoynrMessagingSkeleton(std::shared_ptr<MessageRouter> messageRouter);
+    explicit WebSocketLibJoynrMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter);
 
     ~WebSocketLibJoynrMessagingSkeleton() override = default;
 
@@ -43,12 +43,13 @@ public:
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
-    void onTextMessageReceived(const std::string& message);
+    void onMessageReceived(const std::string& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketLibJoynrMessagingSkeleton);
     ADD_LOGGER(WebSocketLibJoynrMessagingSkeleton);
-    std::shared_ptr<MessageRouter> messageRouter;
+
+    std::weak_ptr<IMessageRouter> messageRouter;
 };
 
 } // namespace joynr

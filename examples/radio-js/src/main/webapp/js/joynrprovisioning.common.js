@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ var provisioning = {};
 provisioning.bounceProxyBaseUrl = window.location.origin;
 
 provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
+provisioning.brokerUri = "tcp://localhost:9001";
 var domain = "javascriptproviderdomain";
 var queryDomain = window.location.href.match(/domain=([a-zA-Z0-9\-]+)/);
 if(queryDomain !== null) {

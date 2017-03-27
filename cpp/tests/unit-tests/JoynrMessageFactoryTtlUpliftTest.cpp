@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ public:
               ttl(1000),
               ttlUplift(10000),
               upliftedTtl(ttl + ttlUplift),
+              isLocalMessage(true),
               messagingQos(),
               factoryWithTtlUplift(ttlUplift)
     {
@@ -64,6 +65,7 @@ protected:
     const std::int64_t ttl;
     const std::uint64_t ttlUplift;
     const std::int64_t upliftedTtl;
+    const bool isLocalMessage;
     MessagingQos messagingQos;
     JoynrMessageFactory factoryWithTtlUplift;
 };
@@ -86,7 +88,7 @@ void JoynrMessageFactoryTtlUpliftTest::checkMessageExpiryDate(const JoynrMessage
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testDefaultTtlUplift)
 {
     Request request;
-    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, messagingQos, request);
+    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
 
     checkMessageExpiryDate(message, ttl);
 }
@@ -94,7 +96,7 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testDefaultTtlUplift)
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_Request)
 {
     Request request;
-    JoynrMessage message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+    JoynrMessage message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -110,7 +112,7 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_Reply_noUplift)
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_OneWayRequest)
 {
     OneWayRequest oneWayRequest;
-    JoynrMessage message = factoryWithTtlUplift.createOneWayRequest(senderID, receiverID, messagingQos, oneWayRequest);
+    JoynrMessage message = factoryWithTtlUplift.createOneWayRequest(senderID, receiverID, messagingQos, oneWayRequest, isLocalMessage);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -134,7 +136,7 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionPublication)
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionRequest)
 {
     SubscriptionRequest request;
-    JoynrMessage message = factoryWithTtlUplift.createSubscriptionRequest(senderID, receiverID, messagingQos, request);
+    JoynrMessage message = factoryWithTtlUplift.createSubscriptionRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -142,7 +144,7 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionRequest)
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_MulticastSubscriptionRequest)
 {
     MulticastSubscriptionRequest request;
-    JoynrMessage message = factoryWithTtlUplift.createMulticastSubscriptionRequest(senderID, receiverID, messagingQos, request);
+    JoynrMessage message = factoryWithTtlUplift.createMulticastSubscriptionRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -150,7 +152,7 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_MulticastSubscriptionRequ
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_BroadcastSubscriptionRequest)
 {
     BroadcastSubscriptionRequest request;
-    JoynrMessage message = factoryWithTtlUplift.createBroadcastSubscriptionRequest(senderID, receiverID, messagingQos, request);
+    JoynrMessage message = factoryWithTtlUplift.createBroadcastSubscriptionRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
 
     checkMessageExpiryDate(message, upliftedTtl);
 }
@@ -183,7 +185,7 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
 
     ttl = INT64_MAX;
     messagingQos.setTtl(ttl);
-    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
     timePoint = message.getHeaderExpiryDate();
     EXPECT_EQ(expectedTimePoint, timePoint) << "expected timepoint: "
                                                + std::to_string(expectedTimePoint.time_since_epoch().count())
@@ -211,7 +213,7 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
             - ttlUplift
             - now;
     messagingQos.setTtl(ttl);
-    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request, isLocalMessage);
 //    timePoint = message.getHeaderExpiryDate();
 //    EXPECT_EQ(expectedTimePoint, timePoint) << "expected timepoint: "
 //                                               + std::to_string(expectedTimePoint.time_since_epoch().count())

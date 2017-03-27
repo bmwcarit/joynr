@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@
 #include "joynr/ReplyCaller.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
@@ -44,33 +45,16 @@ class ISubscriptionManager;
 class JOYNR_EXPORT AbstractJoynrMessagingConnector : public IConnector
 {
 public:
-    AbstractJoynrMessagingConnector(std::shared_ptr<IJoynrMessageSender> joynrMessageSender,
-                                    std::shared_ptr<ISubscriptionManager> subscriptionManager,
-                                    const std::string& domain,
-                                    const std::string& interfaceName,
-                                    const std::string& proxyParticipantId,
-                                    const std::string& providerParticipantId,
-                                    const MessagingQos& qosSettings);
+    AbstractJoynrMessagingConnector(
+            std::shared_ptr<IJoynrMessageSender> joynrMessageSender,
+            std::shared_ptr<ISubscriptionManager> subscriptionManager,
+            const std::string& domain,
+            const std::string& interfaceName,
+            const std::string& proxyParticipantId,
+            const MessagingQos& qosSettings,
+            const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry);
     bool usesClusterController() const override;
     ~AbstractJoynrMessagingConnector() override = default;
-
-    /**
-     * @brief Makes a request and returns the received response via the callback.
-     *
-     * @param methodName
-     * @param replyCaller
-
-     */
-    template <typename T>
-    void attributeRequest(const std::string& methodName, std::shared_ptr<IReplyCaller> replyCaller)
-    {
-        std::string attributeID = domain + ":" + interfaceName + ":" + methodName;
-        Request request;
-        // explicitly set to no parameters
-        request.setParams();
-        request.setMethodName(methodName);
-        sendRequest(request, replyCaller);
-    }
 
     /**
      * @brief Makes a request and returns the received response via the callback.
@@ -89,6 +73,7 @@ protected:
     std::string proxyParticipantId;
     std::string providerParticipantId;
     MessagingQos qosSettings;
+    types::DiscoveryEntryWithMetaInfo providerDiscoveryEntry;
     ADD_LOGGER(AbstractJoynrMessagingConnector);
 
 private:

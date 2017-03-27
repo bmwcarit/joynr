@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,15 +31,16 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
         const std::string& domain,
         const std::string& interfaceName,
         const std::string& proxyParticipantId,
-        const std::string& providerParticipantId,
-        const MessagingQos& qosSettings)
+        const MessagingQos& qosSettings,
+        const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
         : joynrMessageSender(joynrMessageSender),
           subscriptionManager(subscriptionManager),
           domain(domain),
           interfaceName(interfaceName),
           proxyParticipantId(proxyParticipantId),
-          providerParticipantId(providerParticipantId),
-          qosSettings(qosSettings)
+          providerParticipantId(providerDiscoveryEntry.getParticipantId()),
+          qosSettings(qosSettings),
+          providerDiscoveryEntry(providerDiscoveryEntry)
 {
 }
 
@@ -62,13 +63,20 @@ void AbstractJoynrMessagingConnector::operationOneWayRequest(const OneWayRequest
 void AbstractJoynrMessagingConnector::sendRequest(const Request& request,
                                                   std::shared_ptr<IReplyCaller> replyCaller)
 {
-    joynrMessageSender->sendRequest(
-            proxyParticipantId, providerParticipantId, qosSettings, request, replyCaller);
+    joynrMessageSender->sendRequest(proxyParticipantId,
+                                    providerParticipantId,
+                                    qosSettings,
+                                    request,
+                                    replyCaller,
+                                    providerDiscoveryEntry.getIsLocal());
 }
 
 void AbstractJoynrMessagingConnector::sendOneWayRequest(const OneWayRequest& request)
 {
-    joynrMessageSender->sendOneWayRequest(
-            proxyParticipantId, providerParticipantId, qosSettings, request);
+    joynrMessageSender->sendOneWayRequest(proxyParticipantId,
+                                          providerParticipantId,
+                                          qosSettings,
+                                          request,
+                                          providerDiscoveryEntry.getIsLocal());
 }
 } // namespace joynr

@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -186,7 +186,7 @@ public class JoynrMessageFactoryTest {
         final String expectedCustomHeaderName = JoynrMessage.MESSAGE_CUSTOM_HEADER_PREFIX + headerName;
         assertTrue(message.getHeader().containsKey(expectedCustomHeaderName));
         Map<String, String> customHeaders = message.getCustomHeaders();
-        assertTrue(customHeaders.size() == 1);
+        assertTrue(customHeaders.size() == 2);
         assertTrue(customHeaders.containsKey(headerName));
     }
 
@@ -213,9 +213,9 @@ public class JoynrMessageFactoryTest {
         myCustomHeaders.put(headerName, headerValue);
         messagingQos.getCustomMessageHeaders().putAll(myCustomHeaders);
         JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
-                                                                            toParticipantId,
-                                                                            request,
-                                                                            messagingQos);
+                                                                       toParticipantId,
+                                                                       request,
+                                                                       messagingQos);
         assertNotNull(message);
         assertEquals(JoynrMessage.MESSAGE_TYPE_ONE_WAY, message.getType());
         assertExpiryDateEquals(expiryDate.getValue(), message);

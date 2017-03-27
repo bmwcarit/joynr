@@ -2,7 +2,7 @@ package io.joynr.generator.interfaces
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ public interface «syncClassName» extends «interfaceName»«IF hasFireAndForge
 
 			public Object[] getValues() {
 			    return new Object[] {
-			        «FOR outParameter : method.outputParameters SEPARATOR ", "»
+			        «FOR outParameter : method.outputParameters SEPARATOR ","»
 			            «outParameter.name»
 			        «ENDFOR»
 			    };

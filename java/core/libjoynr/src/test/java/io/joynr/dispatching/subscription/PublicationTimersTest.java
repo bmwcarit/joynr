@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.contains;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,8 +99,9 @@ public class PublicationTimersTest {
         Deferred<String> testAttributeDeferred = new Deferred<String>();
         testAttributeDeferred.resolve("testAttributeValue");
         Promise<Deferred<String>> testAttributePromise = new Promise<Deferred<String>>(testAttributeDeferred);
-        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
-                                                                                      any(Method.class));
+        Mockito.doReturn(testAttributePromise)
+               .when(attributePollInterpreter)
+               .execute(any(ProviderContainer.class), any(Method.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -122,7 +123,8 @@ public class PublicationTimersTest {
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
                                                                            providerDirectory,
-                                                                           cleanupScheduler);
+                                                                           cleanupScheduler,
+                                                                           Mockito.mock(SubscriptionRequestStorage.class));
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
         when(providerDirectory.contains(eq(providerId))).thenReturn(true);

@@ -3,7 +3,7 @@ package io.joynr.accesscontrol.global.jee;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,6 +46,8 @@ import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.infrastructure.GlobalDomainAccessControllerSubscriptionPublisher;
+import joynr.infrastructure.GlobalDomainRoleControllerSubscriptionPublisher;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -52,11 +55,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.concurrent.LinkedBlockingDeque;
+
 @RunWith(MockitoJUnitRunner.class)
 public class GlobalDomainAccessControllerBeanTest {
-
-    @Mock
-    private DomainRoleEntryManager domainRoleEntryManagerMock;
 
     @Mock
     private MasterAccessControlEntryManager masterAccessControlEntryManagerMock;
@@ -73,8 +75,11 @@ public class GlobalDomainAccessControllerBeanTest {
     @Mock
     private GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisherMock;
 
+    @Mock
+    private GlobalDomainAccessControllerQueue globalDomainAccessControllerQueueMock;
+
     @InjectMocks
-    private GlobalDomainAccessControllerBean subject = new GlobalDomainAccessControllerBean();
+    private GlobalDomainAccessControllerBean globalDomainAccessControllerSubject = new GlobalDomainAccessControllerBean();
 
     private final static String USER_ID = "user.name";
     private final static String USER_PARTITION = "username";
@@ -84,65 +89,15 @@ public class GlobalDomainAccessControllerBeanTest {
     private final static Role ROLE = Role.MASTER;
     private final static String OPERATION = "operation";
 
-    @Test
-    public void testGetDomainRoleEntries() {
-        DomainRoleEntry[] result = new DomainRoleEntry[0];
-        Mockito.when(domainRoleEntryManagerMock.findByUserId(USER_ID)).thenReturn(result);
-        DomainRoleEntry[] domainRoles = subject.getDomainRoles(USER_ID);
-        verify(domainRoleEntryManagerMock).findByUserId(USER_ID);
-        assertArrayEquals(result, domainRoles);
-    }
-
-    @Test
-    public void testCreate() {
-        DomainRoleEntry domainRoleEntry = new DomainRoleEntry(USER_ID, DOMAINS, ROLE);
-        CreateOrUpdateResult<DomainRoleEntry> createOrUpdateResult = new CreateOrUpdateResult<>(domainRoleEntry,
-            ChangeType.ADD);
-
-        when(domainRoleEntryManagerMock.createOrUpdate(domainRoleEntry)).thenReturn(createOrUpdateResult);
-
-        assertTrue(subject.updateDomainRole(domainRoleEntry));
-
-        verify(domainRoleEntryManagerMock).createOrUpdate(eq(domainRoleEntry));
-        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireDomainRoleEntryChanged(eq(ChangeType.ADD),
-            eq(domainRoleEntry), eq(
-                USER_PARTITION));
-    }
-
-    @Test
-    public void testUpdate() {
-        DomainRoleEntry domainRoleEntry = new DomainRoleEntry(USER_ID, DOMAINS, ROLE);
-        CreateOrUpdateResult<DomainRoleEntry> createOrUpdateResult = new CreateOrUpdateResult<>(domainRoleEntry,
-            ChangeType.UPDATE);
-
-        when(domainRoleEntryManagerMock.createOrUpdate(domainRoleEntry)).thenReturn(createOrUpdateResult);
-
-        assertTrue(subject.updateDomainRole(domainRoleEntry));
-
-        verify(domainRoleEntryManagerMock).createOrUpdate(eq(domainRoleEntry));
-        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireDomainRoleEntryChanged(eq(ChangeType.UPDATE),
-            eq(domainRoleEntry),
-            eq(USER_PARTITION));
-    }
-
-    @Test
-    public void testRemove() {
-        DomainRoleEntry domainRoleEntry = new DomainRoleEntry(USER_ID, DOMAINS, ROLE);
-
-        when(domainRoleEntryManagerMock.removeByUserIdAndRole(USER_ID, ROLE)).thenReturn(domainRoleEntry);
-
-        assertTrue(subject.removeDomainRole(USER_ID, ROLE));
-
-        verify(domainRoleEntryManagerMock).removeByUserIdAndRole(eq(USER_ID), eq(ROLE));
-        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireDomainRoleEntryChanged(eq(ChangeType.REMOVE),
-                                                                                                 eq(domainRoleEntry),
-                                                                                                 eq(USER_PARTITION));
+    @Before
+    public void setUp() {
+        when(globalDomainAccessControllerQueueMock.add(any(GlobalDomainAccessControllerQueueJob.class))).thenReturn(true);
     }
 
     @Test
     public void testFindMasterAccessControlEntriesByUserId() {
         when(masterAccessControlEntryManagerMock.findByUserId(USER_ID, ControlEntryType.MASTER)).thenReturn(new MasterAccessControlEntry[0]);
-        MasterAccessControlEntry[] result = subject.getMasterAccessControlEntries(USER_ID);
+        MasterAccessControlEntry[] result = globalDomainAccessControllerSubject.getMasterAccessControlEntries(USER_ID);
         assertNotNull(result);
         assertEquals(0, result.length);
         verify(masterAccessControlEntryManagerMock).findByUserId(eq(USER_ID), eq(ControlEntryType.MASTER));
@@ -153,7 +108,7 @@ public class GlobalDomainAccessControllerBeanTest {
         when(masterAccessControlEntryManagerMock.findByDomainAndInterfaceName(DOMAIN,
                                                                               INTERFACE_NAME,
                                                                               ControlEntryType.MASTER)).thenReturn(new MasterAccessControlEntry[0]);
-        MasterAccessControlEntry[] result = subject.getMasterAccessControlEntries(DOMAIN, INTERFACE_NAME);
+        MasterAccessControlEntry[] result = globalDomainAccessControllerSubject.getMasterAccessControlEntries(DOMAIN, INTERFACE_NAME);
         assertNotNull(result);
         assertEquals(0, result.length);
         verify(masterAccessControlEntryManagerMock).findByDomainAndInterfaceName(DOMAIN,
@@ -162,79 +117,9 @@ public class GlobalDomainAccessControllerBeanTest {
     }
 
     @Test
-    public void testCreateMasterAccessControlEntry() {
-        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.LOW,
-            new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], OPERATION,
-            Permission.ASK, new Permission[0]);
-        CreateOrUpdateResult<MasterAccessControlEntry> createResult = new CreateOrUpdateResult<>(mace, ChangeType.ADD);
-        when(masterAccessControlEntryManagerMock.createOrUpdate(mace, ControlEntryType.MASTER)).thenReturn(
-            createResult);
-
-        Boolean result = subject.updateMasterAccessControlEntry(mace);
-
-        assertEquals(Boolean.TRUE, result);
-
-        verify(masterAccessControlEntryManagerMock).createOrUpdate(eq(mace), eq(ControlEntryType.MASTER));
-        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMasterAccessControlEntryChanged(
-            eq(ChangeType.ADD), eq(mace), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME), eq(OPERATION));
-    }
-
-    @Test
-    public void testUpdateMasterAccessControlEntry() {
-        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.LOW,
-            new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], OPERATION, Permission.ASK, new Permission[0]);
-        CreateOrUpdateResult<MasterAccessControlEntry> updateResult = new CreateOrUpdateResult<>(mace,
-            ChangeType.UPDATE);
-        when(masterAccessControlEntryManagerMock.createOrUpdate(mace, ControlEntryType.MASTER)).thenReturn(
-            updateResult);
-
-        Boolean result = subject.updateMasterAccessControlEntry(mace);
-
-        assertEquals(Boolean.TRUE, result);
-
-        verify(masterAccessControlEntryManagerMock).createOrUpdate(mace, ControlEntryType.MASTER);
-        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMasterAccessControlEntryChanged(
-            ChangeType.UPDATE, mace, USER_PARTITION, DOMAIN, INTERFACE_NAME, OPERATION);
-    }
-
-    @Test
-    public void testRemoveMasterAccessControlEntry() {
-        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID,
-                                                                     DOMAIN,
-                                                                     INTERFACE_NAME,
-                                                                     TrustLevel.LOW,
-                                                                     new TrustLevel[0],
-                                                                     TrustLevel.HIGH,
-                                                                     new TrustLevel[0],
-                                                                     OPERATION,
-                                                                     Permission.ASK,
-                                                                     new Permission[0]);
-        when(masterAccessControlEntryManagerMock.removeByUserIdDomainInterfaceNameAndOperation(USER_ID,
-                                                                                               DOMAIN,
-                                                                                               INTERFACE_NAME,
-                                                                                               OPERATION,
-                                                                                               ControlEntryType.MASTER)).thenReturn(mace);
-        Boolean result = subject.removeMasterAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, OPERATION);
-
-        assertEquals(Boolean.TRUE, result);
-
-        verify(masterAccessControlEntryManagerMock).removeByUserIdDomainInterfaceNameAndOperation(eq(USER_ID),
-                                                                                                  eq(DOMAIN),
-                                                                                                  eq(INTERFACE_NAME),
-                                                                                                  eq(OPERATION),
-                                                                                                  eq(ControlEntryType.MASTER));
-        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMasterAccessControlEntryChanged(eq(ChangeType.REMOVE),
-                                                                                                          eq(mace),
-                                                                                                          eq(USER_PARTITION),
-                                                                                                          eq(DOMAIN),
-                                                                                                          eq(INTERFACE_NAME),
-                                                                                                          eq(OPERATION));
-    }
-
-    @Test
     public void testFindMediatorAccessControlEntriesByUserId() {
         when(masterAccessControlEntryManagerMock.findByUserId(USER_ID, ControlEntryType.MEDIATOR)).thenReturn(new MasterAccessControlEntry[0]);
-        MasterAccessControlEntry[] result = subject.getMediatorAccessControlEntries(USER_ID);
+        MasterAccessControlEntry[] result = globalDomainAccessControllerSubject.getMediatorAccessControlEntries(USER_ID);
         assertNotNull(result);
         assertEquals(0, result.length);
         verify(masterAccessControlEntryManagerMock).findByUserId(eq(USER_ID), eq(ControlEntryType.MEDIATOR));
@@ -245,7 +130,7 @@ public class GlobalDomainAccessControllerBeanTest {
         when(masterAccessControlEntryManagerMock.findByDomainAndInterfaceName(DOMAIN,
                                                                               INTERFACE_NAME,
                                                                               ControlEntryType.MEDIATOR)).thenReturn(new MasterAccessControlEntry[0]);
-        MasterAccessControlEntry[] result = subject.getMediatorAccessControlEntries(DOMAIN, INTERFACE_NAME);
+        MasterAccessControlEntry[] result = globalDomainAccessControllerSubject.getMediatorAccessControlEntries(DOMAIN, INTERFACE_NAME);
         assertNotNull(result);
         assertEquals(0, result.length);
         verify(masterAccessControlEntryManagerMock).findByDomainAndInterfaceName(DOMAIN,
@@ -254,129 +139,28 @@ public class GlobalDomainAccessControllerBeanTest {
     }
 
     @Test
-    public void testCreateMediatorAccessControlEntry() {
-        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.LOW,
-            new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], OPERATION,
-            Permission.ASK, new Permission[0]);
-        CreateOrUpdateResult<MasterAccessControlEntry> createResult = new CreateOrUpdateResult<>(mace, ChangeType.ADD);
-        when(masterAccessControlEntryManagerMock.createOrUpdate(mace, ControlEntryType.MEDIATOR)).thenReturn(
-            createResult);
-
-        Boolean result = subject.updateMediatorAccessControlEntry(mace);
-
-        assertEquals(Boolean.TRUE, result);
-
-        verify(masterAccessControlEntryManagerMock).createOrUpdate(eq(mace), eq(ControlEntryType.MEDIATOR));
-        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMediatorAccessControlEntryChanged(
-            eq(ChangeType.ADD), eq(mace), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME), eq(OPERATION));
-    }
-
-    @Test
-    public void testUpdateMediatorAccessControlEntry() {
-        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.LOW,
-            new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], OPERATION, Permission.ASK, new Permission[0]);
-        CreateOrUpdateResult<MasterAccessControlEntry> updateResult = new CreateOrUpdateResult<>(mace,
-            ChangeType.UPDATE);
-        when(masterAccessControlEntryManagerMock.createOrUpdate(mace, ControlEntryType.MEDIATOR)).thenReturn(
-            updateResult);
-
-        Boolean result = subject.updateMediatorAccessControlEntry(mace);
-
-        assertEquals(Boolean.TRUE, result);
-
-        verify(masterAccessControlEntryManagerMock).createOrUpdate(mace, ControlEntryType.MEDIATOR);
-        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMediatorAccessControlEntryChanged(
-            ChangeType.UPDATE, mace, USER_PARTITION, DOMAIN, INTERFACE_NAME, OPERATION);
-    }
-
-    @Test
-    public void testRemoveMediatorAccessControlEntry() {
-        MasterAccessControlEntry mace = new MasterAccessControlEntry(USER_ID,
-                                                                     DOMAIN,
-                                                                     INTERFACE_NAME,
-                                                                     TrustLevel.LOW,
-                                                                     new TrustLevel[0],
-                                                                     TrustLevel.HIGH,
-                                                                     new TrustLevel[0],
-                                                                     OPERATION,
-                                                                     Permission.ASK,
-                                                                     new Permission[0]);
-        when(masterAccessControlEntryManagerMock.removeByUserIdDomainInterfaceNameAndOperation(USER_ID,
-                                                                                               DOMAIN,
-                                                                                               INTERFACE_NAME,
-                                                                                               OPERATION,
-                                                                                               ControlEntryType.MEDIATOR)).thenReturn(mace);
-        Boolean result = subject.removeMediatorAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, OPERATION);
-
-        assertEquals(Boolean.TRUE, result);
-
-        verify(masterAccessControlEntryManagerMock).removeByUserIdDomainInterfaceNameAndOperation(eq(USER_ID),
-                                                                                                  eq(DOMAIN),
-                                                                                                  eq(INTERFACE_NAME),
-                                                                                                  eq(OPERATION),
-                                                                                                  eq(ControlEntryType.MEDIATOR));
-        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMediatorAccessControlEntryChanged(eq(ChangeType.REMOVE),
-                                                                                                            eq(mace),
-                                                                                                            eq(USER_PARTITION),
-                                                                                                            eq(DOMAIN),
-                                                                                                            eq(INTERFACE_NAME),
-                                                                                                            eq(OPERATION));
-    }
-
-    @Test
     public void testFindOwnerAccessControlEntryByUserId() {
         when(ownerAccessControlEntryManagerMock.findByUserId(USER_ID)).thenReturn(new OwnerAccessControlEntry[0]);
-        OwnerAccessControlEntry[] result = subject.getOwnerAccessControlEntries(USER_ID);
+        OwnerAccessControlEntry[] result = globalDomainAccessControllerSubject.getOwnerAccessControlEntries(USER_ID);
         assertNotNull(result);
         assertEquals(0, result.length);
         verify(ownerAccessControlEntryManagerMock).findByUserId(eq(USER_ID));
     }
 
     @Test
-    public void testFindEditableOwnerAccessControlEntry() {
-        when(ownerAccessControlEntryManagerMock.findByUserIdThatAreEditable(USER_ID)).thenReturn(new OwnerAccessControlEntry[0]);
-        OwnerAccessControlEntry[] result = subject.getEditableOwnerAccessControlEntries(USER_ID);
-        assertNotNull(result);
-        assertEquals(0, result.length);
-        verify(ownerAccessControlEntryManagerMock).findByUserIdThatAreEditable(eq(USER_ID));
-    }
-
-    @Test
     public void testFindOwnerAccessControlEntryByDomainAndInterfaceName() {
         when(ownerAccessControlEntryManagerMock.findByDomainAndInterfaceName(DOMAIN, INTERFACE_NAME)).thenReturn(new OwnerAccessControlEntry[0]);
-        OwnerAccessControlEntry[] result = subject.getOwnerAccessControlEntries(DOMAIN, INTERFACE_NAME);
+        OwnerAccessControlEntry[] result = globalDomainAccessControllerSubject.getOwnerAccessControlEntries(DOMAIN, INTERFACE_NAME);
         assertNotNull(result);
         assertEquals(0, result.length);
         verify(ownerAccessControlEntryManagerMock).findByDomainAndInterfaceName(eq(DOMAIN), eq(INTERFACE_NAME));
     }
 
     @Test
-    public void testCreateOwnerAccessControlEntry() {
-        OwnerAccessControlEntry oace = new OwnerAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.HIGH, TrustLevel.LOW, OPERATION, Permission.YES);
-        CreateOrUpdateResult<OwnerAccessControlEntry> createResult = new CreateOrUpdateResult<>(oace, ChangeType.ADD);
-        when(ownerAccessControlEntryManagerMock.createOrUpdate(oace)).thenReturn(createResult);
-        Boolean result = subject.updateOwnerAccessControlEntry(oace);
-        assertEquals(Boolean.TRUE, result);
-        verify(ownerAccessControlEntryManagerMock).createOrUpdate(eq(oace));
-        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerAccessControlEntryChanged(eq(ChangeType.ADD), eq(oace), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME), eq(OPERATION));
-    }
-
-    @Test
-    public void testUpdateOwnerAccessControlEntry() {
-        OwnerAccessControlEntry oace = new OwnerAccessControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.HIGH, TrustLevel.LOW, OPERATION, Permission.YES);
-        CreateOrUpdateResult<OwnerAccessControlEntry> createResult = new CreateOrUpdateResult<>(oace, ChangeType.UPDATE);
-        when(ownerAccessControlEntryManagerMock.createOrUpdate(oace)).thenReturn(createResult);
-        Boolean result = subject.updateOwnerAccessControlEntry(oace);
-        assertEquals(Boolean.TRUE, result);
-        verify(ownerAccessControlEntryManagerMock).createOrUpdate(eq(oace));
-        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerAccessControlEntryChanged(eq(ChangeType.UPDATE), eq(oace), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME), eq(OPERATION));
-    }
-
-    @Test
     public void testFindMasterAndMediatorRegistrationControlEntryByUserId() {
         Map<ControlEntryType, Function<String, MasterRegistrationControlEntry[]>> getters = new HashMap<>();
-        getters.put(ControlEntryType.MASTER, (String userId) -> { return subject.getMasterRegistrationControlEntries(userId);});
-        getters.put(ControlEntryType.MEDIATOR, (String userId) -> { return subject.getMediatorRegistrationControlEntries(userId);});
+        getters.put(ControlEntryType.MASTER, (String userId) -> { return globalDomainAccessControllerSubject.getMasterRegistrationControlEntries(userId);});
+        getters.put(ControlEntryType.MEDIATOR, (String userId) -> { return globalDomainAccessControllerSubject.getMediatorRegistrationControlEntries(userId);});
         for (ControlEntryType type : new ControlEntryType[] { ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
             when(masterRegistrationControlEntryManagerMock.findByUserIdAndType(USER_ID,
                 type)).thenReturn(new MasterRegistrationControlEntry[0]);
@@ -389,137 +173,11 @@ public class GlobalDomainAccessControllerBeanTest {
     }
 
     @Test
-    public void testFindEditableMasterAndMediatorRegistrationControlEntryByUserId() {
-        Map<ControlEntryType, Function<String, MasterRegistrationControlEntry[]>> getters = new HashMap<>();
-        getters.put(ControlEntryType.MASTER, (String userId) -> { return subject.getEditableMasterRegistrationControlEntries(userId);});
-        getters.put(ControlEntryType.MEDIATOR, (String userId) -> { return subject.getEditableMediatorRegistrationControlEntries(userId);});
-        for (ControlEntryType type : new ControlEntryType[] { ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
-            when(masterRegistrationControlEntryManagerMock.findByUserIdAndThatAreEditable(USER_ID,
-                type)).thenReturn(new MasterRegistrationControlEntry[0]);
-            MasterRegistrationControlEntry[] result = getters.get(type).apply(USER_ID);
-            assertNotNull(result);
-            assertEquals(0, result.length);
-            verify(masterRegistrationControlEntryManagerMock).findByUserIdAndThatAreEditable(eq(USER_ID),
-                eq(type));
-        }
-    }
-
-    @Test
-    public void testCreateAndUpdateMasterAndMediatorRegistrationControlEntry() {
-        for (ChangeType changeType : new ChangeType[] { ChangeType.ADD, ChangeType.UPDATE}) {
-            Map<ControlEntryType, Function<MasterRegistrationControlEntry, Boolean>> subjectCalls = new HashMap<>();
-            subjectCalls.put(ControlEntryType.MASTER, (updatedEntry) -> {
-                return subject.updateMasterRegistrationControlEntry(updatedEntry);
-            });
-            subjectCalls.put(ControlEntryType.MEDIATOR, (updatedEntry) -> {
-                return subject.updateMediatorRegistrationControlEntry(updatedEntry);
-            });
-
-            Map<ControlEntryType, Consumer<MasterRegistrationControlEntry>> multicastVerifiers = new HashMap<>();
-            multicastVerifiers.put(ControlEntryType.MASTER, (mrce) -> {
-                verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMasterRegistrationControlEntryChanged(
-                    eq(changeType), eq(mrce), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME));
-            });
-            multicastVerifiers.put(ControlEntryType.MEDIATOR, (mrce) -> {
-                verify(
-                    globalDomainAccessControllerSubscriptionPublisherMock).fireMediatorRegistrationControlEntryChanged(
-                    eq(changeType), eq(mrce), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME));
-            });
-
-            for (ControlEntryType type : new ControlEntryType[]{ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
-                reset(masterRegistrationControlEntryManagerMock);
-                reset(globalDomainAccessControllerSubscriptionPublisherMock);
-                MasterRegistrationControlEntry mrce = new MasterRegistrationControlEntry(USER_ID, DOMAIN,
-                    INTERFACE_NAME,
-                    TrustLevel.LOW, new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], Permission.ASK,
-                    new Permission[0]);
-                when(masterRegistrationControlEntryManagerMock.createOrUpdate(mrce, type)).thenReturn(
-                    new CreateOrUpdateResult<MasterRegistrationControlEntry>(mrce, changeType));
-                assertTrue(subjectCalls.get(type).apply(mrce));
-                verify(masterRegistrationControlEntryManagerMock).createOrUpdate(mrce, type);
-                multicastVerifiers.get(type).accept(mrce);
-            }
-        }
-    }
-
-    @Test
-    public void testRemoveMasterAndMediatorRegistrationControlEntry() {
-        Map<ControlEntryType, Supplier<Boolean>> subjectCalls = new HashMap<>();
-        subjectCalls.put(ControlEntryType.MASTER, () -> { return subject.removeMasterRegistrationControlEntry(USER_ID, DOMAIN, INTERFACE_NAME);});
-        subjectCalls.put(ControlEntryType.MEDIATOR, () -> { return subject.removeMediatorRegistrationControlEntry(USER_ID, DOMAIN, INTERFACE_NAME);});
-
-        Map<ControlEntryType, Consumer<MasterRegistrationControlEntry>> multicastVerifiers = new HashMap<>();
-        multicastVerifiers.put(ControlEntryType.MASTER, (mrce) -> { verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMasterRegistrationControlEntryChanged(eq(ChangeType.REMOVE), eq(mrce), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME)); });
-        multicastVerifiers.put(ControlEntryType.MEDIATOR, (mrce) -> { verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMediatorRegistrationControlEntryChanged(eq(ChangeType.REMOVE), eq(mrce), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME)); });
-
-        for (ControlEntryType type : new ControlEntryType[] { ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
-            MasterRegistrationControlEntry mrce = new MasterRegistrationControlEntry(USER_ID, DOMAIN, INTERFACE_NAME, TrustLevel.LOW, new TrustLevel[0], TrustLevel.HIGH, new TrustLevel[0], Permission.ASK, new Permission[0]);
-            when(masterRegistrationControlEntryManagerMock.removeByUserIdDomainInterfaceNameAndType(USER_ID, DOMAIN, INTERFACE_NAME, type)).thenReturn(mrce);
-            assertTrue(subjectCalls.get(type).get());
-            verify(masterRegistrationControlEntryManagerMock).removeByUserIdDomainInterfaceNameAndType(eq(USER_ID), eq(DOMAIN), eq(INTERFACE_NAME), eq(type));
-            multicastVerifiers.get(type).accept(mrce);
-        }
-    }
-
-    @Test
     public void testFindOwnerRegistrationControlEntriesByUserId() {
         when(ownerRegistrationControlEntryManagerMock.findByUserId(USER_ID)).thenReturn(new OwnerRegistrationControlEntry[0]);
-        OwnerRegistrationControlEntry[] result = subject.getOwnerRegistrationControlEntries(USER_ID);
+        OwnerRegistrationControlEntry[] result = globalDomainAccessControllerSubject.getOwnerRegistrationControlEntries(USER_ID);
         assertNotNull(result);
         assertEquals(0, result.length);
         verify(ownerRegistrationControlEntryManagerMock).findByUserId(eq(USER_ID));
-    }
-
-    @Test
-    public void testFindEditableOwnerRegistrationControlEntriesByUserId() {
-        when(ownerRegistrationControlEntryManagerMock.findByUserIdAndThatIsEditable(USER_ID)).thenReturn(new OwnerRegistrationControlEntry[0]);
-        OwnerRegistrationControlEntry[] result = subject.getEditableOwnerRegistrationControlEntries(USER_ID);
-        assertNotNull(result);
-        assertEquals(0, result.length);
-        verify(ownerRegistrationControlEntryManagerMock).findByUserIdAndThatIsEditable(eq(USER_ID));
-    }
-
-    @Test
-    public void testCreateAndUpdateOwnerRegistrationControlEntry() {
-        for (ChangeType changeType : new ChangeType[]{ ChangeType.ADD, ChangeType.UPDATE }) {
-            reset(ownerRegistrationControlEntryManagerMock);
-            OwnerRegistrationControlEntry orce = new OwnerRegistrationControlEntry(USER_ID,
-                                                                                   DOMAIN,
-                                                                                   INTERFACE_NAME,
-                                                                                   TrustLevel.HIGH,
-                                                                                   TrustLevel.LOW,
-                                                                                   Permission.ASK);
-            when(ownerRegistrationControlEntryManagerMock.createOrUpdate(orce)).thenReturn(new CreateOrUpdateResult<OwnerRegistrationControlEntry>(orce,
-                                                                                                                                                   changeType));
-            assertTrue(subject.updateOwnerRegistrationControlEntry(orce));
-            verify(ownerRegistrationControlEntryManagerMock).createOrUpdate(eq(orce));
-            verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerRegistrationControlEntryChanged(eq(changeType),
-                                                                                                                   eq(orce),
-                                                                                                                   eq(USER_PARTITION),
-                                                                                                                   eq(DOMAIN),
-                                                                                                                   eq(INTERFACE_NAME));
-        }
-    }
-
-    @Test
-    public void testRemoveOwnerRegistrationControlEntry() {
-        OwnerRegistrationControlEntry orce = new OwnerRegistrationControlEntry(USER_ID,
-                                                                               DOMAIN,
-                                                                               INTERFACE_NAME,
-                                                                               TrustLevel.HIGH,
-                                                                               TrustLevel.LOW,
-                                                                               Permission.ASK);
-        when(ownerRegistrationControlEntryManagerMock.removeByUserIdDomainAndInterfaceName(USER_ID,
-                                                                                           DOMAIN,
-                                                                                           INTERFACE_NAME)).thenReturn(orce);
-        assertTrue(subject.removeOwnerRegistrationControlEntry(USER_ID, DOMAIN, INTERFACE_NAME));
-        verify(ownerRegistrationControlEntryManagerMock).removeByUserIdDomainAndInterfaceName(eq(USER_ID),
-                                                                                              eq(DOMAIN),
-                                                                                              eq(INTERFACE_NAME));
-        verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerRegistrationControlEntryChanged(eq(ChangeType.REMOVE),
-                                                                                                               eq(orce),
-                                                                                                               eq(USER_PARTITION),
-                                                                                                               eq(DOMAIN),
-                                                                                                               eq(INTERFACE_NAME));
     }
 }

@@ -6,7 +6,7 @@ package io.joynr.generator;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,7 +141,8 @@ public abstract class AbstractJoynrJavaGeneratorTest {
 
     private String readContent(File fromFile) {
         StringBuffer buffer = new StringBuffer();
-        try (FileInputStream fis = new FileInputStream(fromFile); InputStreamReader reader = new InputStreamReader(fis);
+        try (FileInputStream fis = new FileInputStream(fromFile);
+                InputStreamReader reader = new InputStreamReader(fis);
                 BufferedReader bufferedReader = new BufferedReader(reader)) {
             String line = null;
             while ((line = bufferedReader.readLine()) != null) {

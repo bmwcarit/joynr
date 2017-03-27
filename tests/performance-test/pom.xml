@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2016 BMW Car IT GmbH
+  Copyright (C) 2011 - 2017 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>tests</artifactId>
-		<version>0.23.2</version>
+		<version>0.24.0</version>
 	</parent>
 
 	<dependencies>
@@ -54,6 +54,13 @@
 			<artifactId>libjoynr</artifactId>
 			<version>${project.version}</version>
 			<classifier>tests</classifier>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 		<!-- Logging used in the performance Java code -->
 		<dependency>

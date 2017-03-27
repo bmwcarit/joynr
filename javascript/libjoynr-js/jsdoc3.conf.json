@@ -5,7 +5,7 @@
     "source": {
         "includePattern": ".+\\.js(doc)?$",
         "excludePattern": "(^|\\/|\\\\)_",
-        "excludePattern": "src/main/generated/joynr/types/DiscoveryQos.js"
+        "exclude": ["src/main/generated/joynr/types/DiscoveryQos.js"]
     },
     "opts": {
         "recurse": true,

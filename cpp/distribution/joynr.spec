@@ -2,7 +2,7 @@
 BuildRoot:      /data/build/joynr/package/RPM/joynr
 Summary:        joynr base package including executables, libraries and default settings
 Name:           joynr
-Version:        0.23.2
+Version:        0.24.0
 Release:        1
 License:        Apache License, Version 2.0
 Group:          unknown
@@ -90,6 +90,7 @@ mv /data/build/joynr/package/RPM/tmp $RPM_BUILD_ROOT
 /usr/bin/g_IntegrationTests
 /usr/bin/g_UnitTests
 /usr/bin/resources
+/usr/lib64/libTestGenerated.so
 %{?_with_performancetests:
 /usr/bin/performance-consumer-app
 /usr/bin/performance-provider-app

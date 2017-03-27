@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,12 +43,13 @@ void WebSocketMessagingStub::transmit(
     std::string serializedMessage = joynr::serializer::serializeToJson(message);
 
     if (!webSocket->isInitialized()) {
-        JOYNR_LOG_WARN(logger, "WebSocket not ready. Unable to send message {}", serializedMessage);
+        JOYNR_LOG_WARN(
+                logger, "WebSocket not ready. Unable to send message {}", message.toLogMessage());
         onFailure(exceptions::JoynrDelayMessageException(
                 "WebSocket not ready. Unable to send message"));
     }
 
-    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> transmit(serializedMessage={})", serializedMessage);
+    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> {}", message.toLogMessage());
     webSocket->send(serializedMessage, onFailure);
 }
 

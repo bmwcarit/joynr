@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,14 @@ class InterfaceProxyBaseHTemplate extends InterfaceTemplate {
 #include "joynr/ProxyBase.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName»Connector.h"
 
+namespace joynr
+{
+namespace types
+{
+	class DiscoveryEntryWithMetaInfo;
+} // namespace types
+} // namespace joynr
+
 «getNamespaceStarter(francaIntf)»
 /**
  * @brief Proxy base class for interface «interfaceName»
@@ -82,7 +90,7 @@ public:
 	 * @param connection The kind of connection
 	 */
 	void handleArbitrationFinished(
-			const std::string &participantId,
+			const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
 			bool useInProcessConnector
 	) override;
 

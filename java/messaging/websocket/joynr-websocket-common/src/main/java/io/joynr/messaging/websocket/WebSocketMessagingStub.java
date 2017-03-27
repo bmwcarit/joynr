@@ -3,7 +3,7 @@ package io.joynr.messaging.websocket;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class WebSocketMessagingStub implements IMessaging {
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
-        logger.debug("WebSocketMessagingStub.transmit with message " + message);
+        logger.debug(">>> OUTGOING >>> {}", message.toLogMessage());
         long timeout = message.getExpiryDate() - System.currentTimeMillis();
         String serializedMessage;
         try {
@@ -61,6 +61,7 @@ public class WebSocketMessagingStub implements IMessaging {
 
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
+        logger.debug(">>> OUTGOING >>> {}", serializedMessage);
         webSocketEndpoint.writeText(toAddress, serializedMessage, 30, TimeUnit.SECONDS, failureAction);
     }
 }

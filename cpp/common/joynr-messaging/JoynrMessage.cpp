@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <utility>
 #include <memory>
 #include <chrono>
@@ -79,6 +80,7 @@ const std::string& JoynrMessage::CUSTOM_HEADER_PREFIX()
     return customHeaderPrefix;
 }
 
+const std::string JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID = "z4";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY = "oneWay";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_REPLY = "reply";
 const std::string JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST = "request";
@@ -104,7 +106,8 @@ JoynrMessage::JoynrMessage(const JoynrMessage& message)
         : type(message.type),
           header(message.header),
           payload(message.payload),
-          receivedFromGlobal(false)
+          receivedFromGlobal(false),
+          localMessage(false)
 {
     generateAndSetMsgIdHeaderIfAbsent();
 }
@@ -280,7 +283,7 @@ std::string JoynrMessage::getHeaderCreatorUserId() const
 
 void JoynrMessage::setHeaderCreatorUserId(const std::string& creatorUserId)
 {
-    JOYNR_LOG_TRACE(logger, "########## header creater user id: {}", HEADER_CREATOR_USER_ID());
+    JOYNR_LOG_TRACE(logger, "########## header creator user id: {}", HEADER_CREATOR_USER_ID());
     setHeaderForKey(HEADER_CREATOR_USER_ID(), creatorUserId);
 }
 
@@ -369,6 +372,31 @@ bool JoynrMessage::isReceivedFromGlobal() const
 void JoynrMessage::setReceivedFromGlobal(bool receivedFromGlobal)
 {
     this->receivedFromGlobal = receivedFromGlobal;
+}
+
+bool JoynrMessage::isLocalMessage() const
+{
+    return localMessage;
+}
+
+void JoynrMessage::setLocalMessage(bool localMessage)
+{
+    this->localMessage = localMessage;
+}
+
+std::string JoynrMessage::toLogMessage() const
+{
+    std::stringstream ss;
+    ss << "type=" << type;
+    ss << ", header={";
+    for (auto it = header.cbegin(); it != header.cend(); ++it) {
+        if (it != header.cbegin()) {
+            ss << ", ";
+        }
+        ss << it->first << "=" << it->second;
+    }
+    ss << "}";
+    return ss.str();
 }
 
 } // namespace joynr

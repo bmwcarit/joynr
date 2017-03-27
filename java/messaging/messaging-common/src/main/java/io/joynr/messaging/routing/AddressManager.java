@@ -3,7 +3,7 @@ package io.joynr.messaging.routing;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,9 +109,10 @@ public class AddressManager {
         if (result.size() == 0) {
             if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                 throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
-                    + message);
+                        + message);
             } else {
-                throw new JoynrIllegalStateException("Unable to find address for participant with ID " + toParticipantId);
+                throw new JoynrIllegalStateException("Unable to find address for participant with ID "
+                        + toParticipantId);
             }
         }
         return result;

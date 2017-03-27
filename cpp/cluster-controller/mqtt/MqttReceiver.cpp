@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,39 +16,37 @@
  * limitations under the License.
  * #L%
  */
-#include "MqttReceiver.h"
+#include "cluster-controller/mqtt/MqttReceiver.h"
 
 #include <chrono>
 
+#include "joynr/MessagingSettings.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/serializer/Serializer.h"
+
+#include "cluster-controller/mqtt/MosquittoConnection.h"
 
 namespace joynr
 {
 
 INIT_LOGGER(MqttReceiver);
 
-MqttReceiver::MqttReceiver(const MessagingSettings& settings,
+MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnection,
+                           const MessagingSettings& settings,
                            const std::string& channelIdForMqttTopic,
-                           const std::string& receiverId)
+                           const std::string& unicastTopicPrefix)
         : channelIdForMqttTopic(channelIdForMqttTopic),
           globalClusterControllerAddress(),
-          receiverId(receiverId),
-          channelCreated(false),
-          mosquittoSubscriber(settings, globalClusterControllerAddress)
+          mosquittoConnection(mosquittoConnection)
 {
     std::string brokerUri =
             "tcp://" + settings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost() + ":" +
             std::to_string(settings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
-    system::RoutingTypes::MqttAddress receiveMqttAddress(brokerUri, channelIdForMqttTopic);
+
+    std::string unicastChannelIdForMqttTopic = unicastTopicPrefix + channelIdForMqttTopic;
+    system::RoutingTypes::MqttAddress receiveMqttAddress(brokerUri, unicastChannelIdForMqttTopic);
     globalClusterControllerAddress = joynr::serializer::serializeToJson(receiveMqttAddress);
-
-    mosquittoSubscriber.registerChannelId(channelIdForMqttTopic);
-}
-
-MqttReceiver::~MqttReceiver()
-{
-    mosquittoSubscriber.stop();
+    mosquittoConnection->registerChannelId(unicastChannelIdForMqttTopic);
 }
 
 void MqttReceiver::updateSettings()
@@ -58,15 +56,11 @@ void MqttReceiver::updateSettings()
 void MqttReceiver::startReceiveQueue()
 {
     JOYNR_LOG_DEBUG(logger, "startReceiveQueue");
-
-    mosquittoSubscriber.start();
 }
 
 void MqttReceiver::stopReceiveQueue()
 {
     JOYNR_LOG_DEBUG(logger, "stopReceiveQueue");
-
-    mosquittoSubscriber.stop();
 }
 
 const std::string& MqttReceiver::getGlobalClusterControllerAddress() const
@@ -81,23 +75,23 @@ bool MqttReceiver::tryToDeleteChannel()
 
 bool MqttReceiver::isConnected()
 {
-    return mosquittoSubscriber.isSubscribedToChannelTopic();
+    return mosquittoConnection->isSubscribedToChannelTopic();
 }
 
 void MqttReceiver::registerReceiveCallback(
         std::function<void(const std::string&)> onTextMessageReceived)
 {
-    mosquittoSubscriber.registerReceiveCallback(onTextMessageReceived);
+    mosquittoConnection->registerReceiveCallback(onTextMessageReceived);
 }
 
 void MqttReceiver::subscribeToTopic(const std::string& topic)
 {
-    mosquittoSubscriber.subscribeToTopic(topic);
+    mosquittoConnection->subscribeToTopic(topic);
 }
 
 void MqttReceiver::unsubscribeFromTopic(const std::string& topic)
 {
-    mosquittoSubscriber.unsubscribeFromTopic(topic);
+    mosquittoConnection->unsubscribeFromTopic(topic);
 }
 
 } // namespace joynr

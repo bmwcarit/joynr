@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,6 +109,21 @@ typeCollection RoutingTypes {
 interface Routing {
 
 	version {major 0 minor 1}
+
+	<**
+		@description: global address of cluster-controller
+			used for provider registration. Messages from global
+			to these providers have to be sent to this address.
+	**>
+	attribute String globalAddress readonly // NOTIFYREADONLY
+
+	<**
+		@description: global address of cluster-controller
+			used as replyTo address for outgoing requests.
+			Replies from other cluster controllers have to be sent
+			to this address.
+	**>
+	attribute String replyToAddress readonly // NOTIFYREADONLY
 
 	<**
 		@description: Adds a hop to the parent routing table.

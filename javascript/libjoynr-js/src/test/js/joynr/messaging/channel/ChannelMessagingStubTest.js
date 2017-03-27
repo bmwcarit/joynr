@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,12 @@
 define([
     "global/Promise",
     "joynr/system/RoutingTypes/ChannelAddress",
-    "joynr/messaging/channel/ChannelMessagingStub",
-    "joynr/messaging/MessageReplyToAddressCalculator"
-], function(Promise, ChannelAddress, ChannelMessagingStub, MessageReplyToAddressCalculator) {
+    "joynr/messaging/channel/ChannelMessagingStub"
+], function(Promise, ChannelAddress, ChannelMessagingStub) {
 
     describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() {
         var channelMessagingSender, destinationChannelAddress, myChannelAddress;
         var channelMessagingStub1, channelMessagingStub2, joynrMessage;
-        var messageReplyToAddressCalculator;
         var url = "http://testurl";
 
         beforeEach(function(done) {
@@ -45,21 +43,15 @@ define([
                 messagingEndpointUrl : url
             });
 
-            messageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
-                replyToAddress : myChannelAddress
-            });
-
             channelMessagingStub1 = new ChannelMessagingStub({
                 destinationChannelAddress : destinationChannelAddress,
                 myChannelAddress : myChannelAddress,
-                channelMessagingSender : channelMessagingSender,
-                messageReplyToAddressCalculator : messageReplyToAddressCalculator
+                channelMessagingSender : channelMessagingSender
             });
             channelMessagingStub2 = new ChannelMessagingStub({
                 destinationChannelAddress : destinationChannelAddress,
                 myChannelAddress : destinationChannelAddress,
-                channelMessagingSender : channelMessagingSender,
-                messageReplyToAddressCalculator : messageReplyToAddressCalculator
+                channelMessagingSender : channelMessagingSender
             });
             joynrMessage = {
                 key : "joynrMessage",
@@ -70,11 +62,11 @@ define([
 
         it("is instantiable and of correct type", function(done) {
             expect(ChannelMessagingStub).toBeDefined();
-            expect(typeof ChannelMessagingStub === "function").toBeTruthy();
+            expect(typeof ChannelMessagingStub).toEqual("function");
             expect(channelMessagingStub1).toBeDefined();
-            expect(channelMessagingStub1 instanceof ChannelMessagingStub).toBeTruthy();
+            expect(channelMessagingStub1 instanceof ChannelMessagingStub).toEqual(true);
             expect(channelMessagingStub1.transmit).toBeDefined();
-            expect(typeof channelMessagingStub1.transmit === "function").toBeTruthy();
+            expect(typeof channelMessagingStub1.transmit).toEqual("function");
             done();
         });
 
@@ -85,13 +77,11 @@ define([
             done();
         });
 
-        it("transmits a message and set replyChannelId", function(done) {
-            expect(joynrMessage.replyChannelId).toBeUndefined();
+        it("transmits a message", function(done) {
             channelMessagingStub1.transmit(joynrMessage);
             expect(channelMessagingSender.send).toHaveBeenCalledWith(
                     joynrMessage,
                     destinationChannelAddress);
-            expect(joynrMessage.replyChannelId).toBe(JSON.stringify(myChannelAddress));
             done();
         });
 

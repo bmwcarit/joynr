@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,7 +154,7 @@ protected:
                 = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeoutMs(1000);
+        discoveryQos.setDiscoveryTimeoutMs(3000);
         discoveryQos.setRetryIntervalMs(250);
 
         std::int64_t qosRoundTripTTL = 500;
@@ -316,7 +316,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute) {
 
 }
 
-INSTANTIATE_TEST_CASE_P(Http,
+INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         End2EndSubscriptionTest,
         testing::Values(
             std::make_tuple(
@@ -326,12 +326,12 @@ INSTANTIATE_TEST_CASE_P(Http,
         )
 );
 
-INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+INSTANTIATE_TEST_CASE_P(Mqtt,
         End2EndSubscriptionTest,
         testing::Values(
             std::make_tuple(
-                "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings",
-                "test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+                "test-resources/MqttSystemIntegrationTest1.settings",
+                "test-resources/MqttSystemIntegrationTest2.settings"
             )
         )
 );

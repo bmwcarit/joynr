@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -165,7 +165,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
             @Override
             public void onProxyCreationFinished(T result) {
-                logger.debug("proxy created: interface: {} domains: {}", interfaceName, domains);
+                logger.trace("proxy created: interface: {} domains: {}", interfaceName, domains);
             }
 
             @Override
@@ -209,6 +209,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         arbitrator.setArbitrationListener(new ArbitrationCallback() {
             @Override
             public void onSuccess(ArbitrationResult arbitrationResult) {
+                logger.debug("DISCOVERY proxy created for:{}", arbitrationResult.getDiscoveryEntries());
                 proxyInvocationHandler.createConnector(arbitrationResult);
                 messageRouter.addNextHop(getParticipantId(), libjoynrMessagingAddress);
                 callback.onProxyCreationFinished(proxy);

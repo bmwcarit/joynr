@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,11 @@
  * #L%
  */
 
-define("joynr/util/CapabilitiesUtil", [ "joynr/types/DiscoveryEntry"
-], function(DiscoveryEntry) {
+define("joynr/util/CapabilitiesUtil", [
+    "joynr/types/DiscoveryEntry",
+    "joynr/types/GlobalDiscoveryEntry",
+    "joynr/types/DiscoveryEntryWithMetaInfo"
+], function(DiscoveryEntry, GlobalDiscoveryEntry, DiscoveryEntryWithMetaInfo) {
 
     /**
      * @name CapabilitiesUtil
@@ -75,6 +78,82 @@ define("joynr/util/CapabilitiesUtil", [ "joynr/types/DiscoveryEntry"
                     }
                 }
                 return discoveryEntries;
+            };
+
+    /**
+     * This method transforms a DiscoveryEntry into a GlobalDiscoveryEntry
+     * with the given address.
+     *
+     * @function
+     * @name CapabilitiesUtil#discoveryEntry2GlobalDiscoveryEntry
+     *
+     * @param {DiscoveryEntry}
+     *            discoveryEntry the DiscoveryEntry to be transformed
+     * @param {Address}
+     *            address the address to be used for the GlobalDiscoveryEntry
+     *
+     * @returns {GlobalDiscoveryEntry} global DiscoveryEntry with provided address
+     */
+    CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry =
+            function discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, address) {
+                return new GlobalDiscoveryEntry({
+                    providerVersion : discoveryEntry.providerVersion,
+                    domain : discoveryEntry.domain,
+                    interfaceName : discoveryEntry.interfaceName,
+                    participantId : discoveryEntry.participantId,
+                    qos : discoveryEntry.qos,
+                    lastSeenDateMs : discoveryEntry.lastSeenDateMs,
+                    expiryDateMs : discoveryEntry.expiryDateMs,
+                    publicKeyId : discoveryEntry.publicKeyId,
+                    address : JSON.stringify(address)
+                });
+            };
+
+    /**
+     * This method transforms a DiscoveryEntry into a DiscoveryEntryWithMetaInfo
+     * with the given isLocal value.
+     *
+     * @function
+     * @name CapabilitiesUtil#convertToDiscoveryEntryWithMetaInfo
+     *
+     * @param {boolean}
+     *            isLocal true, if it is a local DiscoveryEntry, false otherwise
+     * @param {DiscoveryEntry}
+     *            discoveryEntry the DiscoveryEntry to be transformed
+     *
+     * @returns {DiscoveryEntryWithMetaInfo} DiscoveryEntryWithMetaInfo with the given isLocal value
+     */
+    CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo =
+            function convertToDiscoveryEntryWithMetaInfo(isLocal, discoveryEntry) {
+                discoveryEntry.isLocal = isLocal;
+                return new DiscoveryEntryWithMetaInfo(discoveryEntry);
+            };
+
+    /**
+     * This method transforms an array of DiscoveryEntries into an array of objects
+     * of type DiscoveryEntryWithMetaInfo
+     *
+     * @function
+     * @name CapabilitiesUtil#convertToDiscoveryEntryWithMetaInfoArray
+     *
+     * @param {boolean}
+     *            isLocal true, if the DiscoveryEntries are local DiscoveryEntry, false otherwise
+     * @param {Array}
+     *            discoveryEntries array of DiscoveryEntries
+     *
+     * @returns {Array} array of transformed objects of type DiscoveryEntryWithMetaInfo with the given isLocal value
+     */
+    CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray =
+            function convertToDiscoveryEntryWithMetaInfoArray(isLocal, discoveryEntries) {
+                var result = [], i;
+                if (discoveryEntries) {
+                    for (i = 0; i < discoveryEntries.length; i++) {
+                        result.push(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(
+                                isLocal,
+                                discoveryEntries[i]));
+                    }
+                }
+                return result;
             };
 
     return CapabilitiesUtil;

@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,23 +31,24 @@ import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.SubscriptionReply;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 public interface SubscriptionManager {
 
     void registerAttributeSubscription(String fromParticipantId,
-                                       Set<String> toParticipantIds,
+                                       Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                        AttributeSubscribeInvocation subscriptionRequest);
 
     void registerBroadcastSubscription(String fromParticipantId,
-                                       Set<String> toParticipantIds,
+                                       Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                        BroadcastSubscribeInvocation subscriptionRequest);
 
     void registerMulticastSubscription(String fromParticipantId,
-                                       Set<String> toParticipantIds,
+                                       Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                        MulticastSubscribeInvocation multicastSubscribeInvocation);
 
     void unregisterSubscription(String fromParticipantId,
-                                Set<String> toParticipantIds,
+                                Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                 String subscriptionId,
                                 MessagingQos qosSettings);
 

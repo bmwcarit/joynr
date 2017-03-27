@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,8 @@
 namespace joynr
 {
 
-HttpMessagingStubFactory::HttpMessagingStubFactory(
-        std::shared_ptr<IMessageSender> messageSender,
-        const std::string& globalClusterControllerAddress)
-        : messageSender(messageSender),
-          globalClusterControllerAddress(globalClusterControllerAddress)
+HttpMessagingStubFactory::HttpMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender)
+        : messageSender(messageSender)
 {
 }
 
@@ -43,8 +40,7 @@ std::shared_ptr<IMessaging> HttpMessagingStubFactory::create(
 {
     const system::RoutingTypes::ChannelAddress* channelAddress =
             dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destAddress);
-    return std::make_shared<HttpMessagingStub>(
-            messageSender, *channelAddress, globalClusterControllerAddress);
+    return std::make_shared<HttpMessagingStub>(messageSender, *channelAddress);
 }
 
 void HttpMessagingStubFactory::registerOnMessagingStubClosedCallback(

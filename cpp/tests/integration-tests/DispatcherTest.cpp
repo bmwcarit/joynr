@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
-#include "joynr/MessageRouter.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionCallback.h"
@@ -76,7 +75,8 @@ public:
         messageSender(std::make_shared<JoynrMessageSender>(mockMessageRouter)),
         dispatcher(messageSender, singleThreadIOService.getIOService()),
         callContext(),
-        getLocationCalledSemaphore(0)
+        getLocationCalledSemaphore(0),
+        isLocalMessage(true)
     {
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
         singleThreadIOService.start();
@@ -121,6 +121,7 @@ protected:
     Dispatcher dispatcher;
     joynr::CallContext callContext;
     joynr::Semaphore getLocationCalledSemaphore;
+    const bool isLocalMessage;
 };
 
 INIT_LOGGER(DispatcherTest);
@@ -152,7 +153,8 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
-                request
+                request,
+                isLocalMessage
     );
 
     // construct the result we expect in messaging.transmit. The JoynrMessage
@@ -295,7 +297,8 @@ TEST_F(DispatcherTest, receive_setCallContext) {
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
-                request
+                request,
+                isLocalMessage
     );
     msg.setHeaderCreatorUserId(expectedPrincipal);
 

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 
 #include "joynr/IMessaging.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr
@@ -37,8 +38,7 @@ class MqttMessagingStub : public IMessaging
 {
 public:
     explicit MqttMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                               const system::RoutingTypes::MqttAddress& destinationAddress,
-                               const std::string& globalClusterControllerAddress);
+                               const system::RoutingTypes::MqttAddress& destinationAddress);
     ~MqttMessagingStub() override = default;
     void transmit(JoynrMessage& message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
@@ -48,7 +48,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingStub);
     std::shared_ptr<IMessageSender> messageSender;
     const system::RoutingTypes::MqttAddress destinationAddress;
-    const std::string globalClusterControllerAddress;
+    ADD_LOGGER(MqttMessagingStub);
 };
 
 } // namespace joynr

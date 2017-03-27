@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,9 +95,7 @@ class AccessControllerTest : public ::testing::Test {
 public:
     AccessControllerTest() :
         singleThreadedIOService(),
-        localDomainAccessControllerMock(std::make_unique<LocalDomainAccessStore>(
-                        true // start with clean database
-        )),
+        localDomainAccessControllerMock(std::make_unique<LocalDomainAccessStore>()),
         accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
         settings(),
         messagingSettingsMock(settings),
@@ -113,7 +111,7 @@ public:
     ~AccessControllerTest() = default;
 
     void invokeOnSuccessCallbackFct (std::string participantId,
-                            std::function<void(const joynr::types::DiscoveryEntry&)> onSuccess,
+                            std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)> onSuccess,
                             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         std::ignore = participantId;
         onSuccess(discoveryEntry);
@@ -121,10 +119,12 @@ public:
 
     void SetUp(){
         messagingQos = MessagingQos(5000);
+        const bool isLocalMessage = true;
         message = messageFactory.createRequest(fromParticipantId,
                                      toParticipantId,
                                      messagingQos,
-                                     initOutgoingRequest(TEST_OPERATION, {}));
+                                     initOutgoingRequest(TEST_OPERATION, {}),
+                                     isLocalMessage);
         message.setHeaderCreatorUserId(DUMMY_USERID);
 
         ON_CALL(
@@ -141,7 +141,7 @@ public:
         std::int64_t lastSeenDateMs = 0;
         std::int64_t expiryDateMs = 0;
         joynr::types::Version providerVersion(47, 11);
-        discoveryEntry = DiscoveryEntry(
+        discoveryEntry = DiscoveryEntryWithMetaInfo(
                 providerVersion,
                 TEST_DOMAIN,
                 TEST_INTERFACE,
@@ -149,12 +149,13 @@ public:
                 types::ProviderQos(),
                 lastSeenDateMs,
                 expiryDateMs,
-                TEST_PUBLICKEYID
+                TEST_PUBLICKEYID,
+                false
         );
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,
                 lookup(toParticipantId,
-                       A<std::function<void(const joynr::types::DiscoveryEntry&)>>(),
+                       A<std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)>>(),
                        A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
         )
                 .Times(1)
@@ -172,7 +173,7 @@ protected:
     JoynrMessageFactory messageFactory;
     JoynrMessage message;
     MessagingQos messagingQos;
-    DiscoveryEntry discoveryEntry;
+    DiscoveryEntryWithMetaInfo discoveryEntry;
     static const std::string fromParticipantId;
     static const std::string toParticipantId;
     static const std::string replyToChannelId;

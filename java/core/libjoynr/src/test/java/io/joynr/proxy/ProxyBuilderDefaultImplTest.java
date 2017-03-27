@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,7 +176,10 @@ public class ProxyBuilderDefaultImplTest {
                         Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = Maps.newHashMap();
                         for (String domain : domains) {
                             versionsByDomain.put(domain, discoveredVersions);
-                            exceptionsByDomain.put(domain, new NoCompatibleProviderFoundException("interfaceName", new Version(1,1), domain, discoveredVersions));
+                            exceptionsByDomain.put(domain, new NoCompatibleProviderFoundException("interfaceName",
+                                                                                                  new Version(1, 1),
+                                                                                                  domain,
+                                                                                                  discoveredVersions));
                         }
                         callback.onError(new MultiDomainNoCompatibleProviderFoundException(exceptionsByDomain));
                         return null;

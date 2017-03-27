@@ -3,7 +3,7 @@ package io.joynr.messaging.http.operation;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -239,11 +239,11 @@ public class LongPollChannel {
 
                         @Override
                         public void run() {
-                            logger.info("ARRIVED {} messageId: {} type: {} from: {} to: {} header: {}", new String[]{
-                                    httpget.getURI().toString(), message.getId(), message.getType(),
-                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                                    message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                                    message.getHeader().toString() });
+                            logger.info("ARRIVED {} messageId: {} type: {} from: {} to: {} header: {}",
+                                        new String[]{ httpget.getURI().toString(), message.getId(), message.getType(),
+                                                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
+                                                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
+                                                message.getHeader().toString() });
                             logger.debug("\r\n<<<<<<<<<<<<<<<<<\r\n:{}", message.toLogMessage());
                             messageArrivedListener.messageArrived(message);
                         }
@@ -255,7 +255,7 @@ public class LongPollChannel {
                                                  new JoynrCommunicationException("LongPollingChannel CHANNEL: {} message was null"));
                 }
                 continue;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logger.error("error parsing JSON", e);
             }
 

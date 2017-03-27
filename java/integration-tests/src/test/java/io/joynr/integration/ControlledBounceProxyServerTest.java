@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,10 +152,8 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
                                               .post("message" + SESSIONID_APPENDIX + sessionId);
         /* @formatter:on */
         assertEquals(201 /* Created */, responsePostMessage.getStatusCode());
-        assertThat(responsePostMessage.getHeader(HEADER_LOCATION), isMessageUrlwithJsessionId(bpUrl,
-                                                                                              "message-123",
-                                                                                              sessionId,
-                                                                                              SESSIONID_NAME));
+        assertThat(responsePostMessage.getHeader(HEADER_LOCATION),
+                   isMessageUrlwithJsessionId(bpUrl, "message-123", sessionId, SESSIONID_NAME));
         assertEquals("message-123", responsePostMessage.getHeader(HEADER_MSG_ID));
 
         // open long polling channel
@@ -215,10 +213,8 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
                                                   .post("message/" + SESSIONID_APPENDIX + sessionId);
             /* @formatter:on */
             assertEquals(201 /* Created */, responsePostMessage.getStatusCode());
-            assertThat(responsePostMessage.getHeader(HEADER_LOCATION), isMessageUrlwithJsessionId(bpUrl,
-                                                                                                  msgId,
-                                                                                                  sessionId,
-                                                                                                  SESSIONID_NAME));
+            assertThat(responsePostMessage.getHeader(HEADER_LOCATION),
+                       isMessageUrlwithJsessionId(bpUrl, msgId, sessionId, SESSIONID_NAME));
             assertEquals(msgId, responsePostMessage.getHeader(HEADER_MSG_ID));
         }
 

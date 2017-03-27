@@ -3,7 +3,7 @@ package joynr;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -228,14 +228,14 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
     }
 
     /**
-     * Calculate code for hashing based on member contents
+     * Calculate code for hashing based on member contents and superclass
      *
      * @return The calculated hash code
      */
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
+        int result = super.hashCode();
         result = prime * result + (int) (alertAfterIntervalMs ^ (alertAfterIntervalMs >>> 32));
         result = prime * result + (int) (maxIntervalMs ^ (maxIntervalMs >>> 32));
         return result;
@@ -255,6 +255,9 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
         if (obj == null) {
             return false;
         }
+        if (!super.equals(obj)) {
+            return false;
+        }
         if (getClass() != obj.getClass()) {
             return false;
         }
@@ -267,5 +270,4 @@ public class OnChangeWithKeepAliveSubscriptionQos extends OnChangeSubscriptionQo
         }
         return true;
     }
-
 }

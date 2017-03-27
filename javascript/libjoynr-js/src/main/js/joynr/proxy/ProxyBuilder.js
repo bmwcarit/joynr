@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,8 +201,8 @@ define("joynr/proxy/ProxyBuilder", [
                                                         settings.loggingContext);
                                             }
                                             if (arbitratedCaps && arbitratedCaps.length > 0) {
-                                                proxy.providerParticipantId =
-                                                        arbitratedCaps[0].participantId;
+                                                proxy.providerDiscoveryEntry =
+                                                        arbitratedCaps[0];
                                             }
                                             dependencies.messageRouter.addNextHop(
                                                     proxy.proxyParticipantId,
@@ -213,7 +213,7 @@ define("joynr/proxy/ProxyBuilder", [
                                                                 + " to message router");
                                                     });
                                             dependencies.messageRouter
-                                                    .setToKnown(proxy.providerParticipantId);
+                                                    .setToKnown(proxy.providerDiscoveryEntry.participantId);
 
                                             var freeze =
                                                     settings.freeze === undefined

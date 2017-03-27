@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 #include "joynr/KeywordArbitrationStrategyFunction.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/CustomParameter.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -31,11 +31,10 @@ namespace joynr
 
 INIT_LOGGER(KeywordArbitrationStrategyFunction);
 
-std::string KeywordArbitrationStrategyFunction::select(
+types::DiscoveryEntryWithMetaInfo KeywordArbitrationStrategyFunction::select(
         const std::map<std::string, types::CustomParameter> customParameters,
-        const std::vector<types::DiscoveryEntry>& discoveryEntries) const
+        const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const
 {
-    std::string selectedParticipantId;
     std::string keyword;
     try {
         keyword = customParameters.at(DiscoveryQos::KEYWORD_PARAMETER()).getValue();
@@ -57,22 +56,19 @@ std::string KeywordArbitrationStrategyFunction::select(
         for (types::CustomParameter& parameter : qosParameters) {
             if (parameter.getName() == DiscoveryQos::KEYWORD_PARAMETER() &&
                 keyword == parameter.getValue()) {
-                selectedParticipantId = discoveryEntry.getParticipantId();
-                JOYNR_LOG_TRACE(
-                        logger, "setting selectedParticipantId to {}", selectedParticipantId);
-                return selectedParticipantId;
+                JOYNR_LOG_TRACE(logger,
+                                "setting selectedParticipantId to {}",
+                                discoveryEntry.getParticipantId());
+                return discoveryEntry;
             }
         }
     }
 
-    if (selectedParticipantId.empty()) {
-        std::string errorMsg;
-        errorMsg = "There was more than one entries in capabilitiesEntries, but none of the "
-                   "compatible entries had the correct keyword.";
-        JOYNR_LOG_WARN(logger, errorMsg);
-        throw exceptions::DiscoveryException(errorMsg);
-    }
-    return selectedParticipantId;
+    std::string errorMsg;
+    errorMsg = "There was more than one entries in capabilitiesEntries, but none of the "
+               "compatible entries had the correct keyword.";
+    JOYNR_LOG_WARN(logger, errorMsg);
+    throw exceptions::DiscoveryException(errorMsg);
 }
 
 } // namespace joynr

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,19 +25,20 @@
 #include <string>
 #include <functional>
 
+#include "joynr/IMessageRouter.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/ProxyFactory.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/Arbitrator.h"
 #include "joynr/ArbitratorFactory.h"
-#include "joynr/MessageRouter.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/Future.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/IProxyBuilder.h"
 #include "joynr/Logger.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
@@ -67,14 +68,14 @@ public:
      */
     ProxyBuilder(ProxyFactory& proxyFactory,
                  IRequestCallerDirectory* requestCallerDirectory,
-                 joynr::system::IDiscoverySync& discoveryProxy,
+                 joynr::system::IDiscoveryAsync& discoveryProxy,
                  const std::string& domain,
                  std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
-                 std::shared_ptr<MessageRouter> messageRouter,
+                 std::shared_ptr<IMessageRouter> messageRouter,
                  std::uint64_t messagingMaximumTtlMs);
 
     /** Destructor */
-    ~ProxyBuilder() override;
+    ~ProxyBuilder() override = default;
 
     /**
      * @brief Build the proxy object
@@ -117,11 +118,11 @@ private:
     MessagingQos messagingQos;
     ProxyFactory& proxyFactory;
     IRequestCallerDirectory* requestCallerDirectory;
-    joynr::system::IDiscoverySync& discoveryProxy;
-    Arbitrator* arbitrator;
+    joynr::system::IDiscoveryAsync& discoveryProxy;
+    std::unique_ptr<Arbitrator> arbitrator;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
-    std::shared_ptr<MessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> messageRouter;
     std::uint64_t messagingMaximumTtlMs;
     DiscoveryQos discoveryQos;
 
@@ -132,37 +133,22 @@ template <class T>
 ProxyBuilder<T>::ProxyBuilder(
         ProxyFactory& proxyFactory,
         IRequestCallerDirectory* requestCallerDirectory,
-        joynr::system::IDiscoverySync& discoveryProxy,
+        system::IDiscoveryAsync& discoveryProxy,
         const std::string& domain,
         std::shared_ptr<const system::RoutingTypes::Address> dispatcherAddress,
-        std::shared_ptr<MessageRouter> messageRouter,
+        std::shared_ptr<IMessageRouter> messageRouter,
         std::uint64_t messagingMaximumTtlMs)
         : domain(domain),
           messagingQos(),
           proxyFactory(proxyFactory),
           requestCallerDirectory(requestCallerDirectory),
           discoveryProxy(discoveryProxy),
-          arbitrator(nullptr),
+          arbitrator(),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
           messagingMaximumTtlMs(messagingMaximumTtlMs),
           discoveryQos()
 {
-}
-
-template <class T>
-ProxyBuilder<T>::~ProxyBuilder()
-{
-    if (arbitrator != nullptr) {
-        // question: it is only safe to delete the arbitrator here, if the proxybuilder will not be
-        // deleted
-        // before all arbitrations are finished.
-        delete arbitrator;
-        arbitrator = nullptr;
-        // TODO delete arbitrator
-        // 1. delete arbitrator or
-        // 2. (if std::shared_ptr) delete arbitrator
-    }
 }
 
 template <class T>
@@ -194,24 +180,25 @@ void ProxyBuilder<T>::buildAsync(
     arbitrator = ArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
 
-    auto arbitrationSucceeds = [this, onSuccess, onError](const std::string& participantId) {
-        if (participantId.empty()) {
+    auto arbitrationSucceeds =
+            [this, onSuccess, onError](const types::DiscoveryEntryWithMetaInfo& discoverEntry) {
+        if (discoverEntry.getParticipantId().empty()) {
             onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
                                                    "arbitrator but ParticipantId is empty"));
             return;
         }
 
         JOYNR_LOG_DEBUG(logger,
-                        "DISCOVERY proxy created for provider participantId: {}, for domain: [{}], "
+                        "DISCOVERY proxy created for provider participantId: {}, domain: [{}], "
                         "interface: {}",
-                        participantId,
+                        discoverEntry.getParticipantId(),
                         domain,
                         T::INTERFACE_NAME());
 
-        bool useInProcessConnector = requestCallerDirectory->containsRequestCaller(participantId);
-
+        bool useInProcessConnector =
+                requestCallerDirectory->containsRequestCaller(discoverEntry.getParticipantId());
         std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos));
-        proxy->handleArbitrationFinished(participantId, useInProcessConnector);
+        proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
 
         messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);
 

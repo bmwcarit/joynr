@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,11 @@ class IJoynrMessageSender;
 class ISubscriptionManager;
 class MessagingQos;
 
+namespace types
+{
+class DiscoveryEntryWithMetaInfo;
+} // namespace types
+
 // traits class which is specialized for every Interface
 // this links Interface with the respective Connector
 template <typename Interface>
@@ -47,16 +52,16 @@ public:
     template <class T>
     std::unique_ptr<T> create(const std::string& domain,
                               const std::string proxyParticipantId,
-                              const std::string& providerParticipantId,
-                              const MessagingQos& qosSettings)
+                              const MessagingQos& qosSettings,
+                              const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
     {
         using Connector = typename JoynrMessagingTraits<T>::Connector;
         return std::make_unique<Connector>(messageSender,
                                            subscriptionManager,
                                            domain,
                                            proxyParticipantId,
-                                           providerParticipantId,
-                                           qosSettings);
+                                           qosSettings,
+                                           providerDiscoveryEntry);
     }
 
 private:

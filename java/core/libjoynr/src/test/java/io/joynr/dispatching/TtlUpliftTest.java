@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,10 @@ import com.google.inject.util.Modules;
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.subscription.AttributePollInterpreter;
+import io.joynr.dispatching.subscription.FileSubscriptionRequestStorage;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.PublicationManagerImpl;
+import io.joynr.dispatching.subscription.SubscriptionRequestStorage;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
@@ -160,6 +162,7 @@ public class TtlUpliftTest {
                                                                                   }
                                                                               });
                                               bind(PublicationManager.class).to(PublicationManagerImpl.class);
+                                              bind(SubscriptionRequestStorage.class).toInstance(Mockito.mock(FileSubscriptionRequestStorage.class));
                                               bind(AttributePollInterpreter.class).toInstance(attributePollInterpreter);
                                               bind(Dispatcher.class).toInstance(dispatcher);
                                               bind(ProviderDirectory.class).toInstance(providerDirectory);

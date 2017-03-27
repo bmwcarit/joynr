@@ -3,7 +3,7 @@ package io.joynr.messaging.websocket;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ package io.joynr.messaging.websocket;
 import java.io.IOException;
 
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -37,6 +39,7 @@ import joynr.system.RoutingTypes.WebSocketAddress;
  *
  */
 public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMessagingSkeleton {
+    private static final Logger LOG = LoggerFactory.getLogger(WebSocketMessagingSkeleton.class);
 
     public final static String WEBSOCKET_IS_MAIN_TRANSPORT = "io.joynr.websocket.is.main.transport";
 
@@ -86,6 +89,7 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMes
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
+        LOG.debug("<<< INCOMING <<< {}", message.toLogMessage());
         try {
             if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType()) && this.isMainTransport()) {
                 message.setReceivedFromGlobal(true);

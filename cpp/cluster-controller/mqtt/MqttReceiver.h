@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CLUSTER_CONTROLLER_MQTT_MQTTRECEIVER_H_
-#define CLUSTER_CONTROLLER_MQTT_MQTTRECEIVER_H_
-
-#include "MosquittoSubscriber.h"
+#ifndef MQTTRECEIVER_H
+#define MQTTRECEIVER_H
 
 #include <string>
 
@@ -28,20 +26,22 @@
 #include "joynr/IMessageReceiver.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/Semaphore.h"
 
 namespace joynr
 {
 
+class MosquittoConnection;
+class MessagingSettings;
+
 class JOYNRCLUSTERCONTROLLER_EXPORT MqttReceiver : public IMessageReceiver
 {
 public:
-    explicit MqttReceiver(const MessagingSettings& settings,
+    explicit MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnection,
+                          const MessagingSettings& settings,
                           const std::string& channelIdForMqttTopic,
-                          const std::string& receiverId);
+                          const std::string& unicastTopicPrefix);
 
-    ~MqttReceiver() override;
+    ~MqttReceiver() override = default;
 
     /**
       * Gets the channel ID of the receive channel for incoming messages.
@@ -82,16 +82,11 @@ private:
     std::string channelIdForMqttTopic; // currently channelId is used to subscribe
     std::string globalClusterControllerAddress;
 
-    // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).
-    // Allows for registering multiple receivers for a single channel.
-    std::string receiverId;
-
-    std::atomic<bool> channelCreated;
-    MosquittoSubscriber mosquittoSubscriber;
+    std::shared_ptr<MosquittoConnection> mosquittoConnection;
 
     ADD_LOGGER(MqttReceiver);
 };
 
 } // namespace joynr
 
-#endif // CLUSTER_CONTROLLER_MQTT_MQTTRECEIVER_H_
+#endif // MQTTRECEIVER_H

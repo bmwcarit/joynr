@@ -3,7 +3,7 @@ package io.joynr.runtime;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
 import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.MessageRouterImpl;
 import joynr.system.RoutingTypes.Address;
 
 /**
@@ -36,7 +34,6 @@ public class CCInProcessRuntimeModule extends ClusterControllerRuntimeModule {
     protected void configure() {
         super.configure();
         bind(JoynrRuntime.class).to(ClusterControllerRuntime.class).in(Singleton.class);
-        bind(MessageRouter.class).to(MessageRouterImpl.class).in(Singleton.class);
     }
 
     @Provides

@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
-import io.joynr.arbitration.ArbitrationStrategy;
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.exceptions.DiscoveryException;
-import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.integration.util.DummyJoynrApplication;
-import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.provider.JoynrProvider;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.runtime.AbstractJoynrApplication;
-import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.JoynrInjectorFactory;
-
 import java.util.Properties;
-
-import joynr.tests.DefaulttestProvider;
-import joynr.tests.testProxy;
-import joynr.types.ProviderQos;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -46,8 +28,26 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import com.google.inject.AbstractModule;
+import com.google.inject.Module;
 import com.google.inject.util.Modules;
+
+import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.integration.util.DummyJoynrApplication;
+import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.routing.TestGlobalAddressModule;
+import io.joynr.provider.JoynrProvider;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.CCInProcessRuntimeModule;
+import io.joynr.runtime.JoynrInjectorFactory;
+import joynr.tests.DefaulttestProvider;
+import joynr.tests.testProxy;
+import joynr.types.ProviderQos;
 
 public class ShutdownTest {
 
@@ -66,14 +66,8 @@ public class ShutdownTest {
         factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, "ShutdownTestChannelId");
 
         MockitoAnnotations.initMocks(this);
-        dummyApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider,
-                                                                            Modules.override(new CCInProcessRuntimeModule())
-                                                                                   .with(new AbstractModule() {
-                                                                                       @Override
-                                                                                       protected void configure() {
-                                                                                           bind(MessageReceiver.class).toInstance(messageReceiverMock);
-                                                                                       }
-                                                                                   })).createApplication(DummyJoynrApplication.class);
+        Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new TestGlobalAddressModule());
+        dummyApplication = (DummyJoynrApplication) new JoynrInjectorFactory(factoryPropertiesProvider, runtimeModule).createApplication(DummyJoynrApplication.class);
 
         provider = new DefaulttestProvider();
         providerQos = new ProviderQos();

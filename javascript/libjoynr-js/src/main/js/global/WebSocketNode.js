@@ -1,7 +1,9 @@
+/*global Buffer: true */
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +24,37 @@
  * See: http://dev.w3.org/html5/websockets/#the-websocket-interface
  *
  */
-define([ "ws"
-], function(ws) {
+define([
+    "ws",
+    "joynr/messaging/JoynrMessage",
+    "joynr/util/JSONSerializer",
+    "joynr/exceptions/JoynrRuntimeException",
+    "joynr/system/LoggerFactory"
+], function(ws, JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
+    if (typeof Buffer !== "function") {
+        throw new JoynrRuntimeException(
+                "Decoding of binary websocket messages not possible. Buffer not available.");
+    }
+    var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocket");
+
+    ws.encodeString = function(string) {
+        return string;
+    };
+    ws.decodeEventData = function(data) {
+        return data;
+    };
+
+    ws.marshalJoynrMessage = function(joynrMessage) {
+        return JSONSerializer.stringify(joynrMessage);
+    };
+
+    ws.unmarshalJoynrMessage = function(event, callback) {
+        if (typeof event.data === "object") {
+            callback(new JoynrMessage(JSON.parse(event.data.toString())));
+        } else {
+            log.error("Received unsupported message from websocket.");
+        }
+    };
+
     return ws;
 });

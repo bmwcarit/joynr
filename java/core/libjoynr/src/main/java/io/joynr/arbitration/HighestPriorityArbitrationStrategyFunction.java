@@ -1,11 +1,9 @@
 package io.joynr.arbitration;
 
-import java.util.Arrays;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +21,14 @@ import java.util.Arrays;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import joynr.types.DiscoveryEntry;
+import com.google.common.collect.Sets;
+
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 /**
  * Arbitrator using a custom parameter in the QoS map called "priority". The provider with the highest priority value is
@@ -38,12 +39,12 @@ public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrat
     private static final Logger logger = LoggerFactory.getLogger(HighestPriorityArbitrationStrategyFunction.class);
 
     @Override
-    public final Collection<DiscoveryEntry> select(Map<String, String> parameters,
-                                                   final Collection<DiscoveryEntry> capabilities) {
+    public final Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                        final Collection<DiscoveryEntryWithMetaInfo> capabilities) {
         logger.trace("starting select Provider by priority");
-        DiscoveryEntry highestPriorityCapability = null;
+        DiscoveryEntryWithMetaInfo highestPriorityCapability = null;
         long highestPriority = -1L;
-        for (DiscoveryEntry discoveryEntry : capabilities) {
+        for (DiscoveryEntryWithMetaInfo discoveryEntry : capabilities) {
             // Search for the provider with the highest priority
             Long priority = discoveryEntry.getQos().getPriority();
             logger.trace("Looking at capability with priority " + priority.toString());
@@ -54,6 +55,6 @@ public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrat
         }
         logger.trace("capability with highest priority: " + highestPriority + "\r\n" + highestPriorityCapability);
 
-        return highestPriorityCapability == null ? null : Arrays.asList(highestPriorityCapability);
+        return highestPriorityCapability == null ? null : Sets.newHashSet(highestPriorityCapability);
     }
 }

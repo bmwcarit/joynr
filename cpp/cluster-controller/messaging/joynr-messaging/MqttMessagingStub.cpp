@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,11 @@
 namespace joynr
 {
 
+INIT_LOGGER(MqttMessagingStub);
+
 MqttMessagingStub::MqttMessagingStub(std::shared_ptr<IMessageSender> messageSender,
-                                     const system::RoutingTypes::MqttAddress& destinationAddress,
-                                     const std::string& globalClusterControllerAddress)
-        : messageSender(messageSender),
-          destinationAddress(destinationAddress),
-          globalClusterControllerAddress(globalClusterControllerAddress)
+                                     const system::RoutingTypes::MqttAddress& destinationAddress)
+        : messageSender(messageSender), destinationAddress(destinationAddress)
 {
 }
 
@@ -38,12 +37,7 @@ void MqttMessagingStub::transmit(
         JoynrMessage& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
-        message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
-        message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
-        message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
-        message.setHeaderReplyAddress(globalClusterControllerAddress);
-    }
+    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> {}", message.toLogMessage());
     messageSender->sendMessage(destinationAddress, message, onFailure);
 }
 

@@ -1,7 +1,7 @@
 [
     {
         "_typeName": "joynr.types.GlobalDiscoveryEntry",
-        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.ChannelAddress\",\"messagingEndpointUrl\":\"http://${JOYNR_SERVER}/discovery/channels/discoverydirectory_channelid/\",\"channelId\":\"discoverydirectory_channelid\"}",
+        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://${JOYNR_SERVER_HOST}:${JOYNR_SERVER_MQTT_PORT}\",\"topic\":\"discoverydirectory_channelid\"}",
         "domain": "io.joynr",
         "expiryDateMs": 9223372036854775807,
         "interfaceName": "infrastructure/GlobalCapabilitiesDirectory",
@@ -23,12 +23,56 @@
     },
     {
         "_typeName": "joynr.types.GlobalDiscoveryEntry",
-        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.ChannelAddress\",\"messagingEndpointUrl\":\"http://${JOYNR_SERVER}/discovery/channels/discoverydirectory_channelid/\",\"channelId\":\"domainaccesscontroller_channelid\"}",
+        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://${JOYNR_SERVER_HOST}:${JOYNR_SERVER_MQTT_PORT}\",\"topic\":\"domainaccesscontroller_channelid\"}",
         "domain": "io.joynr",
         "expiryDateMs": 9223372036854775807,
         "interfaceName": "infrastructure/GlobalDomainAccessController",
         "lastSeenDateMs": 0,
         "participantId": "domainaccesscontroller_participantid",
+        "providerVersion": {
+            "_typeName": "joynr.types.Version",
+            "majorVersion": 0,
+            "minorVersion": 1
+        },
+        "publicKeyId": "",
+        "qos": {
+            "_typeName": "joynr.types.ProviderQos",
+            "customParameters": [],
+            "priority": 0,
+            "scope": "GLOBAL",
+            "supportsOnChangeSubscriptions": false
+        }
+    },
+    {
+        "_typeName": "joynr.types.GlobalDiscoveryEntry",
+        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://${JOYNR_SERVER_HOST}:${JOYNR_SERVER_MQTT_PORT}\",\"topic\":\"domainaccesscontroller_channelid\"}",
+        "domain": "io.joynr",
+        "expiryDateMs": 9223372036854775807,
+        "interfaceName": "infrastructure/GlobalDomainAccessControlListEditor",
+        "lastSeenDateMs": 0,
+        "participantId": "domainaccesscontrollisteditor_participantid",
+        "providerVersion": {
+            "_typeName": "joynr.types.Version",
+            "majorVersion": 0,
+            "minorVersion": 1
+        },
+        "publicKeyId": "",
+        "qos": {
+            "_typeName": "joynr.types.ProviderQos",
+            "customParameters": [],
+            "priority": 0,
+            "scope": "GLOBAL",
+            "supportsOnChangeSubscriptions": false
+        }
+    },
+    {
+        "_typeName": "joynr.types.GlobalDiscoveryEntry",
+        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://${JOYNR_SERVER_HOST}:${JOYNR_SERVER_MQTT_PORT}\",\"topic\":\"domainaccesscontroller_channelid\"}",
+        "domain": "io.joynr",
+        "expiryDateMs": 9223372036854775807,
+        "interfaceName": "infrastructure/GlobalDomainRoleController",
+        "lastSeenDateMs": 0,
+        "participantId": "domainrolecontroller_participantid",
         "providerVersion": {
             "_typeName": "joynr.types.Version",
             "majorVersion": 0,

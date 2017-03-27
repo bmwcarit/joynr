@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ var Promise = require('bluebird').Promise;
 var provisioning = { ccAddress: {} };
 
 var timeStart;
-var SHUTDOWN_MAX_TIME = 2000;
+var SHUTDOWN_MAX_TIME = 5000;
 
 exitHook(function () {
     var timeSpent = Date.now() - timeStart;

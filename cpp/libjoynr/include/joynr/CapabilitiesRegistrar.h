@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,20 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <tuple>
 
+#include "joynr/IMessageRouter.h"
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/IDispatcher.h"
-#include "joynr/MessageRouter.h"
-#include "joynr/system/IDiscovery.h"
+#include "joynr/MulticastBroadcastListener.h"
 #include "joynr/Logger.h"
-#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/Future.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Util.h"
+#include "joynr/system/IDiscovery.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/Version.h"
 
 namespace joynr
@@ -49,17 +51,20 @@ class JOYNR_EXPORT CapabilitiesRegistrar
 public:
     CapabilitiesRegistrar(
             std::vector<IDispatcher*> dispatcherList,
-            joynr::system::IDiscoverySync& discoveryProxy,
+            joynr::system::IDiscoveryAsync& discoveryProxy,
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
-            std::shared_ptr<MessageRouter> messageRouter,
+            std::shared_ptr<IMessageRouter> messageRouter,
             std::int64_t defaultExpiryIntervalMs,
             PublicationManager& publicationManager);
 
     template <class T>
-    std::string add(const std::string& domain,
-                    std::shared_ptr<T> provider,
-                    const types::ProviderQos& providerQos)
+    std::string addAsync(
+            const std::string& domain,
+            std::shared_ptr<T> provider,
+            const types::ProviderQos& providerQos,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
     {
 
         std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
@@ -95,37 +100,43 @@ public:
                                            lastSeenDateMs,
                                            defaultExpiryDateMs,
                                            defaultPublicKeyId);
-        try {
-            discoveryProxy.add(entry);
-        } catch (const exceptions::JoynrException& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "Unable to add provider (participant ID: {}, domain: {}, interface: "
-                            "{}) to discovery. Error: {}",
-                            participantId,
-                            domain,
-                            interfaceName,
-                            e.getMessage());
-        }
 
-        // add next hop to dispatcher
-        auto future = std::make_shared<joynr::Future<void>>();
-        auto onSuccess = [future]() { future->onSuccess(); };
-        messageRouter->addNextHop(participantId, dispatcherAddress, onSuccess);
-        future->wait();
+        auto onSuccessWrapper = [
+            messageRouter = util::as_weak_ptr(messageRouter),
+            participantId,
+            dispatcherAddress = dispatcherAddress,
+            onSuccess = std::move(onSuccess),
+            onError
+        ]
+        {
+            // add next hop to dispatcher
+            if (auto ptr = messageRouter.lock()) {
+                ptr->addNextHop(
+                        participantId, dispatcherAddress, std::move(onSuccess), std::move(onError));
+            }
+        };
 
+        discoveryProxy.addAsync(entry, std::move(onSuccessWrapper), std::move(onError));
         return participantId;
     }
 
-    void remove(const std::string& participantId);
+    void removeAsync(
+            const std::string& participantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError);
 
     template <class T>
-    std::string remove(const std::string& domain, std::shared_ptr<T> provider)
+    std::string removeAsync(
+            const std::string& domain,
+            std::shared_ptr<T> provider,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
     {
         std::string interfaceName = provider->getInterfaceName();
         // Get the provider participant Id - the persisted provider Id has priority
         std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
-        remove(participantId);
+        removeAsync(participantId, std::move(onSuccess), std::move(onError));
         return participantId;
     }
 
@@ -135,10 +146,10 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     std::vector<IDispatcher*> dispatcherList;
-    joynr::system::IDiscoverySync& discoveryProxy;
+    joynr::system::IDiscoveryAsync& discoveryProxy;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
-    std::shared_ptr<MessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> messageRouter;
     std::int64_t defaultExpiryIntervalMs;
     PublicationManager& publicationManager;
     ADD_LOGGER(CapabilitiesRegistrar);

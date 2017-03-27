@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ define(
             "joynr/messaging/mqtt/MqttMessagingStubFactory",
             "joynr/messaging/mqtt/MqttMessagingSkeleton",
             "joynr/system/RoutingTypes/MqttAddress",
-            "joynr/messaging/MessageReplyToAddressCalculator",
             "joynr/messaging/mqtt/SharedMqttClient",
             "joynr/messaging/mqtt/MqttMulticastAddressCalculator",
             "joynr/messaging/MessagingSkeletonFactory",
@@ -98,7 +97,6 @@ define(
                 MqttMessagingStubFactory,
                 MqttMessagingSkeleton,
                 MqttAddress,
-                MessageReplyToAddressCalculator,
                 SharedMqttClient,
                 MqttMulticastAddressCalculator,
                 MessagingSkeletonFactory,
@@ -334,13 +332,15 @@ define(
 
                             untypedCapabilities = provisioning.capabilities || [];
                             clusterControllerSettings = defaultClusterControllerSettings({
-                                bounceProxyBaseUrl: provisioning.bounceProxyBaseUrl
+                                bounceProxyBaseUrl: provisioning.bounceProxyBaseUrl,
+                                brokerUri: provisioning.brokerUri
                             });
                             var defaultClusterControllerCapabilities = clusterControllerSettings.capabilities || [];
 
                             untypedCapabilities = untypedCapabilities.concat(defaultClusterControllerCapabilities);
                             /*jslint nomen: true */// allow use of _typeName once
                             typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
+                            typeRegistry.addType(new MqttAddress()._typeName, MqttAddress, false);
                             /*jslint nomen: false */
                             typedCapabilities = [];
                             var errorMessage;
@@ -368,27 +368,19 @@ define(
                                         provisioning.messaging.maxQueueSizeInKBytes;
                             }
 
-                            var channelMessageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
-                                //replyToAddress is provided later
-                            });
-
                             channelMessagingStubFactory = new ChannelMessagingStubFactory({
                                 myChannelId : channelId,
-                                channelMessagingSender : channelMessagingSender,
-                                messageReplyToAddressCalculator : channelMessageReplyToAddressCalculator
+                                channelMessagingSender : channelMessagingSender
                             });
 
-                            var mqttAddress = new MqttAddress({
+                            var globalClusterControllerAddress = new MqttAddress({
                                 brokerUri : provisioning.brokerUri,
                                 topic : channelId
                             });
-
-                            var mqttMessageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
-                                replyToAddress : mqttAddress
-                            });
+                            var serializedGlobalClusterControllerAddress = JSON.stringify(globalClusterControllerAddress);
 
                             var mqttClient = new SharedMqttClient({
-                                address: mqttAddress,
+                                address: globalClusterControllerAddress,
                                 provisioning : provisioning.mqtt || {}
                             });
 
@@ -400,8 +392,7 @@ define(
                             messagingStubFactories[ChannelAddress._typeName] = channelMessagingStubFactory;
                             messagingStubFactories[MqttAddress._typeName] = new MqttMessagingStubFactory({
                                 client : mqttClient,
-                                address : mqttAddress,
-                                messageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
+                                address : globalClusterControllerAddress
                             });
                             /*jslint nomen: false */
 
@@ -417,10 +408,11 @@ define(
                                 messagingStubFactory : messagingStubFactory,
                                 messagingSkeletonFactory : messagingSkeletonFactory,
                                 multicastAddressCalculator : new MqttMulticastAddressCalculator({
-                                    globalAddress : mqttAddress
+                                    globalAddress : globalClusterControllerAddress
                                 }),
                                 messageQueue : new MessageQueue(messageQueueSettings)
                             });
+                            messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
 
                             longPollingMessageReceiver = new LongPollingChannelMessageReceiver({
                                 persistency : persistency,
@@ -436,7 +428,7 @@ define(
                                     });
 
                             mqttMessagingSkeleton = new MqttMessagingSkeleton({
-                                address: mqttAddress,
+                                address: globalClusterControllerAddress,
                                 client : mqttClient,
                                 messageRouter : messageRouter
                             });
@@ -449,8 +441,7 @@ define(
                                         });
 
                                         mqttClient.onConnected().then(function() {
-                                            capabilityDiscovery.globalAddressReady(mqttAddress);
-                                            channelMessageReplyToAddressCalculator.setReplyToAddress(channelAddress);
+                                            capabilityDiscovery.globalAddressReady(globalClusterControllerAddress);
                                             channelMessagingStubFactory.globalAddressReady(channelAddress);
                                             return null;
                                         });
