@@ -25,18 +25,21 @@
 namespace joynr
 {
 
-MessagingQos::MessagingQos(std::uint64_t ttl, MessagingQosEffort::Enum effort, bool encrypt)
-        : ttl(ttl), effort(effort), encrypt(encrypt), compress(false), messageHeaders()
+MessagingQos::MessagingQos(std::uint64_t ttl,
+                           MessagingQosEffort::Enum effort,
+                           bool encrypt,
+                           bool compress)
+        : ttl(ttl), effort(effort), encrypt(encrypt), compress(compress), messageHeaders()
 {
 }
 
 MessagingQos::MessagingQos(MessagingQosEffort::Enum effort, bool encrypt)
-        : MessagingQos::MessagingQos(default_ttl, effort, encrypt)
+        : MessagingQos::MessagingQos(default_ttl, effort, encrypt, false)
 {
 }
 
 MessagingQos::MessagingQos(std::uint64_t ttl, bool encrypt)
-        : MessagingQos::MessagingQos(ttl, MessagingQosEffort::Enum::NORMAL, encrypt)
+        : MessagingQos::MessagingQos(ttl, MessagingQosEffort::Enum::NORMAL, encrypt, false)
 {
 }
 
