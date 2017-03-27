@@ -20,6 +20,7 @@ package io.joynr.messaging.mqtt;
  */
 
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 
 import static java.lang.String.format;
 
@@ -41,24 +42,24 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     public static final String REPLYTO_PREFIX = "replyto/";
     private static final String NON_ALPHA_REGEX_PATTERN = "[^a-zA-Z]";
     private String channelId;
-    private String receiverId;
+    private MqttAddress replyToAddress;
 
     @Inject
     public SharedSubscriptionsMqttMessagingSkeleton(@Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
+                                                    @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
                                                     MqttMessageSerializerFactory messageSerializerFactory,
-                                                    @Named(MessagingPropertyKeys.CHANNELID) String channelId,
-                                                    @Named(MessagingPropertyKeys.RECEIVERID) String receiverId) {
+                                                    @Named(MessagingPropertyKeys.CHANNELID) String channelId) {
         super(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory);
+        this.replyToAddress = replyToAddress;
         this.channelId = channelId;
-        this.receiverId = receiverId;
     }
 
     @Override
     protected void subscribe() {
         getClient().subscribe("$share:" + sanitiseChannelIdForUseAsTopic() + ":" + getOwnAddress().getTopic() + "/#");
-        getClient().subscribe(REPLYTO_PREFIX + getOwnAddress().getTopic() + "/" + receiverId + "/#");
+        getClient().subscribe(replyToAddress.getTopic() + "/#");
     }
 
     private String sanitiseChannelIdForUseAsTopic() {

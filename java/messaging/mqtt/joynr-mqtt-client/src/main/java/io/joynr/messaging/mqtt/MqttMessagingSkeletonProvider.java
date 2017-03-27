@@ -21,8 +21,8 @@ package io.joynr.messaging.mqtt;
 
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
-import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,27 +48,26 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected MqttClientFactory mqttClientFactory;
     private boolean sharedSubscriptionsEnabled;
     private MqttAddress ownAddress;
+    private MqttAddress replyToAddress;
     private MessageRouter messageRouter;
     private MqttMessageSerializerFactory messageSerializerFactory;
     private String channelId;
-    private String receiverId;
 
     @Inject
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessagingSkeletonProvider(@Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
                                          @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
+                                         @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          MessageRouter messageRouter,
                                          MqttClientFactory mqttClientFactory,
                                          MqttMessageSerializerFactory messageSerializerFactory,
-                                         @Named(CHANNELID) String channelId,
-                                         @Named(RECEIVERID) String receiverId) {
+                                         @Named(CHANNELID) String channelId) {
         sharedSubscriptionsEnabled = Boolean.valueOf(enableSharedSubscriptions);
         this.ownAddress = ownAddress;
+        this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
         this.messageSerializerFactory = messageSerializerFactory;
         this.channelId = channelId;
-        this.receiverId = receiverId;
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}", new Object[]{
                 sharedSubscriptionsEnabled, this.ownAddress, this.channelId });
     }
@@ -77,11 +76,11 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     public IMessagingSkeleton get() {
         if (sharedSubscriptionsEnabled) {
             return new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                                replyToAddress,
                                                                 messageRouter,
                                                                 mqttClientFactory,
                                                                 messageSerializerFactory,
-                                                                channelId,
-                                                                receiverId);
+                                                                channelId);
         }
         return new MqttMessagingSkeleton(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory);
     }

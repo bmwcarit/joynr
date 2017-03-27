@@ -56,6 +56,9 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     private MqttAddress ownAddress;
 
     @Mock
+    private MqttAddress replyToAddress;
+
+    @Mock
     private MessageRouter messageRouter;
 
     @Mock
@@ -74,25 +77,27 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     @Test
     public void testSubscribesToSharedSubscription() {
         when(ownAddress.getTopic()).thenReturn("ownTopic");
+        final String replyToAddressTopic = "replyToAddressTopic";
+        when(replyToAddress.getTopic()).thenReturn(replyToAddressTopic);
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                               replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
-                                                               "channelId",
-                                                               "receiverId");
+                                                               "channelId");
         subject.init();
         verify(mqttClient).subscribe(eq("$share:channelId:ownTopic/#"));
-        verify(mqttClient).subscribe(eq("replyto/ownTopic/receiverId/#"));
+        verify(mqttClient).subscribe(eq(replyToAddressTopic + "/#"));
     }
 
     @Test
     public void testChannelIdStrippedOfNonAlphaChars() {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                               replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
-                                                               "channel@123_bling$$",
-                                                               "receiverId");
+                                                               "channel@123_bling$$");
         subject.init();
         verify(mqttClient).subscribe(startsWith("$share:channelbling:"));
     }
@@ -100,11 +105,11 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalChannelId() {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                               replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
-                                                               "@123_$$-!",
-                                                               "receiverId");
+                                                               "@123_$$-!");
         subject.init();
     }
 

@@ -21,8 +21,8 @@ package io.joynr.jeeintegration.messaging;
 
 import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
-import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 
 import org.slf4j.Logger;
@@ -55,19 +55,19 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     public JeeMqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String enableHttpBridge,
                                             @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
                                             @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
+                                            @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                             MessageRouter messageRouter,
                                             MqttClientFactory mqttClientFactory,
                                             MqttMessageSerializerFactory messageSerializerFactory,
-                                            @Named(CHANNELID) String channelId,
-                                            @Named(RECEIVERID) String receiverId) {
+                                            @Named(CHANNELID) String channelId) {
         // CHECKSTYLE:ON
         super(enableSharedSubscriptions,
               ownAddress,
+              replyToAddress,
               messageRouter,
               mqttClientFactory,
               messageSerializerFactory,
-              channelId,
-              receiverId);
+              channelId);
         httpBridgeEnabled = Boolean.valueOf(enableHttpBridge);
         logger.debug("Created with httpBridgeEnabled: {} ownAddress: {} channelId: {}", new Object[]{ httpBridgeEnabled,
                 ownAddress, channelId });
