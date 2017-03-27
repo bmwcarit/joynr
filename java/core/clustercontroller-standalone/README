@@ -2,7 +2,7 @@
 mvn -o exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="websocketcc"
 
 # Start a cluster controller from the JAR, using only web socket transport
-java -jar clustercontroller-standalone-0.24.0-SNAPSHOT.jar websocketcc
+java -jar clustercontroller-standalone-0.24.0.jar websocketcc
 
 # Start a cluster controller via Maven, using all transports, connecting to a local MQTT broker
 mvn -o exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="mqtt:http:websocketcc tcp://localhost:1883"
