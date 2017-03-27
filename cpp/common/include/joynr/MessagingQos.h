@@ -60,11 +60,6 @@ public:
      */
     explicit MessagingQos(std::uint64_t ttl, bool encrypt);
 
-    /*
-     * Adding a constructor with just 'encrypt' is not possible since it results
-     * ambiguous constructors.
-     */
-
     /** @brief Copy constructor */
     MessagingQos(const MessagingQos& other) = default;
 
