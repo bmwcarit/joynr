@@ -465,7 +465,7 @@ define(
                                 }),
                                 messageQueue : new MessageQueue(messageQueueSettings)
                             });
-                            messageRouter.setGlobalClusterControllerAddress(serializedGlobalClusterControllerAddress);
+                            messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
                             browserMessagingSkeleton.registerListener(messageRouter.route);
 
                             longPollingMessageReceiver = new LongPollingChannelMessageReceiver({
@@ -660,6 +660,11 @@ define(
                             routingProvider =
                                     providerBuilder.build(RoutingProvider, {
                                         globalAddress : {
+                                            get : function() {
+                                                return Promise.resolve(serializedGlobalClusterControllerAddress);
+                                            }
+                                        },
+                                        replyToAddress : {
                                             get : function() {
                                                 return Promise.resolve(serializedGlobalClusterControllerAddress);
                                             }
