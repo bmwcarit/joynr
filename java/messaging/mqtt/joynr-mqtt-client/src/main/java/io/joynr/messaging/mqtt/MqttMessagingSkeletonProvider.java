@@ -55,6 +55,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessagingSkeletonProvider(@Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
                                          @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
