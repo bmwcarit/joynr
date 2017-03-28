@@ -26,7 +26,7 @@ and provides simple examples of the usage where possible.
 ### Configuration
 
 The configuration is included in the files
-```src/main/java/io/joynr/test/interlanguage/jee/JoynrConfigurationProvider.java```
+`src/main/java/io/joynr/test/interlanguage/jee/JoynrConfigurationProvider.java`
 in the inter-language-test-jee-provider and inter-language-test-jee-consumer
 directories.
 
@@ -91,7 +91,8 @@ for details.
 
 #### Example
 
-An example of a configuration EJB is:
+An example of a configuration EJB, which uses `servlet` (http) as primary global transport
+(default is `mqtt`, `longpolling` is not supported in joynr JEE), is:
 
 ```
 @Singleton
@@ -107,16 +108,16 @@ public class JoynrConfigurationProvider {
         "http://localhost:8080");
     joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID,
         "io.joynr.test.interlanguage.jee.provider");
-    joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS,
-        Boolean.TRUE.toString());
     joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI,
         "tcp://localhost:1883");
+    joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
+        "http://localhost:8383/bounceproxy/");
+    joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT,
+         "servlet");
     joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
         "http://localhost:8383/discovery/channels/discoverydirectory_channelid/");
     joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL,
         "http://localhost:8383/discovery/channels/discoverydirectory_channelid/");
-    joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
-        "http://localhost:8383/bounceproxy/");
 
     return joynrProperties;
   }
@@ -138,10 +139,10 @@ resource which has the name `'concurrent/joynrMessagingScheduledExecutor'`.
 For example for Glassfish/Payara:
 `asadmin create-managed-scheduled-executor-service --corepoolsize=10 concurrent/joynrMessagingScheduledExecutor`
 
-Note the `--corepoolsize=10` option. The default will only create one thread,
-which can lead to blocking, so you should use at least 10 threads. Depending on your
-load, you can experiment with higher values to enable more concurrency when
-communicating joynr messages.
+>Note the `--corepoolsize=10` option. The default will only create one thread,
+>which can lead to blocking, so you should use at least 10 threads. Depending on your
+>load, you can experiment with higher values to enable more concurrency when
+>communicating joynr messages.
 
 ## Example
 
@@ -167,12 +168,38 @@ install the application server and you will also need to install an MQTT broker,
 
 Start the MQTT broker, and make sure it's accepting traffic on `1883`.
 
-Next, fire up the joynr backend service by changing to the `inter-language-test-jee`
-directory and executing `mvn -N -Pbackend-services jetty:run`.
-
 Then start up the Payara server by changing to the Payara install directory and executing
 `bin/asadmin start-domain`. Follow the instructions above for configuring the required
 managed executor service.
+
+When using primaryglobaltransport=mqtt (default), you need a connection pool for the database which
+shall be used by the backend to persist data.
+For this example, we'll create a database
+on the JavaDB (based on Derby) database which is installed as part of Payara / Glassfish:
+
+    bin/asadmin create-jdbc-connection-pool \
+        --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
+        --restype javax.sql.XADataSource \
+        --property portNumber=1527:password=APP:user=APP:serverName=\
+        localhost:databaseName=joynr-discovery-directory:connectionAttributes=\; \
+        create\\=true JoynrPool
+
+Next, create a datasource resource pointing to that database connection. Here's an
+example of what that would look like when using the connection pool created above:
+
+`bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS`
+`bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DomainAccessControllerDS`
+
+After this, you can start the database:
+
+`bin/asadmin start-database`
+
+Next, fire up the joynr backend services:
+- When using primaryglobaltransport=mqtt, deploy the required war files:
+    - `bin/asadmin deploy <joynr home>/tests/inter-language-test-jee/target/discovery-jee.war`
+    - `bin/asadmin deploy <joynr home>/tests/inter-language-test-jee/target/accesscontrol-jee.war`
+- When using primaryglobaltransport=longpolling, change to the `inter-language-test-jee`
+directory and execute `mvn -N -Pbackend-services-http jetty:run`.
 
 Depending on whether only consumer, only provider or both should run as JEE applications,
 deploy the required WAR files:
@@ -195,7 +222,7 @@ external provider application have started up successfully, you can use an HTTP 
 (e.g. `curl` on the command line or [Paw](https://luckymarmot.com/paw) on Mac OS X) to trigger
 the start of the JUnit test cases on the consumer side.
 
-- `curl http://localhost:8080/inter-language-test-jee-consumer/inter-language-test-jee/start-tests'
+- `curl http://localhost:8080/inter-language-test-jee-consumer/start-tests'
   - This starts the tests, and you should see some output similar to Surefire JUnit XML reports,
     but in condensed JSON format.
 

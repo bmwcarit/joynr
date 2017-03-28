@@ -378,7 +378,7 @@ which holds the mappings between application URLs and the topics for which
 they are interested in.
 
 A limitation of this solution is that replies for requests which originated
-from a clustered application are not guarateed to be received by the cluster
+from a clustered application are not guaranteed to be received by the cluster
 node which sent the request. A possible solution could be to provide extra
 logic on the load balancer. However, without this you should only use
 fire-and-forget semantics for outgoing messages.
@@ -507,14 +507,43 @@ The following describes running the example on [Payara 4.1](http://www.payara.fi
 install the application server and you will also need to install an MQTT broker, e.g.
 [Mosquitto](http://mosquitto.org).
 
-Start the MQTT broker, and make sure it's accepting traffic on `1883`.
+You need to configure Payara with a ManagedScheduledExecutorService, see
+[JEE Container configuration](#jee-container-configuration).
 
-Next, fire up the joynr backend service by changing to the `radio-jee` directory and
-executing `mvn -N -Pbackend-services jetty:run`.
+You also need a connection pool for the database which shall be used by the backend services
+to persist data.
+For this example, we'll create a database on the JavaDB (based on Derby) database which is
+installed as part of Payara:
+```
+    bin/asadmin create-jdbc-connection-pool \
+        --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
+        --restype javax.sql.XADataSource \
+        --property portNumber=1527:password=APP:user=APP:serverName=\
+        localhost:databaseName=joynr-discovery-directory:connectionAttributes=\; \
+        create\\=true JoynrPool
+```
+Next, create a datasource resource pointing to that database connection. Here's an
+example of what that would look like when using the connection pool created above:
+```
+`bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS`
+`bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DomainAccessControllerDS`
+```
+
+After this, you can start the database:
+
+`bin/asadmin start-database`
+
+Start the MQTT broker, and make sure it's accepting traffic on `1883`.
 
 Then start up the Payara server by changing to the Payara install directory and executing
 `bin/asadmin start-domain`. Follow the instructions above for configuring the required
-managed executor service. Finally, deploy the provider and consumer applications:
+managed executor service and databse.
+
+Next, fire up the joynr backend services:
+- `bin/asadmin deploy <joynr home>/asadmin deploy <JOYNR_REPO>/examples/radio-jee/radio-jee-backend-services/target/discovery-jee.war`
+- `bin/asadmin deploy <joynr home>/asadmin deploy <JOYNR_REPO>/examples/radio-jee/radio-jee-backend-services/target/accesscontrol-jee.war`
+
+Finally, deploy the provider and consumer applications:
 
 - `bin/asadmin deploy <joynr home>/examples/radio-jee/radio-jee-provider/target/radio-jee-provider.war`
 - `bin/asadmin deploy <joynr home>/examples/radio-jee/radio-jee-consumer/target/radio-jee-consumer.war`
@@ -538,7 +567,7 @@ Radio service, and the consumer thereof.
 If you want to use the radio JEE example as a template for building a joynr based JEE application
 don't forget to change the joynr dependency version in the Maven POMs to a release version. If you
 change the parent POM, which is also likely, don't forget to pull the necessary `dependencyManagement`
-entries from the joynr parent POM into your own POM.  
+entries from the joynr parent POM into your own POM.
 You'll also likely want to change the way the FIDL file is included in the API project. In this
 example it is obtained from the `radio-app` Maven dependency, but you will probably want to have it
 in, e.g., `${project.root}/my-api/src/main/model/my.fidl`, and then reference that file directly

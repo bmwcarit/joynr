@@ -2,7 +2,7 @@
 
 ## Testing environment
 
-The libjoynr Javascript tests use the 
+The libjoynr Javascript tests use the
 [Jasmine 2.4](http://jasmine.github.io/2.4/introduction.html) test
 framework. All tests are run through the
 [Karma](https://karma-runner.github.io) test runner. Additionally,
@@ -18,14 +18,25 @@ mvn clean install -P javascript
 cd javascript/libjoynr-js
 ```
 
-In addition, a mosquitto broker must be running locally supporting web socket connections
-on port 9001. An example mosquitto configuration can be found under
-javascript/libjoynr-js/src/test/resources/mosquitto-test.conf,
-allowing to start the broker via the follwing command:
+In addition, a MQTT broker (e.g. [Mosquitto](http://mosquitto.org)) must be running locally
+supporting web socket connections on port 9001. An example mosquitto configuration can be found
+under javascript/libjoynr-js/src/test/resources/mosquitto-test.conf, allowing to start the broker
+via the follwing command:
 
 ```
 cd <JOYNR_REPO>/javascript/libjoynr-js
 mosquitto -c src/test/resources/mosquitto-test.conf
+```
+
+You also have to start the joynr mqtt infrastructure by deploying discovery-directory-jee and
+domain-access-controller-jee to a Java EE application server (for the configuration of the
+application server see [Infrastructure](wiki/infrastructure.md) and [JEE Developer Guide](wiki/jee.md)
+or the [Radio Tutorial](Tutorial.md)).
+
+Start joynr mqtt infrastructure:
+```
+asadmin deploy <JOYNR_REPO>/java/backend-services/discovery-directory-jee/target/discovery-directory-jee*.war
+asadmin deploy <JOYNR_REPO>/java/backend-services/domain-access-controller-jee/target/domain-access-controller-jee*.war
 ```
 
 ### Running tests
@@ -107,7 +118,7 @@ Example:
 ### Starting karma from the command line
 
 The tests can also be run from the command line. First run the tests once via ```mvn install```to
-cause all the required node dependencies to be installed, and then create a symbolic link to the 
+cause all the required node dependencies to be installed, and then create a symbolic link to the
 node_modules directory:
 
 ```
@@ -117,7 +128,9 @@ ln -s node_modules target/node-classes/node_modules
 ```
 
 You can then start the tests in karma using ```karma start```. If running system integration tests,
-be sure to start the joynr infrastructure using ```mvn jetty:run``` and mosquitto beforehand.
+be sure to start the joynr http infrastructure using ```mvn jetty:run``` and mosquitto beforehand.
+You also have to start the joynr mqtt infrastructure by deploying discovery-directory-jee and
+domain-access-controller-jee to a Java EE application server.
 
 Start mosquitto:
 
@@ -125,10 +138,17 @@ Start mosquitto:
 mosquitto -c src/test/resources/mosquitto-test.conf -v
 ```
 
-Start joynr infrastructure:
+Start joynr http infrastructure:
 
 ```
 mvn jetty:run
+```
+
+Start joynr mqtt infrastructure:
+
+```
+asadmin deploy <JOYNR_REPO>/java/backend-services/discovery-directory-jee/target/discovery-directory-jee*.war
+asadmin deploy <JOYNR_REPO>/java/backend-services/domain-access-controller-jee/target/domain-access-controller-jee*.war
 ```
 
 Example command line for manual start:
