@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,9 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
         mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         mqttConfig.put(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://localhost:" + mqttBrokerPort);
         mqttConfig.put(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://localhost:" + mqttBrokerPort);
+        mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
+        mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "replyto/");
+        mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
         joynrConfig.putAll(mqttConfig);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(modules);
         Module modulesWithRuntime = Modules.override(runtimeModule).with(new AtmosphereMessagingModule(),

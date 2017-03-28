@@ -51,15 +51,18 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     private MqttClientFactory mqttClientFactory;
     private MqttAddress ownAddress;
     private ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount = Maps.newConcurrentMap();
+    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     @Inject
-    public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
+    public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
-                                 MqttMessageSerializerFactory messageSerializerFactory) {
+                                 MqttMessageSerializerFactory messageSerializerFactory,
+                                 MqttTopicPrefixProvider mqttTopicPrefixProvider) {
         this.ownAddress = ownAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
+        this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         messageSerializer = messageSerializerFactory.create(ownAddress);
     }
 
@@ -90,7 +93,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
         multicastSubscriptionCount.putIfAbsent(multicastId, new AtomicInteger());
         int numberOfSubscriptions = multicastSubscriptionCount.get(multicastId).incrementAndGet();
         if (numberOfSubscriptions == 1) {
-            mqttClient.subscribe(translateWildcard(multicastId));
+            mqttClient.subscribe(getSubscriptionTopic(multicastId));
         }
     }
 
@@ -100,7 +103,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
         if (subscribersCount != null) {
             int remainingCount = subscribersCount.decrementAndGet();
             if (remainingCount == 0) {
-                mqttClient.unsubscribe(translateWildcard(multicastId));
+                mqttClient.unsubscribe(getSubscriptionTopic(multicastId));
             }
         }
     }
@@ -147,6 +150,10 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
 
     protected MqttAddress getOwnAddress() {
         return ownAddress;
+    }
+
+    private String getSubscriptionTopic(String multicastId) {
+        return mqttTopicPrefixProvider.getMulticastTopicPrefix() + translateWildcard(multicastId);
     }
 
 }

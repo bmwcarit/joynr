@@ -3,7 +3,7 @@ package io.joynr.accesscontrol;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public interface AccessController {
      * @param message The message to check
      * @return true if the message has permission, false otherwise
      */
-    boolean hasConsumerPermission(JoynrMessage message);
+    void hasConsumerPermission(final JoynrMessage message, final HasConsumerPermissionCallback callback);
 
     /**
      * Does the provider with given userId and given trust level, has permission to expose given domain interface?

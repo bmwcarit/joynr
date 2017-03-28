@@ -15,9 +15,10 @@ echo '####################################################'
     cd /data/src/java
     mvn install -DskipTests
 
+    ACCESS_CTRL_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*domain-access-controller-jee*.war")
     DISCOVERY_DIRECTORY_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*discovery-directory-jee-.*war")
 
-    /data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE
+    /data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE,$ACCESS_CTRL_WAR_FILE
 )
 
 mosquitto -c /etc/mosquitto/mosquitto.conf &

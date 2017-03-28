@@ -412,7 +412,7 @@ define(
                                 }),
                                 messageQueue : new MessageQueue(messageQueueSettings)
                             });
-                            messageRouter.setGlobalClusterControllerAddress(serializedGlobalClusterControllerAddress);
+                            messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
 
                             longPollingMessageReceiver = new LongPollingChannelMessageReceiver({
                                 persistency : persistency,

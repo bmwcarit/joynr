@@ -3,7 +3,7 @@ package io.joynr.runtime;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import io.joynr.messaging.routing.GlobalAddressFactory;
 import joynr.system.RoutingTypes.Address;
 
 public class GlobalAddressProvider implements Provider<Address> {
+    public static final String GLOBAL_ADDRESS_PROVIDER = "global_address_provider";
 
     private Set<GlobalAddressFactory<? extends Address>> addressFactories;
 
@@ -43,7 +44,7 @@ public class GlobalAddressProvider implements Provider<Address> {
     String primaryGlobalTransport;
 
     @Inject
-    public GlobalAddressProvider(Set<GlobalAddressFactory<? extends Address>> addressFactories) {
+    public GlobalAddressProvider(@Named(GLOBAL_ADDRESS_PROVIDER) Set<GlobalAddressFactory<? extends Address>> addressFactories) {
         this.addressFactories = addressFactories;
     }
 

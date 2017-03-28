@@ -3,7 +3,7 @@ package io.joynr.messaging.mqtt;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,9 +54,16 @@ public class MqttMessagingSkeletonTest {
     @Mock
     private JoynrMqttClient mqttClient;
 
+    @Mock
+    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
+
     @Before
     public void setup() {
-        subject = new MqttMessagingSkeleton(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory);
+        subject = new MqttMessagingSkeleton(ownAddress,
+                                            messageRouter,
+                                            mqttClientFactory,
+                                            messageSerializerFactory,
+                                            mqttTopicPrefixProvider);
         when(mqttClientFactory.create()).thenReturn(mqttClient);
         subject.init();
         verify(mqttClient).subscribe(anyString());
@@ -64,7 +71,21 @@ public class MqttMessagingSkeletonTest {
     }
 
     @Test
+    public void testSubscribeToMulticastWithTopicPrefix() {
+        final String expectedPrefix = "testMulticastPrefix";
+        final String multicastId = "multicastId";
+        when(mqttTopicPrefixProvider.getMulticastTopicPrefix()).thenReturn(expectedPrefix);
+
+        subject.registerMulticastSubscription(multicastId);
+        verify(mqttClient).subscribe(expectedPrefix + multicastId);
+
+        subject.unregisterMulticastSubscription(multicastId);
+        verify(mqttClient).unsubscribe(expectedPrefix + multicastId);
+    }
+
+    @Test
     public void testOnlySubscribeToMulticastIfNotAlreadySubscribed() {
+        when(mqttTopicPrefixProvider.getMulticastTopicPrefix()).thenReturn("");
         String multicastId = "multicastId";
 
         subject.registerMulticastSubscription(multicastId);
@@ -77,6 +98,7 @@ public class MqttMessagingSkeletonTest {
 
     @Test
     public void testMultilevelWildcardTranslated() {
+        when(mqttTopicPrefixProvider.getMulticastTopicPrefix()).thenReturn("");
         String multicastId = "one/two/*";
 
         subject.registerMulticastSubscription(multicastId);

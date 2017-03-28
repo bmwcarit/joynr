@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,10 @@ public final class MessagingPropertyKeys {
     public static final String PROPERTY_SERVLET_HOST_PATH = "joynr.servlet.hostpath";
     public static final String PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION = "joynr.servlet.skiplongpollderegistration";
     public static final String PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT = "joynr.messaging.primaryglobaltransport";
+
+    public static final String MQTT_TOPIC_PREFIX_REPLYTO = "joynr.messaging.mqtt.topicprefix.sharedsubscriptionsreplyto";
+    public static final String MQTT_TOPIC_PREFIX_UNICAST = "joynr.messaging.mqtt.topicprefix.unicast";
+    public static final String MQTT_TOPIC_PREFIX_MULTICAST = "joynr.messaging.mqtt.topicprefix.multicast";
 
     private MessagingPropertyKeys() {
         throw new AssertionError();

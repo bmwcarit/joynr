@@ -3,7 +3,7 @@ package io.joynr.messaging.mqtt.paho.client;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,10 @@ public class MqttPahoClientTest {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC, "60");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC, "30");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS, "-1");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
+        properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
+        properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "");
+        properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
         properties.put(MessagingPropertyKeys.CHANNELID, "myChannelId");
 
         injector = Guice.createInjector(new MqttPahoModule(),
@@ -98,7 +102,8 @@ public class MqttPahoClientTest {
                                             }
                                         });
         mqttClientFactory = injector.getInstance(MqttClientFactory.class);
-        ownTopic = injector.getInstance((Key.get(MqttAddress.class, Names.named(MqttModule.PROPERTY_MQTT_ADDRESS))));
+        ownTopic = injector.getInstance((Key.get(MqttAddress.class,
+                                                 Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))));
 
         client = mqttClientFactory.create();
         client.start();
@@ -111,7 +116,7 @@ public class MqttPahoClientTest {
     }
 
     @Test
-    public void mqqtClientTest() throws Exception {
+    public void mqttClientTest() throws Exception {
         client.setMessageListener(mockReceiver);
         String serializedMessage = "test";
         client.publishMessage(ownTopic.getTopic(), serializedMessage);

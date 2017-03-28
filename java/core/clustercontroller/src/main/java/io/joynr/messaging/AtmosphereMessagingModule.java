@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
+import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -46,8 +48,16 @@ public class AtmosphereMessagingModule extends AbstractModule {
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
         globalAddresses = Multibinder.newSetBinder(binder(),
                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-                                                   });
+                                                   },
+                                                   Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_PROVIDER));
         globalAddresses.addBinding().to(LongPollingHttpGlobalAddressFactory.class);
+
+        Multibinder<GlobalAddressFactory<? extends Address>> replyToAddresses;
+        replyToAddresses = Multibinder.newSetBinder(binder(),
+                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
+                                                    },
+                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_PROVIDER));
+        replyToAddresses.addBinding().to(LongPollingHttpGlobalAddressFactory.class);
 
         bind(MessageReceiver.class).to(LongPollingMessageReceiver.class).asEagerSingleton();
 

@@ -1021,6 +1021,16 @@ define([
                                         /*jslint nomen: false*/
                                         expect(globalAddress.brokerUri).toEqual(provisioning_cc.brokerUri);
 
+                                        // test routing provider returns correct replyTo address
+                                        return routingProxy.replyToAddress.get();
+                                    }).then(function(replyToAddressString) {
+                                        expect(replyToAddressString).toBeDefined();
+                                        expect(replyToAddressString).not.toBeNull();
+                                        var replyToAddress = JSON.parse(replyToAddressString);
+                                        /*jslint nomen: true*/
+                                        expect(replyToAddress._typeName).toEqual(MqttAddress._typeName);
+                                        /*jslint nomen: false*/
+                                        expect(replyToAddress.brokerUri).toEqual(provisioning_cc.brokerUri);
                                         done();
                                         return null;
                                     }).catch(function(error) {

@@ -6,7 +6,7 @@ package test.io.joynr.jeeintegration.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MockChannelAddressFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import org.junit.Test;
@@ -77,14 +77,17 @@ public class JeeMessageRouterTest {
         message.setTo("to");
         when(routingTable.get("to")).thenReturn(address);
 
-        JeeMessageRouter subject = new JeeMessageRouter(new GlobalAddressProvider(Sets.newHashSet(new MockChannelAddressFactory())),
+        @SuppressWarnings("unchecked")
+        JeeMessageRouter subject = new JeeMessageRouter(new ReplyToAddressProvider(Sets.newHashSet(new MockChannelAddressFactory())),
                                                         routingTable,
                                                         scheduler,
                                                         1000L,
                                                         messagingStubFactory,
                                                         messagingSkeletonFactory,
                                                         addressManager,
-                                                        multicastReceiverRegistry);
+                                                        multicastReceiverRegistry,
+                                                        null,
+                                                        false);
 
         message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000L));
         subject.route(message);
@@ -94,14 +97,17 @@ public class JeeMessageRouterTest {
 
     @Test
     public void testShutdown() throws InterruptedException {
-        JeeMessageRouter subject = new JeeMessageRouter(new GlobalAddressProvider(Sets.newHashSet(new MockChannelAddressFactory())),
+        @SuppressWarnings("unchecked")
+        JeeMessageRouter subject = new JeeMessageRouter(new ReplyToAddressProvider(Sets.newHashSet(new MockChannelAddressFactory())),
                                                         routingTable,
                                                         scheduler,
                                                         1000L,
                                                         messagingStubFactory,
                                                         messagingSkeletonFactory,
                                                         addressManager,
-                                                        multicastReceiverRegistry);
+                                                        multicastReceiverRegistry,
+                                                        null,
+                                                        false);
 
         subject.shutdown();
 
