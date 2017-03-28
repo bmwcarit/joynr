@@ -188,7 +188,7 @@ message(STATUS "option ENABLE_DOXYGEN=" ${ENABLE_DOXYGEN})
 
 option(
     BUILD_CLUSTER_CONTROLLER
-    "Build ClusterController?"
+    "Build cluster-controller executable?"
     ON
 )
 message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
@@ -206,9 +206,8 @@ include(AddClangFormat)
 
 # Following dependencies must be installed by the user beforehand because they either
 # use a shared object or are included through joynr header files into the user's code.
-# Mosquitto is only required when the cluster controller build is enabled.
 set (CHECK_DLT (JOYNR_ENABLE_DLT_LOGGING AND USE_PLATFORM_DLT OR NOT JOYNR_ENABLE_DLT_LOGGING))
-if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND (USE_PLATFORM_MOSQUITTO OR NOT BUILD_CLUSTER_CONTROLLER)))
+if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND USE_PLATFORM_MOSQUITTO))
     set(codeMsg "message(FATAL_ERROR \"Install target is not available as long as external platform")
     set(codeMsg "${codeMsg} dependencies are used. For more information see USE_PLATFORM_SPDLOG,")
     set(codeMsg "${codeMsg} USE_PLATFORM_DLT and USE_PLATFORM_MOSQUITTO.\")")
@@ -709,22 +708,12 @@ message(STATUS "variable muesli_INCLUDE_DIRECTORIES= ${muesli_INCLUDE_DIRECTORIE
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     add_subdirectory(common-api)
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+
 add_subdirectory(common)
 add_subdirectory(libjoynr)
-if(${BUILD_CLUSTER_CONTROLLER})
-    add_subdirectory(cluster-controller)
-else()
-    # We still use the websocket default configuration file
-    # copy resources for build tree
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cluster-controller/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings @ONLY)
-    # ...and for install tree
-    install(
-        FILES
-            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
-        DESTINATION ${JOYNR_INSTALL_FULL_SYSCONFDIR}
-    )
-endif(${BUILD_CLUSTER_CONTROLLER})
+add_subdirectory(cluster-controller)
 add_subdirectory(runtimes)
+
 if(${BUILD_TESTS})
     add_subdirectory(tests)
 endif(${BUILD_TESTS})
@@ -736,16 +725,9 @@ set(
     JoynrCommon
     Joynr
     JoynrWsRuntime
+    JoynrClusterController
+    JoynrClusterControllerRuntime
 )
-
-if(${BUILD_CLUSTER_CONTROLLER})
-    LIST(
-        APPEND
-        TARGET_LIBS
-        JoynrClusterController
-        JoynrClusterControllerRuntime
-    )
-endif(${BUILD_CLUSTER_CONTROLLER})
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     list(
@@ -781,13 +763,17 @@ set(
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
-if(${BUILD_CLUSTER_CONTROLLER})
-    set(
-        JoynrConfig_LIB_INPROCESS_LIBRARIES
-        JoynrClusterController
-        JoynrClusterControllerRuntime
-    )
-endif(${BUILD_CLUSTER_CONTROLLER})
+set(
+    JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS
+    ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
+)
+
+set(
+    JoynrConfig_LIB_INPROCESS_LIBRARIES
+    JoynrClusterController
+    JoynrClusterControllerRuntime
+)
 
 set(
     JoynrConfig_LIB_WS_LIBRARIES
@@ -804,6 +790,8 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 # ... for the build tree
 get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     JoynrConfig_LIB_COMMON_INCLUDE_DIRS
@@ -813,15 +801,7 @@ set(
     ${muesli_INCLUDE_DIRECTORIES}
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
 )
-if(${BUILD_CLUSTER_CONTROLLER})
-    get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
-    get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
-    set(
-        JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS
-        ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
-        ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
-    )
-endif(${BUILD_CLUSTER_CONTROLLER})
+
 set(
     JoynrConfig_LIB_WS_INCLUDE_DIRS
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}

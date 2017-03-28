@@ -87,25 +87,19 @@ get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCL
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 
 get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
-if(${BUILD_CLUSTER_CONTROLLER})
-    get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
-    get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
-endif(${BUILD_CLUSTER_CONTROLLER})
+get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 
 set(
-    test_TARGET_LIBRARIES
-    JoynrCommon
-    Joynr
-)
-
-set(
-    JoynrTest_INCLUDE_DIRECTORIES
+    test_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
     ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
@@ -130,7 +124,7 @@ add_library(TestGenerated SHARED
     ${JoynrTest_GENHEADERS}
 )
 
-# add needed dependencies by linking to target joynr
+# add needed dependencies by linking to target Joynr
 target_link_libraries(TestGenerated Joynr)
 
 if(NOT USE_PLATFORM_SPDLOG)
@@ -139,7 +133,7 @@ endif(NOT USE_PLATFORM_SPDLOG)
 
 target_include_directories(
     TestGenerated
-    PUBLIC ${JoynrTest_INCLUDE_DIRECTORIES}
+    PUBLIC ${test_INCLUDE_DIRECTORIES}
 )
 
 target_include_directories(
@@ -155,12 +149,21 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     )
     get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
     list(
-        APPEND JoynrTest_INCLUDE_DIRECTORIES
+        APPEND test_INCLUDE_DIRECTORIES
         ${common_api_PUBLIC_INCLUDE_DIRECTORY}
     )
 else()
     set(OPTIONAL_DBUS_LIBRARIES "")
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
+
+## Collect link targets for tests
+set(
+    test_TARGET_LIBRARIES
+    JoynrCommon
+    Joynr
+    JoynrClusterController
+    JoynrClusterControllerRuntime
+)
 
 # Visual Studio uses different directories for RELEASE and DEBUG
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
@@ -188,52 +191,30 @@ else()
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
-set(
-    cluster_controller_test_INCLUDE_DIRECTORIES
-    ${JoynrTest_INCLUDE_DIRECTORIES}
-    ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
-    ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
-)
-
-set(
-    cluster_controller_test_TARGET_LIBRARIES
-    ${test_TARGET_LIBRARIES}
-    JoynrClusterController
-    JoynrClusterControllerRuntime
+list(
+    APPEND test_TARGET_LIBRARIES
     # Link the Dbus runtime last so that the cluster controller
     # runtime is the default runtime
     ${OPTIONAL_DBUS_LIBRARIES}
 )
 
+## Collect common header files for tests
 set(
-    libjoynr_test_TARGET_LIBRARIES
-    ${test_TARGET_LIBRARIES}
-    JoynrWsRuntime
-)
-
-set(
-    cluster_controller_test_HEADERS
+    test_HEADERS
     "JoynrTest.h"
     "PrettyPrint.h"
     "utils/MockCallback.h"
     "utils/MockObjects.h"
     "utils/LibJoynrMockObjects.h"
     "utils/MockLocalCapabilitiesDirectoryCallback.h"
-    ${JoynrTest_GENHEADERS}
-)
-
-set(
-    libjoynr_test_HEADERS
-    "PrettyPrint.h"
     "utils/TimeUtils.h"
     "utils/TestRunnable.h"
-    "utils/LibJoynrMockObjects.h"
     "utils/TestLibJoynrWebSocketRuntime.h"
-    ${JoynrTest_GENHEADERS}
 )
 
+## Collect common source files for tests
 set(
-    cluster_controller_test_SOURCES
+    test_SOURCES
     "PrettyPrint.cpp"
     "utils/MockObjects.cpp"
     "utils/TestRunnable.cpp"
@@ -241,23 +222,11 @@ set(
     "TestMain.cpp"
 )
 
-set(
-    libjoynr_test_SOURCES
-    "PrettyPrint.cpp"
-    "TestMain.cpp"
-)
+###############
+# g_UnitTests #
+###############
 
-list(APPEND JOYNR_BOOST_REQUIRED_COMPONENTS filesystem regex)
-find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
-    COMPONENTS ${JOYNR_BOOST_REQUIRED_COMPONENTS}
-)
-include(CheckBoostImportTargets)
-
-if(${BUILD_CLUSTER_CONTROLLER})
-    ###############
-    # g_UnitTests #
-    ###############
-
+if(${BUILD_UNIT_TESTS})
     file(
         GLOB g_UnitTests_SOURCES
         "unit-tests/*.cpp"
@@ -279,36 +248,36 @@ if(${BUILD_CLUSTER_CONTROLLER})
         )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    if(${BUILD_UNIT_TESTS})
-        AddTest(
-            g_UnitTests
-            ${cluster_controller_test_HEADERS}
-            ${cluster_controller_test_SOURCES}
-            ${g_UnitTests_HEADERS}
-            ${g_UnitTests_SOURCES}
-        )
+    AddTest(
+        g_UnitTests
+        ${test_HEADERS}
+        ${test_SOURCES}
+        ${g_UnitTests_HEADERS}
+        ${g_UnitTests_SOURCES}
+    )
 
-        target_link_libraries(
-            g_UnitTests
-            TestGenerated
-            ${cluster_controller_test_TARGET_LIBRARIES}
-        )
+    target_link_libraries(
+        g_UnitTests
+        TestGenerated
+        ${test_TARGET_LIBRARIES}
+    )
 
-        target_include_directories(
-            g_UnitTests
-            PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
-        )
+    target_include_directories(
+        g_UnitTests
+        PRIVATE ${test_INCLUDE_DIRECTORIES}
+    )
 
-        install(TARGETS g_UnitTests TestGenerated
-            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        )
-    endif(${BUILD_UNIT_TESTS})
+    install(TARGETS g_UnitTests TestGenerated
+        RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+endif(${BUILD_UNIT_TESTS})
 
-    ######################
-    # g_IntegrationTests #
-    ######################
+######################
+# g_IntegrationTests #
+######################
 
+if(${BUILD_INTEGRATION_TESTS})
     file(
        GLOB g_IntegrationTests_SOURCES
        "integration-tests/*.cpp"
@@ -322,34 +291,41 @@ if(${BUILD_CLUSTER_CONTROLLER})
        )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    if(${BUILD_INTEGRATION_TESTS})
-        AddTest(
-           g_IntegrationTests
-           ${cluster_controller_test_HEADERS}
-           ${cluster_controller_test_SOURCES}
-           ${g_IntegrationTests_SOURCES}
-        )
+    AddTest(
+       g_IntegrationTests
+       ${test_HEADERS}
+       ${test_SOURCES}
+       ${g_IntegrationTests_SOURCES}
+    )
 
-        target_link_libraries(
-            g_IntegrationTests
-            TestGenerated
-            ${cluster_controller_test_TARGET_LIBRARIES}
-        )
+    target_link_libraries(
+        g_IntegrationTests
+        TestGenerated
+        ${test_TARGET_LIBRARIES}
+    )
 
-        target_include_directories(
-            g_IntegrationTests
-            PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
-        )
+    target_include_directories(
+        g_IntegrationTests
+        PRIVATE ${test_INCLUDE_DIRECTORIES}
+    )
 
-        install(TARGETS g_IntegrationTests TestGenerated
-            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        )
-    endif(${BUILD_INTEGRATION_TESTS})
+    install(TARGETS g_IntegrationTests TestGenerated
+        RUNTIME DESTINATION ${INSTALL_TEST_DIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+endif(${BUILD_INTEGRATION_TESTS})
 
-    ############################
-    # g_SystemIntegrationTests #
-    ############################
+############################
+# g_SystemIntegrationTests #
+############################
+
+if(${BUILD_SYSTEM_INTEGRATION_TESTS})
+    # Add addtional boost dependencies for tests
+    list(APPEND JOYNR_BOOST_REQUIRED_COMPONENTS filesystem regex)
+    find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
+        COMPONENTS ${JOYNR_BOOST_REQUIRED_COMPONENTS}
+    )
+    include(CheckBoostImportTargets)
 
     file(
        GLOB g_SystemIntegrationTests_SOURCES
@@ -363,127 +339,47 @@ if(${BUILD_CLUSTER_CONTROLLER})
        )
     endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-    if(${BUILD_SYSTEM_INTEGRATION_TESTS})
-        AddTest(
-           g_SystemIntegrationTests
-           ${cluster_controller_test_HEADERS}
-           ${cluster_controller_test_SOURCES}
-           ${g_SystemIntegrationTests_SOURCES}
-           "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
-           "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
-           "../runtimes/libjoynr-runtime/LibJoynrRuntime.cpp"
-        )
-
-        target_link_libraries(
-            g_SystemIntegrationTests
-            TestGenerated
-            ${cluster_controller_test_TARGET_LIBRARIES}
-            Boost::filesystem
-            Boost::regex
-        )
-
-        set_target_properties(
-           g_SystemIntegrationTests
-           PROPERTIES
-           COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-        )
-
-        target_include_directories(
-            g_SystemIntegrationTests
-            SYSTEM
-            PRIVATE ${CURL_INCLUDE_DIRS}
-        )
-
-        target_include_directories(
-            g_SystemIntegrationTests
-            PRIVATE ${cluster_controller_test_INCLUDE_DIRECTORIES}
-            PRIVATE ${BOOST_INCLUDE_DIRS}
-        )
-
-        install(TARGETS g_SystemIntegrationTests TestGenerated
-            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        )
-    endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
-
-else()
-    # Build tests that run on libjoynr
-
-    ###############
-    # g_UnitTests #
-    ###############
-
-    set(
-        g_UnitTests_SOURCES
-        "unit-tests/JsonSerializerTest.cpp"
+    AddTest(
+       g_SystemIntegrationTests
+       ${test_HEADERS}
+       ${test_SOURCES}
+       ${g_SystemIntegrationTests_SOURCES}
+       "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+       "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
+       "../runtimes/libjoynr-runtime/LibJoynrRuntime.cpp"
     )
 
-    if(${BUILD_UNIT_TESTS})
-        AddTest(
-            g_UnitTests
-            ${libjoynr_test_HEADERS}
-            ${libjoynr_test_SOURCES}
-            ${g_UnitTests_SOURCES}
-        )
-
     target_link_libraries(
-            g_UnitTests
-            TestGenerated
-            ${libjoynr_test_TARGET_LIBRARIES}
-        )
+        g_SystemIntegrationTests
+        TestGenerated
+        ${test_TARGET_LIBRARIES}
+        Boost::filesystem
+        Boost::regex
+    )
+
+    set_target_properties(
+       g_SystemIntegrationTests
+       PROPERTIES
+       COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+    )
 
     target_include_directories(
-            g_UnitTests
-            PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
-        )
+        g_SystemIntegrationTests
+        SYSTEM
+        PRIVATE ${CURL_INCLUDE_DIRS}
+    )
 
-    install(TARGETS g_UnitTests TestGenerated
+    target_include_directories(
+        g_SystemIntegrationTests
+        PRIVATE ${test_INCLUDE_DIRECTORIES}
+        PRIVATE ${BOOST_INCLUDE_DIRS}
+    )
+
+    install(TARGETS g_SystemIntegrationTests TestGenerated
         RUNTIME DESTINATION ${INSTALL_TEST_DIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
-    endif(${BUILD_UNIT_TESTS})
-
-    ############################
-    # g_SystemIntegrationTests #
-    ############################
-
-    set(
-       g_SystemIntegrationTests_SOURCES
-       "systemintegration-tests/TestConfiguration.h"
-       "systemintegration-tests/CombinedEnd2EndTest.h"
-       "systemintegration-tests/CombinedEnd2EndTest.cpp"
-       "systemintegration-tests/TestConfiguration.cpp"
-    )
-
-    if(${BUILD_SYSTEM_INTEGRATION_TESTS})
-        AddTest(
-           g_SystemIntegrationTests
-           ${libjoynr_test_HEADERS}
-           ${libjoynr_test_SOURCES}
-           ${g_SystemIntegrationTests_SOURCES}
-        )
-
-        target_link_libraries(
-            g_SystemIntegrationTests
-            TestGenerated
-            ${libjoynr_test_TARGET_LIBRARIES}
-            Boost::filesystem
-            Boost::regex
-        )
-
-        target_include_directories(
-            g_SystemIntegrationTests
-            PRIVATE ${JoynrTest_INCLUDE_DIRECTORIES}
-            PRIVATE ${BOOST_INCLUDE_DIRS}
-        )
-
-        install(TARGETS g_SystemIntegrationTests TestGenerated
-            RUNTIME DESTINATION ${INSTALL_TEST_DIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        )
-    endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
-
-endif(${BUILD_CLUSTER_CONTROLLER})
+endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
 
 install(DIRECTORY resources
         DESTINATION ${INSTALL_TEST_DIR}
