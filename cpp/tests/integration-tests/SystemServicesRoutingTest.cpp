@@ -87,7 +87,7 @@ public:
 
     ~SystemServicesRoutingTest(){
         runtime->deleteChannel();
-        runtime->stopMessaging();
+        runtime->stopExternalCommunication();
         std::remove(settingsFilename.c_str());
     }
 

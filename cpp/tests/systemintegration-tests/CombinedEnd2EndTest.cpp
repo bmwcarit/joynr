@@ -1102,7 +1102,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
                     ->build());
 
     // Shut down the provider
-    // runtime1->stopMessaging();
+    // runtime1->stopExternalCommunication();
     runtime1->unregisterProvider(domainName, testProvider);
     std::this_thread::sleep_for(std::chrono::seconds(5));
 

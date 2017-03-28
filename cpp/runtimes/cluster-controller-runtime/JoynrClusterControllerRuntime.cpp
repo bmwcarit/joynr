@@ -781,13 +781,13 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     // this ensures all asynchronous operations are stopped now
     // which allows a safe shutdown
     singleThreadIOService->stop();
-    stopMessaging();
+    stopExternalCommunication();
 
     multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
 
     if (joynrDispatcher != nullptr) {
         JOYNR_LOG_TRACE(logger, "joynrDispatcher");
-        // joynrDispatcher->stopMessaging();
+        // joynrDispatcher->stopExternalCommunication();
         delete joynrDispatcher;
     }
 
@@ -805,10 +805,10 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     JOYNR_LOG_TRACE(logger, "leaving ~JoynrClusterControllerRuntime");
 }
 
-void JoynrClusterControllerRuntime::startMessaging()
+void JoynrClusterControllerRuntime::startExternalCommunication()
 {
     //    assert(joynrDispatcher!=NULL);
-    //    joynrDispatcher->startMessaging();
+    //    joynrDispatcher->startExternalCommunication();
     //    joynrDispatcher->waitForMessaging();
     if (doHttpMessaging) {
         assert(httpMessageReceiver != nullptr);
@@ -825,9 +825,9 @@ void JoynrClusterControllerRuntime::startMessaging()
     }
 }
 
-void JoynrClusterControllerRuntime::stopMessaging()
+void JoynrClusterControllerRuntime::stopExternalCommunication()
 {
-    // joynrDispatcher->stopMessaging();
+    // joynrDispatcher->stopExternalCommunication();
     if (doHttpMessaging) {
         if (httpMessagingIsRunning) {
             httpMessageReceiver->stopReceiveQueue();
@@ -840,6 +840,11 @@ void JoynrClusterControllerRuntime::stopMessaging()
             mqttMessagingIsRunning = false;
         }
     }
+}
+
+void JoynrClusterControllerRuntime::shutdown()
+{
+    // to be implemented
 }
 
 void JoynrClusterControllerRuntime::runForever()
@@ -862,7 +867,7 @@ std::unique_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
 
 void JoynrClusterControllerRuntime::start()
 {
-    startMessaging();
+    startExternalCommunication();
     registerRoutingProvider();
     registerDiscoveryProvider();
     registerMessageNotificationProvider();
@@ -874,7 +879,7 @@ void JoynrClusterControllerRuntime::stop(bool deleteChannel)
     if (deleteChannel) {
         this->deleteChannel();
     }
-    stopMessaging();
+    stopExternalCommunication();
     singleThreadIOService->stop();
 }
 

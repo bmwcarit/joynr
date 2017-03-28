@@ -80,7 +80,7 @@ public:
     }
 
     void SetUp() {
-        clusterControllerRuntime->startMessaging();
+        clusterControllerRuntime->startExternalCommunication();
         clusterControllerRuntime->waitForChannelCreation();
     }
 
@@ -91,7 +91,7 @@ public:
 
         if(clusterControllerRuntime != NULL) {
             clusterControllerRuntime->deleteChannel();
-            clusterControllerRuntime->stopMessaging();
+            clusterControllerRuntime->stopExternalCommunication();
             delete clusterControllerRuntime;
         }
     }

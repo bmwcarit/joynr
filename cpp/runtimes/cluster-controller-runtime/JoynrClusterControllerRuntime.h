@@ -24,6 +24,8 @@
 #include <memory>
 #include <vector>
 
+#include "joynr/IClusterControllerSignalHandler.h"
+
 #include "cluster-controller/access-control/LocalDomainAccessController.h"
 
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
@@ -73,7 +75,9 @@ namespace infrastructure
 class ChannelUrlDirectoryProxy;
 } // namespace infrastructure
 
-class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime : public JoynrRuntime
+class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
+        : public JoynrRuntime,
+          public IClusterControllerSignalHandler
 {
 public:
     JoynrClusterControllerRuntime(std::unique_ptr<Settings> settings,
@@ -93,9 +97,12 @@ public:
 
     void runForever();
 
+    // Implement IClusterControllerSignalHandler
+    void startExternalCommunication() final;
+    void stopExternalCommunication() final;
+    void shutdown() final;
+
     // Functions used by integration tests
-    void startMessaging();
-    void stopMessaging();
     void deleteChannel();
     void registerRoutingProvider();
     void registerDiscoveryProvider();

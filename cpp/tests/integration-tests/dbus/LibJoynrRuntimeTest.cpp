@@ -111,7 +111,7 @@ public:
 
     ~LibJoynrRuntimeTest() {
         ccRuntime->deleteChannel();
-        ccRuntime->stopMessaging();
+        ccRuntime->stopExternalCommunication();
         delete ccRuntime;
     }
 
