@@ -73,7 +73,7 @@ ADDITIONAL_CC_ARGS=""
 SKIPBYTEARRAYSIZETIMESK=false
 
 # Select backend service protocol
-BACKEND_SERVICES="mqtt"
+BACKEND_SERVICES="MQTT"
 
 function getCpuTime {
     PID=$1
@@ -450,8 +450,8 @@ function stopAnyProvider {
 }
 
 function startPayara {
-    DISCOVERY_WAR_FILE=target/discovery-jee.war
-    ACCESS_CONTROL_WAR_FILE=target/accesscontrol-jee.war
+    DISCOVERY_WAR_FILE=$PERFORMANCETESTS_SOURCE_DIR/target/discovery-jee.war
+    ACCESS_CONTROL_WAR_FILE=$PERFORMANCETESTS_SOURCE_DIR/target/accesscontrol-jee.war
 
     echo "Starting payara"
 
@@ -616,8 +616,6 @@ TESTCASES=('SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY')
 if [ ! $SKIPBYTEARRAYSIZETIMESK ]
 then
     TESTCASES+=('SEND_BYTEARRAY_WITH_SIZE_TIMES_K')
-fi
-
 fi
 
 if [ -z "$BACKEND_SERVICES" ]
