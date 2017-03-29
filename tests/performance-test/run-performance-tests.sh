@@ -65,7 +65,14 @@ MQTT_BROKER_URI="tcp://localhost:1883"
 JETTY_PID=""
 MOSQUITTO_PID=""
 CLUSTER_CONTROLLER_PID=""
+
+# Stores the PID of the launched provider. Will be empty if the provider is deployed to a payara
+# server as a JEE app. In this case PROVIDER_JEE_APP_NAME can be used to identify the provider.
 PROVIDER_PID=""
+
+# If a provider is deployed to a payara server, this variable will store the application
+# name. If this variable is set, PROVIDER_PID will store an empty string.
+PROVIDER_JEE_APP_NAME=""
 
 # arguments which are passed to the C++ cluster-controller
 ADDITIONAL_CC_ARGS=""
@@ -271,6 +278,15 @@ function startJavaPerformanceTestProvider {
     echo "Performance test provider started"
 }
 
+function startJavaJeePerformanceTestProvider {
+    echo '### Starting java JEE performance test provider (in process cc) ###'
+
+    asadmin deploy --force=true $PERFORMANCETESTS_SOURCE_DIR/../performance-test-jee/target/performance-test-jee-provider.war
+    PROVIDER_JEE_APP_NAME="performance-test-jee-provider"
+
+    echo "Performance test provider started"
+}
+
 function performJavaConsumerTest {
     MODE_PARAM=$1
     TESTCASE_PARAM=$2
@@ -278,11 +294,12 @@ function performJavaConsumerTest {
     REPORTFILE_PARAM=$4
     NUM_INSTANCES=$5
     NUM_RUNS=$6
+    DISCOVERY_SCOPE=$7
 
     CONSUMERCLASS="io.joynr.performance.ConsumerApplication"
     CONSUMERARGS="-d $DOMAINNAME -w $JAVA_WARMUPS -r $NUM_RUNS \
                   -s $MODE_PARAM -t $TESTCASE_PARAM -bs $INPUTDATA_BYTEARRAYSIZE \
-                  -sl $INPUTDATA_STRINGLENGTH"
+                  -sl $INPUTDATA_STRINGLENGTH -ds $DISCOVERY_SCOPE"
 
     cd $PERFORMANCETESTS_SOURCE_DIR
 
@@ -447,6 +464,12 @@ function stopAnyProvider {
         wait $PROVIDER_PID
         PROVIDER_PID=""
     fi
+
+    if [ "$PROVIDER_JEE_APP_NAME" != "" ]
+    then
+        asadmin undeploy --droptables=true $PROVIDER_JEE_APP_NAME
+        PROVIDER_JEE_APP_NAME=""
+    fi
 }
 
 function startPayara {
@@ -514,7 +537,7 @@ function echoUsage {
     echo "Usage: run-performance-tests.sh -j <jetty-dir> -p <performance-bin-dir> \
 -r <performance-results-dir> -s <performance-source-dir> \
 -t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|OAP_TO_BACKEND_MOSQ|\
-CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> -y <joynr-bin-dir>\
+CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|JEE_PROVIDER|ALL> -y <joynr-bin-dir>\
 -B <backend-services (MQTT|HTTP)>\
 [-c <number-of-consumers> -x <number-of-runs> -m <use maven ON|OFF> -z <mosquitto.conf> -n <use node ON|OFF>]"
 }
@@ -590,12 +613,13 @@ if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
    [ "$TESTCASE" != "JS_CONSUMER" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
    [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
    [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ] && \
-   [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ]
+   [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ] && \
+   [ "$TESTCASE" != "JEE_PROVIDER" ]
 then
     echo "\"$TESTCASE\" is not a valid testcase"
     echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, \
 JS_CONSUMER, JS_SHORTCIRCUIT, OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, \
-CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER"
+CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, JEE_PROVIDER"
     echoUsage
     exit 1
 fi
@@ -628,7 +652,7 @@ then
     exit 1
 fi
 
-if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ]
+if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && [ "$TESTCASE" != "JEE_PROVIDER" ]
 then
     startCppClusterController
     startMeasureCpuUsage
@@ -641,7 +665,7 @@ then
             startCppPerformanceTestProvider
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
                 echo "Testcase: JAVA $testcase" | tee -a $REPORTFILE
-                performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
+                performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "LOCAL_ONLY"
             done
         fi
     done
@@ -651,7 +675,7 @@ then
         startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: JAVA $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
-            performJavaConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS
+            performJavaConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS "LOCAL_ONLY"
         done
     fi
 
@@ -711,6 +735,22 @@ then
     stopMeasureCpuUsage $REPORTFILE
     stopAnyProvider
     stopCppClusterController
+fi
+
+if [ "$TESTCASE" == "JEE_PROVIDER" ]
+then
+    startServices
+    startJavaJeePerformanceTestProvider
+
+    for mode in 'ASYNC' 'SYNC'; do
+        for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
+            echo "Testcase: JEE_PROVIDER $mode $testcase" | tee -a $REPORTFILE
+            performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "GLOBAL_ONLY"
+        done
+    done
+
+    stopAnyProvider
+    stopServices
 fi
 
 if [ "$TESTCASE" == "OAP_TO_BACKEND_MOSQ" ]
