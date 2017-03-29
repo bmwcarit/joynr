@@ -66,6 +66,7 @@ public class DefaultMqttTopicPrefixProviderTest {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC, "30");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS, "-1");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "10");
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, expectedMulticastPrefix);
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, expectedReplyToPrefix);
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, expectedUnicastPrefix);

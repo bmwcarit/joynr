@@ -88,6 +88,7 @@ public class MqttPahoClientTest {
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "");
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MessagingPropertyKeys.CHANNELID, "myChannelId");
 
         injector = Guice.createInjector(new MqttPahoModule(),

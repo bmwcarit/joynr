@@ -69,6 +69,7 @@ public class MqttModule extends AbstractModule {
      * configuration).
      */
     public static final String PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS = "joynr.messaging.mqtt.enable.sharedsubscriptions";
+    public static final String PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT = "joynr.messaging.mqtt.maxmsgsinflight";
 
     @Provides
     @Named(PROPERTY_MQTT_GLOBAL_ADDRESS)

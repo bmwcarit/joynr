@@ -68,6 +68,7 @@ public class DefaultMqttClientIdProviderTest {
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "");
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MessagingPropertyKeys.RECEIVERID, receiverId);
         Module testModule = Modules.override(new MqttPahoModule()).with(new AbstractModule() {
             @Override
