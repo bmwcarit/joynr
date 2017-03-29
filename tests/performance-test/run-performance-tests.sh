@@ -478,7 +478,7 @@ function stopPayara {
 
 function startServices {
     startMosquitto
-    log '# starting services'
+    echo '# starting services'
 
     if [ "$BACKEND_SERVICES" = "HTTP" ]
     then
@@ -491,7 +491,7 @@ function startServices {
 
 function stopServices {
     stopMosquitto
-    log '# stopping services'
+    echo '# stopping services'
 
     if [ "$BACKEND_SERVICES" = "HTTP" ]
     then
@@ -624,7 +624,7 @@ then
     BACKEND_SERVICES=MQTT
 elif [ "$BACKEND_SERVICES" != "MQTT" ] && [ "$BACKEND_SERVICES" != "HTTP" ]
 then
-    log 'Invalid value for backend services: $BACKEND_SERVICES.'
+    echo 'Invalid value for backend services: $BACKEND_SERVICES.'
     exit 1
 fi
 
