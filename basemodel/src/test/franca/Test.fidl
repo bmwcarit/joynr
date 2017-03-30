@@ -265,6 +265,15 @@ interface test {
 		}
 	}
 
+	method methodWithEnumWithoutValues {
+		in {
+			testTypes.TestEnumWithoutValues enumIn
+		}
+		out {
+			testTypes.TestEnumWithoutValues enumOut
+		}
+	}
+
 	method methodWithEnumReturn{
 		in {
 			Int32 input

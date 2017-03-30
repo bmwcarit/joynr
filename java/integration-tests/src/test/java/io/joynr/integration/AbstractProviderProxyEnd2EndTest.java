@@ -63,7 +63,6 @@ import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
 import joynr.MulticastSubscriptionQos;
-import joynr.OnChangeSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.DefaulttestProvider;
@@ -441,6 +440,13 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         @Override
         public void methodFireAndForgetWithEnumWithoutValues(TestEnumWithoutValues enumIn) {
             AbstractProviderProxyEnd2EndTest.FIRE_AND_FORGET_WITH_ENUM_WITHOUT_VALUES_PARAM_SEMAPHORE.release();
+        }
+
+        @Override
+        public Promise<MethodWithEnumWithoutValuesDeferred> methodWithEnumWithoutValues(TestEnumWithoutValues enumIn) {
+            MethodWithEnumWithoutValuesDeferred deferred = new MethodWithEnumWithoutValuesDeferred();
+            deferred.resolve(TestEnumWithoutValues.GAMMA);
+            return new Promise<MethodWithEnumWithoutValuesDeferred>(deferred);
         }
     }
 
@@ -1217,7 +1223,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void methodWithFireAndForgetWithEnumWithValues() throws Exception {
+    public void methodFireAndForgetWithEnumWithValues() throws Exception {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         proxy.methodFireAndForgetWithEnumWithValues(TestEnum.ONE);
@@ -1226,12 +1232,20 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void methodWithFireAndForgetWithEnumWithoutValues() throws Exception {
+    public void methodFireAndForgetWithEnumWithoutValues() throws Exception {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         proxy.methodFireAndForgetWithEnumWithoutValues(TestEnumWithoutValues.BETA);
         assertTrue(FIRE_AND_FORGET_WITH_ENUM_WITHOUT_VALUES_PARAM_SEMAPHORE.tryAcquire(CONST_DEFAULT_TEST_TIMEOUT,
                                                                                        TimeUnit.MILLISECONDS));
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void methodWithEnumWithoutValues() throws Exception {
+        ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        TestEnumWithoutValues result = proxy.methodWithEnumWithoutValues(TestEnumWithoutValues.BETA);
+        assertEquals(TestEnumWithoutValues.GAMMA, result);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
