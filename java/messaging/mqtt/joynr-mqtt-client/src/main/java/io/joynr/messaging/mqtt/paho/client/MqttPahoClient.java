@@ -53,6 +53,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private int keepAliveTimerSec;
     private int connectionTimeoutSec;
     private int timeToWaitMs;
+    private int maxMsgsInflight;
 
     private Set<String> subscribedTopics = new HashSet<>();
 
@@ -60,12 +61,14 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                           int reconnectSleepMS,
                           int keepAliveTimerSec,
                           int connectionTimeoutSec,
-                          int timeToWaitMs) throws MqttException {
+                          int timeToWaitMs,
+                          int maxMsgsInflight) throws MqttException {
         this.mqttClient = mqttClient;
         this.reconnectSleepMs = reconnectSleepMS;
         this.keepAliveTimerSec = keepAliveTimerSec;
         this.connectionTimeoutSec = connectionTimeoutSec;
         this.timeToWaitMs = timeToWaitMs;
+        this.maxMsgsInflight = maxMsgsInflight;
     }
 
     @Override
@@ -116,6 +119,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         options.setAutomaticReconnect(false);
         options.setConnectionTimeout(connectionTimeoutSec);
         options.setKeepAliveInterval(keepAliveTimerSec);
+        options.setMaxInflight(maxMsgsInflight);
         options.setCleanSession(false);
         return options;
     }

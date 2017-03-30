@@ -323,6 +323,16 @@ is useful if you want to run a cluster of JEE nodes while using only MQTT for co
 * **User property**: `joynr.messaging.mqtt.enable.sharedsubscriptions`
 * **Default value**: `false`
 
+### `PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT`
+Controls how many messages will be send in parallel before the mqtt module expects an acknowledgment
+from the broker. Increase this value for applications which generate a lot of traffic in order to
+improve the performance.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.maxmsgsinflight`
+* **Default value**: `10`
+
 ## SystemServicesSettings
 
 ### `PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID`
