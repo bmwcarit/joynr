@@ -31,7 +31,7 @@ import org.junit.runner.JUnitCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/inter-language-test-jee")
+@Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 public class IltConsumerRestEndpoint {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerRestEndpoint.class);
