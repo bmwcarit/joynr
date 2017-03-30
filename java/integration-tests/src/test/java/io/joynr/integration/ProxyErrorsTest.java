@@ -1,24 +1,9 @@
 package io.joynr.integration;
 
-import static org.junit.Assert.fail;
-
-import java.util.Properties;
-import java.util.UUID;
-import java.util.concurrent.Semaphore;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import com.google.common.collect.Sets;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +19,20 @@ import com.google.common.collect.Sets;
  * #L%
  */
 
+import static org.junit.Assert.fail;
+
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.Semaphore;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import com.google.common.collect.Sets;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
@@ -45,6 +44,7 @@ import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
@@ -89,6 +89,8 @@ public class ProxyErrorsTest {
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
         Module runtimeModule = new CCInProcessRuntimeModule();
         Module modulesWithRuntime = Modules.override(runtimeModule).with(modules);
+        modulesWithRuntime = Modules.override(modulesWithRuntime).with(new TestGlobalAddressModule());
+
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
 

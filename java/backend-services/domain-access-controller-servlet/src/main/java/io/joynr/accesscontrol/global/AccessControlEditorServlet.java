@@ -3,7 +3,7 @@ package io.joynr.accesscontrol.global;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,12 +59,18 @@ public class AccessControlEditorServlet extends HttpServlet {
     // This servlet cannot be serialized and injected objects are marked as transient
     private transient GlobalDomainAccessStoreAdmin domainAccessStore;
     private transient GlobalDomainAccessControllerProviderImpl domainAccessControllerProvider;
+    private transient GlobalDomainAccessControlListEditorProviderImpl domainAccessControlListEditorProvider;
+    private transient GlobalDomainRoleControllerProviderImpl domainRoleControllerProvider;
 
     @Inject
     public AccessControlEditorServlet(@InjectParam GlobalDomainAccessStoreAdmin domainAccessStore,
-                                      @InjectParam GlobalDomainAccessControllerProviderImpl domainAccessControllerProvider) {
+                                      @InjectParam GlobalDomainAccessControllerProviderImpl domainAccessControllerProvider,
+                                      @InjectParam GlobalDomainRoleControllerProviderImpl domainRoleControllerProvider,
+                                      @InjectParam GlobalDomainAccessControlListEditorProviderImpl domainAccessControlListEditorProvider) {
         this.domainAccessStore = domainAccessStore;
         this.domainAccessControllerProvider = domainAccessControllerProvider;
+        this.domainRoleControllerProvider = domainRoleControllerProvider;
+        this.domainAccessControlListEditorProvider = domainAccessControlListEditorProvider;
     }
 
     /**
@@ -115,7 +121,7 @@ public class AccessControlEditorServlet extends HttpServlet {
     @Path(DOMAIN_ROLE_PATH + "/{userId}/{role}")
     public void deleteDRTEntry(@PathParam("userId") String userId, @PathParam("role") Role role) {
         logger.info("Deleting DRT entry for " + userId + "/" + role);
-        domainAccessControllerProvider.removeDomainRole(userId, role);
+        domainRoleControllerProvider.removeDomainRole(userId, role);
     }
 
     /**
@@ -136,7 +142,7 @@ public class AccessControlEditorServlet extends HttpServlet {
                                      @PathParam("interfaceName") String interfaceName,
                                      @PathParam("operation") String operation) {
         logger.info("Deleting Master ACL entry for " + userId + "/" + domain + "/" + interfaceName + "/" + operation);
-        domainAccessControllerProvider.removeMasterAccessControlEntry(userId, domain, interfaceName, operation);
+        domainAccessControlListEditorProvider.removeMasterAccessControlEntry(userId, domain, interfaceName, operation);
     }
 
     /**
@@ -157,7 +163,7 @@ public class AccessControlEditorServlet extends HttpServlet {
                                     @PathParam("interfaceName") String interfaceName,
                                     @PathParam("operation") String operation) {
         logger.info("Deleting Owner ACL entry for " + userId + "/" + domain + "/" + interfaceName + "/" + operation);
-        domainAccessControllerProvider.removeOwnerAccessControlEntry(userId, domain, interfaceName, operation);
+        domainAccessControlListEditorProvider.removeOwnerAccessControlEntry(userId, domain, interfaceName, operation);
     }
 
     /**
@@ -172,7 +178,7 @@ public class AccessControlEditorServlet extends HttpServlet {
     @Consumes(MediaType.APPLICATION_JSON)
     public void updateDrtEntry(DomainRoleEntry domainRoleEntry) {
         logger.info("Updating DRT entry: " + domainRoleEntry);
-        domainAccessControllerProvider.updateDomainRole(domainRoleEntry);
+        domainRoleControllerProvider.updateDomainRole(domainRoleEntry);
     }
 
     /**
@@ -188,7 +194,7 @@ public class AccessControlEditorServlet extends HttpServlet {
     @Consumes(MediaType.APPLICATION_JSON)
     public void updateMasterAclEntry(MasterAccessControlEntry masterAccessControlEntry) {
         logger.info("Updating Master ACL entry: " + masterAccessControlEntry);
-        domainAccessControllerProvider.updateMasterAccessControlEntry(masterAccessControlEntry);
+        domainAccessControlListEditorProvider.updateMasterAccessControlEntry(masterAccessControlEntry);
     }
 
     /**
@@ -203,7 +209,7 @@ public class AccessControlEditorServlet extends HttpServlet {
     @Consumes(MediaType.APPLICATION_JSON)
     public void updateMasterAclEntry(OwnerAccessControlEntry ownerAccessControlEntry) {
         logger.info("Updating Owner ACL entry: " + ownerAccessControlEntry);
-        domainAccessControllerProvider.updateOwnerAccessControlEntry(ownerAccessControlEntry);
+        domainAccessControlListEditorProvider.updateOwnerAccessControlEntry(ownerAccessControlEntry);
     }
 
     @Override

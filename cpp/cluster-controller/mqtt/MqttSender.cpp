@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "MqttSender.h"
+#include "cluster-controller/mqtt/MqttSender.h"
 
 #include "joynr/IMessageReceiver.h"
 #include "joynr/Util.h"
@@ -24,19 +24,16 @@
 #include "joynr/MessagingQosEffort.h"
 #include "joynr/serializer/Serializer.h"
 
+#include "cluster-controller/mqtt/MosquittoConnection.h"
+
 namespace joynr
 {
 
 INIT_LOGGER(MqttSender);
 
-MqttSender::MqttSender(const MessagingSettings& settings) : mosquittoPublisher(settings), receiver()
+MqttSender::MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection)
+        : mosquittoConnection(mosquittoConnection), receiver()
 {
-    mosquittoPublisher.start();
-}
-
-MqttSender::~MqttSender()
-{
-    mosquittoPublisher.stop();
 }
 
 void MqttSender::sendMessage(
@@ -61,9 +58,9 @@ void MqttSender::sendMessage(
     }
     std::string topic;
     if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
-        topic = message.getHeaderTo();
+        topic = mqttAddress->getTopic();
     } else {
-        topic = mqttAddress->getTopic() + "/" + mosquittoPublisher.getMqttPrio() + "/" +
+        topic = mqttAddress->getTopic() + "/" + mosquittoConnection->getMqttPrio() + "/" +
                 message.getHeaderTo();
     }
 
@@ -74,14 +71,14 @@ void MqttSender::sendMessage(
 
     util::logSerializedMessage(logger, "Sending Message: ", serializedMessage);
 
-    int qosLevel = mosquittoPublisher.getMqttQos();
+    int qosLevel = mosquittoConnection->getMqttQos();
     if (message.containsHeaderEffort() &&
         message.getHeaderEffort() ==
                 MessagingQosEffort::getLiteral(MessagingQosEffort::Enum::BEST_EFFORT)) {
         qosLevel = 0;
     }
 
-    mosquittoPublisher.publishMessage(topic, qosLevel, onFailure, payloadLength, payload);
+    mosquittoConnection->publishMessage(topic, qosLevel, onFailure, payloadLength, payload);
 }
 
 void MqttSender::registerReceiver(std::shared_ptr<IMessageReceiver> receiver)

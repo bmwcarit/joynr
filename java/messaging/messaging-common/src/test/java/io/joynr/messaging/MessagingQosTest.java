@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,5 +71,20 @@ public class MessagingQosTest {
         boolean encrypt = true;
         messagingQos.setEncrypt(encrypt);
         assertEquals(encrypt, messagingQos.getEncrypt());
+    }
+
+    @Test
+    public void testDefaultCompress() {
+        MessagingQos messagingQos = new MessagingQos(0L);
+        assertEquals(false, messagingQos.getCompress());
+    }
+
+    @Test
+    public void testCompressSetter() {
+        MessagingQos messagingQos = new MessagingQos(0L);
+        assertEquals(false, messagingQos.getCompress());
+        boolean compress = true;
+        messagingQos.setCompress(compress);
+        assertEquals(compress, messagingQos.getCompress());
     }
 }

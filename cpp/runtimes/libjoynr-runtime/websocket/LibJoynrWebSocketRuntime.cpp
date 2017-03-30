@@ -22,7 +22,8 @@
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
 #include "joynr/Util.h"
-#include "libjoynr/websocket/WebSocketPpClient.h"
+#include "libjoynr/websocket/WebSocketPpClientTLS.h"
+#include "libjoynr/websocket/WebSocketPpClientNonTLS.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -34,18 +35,13 @@ namespace joynr
 INIT_LOGGER(LibJoynrWebSocketRuntime);
 
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings)
-        : LibJoynrRuntime(std::move(settings)),
-          wsSettings(*this->settings),
-          websocket(std::make_shared<WebSocketPpClient>(wsSettings,
-                                                        singleThreadIOService->getIOService()))
+        : LibJoynrRuntime(std::move(settings)), wsSettings(*this->settings)
 {
+    createWebsocketClient();
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 {
-    // reset receive callback to remove last reference to MessageRouter in
-    // WebSocketLibJoynrMessagingSkeleton
-    websocket->registerReceiveCallback(nullptr);
     websocket->close();
     // synchronously stop the underlying boost::asio::io_service
     // this ensures all asynchronous operations are stopped now
@@ -53,7 +49,9 @@ LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
     singleThreadIOService->stop();
 }
 
-void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallback)
+void LibJoynrWebSocketRuntime::connect(
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError)
 {
     std::string uuid = util::createUuid();
     // remove dashes
@@ -86,7 +84,8 @@ void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallb
 
     auto connectCallback = [
         this,
-        runtimeCreatedCallback = std::move(runtimeCreatedCallback),
+        onSuccess = std::move(onSuccess),
+        onError = std::move(onError),
         factory,
         libjoynrMessagingAddress,
         ccMessagingAddress
@@ -96,9 +95,12 @@ void LibJoynrWebSocketRuntime::connect(std::function<void()> runtimeCreatedCallb
 
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
                 std::make_unique<joynr::WebSocketMulticastAddressCalculator>(ccMessagingAddress);
-        init(factory, libjoynrMessagingAddress, ccMessagingAddress, std::move(addressCalculator));
-
-        runtimeCreatedCallback();
+        init(factory,
+             libjoynrMessagingAddress,
+             ccMessagingAddress,
+             std::move(addressCalculator),
+             std::move(onSuccess),
+             std::move(onError));
     };
 
     auto reconnectCallback = [this]() { sendInitializationMsg(); };
@@ -116,16 +118,52 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
                         "Sending websocket initialization message failed. Error: {}",
                         e.getMessage());
     };
-    websocket->sendTextMessage(initializationMsg, onFailure);
+    websocket->send(initializationMsg, onFailure);
+}
+
+void LibJoynrWebSocketRuntime::createWebsocketClient()
+{
+    system::RoutingTypes::WebSocketAddress webSocketAddress =
+            wsSettings.createClusterControllerMessagingAddress();
+
+    std::string certificateAuthorityPemFilename = wsSettings.getCertificateAuthorityPemFilename();
+    std::string certificatePemFilename = wsSettings.getCertificatePemFilename();
+    std::string privateKeyPemFilename = wsSettings.getPrivateKeyPemFilename();
+
+    if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS) {
+        if (checkAndLogCryptoFileExistence(certificateAuthorityPemFilename,
+                                           certificatePemFilename,
+                                           privateKeyPemFilename,
+                                           logger)) {
+            JOYNR_LOG_INFO(logger, "Using TLS connection");
+            websocket =
+                    std::make_shared<WebSocketPpClientTLS>(wsSettings,
+                                                           singleThreadIOService->getIOService(),
+                                                           certificateAuthorityPemFilename,
+                                                           certificatePemFilename,
+                                                           privateKeyPemFilename);
+        } else {
+            throw exceptions::JoynrRuntimeException(
+                    "Settings property 'cluster-controller-messaging-url' uses TLS "
+                    "but not all TLS properties were configured");
+        }
+    } else if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WS) {
+        JOYNR_LOG_INFO(logger, "Using non-TLS connection");
+        websocket = std::make_shared<WebSocketPpClientNonTLS>(
+                wsSettings, singleThreadIOService->getIOService());
+    } else {
+        throw exceptions::JoynrRuntimeException(
+                "Unknown protocol used for settings property 'cluster-controller-messaging-url'");
+    }
 }
 
 void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
         std::shared_ptr<IMessageRouter> messageRouter)
 {
     auto wsLibJoynrMessagingSkeleton =
-            std::make_shared<WebSocketLibJoynrMessagingSkeleton>(std::move(messageRouter));
+            std::make_shared<WebSocketLibJoynrMessagingSkeleton>(util::as_weak_ptr(messageRouter));
     websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](const std::string& msg) {
-        wsLibJoynrMessagingSkeleton->onTextMessageReceived(msg);
+        wsLibJoynrMessagingSkeleton->onMessageReceived(msg);
     });
 }
 

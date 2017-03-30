@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,290 +18,16 @@
  */
 package infrastructure
 
-<**
-	@description: Data types used in communication between Local and Global
-		Domain Access Controller (LDAC and GDAC).
-**>
-typeCollection DacTypes {
-	enumeration Permission {
-		<**
-			@description: Access is granted without any user interaction.
-		**>
-		YES
-		<**
-			@description: User interaction is required which either allows
-				or denies access.
-		**>
-		ASK
-		<**
-			@description: Access is denied without any user interaction.
-		**>
-		NO
-	}
-
-	<**
-		@description: A Trust Level (TL) describes the trustworthiness of a
-			joynr user and the device he uses to connect to the joynr backend
-			or other joynr participants. There are four levels of
-			trustworthiness: HIGH, MID, LOW and NONE. Note that NONE refers
-			to a completely untrusted, non-authenticated user. All other TLs
-			are specified by requirements regarding the device used to
-			establish a connection (e.g. vehicle, mobile phone, etc.) and
-			the local authentication methods unlocking a user’s certificate
-			(e.g. passwords, biometric authentication, etc.).
-	**>
-	enumeration TrustLevel {
-		HIGH
-		MID
-		LOW
-		NONE
-	}
-
-	<**
-		@description: The Control Entry (CE) stores access permissions of users
-			for a domain/interface combination. It is the base class for
-			<code>MasterControlEntry</code> and <code>OwnerControlEntry</code>.
-	 **>
-	struct ControlEntry {
-		<**
-			@description: A unique user ID (UID) this Control Entry (CE) applies
-				to or the wildcard character (asterisk sign) if this CE applies
-				to all users. CEs that use the wildcard character are overruled
-				by specific ones (if they exist).
-		 **>
-		String uid
-		<**
-			@description: The domain this Control Entry (CE) applies to.
-		**>
-		String domain
-		<**
-			@description: The interface this Control Entry (CE) applies to.
-		**>
-		String interfaceName
-	}
-
-	<**
-		@description: The Master Control Entry (Master CE) stores default
-			Trust Levels (TLs) of users that must be met to apply this CE
-			or to change this CE. Additionally, it contains possible TLs to
-			be used to override default TLs in Owner Control Entries (Owner
-			CEs). It is the base class for <code>MasterAccessControlEntry</code>
-			and <code>MasterRegistrationControlEntry</code>.
-	**>
-	struct MasterControlEntry extends ControlEntry {
-		<**
-			@description: The default required trusted level (TL).
-				TL depends on used device and Authentication mechanism.
-		**>
-		TrustLevel defaultRequiredTrustLevel
-		<**
-			@description: A list of all possible Trust Levels that may be used
-				in an owner CE to overwrite the default required TL.
-		**>
-		TrustLevel[] possibleRequiredTrustLevels
-		<**
-			@description: The default Trust Level (TL) that is needed by the requester
-				in order to create, edit or delete a corresponding owner CE.
-		**>
-		TrustLevel defaultRequiredControlEntryChangeTrustLevel
-		<**
-			@description: A list of all possible Trust Levels (TLs) that may be used
-				in an owner CE to override the default required CE change TL.
-		**>
-		TrustLevel[] possibleRequiredControlEntryChangeTrustLevels
-	}
-
-	<**
-		@description: The Owner Control Entry (Owner CE) stores Trust Levels (TLs)
-			of users that must be met to apply this CE or to change this CE. It is
-			the base class for <code>OwnerAccessControlEntry</code>
-			and <code>OwnerRegistrationControlEntry</code>.
-	**>
-	struct OwnerControlEntry extends ControlEntry {
-		<**
-			@description: The Trust Level (TL) that is needed by the requester in
-				order to get the permission defined in this CE. The TL must be listed
-				in the possible required TLs of the corresponding Master CE. Otherwise
-				this constitutes a conflict.
-		**>
-		TrustLevel requiredTrustLevel
-		<**
-			@description: The Trust Level (TL) that is needed by the requester in
-				order to create, edit or delete an Owner ACE. The TL must be listed
-				in the possible required CE Change TLs of the corresponding Master
-				CE. Otherwise this constitutes a conflict.
-		**>
-		TrustLevel requiredAceChangeTrustLevel
-	}
-
-	<**
-		@description: The Master Access Control Entry (Master ACE) stores default
-			consumer permissions of users for a domain/interface/operations
-			combination. Additionally, it contains possible consumer permissions
-			to be used to override default consumer permissions in Owner Access
-			Control Entries (Owner ACEs). Master ACEs are stored by the Master
-			Access Control List (Master ACL) and the optional Mediator Access
-			Control List (Mediator ACL).
-	**>
-	struct MasterAccessControlEntry extends MasterControlEntry {
-		<**
-			@description: The operation this Access Control Entry (ACE) applies
-				to or the wildcard character (asterisk sign) if this ACE applies
-				to all operations of the corresponding interface. ACEs that use
-				the wildcard character are overruled by specific ones (if they
-				exist).
-		**>
-		String operation
-		<**
-			@description: The default consumer permission that applies to the specified
-				domain, interface and operations combination if there does not
-				exist a corresponding ACE in the owner Access Control List (ACL).
-		**>
-		Permission defaultConsumerPermission
-		<**
-			@description: A list of all possible consumer permissions that may be used in
-				an owner ACE to overwrite the default consumer permission.
-		**>
-		Permission[] possibleConsumerPermissions
-	}
-
-	<**
-		@description: The Master Registration Control Entry (Master RCE) stores
-			default provider permissions of users for a domain/interface combination.
-			Additionally, it contains possible provider permissions to be used to
-			override default provider permissions in Owner Registration Control
-			Entries (Owner RCEs). Master RCEs are stored by the Master Registration
-			Control List (Master RCL) and the optional Mediator Registration Control
-			List (Mediator RCL).
-	**>
-	struct MasterRegistrationControlEntry extends MasterControlEntry {
-		<**
-			@description: The default provider permission that applies to the specified
-				domain and interface combination if there does not exist a corresponding
-				RCE in the Owner Registration Control List (Owner RCL).
-		**>
-		Permission defaultProviderPermission
-		<**
-			@description: A list of all possible provider permissions that may be used in
-				an owner RCE to overwrite the default provider permission.
-		**>
-		Permission[] possibleProviderPermissions
-	}
-
-	<**
-		@description: The Owner Access Control Entry (Owner ACE) stores consumer
-			permissions of users for a domain/interface/operation combination. Owner
-			ACEs are stored by the Owner Access Control List (Owner ACL). If UID,
-			domain, interface and operation values of an Owner ACE match the values
-			of an Master ACE, default consumer permissions and TLs
-			of the Master ACE get overwritten by the consumer permissions and TLs of
-			the Owner ACE unless the consumer permissions or TLs conflict with their
-			respective possible consumer permissions and TLs.
-	**>
-	struct OwnerAccessControlEntry extends OwnerControlEntry {
-		<**
-			@description: The operation this Access Control Entry (ACE) applies
-				to or the wildcard character (asterisk sign) if this ACE applies
-				to all operations of the corresponding interface. ACEs that use
-				the wildcard character are overruled by specific ones (if they
-				exist).
-		**>
-		String operation
-		<**
-			@description: The consumer permission that applies to the specified
-				domain/interface/operation combination. The permission must be
-				listed in possible consumer permissions of the corresponding Master ACE.
-				Otherwise this constitutes a conflict.
-		**>
-		Permission consumerPermission
-	}
-
-	<**
-		@description: The Owner Registration Control Entry (Owner RCE) stores
-			provider permissions of users for a domain/interface combination.
-			Owner RCEs are stored by the Owner Registration Control List (Owner
-			RCL). If UIDs, domain and interface values of an Owner RCE match the
-			values of an Master RCE, default provider permissions and TLs of the
-			Master RCE get overwritten by the permissions and TLs of the Owner RCE
-			unless the permissions or TLs conflict with their respective possible
-			permissions and TLs.
-	**>
-	struct OwnerRegistrationControlEntry extends OwnerControlEntry {
-		<**
-			@description: The provider permission that applies to the specified
-				domain/interface/operations combination. The permission must be
-				listed in possible provider permissions of the corresponding Master ACE.
-				Otherwise this constitutes a conflict.
-		**>
-		Permission providerPermission
-	}
-
-	<**
-		@description: The role of a user defines the rights for changing Access
-			Control Lists (ACLs).
-	**>
-	enumeration Role {
-		<**
-			@description: Allows for changing Master Access Control List (Master ACLs),
-				or Master Registration Control List (Master RCL).
-		**>
-		MASTER
-		<**
-			@description: Allows for changing Owner Access Control Lists (Owner ACLs),
-				or Owner Registration Control List (Owner RCL).
-		**>
-		OWNER
-	}
-
-	<**
-		@description: The Domain Role Entry (DRE) stores domains for users/role combination.
-			User may become specified role when accessing given domains ACEs/RCEs in ACL/RCL.
-			DREs are stored in the Domain Roles Table (DRT) using the pair (uid, role) as
-			combined primary key.
-	**>
-	struct DomainRoleEntry {
-		<**
-			@description: The unique user ID (UID) this entry applies to.
-		**>
-		String uid
-		<**
-			@description: A list of domains this entry applies to. A domain might also contain
-				the wildcard character (asterisk sign) to refer to all (sub-) domains.
-		**>
-		String[] domains
-		<**
-			@description: The role that is assigned to the specified user for the specified
-				domains.
-		**>
-		Role role
-	}
-
-	<**
-		@description: The type of a change.
-	**>
-	enumeration ChangeType {
-		<**
-			@description: Entry was added. There was no entry with the same
-				key before.
-		**>
-		ADD
-		<**
-			@description: Entry was updated. An entry with the key already
-				existed.
-		**>
-		UPDATE
-		<**
-			@description: Entry was removed.
-		**>
-		REMOVE
-	}
-}
-
+import infrastructure.* from "AccessControlGenericTypes.fidl"
+import infrastructure.* from "AccessControlTypes.fidl"
 
 <**
 	@description: A joynr internal interface that is used by the Local Domain
-		Access Controller (LDAC) to access the Global Domain Access Controller
-		(GDAC). The GDAC is a joynr backend component that consists of the Domain
+		Access Controller (LDAC) to access the read-only and broadcast related
+		access and registration control functionality of the Global Domain Access
+		Controller (GDAC).
+
+		The GDAC is a joynr backend component that consists of the Domain
 		Role Table (DRT), the Master Access Control List (Master ACL), one optional
 		Mediator ACL and the Owner ACL.
 		The DRT controls whether a user is allowed to change Access Control
@@ -318,46 +44,6 @@ interface GlobalDomainAccessController {
 	version {major 0 minor 1}
 
 	<**
-		@description: Returns a list of DREs that apply to the user uid.
-			the list contains max two entries (since we only have two roles Master and Owner).
-			Used to get domain roles when a user logs in.
-	**>
-	method getDomainRoles {
-		in {
-			String uid
-		}
-		out {
-			DacTypes.DomainRoleEntry[] domainRoleEntries
-		}
-	}
-
-	<**
-		@description: Updates an existing entry (according to primary key)
-			or adds a new entry if not existent.
-	**>
-	method updateDomainRole {
-		in {
-			DacTypes.DomainRoleEntry updatedEntry
-		}
-		out {
-			Boolean success
-		}
-	}
-
-	<**
-		@description: Removes an entry according to the specified primary key.
-	**>
-	method removeDomainRole {
-		in {
-			String uid
-			DacTypes.Role role
-		}
-		out {
-			Boolean success
-		}
-	}
-
-	<**
 		@description: Returns a list of entries that apply to user uid,
 			i.e. the entries that define the access rights of the user uid.
 			Used by an Master ACL GUI to show access rights of a user
@@ -365,20 +51,6 @@ interface GlobalDomainAccessController {
 			early feedback on consumer side.
 	**>
 	method getMasterAccessControlEntries {
-		in {
-			String uid
-		}
-		out {
-			DacTypes.MasterAccessControlEntry[] masterAces
-		}
-	}
-
-	<**
-		@description: Returns a list of entries applying to domains the user
-			uid has role Master, i.e. the entries the user uid is allowed to
-			edit. Used by a Master ACL editor app.
-	**>
-	method getEditableMasterAccessControlEntries {
 		in {
 			String uid
 		}
@@ -399,34 +71,6 @@ interface GlobalDomainAccessController {
 		}
 		out {
 			DacTypes.MasterAccessControlEntry[] masterAces
-		}
-	}
-
-	<**
-		@description: Updates an existing entry (according to primary key),
-			or adds a new entry if not already existent.
-	**>
-	method updateMasterAccessControlEntry {
-		in {
-			DacTypes.MasterAccessControlEntry updatedMasterAce
-		}
-		out {
-			Boolean success
-		}
-	}
-
-	<**
-		@description: Removes an existing entry (according to primary key).
-	**>
-	method removeMasterAccessControlEntry {
-		in {
-			String uid
-			String domain
-			String interfaceName
-			String operation
-		}
-		out {
-			Boolean success
 		}
 	}
 
@@ -447,20 +91,6 @@ interface GlobalDomainAccessController {
 	}
 
 	<**
-		@description: Returns a list of entries applying to domains the user
-			uid has role Master, i.e. the entries the user uid is allowed to
-			edit. Used by an Master ACL editor app.
-	**>
-	method getEditableMediatorAccessControlEntries {
-		in {
-			String uid
-		}
-		out {
-			DacTypes.MasterAccessControlEntry[] mediatorAces
-		}
-	}
-
-	<**
 		@description: Returns a list of entries that apply to the domain and
 			interface combination. Used when a provider is registered to prefetch
 			applying entries.
@@ -472,34 +102,6 @@ interface GlobalDomainAccessController {
 		}
 		out {
 			DacTypes.MasterAccessControlEntry[] mediatorAces
-		}
-	}
-
-	<**
-		@description: Updates an existing entry (according to primary key),
-			or adds a new entry if not already existent.
-	**>
-	method updateMediatorAccessControlEntry {
-		in {
-			DacTypes.MasterAccessControlEntry updatedMediatorAce
-		}
-		out {
-			Boolean success
-		}
-	}
-
-	<**
-		@description: Removes an existing entry (according to primary key).
-	**>
-	method removeMediatorAccessControlEntry {
-		in {
-			String uid
-			String domain
-			String interfaceName
-			String operation
-		}
-		out {
-			Boolean success
 		}
 	}
 
@@ -535,48 +137,6 @@ interface GlobalDomainAccessController {
 	}
 
 	<**
-		@description: Returns a list of entries applying to domains the user
-			uid has role Owner, i.e. the entries the user uid is allowed to
-			edit. Used by an Owner ACL editor app.
-	**>
-	method getEditableOwnerAccessControlEntries {
-		in {
-			String uid
-		}
-		out {
-			DacTypes.OwnerAccessControlEntry[] ownerAces
-		}
-	}
-
-	<**
-		@description: Updates an existing entry (according to primary key),
-			or adds a new entry if not already existent.
-	**>
-	method updateOwnerAccessControlEntry {
-		in {
-			DacTypes.OwnerAccessControlEntry updatedOwnerAce
-		}
-		out {
-			Boolean success
-		}
-	}
-
-	<**
-		@description: Removes an existing entry (according to primary key).
-	**>
-	method removeOwnerAccessControlEntry {
-		in {
-			String uid
-			String domain
-			String interfaceName
-			String operation
-		}
-		out {
-			Boolean success
-		}
-	}
-
-	<**
 		@description: Returns a list of entries that apply to user uid,
 			i.e. the entries that define the registration rights of the user uid.
 			Used by a Master RCL GUI to show registration rights of a user.
@@ -588,47 +148,6 @@ interface GlobalDomainAccessController {
 		}
 		out {
 			DacTypes.MasterRegistrationControlEntry[] masterRces
-		}
-	}
-
-	<**
-		@description: Returns a list of entries applying to domains the user
-			uid has role Master, i.e. the entries the user uid is allowed to
-			edit. Used by an Master RCL editor app.
-	**>
-	method getEditableMasterRegistrationControlEntries {
-		in {
-			String uid
-		}
-		out {
-			DacTypes.MasterRegistrationControlEntry[] masterRces
-		}
-	}
-
-	<**
-		@description: Updates an existing entry (according to primary key),
-			or adds a new entry if not already existent.
-	**>
-	method updateMasterRegistrationControlEntry {
-		in {
-			DacTypes.MasterRegistrationControlEntry updatedMasterRce
-		}
-		out {
-			Boolean success
-		}
-	}
-
-	<**
-		@description: Removes an existing entry (according to primary key).
-	**>
-	method removeMasterRegistrationControlEntry {
-		in {
-			String uid
-			String domain
-			String interfaceName
-		}
-		out {
-			Boolean success
 		}
 	}
 
@@ -648,47 +167,6 @@ interface GlobalDomainAccessController {
 	}
 
 	<**
-		@description: Returns a list of entries applying to domains the user
-			uid has role Master, i.e. the entries the user uid is allowed to
-			edit. Used by a Master RCL editor app.
-	**>
-	method getEditableMediatorRegistrationControlEntries {
-		in {
-			String uid
-		}
-		out {
-			DacTypes.MasterRegistrationControlEntry[] mediatorRces
-		}
-	}
-
-	<**
-		@description: Updates an existing entry (according to primary key),
-			or adds a new entry if not already existent.
-	**>
-	method updateMediatorRegistrationControlEntry {
-		in {
-			DacTypes.MasterRegistrationControlEntry updatedMediatorRce
-		}
-		out {
-			Boolean success
-		}
-	}
-
-	<**
-		@description: Removes an existing entry (according to primary key).
-	**>
-	method removeMediatorRegistrationControlEntry {
-		in {
-			String uid
-			String domain
-			String interfaceName
-		}
-		out {
-			Boolean success
-		}
-	}
-
-	<**
 		@description: Returns a list of entries that apply to user uid,
 			i.e. the entries that define the registration rights of the user uid.
 			Used by a Master RCL GUI to show registration rights of a user.
@@ -700,69 +178,6 @@ interface GlobalDomainAccessController {
 		}
 		out {
 			DacTypes.OwnerRegistrationControlEntry[] ownerRces
-		}
-	}
-
-	<**
-		@description: Returns a list of entries applying to domains the user
-			uid has role Owner, i.e. the entries the user uid is allowed to
-			edit. Used by an Owner RCL editor app.
-	**>
-	method getEditableOwnerRegistrationControlEntries {
-		in {
-			String uid
-		}
-		out {
-			DacTypes.OwnerRegistrationControlEntry[] ownerRces
-		}
-	}
-
-	<**
-		@description: Updates an existing entry (according to primary key),
-			or adds a new entry if not already existent.
-	**>
-	method updateOwnerRegistrationControlEntry {
-		in {
-			DacTypes.OwnerRegistrationControlEntry updatedOwnerRce
-		}
-		out {
-			Boolean success
-		}
-	}
-
-	<**
-		@description: Removes an existing entry (according to primary key).
-	**>
-	method removeOwnerRegistrationControlEntry {
-		in {
-			String uid
-			String domain
-			String interfaceName
-		}
-		out {
-			Boolean success
-		}
-	}
-
-	<**
-		@description: Event that is fired when new domain role
-			entry is added, an existing entry changed or is removed.
-			The event includes new domain role entry as well as the type of
-			the change.
-			Used by the LocalDomainAccessController to subscribe to updates for
-			the current user.
-			MULTICAST PARTITIONS:
-			When firing the event, it is broadcast using the user ID of the
-			domain role as a partition. So when subscribing you either have
-			to subscribe using a wildcard partition (e.g. '+'), or else subscribe
-			for exactly the user ID you're interested in.
-			Note, however, that as partitions only acceess alpha-numeric characters
-			all other characters (such as '.') are stripped from the various values.
-	**>
-	broadcast domainRoleEntryChanged {
-		out {
-			DacTypes.ChangeType typeOfChange
-			DacTypes.DomainRoleEntry changedDomainRoleEntry
 		}
 	}
 

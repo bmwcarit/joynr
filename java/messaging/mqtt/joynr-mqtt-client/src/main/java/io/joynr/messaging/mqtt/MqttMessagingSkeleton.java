@@ -3,7 +3,7 @@ package io.joynr.messaging.mqtt;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.exceptions.JoynrSerializationException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
@@ -57,19 +56,22 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     private MqttClientFactory mqttClientFactory;
     private MqttAddress ownAddress;
     private ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount = Maps.newConcurrentMap();
+    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     private Set<JoynrMessageProcessor> messageProcessors;
 
     @Inject
-    public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
+    public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
                                  MqttMessageSerializerFactory messageSerializerFactory,
+                                 MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
                                  Set<JoynrMessageProcessor> messageProcessors) {
         this.ownAddress = ownAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
+        this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
         messageSerializer = messageSerializerFactory.create(ownAddress);
@@ -102,7 +104,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
         multicastSubscriptionCount.putIfAbsent(multicastId, new AtomicInteger());
         int numberOfSubscriptions = multicastSubscriptionCount.get(multicastId).incrementAndGet();
         if (numberOfSubscriptions == 1) {
-            mqttClient.subscribe(translateWildcard(multicastId));
+            mqttClient.subscribe(getSubscriptionTopic(multicastId));
         }
     }
 
@@ -112,7 +114,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
         if (subscribersCount != null) {
             int remainingCount = subscribersCount.decrementAndGet();
             if (remainingCount == 0) {
-                mqttClient.unsubscribe(translateWildcard(multicastId));
+                mqttClient.unsubscribe(getSubscriptionTopic(multicastId));
             }
         }
     }
@@ -137,25 +139,30 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
                 messageRouter.addNextHop(message.getFrom(), RoutingTypesUtil.fromAddressString(replyToMqttAddress));
             }
             messageRouter.route(message);
-        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException e) {
+        } catch (Exception e) {
+            LOG.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader(), e);
             failureAction.execute(e);
         }
     }
 
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
-        HashMap<String, Serializable> context = new HashMap<String, Serializable>();
-        JoynrMessage message = messageSerializer.deserialize(rawMessagingPreprocessor.process(serializedMessage,
-                                                                                              context));
-        message.setContext(context);
+        try {
+            HashMap<String, Serializable> context = new HashMap<String, Serializable>();
+            JoynrMessage message = messageSerializer.deserialize(rawMessagingPreprocessor.process(serializedMessage,
+                                                                                                  context));
+            message.setContext(context);
 
-        if (messageProcessors != null) {
-            for (JoynrMessageProcessor processor : messageProcessors) {
-                message = processor.processIncoming(message);
+            if (messageProcessors != null) {
+                for (JoynrMessageProcessor processor : messageProcessors) {
+                    message = processor.processIncoming(message);
+                }
             }
-        }
 
-        transmit(message, failureAction);
+            transmit(message, failureAction);
+        } catch (JoynrSerializationException e) {
+            LOG.error("Message: \"{}\", could not be serialized, exception: {}", serializedMessage, e.getMessage());
+        }
     }
 
     protected JoynrMqttClient getClient() {
@@ -164,6 +171,10 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
 
     protected MqttAddress getOwnAddress() {
         return ownAddress;
+    }
+
+    private String getSubscriptionTopic(String multicastId) {
+        return mqttTopicPrefixProvider.getMulticastTopicPrefix() + translateWildcard(multicastId);
     }
 
 }

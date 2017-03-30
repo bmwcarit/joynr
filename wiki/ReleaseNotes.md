@@ -1,9 +1,6 @@
-#joynr 0.24.0
+# joynr 0.25.0
 
 ## API relevant changes
-
-* **[All]** Added 'encrypt' to MessagingQos (incl. additional constructors, getter/setter),
-  existing MessagingQos APIs remain working
 * **[JEE]** Applications can inject a RawMessagingPreprocessor to modify or inspect messages arriving
   via MQTT
 * **[JAVA/JEE]** JoynrMessageProcessor.process was divided into a processOutgoing and processIncoming
@@ -11,7 +8,51 @@
   to another Joynr instance. The processIncoming method is called for messages which were received
   from another Joynr instance.
 
-#joynr 0.23.1
+# joynr 0.24.0
+
+## API relevant changes
+
+* **[All]** Added 'encrypt' to MessagingQos (incl. additional constructors, getter/setter),
+  existing MessagingQos APIs remain working
+* **[C++]** Providers can be (un)registered asynchronously through `(un)registerProviderAsync`
+* **[All]** The 'GlobalDomainAccessController' interface has been split up into 3 interfaces:
+  'GlobalDomainRoleController' (contains the 'role' based APIs),
+  'GlobalDomainAccessController' (contains the read-only getter & broadcast APIs for
+  master / mediator / owner access and registration control entries) and
+  'GlobalDomainAccessControlListEditor' (contains the modification related APIs for
+  master / mediator / owner access and registration control entries)
+  See `basemodel/src/main/franca/joynr/*.fidl` for details.
+* **[Java]** Moved and changed property `JeeIntegrationPropertyKeys.
+  JEE_ENABLE_SHARED_SUBSCRIPTIONS="joynr.jeeintegration.enable.sharedsubscriptions"` to `MqttModule.
+  PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS="joynr.messaging.mqtt.enable.sharedsubscriptions"`
+* **[Java]** MQTT shared subscriptions are not restricted to JEE any longer
+* **[All]** Added 'compress' to MessagingQos (available with Java/C++ solely via
+  getter/setter, in JS also via constructor), existing MessagingQos APIs remain working
+
+## Other changes
+* **[C++]** Access control can be activated in the cluster-controller. Default: OFF.
+  Refer to [cluster controller settings](ClusterControllerSettings.md) for more info.
+* **[Java]** Added properties (`PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC`,
+  `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC` and `PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS`) to
+  configure the MQTT connection. See [JavaSettings](JavaSettings.md) for more information.
+* **[C++]** Moved to muesli 0.3.1 for serialization of boost::multi_index containers
+* **[Java]** Allow to set prefixes of Mqtt topics, see [JavaSettings](JavaSettings.md).
+* **[C++]** Allow to set prefixes of Mqtt topics in cluster-controller settings:
+  `mqtt-multicast-topic-prefix` and `mqtt-unicast-topic-prefix`
+* **[Java]** Added property (`PROPERTY_ACCESSCONTROL_ENABLE`) to enable access control checks.
+  See [JavaSettings](JavaSettings.md) for more information.
+
+# joynr 0.23.2
+
+## API relevant changes
+none
+
+## Other changes
+* **[JEE]** Fixed issue that caused joynr not to start correctly with debug logging enabled
+* **[Java]** Do not send customHeaders as their own json object
+* **[Java]** Made MQTT reconnect behavior more robust
+
+# joynr 0.23.1
 
 ## API relevant changes
 * **[C++]** createRuntimeAsync returns runtime directly instead of via a callback;
@@ -21,7 +62,7 @@
 ## Other changes
 * **[C++, Java, JS]** Fix bugs in code generation for typedef.
 
-#joynr 0.23.0
+# joynr 0.23.0
 
 ## API relevant changes
 
@@ -47,22 +88,22 @@
 ## Other changes
 * **[C++]** fix lifetime issue in JoynrMessagingConnector
 
-#joynr 0.22.4
+# joynr 0.22.4
 
 ## API relevant changes
 None.
 
-##Other changes
+## Other changes
 
 * **[C++, JS, Java]** Apply configurable Time To Live (TTL) Uplift to each outgoing message and to
   the expiry date of subscriptions
 
-#joynr 0.22.3
+# joynr 0.22.3
 
 ## API relevant changes
 None.
 
-##Other changes
+## Other changes
 
 * **[C++]** fix MQTT connection to broker blocked after first message was sent
 * **[JS]** fix typing issues with maps of structs
@@ -70,33 +111,33 @@ None.
   libjoynr
 * **[C++]** Bugfix: Provider and consumers do not crash after reconnect to cluster-controller
 
-#joynr 0.22.2
+# joynr 0.22.2
 
-##Other changes
+## Other changes
 
 * **[C++]** Bugfix: MQTT sender blocks message router thread in case of connection to broker not
   established.
 
-#joynr 0.22.1
+# joynr 0.22.1
 
-##Other changes
+## Other changes
 
 * **[JS]** Bugfix: For non-selective broadcast subscriptions the listeners could be called too
   often if multiple matching listeners were found.
 
-#joynr 0.21.4
+# joynr 0.21.4
 This is a minor bug fix release.
 
 ## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Fix bug in generated data types if base and derived classes have different
   package names.
 
-#joynr 0.22.0
+# joynr 0.22.0
 
-##API relevant changes
+## API relevant changes
 * **[Java]** constant PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT has been moved to
   io.joynr.messaging.MessagingPropertyKeys
 * **[C++]** During a provider call a call context can be queried which provides the creator user id
@@ -140,7 +181,7 @@ None.
     entry; see [JavaScript documentation for updating an existing subscription]
     (javascript.md#updating-a-%28non-selective%29-broadcast-subscription).
 
-##Other changes
+## Other changes
 * **[JS]** Introduced mqtt messaging layer, allowing javascript runtimes including
   cluster controller functionality to connect to a mqtt broker.
 * On top of MQTT messaging, joynr uses now a multicast approach to send non-selective broadcast
@@ -148,26 +189,26 @@ None.
   Documentation](../docs/multicast.md) for more details. This change breaks the compatibility on the
   messaging layer to joynr version 0.21.x.
 
-#joynr 0.21.3
+# joynr 0.21.3
 This is a minor bug fix release.
 
 ## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[JS]** Fix bug which prevents successful restore of persisted broadcast subscription
   requests
 
-#joynr 0.21.2
+# joynr 0.21.2
 This is a minor bug fix release.
 
 ## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Fix cluster controller crash if many persisted discovery entries are present
 
-#joynr 0.21.1
+# joynr 0.21.1
 This is a minor bug fix release.
 
 ## API relevant changes
@@ -178,9 +219,9 @@ None.
   the cluster-controller to crash.
 * **[C++]** Fixed installation path of system integration tests.
 
-#joynr 0.21.0
+# joynr 0.21.0
 
-##API relevant changes
+## API relevant changes
 * **[JEE]** Ability to specify individual domains for providers via new
   `@ProviderDomain` annotation. See
   [JEE Documentation / Customising the registration domain](jee.md#provider_domain).
@@ -188,7 +229,7 @@ None.
 * **[JEE]** Ability to publish multicast messages by injecting the
   subscription publisher. See [JEE Documentation / Publishing Multicasts](jee.md#publishing_multicasts).
 
-##Other changes
+## Other changes
 * **[Java, C++]** The local capabilities directory will periodically be checked for
   expired discovery entries, and any which have expired will be purged from the
   caches.
@@ -203,14 +244,14 @@ None.
 * **[C++]** Reduced the number of threads which are used by a cluster controller instance
 * **[C++]** The dependency to Qt is now fully removed.
 
-#joynr 0.20.4
+# joynr 0.20.4
 This is a minor bug fix release.
 
 ## Other changes
 * **[C++]** Fixed an issue which caused a high CPU load when a client disconnected from a
   cluster controller.
 
-#joynr 0.20.3
+# joynr 0.20.3
 This is a minor bug fix release.
 
 ## API relevant changes
@@ -219,7 +260,7 @@ None.
 ## Other changes
 * **[JS]** Fix bug which resulted in improper shutdown of joynr.
 
-#joynr 0.20.2
+# joynr 0.20.2
 This is a minor bug fix release.
 
 ## API relevant changes
@@ -229,7 +270,7 @@ None.
 * **[JS]** Fixed bug which caused exception when loading persisted
   subscriptions during startup.
 
-#joynr 0.20.1
+# joynr 0.20.1
 This is a minor bug fix release.
 
 ## API relevant changes
@@ -244,9 +285,9 @@ This is a minor bug fix release.
   are buggy in the version we're using.
 * moved to muesli 0.1.2 to get its bugfix
 
-#joynr 0.20.0
+# joynr 0.20.0
 
-##API relevant changes
+## API relevant changes
 * **[JS]** The SubscriptionListener is now able to get informed about succeeded
   subscription requests. For this purpose, he can implement a callback having
   the following signature: void onSubscribed(subscriptionId). In case of
@@ -293,7 +334,7 @@ This is a minor bug fix release.
 * **[C++]** Joynr runtime object can be created with a settings object as well as with a path
   to a settings file.
 
-##Other changes
+## Other changes
 * **[JEE]** a JEE version of the discovery service was added which can be deployed to EE
   containers like, e.g., Payara.
 * **[JEE]** corrected configuration of Radio App JEE and System Integration Tests sit-jee-app
@@ -303,58 +344,58 @@ This is a minor bug fix release.
   MQTT message being sent (fire-and-forget). See `MessagingQosEffort` classes in each language.
 * **[C++]** muesli is now used as serializer; it can be found at https://github.com/bmwcarit/muesli
 
-#joynr 0.19.5
+# joynr 0.19.5
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Fix multi-threading issue in LocalCapabilitiesDirectory.
 
-#joynr 0.19.4
+# joynr 0.19.4
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Correctly load persisted routing table in the LibJoynrRuntime.
 
-#joynr 0.19.3
+# joynr 0.19.3
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 * **[C++]** Add new API to create joynr runtime with settings object.
 
-##Other changes
+## Other changes
 * **[JS]** Support attributes starting with capital letters.
 
-#joynr 0.19.2
+# joynr 0.19.2
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Do not crash joynr runtime if writing persistency files fails.
 
-#joynr 0.19.1
+# joynr 0.19.1
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Fix issue in the generated JoynrTargets-release.cmake in relation with boost::thread
 
-#joynr 0.19.0
+# joynr 0.19.0
 
-##API relevant changes
+## API relevant changes
 * **[Java]** Added ability to pass a callback to the proxyBuilder.build() method to be notified on
   completion (or failure) of the discovery process.
 
-##Other changes
+## Other changes
 * **[C++, Java, JS]** Enriched the system integration tests to have test from c++/node apps towards
   java jee apps
 * **[C++]** Removed option `USE_PLATFORM_DEPENDENCIES` from CMake. By default all dependencies are
@@ -373,51 +414,51 @@ None.
 * **[JEE]** Support for HiveMQ shared subscriptions, which enables clustering using only
   MQTT for communication.
 
-#joynr 0.18.5
+# joynr 0.18.5
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[JEE]** Fixed bug with multi-out return values not being translated
   between container classes and multi-valued deferred instances in the
   `ProviderWrapper`.
 
-#joynr 0.18.4
+# joynr 0.18.4
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Fixed high cpu load which occurs when the system time is changed
 * **[C++]** Fixed persistency of local capability entries
 * **[C++]** Stability fixes for proxy arbitration
 * **[JS]** Added reconnect after connection loss for websockets
 * **[JS]** Support to clear local storage when loading joynr library
 
-#joynr 0.18.2
+# joynr 0.18.2
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[JS]** Fixed bug when using joynr with node version >= 6
 
-#joynr 0.18.1
+# joynr 0.18.1
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[JS]** Include README in joynr node package
 
-#joynr 0.18.0
+# joynr 0.18.0
 
-##API relevant changes
+## API relevant changes
 * **[C++, Java, JS]** The communication protocol between local directories on the cluster controller
   and global directories in the backend changed. Please make sure that clients and backend use
   compatible versions.
@@ -436,32 +477,32 @@ None.
   `io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY`
   for details.
 
-##Other changes
+## Other changes
 * **[Tools]** Refactored joynr generator framework to simplify the maintenance,
    revised its required dependencies.
 
-#joynr 0.17.2
+# joynr 0.17.2
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[JS]** Updated dependency for atmoshpere.js to version 2.3.2. This ensures that
   joynr has no native dependencies in its npm package.
 
-#joynr 0.17.1
+# joynr 0.17.1
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * Updated disclaimers, added README for npm
 
-#joynr 0.17.0
+# joynr 0.17.0
 
-##API relevant changes
+## API relevant changes
 * **[JEE]** Backend JEE applications are now supported natively with new joynr annotations
   @ServiceProvider and @ServiceLocator, allowing applications to focus solely on business logic.
   See [the JEE documentation](JEE.md) for more information.
@@ -488,7 +529,7 @@ None.
 * **[C++, Java, JS]** Support for empty broadcast. Broadcast with no output parameter is now
   supported in all three languages.
 
-##Other changes
+## Other changes
 * **[C++]** The content of the message router and the local capabilities directory is now persisted
   by default and automatically loaded at cluster-controller startup. Entries are being saved (in
   JSON format) respectively to _MessageRouter.persist_ and to _LocalCapabilitiesDirectory.persist_.
@@ -496,9 +537,9 @@ None.
   now saved in the Discovery Directory.
 * **[JS]** Small fixes in the jsdoc of generated proxies and providers.
 
-#joynr 0.16.0
+# joynr 0.16.0
 
-##API relevant changes
+## API relevant changes
 * **[JS, C++, Java]** Unified subscription QoS API among all programming languages.
  * Add suffix "Ms" to timing related subscription QoS parameters such as
    _expiryDateMs_, _publicationTtlMs_, _periodMs_, _alertAfterIntervalMs_, _minIntervalMs_ and
@@ -545,27 +586,27 @@ None.
   CMake 3.1. See [\<RADIO_HOME\>/CMakeLists.txt](/examples/radio-app/CMakeLists.txt) on how to use
   it.
 
-##Other changes
+## Other changes
 * **[C++, Java]** Fix bug in code generation for typedef.
 * **[C++]** CMake integration of the joynr generator now available. See
   [\<RADIO_HOME\>/CMakeLists.txt](/examples/radio-app/CMakeLists.txt) on how to use it.
 
-#joynr 0.15.1
+# joynr 0.15.1
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Fix segmentation fault in cluster-controller when a libjoynr disconnects.
 * **[C++]** Define proper import targets for Mosquitto in the joynr package configuration.
 * **[Java]** Use correct MQTT topics to fix incompatibilities with joynr C++.
 * **[Java]** Improved stability in websocket implementation.
 
-#joynr 0.15.0
+# joynr 0.15.0
 
-##Notes
+## Notes
 * **[Java,C++]** Java and C++ cluster controllers are now able to communciate to an MQTT broker as
   a replacement, or in addition to, the original bounceproxy. Java uses the Eclipse Paho client,
   while C++ uses mosquitto as an MQTT client.
@@ -578,12 +619,12 @@ joynr-mqtt-client``` project for an example of how this can be done.
   to communicate with the cluster-controller. Due to an incompatibility with Mac OS X,
   the C++-Websocket-Runtime currently does not work on Mac OS X.
 
-##API relevant changes
+## API relevant changes
 * **[C++]** Removed the RequestStatus object returned by joynr::Future::getStatus().
   Instead, an enum named "StatusCode::Enum" is returned.
 * **[C++]** joynr code now requires C++14
 
-##Other changes
+## Other changes
 * **[JS]** Updated the versions of joynr dependencies log4js (0.6.29), requirejs (2.1.22),
   bluebird (3.1.1) and promise (7.1.1). No API impact.
 * **[JS]** The several joynr runtimes (e.g. WebSocketLibjoynrRuntime or InProcessRuntime)
@@ -591,43 +632,43 @@ joynr-mqtt-client``` project for an example of how this can be done.
   applications no longer need to provide this information via the provisioning
   object when loading the library.
 
-#joynr 0.14.3
+# joynr 0.14.3
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Removed absolute paths from export targets for the install tree.
 * **[C++]** Fix segmentation fault in cluster-controller checkServerTime function.
 * **[C++]** Added /etc/joynr to settings search path. This is a workaround for builds with
   incorrect CMAKE_INSTALL_PREFIX.
 
-#joynr 0.14.2
+# joynr 0.14.2
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Fix dependency resolution in the CMake package config file for joynr.
 
-#joynr 0.14.1
+# joynr 0.14.1
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[JS]** Fixed bug in generated proxies with broadcast subscription requests
   having no filters.
 
-#joynr 0.14.0
+# joynr 0.14.0
 
-##Notes
+## Notes
 * **[Java,JS,C++]** Franca `ByteBuffer` is supported.
 * **[Java,JS,C++]** Franca `typedef` is supported. For Java and JS, typedefs
   are ignored and the target datatypes are used instead.
@@ -636,7 +677,7 @@ None.
   to communicate with the cluster-controller. Due to an incompatibility with Mac OS X,
   the C++-Websocket-Runtime currently does not work on Mac OS X.
 
-##API relevant changes
+## API relevant changes
 * **[C++]** The minimum required version of `gcc` is 4.9.
 * **[C++]** The CMake variables when linking against libjoynr have been renamed :
   * `Joynr_LIB_COMMON_*` contains only generic stuff needed to build generated code.
@@ -651,15 +692,15 @@ None.
   modeled Franca errors (called ApplicationExceptison) and one for joynr runtime
   exceptions.
 
-##Other changes
+## Other changes
 * **[C++]** The logging syntax is changed to the following format:
   `JOYNR_LOG_DEBUG(logger, "this {}: {}", "is", "a message");`
 * **[C++]** Fixed bug in filters for broadcast having arrays as output parameters.
 * **[JS]** Set version for node dependency module "ws" to 1.0.1.
 
-#joynr 0.13.0
+# joynr 0.13.0
 
-##Notes
+## Notes
 * **[Java]** Uint types are not supported in Java: Unsigned values are thus read as
   signed values, meaning for example that 255 is represented as -1 in a Java Byte. The
   Java application is responsible for converting from signed to unsigned values as
@@ -677,7 +718,7 @@ None.
   disallow backend communication, so all discovery / registration requests must be set to
   LOCAL_ONLY / LOCAL.
 
-##API relevant changes
+## API relevant changes
 * **[JS]** Async loading of libjoynr (libjoynr.load()) returns a Promise object instead
   expecting a callback function as input parameter. See the
   [JavaScript Tutorial](JavaScriptTutorial.md) for more details.
@@ -688,7 +729,7 @@ None.
 * **[Java]** It is no longer necessary to cast error enums retrieved from modelled
   application exceptions.
 
-##Other changes
+## Other changes
 * **[Android]** The Android runtime has been modified to use an external cluster
   controller using WebSockets, and no longer can communicate itself via HTTP.
 * **[Java, Android]** The following configuration properties must now be set when configuring
@@ -712,41 +753,41 @@ None.
   QSemaphore, QMutex, QThread, QHash, QSet, QMap, QList, ...) by custom or std
   implementations.
 
-#joynr 0.12.3
+# joynr 0.12.3
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Selective broadcasts of basic types generate compilable code.
 
-#joynr 0.12.2
+# joynr 0.12.2
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Generated enum throws exception in the getLiteral method in case of an
   unresolved value.
 
-#joynr 0.12.1
+# joynr 0.12.1
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Fixed bug during deserialization of joynr messages caused by
   incorrect meta type registration of nested structs.
 
-#joynr 0.12.0
+# joynr 0.12.0
 
-##Notes
+## Notes
 * **[Java]** Uint types are not supported in Java: Unsigned values are thus read as
   signed values, meaning for example that 255 is represented as -1 in a Java Byte. The
   Java application is responsible for converting from signed to unsigned values as
@@ -755,7 +796,7 @@ None.
 * **[Java]** The previously mentioned issue with handling of "number" types and enums in Lists
   has now been repaired.
 
-##API relevant changes
+## API relevant changes
 * **[Java]** Java datatype java.util.List has been replaced with Array in the joynr API.
 * **[Java]** The onError callback of subscriptions now passes a JoynrRuntimeException as
   input parameter instead of a JoynrException, as application-level exceptions cannot be defined
@@ -775,7 +816,7 @@ None.
   subscriptions. If two subsequent broadcasts occur within the minimum interval, the
   latter broadcast will not be sent to the subscribing entity.
 
-##Other changes
+## Other changes
 * **[C++]** Fixed bug causing a consumer to crash when subscribing to attributes of type
   enumeration
 * **[JS]** Support of methods with multiple output parameters
@@ -784,14 +825,14 @@ None.
 * **[Tooling]** The joynr generator ignores invalid Franca models, and outputs a list of errors to
   the console.
 
-#joynr 0.11.1
+# joynr 0.11.1
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[JS]** Minimum minInterval for subscriptions is 0ms
 * **[JS]** The PublicationManager checks if the delay
   between two subsequent broadcasts is below the minInterval of the
@@ -801,16 +842,16 @@ None.
   in the node environment
 * **[JS]** Smaller bug fixes in PublicationManager
 
-#joynr 0.11.0
+# joynr 0.11.0
 
-##Notes
+## Notes
 * **[Java]** Uint types are not supported in Java: Unsigned values are thus read as
   signed values, meaning for example that 255 is represented as -1 in a Java Byte. The
   Java application is responsible for converting from signed to unsigned values as
   required. Note that this is only an issue if values exceed the largest possible
   values that can be represented by the signed java values.
 
-##Known issues
+## Known issues
 * **[Java]** Handling of "number" types and enums in Lists is not implemented
   correctly. Accessing these values individually can result in ClassCastExceptions
   being thrown.
@@ -822,7 +863,7 @@ None.
   are currently under development and planned for the upcoming major release
   0.12.0 mid November 2015.
 
-##API relevant changes
+## API relevant changes
 * **[Java]** The onError callback of subscriptions expects now a JoynrException as input parameter
   instead of an empty parameter list. In addition, exceptions received from subscription publication
   are now forwarded to the onError callback.
@@ -835,7 +876,7 @@ None.
   arguments for each broadcast parameter.
 * **]Java,JS,C++]** Harmonized the handling of expiry dates in SubscriptionQos
 
-##Other changes
+## Other changes
 * **[C++]** Replaced QSharedPointer with std::shared_ptr
 * **[C++]** Replaced QDatetime with std counterpart "chrono"
 * **[C++]** Replaced log4qt with spdlog
@@ -845,38 +886,38 @@ None.
   case of very high expiry dates.
 * **[Java,JS]** Enriched the radio example with exception handling
 
-#joynr 0.10.2
+# joynr 0.10.2
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[JS]** Reworked the handling of enums defined in Franca models.
   This resolves issues when using enums as input/output parameter of
   methods in JavaScript.
 
-#joynr 0.10.1
+# joynr 0.10.1
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[Java]** Correct exception handling when messages are not routable
 * **[JS]** Integrate JavaScript markdown in general documentation
 * **[JS]** Fix bug in documentation regarding the Maven group ID of the joynr
   generators
 
-#joynr 0.10.0
+# joynr 0.10.0
 
 joynr JavaScript is now also officially open source. JavaScript can be run in Chrome or node.js.
 Have a look in the [JavaScript Tutorial](JavaScriptTutorial.js) to get started with joynr
 JavaScript, and try out the radio app examples to see it all in action.
 
-##Known issues
+## Known issues
 * **[Java]** Handling of “number” types and enums in Lists is not implemented correctly. Accessing
   these values individually can result in ClassCastExceptions being thrown.
 * **[Java]** Uint types not handled correctly: Unsigned values from C++ are read as signed values
@@ -884,7 +925,7 @@ JavaScript, and try out the radio app examples to see it all in action.
   Note that this is only an issue if values exceed the largest possible values that can be
   represented by the signed java values.
 
-##API relevant changes
+## API relevant changes
 * **[Java, C++, JS]** In order to fix compatibility in all supported languages with types using
   type collections, the generators now use the spelling of Franca element names as-is for packages,
   type collections, interfaces, etc., meaning that they no longer perform upper/lower case
@@ -894,7 +935,7 @@ JavaScript, and try out the radio app examples to see it all in action.
 * **[Java, C++, JS]** Franca's error enums are currently supported in Java, but not yet complete in
   JavaScript or C++. We recommend not using FIDLs with Error Enums until 0.11 is released.
 
-##Other changes
+## Other changes
 * **[Java]** Logging can now be focused on message flow. Set log4j.rootLogger=error and then use a
   single logger to view messages: log4j.logger.io.joynr.messaging.routing.MessageRouterImpl=info
   shows only the flow, =debug shows the body as well.
@@ -909,16 +950,16 @@ JavaScript, and try out the radio app examples to see it all in action.
 * **[Tooling, JS]** The joynr JavaScript build is part of the profile "javascript" of the
   root joynr Maven POM.
 
-#joynr 0.9.4
+# joynr 0.9.4
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 * **[Java, C++, JS]** Use spelling of Franca element names (packages, type collections,
   interfaces, ...) as defined in the model (.fidl files) in generated code. I.e. perform
   no upper/lower case conversions on Franca element names.
 
-##Other changes
+## Other changes
 * **[C++]** Param datatypes in a joynr request message includes type collection names
 * **[JS]** Fix radio example made for node, to be compatible with the radio example
   in C++, Java and the browser-based JavaScript application.
@@ -930,46 +971,46 @@ This is a minor bug fix release.
 * **[Tooling, JS]** The joynr JavaScript build is part of the profile "javascript" of the
   root joynr Maven POM.
 
-#joynr 0.9.3
+# joynr 0.9.3
 
 This is a minor bug fix release. It includes a preview version of the **joynr JavaScript** language
 binding. Have a look in the [JavaScript Tutorial](JavaScriptTutorial.js) to get started with joynr
 JavaScript.
 
-##API relevant changes
+## API relevant changes
 * **[Java, C++, JS]** Using American English in radio.fidl (renaming favourite into favorite).
 
-##Other changes
+## Other changes
 None.
 
-#joynr 0.9.2
+# joynr 0.9.2
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[C++]** Problems with receiving messages in libjoynr via WebSockets have been resolved.
 * **[Java, C++]** Default domain for backend services is now "io.joynr".
 
-#joynr 0.9.1
+# joynr 0.9.1
 
 This is a minor bug fix release.
 
-##API relevant changes
+## API relevant changes
 None.
 
-##Other changes
+## Other changes
 * **[Android]** callback onProxyCreationError is now called correctly when an error occurs creating
   a proxy. onProxyCreation is no longer called with null.
 * **[Java]** problems with multiple calls to register and deregister the same provider have been
   resolved.
 * logging settings in the examples have been reduced to focus on the sent and received messages.
 
-#joynr 0.9.0
+# joynr 0.9.0
 
-##API relevant changes
+## API relevant changes
 * **[Java, C++]** The provider class hierarchy has been simplified. A class diagram is at
   docs/diagram/ClassDiagram-JavaProvider.png. To implement a provider from scratch, extend
   <Interface>AbstractProvider. To implement a provider based on the default implementation extend
@@ -1005,9 +1046,9 @@ None.
   scripts are also used by the joynr project itself in its own CI (Jenkins-based) environment.
 * **[Java]** Capability Directory entries on the global directory are now persisted using JPA.
 
-#joynr 0.8.0
+# joynr 0.8.0
 
-##API relevant changes
+## API relevant changes
 * **[Java, C++]** Support of broadcast: it is now possible to subscribe to broadcasts on proxy side.
   Providers are able to fire broadcast events, which are then forwarded to subscribed proxies. See
   the [Broadcast Tutorial](Broadcast-Tutorial.md) for more information.
@@ -1025,7 +1066,7 @@ None.
   * onReceive: Gets called on every received publication
   * onError: Gets called on every error that is detected on the subscription
 
-##Other changes
+## Other changes
 * **[Tooling]** Enable cleanup capability of joynr generator framework: it is now possible to
   trigger the joynr generator with the "clean" goal, meaning that previously generated files are
   deleted
@@ -1047,15 +1088,15 @@ None.
   and new semantics without wrapping the class, we are now bumping up support API 19. Prior versions
   are no longer supported.
 
-#joynr 0.7.0
-##API relevant changes
+# joynr 0.7.0
+## API relevant changes
 * **[Java]** SubscriptionListener is now called AttributeSubscriptionListener, and
   unregisterSubscription renamed unregisterAttributeSubcription (change required to differentiate
   from broadcasts)
 * **[Java]** The hostPath property can now be set as joynr.servlet.hostPath.
 * **[Java, C++]** SSL support for C++ and Java
 
-##Other changes
+## Other changes
 * **[C++]** libjoynr and cluster-controller now communicate over a single DBus interface
 * **[C++]** introduce MessageRouter on libjoynr and cluster-controller side to resolve next hop for
   messages
@@ -1066,9 +1107,9 @@ None.
   * use Guice injection to configure servlets
   * use RESTful service adapters for messaging related components
 
-#joynr 0.6.0
+# joynr 0.6.0
 
-##API relevant changes
+## API relevant changes
 * **[Java]** exceptions: removed checked exceptions from ProxyBuilder
 * **[Java]** Check for correct usage of SubscriptionQos
 * **[Java]** ChannelUrlDirectoryImpl correctly implements unregisterChannelUrl
@@ -1087,7 +1128,7 @@ None.
   )
   ```
 
-##Other changes
+## Other changes
 * **[C++]** cleaning up joynr libraries used in cmake find_package
 * **[Java]** refactored messaging project structure for scalability-related components
 * **[Java]** definition of RESTful service adapters for messaging related components

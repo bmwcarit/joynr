@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings,
     JOYNR_LOG_DEBUG(logger, "Init finished.");
 
     system::RoutingTypes::ChannelAddress receiverChannelAddress(
-            settings.getBounceProxyUrl().getBrokerChannelsBaseUrl().toString() + channelId + "/",
+            settings.getBrokerUrl().getBrokerChannelsBaseUrl().toString() + channelId + "/",
             channelId);
 
     globalClusterControllerAddress = joynr::serializer::serializeToJson(receiverChannelAddress);
@@ -102,7 +102,7 @@ void HttpReceiver::startReceiveQueue()
             std::chrono::milliseconds(settings.getCreateChannelRetryInterval())};
 
     JOYNR_LOG_DEBUG(logger, "startReceiveQueue");
-    messageReceiver = std::make_unique<LongPollingMessageReceiver>(settings.getBounceProxyUrl(),
+    messageReceiver = std::make_unique<LongPollingMessageReceiver>(settings.getBrokerUrl(),
                                                                    channelId,
                                                                    receiverId,
                                                                    longPollSettings,
@@ -135,8 +135,8 @@ bool HttpReceiver::tryToDeleteChannel()
 {
     // If more than one attempt is needed, create a deleteChannelRunnable and move this to
     // messageSender.
-    // TODO channelUrl is known only to the LongPlooMessageReceiver!
-    std::string deleteChannelUrl = settings.getBounceProxyUrl()
+    // TODO channelUrl is known only to the LongPollingMessageReceiver!
+    std::string deleteChannelUrl = settings.getBrokerUrl()
                                            .getDeleteChannelUrl(getGlobalClusterControllerAddress())
                                            .toString();
     std::shared_ptr<IHttpDeleteBuilder> deleteChannelRequestBuilder(

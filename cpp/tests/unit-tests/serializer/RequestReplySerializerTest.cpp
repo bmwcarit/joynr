@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -312,11 +312,13 @@ TYPED_TEST(RequestReplySerializerTest, exampleSerializerTestWithJoynrRequestOfCo
 TYPED_TEST(RequestReplySerializerTest, serializeJoynrMessage)
 {
     // Create a Request
+    const bool isLocalMessage = true;
     joynr::Request outgoingRequest = this->initializeRequestWithPrimitiveValues();
     joynr::JoynrMessage outgoingMessage = joynr::JoynrMessageFactory().createRequest("sender",
                                                                                      "receiver",
                                                                                      joynr::MessagingQos(),
-                                                                                     outgoingRequest);
+                                                                                     outgoingRequest,
+                                                                                     isLocalMessage);
 
     JOYNR_LOG_TRACE(this->logger, "outgoing JoynrMessage payload JSON: {}", outgoingMessage.getPayload());
 

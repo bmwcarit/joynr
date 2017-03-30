@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,8 @@ class MqttMessagingStubTest : public ::testing::Test {
 public:
     MqttMessagingStubTest() :
         destinationAddress(),
-        globalClusterControllerAddress("globalClusterControllerAddress"),
         mockMessageSender(std::make_shared<MockMessageSender>()),
-        mqttMessagingStub(mockMessageSender, destinationAddress, globalClusterControllerAddress),
+        mqttMessagingStub(mockMessageSender, destinationAddress),
         messageFactory(),
         message(),
         qosSettings(456000)
@@ -83,52 +82,4 @@ void MqttMessagingStubTest::transmitSetsHeaderReplyAddress()
     mqttMessagingStub.transmit(message, onFailure);
     EXPECT_FALSE(message.getHeaderReplyAddress().empty());
     EXPECT_EQ(globalClusterControllerAddress, message.getHeaderReplyAddress());
-}
-
-TEST_F(MqttMessagingStubTest, transmitSetsHeaderReplyAddressForRequests)
-{
-    Request request;
-    message = messageFactory.createRequest(
-            senderID,
-            receiverID,
-            qosSettings,
-            request
-            );
-    transmitSetsHeaderReplyAddress();
-}
-
-TEST_F(MqttMessagingStubTest, transmitSetsHeaderReplyAddressForSubscriptionRequests)
-{
-    SubscriptionRequest request;
-    message = messageFactory.createSubscriptionRequest(
-            senderID,
-            receiverID,
-            qosSettings,
-            request
-            );
-    transmitSetsHeaderReplyAddress();
-}
-
-TEST_F(MqttMessagingStubTest, transmitSetsHeaderReplyAddressForBroadcastSubscriptionRequests)
-{
-    BroadcastSubscriptionRequest request;
-    message = messageFactory.createBroadcastSubscriptionRequest(
-            senderID,
-            receiverID,
-            qosSettings,
-            request
-            );
-    transmitSetsHeaderReplyAddress();
-}
-
-TEST_F(MqttMessagingStubTest, transmitSetsHeaderReplyAddressForMulticastSubscriptionRequests)
-{
-    MulticastSubscriptionRequest request;
-    message = messageFactory.createMulticastSubscriptionRequest(
-            senderID,
-            receiverID,
-            qosSettings,
-            request
-            );
-    transmitSetsHeaderReplyAddress();
 }

@@ -40,7 +40,7 @@ function(AddClangFormat TARGET)
         set(FORMAT_TARGET "format-${TARGET}")
         add_custom_target(
             ${FORMAT_TARGET}
-            COMMAND "${CLANG_FORMAT_PATH}" -i ${FILTERED_TARGET_SOURCES}
+            COMMAND "${CLANG_FORMAT_PATH}" -i ${TARGET_SOURCES}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             VERBATIM
             COMMENT "${COMMENT}"

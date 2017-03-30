@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,8 @@ public:
             Unused, // receiver participant ID
             Unused, // messaging QoS
             Unused, // request object to send
-            std::shared_ptr<IReplyCaller> callback // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller> callback, // reply caller to notify when reply is received
+            bool isLocalMessage
     ) {
         (std::dynamic_pointer_cast<ReplyCaller<void> >(callback))->returnValue();
     }
@@ -79,7 +80,8 @@ public:
             Unused, // receiver participant ID
             Unused, // messaging QoS
             Unused, // request object to send
-            std::shared_ptr<IReplyCaller> callback // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller> callback, // reply caller to notify when reply is received
+            bool isLocalMessage
     ) {
        (std::dynamic_pointer_cast<ReplyCaller<types::Localisation::GpsLocation> >(callback))->returnValue(expectedGpsLocation);
     }
@@ -90,7 +92,8 @@ public:
             Unused, // receiver participant ID
             Unused, // messaging QoS
             Unused, // request object to send
-            std::shared_ptr<IReplyCaller> callback // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller> callback, // reply caller to notify when reply is received
+            bool isLocalMessage
     ) {
 
         std::dynamic_pointer_cast<ReplyCaller<int> >(callback)->returnValue(expectedInt);
@@ -143,7 +146,8 @@ public:
             const std::string&,
             const MessagingQos&,
             const Request&,
-            std::shared_ptr<IReplyCaller>
+            std::shared_ptr<IReplyCaller>,
+            bool isLocalMessage
     )>& setExpectationsForSendRequestCall(std::string methodName) = 0;
 
     // sets the exception which shall be returned by the ReplyCaller
@@ -152,7 +156,8 @@ public:
             const std::string&,
             const MessagingQos&,
             const Request&,
-            std::shared_ptr<IReplyCaller>
+            std::shared_ptr<IReplyCaller>,
+            bool isLocalMessage
     )>& setExpectedExceptionForSendRequestCall(const exceptions::JoynrException& error) {
         this->error.reset(error.clone());
         return EXPECT_CALL(
@@ -162,8 +167,8 @@ public:
                         Eq(providerParticipantId), // receiver participant ID
                         _, // messaging QoS
                         _, // request object to send
-                        Pointee(_) // reply caller to notify when reply is received A<IReplyCaller>()
-                        )
+                        Pointee(_), // reply caller to notify when reply is received A<IReplyCaller>()
+                        _) // isLocal flag
                 ).Times(1).WillRepeatedly(Invoke(this, &AbstractSyncAsyncTest::returnError));
     }
 
@@ -171,7 +176,8 @@ public:
             const std::string& receiverParticipantId,
             const MessagingQos& qos,
             const Request& request,
-            std::shared_ptr<IReplyCaller> callback) {
+            std::shared_ptr<IReplyCaller> callback,
+            bool isLocalMessage) {
         callback->returnError(error);
     }
 
@@ -210,7 +216,8 @@ public:
                             Property(&Request::getMethodName, Eq("setLocation")),
                             Property(&Request::getParamDatatypes, (Property(&std::vector<std::string>::size, Eq(1))))
                         ), // request object to send
-                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()) // reply caller to notify when reply is received
+                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()), // reply caller to notify when reply is received
+                        _ // isLocal flag
                     )
         ).WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackVoidResult));
 

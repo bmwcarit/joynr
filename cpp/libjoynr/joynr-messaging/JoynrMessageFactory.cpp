@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,11 +48,14 @@ JoynrMessageFactory::JoynrMessageFactory(std::uint64_t ttlUpliftMs)
 JoynrMessage JoynrMessageFactory::createRequest(const std::string& senderId,
                                                 const std::string& receiverId,
                                                 const MessagingQos& qos,
-                                                const Request& payload) const
+                                                const Request& payload,
+                                                bool isLocalMessage) const
 {
     // create message and set type
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getRequestReplyId());
+    msg.setLocalMessage(isLocalMessage);
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
@@ -64,6 +67,7 @@ JoynrMessage JoynrMessageFactory::createReply(const std::string& senderId,
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getRequestReplyId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload), false);
     return msg;
 }
@@ -71,10 +75,12 @@ JoynrMessage JoynrMessageFactory::createReply(const std::string& senderId,
 JoynrMessage JoynrMessageFactory::createOneWayRequest(const std::string& senderId,
                                                       const std::string& receiverId,
                                                       const MessagingQos& qos,
-                                                      const OneWayRequest& payload) const
+                                                      const OneWayRequest& payload,
+                                                      bool isLocalMessage) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
+    msg.setLocalMessage(isLocalMessage);
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
@@ -102,18 +108,21 @@ JoynrMessage JoynrMessageFactory::createSubscriptionPublication(
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
 
-JoynrMessage JoynrMessageFactory::createSubscriptionRequest(
-        const std::string& senderId,
-        const std::string& receiverId,
-        const MessagingQos& qos,
-        const SubscriptionRequest& payload) const
+JoynrMessage JoynrMessageFactory::createSubscriptionRequest(const std::string& senderId,
+                                                            const std::string& receiverId,
+                                                            const MessagingQos& qos,
+                                                            const SubscriptionRequest& payload,
+                                                            bool isLocalMessage) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
+    msg.setLocalMessage(isLocalMessage);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
@@ -122,10 +131,13 @@ JoynrMessage JoynrMessageFactory::createMulticastSubscriptionRequest(
         const std::string& senderId,
         const std::string& receiverId,
         const MessagingQos& qos,
-        const MulticastSubscriptionRequest& payload) const
+        const MulticastSubscriptionRequest& payload,
+        bool isLocalMessage) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
+    msg.setLocalMessage(isLocalMessage);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
@@ -134,10 +146,13 @@ JoynrMessage JoynrMessageFactory::createBroadcastSubscriptionRequest(
         const std::string& senderId,
         const std::string& receiverId,
         const MessagingQos& qos,
-        const BroadcastSubscriptionRequest& payload) const
+        const BroadcastSubscriptionRequest& payload,
+        bool isLocalMessage) const
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
+    msg.setLocalMessage(isLocalMessage);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }
@@ -149,6 +164,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionReply(const std::string& sen
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload), false);
     return msg;
 }
@@ -160,6 +176,7 @@ JoynrMessage JoynrMessageFactory::createSubscriptionStop(const std::string& send
 {
     JoynrMessage msg;
     msg.setType(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP);
+    msg.setCustomHeader(JoynrMessage::CUSTOM_HEADER_REQUEST_REPLY_ID, payload.getSubscriptionId());
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload));
     return msg;
 }

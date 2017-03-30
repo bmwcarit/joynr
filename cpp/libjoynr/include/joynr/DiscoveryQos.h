@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,9 @@ public:
         LOCAL_ONLY = 2,
         /** only participants which match a keyword will be considered */
         KEYWORD = 3,
-        /** the participant with the highest priority will be selected */
+        /** the participant with the highest priority will be selected.
+            If multiple provider with the same highest priority are found,
+            one of these will be arbitrarly selected. */
         HIGHEST_PRIORITY = 4
     };
 

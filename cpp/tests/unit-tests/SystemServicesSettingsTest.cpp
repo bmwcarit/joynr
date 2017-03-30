@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ TEST_F(SystemServicesSettingsTest, intializedWithDefaultSettings) {
     SystemServicesSettings systemSettings(testSettings);
 
     EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_DOMAIN()));
-    EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()));
     EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
     EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
     EXPECT_TRUE(systemSettings.contains(SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));

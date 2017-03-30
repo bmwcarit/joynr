@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,14 +37,16 @@ class JOYNRCOMMON_EXPORT MessagingQos
 {
 public:
     /**
-     * @brief Base constructor
+     * @brief Full constructor
      * @param ttl The time to live in milliseconds
      * @param effort The effort to expend during message delivery
      * @param encrypt Specifies, whether messages will be sent encrypted
+     * @param compress Specifies, whether messages will be sent compressed
      */
     explicit MessagingQos(std::uint64_t ttl = default_ttl,
                           MessagingQosEffort::Enum effort = MessagingQosEffort::Enum::NORMAL,
-                          bool encrypt = false);
+                          bool encrypt = false,
+                          bool compress = false);
 
     /**
      * @brief Base constructor
@@ -59,11 +61,6 @@ public:
      * @param encrypt Specifies, whether messages will be sent encrypted
      */
     explicit MessagingQos(std::uint64_t ttl, bool encrypt);
-
-    /*
-     * Adding a constructor with just 'encrypt' is not possible since it results
-     * ambiguous constructors.
-     */
 
     /** @brief Copy constructor */
     MessagingQos(const MessagingQos& other) = default;
@@ -113,6 +110,18 @@ public:
     void setEncrypt(bool encrypt);
 
     /**
+     * @brief Gets the compress flag
+     * @return whether messages will be sent compressed
+     */
+    bool getCompress() const;
+
+    /**
+     * @brief Sets the compress flag
+     * @param compress specifies, whether messages will be sent compressed
+     */
+    void setCompress(bool compress);
+
+    /**
      * @brief Puts a header value for the given header key, replacing an existing value
      * if necessary.
      * @param key the header key for which to put the value.
@@ -150,6 +159,9 @@ private:
 
     /** @brief Specifies, whether messages will be sent encrypted */
     bool encrypt;
+
+    /** @brief Specifies, whether messages will be sent compressed */
+    bool compress;
 
     /** @brief The map of custom message headers */
     std::unordered_map<std::string, std::string> messageHeaders;

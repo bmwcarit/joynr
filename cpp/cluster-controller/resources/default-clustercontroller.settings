@@ -1,0 +1,6 @@
+[cluster-controller]
+ws-tls-port=4243
+ws-port=4242
+mqtt-client-id-prefix=joynr
+mqtt-multicast-topic-prefix=
+mqtt-unicast-topic-prefix=

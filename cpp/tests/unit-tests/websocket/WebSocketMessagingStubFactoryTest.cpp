@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -164,7 +164,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     WebSocketSettings wsSettings(settings);
     SingleThreadedIOService singleThreadedIOService;
     singleThreadedIOService.start();
-    std::shared_ptr<WebSocketPpClient> websocket = std::make_shared<MockWebSocketClient>(wsSettings,
+    std::shared_ptr<IWebSocketPpClient> websocket = std::make_shared<MockWebSocketClient>(wsSettings,
             singleThreadedIOService.getIOService());
 
     websocket->registerDisconnectCallback([](){});

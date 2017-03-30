@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,7 +268,7 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Test(timeout = 1000)
+    @Test(timeout = 2000)
     public void addLocalOnlyCapability() throws InterruptedException {
 
         ProviderQos providerQos = new ProviderQos();
@@ -285,6 +285,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                         channelAddressSerialized);
 
         localCapabilitiesDirectory.add(discoveryEntry);
+        Thread.sleep(1000);
         verify(globalCapabilitiesClient, never()).add(any(Callback.class), any(GlobalDiscoveryEntry.class));
     }
 

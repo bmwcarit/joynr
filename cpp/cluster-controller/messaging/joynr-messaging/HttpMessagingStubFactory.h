@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,7 @@ class HttpMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {
 
 public:
-    HttpMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender,
-                             const std::string& globalClusterControllerAddress);
+    HttpMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender);
     std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
@@ -43,7 +42,6 @@ public:
 
 private:
     std::shared_ptr<IMessageSender> messageSender;
-    std::string globalClusterControllerAddress;
 };
 
 } // namespace joynr

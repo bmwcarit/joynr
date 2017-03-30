@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,11 @@
 #include <boost/optional.hpp>
 
 #include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/Logger.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
-#include "joynr/Logger.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -121,7 +122,8 @@ using Table = bmi::multi_index_container<
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalDomainAccessStore
 {
 public:
-    explicit LocalDomainAccessStore(bool clearDatabaseOnStartup = false);
+    LocalDomainAccessStore();
+    explicit LocalDomainAccessStore(std::string fileName);
     ~LocalDomainAccessStore() = default;
 
     /**
@@ -458,14 +460,19 @@ public:
                                 const std::string& domain,
                                 const std::string& interfaceName);
 
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(MUESLI_NVP(masterTable),
+                MUESLI_NVP(mediatorTable),
+                MUESLI_NVP(ownerTable),
+                MUESLI_NVP(domainRoleTable));
+    }
+
 private:
     ADD_LOGGER(LocalDomainAccessStore);
-
-    /**
-     * Reset store to initial state.
-     * NOTE: After this function store will have no entries!!!
-     */
-    void reset();
+    void persistToFile() const;
+    std::string persistenceFileName;
 
     using MasterTable =
             access_control::TableMaker<access_control::dac::MasterAccessControlEntry>::Type;
@@ -490,12 +497,14 @@ private:
     template <typename Table, typename... Args>
     bool removeFromTable(Table& table, Args&&... args)
     {
+        bool success = false;
         auto it = lookup(table, std::forward<Args>(args)...);
-        if (it == table.end()) {
-            return false;
+        if (it != table.end()) {
+            success = true;
+            table.erase(it);
         }
-        table.erase(it);
-        return true;
+        persistToFile();
+        return success;
     }
 
     template <typename Table, typename Iterator = typename Table::const_iterator, typename... Args>
@@ -518,12 +527,14 @@ private:
     template <typename Table, typename Entry>
     bool insertOrReplace(Table& table, const Entry& updatedEntry)
     {
+        bool success = true;
         std::pair<typename Table::iterator, bool> result = table.insert(updatedEntry);
         if (!result.second) {
             // entry exists, update it
-            return table.replace(result.first, updatedEntry);
+            success = table.replace(result.first, updatedEntry);
         }
-        return true;
+        persistToFile();
+        return success;
     }
 
     template <typename Table, typename Value = typename Table::value_type>

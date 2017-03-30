@@ -51,31 +51,29 @@ void JoynrMessageSender::sendRequest(const std::string& senderParticipantId,
                                      const std::string& receiverParticipantId,
                                      const MessagingQos& qos,
                                      const Request& request,
-                                     std::shared_ptr<IReplyCaller> callback)
+                                     std::shared_ptr<IReplyCaller> callback,
+                                     bool isLocalMessage)
 {
     assert(dispatcher != nullptr);
 
-    try {
-        dispatcher->addReplyCaller(request.getRequestReplyId(), callback, qos);
-        JoynrMessage message = messageFactory.createRequest(
-                senderParticipantId, receiverParticipantId, qos, request);
-        assert(messageRouter);
-        messageRouter->route(message);
-    } catch (const std::invalid_argument& exception) {
-        throw joynr::exceptions::MethodInvocationException(exception.what());
-    }
+    dispatcher->addReplyCaller(request.getRequestReplyId(), callback, qos);
+    JoynrMessage message = messageFactory.createRequest(
+            senderParticipantId, receiverParticipantId, qos, request, isLocalMessage);
+    assert(messageRouter);
+    messageRouter->route(message);
 }
 
 void JoynrMessageSender::sendOneWayRequest(const std::string& senderParticipantId,
                                            const std::string& receiverParticipantId,
                                            const MessagingQos& qos,
-                                           const OneWayRequest& request)
+                                           const OneWayRequest& request,
+                                           bool isLocalMessage)
 {
     assert(dispatcher != nullptr);
 
     try {
         JoynrMessage message = messageFactory.createOneWayRequest(
-                senderParticipantId, receiverParticipantId, qos, request);
+                senderParticipantId, receiverParticipantId, qos, request, isLocalMessage);
         assert(messageRouter);
         messageRouter->route(message);
     } catch (const std::invalid_argument& exception) {
@@ -107,11 +105,15 @@ void JoynrMessageSender::sendReply(const std::string& senderParticipantId,
 void JoynrMessageSender::sendSubscriptionRequest(const std::string& senderParticipantId,
                                                  const std::string& receiverParticipantId,
                                                  const MessagingQos& qos,
-                                                 const SubscriptionRequest& subscriptionRequest)
+                                                 const SubscriptionRequest& subscriptionRequest,
+                                                 bool isLocalMessage)
 {
     try {
-        JoynrMessage message = messageFactory.createSubscriptionRequest(
-                senderParticipantId, receiverParticipantId, qos, subscriptionRequest);
+        JoynrMessage message = messageFactory.createSubscriptionRequest(senderParticipantId,
+                                                                        receiverParticipantId,
+                                                                        qos,
+                                                                        subscriptionRequest,
+                                                                        isLocalMessage);
         assert(messageRouter);
         messageRouter->route(message);
     } catch (const std::invalid_argument& exception) {
@@ -123,11 +125,16 @@ void JoynrMessageSender::sendBroadcastSubscriptionRequest(
         const std::string& senderParticipantId,
         const std::string& receiverParticipantId,
         const MessagingQos& qos,
-        const BroadcastSubscriptionRequest& subscriptionRequest)
+        const BroadcastSubscriptionRequest& subscriptionRequest,
+        bool isLocalMessage)
 {
     try {
-        JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(
-                senderParticipantId, receiverParticipantId, qos, subscriptionRequest);
+        JoynrMessage message =
+                messageFactory.createBroadcastSubscriptionRequest(senderParticipantId,
+                                                                  receiverParticipantId,
+                                                                  qos,
+                                                                  subscriptionRequest,
+                                                                  isLocalMessage);
         assert(messageRouter);
         messageRouter->route(message);
     } catch (const std::invalid_argument& exception) {
@@ -139,11 +146,16 @@ void JoynrMessageSender::sendMulticastSubscriptionRequest(
         const std::string& senderParticipantId,
         const std::string& receiverParticipantId,
         const MessagingQos& qos,
-        const MulticastSubscriptionRequest& subscriptionRequest)
+        const MulticastSubscriptionRequest& subscriptionRequest,
+        bool isLocalMessage)
 {
     try {
-        JoynrMessage message = messageFactory.createMulticastSubscriptionRequest(
-                senderParticipantId, receiverParticipantId, qos, subscriptionRequest);
+        JoynrMessage message =
+                messageFactory.createMulticastSubscriptionRequest(senderParticipantId,
+                                                                  receiverParticipantId,
+                                                                  qos,
+                                                                  subscriptionRequest,
+                                                                  isLocalMessage);
         assert(messageRouter);
         messageRouter->route(message);
     } catch (const std::invalid_argument& exception) {

@@ -187,7 +187,7 @@ void AbstractMessageRouter::scheduleMessage(
                                  ". Stub creation failed. Queueing message.");
         JOYNR_LOG_WARN(logger, errorMessage);
         // save the message for later delivery
-        messageQueue->queueMessage(message);
+        queueMessage(message);
     }
 }
 
@@ -208,6 +208,12 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(const boost::system::er
                         "Failed to schedule timer to remove outdated messages: {}",
                         errorCode.message());
     }
+}
+
+void AbstractMessageRouter::queueMessage(const JoynrMessage& message)
+{
+    JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+    messageQueue->queueMessage(message);
 }
 
 void AbstractMessageRouter::loadRoutingTable(std::string fileName)
@@ -290,14 +296,14 @@ void MessageRunnable::run()
                                 const_cast<exceptions::JoynrRuntimeException&>(e));
                 std::chrono::milliseconds delay = delayException.getDelayMs();
 
-                JOYNR_LOG_ERROR(logger,
+                JOYNR_LOG_TRACE(logger,
                                 "Rescheduling message after error: messageId: {}, new delay {}ms, "
-                                "error: {}",
+                                "reason: {}",
                                 message.getHeaderMessageId(),
                                 delay.count(),
                                 e.getMessage());
                 messageRouter.scheduleMessage(message, destAddress, tryCount + 1, delay);
-            } catch (std::bad_cast& castError) {
+            } catch (const std::bad_cast&) {
                 JOYNR_LOG_ERROR(logger,
                                 "Message with ID {} could not be sent! reason: {}",
                                 message.getHeaderMessageId(),

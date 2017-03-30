@@ -3,7 +3,7 @@ package io.joynr.messaging.mqtt.paho.client;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,12 +50,25 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private MqttClient mqttClient;
     private IRawMessaging messagingSkeleton;
     private int reconnectSleepMs;
+    private int keepAliveTimerSec;
+    private int connectionTimeoutSec;
+    private int timeToWaitMs;
+    private int maxMsgsInflight;
 
     private Set<String> subscribedTopics = new HashSet<>();
 
-    public MqttPahoClient(MqttClient mqttClient, int reconnectSleepMs) throws MqttException {
+    public MqttPahoClient(MqttClient mqttClient,
+                          int reconnectSleepMS,
+                          int keepAliveTimerSec,
+                          int connectionTimeoutSec,
+                          int timeToWaitMs,
+                          int maxMsgsInflight) throws MqttException {
         this.mqttClient = mqttClient;
-        this.reconnectSleepMs = reconnectSleepMs;
+        this.reconnectSleepMs = reconnectSleepMS;
+        this.keepAliveTimerSec = keepAliveTimerSec;
+        this.connectionTimeoutSec = connectionTimeoutSec;
+        this.timeToWaitMs = timeToWaitMs;
+        this.maxMsgsInflight = maxMsgsInflight;
     }
 
     @Override
@@ -63,6 +76,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         while (!mqttClient.isConnected()) {
             try {
                 mqttClient.connect(getConnectOptions());
+                mqttClient.setTimeToWait(timeToWaitMs);
                 mqttClient.setCallback(this);
                 logger.debug("MQTT Connected client");
                 for (String topic : subscribedTopics) {
@@ -103,8 +117,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private MqttConnectOptions getConnectOptions() {
         MqttConnectOptions options = new MqttConnectOptions();
         options.setAutomaticReconnect(false);
-        options.setConnectionTimeout(120);
-        options.setKeepAliveInterval(60);
+        options.setConnectionTimeout(connectionTimeoutSec);
+        options.setKeepAliveInterval(keepAliveTimerSec);
+        options.setMaxInflight(maxMsgsInflight);
         options.setCleanSession(false);
         return options;
     }
@@ -222,28 +237,66 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void connectionLost(Throwable error) {
-        logger.error("MQTT connection lost: {}", error.getMessage());
-        logger.trace("Connection lost because of error", error);
         if (error instanceof MqttException) {
             MqttException mqttError = (MqttException) error;
             int reason = mqttError.getReasonCode();
+
             switch (reason) {
-            case MqttException.REASON_CODE_CLIENT_EXCEPTION:
-                connectionLost(mqttError.getCause());
-                break;
+            // the following error codes indicate recoverable errors, hence a reconnect is initiated
             case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
-            case MqttException.REASON_CODE_CLIENT_NOT_CONNECTED:
             case MqttException.REASON_CODE_CLIENT_TIMEOUT:
-            case MqttException.REASON_CODE_CONNECTION_LOST:
-            case MqttException.REASON_CODE_SERVER_CONNECT_ERROR:
-            case MqttException.REASON_CODE_UNEXPECTED_ERROR:
             case MqttException.REASON_CODE_WRITE_TIMEOUT:
+            case MqttException.REASON_CODE_CLIENT_NOT_CONNECTED:
+            case MqttException.REASON_CODE_INVALID_MESSAGE:
+            case MqttException.REASON_CODE_CONNECTION_LOST:
+            case MqttException.REASON_CODE_UNEXPECTED_ERROR:
+                logger.debug("MQTT connection lost, trying to reconnect");
                 start();
                 break;
-            default:
+            case MqttException.REASON_CODE_CLIENT_EXCEPTION:
+                logger.error("MQTT connection lost due to client exception");
+                Throwable cause = mqttError.getCause();
+                if (cause != null) {
+                    logger.error(cause.getMessage());
+                }
+                start();
+                break;
+            // the following error codes indicate a configuration problem that is not recoverable through reconnecting
+            case MqttException.REASON_CODE_INVALID_PROTOCOL_VERSION:
+            case MqttException.REASON_CODE_INVALID_CLIENT_ID:
+            case MqttException.REASON_CODE_FAILED_AUTHENTICATION:
+            case MqttException.REASON_CODE_NOT_AUTHORIZED:
+            case MqttException.REASON_CODE_SOCKET_FACTORY_MISMATCH:
+            case MqttException.REASON_CODE_SSL_CONFIG_ERROR:
+                logger.error("MQTT Connection is incorrectly configured. Connection not possible: "
+                        + mqttError.getMessage());
                 shutdown();
                 break;
+            // the following error codes can occur if the client is closing / already closed
+            case MqttException.REASON_CODE_CLIENT_CLOSED:
+            case MqttException.REASON_CODE_CLIENT_DISCONNECTING:
+                logger.trace("MQTT connection lost due to client shutting down");
+                break;
+            // the following error codes should not be thrown when the connectionLost() callback is called
+            // they are listed here for the sake of completeness
+            case MqttException.REASON_CODE_CLIENT_CONNECTED:
+            case MqttException.REASON_CODE_SUBSCRIBE_FAILED:
+            case MqttException.REASON_CODE_CLIENT_ALREADY_DISCONNECTED:
+            case MqttException.REASON_CODE_CLIENT_DISCONNECT_PROHIBITED:
+            case MqttException.REASON_CODE_CONNECT_IN_PROGRESS:
+            case MqttException.REASON_CODE_NO_MESSAGE_IDS_AVAILABLE:
+            case MqttException.REASON_CODE_TOKEN_INUSE:
+            case MqttException.REASON_CODE_MAX_INFLIGHT:
+            case MqttException.REASON_CODE_DISCONNECTED_BUFFER_FULL:
+            default:
+                logger.error("received error reason that should not have been thrown for connection loss: "
+                        + mqttError.getMessage());
+                shutdown();
             }
+
+        } else {
+            logger.error("MQTT connection lost due to unknown error " + error);
+            shutdown();
         }
     }
 

@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2016 BMW Car IT GmbH
+  Copyright (C) 2011 - 2017 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -55,6 +55,13 @@
 			<version>${project.version}</version>
 			<classifier>tests</classifier>
 		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 		<!-- Logging used in the performance Java code -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -87,7 +94,21 @@
 
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
+			<artifactId>discovery-directory-jee</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.backend-services</groupId>
 			<artifactId>domain-access-controller-servlet</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.backend-services</groupId>
+			<artifactId>domain-access-controller-jee</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
@@ -108,7 +129,7 @@
 				<filtering>true</filtering>
 			</resource>
 			<resource>
-				<directory>src/main/model</directory>
+				<directory>../src/main/model</directory>
 			</resource>
 		</resources>
 
@@ -145,7 +166,7 @@
 								<source>src/main/js</source>
 								<source>src/main/generated-javascript</source>
 								<source>src/main/generated-java</source>
-								<source>src/main/model</source>
+								<source>../src/main/model</source>
 							</sources>
 						</configuration>
 					</execution>
@@ -163,7 +184,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>${basedir}/src/main/model</model>
+							<model>${basedir}/../performance-test-base/src/main/model</model>
 							<generationLanguage>java</generationLanguage>
 							<outputPath>${basedir}/src/main/generated-java</outputPath>
 						</configuration>
@@ -175,7 +196,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>${basedir}/src/main/model</model>
+							<model>${basedir}/../performance-test-base/src/main/model</model>
 							<generationLanguage>cpp</generationLanguage>
 							<outputPath>${basedir}/src/main/generated-cpp</outputPath>
 						</configuration>
@@ -187,7 +208,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>${basedir}/src/main/model</model>
+							<model>${basedir}/../performance-test-base/src/main/model</model>
 							<generationLanguage>javascript</generationLanguage>
 							<outputPath>${basedir}/src/main/generated-javascript</outputPath>
 						</configuration>
@@ -277,6 +298,22 @@
 									<type>war</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>discovery.war</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>io.joynr.java.backend-services</groupId>
+									<artifactId>domain-access-controller-jee</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>accesscontrol-jee.war</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>io.joynr.java.backend-services</groupId>
+									<artifactId>discovery-directory-jee</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>discovery-jee.war</destFileName>
 								</artifactItem>
 							</artifactItems>
 							<overWriteReleases>false</overWriteReleases>

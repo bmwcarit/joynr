@@ -3,7 +3,7 @@ package io.joynr.messaging.routing;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,8 +66,13 @@ public class RoutingTableImpl implements RoutingTable {
         // NOTE: ConcurrentMap cannot contain null values, this means if result is not null the new
         //       address was not added to the routing table
         if (result != null) {
-            logger.warn("unable to put(participantId={}, address={}) into routing table,"
-                    + " since the participant ID is already associated with address={}", participantId, address, result);
+            if (!address.equals(result)) {
+                logger.warn("unable to put(participantId={}, address={}) into routing table,"
+                                    + " since the participant ID is already associated with address={}",
+                            participantId,
+                            address,
+                            result);
+            }
         } else {
             logger.trace("put(participantId={}, address={}) successfully into routing table", participantId, address);
         }

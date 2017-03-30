@@ -57,3 +57,10 @@
   Webjar: <groupId>org.webjars</groupId>
           <artifactId>bluebird</artifactId>
           <version>3.1.1</version>
+
+* text-encoding (https://github.com/inexorabletash/text-encoding)
+  License: The Unlicense (https://github.com/inexorabletash/text-encoding/blob/master/LICENSE.md)
+  Webjar: <groupId>org.webjars.npm</groupId>
+          <artifactId>text-encoding</artifactId>
+          <version>0.6.4</version>
+

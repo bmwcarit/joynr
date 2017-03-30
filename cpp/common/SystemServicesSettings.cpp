@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,27 +38,21 @@ const std::string& SystemServicesSettings::SETTING_DOMAIN()
     return value;
 }
 
-const std::string& SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()
-{
-    static const std::string value("system.services/cc-routingprovider-authenticationtoken");
-    return value;
-}
-
 const std::string& SystemServicesSettings::SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()
 {
     static const std::string value("system.services/cc-routingprovider-participantid");
     return value;
 }
 
-const std::string& SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()
-{
-    static const std::string value("system.services/cc-discoveryprovider-authenticationtoken");
-    return value;
-}
-
 const std::string& SystemServicesSettings::SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()
 {
     static const std::string value("system.services/cc-discoveryprovider-participantid");
+    return value;
+}
+
+const std::string& SystemServicesSettings::SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID()
+{
+    static const std::string value("system.services/cc-messagenotificationprovider-participantid");
     return value;
 }
 
@@ -78,17 +72,6 @@ void SystemServicesSettings::setJoynrSystemServicesDomain(const std::string& sys
     settings.set(SETTING_DOMAIN(), systemServicesDomain);
 }
 
-std::string SystemServicesSettings::getCcRoutingProviderAuthenticationToken() const
-{
-    return settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN());
-}
-
-void SystemServicesSettings::setCcRoutingProviderAuthenticationToken(
-        const std::string& authenticationToken)
-{
-    settings.set(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN(), authenticationToken);
-}
-
 std::string SystemServicesSettings::getCcRoutingProviderParticipantId() const
 {
     return settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID());
@@ -97,17 +80,6 @@ std::string SystemServicesSettings::getCcRoutingProviderParticipantId() const
 void SystemServicesSettings::setCcRoutingProviderParticipantId(const std::string& participantId)
 {
     settings.set(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(), participantId);
-}
-
-std::string SystemServicesSettings::getCcDiscoveryProviderAuthenticationToken() const
-{
-    return settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN());
-}
-
-void SystemServicesSettings::setCcDiscoveryProviderAuthenticationToken(
-        const std::string& authenticationToken)
-{
-    settings.set(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN(), authenticationToken);
 }
 
 std::string SystemServicesSettings::getCcDiscoveryProviderParticipantId() const
@@ -120,6 +92,17 @@ void SystemServicesSettings::setCcDiscoveryProviderParticipantId(const std::stri
     settings.set(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(), participantId);
 }
 
+std::string SystemServicesSettings::getCcMessageNotificationProviderParticipantId() const
+{
+    return settings.get<std::string>(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID());
+}
+
+void SystemServicesSettings::setCcMessageNotificationProviderParticipantId(
+        const std::string& participantId)
+{
+    settings.set(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID(), participantId);
+}
+
 bool SystemServicesSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
@@ -129,10 +112,9 @@ bool SystemServicesSettings::contains(const std::string& key) const
 void SystemServicesSettings::checkSettings() const
 {
     assert(settings.contains(SETTING_DOMAIN()));
-    assert(settings.contains(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()));
     assert(settings.contains(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
-    assert(settings.contains(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()));
     assert(settings.contains(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
+    assert(settings.contains(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID()));
 }
 
 void SystemServicesSettings::printSettings() const
@@ -142,21 +124,18 @@ void SystemServicesSettings::printSettings() const
                     SETTING_DOMAIN(),
                     settings.get<std::string>(SETTING_DOMAIN()));
     JOYNR_LOG_DEBUG(logger,
-                    "SETTING: {} = {}",
-                    SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN(),
-                    settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_AUTHENTICATIONTOKEN()));
-    JOYNR_LOG_DEBUG(logger,
                     "SETTING: {}  = {}",
                     SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(),
                     settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
     JOYNR_LOG_DEBUG(logger,
-                    "SETTING: {}  = {}",
-                    SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN(),
-                    settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_AUTHENTICATIONTOKEN()));
-    JOYNR_LOG_DEBUG(logger,
                     "SETTING: {} = {}",
                     SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(),
                     settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
+    JOYNR_LOG_DEBUG(
+            logger,
+            "SETTING: {} = {}",
+            SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID(),
+            settings.get<std::string>(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID()));
 }
 
 } // namespace joynr

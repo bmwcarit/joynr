@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,21 @@ define(
             "joynr/system/LoggerFactory",
             "joynr/messaging/inprocess/InProcessAddress",
             "joynr/messaging/JoynrMessage",
+            "joynr/messaging/MessageReplyToAddressCalculator",
+            "joynr/exceptions/JoynrException",
             "joynr/util/Typing",
             "joynr/util/JSONSerializer",
         ],
-        function(Promise, MulticastWildcardRegexFactory, DiagnosticTags, LoggerFactory, InProcessAddress, JoynrMessage, Typing, JSONSerializer) {
+        function(Promise,
+                MulticastWildcardRegexFactory,
+                DiagnosticTags,
+                LoggerFactory,
+                InProcessAddress,
+                JoynrMessage,
+                MessageReplyToAddressCalculator,
+                JoynrException,
+                Typing,
+                JSONSerializer) {
 
             /**
              * Message Router receives a message and forwards it to the correct endpoint, as looked up in the {@link RoutingTable}
@@ -83,6 +94,9 @@ define(
                 var multicastAddressCalculator = settings.multicastAddressCalculator;
                 var messagingSkeletonFactory = settings.messagingSkeletonFactory;
                 var multicastReceiversRegistry = {};
+                var replyToAddress;
+                var messageReplyToAddressCalculator = new MessageReplyToAddressCalculator({});
+                var messagesWithoutReplyTo = [];
 
                 // if (settings.routingTable === undefined) {
                 // throw new Error("routing table is undefined");
@@ -104,6 +118,14 @@ define(
                 function isReady() {
                     return started;
                 }
+
+                this.setReplyToAddress = function (newAddress) {
+                    replyToAddress = newAddress;
+                    messageReplyToAddressCalculator.setReplyToAddress(replyToAddress);
+                    messagesWithoutReplyTo.forEach(function(msg) {
+                        that.route(msg);
+                    });
+                };
 
                 /**
                  * @function MessageRouter#getStorageKey
@@ -198,6 +220,15 @@ define(
                         function setRoutingProxy(newRoutingProxy) {
                             var hop, participantId, errorFct, receiver, queuedCall;
 
+                            routingProxy = newRoutingProxy;
+
+                            var replyToAddressPromise = routingProxy.replyToAddress.get().then(function(replyToAddress) {
+                                that.setReplyToAddress(replyToAddress);
+                            }).catch(function(error) {
+                                throw new Error("Failed to get replyToAddress from parent router: " + error
+                                        + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                            });
+
                             errorFct = function(error) {
                                 if (!isReady()) {
                                     //in this case, the error is expected, e.g. during shut down
@@ -208,7 +239,6 @@ define(
                                 throw new Error(error);
                             };
 
-                            routingProxy = newRoutingProxy;
                             if (routingProxy !== undefined) {
                                 if (routingProxy.proxyParticipantId !== undefined) {
                                     that.addNextHopToParentRoutingTable(
@@ -250,6 +280,7 @@ define(
                             queuedRemoveNextHopCalls = undefined;
                             queuedAddMulticastReceiverCalls = undefined;
                             queuedRemoveMulticastReceiverCalls = undefined;
+                            return replyToAddressPromise;
                         };
 
                 /*
@@ -375,29 +406,43 @@ define(
                                 .forJoynrMessage(joynrMessage));
                         settings.messageQueue.putMessage(joynrMessage);
                         throw new Error(errorMsg);
-                    } else {
-                        messagingStub =
-                                settings.messagingStubFactory
-                                        .createMessagingStub(address);
-                        if (messagingStub === undefined) {
-                            errorMsg =
-                                    "No message receiver found for participantId: "
-                                        + joynrMessage.to
-                                        + " queuing message.";
-                            log.info(errorMsg, DiagnosticTags
-                                    .forJoynrMessage(joynrMessage));
+                    }
+
+                    if (!joynrMessage.isLocalMessage) {
+                        try {
+                            messageReplyToAddressCalculator.setReplyTo(joynrMessage);
+                        } catch (error) {
+                            messagesWithoutReplyTo.push(joynrMessage);
+                            errorMsg = "replyTo address could not be set: "
+                                + error
+                                + ". Queuing message.";
+                            log.warn(errorMsg, JSON.stringify(DiagnosticTags
+                                    .forJoynrMessage(joynrMessage)));
                             throw new Error(errorMsg);
-                        } else {
-                            return messagingStub.transmit(joynrMessage).then(function() {
-                                //succeeded, do nothing
-                                return null;
-                            }).catch(function(error) {
-                                //error while transmitting message
-                                log.debug("Error while transmitting message: " + error);
-                                //TODO queue message and retry later
-                                return null;
-                            });
                         }
+                    }
+
+                    messagingStub =
+                            settings.messagingStubFactory
+                                    .createMessagingStub(address);
+                    if (messagingStub === undefined) {
+                        errorMsg =
+                                "No message receiver found for participantId: "
+                                    + joynrMessage.to
+                                    + " queuing message.";
+                        log.info(errorMsg, DiagnosticTags
+                                .forJoynrMessage(joynrMessage));
+                        throw new Error(errorMsg);
+                    } else {
+                        return messagingStub.transmit(joynrMessage).then(function() {
+                            //succeeded, do nothing
+                            return null;
+                        }).catch(function(error) {
+                            //error while transmitting message
+                            log.debug("Error while transmitting message: " + error);
+                            //TODO queue message and retry later
+                            return null;
+                        });
                     }
                 }
 

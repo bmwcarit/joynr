@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@
 #include "joynr/system/IDiscovery.h"
 #include "joynr/types/DiscoveryScope.h"
 #include "joynr/Semaphore.h"
+#include "joynr/Future.h"
 
 namespace joynr
 {
@@ -40,7 +41,7 @@ Arbitrator::Arbitrator(
         const std::string& domain,
         const std::string& interfaceName,
         const joynr::types::Version& interfaceVersion,
-        joynr::system::IDiscoverySync& discoveryProxy,
+        joynr::system::IDiscoveryAsync& discoveryProxy,
         const DiscoveryQos& discoveryQos,
         std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction)
         : discoveryProxy(discoveryProxy),
@@ -55,7 +56,6 @@ Arbitrator::Arbitrator(
           discoveredIncompatibleVersions(),
           arbitrationError("Arbitration could not be finished in time."),
           arbitrationStrategyFunction(std::move(arbitrationStrategyFunction)),
-          participantId(""),
           arbitrationFinished(false),
           arbitrationRunning(false),
           keepArbitrationRunning(false),
@@ -92,7 +92,7 @@ void Arbitrator::startArbitration(
 
         std::string serializedDomainsList = boost::algorithm::join(domains, ", ");
         JOYNR_LOG_DEBUG(logger,
-                        "DISCOVERY lookup for domain: {}, interface: [{}]",
+                        "DISCOVERY lookup for domain: [{}], interface: {}",
                         serializedDomainsList,
                         interfaceName);
 
@@ -149,11 +149,14 @@ void Arbitrator::attemptArbitration()
         if (discoveryQos.getArbitrationStrategy() ==
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
             types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
-            discoveryProxy.lookup(fixedParticipantResult,
-                                  discoveryQos.getCustomParameter("fixedParticipantId").getValue());
+            std::string fixedParticipantId =
+                    discoveryQos.getCustomParameter("fixedParticipantId").getValue();
+            auto future = discoveryProxy.lookupAsync(fixedParticipantId);
+            future->get(fixedParticipantResult);
             result.push_back(fixedParticipantResult);
         } else {
-            discoveryProxy.lookup(result, domains, interfaceName, systemDiscoveryQos);
+            auto future = discoveryProxy.lookupAsync(domains, interfaceName, systemDiscoveryQos);
+            future->get(result);
         }
         receiveCapabilitiesLookupResults(result);
     } catch (const exceptions::JoynrException& e) {

@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
@@ -54,6 +55,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
@@ -69,7 +72,9 @@ import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.ConnectorFactory;
@@ -88,6 +93,7 @@ import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.SystemServicesSettings;
 import io.joynr.util.VersionUtil;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.tests.testProxy;
 import joynr.types.DiscoveryEntry;
@@ -166,6 +172,8 @@ public class LocalDiscoveryTest {
 
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        when(localDiscoveryEntryStoreMock.hasDiscoveryEntry(any(DiscoveryEntry.class))).thenReturn(true);
         // use default freshnessUpdateIntervalMs: 3600000ms (1h)
         final LocalCapabilitiesDirectoryImpl localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioningMock,
                                                                                                              globalAddressProviderMock,
@@ -177,16 +185,17 @@ public class LocalDiscoveryTest {
                                                                                                              3600000,
                                                                                                              capabilitiesFreshnessUpdateExecutorMock);
 
-        Module testModule = Modules.override(new CCInProcessRuntimeModule()).with(new AbstractModule() {
-            @Override
-            protected void configure() {
-                bind(JoynrMessagingConnectorFactory.class).annotatedWith(Names.named("connectorFactoryMock"))
-                                                          .toInstance(joynrMessagingConnectorFactoryMock);
-                bind(LocalCapabilitiesDirectory.class).toInstance(localCapabilitiesDirectory);
-                bind(LocalCapabilitiesDirectoryImpl.class).toInstance(localCapabilitiesDirectory);
-                bind(ProxyInvocationHandlerFactory.class).to(ProxyInvocationHandlerFactoryImpl.class);
-            }
-        });
+        Module testModule = Modules.override(new CCInProcessRuntimeModule()).with(new TestGlobalAddressModule(),
+                                                                                  new AbstractModule() {
+                                                                                      @Override
+                                                                                      protected void configure() {
+                                                                                          bind(JoynrMessagingConnectorFactory.class).annotatedWith(Names.named("connectorFactoryMock"))
+                                                                                                                                    .toInstance(joynrMessagingConnectorFactoryMock);
+                                                                                          bind(LocalCapabilitiesDirectory.class).toInstance(localCapabilitiesDirectory);
+                                                                                          bind(LocalCapabilitiesDirectoryImpl.class).toInstance(localCapabilitiesDirectory);
+                                                                                          bind(ProxyInvocationHandlerFactory.class).to(ProxyInvocationHandlerFactoryImpl.class);
+                                                                                      }
+                                                                                  });
         Properties joynrProperties = new Properties();
         Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(joynrProperties, testModule)).getInjector();
 

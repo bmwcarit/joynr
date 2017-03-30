@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,16 +149,16 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     JOYNR_LOG_DEBUG(logger, "finished get capabilities");
 }
 
-INSTANTIATE_TEST_CASE_P(Http,
+INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         CapabilitiesClientTest,
         testing::Values(
             "test-resources/HttpSystemIntegrationTest1.settings"
         )
 );
 
-INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+INSTANTIATE_TEST_CASE_P(Mqtt,
         CapabilitiesClientTest,
         testing::Values(
-            "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+            "test-resources/MqttSystemIntegrationTest1.settings"
         )
 );

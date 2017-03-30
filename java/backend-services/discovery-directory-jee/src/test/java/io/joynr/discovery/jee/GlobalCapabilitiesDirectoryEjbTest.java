@@ -3,7 +3,7 @@ package io.joynr.discovery.jee;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ package io.joynr.discovery.jee;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -73,6 +74,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     private GlobalDiscoveryEntry testGlobalDiscoveryEntry;
+    private String testParticpantId;
 
     @Inject
     private GlobalCapabilitiesDirectorySync subject;
@@ -85,10 +87,11 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         Field field = CapabilityUtils.class.getDeclaredField("objectMapper");
         field.setAccessible(true);
         field.set(CapabilityUtils.class, new ObjectMapper());
+        testParticpantId = "participantId";
         testGlobalDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
                                                                            "domain",
                                                                            "interfaceName",
-                                                                           "participantId",
+                                                                           testParticpantId,
                                                                            new ProviderQos(),
                                                                            System.currentTimeMillis(),
                                                                            System.currentTimeMillis() + 1000L,
@@ -98,11 +101,14 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
-    public void testAddAndLookup() {
+    public void testAddAndLookupSingleDiscoveryEntryByParticipantId() {
+        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticpantId);
+        assertNull(resultBeforeAdd);
+
         subject.add(testGlobalDiscoveryEntry);
         entityManager.flush();
         entityManager.clear();
-        GlobalDiscoveryEntry result = subject.lookup("participantId");
+        GlobalDiscoveryEntry result = subject.lookup(testParticpantId);
         assertNotNull(result);
         assertTrue(result instanceof GlobalDiscoveryEntry);
         assertFalse(result instanceof GlobalDiscoveryEntryPersisted);
@@ -112,7 +118,33 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
+    public void testAddAndRemoveSingleDiscoveryEntry() {
+        GlobalDiscoveryEntry resultBeforeRemove = subject.lookup(testParticpantId);
+        assertNull(resultBeforeRemove);
+
+        subject.add(testGlobalDiscoveryEntry);
+        entityManager.flush();
+        entityManager.clear();
+        GlobalDiscoveryEntry result = subject.lookup(testParticpantId);
+        assertNotNull(result);
+        GlobalDiscoveryEntry persisted = (GlobalDiscoveryEntry) result;
+        assertEquals(testGlobalDiscoveryEntry, persisted);
+
+        subject.remove(testParticpantId);
+        entityManager.flush();
+        entityManager.clear();
+
+        GlobalDiscoveryEntry resultAfterRemove = subject.lookup(testParticpantId);
+        assertNull(resultAfterRemove);
+    }
+
+    @Test
     public void testAddAndLookupMultiDomain() throws Exception {
+        GlobalDiscoveryEntry[] resultBeforeAdd = subject.lookup(new String[]{ testGlobalDiscoveryEntry.getDomain() },
+                                                       testGlobalDiscoveryEntry.getInterfaceName());
+        assertNotNull(resultBeforeAdd);
+        assertEquals(0, resultBeforeAdd.length);
+
         subject.add(testGlobalDiscoveryEntry);
         entityManager.flush();
         entityManager.clear();

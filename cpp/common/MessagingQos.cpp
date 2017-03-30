@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,18 +25,21 @@
 namespace joynr
 {
 
-MessagingQos::MessagingQos(std::uint64_t ttl, MessagingQosEffort::Enum effort, bool encrypt)
-        : ttl(ttl), effort(effort), encrypt(encrypt), messageHeaders()
+MessagingQos::MessagingQos(std::uint64_t ttl,
+                           MessagingQosEffort::Enum effort,
+                           bool encrypt,
+                           bool compress)
+        : ttl(ttl), effort(effort), encrypt(encrypt), compress(compress), messageHeaders()
 {
 }
 
 MessagingQos::MessagingQos(MessagingQosEffort::Enum effort, bool encrypt)
-        : MessagingQos::MessagingQos(default_ttl, effort, encrypt)
+        : MessagingQos::MessagingQos(default_ttl, effort, encrypt, false)
 {
 }
 
 MessagingQos::MessagingQos(std::uint64_t ttl, bool encrypt)
-        : MessagingQos::MessagingQos(ttl, MessagingQosEffort::Enum::NORMAL, encrypt)
+        : MessagingQos::MessagingQos(ttl, MessagingQosEffort::Enum::NORMAL, encrypt, false)
 {
 }
 
@@ -68,6 +71,16 @@ bool MessagingQos::getEncrypt() const
 void MessagingQos::setEncrypt(const bool encrypt)
 {
     this->encrypt = encrypt;
+}
+
+bool MessagingQos::getCompress() const
+{
+    return compress;
+}
+
+void MessagingQos::setCompress(const bool compress)
+{
+    this->compress = compress;
 }
 
 void MessagingQos::putCustomMessageHeader(const std::string& key, const std::string& value)
@@ -106,6 +119,7 @@ bool MessagingQos::operator==(const MessagingQos& other) const
 {
     return (this->getTtl() == other.getTtl() && this->getEffort() == other.getEffort() &&
             this->getEncrypt() == other.getEncrypt() &&
+            this->getCompress() == other.getCompress() &&
             this->getCustomMessageHeaders() == other.getCustomMessageHeaders());
 }
 
@@ -116,6 +130,7 @@ std::string MessagingQos::toString() const
     msgQosAsString << "ttl:" << getTtl();
     msgQosAsString << "effort:" << MessagingQosEffort::getLiteral(this->getEffort());
     msgQosAsString << "encrypt:" << this->getEncrypt();
+    msgQosAsString << "compress:" << this->getCompress();
     msgQosAsString << "}";
     return msgQosAsString.str();
 }

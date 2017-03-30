@@ -2,7 +2,7 @@
 ###
 # #%L
 # %%
-# Copyright (C) 2016 BMW Car IT GmbH
+# Copyright (C) 2016 - 2017 BMW Car IT GmbH
 # %%
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -65,12 +65,100 @@ MQTT_BROKER_URI="tcp://localhost:1883"
 JETTY_PID=""
 MOSQUITTO_PID=""
 CLUSTER_CONTROLLER_PID=""
+
+# Stores the PID of the launched provider. Will be empty if the provider is deployed to a payara
+# server as a JEE app. In this case PROVIDER_JEE_APP_NAME can be used to identify the provider.
 PROVIDER_PID=""
+
+# If a provider is deployed to a payara server, this variable will store the application
+# name. If this variable is set, PROVIDER_PID will store an empty string.
+PROVIDER_JEE_APP_NAME=""
 
 # arguments which are passed to the C++ cluster-controller
 ADDITIONAL_CC_ARGS=""
 
 SKIPBYTEARRAYSIZETIMESK=false
+
+# Select backend service protocol
+BACKEND_SERVICES="MQTT"
+
+function getCpuTime {
+    PID=$1
+    UTIME=$(cat /proc/$PID/stat | cut -d" " -f 14)
+    STIME=$(cat /proc/$PID/stat | cut -d" " -f 15)
+    SUM_CPU_TIME=$(echo $UTIME $STIME | awk '{ printf "%f", $1 + $2 }')
+    echo $SUM_CPU_TIME
+}
+
+function minus {
+    echo $1 $2 | awk '{ printf "%f", $1 - $2 }'
+}
+
+function startMeasureCpuUsage {
+    START_TIME=$(cat /proc/uptime | cut -d" " -f 1)
+
+    #get cluster-controller & provider initial cputime
+    if [ -n "$JETTY_PID" ]
+    then
+        JETTY_CPU_TIME_1=$(getCpuTime $JETTY_PID)
+    fi
+    if [ -n "$MOSQUITTO_PID" ]
+    then
+        MOSQUITTO_CPU_TIME_1=$(getCpuTime $MOSQUITTO_PID)
+    fi
+    CC_CPU_TIME_1=$(getCpuTime $CLUSTER_CONTROLLER_PID)
+    PROVIDER_CPU_TIME_1=$(getCpuTime $PROVIDER_PID)
+}
+
+function stopMeasureCpuUsage {
+    REPORTFILE_PARAM=$1
+
+    echo "----- overall statistics -----" | tee -a $REPORTFILE_PARAM
+    echo "startTime:         $START_TIME" | tee -a $REPORTFILE_PARAM
+    if [ -n "$JETTY_PID" ]
+    then
+        JETTY_CPU_TIME_2=$(getCpuTime $JETTY_PID)
+        JETTY_CPU_TIME=$(minus $JETTY_CPU_TIME_2 $JETTY_CPU_TIME_1)
+    else
+        JETTY_CPU_TIME=0
+    fi
+    if [ -n "$MOSQUITTO_PID" ]
+    then
+        MOSQUITTO_CPU_TIME_2=$(getCpuTime $MOSQUITTO_PID)
+        MOSQUITTO_CPU_TIME=$(minus $MOSQUITTO_CPU_TIME_2 $MOSQUITTO_CPU_TIME_1)
+    else
+        MOSQUITTO_CPU_TIME=0
+    fi
+    CC_CPU_TIME_2=$(getCpuTime $CLUSTER_CONTROLLER_PID)
+    PROVIDER_CPU_TIME_2=$(getCpuTime $PROVIDER_PID)
+
+    END_TIME=$(cat /proc/uptime | cut -d" " -f 1)
+    echo "endTime:           $END_TIME" | tee -a $REPORTFILE_PARAM
+    WALL_CLOCK_DURATION=$(echo $END_TIME $START_TIME | awk '{ printf "%f", 1000*($1 - $2) }')
+    echo "wallClockDuration: $WALL_CLOCK_DURATION" | tee -a $REPORTFILE_PARAM
+
+    # cluster-controller & provider net cputime
+    CC_CPU_TIME=$(minus $CC_CPU_TIME_2 $CC_CPU_TIME_1)
+    PROVIDER_CPU_TIME=$(minus $PROVIDER_CPU_TIME_2 $PROVIDER_CPU_TIME_1)
+
+    #get child cputime
+    #here we need to access different values than for "non-waited-for" processes
+    TEST_UTIME=$(cat /proc/$$/stat | cut -d" " -f 16)
+    TEST_STIME=$(cat /proc/$$/stat | cut -d" " -f 17)
+
+    #sum up all cputime values
+    TEST_CPU_TIME=$(echo -e "$TEST_UTIME\n$TEST_STIME" | awk '{sum+=$1};END{print sum}')
+    TOTAL_CPU_TIME=$(echo -e "$CC_CPU_TIME\n$PROVIDER_CPU_TIME\n$JETTY_CPU_TIME\n$MOSQUITTO_CPU_TIME\n$TEST_UTIME\n$TEST_STIME" | awk '{sum+=$1};END{print sum}')
+    echo "ccCpuTime:         $CC_CPU_TIME" | tee -a $REPORTFILE_PARAM
+    echo "providerCpuTime:   $PROVIDER_CPU_TIME" | tee -a $REPORTFILE_PARAM
+    echo "jettyCpuTime:      $JETTY_CPU_TIME" | tee -a $REPORTFILE_PARAM
+    echo "mosquittoCpuTime:  $MOSQUITTO_CPU_TIME" | tee -a $REPORTFILE_PARAM
+    echo "testCpuTime:       $TEST_CPU_TIME" | tee -a $REPORTFILE_PARAM
+    echo "totalCpuTime:      $TOTAL_CPU_TIME" | tee -a $REPORTFILE_PARAM
+    CLOCK_TICK_DURATION=10 # milliseconds; we can get number of clock ticks per second from "getconf CLK_TCK", by default this is 100
+    CPU_PERCENT=$(echo $TOTAL_CPU_TIME $CLOCK_TICK_DURATION $WALL_CLOCK_DURATION | awk '{ printf "%f", 100*($1 * $2 / $3) }')
+    echo "cpuPercent:        $CPU_PERCENT" | tee -a $REPORTFILE_PARAM
+}
 
 function waitUntilJettyStarted {
     started=0
@@ -141,6 +229,7 @@ function startCppClusterController {
     rm -Rf *.persist joynr.settings
 
     ./cluster-controller $ADDITIONAL_CC_ARGS 1>$CC_STDOUT 2>$CC_STDERR & CLUSTER_CONTROLLER_PID=$!
+    CLUSTER_CONTROLLER_CPU_TIME_1=$(getCpuTime $CLUSTER_CONTROLLER_PID)
 
     # Wait long enough in order to allow the cluster controller finish its start procedure
     sleep 5
@@ -156,6 +245,7 @@ function startCppPerformanceTestProvider {
 
     cd $PERFORMANCETESTS_BIN_DIR
     ./performance-provider-app --globalscope on --domain $DOMAINNAME 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+    PROVIDER_CPU_TIME_1=$(getCpuTime $PROVIDER_PID)
 
     # Wait long enough in order to allow the provider to finish the registration procedure
     sleep 5
@@ -181,8 +271,18 @@ function startJavaPerformanceTestProvider {
         mvn exec:java -o -Dexec.mainClass="$PROVIDERCLASS" -Dexec.args="$PROVIDERARGS" \
             1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     fi
+    PROVIDER_CPU_TIME_1=$(getCpuTime $PROVIDER_PID)
 
     sleep 5
+
+    echo "Performance test provider started"
+}
+
+function startJavaJeePerformanceTestProvider {
+    echo '### Starting java JEE performance test provider (in process cc) ###'
+
+    asadmin deploy --force=true $PERFORMANCETESTS_SOURCE_DIR/../performance-test-jee/target/performance-test-jee-provider.war
+    PROVIDER_JEE_APP_NAME="performance-test-jee-provider"
 
     echo "Performance test provider started"
 }
@@ -194,11 +294,12 @@ function performJavaConsumerTest {
     REPORTFILE_PARAM=$4
     NUM_INSTANCES=$5
     NUM_RUNS=$6
+    DISCOVERY_SCOPE=$7
 
     CONSUMERCLASS="io.joynr.performance.ConsumerApplication"
     CONSUMERARGS="-d $DOMAINNAME -w $JAVA_WARMUPS -r $NUM_RUNS \
                   -s $MODE_PARAM -t $TESTCASE_PARAM -bs $INPUTDATA_BYTEARRAYSIZE \
-                  -sl $INPUTDATA_STRINGLENGTH"
+                  -sl $INPUTDATA_STRINGLENGTH -ds $DISCOVERY_SCOPE"
 
     cd $PERFORMANCETESTS_SOURCE_DIR
 
@@ -311,6 +412,8 @@ function performJsConsumerTest {
 function stopJetty {
     echo "Stopping jetty"
 
+    JETTY_CPU_TIME_2=$(getCpuTime $JETTY_PID)
+    JETTY_CPU_TIME=$(minus $PROVIDER_CPU_TIME_2 $PROVIDER_CPU_TIME_1)
     if [ "$USE_MAVEN" != "ON" ]
     then
         kill $JETTY_PID
@@ -325,6 +428,8 @@ function stopJetty {
 
 function stopMosquitto {
     echo "Stopping mosquitto"
+    MOSQUITTO_CPU_TIME_2=$(getCpuTime $MOSQUITTO_PID)
+    MOSQUITTO_CPU_TIME=$(minus $MOSQUITTO_CPU_TIME_2 $MOSQUITTO_CPU_TIME_1)
     kill $MOSQUITTO_PID
     wait $MOSQUITTO_PID
     MOSQUITTO_PID=""
@@ -332,6 +437,8 @@ function stopMosquitto {
 
 function stopCppClusterController {
     echo "Killing C++ CC"
+    CC_CPU_TIME_2=$(getCpuTime $CLUSTER_CONTROLLER_PID)
+    CC_CPU_TIME=$(minus $CC_CPU_TIME_2 $CC_CPU_TIME_1)
     kill $CLUSTER_CONTROLLER_PID
     wait $CLUSTER_CONTROLLER_PID
     CLUSTER_CONTROLLER_PID=""
@@ -341,6 +448,8 @@ function stopAnyProvider {
     echo "Killing provider"
     if [ "$PROVIDER_PID" != "" ]
     then
+        PROVIDER_CPU_TIME_2=$(getCpuTime $PROVIDER_PID)
+        PROVIDER_CPU_TIME=$(minus $PROVIDER_CPU_TIME_2 $PROVIDER_CPU_TIME_1)
         echo "USE_MAVEN: $USE_MAVEN"
         if [ "$USE_MAVEN" != "ON" ]
         then
@@ -355,13 +464,81 @@ function stopAnyProvider {
         wait $PROVIDER_PID
         PROVIDER_PID=""
     fi
+
+    if [ "$PROVIDER_JEE_APP_NAME" != "" ]
+    then
+        asadmin undeploy --droptables=true $PROVIDER_JEE_APP_NAME
+        PROVIDER_JEE_APP_NAME=""
+    fi
+}
+
+function startPayara {
+    DISCOVERY_WAR_FILE=$PERFORMANCETESTS_SOURCE_DIR/target/discovery-jee.war
+    ACCESS_CONTROL_WAR_FILE=$PERFORMANCETESTS_SOURCE_DIR/target/accesscontrol-jee.war
+
+    echo "Starting payara"
+
+    asadmin start-database
+    asadmin start-domain
+
+    asadmin deploy --force=true $DISCOVERY_WAR_FILE
+    asadmin deploy --force=true $ACCESS_CONTROL_WAR_FILE
+
+    echo "payara started"
+}
+
+function stopPayara {
+    echo "stopping payara"
+    for app in `asadmin list-applications | egrep '(discovery|access)' | cut -d" " -f1`;
+    do
+        echo "undeploy $app";
+        asadmin undeploy --droptables=true $app;
+    done
+
+    asadmin stop-domain
+    asadmin stop-database
+}
+
+function startServices {
+    startMosquitto
+    echo '# starting services'
+
+    if [ "$BACKEND_SERVICES" = "HTTP" ]
+    then
+        startJetty
+    else
+        startPayara
+    fi
+    sleep 5
+}
+
+function stopServices {
+    stopMosquitto
+    echo '# stopping services'
+
+    if [ "$BACKEND_SERVICES" = "HTTP" ]
+    then
+        stopJetty
+    else
+        stopPayara
+    fi
+
+    if [ -n "$MOSQUITTO_PID" ]
+    then
+        echo "Stopping mosquitto with PID $MOSQUITTO_PID"
+        disown $MOSQUITTO_PID
+        killProcessHierarchy $MOSQUITTO_PID
+        wait $MOSQUITTO_PID
+        MOSQUITTO_PID=""
+    fi
 }
 
 function echoUsage {
     echo "Usage: run-performance-tests.sh -j <jetty-dir> -p <performance-bin-dir> \
 -r <performance-results-dir> -s <performance-source-dir> \
 -t <JAVA_SYNC|JAVA_ASYNC|JAVA_MULTICONSUMER|JS_ASYNC|OAP_TO_BACKEND_MOSQ|\
-CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|ALL> -y <joynr-bin-dir>\
+CPP_SYNC|CPP_ASYNC|CPP_MULTICONSUMER|JEE_PROVIDER|ALL> -y <joynr-bin-dir>\
+-B <backend-services (MQTT|HTTP)>\
 [-c <number-of-consumers> -x <number-of-runs> -m <use maven ON|OFF> -z <mosquitto.conf> -n <use node ON|OFF>]"
 }
 
@@ -420,6 +597,9 @@ do
         n)
             USE_NPM=$OPTARG
             ;;
+        B)
+            BACKEND_SERVICES=$OPTARG
+            ;;
         \?)
             echoUsage
             exit 1
@@ -433,12 +613,13 @@ if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
    [ "$TESTCASE" != "JS_CONSUMER" ] && [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && \
    [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
    [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ] && \
-   [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ] 
+   [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ] && \
+   [ "$TESTCASE" != "JEE_PROVIDER" ]
 then
     echo "\"$TESTCASE\" is not a valid testcase"
     echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, \
 JS_CONSUMER, JS_SHORTCIRCUIT, OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, \
-CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER"
+CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, JEE_PROVIDER"
     echoUsage
     exit 1
 fi
@@ -461,9 +642,20 @@ then
     TESTCASES+=('SEND_BYTEARRAY_WITH_SIZE_TIMES_K')
 fi
 
-if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ]
+if [ -z "$BACKEND_SERVICES" ]
+then
+    # use default (MQTT/JEE) Discovery and Access Control
+    BACKEND_SERVICES=MQTT
+elif [ "$BACKEND_SERVICES" != "MQTT" ] && [ "$BACKEND_SERVICES" != "HTTP" ]
+then
+    echo 'Invalid value for backend services: $BACKEND_SERVICES.'
+    exit 1
+fi
+
+if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && [ "$TESTCASE" != "JEE_PROVIDER" ]
 then
     startCppClusterController
+    startMeasureCpuUsage
 
     echo "### Starting performance tests ###"
 
@@ -473,7 +665,7 @@ then
             startCppPerformanceTestProvider
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
                 echo "Testcase: JAVA $testcase" | tee -a $REPORTFILE
-                performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
+                performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "LOCAL_ONLY"
             done
         fi
     done
@@ -483,7 +675,7 @@ then
         startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: JAVA $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
-            performJavaConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS
+            performJavaConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS "LOCAL_ONLY"
         done
     fi
 
@@ -540,25 +732,42 @@ then
         sleep 100000000
     fi
 
+    stopMeasureCpuUsage $REPORTFILE
     stopAnyProvider
     stopCppClusterController
+fi
+
+if [ "$TESTCASE" == "JEE_PROVIDER" ]
+then
+    startServices
+    startJavaJeePerformanceTestProvider
+
+    for mode in 'ASYNC' 'SYNC'; do
+        for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
+            echo "Testcase: JEE_PROVIDER $mode $testcase" | tee -a $REPORTFILE
+            performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "GLOBAL_ONLY"
+        done
+    done
+
+    stopAnyProvider
+    stopServices
 fi
 
 if [ "$TESTCASE" == "OAP_TO_BACKEND_MOSQ" ]
 then
     checkDirExists $JETTY_PATH
-    startJetty
-    startMosquitto
+    startServices
     startCppClusterController
     startJavaPerformanceTestProvider
+    startMeasureCpuUsage
 
     echo "### Starting performance tests ###"
 
     echo "Testcase: OAP_TO_BACKEND_MOSQ" | tee -a $REPORTFILE
     performJsConsumerTest $STDOUT $REPORTFILE true OFF $SKIPBYTEARRAYSIZETIMESK
 
+    stopMeasureCpuUsage $REPORTFILE
     stopAnyProvider
     stopCppClusterController
-    stopMosquitto
-    stopJetty
+    stopServices
 fi

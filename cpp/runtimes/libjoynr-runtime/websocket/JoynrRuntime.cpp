@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,10 +65,8 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError)
 {
-    std::ignore = onError;
-
     auto runtime = std::make_unique<LibJoynrWebSocketRuntime>(std::move(settings));
-    runtime->connect(std::move(onSuccess));
+    runtime->connect(std::move(onSuccess), std::move(onError));
     // this is necessary for gcc 4.9
     return std::move(runtime);
 }
@@ -83,4 +81,5 @@ std::unique_ptr<Settings> JoynrRuntime::createSettings(const std::string& pathTo
 
     return settings;
 }
+
 } // namespace joynr

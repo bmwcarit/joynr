@@ -2,7 +2,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2015 BMW Car IT GmbH
+  Copyright (C) 2011 - 2017 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@
 		<atmosphere.javascript.version>2.0.9</atmosphere.javascript.version>
 		<requirejs.version>2.1.22</requirejs.version>
 		<bluebird.version>3.1.1</bluebird.version>
+		<text-encoding.version>0.6.4</text-encoding.version>
 		<log4javascript.version>1.4.10</log4javascript.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
 		<mqtt.version>2.0.1</mqtt.version>
@@ -359,6 +360,13 @@
 									<outputDirectory>${project.build.directory}/dependencies/bluebird</outputDirectory>
 									<includes>META-INF/resources/webjars/bluebird/${bluebird.version}/bluebird.js</includes>
 								</artifactItem>
+								<artifactItem>
+									<groupId>org.webjars.npm</groupId>
+									<artifactId>text-encoding</artifactId>
+									<version>${text-encoding.version}</version>
+									<outputDirectory>${project.build.directory}/dependencies/text-encoding</outputDirectory>
+									<includes>META-INF/resources/webjars/text-encoding/${text-encoding.version}/lib/encoding.js</includes>
+                                </artifactItem>
 							</artifactItems>
 						</configuration>
 					</execution>
@@ -436,6 +444,12 @@
 									<directory>${project.build.directory}/dependencies/bluebird/META-INF/resources/webjars/bluebird/${bluebird.version}/</directory>
 									<includes>
 										<include>bluebird.js</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${project.build.directory}/dependencies/text-encoding/META-INF/resources/webjars/text-encoding/${text-encoding.version}/lib/</directory>
+									<includes>
+										<include>encoding.js</include>
 									</includes>
 								</resource>
 								<resource>
@@ -990,7 +1004,7 @@
 									<arguments>
 										<argument>install</argument>
 										<argument>--prefix=${project.build.directory}/node-classes</argument>
-										<argument>browserify</argument>
+										<argument>browserify@13.3.0</argument>
 									</arguments>
 								</configuration>
 								<goals>

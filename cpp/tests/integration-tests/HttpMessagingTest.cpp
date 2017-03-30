@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,20 +27,22 @@ class HttpMessagingTest : public AbstractMessagingTest {
 public:
     ADD_LOGGER(HttpMessagingTest);
     HttpMessagingTest() :
-        receiverChannelId("receiverChannelId")
+        receiverChannelId("receiverChannelId"),
+        isLocalMessage(true)
     {
         // provision global capabilities directory
         auto addressCapabilitiesDirectory = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
                         messagingSettings.getCapabilitiesDirectoryUrl() + messagingSettings.getCapabilitiesDirectoryChannelId() + "/",
                         messagingSettings.getCapabilitiesDirectoryChannelId());
         messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
-        messagingStubFactory->registerStubFactory(std::make_shared<HttpMessagingStubFactory>(mockMessageSender, globalClusterControllerAddress));
+        messagingStubFactory->registerStubFactory(std::make_shared<HttpMessagingStubFactory>(mockMessageSender));
     }
 
     ~HttpMessagingTest(){
     }
 protected:
     const std::string receiverChannelId;
+    const bool isLocalMessage;
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingTest);
 };
@@ -85,7 +87,8 @@ TEST_F(HttpMessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
                 senderId,
                 receiverId,
                 qos,
-                request);
+                request,
+                isLocalMessage);
 
     // LipciMessagingSkeleton should receive the message
 // NOTE: LipciMessaging doesn't exists (2012-05-08)

@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,6 +91,7 @@ public class DispatcherImpl implements Dispatcher {
                                                                                  toDiscoveryEntry.getParticipantId(),
                                                                                  subscriptionRequest,
                                                                                  messagingQos);
+            message.setLocalMessage(toDiscoveryEntry.getIsLocal());
 
             if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
                 String multicastId = ((MulticastSubscriptionRequest) subscriptionRequest).getMulticastId();
@@ -110,6 +111,7 @@ public class DispatcherImpl implements Dispatcher {
                                                                               toDiscoveryEntry.getParticipantId(),
                                                                               subscriptionStop,
                                                                               messagingQos);
+            message.setLocalMessage(toDiscoveryEntry.getIsLocal());
             messageRouter.route(message);
         }
 

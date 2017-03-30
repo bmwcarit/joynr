@@ -76,6 +76,7 @@
 #include "cluster-controller/http-communication-manager/HttpReceiver.h"
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
+#include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ParticipantIdStorage.h"
@@ -95,7 +96,10 @@
 #include "joynr/types/Version.h"
 #include "joynr/exceptions/JoynrException.h"
 
-#include "libjoynr/websocket/WebSocketPpClient.h"
+#include "libjoynr/websocket/IWebSocketPpClient.h"
+#include "joynr/IWebSocketSendInterface.h"
+#include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include "joynr/MulticastPublication.h"
 #include "joynr/MessagingQos.h"
@@ -332,7 +336,8 @@ class MockMessageRouter : public joynr::AbstractMessageRouter {
 public:
     void invokeAddNextHopOnSuccessFct(const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-            std::function<void()> onSuccess) {
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         if (onSuccess) {
             onSuccess();
         }
@@ -353,7 +358,7 @@ public:
     {
         EXPECT_CALL(
                 *this,
-                addNextHop(_,_,_)
+                addNextHop(_,_,_,_)
         )
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeAddNextHopOnSuccessFct));
         EXPECT_CALL(
@@ -363,7 +368,7 @@ public:
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeRemoveNextHopOnSuccessFct));
     }
 
-    MOCK_METHOD2(route, void(const joynr::JoynrMessage& message, std::uint32_t tryCount));
+    MOCK_METHOD2(route, void(joynr::JoynrMessage& message, std::uint32_t tryCount));
 
     MOCK_METHOD6(registerMulticastReceiver, void(const std::string& multicastId,
                                                  const std::string& subscriberParticipantId,
@@ -372,10 +377,11 @@ public:
                                                  std::function<void()> onSuccess,
                                                  std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError));
 
-    MOCK_METHOD3(addNextHop, void(
+    MOCK_METHOD4(addNextHop, void(
             const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-            std::function<void()> onSuccess));
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 
     MOCK_METHOD3(removeNextHop, void(
             const std::string& participantId,
@@ -395,6 +401,8 @@ public:
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
+
+    MOCK_METHOD1(queueMessage, void(const joynr::JoynrMessage& message));
 };
 
 class MockJoynrMessageSender : public joynr::IJoynrMessageSender {
@@ -405,24 +413,26 @@ public:
             void(joynr::IDispatcher* dispatcher)
     );
 
-    MOCK_METHOD5(
+    MOCK_METHOD6(
             sendRequest,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
                 const joynr::MessagingQos& qos,
                 const joynr::Request& request,
-                std::shared_ptr<joynr::IReplyCaller> callback
+                std::shared_ptr<joynr::IReplyCaller> callback,
+                bool isLocalMessage
             )
     );
     
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             sendOneWayRequest,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
                 const joynr::MessagingQos& qos,
-                const joynr::OneWayRequest& request
+                const joynr::OneWayRequest& request,
+                bool isLocalMessage
             )
     );
 
@@ -436,23 +446,25 @@ public:
             )
     );
 
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             sendSubscriptionRequest,
             void(
                 const std::string &senderParticipantId,
                 const std::string &receiverParticipantId,
                 const joynr::MessagingQos& qos,
-                const joynr::SubscriptionRequest& subscriptionRequest
+                const joynr::SubscriptionRequest& subscriptionRequest,
+                bool isLocalMessage
             )
     );
 
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             sendBroadcastSubscriptionRequest,
             void(
                 const std::string &senderParticipantId,
                 const std::string &receiverParticipantId,
                 const joynr::MessagingQos& qos,
-                const joynr::BroadcastSubscriptionRequest& subscriptionRequest
+                const joynr::BroadcastSubscriptionRequest& subscriptionRequest,
+                bool isLocalMessage
             )
     );
 
@@ -494,13 +506,14 @@ public:
             )
    );
 
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             sendMulticastSubscriptionRequest,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
                 const joynr::MessagingQos& qos,
-                const joynr::MulticastSubscriptionRequest& subscriptionRequest
+                const joynr::MulticastSubscriptionRequest& subscriptionRequest,
+                bool isLocalMessage
             )
     );
 
@@ -1013,8 +1026,8 @@ public:
     MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock filename")) {
 
     }
-    MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& authenticationToken));
-    MOCK_METHOD4(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& defaultValue, const std::string& authenticationToken));
+    MOCK_METHOD2(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName));
+    MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& defaultValue));
 };
 
 class MockLocationUpdatedSelectiveFilter : public joynr::tests::TestLocationUpdateSelectiveBroadcastFilter {
@@ -1054,17 +1067,6 @@ public:
     {
     }
 
-    MOCK_METHOD3(
-            getDomainRolesAsync,
-            std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>>>(
-                const std::string& uid,
-                std::function<void(
-                    const std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>& domainRoleEntries
-                )> onSuccess,
-                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
-            )
-    );
-
     MOCK_METHOD4(
             getMasterAccessControlEntriesAsync,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>>>(
@@ -1101,6 +1103,48 @@ public:
             )
     );
 
+};
+
+class MockGlobalDomainRoleControllerProxy : public virtual joynr::infrastructure::GlobalDomainRoleControllerProxy {
+public:
+    MockGlobalDomainRoleControllerProxy() :
+        GlobalDomainRoleControllerProxy(
+                std::make_shared<const joynr::system::RoutingTypes::Address>(),
+                nullptr,
+                  "domain",
+                joynr::MessagingQos()),
+        ProxyBase(
+                nullptr,
+                "domain",
+                joynr::MessagingQos()),
+        GlobalDomainRoleControllerProxyBase(
+                std::make_shared<const joynr::system::RoutingTypes::Address>(),
+                nullptr,
+                "domain",
+                joynr::MessagingQos()),
+        GlobalDomainRoleControllerSyncProxy(
+                std::make_shared<const joynr::system::RoutingTypes::Address>(),
+                nullptr,
+                "domain",
+                joynr::MessagingQos()),
+        GlobalDomainRoleControllerAsyncProxy(
+                std::make_shared<const joynr::system::RoutingTypes::Address>(),
+                nullptr,
+                "domain",
+                joynr::MessagingQos())
+    {
+    }
+
+    MOCK_METHOD3(
+            getDomainRolesAsync,
+            std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>>>(
+                const std::string& uid,
+                std::function<void(
+                    const std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>& domainRoleEntries
+                )> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+            )
+    );
 };
 
 class MockLocalDomainAccessController : public joynr::LocalDomainAccessController {
@@ -1162,27 +1206,42 @@ public:
     MOCK_METHOD1(hasConsumerPermission, void(bool hasPermission));
 };
 
-class MockWebSocketClient : public joynr::WebSocketPpClient
+class MockWebSocketClient : public joynr::IWebSocketPpClient
 {
 public:
 
     MockWebSocketClient(joynr::WebSocketSettings wsSettings, boost::asio::io_service& ioService)
-        : WebSocketPpClient(wsSettings, ioService) {}
+    {}
     MOCK_METHOD0(dtorCalled, void());
     ~MockWebSocketClient() override
     {
         dtorCalled();
     }
 
+    MOCK_METHOD1(registerConnectCallback, void(std::function<void()>));
+    MOCK_METHOD1(registerReconnectCallback, void(std::function<void()>));
+    MOCK_METHOD1(registerReceiveCallback, void(std::function<void(const std::string&)>));
+
     void registerDisconnectCallback(std::function<void()> callback) override
     {
         onConnectionClosedCallback = callback;
-        WebSocketPpClient::registerConnectCallback(callback);
     }
 
-    void signalDisconnect() {
+    void signalDisconnect()
+    {
         onConnectionClosedCallback();
     }
+
+    MOCK_METHOD1(connect, void(const joynr::system::RoutingTypes::WebSocketAddress&));
+    MOCK_METHOD0(close, void());
+
+    MOCK_CONST_METHOD0(isConnected, bool());
+
+    MOCK_METHOD2(send, void(
+            const std::string&,
+            const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
+
+    MOCK_CONST_METHOD0(getSender, std::shared_ptr<joynr::IWebSocketSendInterface>());
 
 private:
     std::function<void()> onConnectionClosedCallback;

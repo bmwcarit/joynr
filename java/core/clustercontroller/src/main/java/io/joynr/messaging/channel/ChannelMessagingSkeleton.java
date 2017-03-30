@@ -3,7 +3,7 @@ package io.joynr.messaging.channel;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ package io.joynr.messaging.channel;
  */
 
 import com.google.inject.Inject;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
@@ -73,7 +71,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
             }
             addRequestorToMessageRouter(message.getFrom(), replyToChannelId);
             messageRouter.route(message);
-        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException exception) {
+        } catch (Exception exception) {
             logger.error("Error processing incoming message. Message will be dropped: {} ",
                          message.getHeader(),
                          exception);

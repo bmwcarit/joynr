@@ -1,7 +1,9 @@
+/*global Buffer: true, TextEncoder: true */
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +24,15 @@ define([
     "joynr/messaging/JoynrMessage",
     "joynr/system/RoutingTypes/WebSocketAddress",
     "joynr/system/RoutingTypes/WebSocketClientAddress",
-    "joynr/messaging/websocket/SharedWebSocket"
+    "joynr/messaging/websocket/SharedWebSocket",
+    "global/WebSocket"
 ], function(
         WebSocketMessagingSkeleton,
         JoynrMessage,
         WebSocketAddress,
         WebSocketClientAddress,
-        SharedWebSocket) {
+        SharedWebSocket,
+        WebSocket) {
 
     describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", function() {
 
@@ -72,11 +76,30 @@ define([
             data = new JoynrMessage({
                 type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
             });
-            event.data = JSON.stringify(data);
             multicastEvent = new MessageEvent();
-            multicastEvent.data = JSON.stringify(new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
-            }));
+            if (typeof Buffer === "function") {
+                // node environment
+                event.data = Buffer.from(JSON.stringify(data));
+                event.target = {
+                    binaryType : "arraybuffer"
+                };
+                multicastEvent.data = Buffer.from(JSON.stringify(new JoynrMessage({
+                    type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+                })));
+            } else if (typeof TextEncoder === "function") {
+                // browser
+                var textEncoder = new TextEncoder();
+                event.data = textEncoder.encode(JSON.stringify(data));
+                event.target = {
+                    binaryType : "arraybuffer"
+                };
+                multicastEvent.data = textEncoder.encode(JSON.stringify(new JoynrMessage({
+                    type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+                })));
+            } else {
+                // browser without TextDecoder
+                done.fail("error in beforeEach: Buffer/TextEncoder not supported");
+            }
             done();
         });
 

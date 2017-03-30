@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public:
     MockArbitrator(const std::string& domain,
                        const std::string& interfaceName,
                        const joynr::types::Version& interfaceVersion,
-                       joynr::system::IDiscoverySync& discoveryProxy,
+                       joynr::system::IDiscoveryAsync& discoveryProxy,
                        const DiscoveryQos& discoveryQos,
                        std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction) : Arbitrator(domain,
                                interfaceName,
@@ -180,9 +180,11 @@ TEST_F(ArbitratorTest, getLastSeen) {
         ));
     }
 
-    // Check that the correct participant was selected
-    ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
+    auto mockFuture = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture->onSuccess(discoveryEntries);
+    ON_CALL(mockDiscovery, lookupAsync(_,_,_,_,_)).WillByDefault(Return(mockFuture));
 
+    // Check that the correct participant was selected
     auto onSuccess = [this, &lastSeenParticipantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
         EXPECT_EQ(lastSeenParticipantId, discoveryEntry.getParticipantId());
         semaphore.notify();
@@ -237,7 +239,9 @@ TEST_F(ArbitratorTest, getHighestPriority) {
         ));
     }
 
-    ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
+    auto mockFuture = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture->onSuccess(discoveryEntries);
+    ON_CALL(mockDiscovery, lookupAsync(_,_,_,_,_)).WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &participantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
@@ -253,7 +257,7 @@ TEST_F(ArbitratorTest, getHighestPriority) {
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
 }
 
-// Test that the Arbitrator selects a provider with compatible version
+// Test that the Arbitrator selects a provider with compatible version and compatible priority
 TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -275,39 +279,46 @@ TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
     std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries;
     joynr::types::Version providerVersion;
     int participantIdCounter = 0;
-    std::string expectedParticipantId;
-    for (std::int32_t i = -2; i < 2; i++) {
+    std::vector<std::string> expectedParticipantIds;
+    for (std::int32_t i = -2; i < 2; ++i) {
         providerVersion.setMajorVersion(expectedVersion.getMajorVersion() + i);
-        for (std::int32_t j = -2; j < 2; j++) {
+        for (std::int32_t j = -2; j < 2; ++j) {
             providerVersion.setMinorVersion(expectedVersion.getMinorVersion() + j);
             discoveryEntries.push_back(joynr::types::DiscoveryEntryWithMetaInfo(
-                                     providerVersion,
-                                     domain,
-                                     interfaceName,
-                                     std::to_string(participantIdCounter),
-                                     providerQos,
-                                     lastSeenDateMs,
-                                     expiryDateMs,
-                                     publicKeyId,
-                                     true
-            ));
-            if (providerVersion == expectedVersion) {
-                expectedParticipantId = std::to_string(participantIdCounter);
+                                         providerVersion,
+                                         domain,
+                                         interfaceName,
+                                         std::to_string(participantIdCounter),
+                                         providerQos,
+                                         lastSeenDateMs,
+                                         expiryDateMs,
+                                         publicKeyId,
+                                         true
+                                     )
+            );
+            if (providerVersion.getMajorVersion() == expectedVersion.getMajorVersion() ||
+                providerVersion.getMinorVersion() > expectedVersion.getMinorVersion()){
+                expectedParticipantIds.push_back(std::to_string(participantIdCounter));
             }
-            participantIdCounter++;
+            ++participantIdCounter;
         }
     }
 
-    ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
+    auto mockFuture = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture->onSuccess(discoveryEntries);
+    ON_CALL(mockDiscovery, lookupAsync(_,_,_,_,_)).WillByDefault(Return(mockFuture));
 
-    // Check that the correct participant was selected
-    auto onSuccess = [this, &expectedParticipantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
-        EXPECT_EQ(expectedParticipantId, discoveryEntry.getParticipantId());
+    // Check that one of the expected participant was selected
+    auto onSuccess = [this, &expectedParticipantIds](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+        EXPECT_TRUE(std::find(expectedParticipantIds.cbegin(),
+                              expectedParticipantIds.cend(),
+                              discoveryEntry.getParticipantId()
+                              ) != expectedParticipantIds.cend() );
         semaphore.notify();
     };
 
-    auto onError = [](const exceptions::DiscoveryException&) {
-        FAIL();
+    auto onError = [](const exceptions::DiscoveryException& ex) {
+        FAIL() << ex.what();
     };
 
     qosArbitrator.startArbitration(onSuccess, onError);
@@ -361,7 +372,9 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
         ));
     }
 
-    ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
+    auto mockFuture = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture->onSuccess(discoveryEntries);
+    ON_CALL(mockDiscovery, lookupAsync(_,_,_,_,_)).WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &participantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
@@ -437,7 +450,9 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
         ));
     }
 
-    ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
+    auto mockFuture = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture->onSuccess(discoveryEntries);
+    ON_CALL(mockDiscovery, lookupAsync(_,_,_,_,_)).WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &participantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
@@ -504,7 +519,9 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
         }
     }
 
-    ON_CALL(mockDiscovery, lookup(_,_,_,_)).WillByDefault(testing::SetArgReferee<0>(discoveryEntries));
+    auto mockFuture = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture->onSuccess(discoveryEntries);
+    ON_CALL(mockDiscovery, lookupAsync(_,_,_,_,_)).WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &expectedParticipantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
@@ -521,22 +538,23 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
 }
 
 TEST_F(ArbitratorTest, retryFiveTimes) {
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> emptyResult;
+    auto mockFuture = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture->onSuccess(emptyResult);
+
     EXPECT_CALL(
                 mockDiscovery,
-                lookup(
-                    A<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&>(),
+                lookupAsync(
                     A<const std::vector<std::string>&>(),
                     A<const std::string&>(),
-                    A<const joynr::types::DiscoveryQos&>()
+                    A<const joynr::types::DiscoveryQos&>(),
+                    _,
+                    _
                 )
     )
             .Times(5)
             .WillRepeatedly(
-                testing::DoAll(
-                    testing::SetArgReferee<0>(result),
-                    testing::Return()
-                )
+                Return(mockFuture)
             );
 
     DiscoveryQos discoveryQos;
@@ -653,10 +671,13 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
         participantIdCounter++;
     }
 
-    EXPECT_CALL(mockDiscovery, lookup(_,_,_,_))
-            .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
-            .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
-
+    auto mockFuture1 = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture1->onSuccess(discoveryEntries1);
+    auto mockFuture2 = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture2->onSuccess(discoveryEntries2);
+    EXPECT_CALL(mockDiscovery, lookupAsync(_,_,_,_,_))
+            .WillOnce(Return(mockFuture1))
+            .WillRepeatedly(Return(mockFuture2));
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
@@ -742,9 +763,13 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
         participantIdCounter++;
     }
 
-    EXPECT_CALL(mockDiscovery, lookup(_,_,_,_))
-            .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
-            .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
+    auto mockFuture1 = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture1->onSuccess(discoveryEntries1);
+    auto mockFuture2 = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture2->onSuccess(discoveryEntries2);
+    EXPECT_CALL(mockDiscovery, lookupAsync(_,_,_,_,_))
+            .WillOnce(Return(mockFuture1))
+            .WillRepeatedly(Return(mockFuture2));
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
@@ -817,9 +842,13 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
                              true
     );
 
-    EXPECT_CALL(mockDiscovery, lookup(_,Eq(participantId)))
-            .WillOnce(testing::SetArgReferee<0>(discoveryEntry1))
-            .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntry2));
+    auto mockFuture1 = std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
+    mockFuture1->onSuccess(discoveryEntry1);
+    auto mockFuture2 = std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
+    mockFuture2->onSuccess(discoveryEntry2);
+    EXPECT_CALL(mockDiscovery, lookupAsync(_,_,_))
+            .WillOnce(Return(mockFuture1))
+            .WillRepeatedly(Return(mockFuture2));
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersion2);
@@ -899,9 +928,13 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
         participantIdCounter++;
     }
 
-    EXPECT_CALL(mockDiscovery, lookup(_,_,_,_))
-            .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
-            .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
+    auto mockFuture1 = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture1->onSuccess(discoveryEntries1);
+    auto mockFuture2 = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture2->onSuccess(discoveryEntries2);
+    EXPECT_CALL(mockDiscovery, lookupAsync(_,_,_,_,_))
+            .WillOnce(Return(mockFuture1))
+            .WillRepeatedly(Return(mockFuture2));
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
@@ -934,9 +967,14 @@ MATCHER_P(exceptionFromDiscoveryProxy, originalException, "") {
 void ArbitratorTest::testExceptionFromDiscoveryProxy(Arbitrator &arbitrator, const DiscoveryQos& discoveryQos){
     exceptions::JoynrRuntimeException exception1("first exception");
     exceptions::JoynrRuntimeException expectedException("expected exception");
-    EXPECT_CALL(mockDiscovery, lookup(_,_,_,_))
-            .WillOnce(Throw(exception1))
-            .WillRepeatedly(Throw(expectedException));
+
+    auto mockFuture1 = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture1->onError(std::make_shared<exceptions::JoynrRuntimeException>(exception1));
+    auto mockFuture2 = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture2->onError(std::make_shared<exceptions::JoynrRuntimeException>(expectedException));
+    EXPECT_CALL(mockDiscovery, lookupAsync(_,_,_,_,_))
+            .WillOnce(Return(mockFuture1))
+            .WillRepeatedly(Return(mockFuture2));
 
     auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) {
         FAIL();
@@ -1006,9 +1044,13 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsExceptionFromDiscoveryP
 
     exceptions::JoynrRuntimeException exception1("first exception");
     exceptions::JoynrRuntimeException expectedException("expected exception");
-    EXPECT_CALL(mockDiscovery, lookup(_,Eq(participantId)))
-            .WillOnce(Throw(exception1))
-            .WillRepeatedly(Throw(expectedException));
+    auto mockFuture1 = std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
+    mockFuture1->onError(std::make_shared<exceptions::JoynrRuntimeException>(exception1));
+    auto mockFuture2 = std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
+    mockFuture2->onError(std::make_shared<exceptions::JoynrRuntimeException>(expectedException));
+    EXPECT_CALL(mockDiscovery, lookupAsync(_,_,_))
+            .WillOnce(Return(mockFuture1))
+            .WillRepeatedly(Return(mockFuture2));
 
     auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) {
         FAIL();
@@ -1075,9 +1117,13 @@ void ArbitratorTest::testExceptionEmptyResult(Arbitrator &arbitrator, const Disc
     // discoveryEntries for subsequent lookups
     std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries2;
 
-    EXPECT_CALL(mockDiscovery, lookup(_,_,_,_))
-            .WillOnce(testing::SetArgReferee<0>(discoveryEntries1))
-            .WillRepeatedly(testing::SetArgReferee<0>(discoveryEntries2));
+    auto mockFuture1 = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture1->onSuccess(discoveryEntries1);
+    auto mockFuture2 = std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture2->onSuccess(discoveryEntries2);
+    EXPECT_CALL(mockDiscovery, lookupAsync(_,_,_,_,_))
+            .WillOnce(Return(mockFuture1))
+            .WillRepeatedly(Return(mockFuture2));
 
     auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) {
         FAIL();

@@ -3,7 +3,7 @@ package io.joynr.messaging.mqtt.paho.client;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ package io.joynr.messaging.mqtt.paho.client;
  * #L%
  */
 
-import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
-
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -35,6 +33,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -46,18 +45,31 @@ public class MqttPahoClientFactory implements MqttClientFactory {
     private MqttAddress ownAddress;
     private JoynrMqttClient mqttClient = null;
     private int reconnectSleepMs;
+    private int keepAliveTimerSec;
+    private int connectionTimeoutSec;
+    private int timeToWaitMs;
+    private int maxMsgsInflight;
     private ScheduledExecutorService scheduledExecutorService;
-    private String receiverId;
+    private MqttClientIdProvider clientIdProvider;
 
     @Inject
-    public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress ownAddress,
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
+    public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS) int reconnectSleepMs,
+                                 @Named(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC) int keepAliveTimerSec,
+                                 @Named(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC) int connectionTimeoutSec,
+                                 @Named(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS) int timeToWaitMs,
+                                 @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT) int maxMsgsInflight,
                                  @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
-                                 @Named(RECEIVERID) String receiverId) {
+                                 MqttClientIdProvider mqttClientIdProvider) {
         this.ownAddress = ownAddress;
         this.reconnectSleepMs = reconnectSleepMs;
         this.scheduledExecutorService = scheduledExecutorService;
-        this.receiverId = receiverId;
+        this.clientIdProvider = mqttClientIdProvider;
+        this.keepAliveTimerSec = keepAliveTimerSec;
+        this.connectionTimeoutSec = connectionTimeoutSec;
+        this.timeToWaitMs = timeToWaitMs;
+        this.maxMsgsInflight = maxMsgsInflight;
     }
 
     @Override
@@ -74,12 +86,17 @@ public class MqttPahoClientFactory implements MqttClientFactory {
         try {
             logger.debug("Create Mqtt Client. Address: {}", ownAddress);
 
-            String clientId = "joynr:" + receiverId.substring(0, 17);
+            String clientId = clientIdProvider.getClientId();
             MqttClient mqttClient = new MqttClient(ownAddress.getBrokerUri(),
                                                    clientId,
                                                    new MemoryPersistence(),
                                                    scheduledExecutorService);
-            pahoClient = new MqttPahoClient(mqttClient, reconnectSleepMs);
+            pahoClient = new MqttPahoClient(mqttClient,
+                                            reconnectSleepMs,
+                                            keepAliveTimerSec,
+                                            connectionTimeoutSec,
+                                            timeToWaitMs,
+                                            maxMsgsInflight);
         } catch (MqttException e) {
             logger.error("Create MqttClient failed", e);
         }

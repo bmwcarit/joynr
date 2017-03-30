@@ -3,7 +3,7 @@ package joynr.system.RoutingTypes;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrSerializationException;
 
 public class RoutingTypesUtil {
 
@@ -33,7 +33,7 @@ public class RoutingTypesUtil {
         try {
             return objectMapper.writeValueAsString(address);
         } catch (JsonProcessingException e) {
-            throw new JoynrIllegalStateException("unable to serialize address: " + address + " reason:"
+            throw new JoynrSerializationException("unable to serialize address: " + address + " reason:"
                     + e.getMessage());
         }
     }
@@ -42,7 +42,7 @@ public class RoutingTypesUtil {
         try {
             return objectMapper.readValue(addressString, Address.class);
         } catch (IOException e) {
-            throw new JoynrIllegalStateException("unable to deserialize address: " + addressString + " reason:"
+            throw new JoynrSerializationException("unable to deserialize address: " + addressString + " reason:"
                     + e.getMessage());
         }
     }

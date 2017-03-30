@@ -73,7 +73,7 @@ E.g. `tcp://mqtt.mycompany.net:1883`.
 
 #### Optional Properties
 
-* `JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS` - enables the [HiveMQ](http://www.hivemq.com) specific 'shared subscription' feature, which allows clustering of JEE applications using just MQTT for communication. Set this to `true` to enable the feature. Defaults to `false`.
+* `MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS` - enables the [HiveMQ](http://www.hivemq.com) specific 'shared subscription' feature, which allows clustering of JEE applications using just MQTT for communication. Set this to `true` to enable the feature. Defaults to `false`.
 * `JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY` -
 set this property to `true` if you want to use the HTTP Bridge functionality. In this
 configuration incoming messages are communicated via HTTP and can then be load-balanced
@@ -115,7 +115,7 @@ An example of a configuration EJB is:
 			"http://myapp.com:8080");
 		joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID,
 			"provider.domain");
-		joynrProperties.setProperty(JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS,
+		joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS,
 			Boolean.TRUE.toString());
 		joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI,
 			"tcp://mqttbroker.com:1883");
@@ -255,8 +255,15 @@ In some cases you might want to register your providers under a different domain
 application default (specified via `@JoynrLocalDomain`, see configuration documentation above).
 
 In order to do so, use the `@ProviderDomain` annotation on your implementing bean in addition
-to the `@ServiceLocator` annotation. The value you provide will be used as the domain when
+to the `@ServiceProvider` annotation. The value you provide will be used as the domain when
 registering the bean as a joynr provider.
+Here is an example of what that looks like:
+
+    @ServiceProvider(serviceInterface = MyServiceSync.class)
+    @ProviderDomain(MY_CUSTOM_DOMAIN)
+    private static class CustomDomainMyServiceBean implements MyServiceSync {
+        ...
+    }
 
 #### <a name="publishing_multicasts"></a> Publishing Multicasts
 
@@ -402,7 +409,7 @@ for requests originating from inside the cluster to be routed directly
 to the correct node.
 
 Activate this mode with the
-`JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS`
+`MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS`
 property.
 
 ### HTTP Bridge

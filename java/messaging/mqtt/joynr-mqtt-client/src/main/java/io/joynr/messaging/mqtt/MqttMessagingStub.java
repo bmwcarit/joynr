@@ -3,7 +3,7 @@ package io.joynr.messaging.mqtt;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,21 +43,15 @@ public class MqttMessagingStub implements IMessaging {
     private MqttAddress address;
     private JoynrMqttClient mqttClient;
     private JoynrMessageSerializer messageSerializer;
-    private MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator;
 
-    public MqttMessagingStub(MqttAddress address,
-                             JoynrMqttClient mqttClient,
-                             JoynrMessageSerializer messageSerializer,
-                             MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator) {
+    public MqttMessagingStub(MqttAddress address, JoynrMqttClient mqttClient, JoynrMessageSerializer messageSerializer) {
         this.address = address;
         this.mqttClient = mqttClient;
         this.messageSerializer = messageSerializer;
-        this.mqttMessageReplyToAddressCalculator = mqttMessageReplyToAddressCalculator;
     }
 
     @Override
     public void transmit(JoynrMessage message, FailureAction failureAction) {
-        mqttMessageReplyToAddressCalculator.setReplyTo(message);
         LOG.debug(">>> OUTGOING >>> {}", message.toLogMessage());
         String topic = address.getTopic();
         if (!JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {

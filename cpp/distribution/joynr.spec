@@ -90,6 +90,7 @@ mv /data/build/joynr/package/RPM/tmp $RPM_BUILD_ROOT
 /usr/bin/g_IntegrationTests
 /usr/bin/g_UnitTests
 /usr/bin/resources
+/usr/lib64/libTestGenerated.so
 %{?_with_performancetests:
 /usr/bin/performance-consumer-app
 /usr/bin/performance-provider-app

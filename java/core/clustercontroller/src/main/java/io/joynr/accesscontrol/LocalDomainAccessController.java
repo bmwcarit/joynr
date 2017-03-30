@@ -3,7 +3,7 @@ package io.joynr.accesscontrol;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2014 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,11 +57,18 @@ public interface LocalDomainAccessController {
      * @param domain        The domain that is being accessed
      * @param interfaceName The interface that is being accessed
      * @param trustLevel    The trust level of the device accessing the interface
-     * @return Permission to access given interface, or NULL if there is more than one ACE for given uid, domain, interfaceName.
-     * If function returns NULL, use {@link #getConsumerPermission(String, String, String, TrustLevel)} to gain Permission on interface operation.
+     * @param callback      Will be called when the permission is available. The callback's
+     *                      argument is the permission to access the given interface, or NULL if
+     *                      there is more than one ACE for given uid, domain, interfaceName.
+     *                      If the callback returns NULL, use {@link #getConsumerPermission(String,
+     *                      String, String, TrustLevel)} to gain Permission on interface operation.
      */
     @CheckForNull
-    Permission getConsumerPermission(String userId, String domain, String interfaceName, TrustLevel trustLevel);
+    void getConsumerPermission(String userId,
+                               String domain,
+                               String interfaceName,
+                               TrustLevel trustLevel,
+                               GetConsumerPermissionCallback callback);
 
     /**
      * Get consumer permission to access an interface operation

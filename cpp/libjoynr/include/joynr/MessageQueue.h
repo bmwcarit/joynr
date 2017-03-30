@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,14 +43,15 @@ public:
 
     std::size_t queueMessage(const JoynrMessage& message);
 
-    MessageQueueItem* getNextMessageForParticipant(const std::string destinationPartId);
+    std::unique_ptr<MessageQueueItem> getNextMessageForParticipant(
+            const std::string destinationPartId);
 
     std::int64_t removeOutdatedMessages();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 
-    std::multimap<std::string, MessageQueueItem*> queue;
+    std::multimap<std::string, std::unique_ptr<MessageQueueItem>> queue;
     mutable std::mutex queueMutex;
 };
 } // namespace joynr

@@ -3,7 +3,7 @@ package joynr;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@ public class JoynrMessage implements JoynrType {
     private Map<String, String> header;
     private String payload;
     private transient Boolean receivedFromGlobal;
+    private transient Boolean localMessage = false;
     private transient HashMap<String, Serializable> context;
 
     public JoynrMessage() {
@@ -84,6 +85,8 @@ public class JoynrMessage implements JoynrType {
         this.type = message.type;
         this.header = new HashMap<String, String>(message.getHeader());
         this.payload = message.payload;
+        this.receivedFromGlobal = message.receivedFromGlobal;
+        this.localMessage = message.localMessage;
     }
 
     public String getType() {
@@ -112,6 +115,7 @@ public class JoynrMessage implements JoynrType {
         }
     }
 
+    @JsonIgnore
     public Map<String, String> getCustomHeaders() {
         Map<String, String> customHeaders = new HashMap<>();
         for (Map.Entry<String, String> entry : header.entrySet()) {
@@ -149,6 +153,32 @@ public class JoynrMessage implements JoynrType {
 
     public void setReceivedFromGlobal(boolean receivedFromGlobal) {
         this.receivedFromGlobal = receivedFromGlobal;
+    }
+
+    /**
+     * Gets localMessage attribute
+     *
+     * Transient flag isLocalMessage is used to mark messages to be sent
+     * to a provider that is registered on the local cluster controller.
+     *
+     * @return True, if the message is to
+     * be sent to a provider that is registered on the
+     * local cluster controller, false otherwise.
+     */
+    @JsonIgnore
+    public boolean isLocalMessage() {
+        return Boolean.TRUE.equals(localMessage);
+    }
+
+    /**
+     * Sets localMessage attribute
+     *
+     * @param localMessage True, if the message is to
+     * be sent to a provider that is registered on the
+     * local cluster controller, false otherwise.
+     */
+    public void setLocalMessage(boolean localMessage) {
+        this.localMessage = localMessage;
     }
 
     @Override

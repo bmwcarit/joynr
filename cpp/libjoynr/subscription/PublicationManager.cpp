@@ -801,7 +801,7 @@ void PublicationManager::sendPublicationError(
         std::shared_ptr<SubscriptionRequest> request,
         std::shared_ptr<exceptions::JoynrRuntimeException> exception)
 {
-    JOYNR_LOG_DEBUG(logger, "sending subscription error");
+    JOYNR_LOG_TRACE(logger, "sending subscription error");
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
     subscriptionPublication.setError(std::move(exception));

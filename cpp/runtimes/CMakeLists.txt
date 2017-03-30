@@ -31,112 +31,109 @@ set(
 
 include(GenerateJoynrExports)
 
-if(${BUILD_CLUSTER_CONTROLLER})
-    option(
-        ENABLE_ACCESS_CONTROL
-        "Should access control be enabled for the cluster-controller?"
-        OFF
-    )
-    message(STATUS "option ENABLE_ACCESS_CONTROL=" ${ENABLE_ACCESS_CONTROL})
+option(
+    ENABLE_ACCESS_CONTROL
+    "Should access control be enabled for the cluster-controller?"
+    OFF
+)
+message(STATUS "option ENABLE_ACCESS_CONTROL=" ${ENABLE_ACCESS_CONTROL})
 
-    get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
-    set(
-        JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES
-        ${JoynrRuntime_INCLUDE_DIRECTORIES}
-        ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
-        ${MOSQUITTO_INCLUDE_DIRS}
-    )
+get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
+set(
+    JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES
+    ${JoynrRuntime_INCLUDE_DIRECTORIES}
+    ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
+    ${MOSQUITTO_INCLUDE_DIRS}
+)
 
-    set(
-        JoynrClusterControllerRuntime_TARGET_LIBRARIES
-        JoynrCommon
-        Joynr
-        JoynrClusterController
-    )
+set(
+    JoynrClusterControllerRuntime_TARGET_LIBRARIES
+    JoynrCommon
+    Joynr
+    JoynrClusterController
+)
 
-    set(
-        JoynrClusterControllerRuntime_EXPORT_HEADER
-        "include/joynr/JoynrClusterControllerRuntimeExport.h"
-    )
+set(
+    JoynrClusterControllerRuntime_EXPORT_HEADER
+    "include/joynr/JoynrClusterControllerRuntimeExport.h"
+)
 
-    file(
-        GLOB JoynrClusterControllerRuntime_PRIVATE_HEADERS
-        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        "*.h"
-        "cluster-controller-runtime/*.h"
-        "cluster-controller-runtime/websocket/*.h"
-    )
+file(
+    GLOB JoynrClusterControllerRuntime_PRIVATE_HEADERS
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "*.h"
+    "cluster-controller-runtime/*.h"
+    "cluster-controller-runtime/websocket/*.h"
+)
 
-    set(
-        JoynrClusterControllerRuntime_HEADERS
-        ${JoynrClusterControllerRuntime_PRIVATE_HEADERS}
-        ${runtime_PUBLIC_HEADERS}
-    )
+set(
+    JoynrClusterControllerRuntime_HEADERS
+    ${JoynrClusterControllerRuntime_PRIVATE_HEADERS}
+    ${runtime_PUBLIC_HEADERS}
+)
 
-    file(
-        GLOB JoynrClusterControllerRuntime_SOURCES
-        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        "JoynrRuntime.cpp"
-        "cluster-controller-runtime/*.cpp"
-        "cluster-controller-runtime/websocket/*.cpp"
-    )
+file(
+    GLOB JoynrClusterControllerRuntime_SOURCES
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "JoynrRuntime.cpp"
+    "cluster-controller-runtime/*.cpp"
+    "cluster-controller-runtime/websocket/*.cpp"
+)
 
-    add_library(
+add_library(
+    JoynrClusterControllerRuntime
+    # library type is set via BUILD_SHARED_LIBS
+    ${JoynrClusterControllerRuntime_HEADERS}
+    ${JoynrClusterControllerRuntime_SOURCES}
+)
+
+if(ENABLE_ACCESS_CONTROL)
+    target_compile_definitions(
         JoynrClusterControllerRuntime
-        # library type is set via BUILD_SHARED_LIBS
-        ${JoynrClusterControllerRuntime_HEADERS}
-        ${JoynrClusterControllerRuntime_SOURCES}
-    )
+        PRIVATE
+        JOYNR_ENABLE_ACCESS_CONTROL)
+endif(ENABLE_ACCESS_CONTROL)
 
-    if(ENABLE_ACCESS_CONTROL)
-        target_compile_definitions(
-            JoynrClusterControllerRuntime
-            PRIVATE
-            JOYNR_ENABLE_ACCESS_CONTROL)
-    endif(ENABLE_ACCESS_CONTROL)
+target_include_directories(JoynrClusterControllerRuntime SYSTEM PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
 
-    target_include_directories(JoynrClusterControllerRuntime SYSTEM PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
+target_include_directories(
+    JoynrClusterControllerRuntime
+    PRIVATE ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
+)
 
-    target_include_directories(
-        JoynrClusterControllerRuntime
-        PRIVATE ${JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES}
-    )
+AddClangFormat(JoynrClusterControllerRuntime ${JoynrClusterControllerRuntime_EXPORT_HEADER})
 
-    AddClangFormat(JoynrClusterControllerRuntime ${JoynrClusterControllerRuntime_EXPORT_HEADER})
+AddIncludeWhatYouUse(JoynrClusterControllerRuntime)
 
-    AddIncludeWhatYouUse(JoynrClusterControllerRuntime)
+AddClangTidy(JoynrClusterControllerRuntime)
 
-    AddClangTidy(JoynrClusterControllerRuntime)
+set_target_properties(
+    JoynrClusterControllerRuntime
+    PROPERTIES
+    SOVERSION "${JOYNR_SOVERSION}"
+    VERSION "${JOYNR_VERSION}"
+    PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
+)
 
-    set_target_properties(
-        JoynrClusterControllerRuntime
-        PROPERTIES
-        SOVERSION "${JOYNR_SOVERSION}"
-        VERSION "${JOYNR_VERSION}"
-        PUBLIC_INCLUDE_DIRECTORY "${runtime_PUBLIC_INCLUDE_DIRECTORY}"
-    )
+GenerateJoynrExports(
+    JoynrClusterControllerRuntime
+    EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrClusterControllerRuntime_EXPORT_HEADER}"
+)
 
-    GenerateJoynrExports(
-        JoynrClusterControllerRuntime
-        EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrClusterControllerRuntime_EXPORT_HEADER}"
-    )
+target_link_libraries(
+    JoynrClusterControllerRuntime
+    ${JoynrClusterControllerRuntime_TARGET_LIBRARIES}
+)
 
-    target_link_libraries(
-        JoynrClusterControllerRuntime
-        ${JoynrClusterControllerRuntime_TARGET_LIBRARIES}
-    )
-
-    install(
-        TARGETS JoynrClusterControllerRuntime
-        EXPORT JoynrTargets
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        # this will flatten directory hierarchy of header files
-        # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    )
-endif(${BUILD_CLUSTER_CONTROLLER})
-
+install(
+    TARGETS JoynrClusterControllerRuntime
+    EXPORT JoynrTargets
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    # this will flatten directory hierarchy of header files
+    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
 
 # so we install header files manually to preserve directory hierarchy
 install(

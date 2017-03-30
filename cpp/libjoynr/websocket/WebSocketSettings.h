@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,9 @@ class WebSocketSettings
 public:
     static const std::string& SETTING_CC_MESSAGING_URL();
     static const std::string& SETTING_RECONNECT_SLEEP_TIME_MS();
+    static const std::string& SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME();
+    static const std::string& SETTING_CERTIFICATE_PEM_FILENAME();
+    static const std::string& SETTING_PRIVATE_KEY_PEM_FILENAME();
 
     static const std::string& DEFAULT_WEBSOCKET_SETTINGS_FILENAME();
 
@@ -57,6 +60,19 @@ public:
 
     std::chrono::milliseconds getReconnectSleepTimeMs() const;
     void setReconnectSleepTimeMs(const std::chrono::milliseconds reconnectSleepTimeMs);
+
+    /*************************************************************************************
+     * The certificate / key properties are only used internally and may be removed later
+     *************************************************************************************/
+
+    void setCertificateAuthorityPemFilename(const std::string& filename);
+    std::string getCertificateAuthorityPemFilename() const;
+
+    void setCertificatePemFilename(const std::string& filename);
+    std::string getCertificatePemFilename() const;
+
+    void setPrivateKeyPemFilename(const std::string& filename);
+    std::string getPrivateKeyPemFilename() const;
 
     void printSettings() const;
 

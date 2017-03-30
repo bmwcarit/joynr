@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,42 @@ define([
             expect(new MessagingQos({
                 encrypt : true
             })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                effort : MessagingQosEffort.BEST_EFFORT,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                effort : MessagingQosEffort.BEST_EFFORT,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                encrypt : true,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                effort : MessagingQosEffort.BEST_EFFORT,
+                encrypt : true,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                effort : MessagingQosEffort.BEST_EFFORT,
+                encrypt : true,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                compress : true,
+                encrypt : true
+            })).toBeDefined();
         });
 
         it("is of correct type", function() {
@@ -70,6 +106,7 @@ define([
                 ttl : MessagingQos.DEFAULT_TTL
             }));
             expect(new MessagingQos().encrypt).toEqual(false);
+            expect(new MessagingQos().compress).toEqual(false);
         });
 
         function testTtlValues(ttl) {
@@ -117,6 +154,18 @@ define([
         it("constructs with correct encrypt values", function() {
             testEncryptValues(false);
             testEncryptValues(true);
+        });
+
+        function testCompressValues(compress) {
+            var messagingQos = new MessagingQos({
+                compress : compress
+            });
+            expect(messagingQos.compress).toBe(compress);
+        }
+
+        it("constructs with correct compress values", function() {
+            testCompressValues(false);
+            testCompressValues(true);
         });
 
         var runsWithCustomHeaders = [

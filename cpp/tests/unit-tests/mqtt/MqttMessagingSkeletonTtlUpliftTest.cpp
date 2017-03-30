@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 
 #include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
 
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Request.h"
 #include "joynr/serializer/Serializer.h"
@@ -46,7 +47,10 @@ public:
         mockMessageRouter(singleThreadedIOService.getIOService()),
         senderID("senderId"),
         receiverID("receiverId"),
-        ttlUpliftMs(10000)
+        ttlUpliftMs(10000),
+        isLocalMessage(false),
+        settings(),
+        ccSettings(settings)
     {
         singleThreadedIOService.start();
     }
@@ -65,6 +69,9 @@ protected:
     std::string senderID;
     std::string receiverID;
     std::uint64_t ttlUpliftMs;
+    const bool isLocalMessage;
+    Settings settings;
+    ClusterControllerSettings ccSettings;
 };
 
 TEST_F(MqttMessagingSkeletonTtlUpliftTest, testDefaultTtlUplift) {
@@ -75,14 +82,15 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, testDefaultTtlUplift) {
                 senderID,
                 receiverID,
                 qos,
-                request);
+                request,
+                isLocalMessage);
     message.setHeaderReplyAddress(replyAddressSerialized);
 
     JoynrTimePoint expectedExpiryDate = message.getHeaderExpiryDate();
 
     EXPECT_CALL(mockMessageRouter, route(Property(&JoynrMessage::getHeaderExpiryDate, Eq(expectedExpiryDate)),_));
 
-    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr);
+    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix());
     std::string serializedMessage = serializer::serializeToJson(message);
     mqttMessagingSkeleton.onTextMessageReceived(serializedMessage);
 }
@@ -95,14 +103,15 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, testTtlUplift) {
                 senderID,
                 receiverID,
                 qos,
-                request);
+                request,
+                isLocalMessage);
     message.setHeaderReplyAddress(replyAddressSerialized);
 
     JoynrTimePoint expectedExpiryDate = message.getHeaderExpiryDate() + std::chrono::milliseconds(ttlUpliftMs);
 
     EXPECT_CALL(mockMessageRouter, route(Property(&JoynrMessage::getHeaderExpiryDate, Eq(expectedExpiryDate)),_));
 
-    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr, ttlUpliftMs);
+    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), ttlUpliftMs);
     std::string serializedMessage = serializer::serializeToJson(message);
     mqttMessagingSkeleton.onTextMessageReceived(serializedMessage);
 }
@@ -116,14 +125,15 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, testTtlUpliftWithLargeTtl) {
                 senderID,
                 receiverID,
                 qos,
-                request);
+                request,
+                isLocalMessage);
     message.setHeaderReplyAddress(replyAddressSerialized);
 
     JoynrTimePoint expiryDate = maxAbsoluteTime - std::chrono::milliseconds(ttlUpliftMs / 2);
     message.setHeaderExpiryDate(expiryDate);
     JoynrTimePoint expectedExpiryDate = maxAbsoluteTime;
     EXPECT_CALL(mockMessageRouter, route(Property(&JoynrMessage::getHeaderExpiryDate, Eq(expectedExpiryDate)),_));
-    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr, ttlUpliftMs);
+    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), ttlUpliftMs);
     std::string serializedMessage = serializer::serializeToJson(message);
     mqttMessagingSkeleton.onTextMessageReceived(serializedMessage);
 

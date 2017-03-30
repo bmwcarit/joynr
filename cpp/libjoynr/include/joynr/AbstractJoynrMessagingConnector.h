@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,24 +55,6 @@ public:
             const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry);
     bool usesClusterController() const override;
     ~AbstractJoynrMessagingConnector() override = default;
-
-    /**
-     * @brief Makes a request and returns the received response via the callback.
-     *
-     * @param methodName
-     * @param replyCaller
-
-     */
-    template <typename T>
-    void attributeRequest(const std::string& methodName, std::shared_ptr<IReplyCaller> replyCaller)
-    {
-        std::string attributeID = domain + ":" + interfaceName + ":" + methodName;
-        Request request;
-        // explicitly set to no parameters
-        request.setParams();
-        request.setMethodName(methodName);
-        sendRequest(request, replyCaller);
-    }
 
     /**
      * @brief Makes a request and returns the received response via the callback.

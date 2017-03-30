@@ -2,7 +2,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,9 +53,9 @@ define("joynr/start/settings/defaultClusterControllerSettings", [
                     expiryDateMs : Util.getMaxLongValue(),
                     publicKeyId : "",
                     address : JSON.stringify({
-                        _typeName : "joynr.system.RoutingTypes.ChannelAddress",
-                        channelId : defaultSettings.discoveryChannel,
-                        messagingEndpointUrl : defaultSettings.getDefaultDiscoveryChannelUrl()
+                        _typeName : "joynr.system.RoutingTypes.MqttAddress",
+                        topic : defaultSettings.discoveryChannel,
+                        brokerUri : settings.brokerUri
                     })
                 };
 

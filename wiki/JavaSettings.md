@@ -148,6 +148,15 @@ updates the ```lastSeenDateMs``` of all capabilities registered via this cluster
 * **User property**: `joynr.capabilities.freshnessupdateintervalms`
 * **Default value**: `3600000`
 
+##Access Control
+### `PROPERTY_ACCESSCONTROL_ENABLE`
+Enables or disables access control checks.
+
+* **OPTIONAL**
+* **Type**: boolean
+* **User property**: `joynr.accesscontrol.enable`
+* **Default value**: `false`
+
 ##MessagingPropertyKeys
 
 ### `PROPERTY_BOUNCE_PROXY_URL`
@@ -168,6 +177,33 @@ will be reachable via the selected global transport middleware.
 * **Type**: String
 * **User property**: `joynr.messaging.primaryglobaltransport`
 * **Default value**: NOT SET
+
+### `MQTT_TOPIC_PREFIX_REPLYTO`
+Set the mqtt prefix to be prepended to replyTo topics when using shared subscriptions.
+If shared subscriptions are disabled, the unicast prefix is used, i.e. the replyTo address
+is the same as the global address for provider registration.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.topicprefix.sharedsubscriptionsreplyto`
+* **Default value**: `replyto/`
+
+### `MQTT_TOPIC_PREFIX_UNICAST`
+Can be used to set the cluster topic prefix (shared by all nodes in a MQTT cluster-node
+configuration).
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.topicprefix.unicast`
+* **Default value**: ``
+
+### `MQTT_TOPIC_PREFIX_MULTICAST`
+Set the mqtt prefix to be prepended to multicast topics.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.topicprefix.multicast`
+* **Default value**: ``
 
 ### `CAPABILITYDIRECTORYURL`
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
@@ -243,6 +279,59 @@ trying to connect again.
 * **Type**: int
 * **User property**: `joynr.messaging.mqtt.reconnect.sleepms`
 * **Default value**: `1000`
+
+### `PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC`
+Sets the "keep alive" interval measured in seconds. If no message is transmitted during this period,
+the client sends a ping message which is acknowledged by the server. This allows a client to detect
+disconnects without using TCP/IP mechanisms. A value of 0 disables the "keep alive" mechanism.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.keepalivetimersec`
+* **Default value**: `60`
+
+### `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC`
+Sets the connection timeout measured in seconds. This value states how long a client will wait until
+a network connection to the server is established. A value of 0 means that a client will wait until
+the network connection is established successfully or fails.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.connectiontimeoutsec`
+* **Default value**: `30`
+
+### `PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS`
+Sets the maximum time for an action to complete (measured in milliseconds) before the control is returned
+to the application. A value of -1 means that no timeout is used for actions.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.timetowaitms`
+* **Default value**: `-1`
+
+### `PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS`
+
+Use this key to activate shared subscription support by setting the property's value to true.
+Shared subscriptions are a feature of HiveMQ which allow queue semantics to be used for
+subscribers to MQTT topics. That is, only one subscriber receives a message, rather than all
+subscribers. This feature can be used to load balance incoming messages on MQTT. This feature
+is useful if you want to run a cluster of JEE nodes while using only MQTT for communication
+(an alternative is to use the HTTP bridge configuration).
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `joynr.messaging.mqtt.enable.sharedsubscriptions`
+* **Default value**: `false`
+
+### `PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT`
+Controls how many messages will be send in parallel before the mqtt module expects an acknowledgment
+from the broker. Increase this value for applications which generate a lot of traffic in order to
+improve the performance.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.maxmsgsinflight`
+* **Default value**: `10`
 
 ## SystemServicesSettings
 
@@ -355,15 +444,6 @@ global cached discovery entries.
 
 These properties are defined as constants in the
 `io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys` class.
-
-### `JEE_ENABLE_SHARED_SUBSCRIPTIONS`
-
-Use this key to activate shared subscription support by setting the property's value to true. Shared subscriptions are a feature of HiveMQ which allow queue semantics to be used for subscribers to MQTT topics. That is, only one subscriber receives a message, rather than all subscribers. This feature can be used to load balance incoming messages on MQTT. This feature is useful if you want to run a cluster of JEE nodes while using only MQTT for communication (an alternative is to use the HTTP bridge configuration).
-
-* **OPTIONAL**
-* **Type**: Boolean
-* **User property**: `joynr.jeeintegration.enable.sharedsubscriptions`
-* **Default value**: `false`
 
 ### `JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY`
 
