@@ -26,7 +26,7 @@
 
 #include "joynr/IClusterControllerSignalHandler.h"
 
-#include "cluster-controller/access-control/LocalDomainAccessController.h"
+#include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrRuntime.h"

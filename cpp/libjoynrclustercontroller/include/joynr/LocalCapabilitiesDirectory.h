@@ -29,7 +29,7 @@
 
 #include <boost/asio/steady_timer.hpp>
 
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 
 #include "common/InterfaceAddress.h"
 

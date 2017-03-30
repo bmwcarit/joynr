@@ -24,10 +24,10 @@
 #include <gmock/gmock.h>
 #include "tests/utils/MockObjects.h"
 #include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "cluster-controller/capabilities-client/CapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
-#include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
+#include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/types/Version.h"
 
 #include "JoynrTest.h"

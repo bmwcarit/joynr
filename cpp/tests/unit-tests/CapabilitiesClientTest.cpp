@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "cluster-controller/capabilities-client/CapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"

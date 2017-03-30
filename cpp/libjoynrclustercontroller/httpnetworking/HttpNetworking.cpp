@@ -16,9 +16,9 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/httpnetworking/HttpNetworking.h"
-#include "cluster-controller/httpnetworking/HttpRequestBuilder.h"
-#include "cluster-controller/httpnetworking/CurlHandlePool.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpRequestBuilder.h"
+#include "libjoynrclustercontroller/httpnetworking/CurlHandlePool.h"
 
 #include <curl/curl.h>
 

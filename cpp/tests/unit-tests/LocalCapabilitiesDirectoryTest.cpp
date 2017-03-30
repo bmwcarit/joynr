@@ -28,7 +28,7 @@
 #include "JoynrTest.h"
 
 #include "joynr/LocalCapabilitiesDirectory.h"
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"

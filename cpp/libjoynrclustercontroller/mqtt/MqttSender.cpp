@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/mqtt/MqttSender.h"
+#include "libjoynrclustercontroller/mqtt/MqttSender.h"
 
 #include "joynr/IMessageReceiver.h"
 #include "joynr/Util.h"
@@ -24,7 +24,7 @@
 #include "joynr/MessagingQosEffort.h"
 #include "joynr/serializer/Serializer.h"
 
-#include "cluster-controller/mqtt/MosquittoConnection.h"
+#include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
 namespace joynr
 {

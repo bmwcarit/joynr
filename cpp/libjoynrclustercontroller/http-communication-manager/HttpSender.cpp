@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/http-communication-manager/HttpSender.h"
+#include "libjoynrclustercontroller/http-communication-manager/HttpSender.h"
 
 #include <cassert>
 #include <algorithm>
@@ -26,8 +26,8 @@
 
 #include "joynr/JoynrMessage.h"
 #include "joynr/Util.h"
-#include "cluster-controller/httpnetworking/HttpNetworking.h"
-#include "cluster-controller/httpnetworking/HttpResult.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/serializer/Serializer.h"

@@ -25,8 +25,8 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 
 #include "common/InterfaceAddress.h"
 

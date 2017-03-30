@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/mqtt/MqttReceiver.h"
+#include "libjoynrclustercontroller/mqtt/MqttReceiver.h"
 
 #include <chrono>
 
@@ -24,7 +24,7 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/serializer/Serializer.h"
 
-#include "cluster-controller/mqtt/MosquittoConnection.h"
+#include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
 namespace joynr
 {

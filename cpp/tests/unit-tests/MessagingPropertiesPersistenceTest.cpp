@@ -19,7 +19,7 @@
 
 
 #include <gtest/gtest.h>
-#include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
+#include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
 
 #include <cstdio>
 

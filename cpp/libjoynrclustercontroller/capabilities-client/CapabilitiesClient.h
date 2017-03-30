@@ -31,7 +31,7 @@
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 #include "joynr/types/DiscoveryQos.h"
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/Logger.h"
 

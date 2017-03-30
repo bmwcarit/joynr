@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/httpnetworking/HttpRequestBuilder.h"
-#include "cluster-controller/httpnetworking/DefaultHttpRequest.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpRequestBuilder.h"
+#include "libjoynrclustercontroller/httpnetworking/DefaultHttpRequest.h"
 #include "joynr/exceptions/JoynrException.h"
 
 #include <curl/curl.h>

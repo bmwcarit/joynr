@@ -22,7 +22,7 @@
 #include <boost/algorithm/string.hpp>
 #include <curl/curl.h>
 
-#include "cluster-controller/httpnetworking/HttpResult.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
 
 namespace joynr
 {

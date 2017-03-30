@@ -26,8 +26,8 @@
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 
-#include "cluster-controller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
-#include "cluster-controller/messaging/joynr-messaging/MqttMessagingStub.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStub.h"
 
 #include "utils/MockObjects.h"
 

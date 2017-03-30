@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
+#include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/Util.h"
 #include "joynr/Settings.h"
 

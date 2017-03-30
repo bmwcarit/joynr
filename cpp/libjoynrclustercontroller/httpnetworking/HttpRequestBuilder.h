@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include "cluster-controller/httpnetworking/HttpNetworking.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 

@@ -22,7 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
+#include "libjoynrclustercontroller/mqtt/MqttMessagingSkeleton.h"
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/DispatcherUtils.h"

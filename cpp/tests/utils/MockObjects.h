@@ -38,7 +38,7 @@
 #include "LibJoynrMockObjects.h"
 
 #include "joynr/access-control/IAccessController.h"
-#include "cluster-controller/access-control/LocalDomainAccessController.h"
+#include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/tests/testRequestCaller.h"
 #include "joynr/vehicle/DefaultGpsProvider.h"
@@ -69,11 +69,11 @@
 
 #include "joynr/ClusterControllerDirectories.h"
 
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "common/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/InProcessConnectorFactory.h"
-#include "cluster-controller/http-communication-manager/HttpReceiver.h"
+#include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"

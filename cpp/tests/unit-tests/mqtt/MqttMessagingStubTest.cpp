@@ -22,7 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "cluster-controller/messaging/joynr-messaging/MqttMessagingStub.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStub.h"
 
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/JoynrMessage.h"

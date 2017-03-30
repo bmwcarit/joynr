@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/httpnetworking/HttpResult.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
 
 #include <curl/curl.h>
 #include <boost/format.hpp>

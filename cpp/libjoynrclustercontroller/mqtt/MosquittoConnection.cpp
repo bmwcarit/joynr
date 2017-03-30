@@ -17,7 +17,7 @@
  * #L%
  */
 
-#include "cluster-controller/mqtt/MosquittoConnection.h"
+#include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
 #include "joynr/MessagingSettings.h"
 #include "joynr/ClusterControllerSettings.h"

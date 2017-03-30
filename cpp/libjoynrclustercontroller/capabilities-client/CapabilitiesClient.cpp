@@ -25,7 +25,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include "cluster-controller/capabilities-client/CapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Future.h"
 #include "joynr/MessagingQos.h"

@@ -35,7 +35,7 @@
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
-#include "cluster-controller/include/joynr/CcMessageRouter.h"
+#include "libjoynrclustercontroller/include/joynr/CcMessageRouter.h"
 
 namespace joynr
 {

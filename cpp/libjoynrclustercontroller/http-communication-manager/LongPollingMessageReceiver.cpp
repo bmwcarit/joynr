@@ -23,11 +23,11 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "cluster-controller/http-communication-manager/LongPollingMessageReceiver.h"
-#include "cluster-controller/httpnetworking/HttpNetworking.h"
+#include "libjoynrclustercontroller/http-communication-manager/LongPollingMessageReceiver.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
 #include "joynr/Util.h"
 #include "joynr/DispatcherUtils.h"
-#include "cluster-controller/httpnetworking/HttpResult.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
 #include "joynr/Future.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"

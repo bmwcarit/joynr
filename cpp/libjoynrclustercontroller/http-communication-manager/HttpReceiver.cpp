@@ -16,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-#include "cluster-controller/http-communication-manager/HttpReceiver.h"
+#include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
 
-#include "cluster-controller/http-communication-manager/LongPollingMessageReceiver.h"
-#include "cluster-controller/httpnetworking/HttpNetworking.h"
-#include "cluster-controller/httpnetworking/HttpResult.h"
+#include "libjoynrclustercontroller/http-communication-manager/LongPollingMessageReceiver.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
 #include "joynr/Future.h"
 #include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"

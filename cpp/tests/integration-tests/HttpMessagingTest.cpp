@@ -18,7 +18,7 @@
  */
 #include "AbstractMessagingTest.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "cluster-controller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
 
 using namespace ::testing;
 using namespace joynr;

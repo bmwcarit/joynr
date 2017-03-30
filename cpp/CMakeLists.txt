@@ -711,7 +711,7 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 add_subdirectory(common)
 add_subdirectory(libjoynr)
-add_subdirectory(cluster-controller)
+add_subdirectory(libjoynrclustercontroller)
 add_subdirectory(runtimes)
 
 if(${BUILD_TESTS})
