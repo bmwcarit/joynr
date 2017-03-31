@@ -218,8 +218,8 @@ public:
     {
         if (!proxyFactory) {
             throw exceptions::JoynrRuntimeException(
-                    "Exception in JoynrRuntime: Creating a proxy before "
-                    "startMessaging was called is not yet supported.");
+                    "Exception in JoynrRuntime: Cannot perform arbitration as"
+                    "runtime is not yet fully initialized.");
         }
         return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
                                                           requestCallerDirectory,
