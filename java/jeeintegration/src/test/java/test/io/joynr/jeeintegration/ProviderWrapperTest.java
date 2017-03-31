@@ -32,8 +32,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Map;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Annotated;
@@ -43,17 +45,20 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Injector;
 import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.jeeintegration.JoynrJeeMessageMetaInfo;
 import io.joynr.jeeintegration.ProviderWrapper;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 import io.joynr.jeeintegration.multicast.SubscriptionPublisherProducer;
 import io.joynr.messaging.JoynrMessageCreator;
+import io.joynr.messaging.JoynrMessageMetaInfo;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
@@ -78,6 +83,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ProviderWrapperTest {
 
     private static final String USERNAME = "messageCreatorId";
+    private static final Map<String, Serializable> expectedMessageContext = Maps.newHashMap();
 
     private static final AnnotationLiteral<io.joynr.jeeintegration.api.SubscriptionPublisher> SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL = new AnnotationLiteral<io.joynr.jeeintegration.api.SubscriptionPublisher>() {
     };
@@ -198,6 +204,9 @@ public class ProviderWrapperTest {
 
     @Mock
     private JoynrCallingPrincipal joynrCallingPincipal;
+
+    @Mock
+    private JoynrJeeMessageMetaInfo joynrJeeMessageContext;
 
     @Mock
     private SubscriptionPublisherProducer subscriptionPublisherProducer;
@@ -362,6 +371,18 @@ public class ProviderWrapperTest {
         verify(joynrCallingPincipal).setUsername(USERNAME);
     }
 
+    @Test
+    public void testMessageContextCopied() throws Throwable {
+        ProviderWrapper subject = createSubject();
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = TestServiceProviderInterface.class.getMethod("testServiceMethodNoArgs");
+
+        subject.invoke(proxy, method, new Object[0]);
+
+        verify(joynrJeeMessageContext).setMessageContext(expectedMessageContext);
+    }
+
     @SuppressWarnings("rawtypes")
     private void assertPromiseEquals(Object result, Object value) {
         assertTrue(((Promise) result).isFulfilled());
@@ -400,6 +421,18 @@ public class ProviderWrapperTest {
         Bean<?> bean = mock(Bean.class);
         doReturn(TestServiceImpl.class).when(bean).getBeanClass();
         doReturn(new TestServiceImpl()).when(bean).create(null);
+
+        JoynrMessageMetaInfo joynrMessageContext = mock(JoynrMessageMetaInfo.class);
+        when(injector.getInstance(eq(JoynrMessageMetaInfo.class))).thenReturn(joynrMessageContext);
+        when(joynrMessageContext.getMessageContext()).thenReturn(expectedMessageContext);
+        Bean<?> joynrMessageContextBean = mock(Bean.class);
+        when(beanManager.getBeans(
+                JoynrJeeMessageMetaInfo.class)).
+                thenReturn(Sets.newHashSet(joynrMessageContextBean));
+        when(beanManager.getReference(
+                eq(joynrMessageContextBean),
+                eq(JoynrJeeMessageMetaInfo.class),
+                Mockito.any())).thenReturn(joynrJeeMessageContext);
 
         // Setup mock SubscriptionPublisherProducer instance in mock bean manager
         Bean subscriptionPublisherProducerBean = mock(Bean.class);

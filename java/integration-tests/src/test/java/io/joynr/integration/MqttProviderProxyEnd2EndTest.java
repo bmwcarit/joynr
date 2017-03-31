@@ -21,33 +21,33 @@ package io.joynr.integration;
 
 import static org.junit.Assert.fail;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.servlet.ServletUtil;
 import joynr.MulticastSubscriptionQos;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProxy;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
 
     private Properties mqttConfig;
-    private static Process mosquittoProcess;
     private static int mqttBrokerPort = 1883;
 
     @Override
@@ -64,7 +64,22 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
         joynrConfig.putAll(mqttConfig);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(modules);
         Module modulesWithRuntime = Modules.override(runtimeModule).with(new AtmosphereMessagingModule(),
-                                                                         new MqttPahoModule());
+                                                                         new MqttPahoModule(),
+                                                                         new AbstractModule() {
+
+                                                                             @Override
+                                                                             protected void configure() {
+                                                                                 bind(RawMessagingPreprocessor.class).toInstance(new RawMessagingPreprocessor() {
+
+                                                                                     @Override
+                                                                                     public String process(String rawMessage,
+                                                                                                           Map<String, Serializable> context) {
+                                                                                         return rawMessage;
+                                                                                     }
+                                                                                 });
+                                                                             }
+
+                                                                         });
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
 

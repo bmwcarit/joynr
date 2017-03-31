@@ -183,11 +183,13 @@ public class DispatcherImpl implements Dispatcher {
             } else if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
                 final Request request = objectMapper.readValue(message.getPayload(), Request.class);
                 request.setCreatorUserId(message.getCreatorUserId());
+                request.setContext(message.getContext());
                 logger.trace("Parsed request from message payload :" + message.getPayload());
                 handle(request, message.getFrom(), message.getTo(), expiryDate, customHeaders);
             } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
                 OneWayRequest oneWayRequest = objectMapper.readValue(message.getPayload(), OneWayRequest.class);
                 oneWayRequest.setCreatorUserId(message.getCreatorUserId());
+                oneWayRequest.setContext(message.getContext());
                 logger.trace("Parsed one way request from message payload :" + message.getPayload());
                 handle(oneWayRequest, message.getTo(), expiryDate);
             } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)

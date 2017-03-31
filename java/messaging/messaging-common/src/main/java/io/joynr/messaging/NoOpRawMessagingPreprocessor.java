@@ -1,4 +1,4 @@
-package io.joynr.provider;
+package io.joynr.messaging;
 
 /*
  * #%L
@@ -18,24 +18,13 @@ package io.joynr.provider;
  * limitations under the License.
  * #L%
  */
+import java.util.Map;
+import java.io.Serializable;
 
-public abstract class AbstractJoynrProvider implements JoynrProvider {
-    static ThreadLocal<CallContext> callContext = new ThreadLocal<CallContext>() {
-        @Override
-        protected CallContext initialValue() {
-            return new CallContext();
-        }
-    };
+public class NoOpRawMessagingPreprocessor extends RawMessagingPreprocessor {
 
-    public AbstractJoynrProvider() {
+    @Override
+    public String process(String rawMessage, Map<String, Serializable> context) {
+        return rawMessage;
     }
-
-    public CallContext getCallContext() {
-        return callContext.get();
-    }
-
-    public static void setCallContext(CallContext callContext) {
-        AbstractJoynrProvider.callContext.set(callContext);
-    }
-
 }

@@ -1,4 +1,4 @@
-package io.joynr.provider;
+package io.joynr.jeeintegration;
 
 /*
  * #%L
@@ -19,23 +19,24 @@ package io.joynr.provider;
  * #L%
  */
 
-public abstract class AbstractJoynrProvider implements JoynrProvider {
-    static ThreadLocal<CallContext> callContext = new ThreadLocal<CallContext>() {
-        @Override
-        protected CallContext initialValue() {
-            return new CallContext();
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import io.joynr.jeeintegration.api.JoynrJeeMessageScoped;
+
+@JoynrJeeMessageScoped
+public class JoynrJeeMessageMetaInfo {
+    private Map<String, Serializable> context = new HashMap<String, Serializable>();
+
+    public Map<String, Serializable> getMessageContext() {
+        return context;
+    }
+
+    public void setMessageContext(Map<String, Serializable> context) {
+        if (context == null) {
+            return;
         }
-    };
-
-    public AbstractJoynrProvider() {
+        this.context = context;
     }
-
-    public CallContext getCallContext() {
-        return callContext.get();
-    }
-
-    public static void setCallContext(CallContext callContext) {
-        AbstractJoynrProvider.callContext.set(callContext);
-    }
-
 }

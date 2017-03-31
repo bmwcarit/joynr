@@ -30,6 +30,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
 import joynr.BroadcastSubscriptionRequest;
@@ -96,7 +97,7 @@ public class JoynrMessageFactory {
         message.setPayload(serializePayload(payload));
         message.setCustomHeaders(messagingQos.getCustomMessageHeaders());
         for (JoynrMessageProcessor processor : messageProcessors) {
-            message = processor.process(message);
+            message = processor.processOutgoing(message);
         }
         return message;
     }
@@ -218,7 +219,7 @@ public class JoynrMessageFactory {
 
     private Map<String, String> createHeader(final String fromParticipantId, final String toParticipantId) {
         Map<String, String> header = Maps.newHashMap();
-        header.put(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, "todo");
+        header.put(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, System.getProperty("user.name"));
         header.put(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID, fromParticipantId);
         header.put(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID, toParticipantId);
         header.put(JoynrMessage.HEADER_NAME_CONTENT_TYPE, JoynrMessage.CONTENT_TYPE_APPLICATION_JSON);

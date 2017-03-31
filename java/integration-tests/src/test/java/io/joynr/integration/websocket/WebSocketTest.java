@@ -21,12 +21,15 @@ package io.joynr.integration.websocket;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
+
 import io.joynr.dispatching.JoynrMessageFactory;
-import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
@@ -53,6 +56,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WebSocketTest {
@@ -87,7 +96,10 @@ public class WebSocketTest {
         joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper(), new HashSet<JoynrMessageProcessor>());
     }
 
-    private void configure(int maxMessageSize, long reconnectDelay, long websocketIdleTimeout) {
+    private void configure(int maxMessageSize,
+                           long reconnectDelay,
+                           long websocketIdleTimeout,
+                           Set<JoynrMessageProcessor> messageProcessor) {
         ObjectMapper objectMapper = new ObjectMapper();
         WebSocketEndpointFactory webSocketJettyServerFactory = new WebSocketJettyServerFactory(maxMessageSize,
                                                                                                objectMapper);
@@ -95,7 +107,8 @@ public class WebSocketTest {
                                                                       webSocketJettyServerFactory,
                                                                       messageRouterMock,
                                                                       objectMapper,
-                                                                      new WebSocketMessagingSkeleton.MainTransportFlagBearer());
+                                                                      new WebSocketMessagingSkeleton.MainTransportFlagBearer(),
+                                                                      messageProcessor);
 
         ownAddress = new WebSocketClientAddress(UUID.randomUUID().toString());
         webSocketJettyClientFactory = new WebSocketJettyClientFactory(ownAddress,
@@ -110,7 +123,8 @@ public class WebSocketTest {
                                                                        webSocketJettyClientFactory,
                                                                        messageRouterMock,
                                                                        new ObjectMapper(),
-                                                                       new WebSocketMessagingSkeleton.MainTransportFlagBearer());
+                                                                       new WebSocketMessagingSkeleton.MainTransportFlagBearer(),
+                                                                       messageProcessor);
         ccWebSocketMessagingSkeleton.init();
         libWebSocketMessagingSkeleton.init();
     }
@@ -129,7 +143,7 @@ public class WebSocketTest {
         int maxMessageSize = 100000;
         long reconnectDelay = 100;
         long websocketIdleTimeout = 30000;
-        configure(maxMessageSize, reconnectDelay, websocketIdleTimeout);
+        configure(maxMessageSize, reconnectDelay, websocketIdleTimeout, new HashSet<JoynrMessageProcessor>());
         sendMessage();
     }
 
@@ -140,12 +154,28 @@ public class WebSocketTest {
         int maxMessageSize = 100000;
         long reconnectDelay = 100;
         long websocketIdleTimeout = millis - 100;
-        configure(maxMessageSize, reconnectDelay, websocketIdleTimeout);
+        configure(maxMessageSize, reconnectDelay, websocketIdleTimeout, new HashSet<JoynrMessageProcessor>());
 
         sendMessage();
         logger.info("Waiting for " + millis + "ms to cause websocket idle timeout");
         Thread.sleep(millis);
         sendMessage();
+    }
+
+    @Test
+    public void testJoynrMessageProcessorIsCalled() throws Throwable {
+        JoynrMessageProcessor processorMock = mock(JoynrMessageProcessor.class);
+        when(processorMock.processIncoming(any(JoynrMessage.class))).then(returnsFirstArg());
+
+        int millis = 1000;
+        int maxMessageSize = 100000;
+        long reconnectDelay = 100;
+        long websocketIdleTimeout = millis - 100;
+        configure(maxMessageSize, reconnectDelay, websocketIdleTimeout, Sets.newHashSet(processorMock));
+        sendMessage();
+        Thread.sleep(millis);
+
+        verify(processorMock).processIncoming(any(JoynrMessage.class));
     }
 
     private void sendMessage() throws Throwable {

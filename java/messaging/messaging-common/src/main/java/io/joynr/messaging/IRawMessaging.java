@@ -1,4 +1,4 @@
-package io.joynr.provider;
+package io.joynr.messaging;
 
 /*
  * #%L
@@ -19,23 +19,6 @@ package io.joynr.provider;
  * #L%
  */
 
-public abstract class AbstractJoynrProvider implements JoynrProvider {
-    static ThreadLocal<CallContext> callContext = new ThreadLocal<CallContext>() {
-        @Override
-        protected CallContext initialValue() {
-            return new CallContext();
-        }
-    };
-
-    public AbstractJoynrProvider() {
-    }
-
-    public CallContext getCallContext() {
-        return callContext.get();
-    }
-
-    public static void setCallContext(CallContext callContext) {
-        AbstractJoynrProvider.callContext.set(callContext);
-    }
-
+public interface IRawMessaging {
+    public void transmit(String serializedMessage, FailureAction failureAction);
 }

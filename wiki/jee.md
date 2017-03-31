@@ -299,6 +299,50 @@ See also the
 [Radio JEE provider bean](../examples/radio-jee/radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBean.java)
 for a working example.
 
+#### Injecting a RawMessagingPreprocessor
+
+if you need to inspect or modify incoming joynr messages, you can provide a producer of
+@JoynrRawMessagingPreprocessor, whose process method will be called for each incoming MQTT
+message.
+
+For example:
+
+	@Produces
+	@JoynrRawMessagingPreprocessor
+	RawMessagingPreprocessor rawMessagingPreprocessor() {
+		return new RawMessagingPreprocessor() {
+			@Override
+			public String process(String rawMessage, @Nonnull Map<String, Serializable> context) {
+				// do something with the message here, and add entries to the context
+				return rawMessage;
+			}
+		};
+	}
+
+Inject `JoynrJeeMessageMetaInfo` to your EJB in order to retrieve the context for a received message.
+
+The context can be accessed by calling `JoynrJeeMessageMetaInfo.getMessageContext()`:
+
+    @Stateless
+    @ServiceProvider(serviceInterface = MyServiceSync.class)
+    public class MyBean implements MyServiceSync {
+        private JoynrJeeMessageMetaInfo messageMetaInfo;
+
+        @Inject
+        public MyBean(JoynrJeeMessageMetaInfo messageMetaInfo) {
+            this.messageMetaInfo = messageMetaInfo;
+        }
+
+        ... other method implementations ...
+
+        @Override
+        public void myMethod() {
+            ...
+            Map<String, Serializable> context = messageMetaInfo.getMessageContext();
+            ...
+        }
+    }
+
 ### Calling services
 
 In order to call services provided by other participants (e.g. applications
@@ -472,10 +516,14 @@ Here's an example of a message processor:
 ```
 @Stateless
 public class MyMessageProcessor implements JoynrMessageProcessor {
-    public JoynrMessage process(JoynrMessage joynrMessage) {
+    public JoynrMessage processOutgoing(JoynrMessage joynrMessage) {
         Map<String, String> myCustomHeaders = new HashMap<>();
         myCustomHeaders.put("my-correlation-id", UUID.randomUuid().toString());
         joynrMessage.setCustomHeaders(myCustomHeaders);
+        return joynrMessage;
+    }
+
+    public JoynrMessage processIncoming(JoynrMessage joynrMessage) {
         return joynrMessage;
     }
 }

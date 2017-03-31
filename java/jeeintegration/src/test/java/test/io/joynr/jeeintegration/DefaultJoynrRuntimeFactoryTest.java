@@ -48,10 +48,12 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.dispatching.JoynrMessageFactory;
-import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.JoynrMessage;
 import joynr.Request;
@@ -75,8 +77,12 @@ public class DefaultJoynrRuntimeFactoryTest {
     @Stateless
     private class JoynrMessageProcessorTest implements JoynrMessageProcessor {
         @Override
-        public JoynrMessage process(JoynrMessage joynrMessage) {
+        public JoynrMessage processOutgoing(JoynrMessage joynrMessage) {
             joynrMessage.getHeader().put("test", "test");
+            return joynrMessage;
+        }
+        @Override
+        public JoynrMessage processIncoming(JoynrMessage joynrMessage) {
             return joynrMessage;
         }
     }
@@ -98,11 +104,13 @@ public class DefaultJoynrRuntimeFactoryTest {
         when(joynrProperties.get()).thenReturn(joynrPropertiesValues);
         Instance<String> joynrLocalDomain = mock(Instance.class);
         when(joynrLocalDomain.get()).thenReturn(LOCAL_DOMAIN);
+        Instance<RawMessagingPreprocessor> rawMessageProcessor = mock(Instance.class);
+        when(rawMessageProcessor.get()).thenReturn(new NoOpRawMessagingPreprocessor());
         BeanManager beanManager = mock(BeanManager.class);
         Bean<JoynrMessageProcessor> bean = mock(Bean.class);
         when(bean.create(Mockito.any())).thenReturn(new JoynrMessageProcessorTest());
         when(beanManager.getBeans(Mockito.<Type> eq(JoynrMessageProcessor.class), Mockito.<Annotation> any())).thenReturn(Sets.newHashSet(bean));
-        fixture = new DefaultJoynrRuntimeFactory(joynrProperties, joynrLocalDomain, beanManager);
+        fixture = new DefaultJoynrRuntimeFactory(joynrProperties, joynrLocalDomain, rawMessageProcessor, beanManager);
         scheduledExecutorService = mock(ScheduledExecutorService.class);
         Field executorField = DefaultJoynrRuntimeFactory.class.getDeclaredField("scheduledExecutorService");
         executorField.setAccessible(true);

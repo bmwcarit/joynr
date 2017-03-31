@@ -1,3 +1,13 @@
+# joynr 0.25.0
+
+## API relevant changes
+* **[JEE]** Applications can inject a RawMessagingPreprocessor to modify or inspect messages arriving
+  via MQTT
+* **[JAVA/JEE]** JoynrMessageProcessor.process was divided into a processOutgoing and processIncoming
+  method. The processOutgoing method is called right after a message was created that will be sent
+  to another Joynr instance. The processIncoming method is called for messages which were received
+  from another Joynr instance.
+
 # joynr 0.24.0
 
 ## API relevant changes

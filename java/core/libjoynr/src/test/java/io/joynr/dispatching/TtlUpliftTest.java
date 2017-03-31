@@ -56,6 +56,7 @@ import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.PublicationManagerImpl;
 import io.joynr.dispatching.subscription.SubscriptionRequestStorage;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.AbstractSubscriptionPublisher;
@@ -155,9 +156,14 @@ public class TtlUpliftTest {
                                               joynrMessageProcessorMultibinder.addBinding()
                                                                               .toInstance(new JoynrMessageProcessor() {
                                                                                   @Override
-                                                                                  public JoynrMessage process(JoynrMessage joynrMessage) {
+                                                                                  public JoynrMessage processOutgoing(JoynrMessage joynrMessage) {
                                                                                       joynrMessage.getHeader()
                                                                                                   .put("test", "test");
+                                                                                      return joynrMessage;
+                                                                                  }
+
+                                                                                  @Override
+                                                                                  public JoynrMessage processIncoming(JoynrMessage joynrMessage) {
                                                                                       return joynrMessage;
                                                                                   }
                                                                               });
@@ -186,7 +192,7 @@ public class TtlUpliftTest {
         joynrMessageFactoryWithTtlUplift = injectorWithTtlUplift.getInstance(JoynrMessageFactory.class);
 
         requestCaller = new RequestCallerFactory().create(provider);
-        when(providerContainer.getRequestCaller()).thenReturn(requestCaller);
+        when(providerContainer.getProviderProxy()).thenReturn(requestCaller.getProxy());
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
         Deferred<String> valueToPublishDeferred = new Deferred<String>();
         valueToPublishDeferred.resolve(valueToPublish);
@@ -206,7 +212,7 @@ public class TtlUpliftTest {
         publicationManagerWithTtlUplift = (PublicationManagerImpl) injectorWithPublicationUplift.getInstance(PublicationManager.class);
 
         payload = "payload";
-        Method method = TestRequestCaller.class.getMethod("respond", new Class[]{ String.class });
+        Method method = TestProvider.class.getMethod("methodWithStrings", new Class[]{ String.class });
         request = new Request(method.getName(), new String[]{ payload }, method.getParameterTypes());
         messagingQos = new MessagingQos(TTL);
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());

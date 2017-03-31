@@ -27,6 +27,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.joynr.common.ExpiryDate;
 import io.joynr.subtypes.JoynrType;
 
+import java.io.Serializable;
+
 /**
  * Storage class to keep the type, header and payload of a message.
  */
@@ -62,6 +64,7 @@ public class JoynrMessage implements JoynrType {
     private String payload;
     private transient Boolean receivedFromGlobal;
     private transient Boolean localMessage = false;
+    private transient HashMap<String, Serializable> context;
 
     public JoynrMessage() {
         this(null, new HashMap<String, String>(), null);
@@ -350,5 +353,13 @@ public class JoynrMessage implements JoynrType {
      */
     public void setReplyTo(String replyToChannelId) {
         setHeaderValue(HEADER_NAME_REPLY_CHANNELID, replyToChannelId);
+    }
+
+    public void setContext(HashMap<String, Serializable> context) {
+        this.context = context;
+    }
+
+    public Map<String, Serializable> getContext() {
+        return context;
     }
 }

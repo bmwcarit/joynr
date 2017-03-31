@@ -22,6 +22,9 @@ package io.joynr.jeeintegration.messaging;
 import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
+
+import java.util.HashSet;
+
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 
@@ -32,6 +35,8 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageProcessor;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider;
@@ -70,7 +75,9 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               mqttClientFactory,
               messageSerializerFactory,
               channelId,
-              mqttTopicPrefixProvider);
+              mqttTopicPrefixProvider,
+              new NoOpRawMessagingPreprocessor(),
+              new HashSet<JoynrMessageProcessor>());
         httpBridgeEnabled = Boolean.valueOf(enableHttpBridge);
         logger.debug("Created with httpBridgeEnabled: {} ownAddress: {} channelId: {}", new Object[]{ httpBridgeEnabled,
                 ownAddress, channelId });

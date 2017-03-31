@@ -138,7 +138,7 @@ public class PublicationManagerTest {
                                                         Mockito.mock(SubscriptionRequestStorage.class));
 
         requestCaller = new RequestCallerFactory().create(provider);
-        when(providerContainer.getRequestCaller()).thenReturn(requestCaller);
+        when(providerContainer.getProviderProxy()).thenReturn(requestCaller.getProxy());
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
 
         when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(false);

@@ -1,4 +1,5 @@
-package io.joynr.provider;
+package itest.io.joynr.jeeintegration.preprocessor;
+
 
 /*
  * #%L
@@ -19,23 +20,19 @@ package io.joynr.provider;
  * #L%
  */
 
-public abstract class AbstractJoynrProvider implements JoynrProvider {
-    static ThreadLocal<CallContext> callContext = new ThreadLocal<CallContext>() {
-        @Override
-        protected CallContext initialValue() {
-            return new CallContext();
-        }
-    };
+import java.io.Serializable;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    public AbstractJoynrProvider() {
+import io.joynr.messaging.RawMessagingPreprocessor;
+
+public class TestRawMessagingProcessor extends RawMessagingPreprocessor {
+    private static final Logger logger = LoggerFactory.getLogger(RawMessagingPreprocessor.class);
+
+    @Override
+    public String process(String rawMessage, Map<String, Serializable> context) {
+        logger.info("raw message received: " + rawMessage);
+        return rawMessage;
     }
-
-    public CallContext getCallContext() {
-        return callContext.get();
-    }
-
-    public static void setCallContext(CallContext callContext) {
-        AbstractJoynrProvider.callContext.set(callContext);
-    }
-
 }

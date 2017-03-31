@@ -24,6 +24,8 @@ import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashSet;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,6 +35,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import io.joynr.messaging.JoynrMessageProcessor;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
@@ -89,7 +93,9 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
                                                                "channelId",
-                                                               mqttTopicPrefixProvider);
+                                                               mqttTopicPrefixProvider,
+                                                               new NoOpRawMessagingPreprocessor(),
+                                                               new HashSet<JoynrMessageProcessor>());
         subject.init();
         verify(mqttClient).subscribe(eq("$share:channelId:ownTopic/#"));
         verify(mqttClient).subscribe(eq(replyToAddressTopic + "/#"));
@@ -103,7 +109,9 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
                                                                "channel@123_bling$$",
-                                                               mqttTopicPrefixProvider);
+                                                               mqttTopicPrefixProvider,
+                                                               new NoOpRawMessagingPreprocessor(),
+                                                               new HashSet<JoynrMessageProcessor>());
         subject.init();
         verify(mqttClient).subscribe(startsWith("$share:channelbling:"));
     }
@@ -116,7 +124,9 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                mqttClientFactory,
                                                                mqttMessageSerializerFactory,
                                                                "@123_$$-!",
-                                                               mqttTopicPrefixProvider);
+                                                               mqttTopicPrefixProvider,
+                                                               new NoOpRawMessagingPreprocessor(),
+                                                               new HashSet<JoynrMessageProcessor>());
         subject.init();
     }
 

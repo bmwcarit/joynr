@@ -58,13 +58,10 @@ public class JoynrIntegrationBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(JoynrIntegrationBean.class);
 
-    @Inject
     private BeanManager beanManager;
 
-    @Inject
     private JoynrRuntimeFactory joynrRuntimeFactory;
 
-    @Inject
     private ServiceProviderDiscovery serviceProviderDiscovery;
 
     private Set<Object> registeredProviders = new HashSet<>();
@@ -76,6 +73,7 @@ public class JoynrIntegrationBean {
     public JoynrIntegrationBean() {
     }
 
+    @Inject
     public JoynrIntegrationBean(BeanManager beanManager,
                                 JoynrRuntimeFactory joynrRuntimeFactory,
                                 ServiceProviderDiscovery serviceProviderDiscovery) {

@@ -53,12 +53,15 @@ import io.joynr.ProvidedBy;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
-import io.joynr.dispatching.JoynrMessageProcessor;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
+import io.joynr.jeeintegration.api.JoynrRawMessagingPreprocessor;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -85,8 +88,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     private static final String MQTT = "mqtt";
 
-    private static final String LOCALHOST_URL = "https://localhost:8443/";
-
     private Properties joynrProperties;
 
     private final String joynrLocalDomain;
@@ -101,6 +102,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     private Injector fInjector = null;
 
+    private RawMessagingPreprocessor rawMessagePreprocessor;
+
     /**
      * Constructor in which the JEE runtime injects the managed resources and the JEE joynr integration specific
      * configuration data (see {@link JoynrProperties} and {@link JoynrLocalDomain}
@@ -112,10 +115,12 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
      *
      * @param joynrProperties  the joynr properties, if present, by {@link #prepareJoynrProperties(Properties)} to prepare the properties with which the injector is created.
      * @param joynrLocalDomain the joynr local domain name to use for the application.
+     * @param rawMessagePreprocessor can be optionally provided to intercept incoming messages and inspect or modify them
      */
     @Inject
     public DefaultJoynrRuntimeFactory(@JoynrProperties Instance<Properties> joynrProperties,
                                       @JoynrLocalDomain Instance<String> joynrLocalDomain,
+                                      @JoynrRawMessagingPreprocessor Instance<RawMessagingPreprocessor> rawMessagePreprocessor,
                                       BeanManager beanManager) {
         if (!joynrLocalDomain.isUnsatisfied() && !joynrLocalDomain.isAmbiguous()) {
             this.joynrLocalDomain = joynrLocalDomain.get();
@@ -124,6 +129,19 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             LOG.error(message);
             throw new JoynrIllegalStateException(message);
         }
+
+        if (!rawMessagePreprocessor.isUnsatisfied()) {
+            if (!rawMessagePreprocessor.isAmbiguous()) {
+                this.rawMessagePreprocessor = rawMessagePreprocessor.get();
+            } else {
+                String message = "Only one RawMessagePreprocessor may be provided.";
+                LOG.error(message);
+                throw new JoynrIllegalStateException(message);
+            }
+        } else {
+            this.rawMessagePreprocessor = new NoOpRawMessagingPreprocessor();
+        }
+
         Properties configuredProperties;
         if (!joynrProperties.isUnsatisfied() && !joynrProperties.isAmbiguous()) {
             configuredProperties = joynrProperties.get();
@@ -169,7 +187,15 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             fInjector = new JoynrInjectorFactory(joynrProperties,
                                                  new StaticDomainAccessControlProvisioningModule(),
                                                  getMessageProcessorsModule(),
-                                                 override(new CCInProcessRuntimeModule()).with(new JeeJoynrIntegrationModule(scheduledExecutorService))).getInjector();
+                                                 override(new CCInProcessRuntimeModule()).with(new JeeJoynrIntegrationModule(scheduledExecutorService),
+                                                                                               new AbstractModule() {
+
+                                                                                                   @Override
+                                                                                                   protected void configure() {
+                                                                                                       bind(RawMessagingPreprocessor.class).toInstance(rawMessagePreprocessor);
+
+                                                                                                   }
+                                                                                               })).getInjector();
         }
         return fInjector;
     }
@@ -177,8 +203,10 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     private AbstractModule getMessageProcessorsModule() {
         final Set<Bean<?>> joynrMessageProcessorBeans = beanManager.getBeans(JoynrMessageProcessor.class,
                                                                              new AnnotationLiteral<Any>() {
+                                                                                 private static final long serialVersionUID = 1L;
                                                                              });
         return new AbstractModule() {
+            @SuppressWarnings("unchecked")
             @Override
             protected void configure() {
 
@@ -188,7 +216,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                 for (Bean<?> bean : joynrMessageProcessorBeans) {
                     joynrMessageProcessorMultibinder.addBinding()
                                                     .toInstance((JoynrMessageProcessor) Proxy.newProxyInstance(getClass().getClassLoader(),
-                                                                                                               new Class[]{ JoynrMessageProcessor.class },
+                                                                                                               new Class[]{
+                                                                                                                       JoynrMessageProcessor.class },
                                                                                                                new BeanCallingProxy<JoynrMessageProcessor>((Bean<JoynrMessageProcessor>) bean,
                                                                                                                                                            beanManager)));
                 }
@@ -223,39 +252,32 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         }
     }
 
-    private String getEnvWithDefault(String variableName, String defaultValue) {
-        String value = System.getenv(variableName);
-        if (value == null || value.trim().isEmpty()) {
-            value = defaultValue;
-        }
-        return value;
-    }
-
     private void provisionAccessControl(Properties properties, String domain, String[] interfaceNames) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
         List<MasterAccessControlEntry> allEntries = new ArrayList<>();
         for (String interfaceName : interfaceNames) {
             MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
-                domain,
-                interfaceName,
-                TrustLevel.LOW,
-                new TrustLevel[]{TrustLevel.LOW},
-                TrustLevel.LOW,
-                new TrustLevel[]{TrustLevel.LOW},
-                "*",
-                Permission.YES,
-                new Permission[]{joynr.infrastructure.DacTypes.Permission.YES});
+                                                                                                domain,
+                                                                                                interfaceName,
+                                                                                                TrustLevel.LOW,
+                                                                                                new TrustLevel[]{
+                                                                                                        TrustLevel.LOW },
+                                                                                                TrustLevel.LOW,
+                                                                                                new TrustLevel[]{
+                                                                                                        TrustLevel.LOW },
+                                                                                                "*",
+                                                                                                Permission.YES,
+                                                                                                new Permission[]{
+                                                                                                        joynr.infrastructure.DacTypes.Permission.YES });
             allEntries.add(newMasterAccessControlEntry);
         }
-        MasterAccessControlEntry[] provisionedAccessControlEntries = allEntries.toArray(
-            new MasterAccessControlEntry[allEntries.size()]);
+        MasterAccessControlEntry[] provisionedAccessControlEntries = allEntries.toArray(new MasterAccessControlEntry[allEntries.size()]);
         String provisionedAccessControlEntriesAsJson;
         try {
             provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);
-            properties.setProperty(
-                StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
-                provisionedAccessControlEntriesAsJson);
+            properties.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
+                                   provisionedAccessControlEntriesAsJson);
         } catch (JsonProcessingException e) {
             LOG.error("Error parsing JSON.", e);
         }
@@ -266,4 +288,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         return joynrLocalDomain;
     }
 
+    public RawMessagingPreprocessor getRawMessagePreprocessor() {
+        return rawMessagePreprocessor;
+    }
 }
