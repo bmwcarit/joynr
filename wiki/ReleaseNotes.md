@@ -1,3 +1,11 @@
+# joynr 0.24.1
+
+## API relevant changes
+
+## Other changes
+* **[Java]** Fixed a bug where enumeration parameters in fire and forget method calls
+  were improperly deserialized on provider side, leading to an exception.
+
 # joynr 0.24.0
 
 ## API relevant changes
