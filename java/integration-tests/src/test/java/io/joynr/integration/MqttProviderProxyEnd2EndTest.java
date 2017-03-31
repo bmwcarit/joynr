@@ -48,13 +48,10 @@ import org.junit.Test;
 public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
 
     private Properties mqttConfig;
-    private static Process mosquittoProcess;
     private static int mqttBrokerPort = 1883;
-    private int incomingMessageCount;
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
-        incomingMessageCount = 0;
         mqttConfig = new Properties();
         mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
         // test is using 2 global address typs, so need to set one of them as primary
@@ -77,7 +74,6 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
                                                                                      @Override
                                                                                      public String process(String rawMessage,
                                                                                                            Map<String, Serializable> context) {
-                                                                                         incomingMessageCount++;
                                                                                          return rawMessage;
                                                                                      }
                                                                                  });
