@@ -36,18 +36,14 @@ import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.servlet.ServletUtil;
 import joynr.MulticastSubscriptionQos;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProxy;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
 
     private Properties mqttConfig;
-    private static Process mosquittoProcess;
     private static int mqttBrokerPort = 1883;
 
     @Override
