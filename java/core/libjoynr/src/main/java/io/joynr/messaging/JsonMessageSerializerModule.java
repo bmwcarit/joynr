@@ -24,7 +24,9 @@ import io.joynr.messaging.serialize.JoynrEnumSerializer;
 import io.joynr.messaging.serialize.JoynrListSerializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
 import io.joynr.messaging.serialize.NumberSerializer;
+import io.joynr.messaging.serialize.OneWayRequestDeserializer;
 import io.joynr.messaging.serialize.RequestDeserializer;
+import joynr.OneWayRequest;
 import joynr.Request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -77,6 +79,7 @@ public class JsonMessageSerializerModule extends AbstractModule {
                                                                                            null);
 
         module.addDeserializer(Request.class, new RequestDeserializer(objectMapper));
+        module.addDeserializer(OneWayRequest.class, new OneWayRequestDeserializer(objectMapper));
         module.addDeserializer(Object.class, new JoynrUntypedObjectDeserializer(typeDeserializer));
 
         module.setMixInAnnotation(Throwable.class, ThrowableMixIn.class);
