@@ -19,7 +19,7 @@
 * **[All]** Added 'compress' to MessagingQos (available with Java/C++ solely via
   getter/setter, in JS also via constructor), existing MessagingQos APIs remain working
 * **[All]** Multiple global transports cannot be used in parallel any longer, either Mqtt
-  or Http have to be used
+  or Http has to be used
 * **[All]** Mqtt / Jee joynr backend services are used by default now (set in default settings).
   * To use the http backend in **Java**, set DISCOVERYDIRECTORYURL and DOMAINACCESSCONTROLLERURL
     as explained in the [Java Configuration Reference](JavaSettings.md).
