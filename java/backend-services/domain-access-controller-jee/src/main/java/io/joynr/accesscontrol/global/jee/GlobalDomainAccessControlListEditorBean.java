@@ -19,21 +19,21 @@ package io.joynr.accesscontrol.global.jee;
  * #L%
  */
 
-import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MASTER;
-import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MEDIATOR;
+import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
+import io.joynr.jeeintegration.api.ServiceProvider;
+import joynr.infrastructure.DacTypes.ChangeType;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.GlobalDomainAccessControlListEditorSync;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
-import io.joynr.jeeintegration.api.ServiceProvider;
-import joynr.infrastructure.DacTypes.ChangeType;
-import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
-import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
-import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
-import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
-import joynr.infrastructure.GlobalDomainAccessControlListEditorSync;
+import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MASTER;
+import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MEDIATOR;
 
 @Stateless
 @ServiceProvider(serviceInterface = GlobalDomainAccessControlListEditorSync.class)
@@ -48,24 +48,23 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
 
     private OwnerRegistrationControlEntryManager ownerRegistrationControlEntryManager;
 
-    private GlobalDomainAccessControllerQueue globalDomainAccessControllerQueue;
+    private GlobalDomainAccessControllerLocal globalDomainAccessControllerBean;
 
     // Only required for testing
     protected GlobalDomainAccessControlListEditorBean() {
     }
 
     @Inject
-    public GlobalDomainAccessControlListEditorBean(
-                                            MasterAccessControlEntryManager masterAccessControlEntryManager,
+    public GlobalDomainAccessControlListEditorBean(MasterAccessControlEntryManager masterAccessControlEntryManager,
                                             OwnerAccessControlEntryManager ownerAccessControlEntryManager,
                                             MasterRegistrationControlEntryManager masterRegistrationControlEntryManager,
                                             OwnerRegistrationControlEntryManager ownerRegistrationControlEntryManager,
-                                            GlobalDomainAccessControllerQueue globalDomainAccessControllerQueue) {
+                                            GlobalDomainAccessControllerLocal globalDomainAccessControllerBean) {
         this.masterAccessControlEntryManager = masterAccessControlEntryManager;
         this.ownerAccessControlEntryManager = ownerAccessControlEntryManager;
         this.masterRegistrationControlEntryManager = masterRegistrationControlEntryManager;
         this.ownerRegistrationControlEntryManager = ownerRegistrationControlEntryManager;
-        this.globalDomainAccessControllerQueue = globalDomainAccessControllerQueue;
+        this.globalDomainAccessControllerBean = globalDomainAccessControllerBean;
     }
 
     @Override
@@ -79,10 +78,7 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                MASTER);
         if (result != null) {
             MasterAccessControlEntry persistedAce = result.getEntry();
-            GlobalDomainAccessControllerQueueJob job = new GlobalDomainAccessControllerQueueJob();
-            job.setChangeType(result.getChangeType());
-            job.setMasterAccessControlEntry(persistedAce);
-            globalDomainAccessControllerQueue.add(job);
+            globalDomainAccessControllerBean.doFireMasterAccessControlEntryChanged(result.getChangeType(), persistedAce);
             return true;
         }
         return false;
@@ -96,10 +92,7 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                               operation,
                                                                                                                               MASTER);
         if (removedEntry != null) {
-            GlobalDomainAccessControllerQueueJob job = new GlobalDomainAccessControllerQueueJob();
-            job.setChangeType(ChangeType.REMOVE);
-            job.setMasterAccessControlEntry(removedEntry);
-            globalDomainAccessControllerQueue.add(job);
+            globalDomainAccessControllerBean.doFireMasterAccessControlEntryChanged(ChangeType.REMOVE, removedEntry);
             return true;
         }
         return false;
@@ -116,10 +109,7 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                MEDIATOR);
         if (result != null) {
             MasterAccessControlEntry persistedEntry = result.getEntry();
-            GlobalDomainAccessControllerQueueJob job = new GlobalDomainAccessControllerQueueJob();
-            job.setChangeType(result.getChangeType());
-            job.setMediatorAccessControlEntry(persistedEntry);
-            globalDomainAccessControllerQueue.add(job);
+            globalDomainAccessControllerBean.doFireMediatorAccessControlEntryChanged(result.getChangeType(), persistedEntry);
             return true;
         }
         return false;
@@ -133,10 +123,7 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                               operation,
                                                                                                                               MEDIATOR);
         if (removedEntry != null) {
-            GlobalDomainAccessControllerQueueJob job = new GlobalDomainAccessControllerQueueJob();
-            job.setChangeType(ChangeType.REMOVE);
-            job.setMediatorAccessControlEntry(removedEntry);
-            globalDomainAccessControllerQueue.add(job);
+            globalDomainAccessControllerBean.doFireMediatorAccessControlEntryChanged(ChangeType.REMOVE, removedEntry);
             return true;
         }
         return false;
@@ -152,10 +139,7 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
         CreateOrUpdateResult<OwnerAccessControlEntry> result = ownerAccessControlEntryManager.createOrUpdate(updatedOwnerAce);
         if (result != null) {
             OwnerAccessControlEntry entry = result.getEntry();
-            GlobalDomainAccessControllerQueueJob job = new GlobalDomainAccessControllerQueueJob();
-            job.setChangeType(result.getChangeType());
-            job.setOwnerAccessControlEntry(entry);
-            globalDomainAccessControllerQueue.add(job);
+            globalDomainAccessControllerBean.doFireOwnerAccessControlEntryChanged(result.getChangeType(), entry);
             return true;
         }
         return false;
@@ -168,10 +152,7 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                             interfaceName,
                                                                                                                             operation);
         if (removedEntry != null) {
-            GlobalDomainAccessControllerQueueJob job = new GlobalDomainAccessControllerQueueJob();
-            job.setChangeType(ChangeType.REMOVE);
-            job.setOwnerAccessControlEntry(removedEntry);
-            globalDomainAccessControllerQueue.add(job);
+            globalDomainAccessControllerBean.doFireOwnerAccessControlEntryChanged(ChangeType.REMOVE, removedEntry);
             return true;
         }
         return false;
@@ -188,10 +169,7 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                            ControlEntryType.MASTER);
         if (result != null) {
             MasterRegistrationControlEntry entry = result.getEntry();
-            GlobalDomainAccessControllerQueueJob job = new GlobalDomainAccessControllerQueueJob();
-            job.setChangeType(result.getChangeType());
-            job.setMasterRegistrationControlEntry(entry);
-            globalDomainAccessControllerQueue.add(job);
+            globalDomainAccessControllerBean.doFireMasterRegistrationControlEntryChanged(result.getChangeType(), entry);
             return true;
         }
         return false;
@@ -204,10 +182,7 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                                      interfaceName,
                                                                                                                                      ControlEntryType.MASTER);
         if (removedEntry != null) {
-            GlobalDomainAccessControllerQueueJob job = new GlobalDomainAccessControllerQueueJob();
-            job.setChangeType(ChangeType.REMOVE);
-            job.setMasterRegistrationControlEntry(removedEntry);
-            globalDomainAccessControllerQueue.add(job);
+            globalDomainAccessControllerBean.doFireMasterRegistrationControlEntryChanged(ChangeType.REMOVE, removedEntry);
             return true;
         }
         return false;
@@ -224,10 +199,7 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                            ControlEntryType.MEDIATOR);
         if (result != null) {
             MasterRegistrationControlEntry entry = result.getEntry();
-            GlobalDomainAccessControllerQueueJob job = new GlobalDomainAccessControllerQueueJob();
-            job.setChangeType(result.getChangeType());
-            job.setMediatorRegistrationControlEntry(entry);
-            globalDomainAccessControllerQueue.add(job);
+            globalDomainAccessControllerBean.doFireMediatorRegistrationControlEntryChanged(result.getChangeType(), entry);
             return true;
         }
         return false;
@@ -240,10 +212,7 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                                      interfaceName,
                                                                                                                                      ControlEntryType.MEDIATOR);
         if (removedEntry != null) {
-            GlobalDomainAccessControllerQueueJob job = new GlobalDomainAccessControllerQueueJob();
-            job.setChangeType(ChangeType.REMOVE);
-            job.setMediatorRegistrationControlEntry(removedEntry);
-            globalDomainAccessControllerQueue.add(job);
+            globalDomainAccessControllerBean.doFireMediatorRegistrationControlEntryChanged(ChangeType.REMOVE, removedEntry);
             return true;
         }
         return false;
@@ -259,10 +228,7 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
         CreateOrUpdateResult<OwnerRegistrationControlEntry> result = ownerRegistrationControlEntryManager.createOrUpdate(updatedOwnerRce);
         if (result != null) {
             OwnerRegistrationControlEntry entry = result.getEntry();
-            GlobalDomainAccessControllerQueueJob job = new GlobalDomainAccessControllerQueueJob();
-            job.setChangeType(result.getChangeType());
-            job.setOwnerRegistrationControlEntry(entry);
-            globalDomainAccessControllerQueue.add(job);
+            globalDomainAccessControllerBean.doFireOwnerRegistrationControlEntryChanged(result.getChangeType(), entry);
             return true;
         }
         return false;
@@ -274,10 +240,7 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
                                                                                                                                domain,
                                                                                                                                interfaceName);
         if (removedEntry != null) {
-            GlobalDomainAccessControllerQueueJob job = new GlobalDomainAccessControllerQueueJob();
-            job.setChangeType(ChangeType.REMOVE);
-            job.setOwnerRegistrationControlEntry(removedEntry);
-            globalDomainAccessControllerQueue.add(job);
+            globalDomainAccessControllerBean.doFireOwnerRegistrationControlEntryChanged(ChangeType.REMOVE, removedEntry);
             return true;
         }
         return false;

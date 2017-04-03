@@ -69,12 +69,11 @@ public class GlobalDomainAccessControlListEditorBeanTest {
     @Mock
     private OwnerRegistrationControlEntryManager ownerRegistrationControlEntryManagerMock;
 
-    //Direct Multicast publication via another interface is currently not possible
-    //@Mock
-    //private GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisherMock;
+    @Mock
+    private GlobalDomainAccessControllerLocal globalDomainAccessControllerBeanMock;
 
     @Mock
-    private GlobalDomainAccessControllerQueue globalDomainAccessControllerQueueMock;
+    private GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisherMock;
 
     @InjectMocks
     private GlobalDomainAccessControlListEditorBean globalDomainAccessControlListEditorSubject = new GlobalDomainAccessControlListEditorBean();
@@ -85,11 +84,6 @@ public class GlobalDomainAccessControlListEditorBeanTest {
     private final static String[] DOMAINS = { DOMAIN };
     private final static String INTERFACE_NAME = "interfaceName";
     private final static String OPERATION = "operation";
-
-    @Before
-    public void setUp() {
-        when(globalDomainAccessControllerQueueMock.add(any(GlobalDomainAccessControllerQueueJob.class))).thenReturn(true);
-    }
 
     @Test
     public void testCreateMasterAccessControlEntry() {
@@ -105,9 +99,8 @@ public class GlobalDomainAccessControlListEditorBeanTest {
         assertEquals(Boolean.TRUE, result);
 
         verify(masterAccessControlEntryManagerMock).createOrUpdate(eq(mace), eq(ControlEntryType.MASTER));
-        //Direct Multicast publication via another interface is currently not possible
-        //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMasterAccessControlEntryChanged(
-        //    eq(ChangeType.ADD), eq(mace), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME), eq(OPERATION));
+        verify(globalDomainAccessControllerBeanMock).doFireMasterAccessControlEntryChanged(
+            eq(ChangeType.ADD), eq(mace));
     }
 
     @Test
@@ -124,9 +117,8 @@ public class GlobalDomainAccessControlListEditorBeanTest {
         assertEquals(Boolean.TRUE, result);
 
         verify(masterAccessControlEntryManagerMock).createOrUpdate(mace, ControlEntryType.MASTER);
-        //Direct Multicast publication via another interface is currently not possible
-        //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMasterAccessControlEntryChanged(
-        //    ChangeType.UPDATE, mace, USER_PARTITION, DOMAIN, INTERFACE_NAME, OPERATION);
+        verify(globalDomainAccessControllerBeanMock).doFireMasterAccessControlEntryChanged(
+            ChangeType.UPDATE, mace);
     }
 
     @Test
@@ -155,13 +147,8 @@ public class GlobalDomainAccessControlListEditorBeanTest {
                                                                                                   eq(INTERFACE_NAME),
                                                                                                   eq(OPERATION),
                                                                                                   eq(ControlEntryType.MASTER));
-        //Direct Multicast publication via another interface is currently not possible
-        //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMasterAccessControlEntryChanged(eq(ChangeType.REMOVE),
-        //                                                                                                  eq(mace),
-        //                                                                                                  eq(USER_PARTITION),
-        //                                                                                                  eq(DOMAIN),
-        //                                                                                                  eq(INTERFACE_NAME),
-        //                                                                                                  eq(OPERATION));
+        verify(globalDomainAccessControllerBeanMock).doFireMasterAccessControlEntryChanged(eq(ChangeType.REMOVE),
+                                                                                                          eq(mace));
     }
 
     @Test
@@ -178,9 +165,8 @@ public class GlobalDomainAccessControlListEditorBeanTest {
         assertEquals(Boolean.TRUE, result);
 
         verify(masterAccessControlEntryManagerMock).createOrUpdate(eq(mace), eq(ControlEntryType.MEDIATOR));
-        //Direct Multicast publication via another interface is currently not possible
-        //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMediatorAccessControlEntryChanged(
-        //    eq(ChangeType.ADD), eq(mace), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME), eq(OPERATION));
+        verify(globalDomainAccessControllerBeanMock).doFireMediatorAccessControlEntryChanged(
+            eq(ChangeType.ADD), eq(mace));
     }
 
     @Test
@@ -197,9 +183,8 @@ public class GlobalDomainAccessControlListEditorBeanTest {
         assertEquals(Boolean.TRUE, result);
 
         verify(masterAccessControlEntryManagerMock).createOrUpdate(mace, ControlEntryType.MEDIATOR);
-        //Direct Multicast publication via another interface is currently not possible
-        //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMediatorAccessControlEntryChanged(
-        //    ChangeType.UPDATE, mace, USER_PARTITION, DOMAIN, INTERFACE_NAME, OPERATION);
+        verify(globalDomainAccessControllerBeanMock).doFireMediatorAccessControlEntryChanged(
+            ChangeType.UPDATE, mace);
     }
 
     @Test
@@ -228,13 +213,8 @@ public class GlobalDomainAccessControlListEditorBeanTest {
                                                                                                   eq(INTERFACE_NAME),
                                                                                                   eq(OPERATION),
                                                                                                   eq(ControlEntryType.MEDIATOR));
-        //Direct Multicast publication via another interface is currently not possible
-        //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMediatorAccessControlEntryChanged(eq(ChangeType.REMOVE),
-        //                                                                                                    eq(mace),
-        //                                                                                                    eq(USER_PARTITION),
-        //                                                                                                    eq(DOMAIN),
-        //                                                                                                    eq(INTERFACE_NAME),
-        //                                                                                                    eq(OPERATION));
+        verify(globalDomainAccessControllerBeanMock).doFireMediatorAccessControlEntryChanged(eq(ChangeType.REMOVE),
+                                                                                                            eq(mace));
     }
 
     @Test
@@ -254,8 +234,7 @@ public class GlobalDomainAccessControlListEditorBeanTest {
         Boolean result = globalDomainAccessControlListEditorSubject.updateOwnerAccessControlEntry(oace);
         assertEquals(Boolean.TRUE, result);
         verify(ownerAccessControlEntryManagerMock).createOrUpdate(eq(oace));
-        //Direct Multicast publication via another interface is currently not possible
-        //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerAccessControlEntryChanged(eq(ChangeType.ADD), eq(oace), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME), eq(OPERATION));
+        verify(globalDomainAccessControllerBeanMock).doFireOwnerAccessControlEntryChanged(eq(ChangeType.ADD), eq(oace));
     }
 
     @Test
@@ -266,8 +245,7 @@ public class GlobalDomainAccessControlListEditorBeanTest {
         Boolean result = globalDomainAccessControlListEditorSubject.updateOwnerAccessControlEntry(oace);
         assertEquals(Boolean.TRUE, result);
         verify(ownerAccessControlEntryManagerMock).createOrUpdate(eq(oace));
-        //Direct Multicast publication via another interface is currently not possible
-        //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerAccessControlEntryChanged(eq(ChangeType.UPDATE), eq(oace), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME), eq(OPERATION));
+        verify(globalDomainAccessControllerBeanMock).doFireOwnerAccessControlEntryChanged(eq(ChangeType.UPDATE), eq(oace));
     }
 
     @Test
@@ -299,15 +277,13 @@ public class GlobalDomainAccessControlListEditorBeanTest {
 
             Map<ControlEntryType, Consumer<MasterRegistrationControlEntry>> multicastVerifiers = new HashMap<>();
             multicastVerifiers.put(ControlEntryType.MASTER, (mrce) -> {
-                //Direct Multicast publication via another interface is currently not possible
-                //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMasterRegistrationControlEntryChanged(
-                //    eq(changeType), eq(mrce), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME));
+                verify(globalDomainAccessControllerBeanMock).doFireMasterRegistrationControlEntryChanged(
+                    eq(changeType), eq(mrce));
             });
             multicastVerifiers.put(ControlEntryType.MEDIATOR, (mrce) -> {
-                //Direct Multicast publication via another interface is currently not possible
-                //verify(
-                //    globalDomainAccessControllerSubscriptionPublisherMock).fireMediatorRegistrationControlEntryChanged(
-                //    eq(changeType), eq(mrce), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME));
+                verify(
+                    globalDomainAccessControllerBeanMock).doFireMediatorRegistrationControlEntryChanged(
+                    eq(changeType), eq(mrce));
             });
 
             for (ControlEntryType type : new ControlEntryType[]{ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
@@ -334,12 +310,10 @@ public class GlobalDomainAccessControlListEditorBeanTest {
 
         Map<ControlEntryType, Consumer<MasterRegistrationControlEntry>> multicastVerifiers = new HashMap<>();
         multicastVerifiers.put(ControlEntryType.MASTER, (mrce) -> {
-            //Direct Multicast publication via another interface is currently not possible
-            //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMasterRegistrationControlEntryChanged(eq(ChangeType.REMOVE), eq(mrce), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME));
+            verify(globalDomainAccessControllerBeanMock).doFireMasterRegistrationControlEntryChanged(eq(ChangeType.REMOVE), eq(mrce));
         });
         multicastVerifiers.put(ControlEntryType.MEDIATOR, (mrce) -> {
-            //Direct Multicast publication via another interface is currently not possible
-            //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireMediatorRegistrationControlEntryChanged(eq(ChangeType.REMOVE), eq(mrce), eq(USER_PARTITION), eq(DOMAIN), eq(INTERFACE_NAME));
+            verify(globalDomainAccessControllerBeanMock).doFireMediatorRegistrationControlEntryChanged(eq(ChangeType.REMOVE), eq(mrce));
         });
 
         for (ControlEntryType type : new ControlEntryType[] { ControlEntryType.MASTER, ControlEntryType.MEDIATOR}) {
@@ -374,12 +348,8 @@ public class GlobalDomainAccessControlListEditorBeanTest {
                                                                                                                                                    changeType));
             assertTrue(globalDomainAccessControlListEditorSubject.updateOwnerRegistrationControlEntry(orce));
             verify(ownerRegistrationControlEntryManagerMock).createOrUpdate(eq(orce));
-            //Direct Multicast publication via another interface is currently not possible
-            //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerRegistrationControlEntryChanged(eq(changeType),
-            //                                                                                                       eq(orce),
-            //                                                                                                       eq(USER_PARTITION),
-            //                                                                                                       eq(DOMAIN),
-            //                                                                                                       eq(INTERFACE_NAME));
+            verify(globalDomainAccessControllerBeanMock).doFireOwnerRegistrationControlEntryChanged(eq(changeType),
+                                                                                                                   eq(orce));
         }
     }
 
@@ -398,11 +368,7 @@ public class GlobalDomainAccessControlListEditorBeanTest {
         verify(ownerRegistrationControlEntryManagerMock).removeByUserIdDomainAndInterfaceName(eq(USER_ID),
                                                                                               eq(DOMAIN),
                                                                                               eq(INTERFACE_NAME));
-        //Direct Multicast publication via another interface is currently not possible
-        //verify(globalDomainAccessControllerSubscriptionPublisherMock).fireOwnerRegistrationControlEntryChanged(eq(ChangeType.REMOVE),
-        //                                                                                                       eq(orce),
-        //                                                                                                       eq(USER_PARTITION),
-        //                                                                                                       eq(DOMAIN),
-        //                                                                                                       eq(INTERFACE_NAME));
+        verify(globalDomainAccessControllerBeanMock).doFireOwnerRegistrationControlEntryChanged(eq(ChangeType.REMOVE),
+                                                                                                               eq(orce));
     }
 }

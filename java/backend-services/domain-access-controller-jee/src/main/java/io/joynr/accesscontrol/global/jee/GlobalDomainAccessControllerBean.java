@@ -23,14 +23,13 @@ import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MAS
 import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MEDIATOR;
 
 import javax.ejb.Stateless;
-import javax.ejb.Schedule;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
-import static io.joynr.dispatching.subscription.MulticastIdUtil.sanitizeForPartition;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
+import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
@@ -38,14 +37,10 @@ import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.GlobalDomainAccessControllerSubscriptionPublisher;
 import joynr.infrastructure.GlobalDomainAccessControllerSync;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @Stateless
 @ServiceProvider(serviceInterface = GlobalDomainAccessControllerSync.class)
 @Transactional
-public class GlobalDomainAccessControllerBean implements GlobalDomainAccessControllerSync {
-    private static final Logger logger = LoggerFactory.getLogger(GlobalDomainAccessControllerBean.class);
+public class GlobalDomainAccessControllerBean implements GlobalDomainAccessControllerLocal {
 
     private MasterAccessControlEntryManager masterAccessControlEntryManager;
 
@@ -57,8 +52,6 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
 
     private GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisher;
 
-    private GlobalDomainAccessControllerQueue globalDomainAccessControllerQueue;
-
     // Only required for testing
     protected GlobalDomainAccessControllerBean() {
     }
@@ -68,14 +61,16 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
                                             MasterAccessControlEntryManager masterAccessControlEntryManager,
                                             OwnerAccessControlEntryManager ownerAccessControlEntryManager,
                                             MasterRegistrationControlEntryManager masterRegistrationControlEntryManager,
-                                            OwnerRegistrationControlEntryManager ownerRegistrationControlEntryManager,
-                                            GlobalDomainAccessControllerQueue globalDomainAccessControllerQueue) {
+                                            OwnerRegistrationControlEntryManager ownerRegistrationControlEntryManager) {
         this.globalDomainAccessControllerSubscriptionPublisher = globalDomainAccessControllerSubscriptionPublisher;
         this.masterAccessControlEntryManager = masterAccessControlEntryManager;
         this.ownerAccessControlEntryManager = ownerAccessControlEntryManager;
         this.masterRegistrationControlEntryManager = masterRegistrationControlEntryManager;
         this.ownerRegistrationControlEntryManager = ownerRegistrationControlEntryManager;
-        this.globalDomainAccessControllerQueue = globalDomainAccessControllerQueue;
+    }
+
+    private String sanitizeForPartition(String value) {
+        return value.replaceAll("[^a-zA-Z0-9]", "");
     }
 
     @Override
@@ -123,64 +118,52 @@ public class GlobalDomainAccessControllerBean implements GlobalDomainAccessContr
         return ownerRegistrationControlEntryManager.findByUserId(uid);
     }
 
-    @Schedule(second = "*/1", minute = "*", hour = "*", persistent = false)
-    public void handleQueuedBroadcastPublications() {
-        while (!globalDomainAccessControllerQueue.isEmpty()) {
-            try {
-                GlobalDomainAccessControllerQueueJob job = globalDomainAccessControllerQueue.take();
-
-                if (job.getMasterAccessControlEntry() != null) {
-                    globalDomainAccessControllerSubscriptionPublisher.fireMasterAccessControlEntryChanged(
-                            job.getChangeType(),
-                            job.getMasterAccessControlEntry(),
-                            sanitizeForPartition(job.getMasterAccessControlEntry().getUid()),
-                            sanitizeForPartition(job.getMasterAccessControlEntry().getDomain()),
-                            sanitizeForPartition(job.getMasterAccessControlEntry().getInterfaceName()));
-                    // TODO: add
-                    // sanitizeForPartition(job.getMasterAccessControlEntry().getOperation())
-                } else if (job.getMediatorAccessControlEntry() != null) {
-                    globalDomainAccessControllerSubscriptionPublisher.fireMediatorAccessControlEntryChanged(
-                            job.getChangeType(),
-                            job.getMediatorAccessControlEntry(),
-                            sanitizeForPartition(job.getMediatorAccessControlEntry().getUid()),
-                            sanitizeForPartition(job.getMediatorAccessControlEntry().getDomain()),
-                            sanitizeForPartition(job.getMediatorAccessControlEntry().getInterfaceName()));
-                    // TODO: add
-                    // sanitizeForPartition(job.getMasterAccessControlEntry().getOperation())
-                } else if (job.getOwnerAccessControlEntry() != null) {
-                    globalDomainAccessControllerSubscriptionPublisher.fireOwnerAccessControlEntryChanged(
-                            job.getChangeType(),
-                            job.getOwnerAccessControlEntry(),
-                            sanitizeForPartition(job.getOwnerAccessControlEntry().getUid()),
-                            sanitizeForPartition(job.getOwnerAccessControlEntry().getDomain()),
-                            sanitizeForPartition(job.getOwnerAccessControlEntry().getInterfaceName()));
-                    // TODO: add
-                    // sanitizeForPartition(job.getMasterAccessControlEntry().getOperation())
-                } else if (job.getMasterRegistrationControlEntry() != null) {
-                    globalDomainAccessControllerSubscriptionPublisher.fireMasterRegistrationControlEntryChanged(
-                            job.getChangeType(),
-                            job.getMasterRegistrationControlEntry(),
-                            sanitizeForPartition(job.getMasterRegistrationControlEntry().getUid()),
-                            sanitizeForPartition(job.getMasterRegistrationControlEntry().getDomain()),
-                            sanitizeForPartition(job.getMasterRegistrationControlEntry().getInterfaceName()));
-                } else if (job.getMediatorRegistrationControlEntry() != null) {
-                    globalDomainAccessControllerSubscriptionPublisher.fireMediatorRegistrationControlEntryChanged(
-                            job.getChangeType(),
-                            job.getMediatorRegistrationControlEntry(),
-                            sanitizeForPartition(job.getMediatorRegistrationControlEntry().getUid()),
-                            sanitizeForPartition(job.getMediatorRegistrationControlEntry().getDomain()),
-                            sanitizeForPartition(job.getMediatorRegistrationControlEntry().getInterfaceName()));
-                } else if (job.getOwnerRegistrationControlEntry() != null) {
-                    globalDomainAccessControllerSubscriptionPublisher.fireOwnerRegistrationControlEntryChanged(
-                            job.getChangeType(),
-                            job.getOwnerRegistrationControlEntry(),
-                            sanitizeForPartition(job.getOwnerRegistrationControlEntry().getUid()),
-                            sanitizeForPartition(job.getOwnerRegistrationControlEntry().getDomain()),
-                            sanitizeForPartition(job.getOwnerRegistrationControlEntry().getInterfaceName()));
-                }
-            } catch (InterruptedException e) {
-                logger.warn("cannot fire broadcast because no matching criteria present");
-            }
-        }
+    public void doFireMasterAccessControlEntryChanged(ChangeType changeType, MasterAccessControlEntry persistedAce) {
+        globalDomainAccessControllerSubscriptionPublisher.fireMasterAccessControlEntryChanged(changeType,
+                persistedAce,
+                sanitizeForPartition(persistedAce.getUid()),
+                sanitizeForPartition(persistedAce.getDomain()),
+                sanitizeForPartition(persistedAce.getInterfaceName()));
     }
+
+    public void doFireMediatorAccessControlEntryChanged(ChangeType changeType, MasterAccessControlEntry persistedAce) {
+        globalDomainAccessControllerSubscriptionPublisher.fireMediatorAccessControlEntryChanged(changeType,
+                persistedAce,
+                sanitizeForPartition(persistedAce.getUid()),
+                sanitizeForPartition(persistedAce.getDomain()),
+                sanitizeForPartition(persistedAce.getInterfaceName()));
+    }
+
+    public void doFireOwnerAccessControlEntryChanged(ChangeType changeType, OwnerAccessControlEntry persistedAce) {
+        globalDomainAccessControllerSubscriptionPublisher.fireOwnerAccessControlEntryChanged(changeType,
+                persistedAce,
+                sanitizeForPartition(persistedAce.getUid()),
+                sanitizeForPartition(persistedAce.getDomain()),
+                sanitizeForPartition(persistedAce.getInterfaceName()));
+    }
+
+    public void doFireMasterRegistrationControlEntryChanged(ChangeType changeType, MasterRegistrationControlEntry persistedAce) {
+        globalDomainAccessControllerSubscriptionPublisher.fireMasterRegistrationControlEntryChanged(changeType,
+                persistedAce,
+                sanitizeForPartition(persistedAce.getUid()),
+                sanitizeForPartition(persistedAce.getDomain()),
+                sanitizeForPartition(persistedAce.getInterfaceName()));
+    }
+
+    public void doFireMediatorRegistrationControlEntryChanged(ChangeType changeType, MasterRegistrationControlEntry persistedAce) {
+        globalDomainAccessControllerSubscriptionPublisher.fireMediatorRegistrationControlEntryChanged(changeType,
+                persistedAce,
+                sanitizeForPartition(persistedAce.getUid()),
+                sanitizeForPartition(persistedAce.getDomain()),
+                sanitizeForPartition(persistedAce.getInterfaceName()));
+    }
+
+    public void doFireOwnerRegistrationControlEntryChanged(ChangeType changeType, OwnerRegistrationControlEntry persistedAce) {
+        globalDomainAccessControllerSubscriptionPublisher.fireOwnerRegistrationControlEntryChanged(changeType,
+                persistedAce,
+                sanitizeForPartition(persistedAce.getUid()),
+                sanitizeForPartition(persistedAce.getDomain()),
+                sanitizeForPartition(persistedAce.getInterfaceName()));
+    }
+
 }
