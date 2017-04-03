@@ -51,6 +51,30 @@ LocalDomainAccessStore::LocalDomainAccessStore(std::string fileName)
     }
 }
 
+std::set<std::pair<std::string, std::string>> LocalDomainAccessStore::
+        getUniqueDomainInterfaceCombinations() const
+{
+    std::set<std::pair<std::string, std::string>> result;
+
+    auto insertInResult = [&result](const auto& entry) {
+        result.insert(std::make_pair(entry.getDomain(), entry.getInterfaceName()));
+    };
+
+    for (const auto& masterACE : masterTable) {
+        insertInResult(masterACE);
+    }
+
+    for (const auto& mediatorACE : mediatorTable) {
+        insertInResult(mediatorACE);
+    }
+
+    for (const auto& ownerACE : ownerTable) {
+        insertInResult(ownerACE);
+    }
+
+    return result;
+}
+
 std::vector<DomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const std::string& userId)
 {
     JOYNR_LOG_TRACE(logger, "execute: entering getDomainRoleEntries with userId {}", userId);

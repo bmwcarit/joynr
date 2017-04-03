@@ -151,6 +151,13 @@ LocalDomainAccessController::LocalDomainAccessController(
           ownerAccessControlEntryChangedBroadcastListener(
                   std::make_shared<OwnerAccessControlEntryChangedBroadcastListener>(*this))
 {
+    // Iterate over all domain/interfaces in LocalDomainAccessStore and create for each a
+    // subscription
+    auto uniqueDomainInterfaceCombinations =
+            this->localDomainAccessStore->getUniqueDomainInterfaceCombinations();
+    for (const auto& domainInterfacePair : uniqueDomainInterfaceCombinations) {
+        initialised(domainInterfacePair.first, domainInterfacePair.second, true);
+    }
 }
 
 void LocalDomainAccessController::init(
@@ -686,8 +693,10 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
 }
 
 // Called when the data for the given domain/interface has been obtained from the GDAC
+// or from loading the accessStore from disk.
 void LocalDomainAccessController::initialised(const std::string& domain,
-                                              const std::string& interfaceName)
+                                              const std::string& interfaceName,
+                                              bool restoringFromFile)
 {
     std::string compoundKey = createCompoundKey(domain, interfaceName);
     std::vector<ConsumerPermissionRequest> requests;
@@ -699,10 +708,12 @@ void LocalDomainAccessController::initialised(const std::string& domain,
         aceSubscriptions.insert(
                 std::make_pair(compoundKey, subscribeForAceChange(domain, interfaceName)));
 
-        // Remove requests for processing
-        auto it = consumerPermissionRequests.find(compoundKey);
-        requests = it->second;
-        consumerPermissionRequests.erase(it);
+        if (!restoringFromFile) {
+            // Remove requests for processing
+            auto it = consumerPermissionRequests.find(compoundKey);
+            requests = it->second;
+            consumerPermissionRequests.erase(it);
+        }
     }
 
     // Handle any queued requests for this domain/interface

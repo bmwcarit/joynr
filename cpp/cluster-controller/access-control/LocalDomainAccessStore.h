@@ -22,6 +22,7 @@
 
 #include <string>
 #include <tuple>
+#include <set>
 #include <vector>
 
 #include <boost/multi_index_container.hpp>
@@ -468,6 +469,16 @@ public:
                 MUESLI_NVP(ownerTable),
                 MUESLI_NVP(domainRoleTable));
     }
+
+    /**
+     * Return a list of unique pairs (Domain, Interface) for all control entries present in
+     * the access store. The list can include duplicates.
+     *
+     * @return: a forward_list of unique pairs in the form:
+     *  1. Domain
+     *  2. InterfaceName
+     */
+    std::set<std::pair<std::string, std::string>> getUniqueDomainInterfaceCombinations() const;
 
 private:
     ADD_LOGGER(LocalDomainAccessStore);

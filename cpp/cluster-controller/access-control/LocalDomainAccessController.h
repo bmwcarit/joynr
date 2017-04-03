@@ -504,7 +504,9 @@ private:
                                           const std::string& domain,
                                           const std::string& interfaceName);
 
-    void initialised(const std::string& domain, const std::string& interfaceName);
+    void initialised(const std::string& domain,
+                     const std::string& interfaceName,
+                     bool restoringFromFile = false);
     void abortInitialisation(const std::string& domain, const std::string& interfaceName);
 
     std::shared_ptr<Future<std::string>> subscribeForDreChange(const std::string& userId);
