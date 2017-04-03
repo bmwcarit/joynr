@@ -75,9 +75,6 @@ public class GlobalDomainAccessControllerBeanTest {
     @Mock
     private GlobalDomainAccessControllerSubscriptionPublisher globalDomainAccessControllerSubscriptionPublisherMock;
 
-    @Mock
-    private GlobalDomainAccessControllerQueue globalDomainAccessControllerQueueMock;
-
     @InjectMocks
     private GlobalDomainAccessControllerBean globalDomainAccessControllerSubject = new GlobalDomainAccessControllerBean();
 
@@ -88,11 +85,6 @@ public class GlobalDomainAccessControllerBeanTest {
     private final static String INTERFACE_NAME = "interfaceName";
     private final static Role ROLE = Role.MASTER;
     private final static String OPERATION = "operation";
-
-    @Before
-    public void setUp() {
-        when(globalDomainAccessControllerQueueMock.add(any(GlobalDomainAccessControllerQueueJob.class))).thenReturn(true);
-    }
 
     @Test
     public void testFindMasterAccessControlEntriesByUserId() {

@@ -1,4 +1,4 @@
-#The joynr Code Generator
+# The joynr Code Generator
 The joynr Code Generator can be used to create **Java**, **C++** and **Javascript** code
 from Franca model files (*.fidl). Code generation itself is integrated into the Maven
 build process. See also the Demo App tutorial and sample code.
@@ -26,12 +26,18 @@ have to be provided in the Maven configuration:
                 <generationLanguage><GENERATION_LANGUAGE></generationLanguage>
                 <!-- specify the output directory -->
                 <outputPath><PATH_TO_OUTPUT_DIRECTORY></outputPath>
+                <!-- for Jee code generation use generation language "java"
+                     and set the following parameter
+                     (see also documentation of joynr JEE Integration -->
+                <parameter>
+                    <jee>true</jee>
+                </parameter>
             </configuration>
         </execution>
     </executions>
     <dependencies>
-        <!-- For Java code generation:
-             add the Java generator dependency -->
+        <!-- For Javai/Jee code generation:
+             add the Java/Jee generator dependency -->
         <dependency>
             <groupId>io.joynr.tools.generator</groupId>
             <artifactId>java-generator</artifactId>
@@ -51,6 +57,14 @@ have to be provided in the Maven configuration:
         <dependency>
             <groupId>io.joynr.tools.generator</groupId>
             <artifactId>js-generator</artifactId>
+            <version><JOYNR_VERSION></version>
+        </dependency>
+
+        <!-- For JEE code generation:
+             add the JEE generator dependency -->
+        <dependency>
+            <groupId>io.joynr.tools.generator</groupId>
+            <artifactId>java-generator</artifactId>
             <version><JOYNR_VERSION></version>
         </dependency>
 

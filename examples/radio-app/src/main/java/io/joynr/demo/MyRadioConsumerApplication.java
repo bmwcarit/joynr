@@ -1,20 +1,5 @@
 package io.joynr.demo;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
-import com.google.inject.Module;
-import com.google.inject.name.Named;
-import com.google.inject.util.Modules;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /*
  * #%L
  * %%
@@ -33,6 +18,21 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * limitations under the License.
  * #L%
  */
+
+import java.io.IOException;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.google.inject.Module;
+import com.google.inject.name.Named;
+import com.google.inject.util.Modules;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -193,7 +193,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             return Modules.override(runtimeModule).with(backendTransportModules);
         }
 
-        return Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+        return Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
     }
 
     @Override

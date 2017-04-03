@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,11 +39,14 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.proxy.Future;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.provider.Promise;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
@@ -66,8 +70,8 @@ import static org.junit.Assert.assertTrue;
 public class AccessControllerEnd2EndTest {
     private static final String TEST_DOMAIN = "test";
     private static final String GDAC_DOMAIN = "io.joynr";
-    private static final long DISCOVERY_TIMEOUT = 2000;
-    private static final long MESSAGING_TTL = 2000;
+    private static final long DISCOVERY_TIMEOUT = 4000;
+    private static final long MESSAGING_TTL = 5000;
     private static final String USERID = "todo";
 
     private JoynrRuntime runtime;
@@ -156,10 +160,29 @@ public class AccessControllerEnd2EndTest {
         MessagingQos messagingQos = new MessagingQos();
         messagingQos.setTtl_ms(MESSAGING_TTL);
 
-        return runtime.getProxyBuilder(TEST_DOMAIN, testProxy.class)
-                      .setDiscoveryQos(discoveryQos)
-                      .setMessagingQos(messagingQos)
-                      .build();
+        final Future<Void> future = new Future<Void>();
+        testProxy testProxy;
+
+        testProxy = runtime.getProxyBuilder(TEST_DOMAIN, testProxy.class)
+                           .setDiscoveryQos(discoveryQos)
+                           .setMessagingQos(messagingQos)
+                           .build(new ProxyCreatedCallback<testProxy>() {
+                               @Override
+                               public void onProxyCreationFinished(testProxy result) {
+                                   future.onSuccess(null);
+                               }
+
+                               @Override
+                               public void onProxyCreationError(JoynrRuntimeException error) {
+                                   future.onFailure(error);
+                               }
+                           });
+        try {
+            future.get(5000);
+        } catch (Exception e) {
+            Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
+        }
+        return testProxy;
     }
 
     private void createDefaultGDACEntries(String domainName,

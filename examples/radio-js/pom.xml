@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>0.24.0</version>
+		<version>0.24.1</version>
 	</parent>
 
 	<dependencies>
@@ -107,7 +107,36 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>copy-backend-wars</id>
+						<id>copy-backend-jee-wars</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>io.joynr.java.backend-services</groupId>
+									<artifactId>domain-access-controller-jee</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>accesscontrol-jee.war</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>io.joynr.java.backend-services</groupId>
+									<artifactId>discovery-directory-jee</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>discovery-jee.war</destFileName>
+								</artifactItem>
+							</artifactItems>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-backend-http-wars</id>
 						<phase>initialize</phase>
 						<goals>
 							<goal>copy</goal>

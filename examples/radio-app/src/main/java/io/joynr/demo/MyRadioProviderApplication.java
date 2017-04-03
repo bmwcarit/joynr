@@ -193,7 +193,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
             }
             return Modules.override(runtimeModule).with(backendTransportModules);
         }
-        return Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+        return Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
     }
 
     private static void configureWebSocket(Properties joynrConfig) {

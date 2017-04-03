@@ -1,5 +1,17 @@
-to try out the Radio example run:
+Prerequisite:
 
+For both, consumer and provider, the joynr backend services (Discovery and Access Control) have to
+be started first.
+
+Run a MQTT broker (e.g. [Mosquitto](http://mosquitto.org)) listening on port 1883 and deploy
+discovery-directory-jee and domain-access-controller-jee to a Java EE application server
+(e.g. Payara):
+asadmin deploy <RADIO_HOME>/target/discovery-jee.war
+asadmin deploy <RADIO_HOME>/target/accesscontrol-jee.war
+
+See Radio App Tutorial or Infrastructure Guide for the configuration of Payara.
+
+To try out the Radio example run:
 
 	mvn clean package jetty:run-war
 

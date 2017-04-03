@@ -1,3 +1,11 @@
+# joynr 0.24.1
+
+## API relevant changes
+
+## Other changes
+* **[Java]** Fixed a bug where enumeration parameters in fire and forget method calls
+  were improperly deserialized on provider side, leading to an exception.
+
 # joynr 0.24.0
 
 ## API relevant changes
@@ -18,6 +26,21 @@
 * **[Java]** MQTT shared subscriptions are not restricted to JEE any longer
 * **[All]** Added 'compress' to MessagingQos (available with Java/C++ solely via
   getter/setter, in JS also via constructor), existing MessagingQos APIs remain working
+* **[All]** Multiple global transports cannot be used in parallel any longer, either Mqtt
+  or Http has to be used
+* **[All]** Mqtt / Jee joynr backend services are used by default now (set in default settings).
+  * To use the http backend in **Java**, set DISCOVERYDIRECTORYURL and DOMAINACCESSCONTROLLERURL
+    as explained in the [Java Configuration Reference](JavaSettings.md).
+  * To use the http backend in **C++**, change the cluster controller's messaging settings:
+    set "broker-url" to the bounceproxy's url (e.g. "http://localhost:8080/bounceproxy/"),
+    set "capabilities-directory-url" to the capabilities directory's channel url (e.g.
+    "http://localhost:8080/discovery/channels/discoverydirectory_channelid/"),
+    set "capabilities-directory-channelid" to "discoverydirectory_channelid" (default is the
+    serialized Mqtt address of the global discovery directory)
+  * To use the http backend in **JS**, start a C++/Java cluster controller configured to use
+    the http backend (see above)
+* **[C++]** Removed messaging setting bounceproxy-url since it is not possible to use http
+  (bounceproxy) in parallel with mqtt (broker)
 
 ## Other changes
 * **[C++]** Access control can be activated in the cluster-controller. Default: OFF.

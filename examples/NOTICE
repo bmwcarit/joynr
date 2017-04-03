@@ -43,7 +43,9 @@ This project has dependencies to:
   io.joynr.examples:radio-js under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:discovery-directory-jee under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
+  io.joynr.java.backend-services:domain-access-controller-jee under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller-servlet under The Apache Software License, Version 2.0
   io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
   io.joynr.java.common:discovery-common under The Apache Software License, Version 2.0
@@ -95,6 +97,7 @@ This project has dependencies to:
   Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
   radio-jee-api under The Apache Software License, Version 2.0
+  radio-jee-backend-services under The Apache Software License, Version 2.0
   radio-jee-consumer under The Apache Software License, Version 2.0
   radio-jee-provider under The Apache Software License, Version 2.0
   Reflections under WTFPL
