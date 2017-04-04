@@ -35,11 +35,6 @@
 using namespace ::testing;
 using namespace joynr;
 
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
-
 namespace joynr {
 
 class End2EndSubscriptionTest : public TestWithParam< std::tuple<std::string, std::string> > {

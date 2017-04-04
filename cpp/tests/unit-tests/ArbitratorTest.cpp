@@ -22,6 +22,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "JoynrTest.h"
+
 #include "joynr/DiscoveryQos.h"
 #include "joynr/Arbitrator.h"
 #include "joynr/exceptions/NoCompatibleProviderFoundException.h"
@@ -43,11 +45,6 @@ using namespace joynr;
 
 static const std::string domain("unittest-domain");
 static const std::string interfaceName("unittest-interface");
-
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
 
 MATCHER_P(discoveryException, msg, "") {
     return arg.getTypeName() == joynr::exceptions::DiscoveryException::TYPE_NAME() && arg.getMessage() == msg;

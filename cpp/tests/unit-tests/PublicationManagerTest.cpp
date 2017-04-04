@@ -24,6 +24,9 @@
 #include <memory>
 #include <string>
 #include <thread>
+
+#include "JoynrTest.h"
+
 #include "tests/utils/MockObjects.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
@@ -56,11 +59,6 @@ using ::testing::Matcher;
 using ::testing::MakeMatcher;
 
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
 
 class PublicationManagerTest : public testing::Test {
 public:

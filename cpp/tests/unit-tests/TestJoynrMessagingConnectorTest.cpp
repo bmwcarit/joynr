@@ -21,6 +21,8 @@
 
 #include <gmock/gmock.h>
 
+#include "JoynrTest.h"
+
 #include "AbstractSyncAsyncTest.cpp"
 #include "joynr/tests/testJoynrMessagingConnector.h"
 #include "joynr/IReplyCaller.h"
@@ -41,11 +43,6 @@ using ::testing::Invoke;
 using ::testing::Unused;
 
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
 
 /**
  * @brief Fixutre.

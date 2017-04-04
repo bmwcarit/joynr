@@ -144,8 +144,4 @@ template <typename T>
 const std::chrono::milliseconds IltAbstractConsumerTest<T>::publicationTimeoutMs =
         std::chrono::milliseconds(10000);
 
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
 #endif // ILTABSTRACTCONSUMERTEST_H

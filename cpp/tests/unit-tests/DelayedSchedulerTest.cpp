@@ -22,6 +22,8 @@
 #include <cstdint>
 #include <cassert>
 
+#include "JoynrTest.h"
+
 #include "joynr/DelayedScheduler.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
@@ -29,17 +31,10 @@
 #include "tests/utils/TimeUtils.h"
 #include "utils/MockObjects.h"
 
-
 using namespace joynr;
 
 using namespace ::testing;
 using ::testing::StrictMock;
-
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
-
 
 // Expected accuracy of the timer in milliseconds
 static const std::uint64_t timerAccuracy_ms = 15U;

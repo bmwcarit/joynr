@@ -24,6 +24,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "JoynrTest.h"
+
 #include "joynr/CcMessageRouter.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/LibJoynrMessageRouter.h"
@@ -40,11 +42,6 @@
 #include "joynr/WebSocketMulticastAddressCalculator.h"
 
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
 
 template <typename T>
 class MessageRouterTest : public ::testing::Test {

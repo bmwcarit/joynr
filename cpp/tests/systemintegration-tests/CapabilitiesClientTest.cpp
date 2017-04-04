@@ -30,13 +30,10 @@
 #include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/types/Version.h"
 
+#include "JoynrTest.h"
+
 using namespace ::testing;
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
 
 static const std::string messagingPropertiesPersistenceFileName("CapabilitiesClientTest-joynr.settings");
 static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystemIntegration1.settings");

@@ -20,6 +20,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "JoynrTest.h"
+
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
@@ -36,11 +38,6 @@
 
 using namespace ::testing;
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
 
 class MessageNotificationTest : public ::testing::Test
 {

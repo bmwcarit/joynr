@@ -44,13 +44,10 @@
 #include "joynr/CallContext.h"
 #include "common/CallContextStorage.h"
 
+#include "JoynrTest.h"
+
 using namespace ::testing;
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
 
 class DispatcherTest : public ::testing::Test {
 public:

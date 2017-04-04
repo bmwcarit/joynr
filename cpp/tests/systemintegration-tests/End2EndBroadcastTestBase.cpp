@@ -40,11 +40,6 @@
 using namespace ::testing;
 using namespace joynr;
 
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
-
 static const std::string messagingPropertiesPersistenceFileName1(
         "End2EndBroadcastTest-runtime1-joynr.persist");
 static const std::string messagingPropertiesPersistenceFileName2(

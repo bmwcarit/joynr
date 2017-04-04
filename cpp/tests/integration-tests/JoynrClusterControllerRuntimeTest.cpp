@@ -48,11 +48,6 @@ using testing::ByRef;
 using testing::SetArgReferee;
 using testing::AtLeast;
 
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
-
 class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
     std::string settingsFilenameMqtt;
