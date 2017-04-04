@@ -488,7 +488,10 @@ private:
     using MasterTable =
             access_control::TableMaker<access_control::dac::MasterAccessControlEntry>::Type;
     MasterTable masterTable;
-    MasterTable mediatorTable;
+
+    using MediatorTable = MasterTable;
+    MediatorTable mediatorTable;
+
     using OwnerTable =
             access_control::TableMaker<access_control::dac::OwnerAccessControlEntry>::Type;
     OwnerTable ownerTable;
