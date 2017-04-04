@@ -247,7 +247,7 @@ public:
                 const std::string& result)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) override
     {
-        std::string result("QtAnotherDerivedStruct");
+        std::string result("AnotherDerivedStruct");
         onSuccess(result);
     }
 

@@ -697,7 +697,7 @@ public:
                     new MockGpsSubscriptionListener());
         //TODO uncomment once the connector has the correct signature!
         //vehicle::IGps* gpsFixture = createFixture(false);
-        //QtSubscriptionQos  subscriptionQos(100, 200, true, 80, 80);
+        //SubscriptionQos subscriptionQos(100, 200, true, 80, 80);
         //gpsFixture->subscribeToLocation(subscriptionListener, subscriptionQos);
         //delete gpsFixture;
     }

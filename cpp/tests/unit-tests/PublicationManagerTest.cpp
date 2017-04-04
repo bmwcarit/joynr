@@ -1256,7 +1256,7 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
     const std::string senderId = "SenderId";
     const std::string receiverId = "ReceiverId";
     const std::string attributeName("notExistingAttribute");
-    //QtSubscriptionQos
+    //SubscriptionQos
     const std::int64_t period_ms = 100;
     const std::int64_t validity_ms = 1000;
     const std::int64_t publicationTtl_ms = 1000;
