@@ -47,6 +47,7 @@ namespace joynr
 LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
         : JoynrRuntime(*settings),
           subscriptionManager(nullptr),
+          inProcessPublicationSender(nullptr),
           joynrMessagingSendStub(nullptr),
           joynrMessageSender(nullptr),
           joynrDispatcher(nullptr),
@@ -61,13 +62,22 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
 
 LibJoynrRuntime::~LibJoynrRuntime()
 {
-    delete inProcessDispatcher;
-    delete joynrDispatcher;
-    delete libjoynrSettings;
-    libjoynrSettings = nullptr;
-
-    delete inProcessPublicationSender;
-    inProcessPublicationSender = nullptr;
+    if (inProcessDispatcher) {
+        delete inProcessDispatcher;
+        inProcessDispatcher = nullptr;
+    }
+    if (joynrDispatcher) {
+        delete joynrDispatcher;
+        joynrDispatcher = nullptr;
+    }
+    if (libjoynrSettings) {
+        delete libjoynrSettings;
+        libjoynrSettings = nullptr;
+    }
+    if (inProcessPublicationSender) {
+        delete inProcessPublicationSender;
+        inProcessPublicationSender = nullptr;
+    }
 }
 
 void LibJoynrRuntime::init(
