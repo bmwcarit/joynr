@@ -86,4 +86,6 @@ int main(int argc, char* argv[])
 
     // run the cluster controller forever
     clusterControllerRuntime->runForever();
+
+    return 0;
 }
