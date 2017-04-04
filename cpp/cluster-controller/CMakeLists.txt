@@ -26,7 +26,7 @@ else(USE_PLATFORM_MOSQUITTO)
         ${MOSQUITTO_SOURCE_TYPE} "${MOSQUITTO_SOURCE_URL}"
         GIT_TAG v${MOSQUITTO_VERSION}
         TIMEOUT 10
-        BUILD_BYPRODUCTS("${CMAKE_BINARY_DIR}/ThirdParty/src/mosquitto-build/lib/cpp/${MOSQUITTO_LIBRARY_NAME}")
+        BUILD_BYPRODUCTS("${EXTERNAL_PROJECTS_ROOT}/src/mosquitto-build/lib/cpp/${MOSQUITTO_LIBRARY_NAME}")
     )
 
     ExternalProject_Get_Property(mosquitto SOURCE_DIR)
