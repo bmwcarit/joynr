@@ -537,32 +537,28 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         EXPECT_EQ(uint64Out, uint64Arg);
     }
 
-// Operation overloading is not currently supported
-#if 0
     // Testing operation overloading
     {
-        std::unique_ptr<ProxyBuilder<tests::TestProxy>> testProxyBuilder =
+        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
                 runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
-        std::uint64_t qosOneWayTTL = 40000;
         std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
-        std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                                   ->setMessagingQos(MessagingQos(qosOneWayTTL, qosRoundTripTTL))
-                                                   ->setDiscoveryQos(discoveryQos)
-                                                   ->build());
+        std::unique_ptr<tests::testProxy> testProxy =
+                testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                        ->setDiscoveryQos(discoveryQos)
+                        ->build();
 
         std::string derivedStructResult;
         std::string anotherDerivedStructResult;
 
         // Check that the operation overloading worked and the result is of the correct type
-        testProxy->overloadedOperation(derivedStructResult, tests::DerivedStruct());
-        testProxy->overloadedOperation(anotherDerivedStructResult, tests::AnotherDerivedStruct());
+        testProxy->overloadedOperation(derivedStructResult, tests::testTypes::DerivedStruct());
+        testProxy->overloadedOperation(anotherDerivedStructResult, tests::testTypes::AnotherDerivedStruct());
         EXPECT_EQ(derivedStructResult, "DerivedStruct");
         EXPECT_EQ(anotherDerivedStructResult, "AnotherDerivedStruct");
     }
-#endif
 }
 
 TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
