@@ -34,6 +34,7 @@
 #include "joynr/RuntimeConfig.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/WebSocketSettings.h"
+#include "joynr/Semaphore.h"
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "joynr/DBusMessageRouterAdapter.h"
@@ -178,6 +179,8 @@ private:
             MessagingSettings& messagingSettings,
             const std::map<std::string, types::DiscoveryEntryWithMetaInfo>& provisionedEntries);
     friend class ::JoynrClusterControllerRuntimeTest;
+
+    Semaphore lifetimeSemaphore;
 };
 
 } // namespace joynr

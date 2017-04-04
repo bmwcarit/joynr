@@ -152,7 +152,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           wsMessagingStubFactory(),
           multicastMessagingSkeletonDirectory(
                   std::make_shared<MulticastMessagingSkeletonDirectory>()),
-          ccMessageRouter(nullptr)
+          ccMessageRouter(nullptr),
+          lifetimeSemaphore(0)
 {
     initializeAllDependencies();
 }
@@ -828,13 +829,13 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     // this ensures all asynchronous operations are stopped now
     // which allows a safe shutdown
     singleThreadIOService->stop();
+
     stopExternalCommunication();
 
     multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
 
     if (joynrDispatcher != nullptr) {
         JOYNR_LOG_TRACE(logger, "joynrDispatcher");
-        // joynrDispatcher->stopExternalCommunication();
         delete joynrDispatcher;
     }
 
@@ -848,7 +849,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     delete ccDbusMessageRouterAdapter;
     delete dbusSettings;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-
     JOYNR_LOG_TRACE(logger, "leaving ~JoynrClusterControllerRuntime");
 }
 
@@ -891,12 +891,13 @@ void JoynrClusterControllerRuntime::stopExternalCommunication()
 
 void JoynrClusterControllerRuntime::shutdown()
 {
-    // to be implemented
+    JOYNR_LOG_TRACE(logger, "Shutdown Cluster Controller");
+    lifetimeSemaphore.notify();
 }
 
 void JoynrClusterControllerRuntime::runForever()
 {
-    singleThreadIOService->join();
+    lifetimeSemaphore.wait();
 }
 
 std::unique_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
