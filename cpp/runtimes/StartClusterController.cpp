@@ -37,7 +37,7 @@ namespace
 {
 static const std::string getVersionInfo()
 {
-    return "Joynr clust-controller."
+    return "Joynr cluster-controller."
            "\nJoynr version: " JOYNR_VERSION "."
            "\nPackage revision: " JOYNR_PACKAGE_REVISION " build on " JOYNR_BUILD_TIME;
 }
