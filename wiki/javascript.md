@@ -176,9 +176,9 @@ Example for setting up a ```DiscoveryQos``` object:
 var discoveryQos = new joynr.proxy.DiscoveryQos({
     discoveryTimeoutMs : 30000,
     discoveryRetryDelayMs : 1000,
-    arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
+    arbitrationStrategy : joynr.types.ArbitrationStrategyCollection.LastSeen,
     cacheMaxAgeMs : 0,
-    discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
+    discoveryScope : joynr.types.DiscoveryScope.LOCAL_THEN_GLOBAL,
     providerMustSupportOnChange : false,
     // additional parameters are used for arbitration strategy Keyword (key: "keyword")
     // or can be used for custom arbitration strategies

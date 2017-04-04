@@ -172,6 +172,8 @@ channel in the backend. The cluster controller polls the channel to download the
 ### `PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT`
 Select primary global transport middleware which will be used to register providers. The provider
 will be reachable via the selected global transport middleware.
+Possible values: `mqtt, longpolling, servlet`
+Longpolling is not supported in Jee.
 
 * **REQUIRED if using more than one global transport**
 * **Type**: String
@@ -205,30 +207,38 @@ Set the mqtt prefix to be prepended to multicast topics.
 * **User property**: `joynr.messaging.mqtt.topicprefix.multicast`
 * **Default value**: ``
 
-### `CAPABILITYDIRECTORYURL`
+### `DISCOVERYDIRECTORYURL`
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
 service. To connect to the global capabilities directory the cluster controller creates an
 appropriate entry in the local capabilities directory.  
 If the capabilities directory is using MQTT as its primary transport, then the URL you set here
 is that of the MQTT broker configured for the capabilities directory. E.g.
-`tcp://mqttbroker:1883`.  
+`tcp://mqttbroker:1883`.
+If the capabilities directory is using HTTP (longpolling) as its primary transport, then the URL
+you set here is that of the capabilities directory's channel
+(channelId=discoverydirectory_channelid) at the Bounceproxy. E.g.
+`http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
 See also the static capabilities provisioning documentation below.
 
 * **OPTIONAL** (see static capabilities provisioning)
 * **Type**: String
-* **User property**: `joynr.messaging.capabilitiesdirectoryurl`
-* **Default value**: `http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
+* **User property**: `joynr.messaging.discoverydirectoryurl`
+* **Default value**: `tcp://localhost:1883`
 
 ### `DOMAINACCESSCONTROLLERURL`
 The URL of the receive channel (incoming message queue) of the global domain access
 controller service. To connect to the global domain access controller directory
 the cluster controller creates an appropriate entry in the local capabilities directory.
-See also the static capabilities provisioning documentation below.
+If the domain access controller is using HTTP (longpolling) as its primary transport, then the URL
+you set here is that of the domain access controller's channel
+(channelId=domainaccesscontroller_channelid) at the Bounceproxy. E.g.
+`http://localhost:8080/discovery/channels/domainaccesscontroller_channelid/`
+See also the static capabilities provisioning documentation below and DISCOVERYDIRECTORYURL above.
 
 * **OPTIONAL** (see static capabilities provisioning)
 * **Type**: String
 * **User property**: `joynr.messaging.domainaccesscontrollerurl`
-* **Default value**: `http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
+* **Default value**: `tcp://localhost:1883`
 
 ### `PROPERTY_SERVLET_HOST_PATH`
 If a joynr application is deployed into a servlet on an application server, the servlet host path is

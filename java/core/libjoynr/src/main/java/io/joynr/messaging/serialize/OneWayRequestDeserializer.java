@@ -31,19 +31,19 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import joynr.Request;
+import joynr.OneWayRequest;
 
 /**
- * Deserializer for Requests that uses the correct datatypes while deserializing.
+ * Deserializer for OneWayRequests that uses the correct datatypes while deserializing.
  * This is especially necessary for enums, which are otherwise deserialized to String,
  * and arrays, which are otherwise deserialized to Object[]
  */
-public class RequestDeserializer extends JsonDeserializer<Request> {
-    private static final Logger logger = LoggerFactory.getLogger(RequestDeserializer.class);
+public class OneWayRequestDeserializer extends JsonDeserializer<OneWayRequest> {
+    private static final Logger logger = LoggerFactory.getLogger(OneWayRequestDeserializer.class);
 
     private ObjectMapper objectMapper;
 
-    public RequestDeserializer(ObjectMapper objectMapper) {
+    public OneWayRequestDeserializer(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
@@ -52,18 +52,16 @@ public class RequestDeserializer extends JsonDeserializer<Request> {
      * com.fasterxml.jackson.databind.DeserializationContext)
      */
     @Override
-    public Request deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public OneWayRequest deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException,
+                                                                                JsonProcessingException {
         JsonNode node = jp.getCodec().readTree(jp);
         String methodName = node.get("methodName").asText();
-        String requestReplyId = node.get("requestReplyId").asText();
 
         ParamsAndParamDatatypesHolder paramsAndParamDatatypes = DeserializerUtils.deserializeParams(objectMapper,
                                                                                                     node,
                                                                                                     logger);
 
-        return new Request(methodName,
-                           paramsAndParamDatatypes.params,
-                           paramsAndParamDatatypes.paramDatatypes,
-                           requestReplyId);
+        return new OneWayRequest(methodName, paramsAndParamDatatypes.params, paramsAndParamDatatypes.paramDatatypes);
+
     }
 }
