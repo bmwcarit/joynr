@@ -16,6 +16,8 @@
  * limitations under the License.
  * #L%
  */
+
+#include <memory>
 #include <string>
 
 #ifdef JOYNR_ENABLE_DLT_LOGGING
@@ -26,10 +28,8 @@
 
 #include "joynr/JoynrClusterControllerRuntime.h"
 
-#include "joynr/Logger.h"
-#include "joynr/Settings.h"
-#include "joynr/Util.h"
 #include "joynr/JoynrVersion.h"
+#include "joynr/Logger.h"
 
 using namespace joynr;
 
@@ -77,49 +77,12 @@ int main(int argc, char* argv[])
     // Always print Joynr version
     printVersionToStdOut();
 
-    // Object that holds all the settings
-    auto settings = std::make_unique<Settings>();
-
-    // Discovery entry file name
-    std::string discoveryEntriesFile;
-
-    // Walk the argument list and
-    //  - merge all the settings files into the settings object
-    //  - read in input file name to inject discovery entries
-    for (int i = 1; i < argc; ++i) {
-
-        if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--version") == 0) {
-            // exit immediately if only --version was asked
-            return 0;
-        } else if (std::strcmp(argv[i], "-d") == 0) {
-            if (++i < argc) {
-                discoveryEntriesFile = argv[i];
-            } else {
-                printUsage(logger, programName);
-            }
-            break;
-        }
-
-        const std::string settingsFileName(argv[i]);
-
-        // Read the settings file
-        JOYNR_LOG_INFO(logger, "Loading settings file: {}", settingsFileName);
-        Settings currentSettings(settingsFileName);
-
-        // Check for errors
-        if (!currentSettings.isLoaded()) {
-            JOYNR_LOG_FATAL(
-                    logger, "Provided settings file {} could not be loaded.", settingsFileName);
-            return 1;
-        }
-
-        // Merge
-        Settings::merge(currentSettings, *settings, true);
-    }
-
     // create the cluster controller runtime
-    std::unique_ptr<JoynrClusterControllerRuntime> clusterControllerRuntime =
-            JoynrClusterControllerRuntime::create(std::move(settings), discoveryEntriesFile);
+    auto clusterControllerRuntime = JoynrClusterControllerRuntime::create(argc, argv);
+    if (!clusterControllerRuntime) {
+        printUsage(logger, programName);
+        return 1;
+    }
 
     // run the cluster controller forever
     clusterControllerRuntime->runForever();

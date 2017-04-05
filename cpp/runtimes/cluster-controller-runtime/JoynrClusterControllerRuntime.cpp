@@ -157,6 +157,52 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
     initializeAllDependencies();
 }
 
+std::unique_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
+        std::size_t argc,
+        char* argv[])
+{
+    // Object that holds all the settings
+    auto settings = std::make_unique<Settings>();
+
+    // Discovery entry file name
+    std::string discoveryEntriesFile;
+
+    // Walk the argument list and
+    //  - merge all the settings files into the settings object
+    //  - read in input file name to inject discovery entries
+    for (std::size_t i = 1; i < argc; ++i) {
+
+        if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--version") == 0) {
+            // exit immediately if only --version was asked
+            return 0;
+        } else if (std::strcmp(argv[i], "-d") == 0) {
+            if (++i < argc) {
+                discoveryEntriesFile = argv[i];
+            } else {
+                return nullptr;
+            }
+            break;
+        }
+
+        const std::string settingsFileName(argv[i]);
+
+        // Read the settings file
+        JOYNR_LOG_INFO(logger, "Loading settings file: {}", settingsFileName);
+        Settings currentSettings(settingsFileName);
+
+        // Check for errors
+        if (!currentSettings.isLoaded()) {
+            JOYNR_LOG_FATAL(
+                    logger, "Provided settings file {} could not be loaded.", settingsFileName);
+            return nullptr;
+        }
+
+        // Merge
+        Settings::merge(currentSettings, *settings, true);
+    }
+    return create(std::move(settings), discoveryEntriesFile);
+}
+
 void JoynrClusterControllerRuntime::initializeAllDependencies()
 {
     /**

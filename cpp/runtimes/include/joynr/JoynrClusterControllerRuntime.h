@@ -84,6 +84,8 @@ public:
                                   std::shared_ptr<IMessageReceiver> mqttMessageReceiver = nullptr,
                                   std::shared_ptr<IMessageSender> mqttMessageSender = nullptr);
 
+    static std::unique_ptr<JoynrClusterControllerRuntime> create(std::size_t argc, char* argv[]);
+
     static std::unique_ptr<JoynrClusterControllerRuntime> create(
             std::unique_ptr<Settings> settings,
             const std::string& discoveryEntriesFile = "");
