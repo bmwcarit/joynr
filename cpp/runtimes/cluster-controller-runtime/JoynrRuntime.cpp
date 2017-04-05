@@ -17,7 +17,7 @@
  * #L%
  */
 #include "joynr/JoynrRuntime.h"
-#include "JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/Settings.h"
 #include "joynr/exceptions/JoynrException.h"
 

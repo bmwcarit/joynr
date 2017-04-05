@@ -22,7 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"

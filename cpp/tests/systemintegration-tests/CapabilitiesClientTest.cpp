@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "tests/utils/MockObjects.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"

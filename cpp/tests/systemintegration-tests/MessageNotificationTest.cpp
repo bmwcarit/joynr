@@ -33,7 +33,7 @@
 #include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/types/ProviderQos.h"
 
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "utils/TestLibJoynrWebSocketRuntime.h"
 
 using namespace ::testing;

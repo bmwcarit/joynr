@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 
 #include <cassert>
 #include <cstdint>

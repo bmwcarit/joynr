@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "joynr/PrivateCopyAssign.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"

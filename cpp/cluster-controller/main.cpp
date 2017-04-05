@@ -24,7 +24,7 @@
 #define JOYNR_STRINGIFY_INTERNAL(s) #s
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 
 #include "joynr/Logger.h"
 #include "joynr/Settings.h"

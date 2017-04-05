@@ -29,7 +29,7 @@
 
 #include "JoynrTest.h"
 #include "tests/utils/MockObjects.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/OnChangeSubscriptionQos.h"
