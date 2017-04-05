@@ -689,7 +689,15 @@ else(USE_PLATFORM_MUESLI)
     # add import target for muesli library
     add_library(muesli::muesli INTERFACE IMPORTED GLOBAL)
     add_dependencies(muesli::muesli muesli)
-    set(muesli_INCLUDE_DIRECTORIES "${SOURCE_DIR}/include" "${EXTERNAL_PROJECTS_ROOT}/src/rapidjson/include")
+
+    # muesli fetches rapidjson via AddExternalProject,
+    # hence rapidjson lies in muesli's build directory
+    set(
+        muesli_INCLUDE_DIRECTORIES
+        "${SOURCE_DIR}/include"
+        "${BINARY_DIR}/ThirdParty/src/rapidjson/include"
+    )
+
     # need to create include dirs manually at cmake time to prevent cmake warning (non existing path
     # in INTERFACE_INCLUDE_DIRECTORIES), since otherwise they are created at make time when cloning
     # the source repositories
