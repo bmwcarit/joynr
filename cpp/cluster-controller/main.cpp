@@ -30,6 +30,7 @@
 
 #include "joynr/JoynrVersion.h"
 #include "joynr/Logger.h"
+#include "signal-handler/PosixSignalHandler.h"
 
 using namespace joynr;
 
@@ -78,11 +79,14 @@ int main(int argc, char* argv[])
     printVersionToStdOut();
 
     // create the cluster controller runtime
-    auto clusterControllerRuntime = JoynrClusterControllerRuntime::create(argc, argv);
+    std::shared_ptr<JoynrClusterControllerRuntime> clusterControllerRuntime =
+            JoynrClusterControllerRuntime::create(argc, argv);
     if (!clusterControllerRuntime) {
         printUsage(logger, programName);
         return 1;
     }
+
+    PosixSignalHandler::setHandleAndRegisterForSignals(clusterControllerRuntime);
 
     // run the cluster controller forever
     clusterControllerRuntime->runForever();
