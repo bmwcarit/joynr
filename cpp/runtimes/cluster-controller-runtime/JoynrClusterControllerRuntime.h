@@ -26,8 +26,6 @@
 
 #include "joynr/IClusterControllerSignalHandler.h"
 
-#include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
-
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
@@ -68,6 +66,7 @@ class IMessaging;
 class CcMessageRouter;
 class WebSocketMessagingStubFactory;
 class MosquittoConnection;
+class LocalDomainAccessController;
 
 namespace infrastructure
 {

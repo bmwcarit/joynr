@@ -29,6 +29,7 @@
 #include "websocket/WebSocketCcMessagingSkeletonTLS.h"
 #include "websocket/WebSocketCcMessagingSkeletonNonTLS.h"
 
+#include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "libjoynrclustercontroller/access-control/AccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 #include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
