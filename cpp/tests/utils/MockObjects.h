@@ -98,7 +98,7 @@
 
 #include "libjoynr/websocket/IWebSocketPpClient.h"
 #include "joynr/IWebSocketSendInterface.h"
-#include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/WebSocketSettings.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include "joynr/MulticastPublication.h"

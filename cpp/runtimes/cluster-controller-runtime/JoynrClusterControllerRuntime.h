@@ -35,8 +35,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/RuntimeConfig.h"
 #include "joynr/ClusterControllerSettings.h"
-
-#include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/WebSocketSettings.h"
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "joynr/DBusMessageRouterAdapter.h"

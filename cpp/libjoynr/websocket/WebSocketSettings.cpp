@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "WebSocketSettings.h"
+#include "joynr/WebSocketSettings.h"
 
 #include <cassert>
 

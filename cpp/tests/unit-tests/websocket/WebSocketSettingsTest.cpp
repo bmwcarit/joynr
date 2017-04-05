@@ -20,7 +20,7 @@
 #include <chrono>
 #include <cstdio>
 #include "PrettyPrint.h"
-#include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/WebSocketSettings.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/Settings.h"
 

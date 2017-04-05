@@ -34,9 +34,9 @@
 
 #include "IWebSocketPpClient.h"
 #include "joynr/Logger.h"
+#include "joynr/WebSocketSettings.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketProtocol.h"
-#include "libjoynr/websocket/WebSocketSettings.h"
 #include "libjoynr/websocket/WebSocketPpReceiver.h"
 #include "libjoynr/websocket/WebSocketPpSender.h"
 

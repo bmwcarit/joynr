@@ -41,7 +41,7 @@
 
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
-#include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/WebSocketSettings.h"
 
 using namespace ::testing;
 

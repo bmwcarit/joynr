@@ -27,7 +27,7 @@
 #include "joynr/Logger.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 #include "joynr/Settings.h"
-#include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/WebSocketSettings.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
