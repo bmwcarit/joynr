@@ -116,7 +116,7 @@
 				<filtering>true</filtering>
 			</resource>
 			<resource>
-				<directory>../src/main/model</directory>
+				<directory>../performance-test-base/src/main/model</directory>
 			</resource>
 		</resources>
 
@@ -153,7 +153,7 @@
 								<source>src/main/js</source>
 								<source>src/main/generated-javascript</source>
 								<source>src/main/generated-java</source>
-								<source>../src/main/model</source>
+								<source>../performance-test-base/src/main/model</source>
 							</sources>
 						</configuration>
 					</execution>
