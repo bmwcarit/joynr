@@ -31,6 +31,7 @@
 	<modules>
 		<module>test-base</module>
 		<module>performance-test</module>
+		<module>performance-test-jee</module>
 		<module>robustness-test</module>
 		<module>inter-language-test</module>
 		<module>inter-language-test-jee</module>
