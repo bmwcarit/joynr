@@ -151,19 +151,21 @@ LocalDomainAccessController::LocalDomainAccessController(
           ownerAccessControlEntryChangedBroadcastListener(
                   std::make_shared<OwnerAccessControlEntryChangedBroadcastListener>(*this))
 {
-    // Iterate over all domain/interfaces in LocalDomainAccessStore and create for each a
-    // subscription
-    auto uniqueDomainInterfaceCombinations =
-            this->localDomainAccessStore->getUniqueDomainInterfaceCombinations();
-    for (const auto& domainInterfacePair : uniqueDomainInterfaceCombinations) {
-        initialised(domainInterfacePair.first, domainInterfacePair.second, true);
-    }
 }
 
 void LocalDomainAccessController::init(
         std::unique_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
 {
     this->globalDomainAccessControllerProxy = std::move(globalDomainAccessControllerProxy);
+
+    // Iterate over all domain/interfaces in LocalDomainAccessStore and create for each a
+    // subscription
+    auto uniqueDomainInterfaceCombinations =
+            localDomainAccessStore->getUniqueDomainInterfaceCombinations();
+    const bool restoringFromFile = true;
+    for (const auto& domainInterfacePair : uniqueDomainInterfaceCombinations) {
+        initialised(domainInterfacePair.first, domainInterfacePair.second, restoringFromFile);
+    }
 }
 
 void LocalDomainAccessController::init(std::shared_ptr<GlobalDomainAccessControlListEditorProxy>
