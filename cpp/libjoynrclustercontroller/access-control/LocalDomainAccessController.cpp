@@ -49,20 +49,44 @@ class LocalDomainAccessController::Initialiser
 public:
     Initialiser(LocalDomainAccessController& parent,
                 const std::string& domain,
-                const std::string& interfaceName);
+                const std::string& interfaceName,
+                const std::uint8_t steps)
+            : counter(steps),
+              aborted(false),
+              parent(parent),
+              domain(domain),
+              interfaceName(interfaceName)
+    {
+    }
 
     // Called to indicate that some data has been initialised
-    void update();
+    void update()
+    {
+        std::uint8_t prevValue = counter--;
+        if (prevValue == 1) {
+            // Initialisation has finished
+            if (aborted) {
+                parent.abortInitialisation(domain, interfaceName);
+            } else {
+                parent.initialised(domain, interfaceName);
+            }
+        }
+    }
 
     // Called to abort the initialisation
-    void abort();
+    void abort()
+    {
+        aborted = true;
+        update();
+    }
 
 private:
     std::atomic<std::uint8_t> counter;
     std::atomic<bool> aborted;
     LocalDomainAccessController& parent;
-    std::string domain;
-    std::string interfaceName;
+
+    const std::string domain;
+    const std::string interfaceName;
 };
 
 class LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener
@@ -622,6 +646,9 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
 
     globalDomainRoleControllerProxy->getDomainRolesAsync(
             userId, std::move(domainRoleOnSuccess), std::move(domainRoleOnError));
+    // Create an object to keep track of the initialisation
+    const std::uint8_t steps = 4;
+    auto initialiser = std::make_shared<Initialiser>(*this, domain, interfaceName, steps);
 
     std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)>
             masterAceOnSuccess =
@@ -847,35 +874,6 @@ std::string LocalDomainAccessController::createCompoundKey(const std::string& do
     subscriptionMapKey.insert(0, interfaceName);
 
     return subscriptionMapKey;
-}
-
-//--- Implementation of Initialiser --------------------------------------------
-
-LocalDomainAccessController::Initialiser::Initialiser(LocalDomainAccessController& parent,
-                                                      const std::string& domain,
-                                                      const std::string& interfaceName)
-        : counter(4), aborted(false), parent(parent), domain(domain), interfaceName(interfaceName)
-// counter == 4, because there are 4 init operations (DRT, MasterACE, MediatorACE, OwnerACE)
-{
-}
-
-void LocalDomainAccessController::Initialiser::update()
-{
-    std::uint8_t prevValue = counter--;
-    if (prevValue == 1) {
-        // Initialisation has finished
-        if (aborted) {
-            parent.abortInitialisation(domain, interfaceName);
-        } else {
-            parent.initialised(domain, interfaceName);
-        }
-    }
-}
-
-void LocalDomainAccessController::Initialiser::abort()
-{
-    aborted = true;
-    update();
 }
 
 //--- Implementation of DomainRoleEntryChangedBroadcastListener ----------------
