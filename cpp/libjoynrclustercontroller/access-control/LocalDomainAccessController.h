@@ -500,9 +500,13 @@ private:
     ADD_LOGGER(LocalDomainAccessController);
     static std::chrono::milliseconds broadcastSubscriptionValidity;
 
-    void initialiseLocalDomainAccessStore(const std::string& userId,
-                                          const std::string& domain,
+    // Initialise MasterACE, MediatorACE and OwnerACE for the given data/interface. This function is
+    // non-blocking.
+    void initialiseLocalDomainAccessStore(const std::string& domain,
                                           const std::string& interfaceName);
+
+    // Initialise DRT for the given userId. This function is non-blocking.
+    void initialiseDomainRoleTable(const std::string& userId);
 
     void initialised(const std::string& domain,
                      const std::string& interfaceName,

@@ -262,7 +262,11 @@ void LocalDomainAccessController::getConsumerPermission(
     // Do further initialisation outside of the mutex to prevent deadlocks
     if (needsInit) {
         // Get the data for this domain interface and do not wait for it
-        initialiseLocalDomainAccessStore(userId, domain, interfaceName);
+        initialiseLocalDomainAccessStore(domain, interfaceName);
+
+        // Init domain roles as well
+        initialiseDomainRoleTable(userId);
+
         return;
     }
 
@@ -615,39 +619,34 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
     }
 }
 
-// Initialise the data for the given data/interface. This function is non-blocking
-void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::string& userId,
-                                                                   const std::string& domain,
-                                                                   const std::string& interfaceName)
+void LocalDomainAccessController::initialiseDomainRoleTable(const std::string& userId)
 {
-    // Create an object to keep track of the initialisation
-    auto initialiser = std::make_shared<Initialiser>(*this, domain, interfaceName);
-
     // Initialise domain roles from global data
-    // TODO: confirm that this is needed
     std::function<void(const std::vector<DomainRoleEntry>& domainRoleEntries)> domainRoleOnSuccess =
-            [this, initialiser](const std::vector<DomainRoleEntry>& domainRoleEntries) {
+            [this](const std::vector<DomainRoleEntry>& domainRoleEntries) {
         // Add the results
         for (const DomainRoleEntry& dre : domainRoleEntries) {
             localDomainAccessStore->updateDomainRole(dre);
         }
-        initialiser->update();
     };
 
     std::function<void(const exceptions::JoynrException&)> domainRoleOnError =
-            [this, initialiser](const exceptions::JoynrException& error) {
+            [this](const exceptions::JoynrException& error) {
         JOYNR_LOG_ERROR(logger,
                         "Aborting ACL initialisation due to communication error:\n{}",
                         error.getMessage());
-
-        // Abort the initialisation
-        initialiser->abort();
     };
 
     globalDomainRoleControllerProxy->getDomainRolesAsync(
             userId, std::move(domainRoleOnSuccess), std::move(domainRoleOnError));
+}
+
+void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::string& domain,
+                                                                   const std::string& interfaceName)
+{
     // Create an object to keep track of the initialisation
-    const std::uint8_t steps = 4;
+    // steps == 3, because there are 3 init operations (MasterACE, MediatorACE, OwnerACE)
+    const std::uint8_t steps = 3;
     auto initialiser = std::make_shared<Initialiser>(*this, domain, interfaceName, steps);
 
     std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)>
