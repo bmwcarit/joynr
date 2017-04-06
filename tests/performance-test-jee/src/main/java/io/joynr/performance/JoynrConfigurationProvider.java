@@ -1,7 +1,5 @@
 package io.joynr.performance;
 
-import java.util.Map;
-
 /*
  * #%L
  * %%
