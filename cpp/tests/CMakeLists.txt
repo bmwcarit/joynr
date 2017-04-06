@@ -191,8 +191,18 @@ else()
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
+
+# Add additional boost dependencies for tests
+list(APPEND JOYNR_BOOST_REQUIRED_COMPONENTS filesystem regex)
+find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
+    COMPONENTS ${JOYNR_BOOST_REQUIRED_COMPONENTS}
+)
+include(CheckBoostImportTargets)
+
 list(
     APPEND test_TARGET_LIBRARIES
+    Boost::filesystem
+    Boost::regex
     # Link the Dbus runtime last so that the cluster controller
     # runtime is the default runtime
     ${OPTIONAL_DBUS_LIBRARIES}
@@ -215,6 +225,7 @@ set(
 ## Collect common source files for tests
 set(
     test_SOURCES
+    "JoynrTest.cpp"
     "PrettyPrint.cpp"
     "utils/MockObjects.cpp"
     "utils/TestRunnable.cpp"
@@ -320,13 +331,6 @@ endif(${BUILD_INTEGRATION_TESTS})
 ############################
 
 if(${BUILD_SYSTEM_INTEGRATION_TESTS})
-    # Add addtional boost dependencies for tests
-    list(APPEND JOYNR_BOOST_REQUIRED_COMPONENTS filesystem regex)
-    find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
-        COMPONENTS ${JOYNR_BOOST_REQUIRED_COMPONENTS}
-    )
-    include(CheckBoostImportTargets)
-
     file(
        GLOB g_SystemIntegrationTests_SOURCES
        "systemintegration-tests/*.cpp"
@@ -353,8 +357,6 @@ if(${BUILD_SYSTEM_INTEGRATION_TESTS})
         g_SystemIntegrationTests
         TestGenerated
         ${test_TARGET_LIBRARIES}
-        Boost::filesystem
-        Boost::regex
     )
 
     set_target_properties(

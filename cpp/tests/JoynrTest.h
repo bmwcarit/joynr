@@ -57,4 +57,11 @@ ACTION_P(ReleaseSemaphore, semaphore)
     semaphore->notify();
 }
 
+namespace joynr {
+namespace test {
+namespace util {
+    void removeFileInCurrentDirectory(const std::string& filePattern);
+} // namespace util
+} // namespace test
+} // namespace joynr
 #endif // JOYNRTEST_H_

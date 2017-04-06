@@ -23,10 +23,6 @@
 #include <memory>
 #include <string>
 
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
-#include <boost/regex.hpp>
-
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -41,24 +37,6 @@
 
 using namespace ::testing;
 using namespace joynr;
-
-void removeFileInCurrentDirectory(const std::string& filePattern) {
-    boost::filesystem::path currentDir(".");
-    boost::regex pattern(filePattern);
-    boost::filesystem::directory_iterator dirBegin(currentDir), dirEnd;
-
-    BOOST_FOREACH(const boost::filesystem::path& file, std::make_pair(dirBegin, dirEnd))
-    {
-        if(boost::filesystem::is_regular_file(file))
-        {
-            std::string fileName = file.filename().string();
-            boost::smatch result;
-            if(boost::regex_match(fileName, result, pattern)){
-                boost::filesystem::remove(file);
-            }
-        }
-    }
-}
 
 class End2EndAccessControlTest : public TestWithParam<std::tuple<std::string>> {
 public:
@@ -116,8 +94,8 @@ public:
         runtimeAcOFF.reset();
 
         // Delete test specific files
-        removeFileInCurrentDirectory(".*\\.settings");
-        removeFileInCurrentDirectory(".*\\.persist");
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
         std::remove(AC_ENTRIES_FILE.c_str());
     }
 
