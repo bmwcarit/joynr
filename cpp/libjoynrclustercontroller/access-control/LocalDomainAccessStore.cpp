@@ -36,8 +36,13 @@ LocalDomainAccessStore::LocalDomainAccessStore() : persistenceFileName()
 }
 
 LocalDomainAccessStore::LocalDomainAccessStore(std::string fileName)
-        : persistenceFileName(std::move(fileName))
 {
+    if (fileName.empty()) {
+        return;
+    }
+
+    persistenceFileName = std::move(fileName);
+
     try {
         joynr::serializer::deserializeFromJson(
                 *this, joynr::util::loadStringFromFile(persistenceFileName));
