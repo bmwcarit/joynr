@@ -1,0 +1,45 @@
+{
+   "masterTable":[
+      {
+         "_typeName":"joynr.infrastructure.DacTypes.MasterAccessControlEntry",
+         "uid":"testUser",
+         "domain":"testDomain",
+         "interfaceName":"this/is/a/test/interface",
+         "defaultRequiredTrustLevel":"LOW",
+         "possibleRequiredTrustLevels":[
+            "LOW",
+            "MID"
+         ],
+         "defaultRequiredControlEntryChangeTrustLevel":"LOW",
+         "possibleRequiredControlEntryChangeTrustLevels":[
+            "LOW",
+            "MID"
+         ],
+         "operation":"*",
+         "defaultConsumerPermission":"NO",
+         "possibleConsumerPermissions":[
+	    "YES",
+            "NO",
+            "ASK"
+         ]
+      }
+   ],
+   "mediatorTable":[
+
+   ],
+   "ownerTable":[
+      {
+         "_typeName":"joynr.infrastructure.DacTypes.OwnerAccessControlEntry",
+         "uid":"testUser",
+         "domain":"testDomain",
+         "interfaceName":"this/is/a/test/interface",
+         "requiredTrustLevel":"LOW",
+         "requiredAceChangeTrustLevel":"LOW",
+         "operation":"*",
+         "consumerPermission":"NO"
+      }
+   ],
+   "domainRoleTable":[
+
+   ]
+}

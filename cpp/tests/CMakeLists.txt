@@ -32,6 +32,7 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
     set(TEST_FILES
         "AccessControlNoPermission.entries"
         "AccessControlYesPermission.entries"
+        "AccessStoreTest.persist"
         "integrationtest.settings"
         "websocket-cc-tls.settings"
         "websocket-libjoynr-tls.settings"

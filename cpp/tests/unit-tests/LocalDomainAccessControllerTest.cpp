@@ -17,14 +17,23 @@
  * #L%
  */
 
-#include "joynr/PrivateCopyAssign.h"
-#include "tests/utils/MockObjects.h"
+#include <chrono>
+#include <fstream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
+#include "JoynrTest.h"
 #include "joynr/Semaphore.h"
-#include <string>
+#include "joynr/PrivateCopyAssign.h"
+
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -73,7 +82,7 @@ private:
 };
 
 // Test class
-class LocalDomainAccessControllerTest : public ::testing::Test {
+class LocalDomainAccessControllerTest : public testing::TestWithParam<bool> {
 public:
     LocalDomainAccessControllerTest() : localDomainAccessStorePtr(nullptr),
                                         localDomainAccessController(),
@@ -82,15 +91,29 @@ public:
     {
     }
 
+    ~LocalDomainAccessControllerTest() override {
+        // Delete test specific files
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
+    }
 
     void SetUp(){
-        auto localDomainAccessStore = std::make_unique<LocalDomainAccessStore>();
+        std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore;
+        if(GetParam()) {
+            // copy access entry file to bin folder for the test so that runtimes will find and load the file
+            joynr::test::util::copyTestResourceToCurrentDirectory("AccessStoreTest.persist");
+
+            localDomainAccessStore = std::make_unique<LocalDomainAccessStore>("AccessStoreTest.persist");
+        } else {
+            localDomainAccessStore = std::make_unique<LocalDomainAccessStore>();
+        }
         localDomainAccessStorePtr = localDomainAccessStore.get();
-        localDomainAccessController =
-                std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
+        localDomainAccessController = std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
+
         auto mockGdacProxy = std::make_unique<MockGlobalDomainAccessControllerProxy>();
         mockGdacProxyMock = mockGdacProxy.get();
         localDomainAccessController->init(std::move(mockGdacProxy));
+
         mockGdrcProxy = std::make_shared<MockGlobalDomainRoleControllerProxy>();
         localDomainAccessController->init(mockGdrcProxy);
 
@@ -118,6 +141,15 @@ public:
         );
     }
 
+    static const std::string TEST_USER;
+    static const std::string TEST_DOMAIN1;
+    static const std::string TEST_INTERFACE1;
+    static const std::string TEST_OPERATION1;
+    static const std::vector<std::string> DOMAINS;
+    static const std::vector<Permission::Enum> PERMISSIONS;
+    static const std::vector<TrustLevel::Enum> TRUST_LEVELS;
+    static const std::string joynrDomain;
+
 protected:
     LocalDomainAccessStore* localDomainAccessStorePtr;
     std::unique_ptr<LocalDomainAccessController> localDomainAccessController;
@@ -127,14 +159,6 @@ protected:
     OwnerAccessControlEntry ownerAce;
     MasterAccessControlEntry masterAce;
     DomainRoleEntry userDre;
-    static const std::string TEST_USER;
-    static const std::string TEST_DOMAIN1;
-    static const std::string TEST_INTERFACE1;
-    static const std::string TEST_OPERATION1;
-    static const std::vector<std::string> DOMAINS;
-    static const std::vector<Permission::Enum> PERMISSIONS;
-    static const std::vector<TrustLevel::Enum> TRUST_LEVELS;
-    static const std::string joynrDomain;
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDomainAccessControllerTest);
 };
@@ -157,7 +181,7 @@ const std::string LocalDomainAccessControllerTest::joynrDomain("LocalDomainAcces
 
 //----- Tests ------------------------------------------------------------------
 
-TEST_F(LocalDomainAccessControllerTest, testHasRole) {
+TEST_P(LocalDomainAccessControllerTest, testHasRole) {
     localDomainAccessStorePtr->updateDomainRole(userDre);
 
     std::string defaultString;
@@ -168,7 +192,7 @@ TEST_F(LocalDomainAccessControllerTest, testHasRole) {
                                                      Role::OWNER));
 }
 
-TEST_F(LocalDomainAccessControllerTest, consumerPermission) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermission) {
     localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
 
     std::string defaultString;
@@ -185,7 +209,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermission) {
     );
 }
 
-TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
     localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
 
     // Update the MasterACE so that it does not permit Permission::YES
@@ -210,7 +234,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
     );
 }
 
-TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaster) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaster) {
     ownerAce.setRequiredTrustLevel(TrustLevel::MID);
     ownerAce.setConsumerPermission(Permission::ASK);
     localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
@@ -240,7 +264,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaste
     );
 }
 
-TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
     ownerAce.setOperation(access_control::WILDCARD);
     localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
 
@@ -258,7 +282,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
     );
 }
 
-TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(access_control::WILDCARD);
     std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
@@ -326,8 +350,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     );
 }
 
-
-TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(access_control::WILDCARD);
     std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
@@ -335,7 +358,6 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
 
     std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
     ownerAcesFromGlobalDac.push_back(ownerAce);
-
 
     // Setup the mock GDAC proxy
     EXPECT_CALL(*mockGdrcProxy, getDomainRolesAsync(_,_,_))
@@ -383,7 +405,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
     EXPECT_EQ(Permission::NO, getConsumerPermissionCallback->getPermission());
 }
 
-TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(access_control::WILDCARD);
     std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
@@ -393,7 +415,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
     ownerAcesFromGlobalDac.push_back(ownerAce);
 
-    std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)> getMasterAcesOnSuccessFct;
+    std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)> getMasterAcesOnSuccessFct = [](auto){};
 
     // Setup the mock GDAC proxy
     EXPECT_CALL(*mockGdrcProxy, getDomainRolesAsync(_,_,_))
@@ -420,6 +442,11 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
                     InvokeArgument<2>(ownerAcesFromGlobalDac),
                     Return(std::shared_ptr<Future<std::vector<OwnerAccessControlEntry>>>()) // nullptr pointer
             ));
+
+    // Expect a call to subscribe for the not present Entry
+    EXPECT_CALL(*mockGdacProxyMock, subscribeToMasterAccessControlEntryChangedBroadcast(_,_,_)).    Times(1);
+    EXPECT_CALL(*mockGdacProxyMock, subscribeToMediatorAccessControlEntryChangedBroadcast(_,_,_)).  Times(1);
+    EXPECT_CALL(*mockGdacProxyMock, subscribeToOwnerAccessControlEntryChangedBroadcast(_,_,_)).     Times(1);
 
     // Set default return value for Google mock
     std::string defaultString;
@@ -458,4 +485,51 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     EXPECT_EQ(Permission::YES, getConsumerPermissionCallback1->getPermission());
     EXPECT_EQ(Permission::YES, getConsumerPermissionCallback2->getPermission());
 
+}
+
+// true: with persist file
+// false: without
+INSTANTIATE_TEST_CASE_P(WithOrWithoutPersistFile,
+    LocalDomainAccessControllerTest,
+    Bool()
+);
+
+TEST(LocalDomainAccessControllerPeristedTest, persistedAcesAreUsed) {
+    auto mockGdacProxyPtr = std::make_unique<MockGlobalDomainAccessControllerProxy>();
+    auto mockGdacProxy = mockGdacProxyPtr.get();
+
+    // Do not contact GDAC (do not perform any get* operation) for persisted ACEs
+    EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_,_,_,_))    .Times(0);
+    EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_,_,_,_))  .Times(0);
+    EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_,_,_,_))     .Times(0);
+
+    // Expect only calls to subscribeTo methods
+    EXPECT_CALL(*mockGdacProxy, subscribeToMasterAccessControlEntryChangedBroadcast(_,_,_)).    Times(1);
+    EXPECT_CALL(*mockGdacProxy, subscribeToMediatorAccessControlEntryChangedBroadcast(_,_,_)).  Times(1);
+    EXPECT_CALL(*mockGdacProxy, subscribeToOwnerAccessControlEntryChangedBroadcast(_,_,_)).     Times(1);
+
+    // Copy access entry file to bin folder for the test so that runtimes will find and load the file
+    joynr::test::util::copyTestResourceToCurrentDirectory("AccessStoreTest.persist");
+
+    // Load persisted ACEs
+    auto localDomainAccessStore = std::make_unique<LocalDomainAccessStore>("AccessStoreTest.persist");
+    auto localDomainAccessController =
+            std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
+
+    localDomainAccessController->init(std::move(mockGdacProxyPtr));
+
+    // Set default return value for Google mock
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
+
+    EXPECT_EQ(
+            Permission::NO,
+            localDomainAccessController->getConsumerPermission(
+                    LocalDomainAccessControllerTest::TEST_USER,
+                    LocalDomainAccessControllerTest::TEST_DOMAIN1,
+                    LocalDomainAccessControllerTest::TEST_INTERFACE1,
+                    LocalDomainAccessControllerTest::TEST_OPERATION1,
+                    TrustLevel::HIGH
+            )
+    );
 }

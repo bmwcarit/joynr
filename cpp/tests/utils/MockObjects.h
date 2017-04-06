@@ -27,6 +27,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <functional>
+#include <tuple>
 
 #include <boost/any.hpp>
 #include <boost/asio.hpp>
@@ -1037,13 +1038,14 @@ public:
                      const joynr::types::Localisation::GpsLocation &location,
                      const joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters &filterParameters));
 };
+
 class MockGlobalDomainAccessControllerProxy : public virtual joynr::infrastructure::GlobalDomainAccessControllerProxy {
 public:
     MockGlobalDomainAccessControllerProxy() :
         GlobalDomainAccessControllerProxy(
                 std::make_shared<const joynr::system::RoutingTypes::Address>(),
                 nullptr,
-                  "domain",
+                "domain",
                 joynr::MessagingQos()),
         ProxyBase(
                 nullptr,
@@ -1103,6 +1105,44 @@ public:
             )
     );
 
+    MOCK_METHOD3(
+            subscribeToMasterAccessControlEntryChangedBroadcast,
+            std::shared_ptr<joynr::Future<std::string>>(
+                std::shared_ptr<
+                    joynr::ISubscriptionListener<
+                        joynr::infrastructure::DacTypes::ChangeType::Enum,
+                        joynr::infrastructure::DacTypes::MasterAccessControlEntry>
+                    >subscriptionListener,
+                std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
+                const std::vector<std::string>& partitions
+            )
+    );
+
+    MOCK_METHOD3(
+            subscribeToMediatorAccessControlEntryChangedBroadcast,
+            std::shared_ptr<joynr::Future<std::string>>(
+                std::shared_ptr<
+                    joynr::ISubscriptionListener<
+                        joynr::infrastructure::DacTypes::ChangeType::Enum,
+                        joynr::infrastructure::DacTypes::MasterAccessControlEntry>
+                    >subscriptionListener,
+                std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
+                const std::vector<std::string>& partitions
+            )
+    );
+
+    MOCK_METHOD3(
+            subscribeToOwnerAccessControlEntryChangedBroadcast,
+            std::shared_ptr<joynr::Future<std::string>>(
+                std::shared_ptr<
+                    joynr::ISubscriptionListener<
+                        joynr::infrastructure::DacTypes::ChangeType::Enum,
+                        joynr::infrastructure::DacTypes::OwnerAccessControlEntry>
+                    >subscriptionListener,
+                std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
+                const std::vector<std::string>& partitions
+            )
+    );
 };
 
 class MockGlobalDomainRoleControllerProxy : public virtual joynr::infrastructure::GlobalDomainRoleControllerProxy {
