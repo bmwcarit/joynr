@@ -30,7 +30,7 @@
 
 #include "joynr/JoynrVersion.h"
 #include "joynr/Logger.h"
-#include "signal-handler/PosixSignalHandler.h"
+#include "runtimes/cluster-controller-runtime/signal-handler/PosixSignalHandler.h"
 
 using namespace joynr;
 
