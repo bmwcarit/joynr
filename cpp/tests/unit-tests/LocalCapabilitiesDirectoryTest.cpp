@@ -86,7 +86,10 @@ public:
     ~LocalCapabilitiesDirectoryTest()
     {
         singleThreadedIOService.stop();
-        std::remove(settingsFileName.c_str());
+        localCapabilitiesDirectory.reset();
+
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
     }
 
     void SetUp()
