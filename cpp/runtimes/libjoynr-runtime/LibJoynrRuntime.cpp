@@ -79,6 +79,9 @@ LibJoynrRuntime::~LibJoynrRuntime()
         delete inProcessPublicationSender;
         inProcessPublicationSender = nullptr;
     }
+    if (libJoynrMessageRouter) {
+        libJoynrMessageRouter->shutdown();
+    }
 }
 
 void LibJoynrRuntime::init(
