@@ -123,7 +123,6 @@ public:
     JoynrMessage(JoynrMessage&& message);
     JoynrMessage& operator=(JoynrMessage&& message);
 
-    // deactivated to fix linker warnings. Not needed anywhere at the moment.
     bool operator==(const JoynrMessage& message) const;
 
     std::string getType() const;
