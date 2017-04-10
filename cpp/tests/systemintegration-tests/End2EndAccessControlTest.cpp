@@ -53,13 +53,9 @@ public:
     {
     }
 
-    void init(std::string pathToACCentriesFile) {
+    void init(std::string fileWithACCentries) {
         // copy access entry file to bin folder for the test so that runtimes will find and load the file
-        {
-            std::ofstream dst(AC_ENTRIES_FILE.c_str());
-            std::ifstream src(pathToACCentriesFile);
-            dst << src.rdbuf();
-        }
+        joynr::test::util::copyTestResourceToCurrentDirectory(fileWithACCentries, AC_ENTRIES_FILE);
 
         auto settings1 = std::make_unique<Settings>("test-resources/MessagingWithAccessControlEnabled.settings");
         auto settings2 = std::make_unique<Settings>("test-resources/MessagingWithAccessControlDisabled.settings");
@@ -96,7 +92,7 @@ public:
         // Delete test specific files
         joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
         joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
-        std::remove(AC_ENTRIES_FILE.c_str());
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.entries");
     }
 
 protected:
@@ -116,7 +112,7 @@ protected:
 
 TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesNotHavePermission) {
 
-    init("test-resources/AccessControlYesPermission.entries");
+    init("AccessControlYesPermission.entries");
 
     // If AccessControl is active, the proxy cannot call methodWithNoInputParameters (see AC_ENTRIES_FILE file)
     EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_,_))
@@ -131,7 +127,7 @@ TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesNotHavePermission) {
 
 TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesHavePermission) {
 
-    init("test-resources/AccessControlNoPermission.entries");
+    init("AccessControlNoPermission.entries");
 
     EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_,_))
             .Times(1)

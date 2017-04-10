@@ -60,7 +60,21 @@ ACTION_P(ReleaseSemaphore, semaphore)
 namespace joynr {
 namespace test {
 namespace util {
+
+    /**
+     * @brief Remove specified file from current working directory.
+     * @param filePattern: regex pattern to describe the set of files to remove.
+     */
     void removeFileInCurrentDirectory(const std::string& filePattern);
+
+    /**
+     * @brief Copy the specified resource file from test-resources/ to current working directory.
+     * @param resourceFileName: resource file to copy
+     * @param newName: optional new name for the resource file (resourceFileName used otherwise)
+     */
+    void copyTestResourceToCurrentDirectory(const std::string& resourceFileName,
+                                            const std::string& newName = std::string());
+
 } // namespace util
 } // namespace test
 } // namespace joynr

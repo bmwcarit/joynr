@@ -17,6 +17,7 @@
  * #L%
  */
 
+#include <fstream>
 #include <string>
 
 #include <boost/filesystem.hpp>
@@ -46,6 +47,26 @@ void removeFileInCurrentDirectory(const std::string& filePattern)
         }
     }
 }
+
+void copyTestResourceToCurrentDirectory(const std::string& resourceFileName,
+                                        const std::string& newName)
+{
+    static const std::string TEST_RESOURCE_FOLDER = "test-resources/";
+    const std::ifstream src(TEST_RESOURCE_FOLDER + resourceFileName);
+    std::ofstream dst;
+
+    if (newName.empty()) {
+        dst.open(resourceFileName);
+    } else {
+        dst.open(newName);
+    }
+
+    assert(src.is_open());
+    assert(dst.is_open());
+
+    dst << src.rdbuf();
+}
+
 } // namespace util
 } // namespace test
 } // namespace joynr
