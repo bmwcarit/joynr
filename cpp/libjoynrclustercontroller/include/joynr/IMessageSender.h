@@ -19,13 +19,13 @@
 #ifndef IMESSAGESENDER_H
 #define IMESSAGESENDER_H
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "joynr/MessagingSettings.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {

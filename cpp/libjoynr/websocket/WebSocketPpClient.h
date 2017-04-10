@@ -20,17 +20,16 @@
 #define WEBSOCKETPPCLIENT_H
 
 #include <atomic>
-#include <chrono>
 #include <cassert>
+#include <chrono>
 #include <functional>
 
-#include <websocketpp/config/asio_client.hpp>
-#include <websocketpp/client.hpp>
-#include <websocketpp/uri.hpp>
-#include <websocketpp/error.hpp>
-
-#include <boost/asio/steady_timer.hpp>
 #include <boost/asio/io_service.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <websocketpp/client.hpp>
+#include <websocketpp/config/asio_client.hpp>
+#include <websocketpp/error.hpp>
+#include <websocketpp/uri.hpp>
 
 #include "IWebSocketPpClient.h"
 #include "joynr/Logger.h"

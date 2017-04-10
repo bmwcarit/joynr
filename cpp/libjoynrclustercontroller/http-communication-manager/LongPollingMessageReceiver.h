@@ -18,8 +18,8 @@
  */
 #ifndef LONGPOLLINGMESSAGERECEIVER_H_
 #define LONGPOLLINGMESSAGERECEIVER_H_
-#include <condition_variable>
 #include <chrono>
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <string>

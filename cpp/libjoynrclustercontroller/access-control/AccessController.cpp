@@ -22,15 +22,15 @@
 #include <tuple>
 
 #include "LocalDomainAccessController.h"
-#include "joynr/LocalCapabilitiesDirectory.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/LocalCapabilitiesDirectory.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
-#include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/MulticastSubscriptionRequest.h"
-#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/types/DiscoveryEntry.h"
 
 namespace joynr
 {

@@ -21,11 +21,12 @@
  * Client for the global capabilities directory.
  */
 
-#include <string>
-#include <cstdint>
-#include <cassert>
-
 #include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
+
+#include <cassert>
+#include <cstdint>
+#include <string>
+
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Future.h"
 #include "joynr/MessagingQos.h"

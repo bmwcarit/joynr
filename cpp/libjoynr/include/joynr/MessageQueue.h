@@ -20,14 +20,14 @@
 #define MESSAGEQUEUE_H
 
 #include <cstdint>
+#include <map>
 #include <mutex>
 #include <string>
-#include <map>
 
-#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ContentWithDecayTime.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/ContentWithDecayTime.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {

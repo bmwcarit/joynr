@@ -18,10 +18,10 @@
  */
 #ifndef DBUSMESSAGINGSKELETON_H
 #define DBUSMESSAGINGSKELETON_H
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrCommonExport.h"
 #include "joynr/IMessaging.h"
+#include "joynr/JoynrCommonExport.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 // save the GCC diagnostic state
 #pragma GCC diagnostic push

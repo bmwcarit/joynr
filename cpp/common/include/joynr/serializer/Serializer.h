@@ -23,10 +23,12 @@
 #include <stdexcept>
 #include <string>
 
-#include <boost/mpl/transform.hpp>
 #include <boost/mpl/identity.hpp>
+#include <boost/mpl/transform.hpp>
 #include <boost/variant.hpp>
 
+// order of includes is relevant due to muesli's registration mechanism
+// clang-format off
 #include <muesli/archives/json/JsonInputArchive.h>
 #include <muesli/archives/json/JsonOutputArchive.h>
 #include <muesli/streams/StringIStream.h>
@@ -34,6 +36,7 @@
 #include <muesli/ArchiveRegistry.h>
 #include <muesli/TypeRegistry.h>
 #include <muesli/Registry.h>
+// clang-format on
 
 #include "joynr/Util.h"
 #include "joynr/serializer/JsonDeserializable.h"

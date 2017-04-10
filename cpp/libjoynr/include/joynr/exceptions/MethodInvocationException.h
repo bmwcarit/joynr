@@ -23,8 +23,8 @@
 
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/types/Version.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/types/Version.h"
 
 namespace joynr
 {

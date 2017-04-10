@@ -19,30 +19,28 @@
 #ifndef PUBLICATIONMANAGER_H
 #define PUBLICATIONMANAGER_H
 
-#include <mutex>
-#include <memory>
-#include <vector>
 #include <map>
+#include <memory>
+#include <mutex>
 #include <string>
+#include <vector>
 
 #include <boost/optional.hpp>
 
-#include "joynr/SubscriptionPublication.h"
-#include "joynr/MulticastPublication.h"
-#include "joynr/SubscriptionRequestInformation.h"
-#include "joynr/BroadcastSubscriptionRequestInformation.h"
 #include "joynr/BroadcastFilterParameters.h"
-
-#include "joynr/PrivateCopyAssign.h"
+#include "joynr/BroadcastSubscriptionRequestInformation.h"
+#include "joynr/DelayedScheduler.h"
+#include "joynr/IJoynrMessageSender.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/ThreadPoolDelayedScheduler.h"
-#include "joynr/ReadWriteLock.h"
-#include "joynr/ThreadSafeMap.h"
-#include "joynr/SubscriptionReply.h"
-
 #include "joynr/MessagingQos.h"
-#include "joynr/IJoynrMessageSender.h"
+#include "joynr/MulticastPublication.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ReadWriteLock.h"
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionReply.h"
+#include "joynr/SubscriptionRequestInformation.h"
+#include "joynr/ThreadSafeMap.h"
 
 namespace boost
 {

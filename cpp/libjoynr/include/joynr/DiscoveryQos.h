@@ -21,8 +21,8 @@
 #define DISCOVERYQOS_H
 
 #include <cstdint>
-#include <string>
 #include <map>
+#include <string>
 
 #include "joynr/JoynrExport.h"
 #include "joynr/types/CustomParameter.h"

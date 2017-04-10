@@ -20,8 +20,8 @@
 #define INPROCESSMESSAGINGSTUB_H
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrCommonExport.h"
 #include "joynr/IMessaging.h"
+#include "joynr/JoynrCommonExport.h"
 
 #include <memory>
 

@@ -20,8 +20,8 @@
 
 #include <cassert>
 
-#include "joynr/Dispatcher.h"
 #include "common/CallContextStorage.h"
+#include "joynr/Dispatcher.h"
 
 namespace joynr
 {

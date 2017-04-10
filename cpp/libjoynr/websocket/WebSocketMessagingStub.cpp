@@ -21,9 +21,9 @@
 #include "WebSocketMessagingStubFactory.h"
 #include "joynr/IWebSocketSendInterface.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {

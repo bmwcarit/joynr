@@ -22,8 +22,8 @@
 #include <algorithm>
 #include <iterator>
 
-#include "joynr/Util.h"
 #include "AceValidator.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {

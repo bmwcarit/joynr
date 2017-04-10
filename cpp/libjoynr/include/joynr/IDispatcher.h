@@ -19,8 +19,8 @@
 #ifndef IDISPATCHER_H
 #define IDISPATCHER_H
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace joynr
 {

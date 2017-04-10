@@ -19,30 +19,29 @@
 #include "joynr/Dispatcher.h"
 
 #include <cassert>
-#include <cstdint>
 #include <chrono>
+#include <cstdint>
 
-#include "joynr/serializer/Serializer.h"
-#include "joynr/DispatcherUtils.h"
-#include "joynr/SubscriptionRequest.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/MulticastPublication.h"
-#include "joynr/MulticastSubscriptionRequest.h"
-#include "joynr/SubscriptionReply.h"
-#include "joynr/SubscriptionPublication.h"
-#include "joynr/SubscriptionStop.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/JoynrMessageSender.h"
-#include "joynr/MessagingQos.h"
+#include "joynr/DispatcherUtils.h"
 #include "joynr/IRequestInterpreter.h"
-#include "libjoynr/joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
-#include "joynr/PublicationManager.h"
 #include "joynr/ISubscriptionManager.h"
 #include "joynr/InterfaceRegistrar.h"
+#include "joynr/JoynrMessageSender.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/MulticastPublication.h"
+#include "joynr/MulticastSubscriptionRequest.h"
+#include "joynr/PublicationManager.h"
+#include "joynr/Reply.h"
 #include "joynr/Request.h"
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionReply.h"
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/SubscriptionStop.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
-#include "joynr/Reply.h"
+#include "joynr/serializer/Serializer.h"
+#include "libjoynr/joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
 
 namespace joynr
 {

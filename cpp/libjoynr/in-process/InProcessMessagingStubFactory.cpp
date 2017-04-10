@@ -17,8 +17,8 @@
  * #L%
  */
 #include "InProcessMessagingStubFactory.h"
-#include "joynr/InProcessMessagingAddress.h"
 #include "common/in-process/InProcessMessagingStub.h"
+#include "joynr/InProcessMessagingAddress.h"
 
 namespace joynr
 {

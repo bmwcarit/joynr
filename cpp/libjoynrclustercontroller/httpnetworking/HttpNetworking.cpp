@@ -17,8 +17,8 @@
  * #L%
  */
 #include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpRequestBuilder.h"
 #include "libjoynrclustercontroller/httpnetworking/CurlHandlePool.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpRequestBuilder.h"
 
 #include <curl/curl.h>
 

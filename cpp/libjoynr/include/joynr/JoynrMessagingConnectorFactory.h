@@ -21,9 +21,9 @@
 
 #include "joynr/JoynrExport.h"
 
+#include <memory>
 #include <string>
 #include <tuple>
-#include <memory>
 
 namespace joynr
 {

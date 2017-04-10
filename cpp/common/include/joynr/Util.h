@@ -19,24 +19,23 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <cstddef>
 #include <algorithm>
 #include <chrono>
+#include <cstddef>
 #include <iterator>
+#include <memory>
 #include <set>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
-#include <memory>
 
-#include <boost/range/adaptor/map.hpp>
-#include <boost/range/algorithm/copy.hpp>
-
-#include <boost/mpl/vector.hpp>
 #include <boost/mpl/begin_end.hpp>
 #include <boost/mpl/deref.hpp>
 #include <boost/mpl/next_prior.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm/copy.hpp>
 
 namespace joynr
 {

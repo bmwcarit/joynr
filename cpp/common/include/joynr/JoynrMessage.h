@@ -22,10 +22,10 @@
 #include <map>
 #include <string>
 
-#include "joynr/serializer/Serializer.h"
-#include "joynr/JoynrCommonExport.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/JoynrCommonExport.h"
 #include "joynr/Logger.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {

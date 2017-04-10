@@ -22,8 +22,8 @@
 #include <string>
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {

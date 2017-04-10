@@ -30,7 +30,6 @@
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionManager.h"
-#include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/MulticastSubscriptionCallback.h"
 #include "joynr/Util.h"
 #include "tests/utils/MockObjects.h"

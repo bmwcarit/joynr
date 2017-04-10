@@ -19,18 +19,18 @@
 #ifndef THREADPOOL_H
 #define THREADPOOL_H
 
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/Logger.h"
-#include "joynr/BlockingQueue.h"
-
-#include <cstdint>
-#include <vector>
-#include <set>
-#include <thread>
-#include <string>
-#include <mutex>
 #include <atomic>
+#include <cstdint>
+#include <mutex>
+#include <set>
+#include <string>
+#include <thread>
+#include <vector>
+
+#include "joynr/BlockingQueue.h"
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {

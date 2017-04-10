@@ -20,12 +20,12 @@
 
 #include "MqttReceiver.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/JoynrMessage.h"
 #include "joynr/IMessageRouter.h"
+#include "joynr/JoynrMessage.h"
+#include "joynr/Util.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/Util.h"
 
 namespace joynr
 {

@@ -19,10 +19,10 @@
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
 
 #include "joynr/IMessageReceiver.h"
-#include "joynr/Util.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/MessagingQosEffort.h"
+#include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 

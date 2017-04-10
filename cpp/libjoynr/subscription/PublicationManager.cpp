@@ -17,37 +17,40 @@
  * #L%
  */
 
+#include "joynr/PublicationManager.h"
+
 #include <cassert>
+#include <chrono>
 #include <cstdint>
 #include <fstream>
-#include <sstream>
-#include <chrono>
 #include <mutex>
+#include <sstream>
+
 #include <boost/asio/io_service.hpp>
 
-#include "joynr/PublicationManager.h"
-#include "joynr/RequestCaller.h"
+#include "common/CallContextStorage.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/DelayedScheduler.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/IPublicationSender.h"
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/DelayedScheduler.h"
-#include "joynr/Runnable.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/IPublicationSender.h"
-#include "joynr/SubscriptionRequest.h"
-#include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/MulticastSubscriptionRequest.h"
-#include "joynr/Util.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/MulticastSubscriptionRequest.h"
+#include "joynr/Reply.h"
+#include "joynr/Request.h"
+#include "joynr/RequestCaller.h"
+#include "joynr/Runnable.h"
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/SubscriptionUtil.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/UnicastSubscriptionQos.h"
+#include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
-#include "joynr/SubscriptionUtil.h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
-#include "joynr/UnicastSubscriptionQos.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/exceptions/SubscriptionException.h"
-#include "common/CallContextStorage.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {

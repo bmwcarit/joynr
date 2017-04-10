@@ -19,11 +19,11 @@
 #ifndef PROVIDERARBITRATORFACTORY_H
 #define PROVIDERARBITRATORFACTORY_H
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "joynr/JoynrExport.h"
 #include "joynr/Arbitrator.h"
+#include "joynr/JoynrExport.h"
 
 namespace joynr
 {

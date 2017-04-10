@@ -19,9 +19,9 @@
 #ifndef STEADYTIMER_H
 #define STEADYTIMER_H
 
+#include <chrono>
 #include <functional>
 #include <memory>
-#include <chrono>
 
 namespace boost
 {

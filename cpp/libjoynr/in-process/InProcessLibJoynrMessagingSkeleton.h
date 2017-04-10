@@ -21,9 +21,9 @@
 
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrExport.h"
 #include "common/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/IDispatcher.h"
+#include "joynr/JoynrExport.h"
 
 namespace joynr
 {

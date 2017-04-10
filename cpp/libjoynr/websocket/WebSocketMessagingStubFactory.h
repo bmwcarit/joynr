@@ -23,9 +23,9 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "joynr/Url.h"
-#include "joynr/Logger.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
+#include "joynr/Logger.h"
+#include "joynr/Url.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 

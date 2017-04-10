@@ -19,8 +19,8 @@
 #ifndef IJOYNRPROVIDER_H
 #define IJOYNRPROVIDER_H
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace joynr
 {

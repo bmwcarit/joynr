@@ -20,25 +20,25 @@
 #ifndef JOYNRCLUSTERCONTROLLERRUNTIME_H
 #define JOYNRCLUSTERCONTROLLERRUNTIME_H
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "joynr/IClusterControllerSignalHandler.h"
 
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/RuntimeConfig.h"
-#include "joynr/ClusterControllerSettings.h"
-#include "joynr/WebSocketSettings.h"
 #include "joynr/Semaphore.h"
+#include "joynr/WebSocketSettings.h"
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-#include "joynr/DBusMessageRouterAdapter.h"
 #include "common/dbus/DbusSettings.h"
+#include "joynr/DBusMessageRouterAdapter.h"
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
 class JoynrClusterControllerRuntimeTest;

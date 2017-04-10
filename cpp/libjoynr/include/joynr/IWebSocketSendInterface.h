@@ -22,8 +22,8 @@
 #include <functional>
 #include <string>
 
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {

@@ -22,8 +22,8 @@
 
 #include <boost/format.hpp>
 
-#include "joynr/Util.h"
 #include "joynr/Settings.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {

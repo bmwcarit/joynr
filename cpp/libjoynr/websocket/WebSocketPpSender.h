@@ -23,8 +23,8 @@
 
 #include <websocketpp/error.hpp>
 
-#include "joynr/Logger.h"
 #include "joynr/IWebSocketSendInterface.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {

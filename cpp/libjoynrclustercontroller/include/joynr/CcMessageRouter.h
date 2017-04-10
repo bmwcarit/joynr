@@ -24,7 +24,6 @@
 #include "joynr/system/RoutingAbstractProvider.h"
 
 #include <memory>
-#include <mutex>
 #include <string>
 #include <unordered_set>
 
@@ -32,8 +31,8 @@
 #include "joynr/Logger.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MulticastReceiverDirectory.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/ObjectWithDecayTime.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Runnable.h"
 
 namespace boost

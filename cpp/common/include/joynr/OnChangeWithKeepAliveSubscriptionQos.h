@@ -21,9 +21,9 @@
 
 #include <cstdint>
 
-#include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/Logger.h"
+#include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr

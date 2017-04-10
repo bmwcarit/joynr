@@ -18,12 +18,12 @@
  */
 #include "joynr/JoynrMessage.h"
 
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <utility>
-#include <memory>
 #include <chrono>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
 
 #include "joynr/Util.h"
 

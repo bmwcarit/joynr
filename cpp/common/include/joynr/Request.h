@@ -22,10 +22,10 @@
 #include <string>
 #include <vector>
 
-#include "joynr/OneWayRequest.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/OneWayRequest.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {

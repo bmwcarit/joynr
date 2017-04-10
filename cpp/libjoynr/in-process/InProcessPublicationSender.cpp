@@ -22,9 +22,9 @@
 #include <tuple>
 
 #include "joynr/ISubscriptionCallback.h"
+#include "joynr/ISubscriptionManager.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
-#include "joynr/ISubscriptionManager.h"
 
 namespace joynr
 {

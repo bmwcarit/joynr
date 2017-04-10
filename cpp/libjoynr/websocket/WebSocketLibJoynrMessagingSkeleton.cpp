@@ -18,8 +18,8 @@
  */
 #include "WebSocketLibJoynrMessagingSkeleton.h"
 
-#include "joynr/JoynrMessage.h"
 #include "joynr/IMessageRouter.h"
+#include "joynr/JoynrMessage.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 

@@ -21,14 +21,14 @@
 
 #include <atomic>
 #include <cassert>
-#include <tuple>
 #include <regex>
+#include <tuple>
 
-#include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
-#include "joynr/infrastructure/GlobalDomainAccessControlListEditorProxy.h"
-#include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
-#include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
 #include "joynr/MulticastSubscriptionQos.h"
+#include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
+#include "joynr/infrastructure/GlobalDomainAccessControlListEditorProxy.h"
+#include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
+#include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 
 namespace joynr
 {

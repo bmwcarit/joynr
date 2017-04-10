@@ -18,16 +18,16 @@
  */
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
-#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
-#include "libjoynr/websocket/WebSocketPpClientTLS.h"
-#include "libjoynr/websocket/WebSocketPpClientNonTLS.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/SingleThreadedIOService.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
+#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
+#include "libjoynr/websocket/WebSocketPpClientNonTLS.h"
+#include "libjoynr/websocket/WebSocketPpClientTLS.h"
 
 namespace joynr
 {

@@ -21,10 +21,10 @@
 
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/MessageRouter.h"
-#include "joynr/IDbusSkeletonWrapper.h"
 #include "joynr/DbusMessagingSkeleton.h"
+#include "joynr/IDbusSkeletonWrapper.h"
 #include "joynr/IMessaging.h"
+#include "joynr/MessageRouter.h"
 
 #include "joynr/JoynrExport.h"
 

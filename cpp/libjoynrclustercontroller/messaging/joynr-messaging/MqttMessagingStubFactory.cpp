@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include "MqttMessagingStub.h"
 #include "MqttMessagingStubFactory.h"
+#include "MqttMessagingStub.h"
 
 #include "joynr/IMessageSender.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"

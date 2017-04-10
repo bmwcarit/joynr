@@ -19,8 +19,8 @@
 #ifndef IJOYNRMESSAGESENDER_H
 #define IJOYNRMESSAGESENDER_H
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include "joynr/IPublicationSender.h"
 

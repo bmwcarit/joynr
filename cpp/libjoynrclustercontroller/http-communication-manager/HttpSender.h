@@ -19,9 +19,9 @@
 #ifndef HTTPSENDER_H
 #define HTTPSENDER_H
 
-#include <string>
-#include <memory>
 #include <chrono>
+#include <memory>
+#include <string>
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/DispatcherUtils.h"

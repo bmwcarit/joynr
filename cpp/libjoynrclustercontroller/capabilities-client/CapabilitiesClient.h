@@ -19,8 +19,8 @@
 #ifndef CAPABILITIESCLIENT_H
 #define CAPABILITIESCLIENT_H
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "joynr/JoynrClusterControllerExport.h"
@@ -29,11 +29,9 @@
 #include "joynr/ProxyBuilder.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
-#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
-#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
-#include "joynr/Logger.h"
 
 /*
 *   Client for the global capabilities directory. Registration and lookup

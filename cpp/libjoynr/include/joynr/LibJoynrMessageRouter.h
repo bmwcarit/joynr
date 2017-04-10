@@ -53,8 +53,6 @@ class IMessaging;
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
 class JoynrMessage;
-class SteadyTimer;
-class ThreadPoolDelayedScheduler;
 
 namespace system
 {

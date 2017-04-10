@@ -22,11 +22,11 @@
 #include <memory>
 #include <string>
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/IMessageReceiver.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingSettings.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 
 class CapabilitiesClientTest;

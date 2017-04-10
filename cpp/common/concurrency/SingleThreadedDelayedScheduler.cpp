@@ -20,6 +20,7 @@
 
 #include <boost/asio/io_service.hpp>
 #include <boost/system/error_code.hpp>
+
 #include "joynr/Runnable.h"
 
 namespace joynr

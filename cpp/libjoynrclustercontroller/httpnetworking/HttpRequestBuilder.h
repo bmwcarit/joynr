@@ -21,9 +21,9 @@
 
 #include <string>
 
-#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
 
 struct curl_slist;
 

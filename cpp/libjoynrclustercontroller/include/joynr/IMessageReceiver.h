@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <string>
+
 #include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr

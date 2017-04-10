@@ -18,12 +18,13 @@
  */
 #ifndef MQTTMESSAGINGSTUB_H
 #define MQTTMESSAGINGSTUB_H
-#include <string>
+
 #include <memory>
+#include <string>
 
 #include "joynr/IMessaging.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr

@@ -20,13 +20,12 @@
 #ifndef PROXYFACTORY_H
 #define PROXYFACTORY_H
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrExport.h"
+#include <memory>
+#include <string>
 
 #include "joynr/ConnectorFactory.h"
-
-#include <string>
-#include <memory>
+#include "joynr/JoynrExport.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {

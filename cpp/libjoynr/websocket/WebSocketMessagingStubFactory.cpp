@@ -18,8 +18,8 @@
  */
 #include "WebSocketMessagingStubFactory.h"
 
-#include <cctype>
 #include <algorithm>
+#include <cctype>
 #include <string>
 
 #include <boost/format.hpp>

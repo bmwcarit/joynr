@@ -19,9 +19,10 @@
 #ifndef HASHUTIL_H
 #define HASHUTIL_H
 
+#include <functional>
 #include <map>
 #include <type_traits>
-#include <functional>
+
 #include "joynr/Util.h"
 
 namespace std

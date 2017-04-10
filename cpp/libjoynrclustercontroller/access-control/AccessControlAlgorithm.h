@@ -23,8 +23,8 @@
 #include <boost/optional.hpp>
 
 #include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/infrastructure/DacTypes/TrustLevel.h"
 #include "joynr/infrastructure/DacTypes/Permission.h"
+#include "joynr/infrastructure/DacTypes/TrustLevel.h"
 
 namespace joynr
 {

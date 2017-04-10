@@ -19,12 +19,12 @@
 #ifndef HTTPMESSAGINGSTUB_H
 #define HTTPMESSAGINGSTUB_H
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/IMessaging.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr

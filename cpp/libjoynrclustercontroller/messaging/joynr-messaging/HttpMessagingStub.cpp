@@ -19,8 +19,8 @@
 #include "HttpMessagingStub.h"
 
 #include "joynr/IMessageSender.h"
-#include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
+#include "joynr/MessagingQos.h"
 
 namespace joynr
 {

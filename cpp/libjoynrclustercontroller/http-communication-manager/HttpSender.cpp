@@ -18,19 +18,19 @@
  */
 #include "libjoynrclustercontroller/http-communication-manager/HttpSender.h"
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 #include <chrono>
 
 #include <curl/curl.h>
 
 #include "joynr/JoynrMessage.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/Util.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {

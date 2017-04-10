@@ -22,34 +22,30 @@
 #include <cassert>
 #include <functional>
 
-#include <boost/asio/io_service.hpp>
-
-#include "joynr/access-control/IAccessController.h"
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/IMessaging.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMulticastAddressCalculator.h"
-#include "joynr/InProcessMessagingAddress.h"
 #include "joynr/IPlatformSecurityManager.h"
+#include "joynr/InProcessMessagingAddress.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/MulticastReceiverDirectory.h"
-#include "joynr/ThreadPoolDelayedScheduler.h"
-#include "joynr/SteadyTimer.h"
+#include "joynr/Util.h"
+#include "joynr/access-control/IAccessController.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/MessageNotificationAbstractProvider.h"
 #include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilter.h"
 #include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/Util.h"
 
 namespace joynr
 {

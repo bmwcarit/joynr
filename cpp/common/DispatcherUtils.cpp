@@ -18,8 +18,8 @@
  */
 #include "joynr/DispatcherUtils.h"
 
-#include <limits>
 #include <ctime>
+#include <limits>
 
 namespace joynr
 {

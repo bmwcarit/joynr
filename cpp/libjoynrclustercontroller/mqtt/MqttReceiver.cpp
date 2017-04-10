@@ -21,8 +21,8 @@
 #include <chrono>
 
 #include "joynr/MessagingSettings.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 

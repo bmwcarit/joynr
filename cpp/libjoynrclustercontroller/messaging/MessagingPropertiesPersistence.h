@@ -19,8 +19,8 @@
 #ifndef MESSAGINGPROPERTIESPERSISTENCE_H
 #define MESSAGINGPROPERTIESPERSISTENCE_H
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/PrivateCopyAssign.h"
 #include <string>
 
 namespace joynr

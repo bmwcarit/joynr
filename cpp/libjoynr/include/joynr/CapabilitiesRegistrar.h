@@ -21,19 +21,19 @@
 
 #include <cassert>
 #include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
-#include "joynr/IMessageRouter.h"
-#include "joynr/RequestCallerFactory.h"
-#include "joynr/ParticipantIdStorage.h"
-#include "joynr/IDispatcher.h"
-#include "joynr/MulticastBroadcastListener.h"
-#include "joynr/Logger.h"
 #include "joynr/Future.h"
+#include "joynr/IDispatcher.h"
+#include "joynr/IMessageRouter.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/Logger.h"
+#include "joynr/MulticastBroadcastListener.h"
+#include "joynr/ParticipantIdStorage.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/RequestCallerFactory.h"
 #include "joynr/Util.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/system/RoutingTypes/Address.h"

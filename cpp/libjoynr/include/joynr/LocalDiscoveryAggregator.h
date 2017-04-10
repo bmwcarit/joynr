@@ -19,12 +19,12 @@
 #ifndef LOCALDISCOVERYAGGREGATOR_H
 #define LOCALDISCOVERYAGGREGATOR_H
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/system/IDiscovery.h"
 
 namespace joynr

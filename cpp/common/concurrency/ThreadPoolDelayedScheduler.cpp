@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <functional>
+
 #include <boost/asio/io_service.hpp>
 
 namespace joynr

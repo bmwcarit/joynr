@@ -21,8 +21,8 @@
 #include "joynr/IMessageRouter.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
 {

@@ -20,11 +20,12 @@
 #define JOYNR_SETTINGS_H
 
 #include <string>
+
 #include <boost/property_tree/ptree.hpp>
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {

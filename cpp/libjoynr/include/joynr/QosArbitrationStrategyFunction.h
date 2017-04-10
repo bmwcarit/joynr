@@ -19,13 +19,14 @@
  */
 #ifndef QOSARBITRATIONSTRATEGYFUNCTION_H
 #define QOSARBITRATIONSTRATEGYFUNCTION_H
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "joynr/ArbitrationStrategyFunction.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {

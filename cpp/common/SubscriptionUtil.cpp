@@ -21,11 +21,11 @@
 #include <cassert>
 #include <typeinfo>
 
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/SubscriptionQos.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {

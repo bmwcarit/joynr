@@ -16,15 +16,16 @@
  * limitations under the License.
  * #L%
  */
-#include <stdexcept>
 
 #include "joynr/KeywordArbitrationStrategyFunction.h"
-#include "joynr/types/DiscoveryEntry.h"
+
+#include <stdexcept>
+
 #include "joynr/DiscoveryQos.h"
-#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/CustomParameter.h"
-#include "joynr/exceptions/JoynrException.h"
+#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {

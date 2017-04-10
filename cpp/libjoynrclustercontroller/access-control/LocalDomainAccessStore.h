@@ -20,16 +20,16 @@
 #ifndef LOCALDOMAINACCESSSTORE_H
 #define LOCALDOMAINACCESSSTORE_H
 
+#include <set>
 #include <string>
 #include <tuple>
-#include <set>
 #include <vector>
 
-#include <boost/multi_index_container.hpp>
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 #include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index_container.hpp>
 #include <boost/optional.hpp>
 
 #include "joynr/JoynrClusterControllerExport.h"

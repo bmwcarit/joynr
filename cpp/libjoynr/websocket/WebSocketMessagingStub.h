@@ -22,9 +22,9 @@
 #include <functional>
 #include <memory>
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/Logger.h"
 #include "joynr/IMessaging.h"
+#include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {

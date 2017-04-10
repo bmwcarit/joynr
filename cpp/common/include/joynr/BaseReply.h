@@ -25,8 +25,8 @@
 #include <vector>
 
 #include "joynr/JoynrCommonExport.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/serializer/SerializationPlaceholder.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {

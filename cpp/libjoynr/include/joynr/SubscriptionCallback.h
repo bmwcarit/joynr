@@ -22,12 +22,12 @@
 #include <memory>
 #include <tuple>
 
-#include "joynr/ISubscriptionCallback.h"
-#include "joynr/ISubscriptionListener.h"
 #include "ISubscriptionManager.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/BasePublication.h"
 #include "joynr/Future.h"
+#include "joynr/ISubscriptionCallback.h"
+#include "joynr/ISubscriptionListener.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/SubscriptionReply.h"
 
 namespace joynr

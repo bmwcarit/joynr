@@ -21,13 +21,13 @@
 
 #include <memory>
 
-#include "joynr/SubscriptionCallback.h"
-#include "joynr/ISubscriptionListener.h"
 #include "ISubscriptionManager.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/BasePublication.h"
 #include "joynr/Future.h"
+#include "joynr/ISubscriptionListener.h"
 #include "joynr/MulticastPublication.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/SubscriptionCallback.h"
 
 namespace joynr
 {

@@ -25,8 +25,8 @@
 
 #include <boost/optional.hpp>
 
-#include "joynr/serializer/Serializer.h"
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {

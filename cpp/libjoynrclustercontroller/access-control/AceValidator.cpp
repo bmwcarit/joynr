@@ -19,8 +19,8 @@
 
 #include "AceValidator.h"
 
-#include <set>
 #include <algorithm>
+#include <set>
 
 namespace joynr
 {

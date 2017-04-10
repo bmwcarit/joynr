@@ -21,9 +21,10 @@
 #define MESSAGINGQOS_H
 
 #include <cstdint>
+#include <iosfwd>
 #include <string>
 #include <unordered_map>
-#include <iosfwd>
+
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/MessagingQosEffort.h"
 

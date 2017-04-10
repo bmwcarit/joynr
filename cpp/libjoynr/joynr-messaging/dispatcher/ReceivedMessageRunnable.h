@@ -18,11 +18,11 @@
  */
 #ifndef RECEIVEDMESSAGERUNNABLE_H
 #define RECEIVEDMESSAGERUNNABLE_H
-#include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/ObjectWithDecayTime.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessagingQos.h"
+#include "joynr/ObjectWithDecayTime.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Runnable.h"
 
 namespace joynr

@@ -19,15 +19,14 @@
 #ifndef IDBUSSKELETONWRAPPER_H
 #define IDBUSSKELETONWRAPPER_H
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrCommonExport.h"
-
-#include "joynr/Logger.h"
-
 #include <string>
+#include <chrono>
+
 #include <CommonAPI/CommonAPI.h>
 
-#include <chrono>
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {

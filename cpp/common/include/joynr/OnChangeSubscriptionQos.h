@@ -21,8 +21,8 @@
 
 #include <cstdint>
 
-#include "joynr/UnicastSubscriptionQos.h"
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/UnicastSubscriptionQos.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr

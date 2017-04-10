@@ -20,19 +20,16 @@
 #define LOCALCAPABILITIESDIRECTORY_H
 
 #include <chrono>
-#include <unordered_map>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
+#include <unordered_map>
 #include <vector>
-#include <functional>
 
 #include <boost/asio/steady_timer.hpp>
 
-#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
-
 #include "common/InterfaceAddress.h"
-
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/JoynrClusterControllerExport.h"
@@ -40,11 +37,12 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
-#include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/TypedClientMultiCache.h"
-#include "joynr/types/DiscoveryQos.h"
+#include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
+#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 
 namespace boost
 {

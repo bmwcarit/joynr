@@ -17,8 +17,8 @@
  * #L%
  */
 #include "libjoynrclustercontroller/httpnetworking/HttpRequestBuilder.h"
-#include "libjoynrclustercontroller/httpnetworking/DefaultHttpRequest.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "libjoynrclustercontroller/httpnetworking/DefaultHttpRequest.h"
 
 #include <curl/curl.h>
 

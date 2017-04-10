@@ -20,8 +20,8 @@
 #define IMESSAGEROUTER_H
 
 #include <cstdint>
-#include <memory>
 #include <functional>
+#include <memory>
 
 #include "joynr/JoynrExport.h"
 

@@ -21,8 +21,8 @@
 
 #include <cstdint>
 
-#include "joynr/UnicastSubscriptionQos.h"
 #include "joynr/Logger.h"
+#include "joynr/UnicastSubscriptionQos.h"
 
 namespace joynr
 {

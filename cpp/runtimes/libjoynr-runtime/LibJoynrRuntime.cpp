@@ -23,23 +23,23 @@
 #include <vector>
 
 #include "joynr/Dispatcher.h"
-#include "joynr/InProcessDispatcher.h"
 #include "joynr/IMulticastAddressCalculator.h"
-#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
-#include "joynr/PublicationManager.h"
-#include "joynr/SubscriptionManager.h"
+#include "joynr/InProcessDispatcher.h"
+#include "joynr/InProcessMessagingAddress.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/LibJoynrMessageRouter.h"
-#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
-#include "joynr/InProcessMessagingAddress.h"
 #include "joynr/MessagingStubFactory.h"
-#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include "joynr/system/DiscoveryProxy.h"
-#include "joynr/system/RoutingProxy.h"
-#include "joynr/Util.h"
+#include "joynr/PublicationManager.h"
 #include "joynr/Settings.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/SubscriptionManager.h"
+#include "joynr/Util.h"
+#include "joynr/system/DiscoveryProxy.h"
+#include "joynr/system/RoutingProxy.h"
+#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
+#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
 namespace joynr
 {

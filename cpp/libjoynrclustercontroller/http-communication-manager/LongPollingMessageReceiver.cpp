@@ -16,22 +16,23 @@
  * limitations under the License.
  * #L%
  */
+
+#include "libjoynrclustercontroller/http-communication-manager/LongPollingMessageReceiver.h"
+
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <cstdlib>
-#include <algorithm>
 
 #include <boost/lexical_cast.hpp>
 
-#include "libjoynrclustercontroller/http-communication-manager/LongPollingMessageReceiver.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
-#include "joynr/Util.h"
 #include "joynr/DispatcherUtils.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
 #include "joynr/Future.h"
 #include "joynr/JoynrMessage.h"
+#include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/JoynrMessage.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
 
 namespace joynr
 {

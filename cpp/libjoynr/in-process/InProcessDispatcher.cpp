@@ -20,10 +20,11 @@
 
 #include <cassert>
 #include <tuple>
+
 #include <boost/asio/io_service.hpp>
 
-#include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
+#include "joynr/MessagingQos.h"
 
 namespace joynr
 {

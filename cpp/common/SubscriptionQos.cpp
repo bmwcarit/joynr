@@ -18,8 +18,8 @@
  */
 
 #include "joynr/SubscriptionQos.h"
-#include <limits>
 #include <chrono>
+#include <limits>
 
 namespace joynr
 {

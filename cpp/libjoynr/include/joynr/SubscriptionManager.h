@@ -31,12 +31,12 @@
 
 #include "joynr/ISubscriptionManager.h"
 
-#include "joynr/MulticastReceiverDirectory.h"
-#include "joynr/ObjectWithDecayTime.h"
-#include "joynr/Runnable.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
+#include "joynr/MulticastReceiverDirectory.h"
+#include "joynr/ObjectWithDecayTime.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Runnable.h"
 #include "joynr/ThreadSafeMap.h"
 
 namespace boost

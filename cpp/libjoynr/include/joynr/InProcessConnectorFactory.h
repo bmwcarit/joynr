@@ -19,14 +19,14 @@
 #ifndef INPROCESSCONNECTORFACTORY_H
 #define INPROCESSCONNECTORFACTORY_H
 
-#include <string>
 #include <memory>
+#include <string>
 
+#include "joynr/IRequestCallerDirectory.h"
+#include "joynr/InProcessAddress.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/InProcessAddress.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/IRequestCallerDirectory.h"
 
 namespace joynr
 {

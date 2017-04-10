@@ -19,13 +19,13 @@
 #ifndef THREADPOOLDELAYEDSCHEDULER_H
 #define THREADPOOLDELAYEDSCHEDULER_H
 
-#include <cstdint>
 #include <chrono>
+#include <cstdint>
 #include <string>
 
+#include "joynr/DelayedScheduler.h"
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/DelayedScheduler.h"
 #include "joynr/ThreadPool.h"
 
 namespace boost

@@ -18,13 +18,13 @@
  */
 #include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
 
+#include "joynr/Future.h"
+#include "joynr/Util.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynrclustercontroller/http-communication-manager/LongPollingMessageReceiver.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
-#include "joynr/Future.h"
-#include "joynr/Util.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {

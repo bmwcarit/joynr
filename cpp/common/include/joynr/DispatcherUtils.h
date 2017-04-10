@@ -22,10 +22,10 @@
 #include "joynr/JoynrCommonExport.h"
 #include "joynr/Logger.h"
 
-#include <cstdint>
-#include <string>
 #include <chrono>
+#include <cstdint>
 #include <map>
+#include <string>
 
 namespace joynr
 {

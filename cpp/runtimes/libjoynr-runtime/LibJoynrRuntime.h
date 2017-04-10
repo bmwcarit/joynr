@@ -20,22 +20,20 @@
 #ifndef LIBJOYNRRUNTIME_H
 #define LIBJOYNRRUNTIME_H
 
-#include <string>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <string>
 
-#include "joynr/PrivateCopyAssign.h"
-
-#include "joynr/JoynrRuntime.h"
-
-#include "joynr/LibjoynrSettings.h"
-#include "joynr/SystemServicesSettings.h"
-#include "joynr/ProxyBuilder.h"
+#include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/IMessaging.h"
 #include "joynr/JoynrMessageSender.h"
-#include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/SubscriptionManager.h"
+#include "joynr/JoynrRuntime.h"
+#include "joynr/LibjoynrSettings.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ProxyBuilder.h"
 #include "joynr/Semaphore.h"
+#include "joynr/SubscriptionManager.h"
+#include "joynr/SystemServicesSettings.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr

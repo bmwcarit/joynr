@@ -18,16 +18,16 @@
  */
 #include "joynr/Util.h"
 
-#include <fstream>
-#include <regex>
 #include <cctype>
+#include <fstream>
 #include <iterator>
-#include <stdexcept>
+#include <regex>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
-#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 #include "joynr/Logger.h"

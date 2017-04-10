@@ -19,18 +19,18 @@
 #include "joynr/Arbitrator.h"
 
 #include <cassert>
-#include <vector>
 #include <chrono>
+#include <vector>
 
 #include <boost/algorithm/string/join.hpp>
 
+#include "joynr/Future.h"
+#include "joynr/Logger.h"
+#include "joynr/Semaphore.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/NoCompatibleProviderFoundException.h"
-#include "joynr/Logger.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/types/DiscoveryScope.h"
-#include "joynr/Semaphore.h"
-#include "joynr/Future.h"
 
 namespace joynr
 {

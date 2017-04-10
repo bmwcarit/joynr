@@ -20,12 +20,11 @@
 
 #include <sstream>
 
-#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/types/ProviderQos.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/CustomParameter.h"
-#include "joynr/exceptions/JoynrException.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/types/ProviderQos.h"
 
 namespace joynr
 {

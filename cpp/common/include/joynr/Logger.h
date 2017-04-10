@@ -19,12 +19,14 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
-#include <boost/type_index.hpp>
+
 #include <boost/algorithm/string/erase.hpp>
+#include <boost/type_index.hpp>
 #include <spdlog/spdlog.h>
+
 #ifdef JOYNR_ENABLE_STDOUT_LOGGING
 #include <spdlog/sinks/stdout_sinks.h>
 #endif // JOYNR_ENABLE_STDOUT_LOGGING

@@ -19,20 +19,20 @@
 #ifndef MESSAGINGSTUBFACTORY_H
 #define MESSAGINGSTUBFACTORY_H
 
-#include <string>
 #include <memory>
 #include <mutex>
-#include <vector>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include <boost/functional/hash/extensions.hpp>
 
+#include "joynr/IMessaging.h"
+#include "joynr/IMessagingStubFactory.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/RuntimeConfig.h"
 #include "joynr/ThreadSafeMap.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/IMessagingStubFactory.h"
-#include "joynr/IMessaging.h"
 
 namespace joynr
 {

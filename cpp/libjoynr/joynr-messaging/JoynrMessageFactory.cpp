@@ -16,22 +16,24 @@
  * limitations under the License.
  * #L%
  */
-#include <limits>
 
 #include "joynr/JoynrMessageFactory.h"
-#include "joynr/DispatcherUtils.h"
-#include "joynr/SubscriptionRequest.h"
+
+#include <limits>
+
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/DispatcherUtils.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/MulticastPublication.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/OneWayRequest.h"
-#include "joynr/Request.h"
 #include "joynr/Reply.h"
-#include "joynr/MulticastPublication.h"
+#include "joynr/Request.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
+#include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/serializer/Serializer.h"
-#include "joynr/MessagingQos.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 
 namespace joynr

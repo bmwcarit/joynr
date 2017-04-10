@@ -21,8 +21,8 @@
 
 #include <functional>
 
-#include "joynr/JoynrCommonExport.h"
 #include "joynr/IMessaging.h"
+#include "joynr/JoynrCommonExport.h"
 
 namespace joynr
 {

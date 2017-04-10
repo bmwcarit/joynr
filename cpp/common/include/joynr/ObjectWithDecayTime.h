@@ -21,8 +21,8 @@
 
 #include <chrono>
 
-#include "joynr/JoynrCommonExport.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/JoynrCommonExport.h"
 
 namespace joynr
 {

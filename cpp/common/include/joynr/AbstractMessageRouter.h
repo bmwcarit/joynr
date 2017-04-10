@@ -25,17 +25,18 @@
 #include <string>
 #include <unordered_set>
 
-#include "joynr/IMessageRouter.h"
-
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/PrivateCopyAssign.h"
-
 #include "joynr/Directory.h"
+#include "joynr/IMessageRouter.h"
+#include "joynr/JoynrCommonExport.h"
+#include "joynr/JoynrMessage.h"
 #include "joynr/Logger.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ObjectWithDecayTime.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Runnable.h"
+#include "joynr/SteadyTimer.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/system/RoutingAbstractProvider.h"
 
 namespace boost
@@ -53,13 +54,9 @@ class error_code;
 namespace joynr
 {
 
-class IAccessController;
 class IMessaging;
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
-class JoynrMessage;
-class SteadyTimer;
-class ThreadPoolDelayedScheduler;
 
 namespace system
 {

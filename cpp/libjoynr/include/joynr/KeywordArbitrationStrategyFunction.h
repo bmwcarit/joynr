@@ -23,8 +23,8 @@
 #include <vector>
 
 #include "joynr/ArbitrationStrategyFunction.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {

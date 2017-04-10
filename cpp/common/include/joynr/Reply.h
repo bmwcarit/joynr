@@ -23,8 +23,8 @@
 #include <vector>
 
 #include "joynr/BaseReply.h"
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrCommonExport.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr

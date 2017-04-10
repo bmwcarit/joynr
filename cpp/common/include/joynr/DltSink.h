@@ -19,9 +19,9 @@
 #ifndef DLTSINK_H
 #define DLTSINK_H
 
-#include <spdlog/sinks/sink.h>
-#include <spdlog/details/log_msg.h>
 #include <dlt/dlt.h>
+#include <spdlog/details/log_msg.h>
+#include <spdlog/sinks/sink.h>
 
 namespace joynr
 {

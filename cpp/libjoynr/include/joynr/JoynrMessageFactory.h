@@ -21,12 +21,11 @@
 
 #include <string>
 
-#include "joynr/JoynrMessage.h"
 #include "joynr/IPlatformSecurityManager.h"
-
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/JoynrMessage.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {

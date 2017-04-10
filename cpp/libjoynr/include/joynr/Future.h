@@ -19,18 +19,18 @@
 #ifndef FUTURE_H
 #define FUTURE_H
 
-#include <tuple>
-#include <functional>
-#include <utility>
 #include <cstdint>
+#include <functional>
 #include <memory>
+#include <tuple>
+#include <utility>
 
 #include "joynr/Logger.h"
-#include "joynr/Util.h"
+#include "joynr/Semaphore.h"
 #include "joynr/StatusCode.h"
+#include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
-#include "joynr/Semaphore.h"
 
 namespace joynr
 {

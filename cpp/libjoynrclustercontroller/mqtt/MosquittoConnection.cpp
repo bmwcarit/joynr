@@ -19,8 +19,8 @@
 
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
-#include "joynr/MessagingSettings.h"
 #include "joynr/ClusterControllerSettings.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
