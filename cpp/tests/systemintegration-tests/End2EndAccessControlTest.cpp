@@ -38,7 +38,7 @@
 using namespace ::testing;
 using namespace joynr;
 
-class End2EndAccessControlTest : public TestWithParam<std::tuple<std::string>> {
+class End2EndAccessControlTest : public testing::Test {
 public:
     End2EndAccessControlTest() :
         runtimeAcON(nullptr),
