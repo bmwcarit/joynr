@@ -33,7 +33,7 @@ std::unique_ptr<Arbitrator> ArbitratorFactory::createArbitrator(
         const std::string& domain,
         const std::string& interfaceName,
         const joynr::types::Version& interfaceVersion,
-        joynr::system::IDiscoveryAsync& discoveryProxy,
+        std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
         const DiscoveryQos& discoveryQos)
 {
     std::unique_ptr<ArbitrationStrategyFunction> arbitrationStrategyFunction;
