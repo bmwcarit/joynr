@@ -94,7 +94,7 @@ enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
         if (JOYNR_LOG_LEVEL <= logLevel) {                                                         \
             logger.spdlog->method(__VA_ARGS__);                                                    \
         }                                                                                          \
-    } while (0)
+    } while (false)
 
 #define JOYNR_LOG_TRACE(logger, ...)                                                               \
     JOYNR_CONDITIONAL_SPDLOG(joynr::LogLevel::Trace, trace, logger, __VA_ARGS__)
