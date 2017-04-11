@@ -23,42 +23,24 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include <utility>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/asio/io_service.hpp>
-#include <websocketpp/config/asio.hpp>
 #include <websocketpp/server.hpp>
 
 #include "joynr/IMessageRouter.h"
 #include "joynr/IMessaging.h"
-#include "joynr/IWebSocketSendInterface.h"
-#include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/system/RoutingTypes/WebSocketProtocol.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketPpReceiver.h"
 #include "libjoynr/websocket/WebSocketPpSender.h"
 
 namespace joynr
 {
-
-class JoynrMessage;
-class WebSocketMessagingStubFactory;
-
-namespace system
-{
-namespace RoutingTypes
-{
-class WebSocketAddress;
-} // namespace RoutingTypes
-} // namespace system
 
 /**
  * @class WebSocketCcMessagingSkeleton

@@ -19,9 +19,11 @@
 #ifndef WEBSOCKETCCMESSAGINGSKELETONTLS_H
 #define WEBSOCKETCCMESSAGINGSKELETONTLS_H
 
+#include "runtimes/cluster-controller-runtime/websocket/WebSocketCcMessagingSkeleton.h"
+
 #include <string>
 
-#include "runtimes/cluster-controller-runtime/websocket/WebSocketCcMessagingSkeleton.h"
+#include <websocketpp/config/asio.hpp>
 
 namespace joynr
 {

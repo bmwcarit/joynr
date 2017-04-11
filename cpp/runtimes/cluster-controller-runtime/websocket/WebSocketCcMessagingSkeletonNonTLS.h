@@ -21,6 +21,8 @@
 
 #include "runtimes/cluster-controller-runtime/websocket/WebSocketCcMessagingSkeleton.h"
 
+#include <websocketpp/config/asio_no_tls.hpp>
+
 namespace joynr
 {
 
