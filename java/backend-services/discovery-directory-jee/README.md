@@ -31,12 +31,10 @@ First, if not already done so, create a connection pool for the database you wan
 discovery directory to use for persistence. For this example, we'll create a database
 on the JavaDB (based on Derby) database which is installed as part of Payara / Glassfish:
 
-    create-jdbc-connection-pool \
+    bin/asadmin create-jdbc-connection-pool \
         --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
         --restype javax.sql.XADataSource \
-        --property portNumber=1527:password=APP:user=APP:serverName=\
-        localhost:databaseName=joynr-discovery-directory:connectionAttributes=\; \
-        create\\=true JoynrPool
+        --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool
 
 Next, create a datasource resource pointing to that database connection. Here's an
 example of what that would look like when using the connection pool created above:
