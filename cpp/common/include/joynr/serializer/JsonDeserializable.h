@@ -35,7 +35,7 @@ template <typename Archive>
 class JsonDeserializable
 {
 public:
-    JsonDeserializable(Archive& archive) : jsonInputArchive()
+    explicit JsonDeserializable(Archive& archive) : jsonInputArchive()
     {
         archive.pushNullableNode();
         if (!archive.currentValueIsNull()) {
