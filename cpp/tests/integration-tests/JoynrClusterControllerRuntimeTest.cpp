@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "joynr/PrivateCopyAssign.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
@@ -47,11 +47,6 @@ using testing::ReturnRef;
 using testing::ByRef;
 using testing::SetArgReferee;
 using testing::AtLeast;
-
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
 
 class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
@@ -110,7 +105,7 @@ public:
     ~JoynrClusterControllerRuntimeTest(){
         if (runtime) {
             runtime->deleteChannel();
-            runtime->stopMessaging();
+            runtime->stopExternalCommunication();
         }
     }
 
@@ -144,7 +139,7 @@ public:
         );
     }
 
-    void startMessagingDoesNotThrow();
+    void startExternalCommunicationDoesNotThrow();
 
     void invokeOnSuccessWithGpsLocation(
             std::function<void(const joynr::types::Localisation::GpsLocation location)> onSuccess,
@@ -177,13 +172,13 @@ TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeHttp)
     ASSERT_TRUE(runtime != nullptr);
 }
 
-void JoynrClusterControllerRuntimeTest::startMessagingDoesNotThrow() {
+void JoynrClusterControllerRuntimeTest::startExternalCommunicationDoesNotThrow() {
     ASSERT_TRUE(runtime != nullptr);
-    runtime->startMessaging();
-    runtime->stopMessaging();
+    runtime->startExternalCommunication();
+    runtime->stopExternalCommunication();
 }
 
-TEST_F(JoynrClusterControllerRuntimeTest, startMessagingHttpDoesNotThrow)
+TEST_F(JoynrClusterControllerRuntimeTest, startExternalCommunicationHttpDoesNotThrow)
 {
     EXPECT_CALL(*mockHttpMessageReceiver, startReceiveQueue())
             .Times(1);
@@ -191,10 +186,10 @@ TEST_F(JoynrClusterControllerRuntimeTest, startMessagingHttpDoesNotThrow)
             .Times(1);
 
     createRuntimeHttp();
-    startMessagingDoesNotThrow();
+    startExternalCommunicationDoesNotThrow();
 }
 
-TEST_F(JoynrClusterControllerRuntimeTest, startMessagingMqttDoesNotThrow)
+TEST_F(JoynrClusterControllerRuntimeTest, startExternalCommunicationMqttDoesNotThrow)
 {
     EXPECT_CALL(*mockHttpMessageReceiver, startReceiveQueue())
             .Times(0);
@@ -202,7 +197,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, startMessagingMqttDoesNotThrow)
             .Times(0);
 
     createRuntimeMqtt();
-    startMessagingDoesNotThrow();
+    startExternalCommunicationDoesNotThrow();
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
@@ -228,7 +223,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
                       &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
             ));
 
-    runtime->startMessaging();
+    runtime->startExternalCommunication();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
                 mockTestProvider,
@@ -278,7 +273,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     ints.push_back(12);
     int sum = 22;
 
-    runtime->startMessaging();
+    runtime->startExternalCommunication();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
                 mockTestProvider,
@@ -333,7 +328,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
                     &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
             ));
 
-    runtime->startMessaging();
+    runtime->startExternalCommunication();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
                 mockTestProvider,
@@ -398,7 +393,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
                     &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
             ));
 
-    runtime->startMessaging();
+    runtime->startExternalCommunication();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
                 mockTestProvider,

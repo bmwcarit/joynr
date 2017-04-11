@@ -21,6 +21,9 @@ package io.joynr.messaging.mqtt;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
+import java.io.Serializable;
+import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +36,9 @@ import io.joynr.exceptions.JoynrSerializationException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JoynrMessageSerializer;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -52,17 +57,23 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     private MqttAddress ownAddress;
     private ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount = Maps.newConcurrentMap();
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
+    private RawMessagingPreprocessor rawMessagingPreprocessor;
+    private Set<JoynrMessageProcessor> messageProcessors;
 
     @Inject
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
                                  MqttMessageSerializerFactory messageSerializerFactory,
-                                 MqttTopicPrefixProvider mqttTopicPrefixProvider) {
+                                 MqttTopicPrefixProvider mqttTopicPrefixProvider,
+                                 RawMessagingPreprocessor rawMessagingPreprocessor,
+                                 Set<JoynrMessageProcessor> messageProcessors) {
         this.ownAddress = ownAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
+        this.rawMessagingPreprocessor = rawMessagingPreprocessor;
+        this.messageProcessors = messageProcessors;
         messageSerializer = messageSerializerFactory.create(ownAddress);
     }
 
@@ -137,7 +148,17 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
         try {
-            JoynrMessage message = messageSerializer.deserialize(serializedMessage);
+            HashMap<String, Serializable> context = new HashMap<String, Serializable>();
+            JoynrMessage message = messageSerializer.deserialize(rawMessagingPreprocessor.process(serializedMessage,
+                                                                                                  context));
+            message.setContext(context);
+
+            if (messageProcessors != null) {
+                for (JoynrMessageProcessor processor : messageProcessors) {
+                    message = processor.processIncoming(message);
+                }
+            }
+
             transmit(message, failureAction);
         } catch (JoynrSerializationException e) {
             LOG.error("Message: \"{}\", could not be serialized, exception: {}", serializedMessage, e.getMessage());

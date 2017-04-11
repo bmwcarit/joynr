@@ -20,7 +20,10 @@
 #define JOYNRTEST_H_
 
 #include <exception>
+
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include <joynr/exceptions/JoynrException.h>
 #include <joynr/exceptions/MethodInvocationException.h>
 
@@ -43,5 +46,15 @@
 
 #define JOYNR_ASSERT_NO_THROW(statement) \
     JOYNR_TEST_NO_THROW(statement, FAIL)
+
+ACTION_P(AcquireSemaphore, semaphore)
+{
+    semaphore->wait();
+}
+
+ACTION_P(ReleaseSemaphore, semaphore)
+{
+    semaphore->notify();
+}
 
 #endif // JOYNRTEST_H_

@@ -38,7 +38,7 @@
 #include "LibJoynrMockObjects.h"
 
 #include "joynr/access-control/IAccessController.h"
-#include "cluster-controller/access-control/LocalDomainAccessController.h"
+#include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/tests/testRequestCaller.h"
 #include "joynr/vehicle/DefaultGpsProvider.h"
@@ -69,11 +69,11 @@
 
 #include "joynr/ClusterControllerDirectories.h"
 
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "common/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/InProcessConnectorFactory.h"
-#include "cluster-controller/http-communication-manager/HttpReceiver.h"
+#include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
@@ -95,10 +95,11 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/IClusterControllerSignalHandler.h"
 
 #include "libjoynr/websocket/IWebSocketPpClient.h"
 #include "joynr/IWebSocketSendInterface.h"
-#include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/WebSocketSettings.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include "joynr/MulticastPublication.h"
@@ -1253,6 +1254,14 @@ public:
                              const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
     MOCK_CONST_METHOD0(isInitialized, bool ());
     MOCK_CONST_METHOD0(isConnected, bool ());
+};
+
+class MockClusterControllerSignalHandler: public joynr::IClusterControllerSignalHandler
+{
+public:
+    MOCK_METHOD0(shutdown, void());
+    MOCK_METHOD0(startExternalCommunication, void());
+    MOCK_METHOD0(stopExternalCommunication, void());
 };
 
 #ifdef _MSC_VER

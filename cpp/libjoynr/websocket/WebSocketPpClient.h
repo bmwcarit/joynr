@@ -34,9 +34,9 @@
 
 #include "IWebSocketPpClient.h"
 #include "joynr/Logger.h"
+#include "joynr/WebSocketSettings.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketProtocol.h"
-#include "libjoynr/websocket/WebSocketSettings.h"
 #include "libjoynr/websocket/WebSocketPpReceiver.h"
 #include "libjoynr/websocket/WebSocketPpSender.h"
 
@@ -105,12 +105,12 @@ public:
     }
 
     /**
-     * @brief Register method called on disconnect
+     * @brief Register method called on final disconnect (shutdown)
      * @param onWebSocketDisconnected Callback method
-     * @note This is needed because of the missing signal / slot mechanism of
-     *      Qt. The ownership of objects based on @ref WebSocketSendInterface
-     *      is given to WebSocketMessagingStub. So WebSocketMessagingStub and
-     *      it needs to be informed about a disconnect
+     * @note The WebSocketMessagingStubFactory holds references of objects based
+     *      on @ref IWebSocketSendInterface which must be destroyed.
+     *      So WebSocketMessagingStubFactory needs to be informed about a
+     *      disconnect.
      */
     virtual void registerDisconnectCallback(std::function<void()> onWebSocketDisconnected)
     {
@@ -120,8 +120,7 @@ public:
     /**
      * @brief Register method called on message received
      * @param onMessageReceived Callback method with message as parameter
-     * @note This is needed because of the missing signal / slot mechanism of
-     *      Qt. All messages will be received by the runtime.
+     * @note All received messages will be forwarded to this receive callback.
      */
     void registerReceiveCallback(std::function<void(const std::string&)> onMessageReceived)
     {

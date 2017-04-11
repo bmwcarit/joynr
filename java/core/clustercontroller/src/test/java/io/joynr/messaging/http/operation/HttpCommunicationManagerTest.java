@@ -25,10 +25,14 @@ import static org.hamcrest.Matchers.containsString;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
+
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.AtmosphereMessagingModule;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.ReceiverStatusListener;
@@ -128,6 +132,9 @@ public class HttpCommunicationManagerTest {
                                                          bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
                                                                                   .in(Singleton.class);
                                                          bind(MessageRouter.class).toInstance(mockMessageRouter);
+                                                         Multibinder.newSetBinder(binder(),
+                                                                                  new TypeLiteral<JoynrMessageProcessor>() {
+                                                                                  });
                                                      }
                                                  });
 

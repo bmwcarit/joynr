@@ -76,6 +76,9 @@ joynr::<Package>::<Interface>RequestCaller
 joynr::<Package>::<Interface>RequestInterpreter
 joynr::<Package>::<Interface>SyncProxy
 ```
+# Configuration Reference
+See [C++ Configuration Reference](CppConfigurationReference.md) for a complete listing of
+all configuration properties available to use in joynr C++ applications.
 
 # Building a C++ consumer application
 

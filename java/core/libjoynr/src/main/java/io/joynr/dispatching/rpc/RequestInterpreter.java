@@ -1,5 +1,7 @@
 package io.joynr.dispatching.rpc;
 
+import java.io.Serializable;
+
 /*
  * #%L
  * %%
@@ -21,6 +23,7 @@ package io.joynr.dispatching.rpc;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -36,7 +39,9 @@ import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.JoynrMessageCreator;
+import io.joynr.messaging.JoynrMessageMetaInfo;
 import io.joynr.provider.AbstractDeferred;
+import io.joynr.provider.CallContext;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.provider.ProviderCallback;
@@ -57,11 +62,15 @@ public class RequestInterpreter {
 
     private Provider<JoynrMessageCreator> joynrMessageCreatorProvider;
 
+    private Provider<JoynrMessageMetaInfo> joynrMessageContext;
+
     @Inject
     public RequestInterpreter(JoynrMessageScope joynrMessageScope,
-                              Provider<JoynrMessageCreator> joynrMessageCreatorProvider) {
+                              Provider<JoynrMessageCreator> joynrMessageCreatorProvider,
+                              Provider<JoynrMessageMetaInfo> joynrMessageContext) {
         this.joynrMessageScope = joynrMessageScope;
         this.joynrMessageCreatorProvider = joynrMessageCreatorProvider;
+        this.joynrMessageContext = joynrMessageContext;
     }
 
     // use for caching because creation of MethodMetaInformation is expensive
@@ -85,7 +94,8 @@ public class RequestInterpreter {
             callback.onFailure(e);
             return;
         } catch (Exception e) {
-            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getClass(), JoynrVersion.class);
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getProxy().getClass(),
+                                                                     JoynrVersion.class);
             MethodInvocationException methodInvocationException = new MethodInvocationException(e,
                                                                                                 new Version(joynrVersion.major(),
                                                                                                             joynrVersion.minor()));
@@ -129,12 +139,14 @@ public class RequestInterpreter {
                 params = request.getParams();
             }
             joynrMessageScope.activate();
-            joynrMessageCreatorProvider.get().setMessageCreatorId(request.getCreatorUserId());
+            setContext(requestCaller, request);
+
             logger.trace("invoke provider method {}({})", method.getName(), params == null ? "" : params);
-            return method.invoke(requestCaller, params);
+            return requestCaller.invoke(method, params);
         } catch (IllegalAccessException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non public method {}", request);
-            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getClass(), JoynrVersion.class);
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getProxy().getClass(),
+                                                                     JoynrVersion.class);
             throw new MethodInvocationException(e, new Version(joynrVersion.major(), joynrVersion.minor()));
 
         } catch (InvocationTargetException e) {
@@ -148,20 +160,37 @@ public class RequestInterpreter {
         }
     }
 
+    private void setContext(RequestCaller requestCaller, OneWayRequest request) {
+        String creatorUserId = request.getCreatorUserId();
+        Map<String, Serializable> context = request.getContext();
+
+        // Enable guice-scoped
+        joynrMessageCreatorProvider.get().setMessageCreatorId(creatorUserId);
+        joynrMessageContext.get().setMessageContext(context);
+        // allow requestCaller to set thread-local CallContext
+        CallContext callContext = new CallContext();
+        callContext.setContext(context);
+        callContext.setPrincipal(creatorUserId);
+        requestCaller.setContext(callContext);
+    }
+
     private void ensureMethodMetaInformationPresent(RequestCaller requestCaller,
                                                     OneWayRequest request,
                                                     MethodSignature methodSignature) {
         try {
             if (!methodSignatureToMethodMap.containsKey(methodSignature)) {
                 Method method;
-                method = ReflectionUtils.findMethodByParamTypeNames(methodSignature.getRequestCaller().getClass(),
+                method = ReflectionUtils.findMethodByParamTypeNames(methodSignature.getRequestCaller()
+                                                                                   .getProxy()
+                                                                                   .getClass(),
                                                                     methodSignature.getMethodName(),
                                                                     methodSignature.getParameterTypeNames());
                 methodSignatureToMethodMap.putIfAbsent(methodSignature, method);
             }
         } catch (NoSuchMethodException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non existing method" + request, e);
-            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getClass(), JoynrVersion.class);
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getProxy().getClass(),
+                                                                     JoynrVersion.class);
             throw new MethodInvocationException(e.toString(), new Version(joynrVersion.major(), joynrVersion.minor()));
         }
     }

@@ -2,9 +2,17 @@ message(STATUS "#############################################")
 message(STATUS "Configuring JoynrCommon...")
 message(STATUS "#############################################\n")
 
+# generate JoynrVersion.h which contains the version of joynr
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/git-revision-description")
+include(GetGitRevisionDescription)
+get_git_head_revision(GIT_REFSPEC JOYNR_HEAD_SHA1)
+string(SUBSTRING ${JOYNR_HEAD_SHA1} 0 10 JOYNR_HEAD_SHA1_SHORT)
+set(JOYNR_PACKAGE_REVISION ${JOYNR_VERSION}.${JOYNR_HEAD_SHA1_SHORT})
+string(TIMESTAMP JOYNR_BUILD_TIME)
+
 configure_file(
-    JoynrConfig.h.cmake
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/joynr/JoynrConfig.h"
+    JoynrVersion.h.in
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/joynr/JoynrVersion.h"
     @ONLY
 )
 

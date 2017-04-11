@@ -25,12 +25,13 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>0.24.1</version>
+		<version>0.25.0</version>
 	</parent>
 
 	<modules>
 		<module>test-base</module>
 		<module>performance-test</module>
+		<module>performance-test-jee</module>
 		<module>robustness-test</module>
 		<module>inter-language-test</module>
 		<module>inter-language-test-jee</module>

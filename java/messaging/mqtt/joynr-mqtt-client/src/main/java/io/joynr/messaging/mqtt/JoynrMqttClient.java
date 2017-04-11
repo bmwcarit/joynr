@@ -1,7 +1,5 @@
 package io.joynr.messaging.mqtt;
 
-import io.joynr.messaging.IMessaging;
-
 /*
  * #%L
  * %%
@@ -21,11 +19,13 @@ import io.joynr.messaging.IMessaging;
  * #L%
  */
 
+import io.joynr.messaging.IRawMessaging;
+
 public interface JoynrMqttClient {
 
     public void start();
 
-    public void setMessageListener(IMessaging messaging);
+    public void setMessageListener(IRawMessaging rawMessaging);
 
     public void shutdown();
 

@@ -27,6 +27,8 @@
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 
+#include "JoynrTest.h"
+
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
 #include "joynr/JoynrMessage.h"
@@ -39,7 +41,7 @@
 
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
-#include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/WebSocketSettings.h"
 
 using namespace ::testing;
 
@@ -158,11 +160,6 @@ protected:
 };
 
 INIT_LOGGER(WebSocketMessagingStubTest);
-
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
 
 TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
     JOYNR_LOG_TRACE(logger, "transmit message");

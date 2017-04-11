@@ -33,7 +33,7 @@ function start_java_provider {
     echo '####################################################'
     cd $JOYNR_SOURCE_DIR/tests/robustness-test
     # leave any persistence files instact, since this is a restart
-    mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.robustness.RobustnessProviderApplication" -Dexec.args="$DOMAIN http:mqtt" > $ROBUSTNESS_RESULTS_DIR/provider_java.log 2>&1 &
+    mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.robustness.RobustnessProviderApplication" -Dexec.args="$DOMAIN mqtt" > $ROBUSTNESS_RESULTS_DIR/provider_java.log 2>&1 &
     PROVIDER_PID=$!
     echo "Started Java provider with PID $PROVIDER_PID"
     # Allow some time for startup

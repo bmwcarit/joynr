@@ -28,6 +28,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
@@ -37,6 +38,7 @@ import io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
@@ -88,6 +90,8 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
         messageSerializerFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
         }, new TypeLiteral<AbstractMiddlewareMessageSerializerFactory<? extends Address>>() {
         }, Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
+
+        Multibinder.newSetBinder(binder(), JoynrMessageProcessor.class);
 
         install(new JeeHttpMessagingModule(messagingSkeletonFactory, messagingStubFactory, messageSerializerFactory));
         install(new HttpBridgeEndpointRegistryClientModule());

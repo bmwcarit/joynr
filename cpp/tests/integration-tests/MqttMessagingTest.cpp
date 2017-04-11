@@ -18,7 +18,7 @@
  */
 #include "AbstractMessagingTest.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "cluster-controller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
 
 using namespace ::testing;
 using namespace joynr;

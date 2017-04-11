@@ -39,7 +39,7 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IRawMessaging;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
@@ -48,11 +48,12 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClient.class);
     private MqttClient mqttClient;
-    private IMessaging messagingSkeleton;
+    private IRawMessaging messagingSkeleton;
     private int reconnectSleepMs;
     private int keepAliveTimerSec;
     private int connectionTimeoutSec;
     private int timeToWaitMs;
+    private int maxMsgsInflight;
 
     private Set<String> subscribedTopics = new HashSet<>();
 
@@ -60,12 +61,14 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                           int reconnectSleepMS,
                           int keepAliveTimerSec,
                           int connectionTimeoutSec,
-                          int timeToWaitMs) throws MqttException {
+                          int timeToWaitMs,
+                          int maxMsgsInflight) throws MqttException {
         this.mqttClient = mqttClient;
         this.reconnectSleepMs = reconnectSleepMS;
         this.keepAliveTimerSec = keepAliveTimerSec;
         this.connectionTimeoutSec = connectionTimeoutSec;
         this.timeToWaitMs = timeToWaitMs;
+        this.maxMsgsInflight = maxMsgsInflight;
     }
 
     @Override
@@ -116,6 +119,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         options.setAutomaticReconnect(false);
         options.setConnectionTimeout(connectionTimeoutSec);
         options.setKeepAliveInterval(keepAliveTimerSec);
+        options.setMaxInflight(maxMsgsInflight);
         options.setCleanSession(false);
         return options;
     }
@@ -319,7 +323,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void setMessageListener(IMessaging messaging) {
+    public void setMessageListener(IRawMessaging messaging) {
         this.messagingSkeleton = messaging;
 
     }

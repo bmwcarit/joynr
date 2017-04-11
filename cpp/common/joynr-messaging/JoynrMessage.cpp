@@ -97,7 +97,8 @@ const std::string JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP = "subscrip
 const std::string JoynrMessage::VALUE_CONTENT_TYPE_TEXT_PLAIN = "text/plain";
 const std::string JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON = "application/json";
 
-JoynrMessage::JoynrMessage() : type(""), header(), payload(), receivedFromGlobal(false)
+JoynrMessage::JoynrMessage()
+        : type(""), header(), payload(), receivedFromGlobal(false), localMessage(false)
 {
     generateAndSetMsgIdHeaderIfAbsent();
 }
@@ -118,6 +119,7 @@ JoynrMessage& JoynrMessage::operator=(const JoynrMessage& message)
     header = message.header;
     payload = message.payload;
     receivedFromGlobal = message.receivedFromGlobal;
+    localMessage = message.localMessage;
     generateAndSetMsgIdHeaderIfAbsent();
     return *this;
 }
@@ -126,7 +128,8 @@ JoynrMessage::JoynrMessage(JoynrMessage&& message)
         : type(std::move(message.type)),
           header(std::move(message.header)),
           payload(std::move(message.payload)),
-          receivedFromGlobal(std::move(message.receivedFromGlobal))
+          receivedFromGlobal(std::move(message.receivedFromGlobal)),
+          localMessage(std::move(message.localMessage))
 {
     generateAndSetMsgIdHeaderIfAbsent();
 }
@@ -137,6 +140,7 @@ JoynrMessage& JoynrMessage::operator=(JoynrMessage&& message)
     header = std::move(message.header);
     payload = std::move(message.payload);
     receivedFromGlobal = std::move(message.receivedFromGlobal);
+    localMessage = std::move(message.localMessage);
     generateAndSetMsgIdHeaderIfAbsent();
     return *this;
 }
@@ -396,6 +400,8 @@ std::string JoynrMessage::toLogMessage() const
         ss << it->first << "=" << it->second;
     }
     ss << "}";
+    ss << ", receivedFromGlobal=" << receivedFromGlobal;
+    ss << ", localMessage=" << localMessage;
     return ss.str();
 }
 

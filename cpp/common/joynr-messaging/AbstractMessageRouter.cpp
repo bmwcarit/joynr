@@ -296,14 +296,14 @@ void MessageRunnable::run()
                                 const_cast<exceptions::JoynrRuntimeException&>(e));
                 std::chrono::milliseconds delay = delayException.getDelayMs();
 
-                JOYNR_LOG_ERROR(logger,
+                JOYNR_LOG_TRACE(logger,
                                 "Rescheduling message after error: messageId: {}, new delay {}ms, "
-                                "error: {}",
+                                "reason: {}",
                                 message.getHeaderMessageId(),
                                 delay.count(),
                                 e.getMessage());
                 messageRouter.scheduleMessage(message, destAddress, tryCount + 1, delay);
-            } catch (std::bad_cast& castError) {
+            } catch (const std::bad_cast&) {
                 JOYNR_LOG_ERROR(logger,
                                 "Message with ID {} could not be sent! reason: {}",
                                 message.getHeaderMessageId(),

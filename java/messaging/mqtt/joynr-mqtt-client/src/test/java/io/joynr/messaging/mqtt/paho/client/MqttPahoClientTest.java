@@ -35,12 +35,17 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttModule;
@@ -88,6 +93,7 @@ public class MqttPahoClientTest {
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "");
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MessagingPropertyKeys.CHANNELID, "myChannelId");
 
         injector = Guice.createInjector(new MqttPahoModule(),
@@ -99,6 +105,10 @@ public class MqttPahoClientTest {
                                                 bind(MessageRouter.class).toInstance(mockMessageRouter);
                                                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                                                     .toInstance(Executors.newScheduledThreadPool(10));
+                                                bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
+                                                Multibinder.newSetBinder(binder(),
+                                                                         new TypeLiteral<JoynrMessageProcessor>() {
+                                                                         });
                                             }
                                         });
         mqttClientFactory = injector.getInstance(MqttClientFactory.class);

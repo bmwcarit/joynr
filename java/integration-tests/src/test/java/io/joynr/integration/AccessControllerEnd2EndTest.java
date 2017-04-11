@@ -72,7 +72,7 @@ public class AccessControllerEnd2EndTest {
     private static final String GDAC_DOMAIN = "io.joynr";
     private static final long DISCOVERY_TIMEOUT = 4000;
     private static final long MESSAGING_TTL = 5000;
-    private static final String USERID = "todo";
+    private static final String USERID = System.getProperty("user.name");
 
     private JoynrRuntime runtime;
 

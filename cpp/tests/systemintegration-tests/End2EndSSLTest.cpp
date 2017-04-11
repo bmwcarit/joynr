@@ -25,7 +25,7 @@
 #include <gmock/gmock.h>
 
 #include "tests/utils/MockObjects.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/Future.h"

@@ -20,7 +20,7 @@
 #include <memory>
 #include <string>
 #include <stdint.h>
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "PrettyPrint.h"
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
 #include "joynr/MessagingSettings.h"
@@ -111,7 +111,7 @@ public:
 
     ~LibJoynrRuntimeTest() {
         ccRuntime->deleteChannel();
-        ccRuntime->stopMessaging();
+        ccRuntime->stopExternalCommunication();
         delete ccRuntime;
     }
 

@@ -20,8 +20,8 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "tests/utils/MockObjects.h"
 #include <gtest/gtest.h>
-#include "cluster-controller/access-control/LocalDomainAccessController.h"
-#include "cluster-controller/access-control/LocalDomainAccessStore.h"
+#include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
+#include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
 #include "joynr/Semaphore.h"
 #include <string>

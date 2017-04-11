@@ -34,11 +34,15 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 
 import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.routing.MessageRouter;
 
@@ -68,10 +72,13 @@ public class DefaultMqttClientIdProviderTest {
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "");
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MessagingPropertyKeys.RECEIVERID, receiverId);
         Module testModule = Modules.override(new MqttPahoModule()).with(new AbstractModule() {
             @Override
             protected void configure() {
+                Multibinder.newSetBinder(binder(), JoynrMessageProcessor.class);
+                bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
                 bind(MessageRouter.class).toInstance(mockMessageRouter);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                     .toInstance(Executors.newScheduledThreadPool(10));

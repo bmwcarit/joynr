@@ -25,7 +25,7 @@
 #include "joynr/tests/testProxy.h"
 #include "joynr/types/ProviderQos.h"
 
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 
 using namespace ::testing;
 using namespace joynr;

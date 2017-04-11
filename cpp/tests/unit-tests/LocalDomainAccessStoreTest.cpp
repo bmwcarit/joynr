@@ -21,7 +21,7 @@
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "cluster-controller/access-control/LocalDomainAccessStore.h"
+#include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
 using namespace ::testing;
 using namespace joynr;

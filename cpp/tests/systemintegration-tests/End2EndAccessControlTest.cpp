@@ -30,20 +30,17 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "JoynrTest.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Settings.h"
 #include "joynr/tests/testProxy.h"
 
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 
 #include "tests/utils/LibJoynrMockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore, semaphore){
-    semaphore->notify();
-}
 
 void removeFileInCurrentDirectory(const std::string& filePattern) {
     boost::filesystem::path currentDir(".");

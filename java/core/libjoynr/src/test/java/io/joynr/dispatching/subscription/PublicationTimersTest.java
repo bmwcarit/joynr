@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
@@ -61,19 +62,16 @@ import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
+import joynr.tests.DefaulttestProvider;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PublicationTimersTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(PublicationTimersTest.class);
-    private final String attributeName = "testAttribute";
-
-    interface TestRequestCaller extends RequestCaller {
-        String getTestAttribute();
-    }
+    private final String attributeName = "notifyReadWrite";
 
     @Mock
-    private TestRequestCaller requestCaller;
+    private RequestCaller requestCaller;
 
     @Mock
     private AbstractSubscriptionPublisher subscriptionPublisher;
@@ -93,7 +91,8 @@ public class PublicationTimersTest {
 
     @Before
     public void setUp() {
-        when(providerContainer.getRequestCaller()).thenReturn(requestCaller);
+        requestCaller = new RequestCallerFactory().create(new DefaulttestProvider());
+        when(providerContainer.getProviderProxy()).thenReturn(requestCaller.getProxy());
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
 
         Deferred<String> testAttributeDeferred = new Deferred<String>();

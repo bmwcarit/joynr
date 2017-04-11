@@ -1,8 +1,9 @@
 # Enable ExternalProject CMake module
 include(ExternalProject)
 
+set(EXTERNAL_PROJECTS_ROOT "${CMAKE_BINARY_DIR}/ThirdParty")
 # Set default ExternalProject root directory
-set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
+set_directory_properties(PROPERTIES EP_PREFIX ${EXTERNAL_PROJECTS_ROOT})
 
 # wrapper function around ExternalProject_Add
 # it sets default arguments which are used for every external project

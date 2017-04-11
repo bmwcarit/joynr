@@ -24,6 +24,9 @@
 #include <memory>
 #include <string>
 #include <thread>
+
+#include "JoynrTest.h"
+
 #include "tests/utils/MockObjects.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
@@ -56,11 +59,6 @@ using ::testing::Matcher;
 using ::testing::MakeMatcher;
 
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
 
 class PublicationManagerTest : public testing::Test {
 public:
@@ -1256,7 +1254,7 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
     const std::string senderId = "SenderId";
     const std::string receiverId = "ReceiverId";
     const std::string attributeName("notExistingAttribute");
-    //QtSubscriptionQos
+    //SubscriptionQos
     const std::int64_t period_ms = 100;
     const std::int64_t validity_ms = 1000;
     const std::int64_t publicationTtl_ms = 1000;

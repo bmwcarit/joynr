@@ -37,14 +37,16 @@ class JOYNRCOMMON_EXPORT MessagingQos
 {
 public:
     /**
-     * @brief Base constructor
+     * @brief Full constructor
      * @param ttl The time to live in milliseconds
      * @param effort The effort to expend during message delivery
      * @param encrypt Specifies, whether messages will be sent encrypted
+     * @param compress Specifies, whether messages will be sent compressed
      */
     explicit MessagingQos(std::uint64_t ttl = default_ttl,
                           MessagingQosEffort::Enum effort = MessagingQosEffort::Enum::NORMAL,
-                          bool encrypt = false);
+                          bool encrypt = false,
+                          bool compress = false);
 
     /**
      * @brief Base constructor
@@ -59,11 +61,6 @@ public:
      * @param encrypt Specifies, whether messages will be sent encrypted
      */
     explicit MessagingQos(std::uint64_t ttl, bool encrypt);
-
-    /*
-     * Adding a constructor with just 'encrypt' is not possible since it results
-     * ambiguous constructors.
-     */
 
     /** @brief Copy constructor */
     MessagingQos(const MessagingQos& other) = default;

@@ -24,6 +24,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "JoynrTest.h"
+
 #include "joynr/IJoynrMessageSender.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/LibjoynrSettings.h"
@@ -50,11 +52,6 @@ using ::testing::MakeMatcher;
 using ::testing::Mock;
 
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
 
 MATCHER_P3(messagingQosWithTtl, expectedTtlMs, toleranceMs, logger, "") {
     std::int64_t actual = arg.getTtl();

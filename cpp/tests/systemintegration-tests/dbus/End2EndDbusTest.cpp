@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include "joynr/DispatcherUtils.h"
 #include "tests/utils/MockObjects.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "runtimes/libjoynr-runtime/dbus/LibJoynrDbusRuntime.h"
 
 #include "joynr/tests/DefaulttestProvider.h"
@@ -80,7 +80,7 @@ public:
     }
 
     void SetUp() {
-        clusterControllerRuntime->startMessaging();
+        clusterControllerRuntime->startExternalCommunication();
         clusterControllerRuntime->waitForChannelCreation();
     }
 
@@ -91,7 +91,7 @@ public:
 
         if(clusterControllerRuntime != NULL) {
             clusterControllerRuntime->deleteChannel();
-            clusterControllerRuntime->stopMessaging();
+            clusterControllerRuntime->stopExternalCommunication();
             delete clusterControllerRuntime;
         }
     }

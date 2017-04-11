@@ -187,6 +187,18 @@ interface test {
 
 	attribute TypeDefForPrimitive[] typeDefForPrimitiveArray
 
+	method echoCallingPrincipal {
+		out {
+			String callingPrincipal
+		}
+	}
+
+	method fireAndForgetMethod fireAndForget {
+	    in {
+	        String input
+	    }
+	}
+
 	method addNumbers {
 		in {
 			Int32 first
@@ -213,6 +225,15 @@ interface test {
 	method methodWithNoInputParameters {
 		out {
 			Int32 result
+		}
+	}
+
+	method methodWithStrings{
+		in {
+			String input
+		}
+		out {
+			String result
 		}
 	}
 

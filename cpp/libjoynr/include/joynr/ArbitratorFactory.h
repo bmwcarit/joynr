@@ -44,7 +44,7 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             const types::Version& interfaceVersion,
-            joynr::system::IDiscoveryAsync& discoveryProxy,
+            std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
             const DiscoveryQos& discoveryQos);
 };
 

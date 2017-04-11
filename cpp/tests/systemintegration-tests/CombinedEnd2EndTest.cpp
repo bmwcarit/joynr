@@ -50,11 +50,6 @@
 using namespace ::testing;
 using namespace joynr;
 
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
-
 static const std::string messagingPropertiesPersistenceFileName1(
         "CombinedEnd2EndTest-runtime1-joynr.settings");
 static const std::string messagingPropertiesPersistenceFileName2(
@@ -113,6 +108,28 @@ void CombinedEnd2EndTest::TearDown()
 {
     // Delete the persisted participant ids so that each test uses different participant ids
     std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
+}
+
+TEST_P(CombinedEnd2EndTest, surviveDestructionOfRuntime)
+{
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    // consumer for testinterface
+    {
+        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+                runtime2->createProxyBuilder<tests::testProxy>(domainName);
+        std::uint64_t qosRoundTripTTL = 40000;
+
+        // destroy runtime
+        runtime2 = nullptr;
+
+        // try to build a proxy, it must not run into SIGSEGV
+        EXPECT_THROW(std::unique_ptr<tests::testProxy> testProxy(
+            testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build()),
+             exceptions::DiscoveryException);
+    }
 }
 
 TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
@@ -537,32 +554,28 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         EXPECT_EQ(uint64Out, uint64Arg);
     }
 
-// Operation overloading is not currently supported
-#if 0
     // Testing operation overloading
     {
-        std::unique_ptr<ProxyBuilder<tests::TestProxy>> testProxyBuilder =
+        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
                 runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
-        std::uint64_t qosOneWayTTL = 40000;
         std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
-        std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                                   ->setMessagingQos(MessagingQos(qosOneWayTTL, qosRoundTripTTL))
-                                                   ->setDiscoveryQos(discoveryQos)
-                                                   ->build());
+        std::unique_ptr<tests::testProxy> testProxy =
+                testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                        ->setDiscoveryQos(discoveryQos)
+                        ->build();
 
         std::string derivedStructResult;
         std::string anotherDerivedStructResult;
 
         // Check that the operation overloading worked and the result is of the correct type
-        testProxy->overloadedOperation(derivedStructResult, tests::DerivedStruct());
-        testProxy->overloadedOperation(anotherDerivedStructResult, tests::AnotherDerivedStruct());
+        testProxy->overloadedOperation(derivedStructResult, tests::testTypes::DerivedStruct());
+        testProxy->overloadedOperation(anotherDerivedStructResult, tests::testTypes::AnotherDerivedStruct());
         EXPECT_EQ(derivedStructResult, "DerivedStruct");
         EXPECT_EQ(anotherDerivedStructResult, "AnotherDerivedStruct");
     }
-#endif
 }
 
 TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
@@ -1102,7 +1115,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
                     ->build());
 
     // Shut down the provider
-    // runtime1->stopMessaging();
+    // runtime1->stopExternalCommunication();
     runtime1->unregisterProvider(domainName, testProvider);
     std::this_thread::sleep_for(std::chrono::seconds(5));
 

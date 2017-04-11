@@ -41,14 +41,10 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/PrivateCopyAssign.h"
 
+#include "JoynrTest.h"
+
 using namespace ::testing;
-
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
 
 /**
   * Is an integration test. Tests from Dispatcher -> SubscriptionListener and RequestCaller

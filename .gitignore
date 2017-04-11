@@ -24,3 +24,4 @@ java/core/clustercontroller-standalone/joynr.properties
 node_modules
 build-*
 generated-cpp
+cpp/common/include/joynr/JoynrVersion.h

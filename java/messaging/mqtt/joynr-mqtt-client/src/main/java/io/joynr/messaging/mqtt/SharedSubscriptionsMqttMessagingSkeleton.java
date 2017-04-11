@@ -24,10 +24,14 @@ import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 
 import static java.lang.String.format;
 
+import java.util.Set;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -44,14 +48,23 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     private MqttAddress replyToAddress;
 
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 8 LINES
     public SharedSubscriptionsMqttMessagingSkeleton(@Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                                     @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
                                                     MqttMessageSerializerFactory messageSerializerFactory,
                                                     @Named(MessagingPropertyKeys.CHANNELID) String channelId,
-                                                    MqttTopicPrefixProvider mqttTopicPrefixProvider) {
-        super(ownAddress, messageRouter, mqttClientFactory, messageSerializerFactory, mqttTopicPrefixProvider);
+                                                    MqttTopicPrefixProvider mqttTopicPrefixProvider,
+                                                    RawMessagingPreprocessor rawMessagingPreprocessor,
+                                                    Set<JoynrMessageProcessor> messageProcessors) {
+        super(ownAddress,
+              messageRouter,
+              mqttClientFactory,
+              messageSerializerFactory,
+              mqttTopicPrefixProvider,
+              rawMessagingPreprocessor,
+              messageProcessors);
         this.replyToAddress = replyToAddress;
         this.channelId = channelId;
     }

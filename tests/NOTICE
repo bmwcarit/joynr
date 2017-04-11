@@ -38,9 +38,7 @@ This project has dependencies to:
   inter-language-test-jee-api under The Apache Software License, Version 2.0
   inter-language-test-jee-consumer under The Apache Software License, Version 2.0
   inter-language-test-jee-provider under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:discovery-directory-jee under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery-directory-servlet under The Apache Software License, Version 2.0
-  io.joynr.java.backend-services:domain-access-controller-jee under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller-servlet under The Apache Software License, Version 2.0
   io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
   io.joynr.java.common:discovery-common under The Apache Software License, Version 2.0
@@ -57,6 +55,7 @@ This project has dependencies to:
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
+  io.joynr.performance:performance-test-jee under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-cpp-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-java-app under The Apache Software License, Version 2.0
   io.joynr.tests.system-integration-test:sit-jee-app under The Apache Software License, Version 2.0

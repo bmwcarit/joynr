@@ -76,6 +76,12 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
 {
 }
 
+void LibJoynrMessageRouter::shutdown()
+{
+    parentRouter.reset();
+    parentAddress.reset();
+}
+
 void LibJoynrMessageRouter::setParentRouter(
         std::unique_ptr<system::RoutingProxy> parentRouter,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress,
@@ -157,7 +163,10 @@ void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
         std::lock_guard<std::mutex> lock(parentResolveMutex);
         const std::string destinationPartId = message.getHeaderTo();
         if (runningParentResolves.find(destinationPartId) == runningParentResolves.end()) {
+            EXIT_IF_PARENT_MESSAGE_ROUTER_IS_NOT_SET();
+
             runningParentResolves.insert(destinationPartId);
+
             std::function<void(const bool&)> onSuccess =
                     [this, destinationPartId](const bool& resolved) {
                 if (resolved) {
@@ -175,8 +184,6 @@ void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
                     // TODO error handling in case of failing submission (?)
                 }
             };
-
-            EXIT_IF_PARENT_MESSAGE_ROUTER_IS_NOT_SET();
 
             // TODO error handling in case of failing submission (?)
             parentRouter->resolveNextHopAsync(destinationPartId, onSuccess);
@@ -280,6 +287,14 @@ void LibJoynrMessageRouter::removeNextHop(
     }
     saveRoutingTable();
 
+    if (!isParentMessageRouterSet()) {
+        if (onError) {
+            onError(exceptions::ProviderRuntimeException(
+                    "unable to removeNextHop since parentRouter is not available"));
+        }
+        return;
+    }
+
     std::function<void(const exceptions::JoynrRuntimeException&)> onErrorWrapper =
             [onError](const exceptions::JoynrRuntimeException& error) {
         JOYNR_LOG_ERROR(logger,
@@ -304,6 +319,13 @@ void LibJoynrMessageRouter::addMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    if (!isParentMessageRouterSet()) {
+        if (onError) {
+            onError(exceptions::ProviderRuntimeException(
+                    "unable to addMulticastReceiver since parentRouter is not available"));
+        }
+        return;
+    }
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
         ReadLocker lock(routingTableLock);
@@ -390,6 +412,14 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
         JOYNR_LOG_ERROR(logger,
                         "No routing entry for multicast provider (providerParticipantId=" +
                                 providerParticipantId + ") found.");
+        return;
+    }
+
+    if (!isParentMessageRouterSet()) {
+        if (onError) {
+            onError(exceptions::ProviderRuntimeException(
+                    "unable to removeMulticastReceiver since parentRouter is not available"));
+        }
         return;
     }
 

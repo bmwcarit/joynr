@@ -25,8 +25,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "JoynrTest.h"
+
 #include "joynr/LocalCapabilitiesDirectory.h"
-#include "cluster-controller/capabilities-client/ICapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -47,16 +49,6 @@ using ::testing::WhenDynamicCastTo;
 using ::testing::ElementsAre;
 using namespace ::testing;
 using namespace joynr;
-
-ACTION_P(AcquireSemaphore, semaphore)
-{
-    semaphore->wait();
-}
-
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
 
 class LocalCapabilitiesDirectoryTest : public ::testing::Test
 {

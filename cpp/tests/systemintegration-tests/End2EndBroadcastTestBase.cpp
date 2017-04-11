@@ -29,7 +29,7 @@
 
 #include "JoynrTest.h"
 #include "tests/utils/MockObjects.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/OnChangeSubscriptionQos.h"
@@ -39,11 +39,6 @@
 
 using namespace ::testing;
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
 
 static const std::string messagingPropertiesPersistenceFileName1(
         "End2EndBroadcastTest-runtime1-joynr.persist");

@@ -43,6 +43,7 @@ import com.google.inject.name.Names;
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
@@ -98,21 +99,25 @@ public class JoynrMessageFactoryTest {
                                                          joynrMessageProcessorMultibinder.addBinding()
                                                                                          .toInstance(new JoynrMessageProcessor() {
                                                                                              @Override
-                                                                                             public JoynrMessage process(JoynrMessage joynrMessage) {
+                                                                                             public JoynrMessage processOutgoing(JoynrMessage joynrMessage) {
                                                                                                  joynrMessage.getHeader()
                                                                                                              .put("test",
                                                                                                                   "test");
                                                                                                  return joynrMessage;
                                                                                              }
+
+                                                                                             @Override
+                                                                                             public JoynrMessage processIncoming(JoynrMessage joynrMessage) {
+                                                                                                 return joynrMessage;
+                                                                                             }
                                                                                          });
                                                      }
-
                                                  });
 
         objectMapper = injector.getInstance(ObjectMapper.class);
 
         payload = "payload";
-        Method method = TestRequestCaller.class.getMethod("respond", new Class[]{ String.class });
+        Method method = TestProvider.class.getMethod("methodWithStrings", new Class[]{ String.class });
         request = new Request(method.getName(), new String[]{ payload }, method.getParameterTypes());
         String requestReplyId = request.getRequestReplyId();
         reply = new Reply(requestReplyId, objectMapper.<JsonNode> valueToTree(payload));

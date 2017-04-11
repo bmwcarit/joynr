@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 
 #include <cassert>
 #include <cstdint>
@@ -29,19 +29,20 @@
 #include "websocket/WebSocketCcMessagingSkeletonTLS.h"
 #include "websocket/WebSocketCcMessagingSkeletonNonTLS.h"
 
-#include "cluster-controller/access-control/AccessController.h"
-#include "cluster-controller/access-control/LocalDomainAccessStore.h"
-#include "cluster-controller/capabilities-client/CapabilitiesClient.h"
-#include "cluster-controller/http-communication-manager/HttpMessagingSkeleton.h"
-#include "cluster-controller/http-communication-manager/HttpReceiver.h"
-#include "cluster-controller/http-communication-manager/HttpSender.h"
-#include "cluster-controller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
-#include "cluster-controller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
-#include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
-#include "cluster-controller/mqtt/MqttMessagingSkeleton.h"
-#include "cluster-controller/mqtt/MqttReceiver.h"
-#include "cluster-controller/mqtt/MqttSender.h"
-#include "cluster-controller/mqtt/MosquittoConnection.h"
+#include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
+#include "libjoynrclustercontroller/access-control/AccessController.h"
+#include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
+#include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
+#include "libjoynrclustercontroller/http-communication-manager/HttpMessagingSkeleton.h"
+#include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
+#include "libjoynrclustercontroller/http-communication-manager/HttpSender.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
+#include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
+#include "libjoynrclustercontroller/mqtt/MqttMessagingSkeleton.h"
+#include "libjoynrclustercontroller/mqtt/MqttReceiver.h"
+#include "libjoynrclustercontroller/mqtt/MqttSender.h"
+#include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
 #include "joynr/infrastructure/DacTypes/ControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
@@ -151,9 +152,56 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           wsMessagingStubFactory(),
           multicastMessagingSkeletonDirectory(
                   std::make_shared<MulticastMessagingSkeletonDirectory>()),
-          ccMessageRouter(nullptr)
+          ccMessageRouter(nullptr),
+          lifetimeSemaphore(0)
 {
     initializeAllDependencies();
+}
+
+std::unique_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
+        std::size_t argc,
+        char* argv[])
+{
+    // Object that holds all the settings
+    auto settings = std::make_unique<Settings>();
+
+    // Discovery entry file name
+    std::string discoveryEntriesFile;
+
+    // Walk the argument list and
+    //  - merge all the settings files into the settings object
+    //  - read in input file name to inject discovery entries
+    for (std::size_t i = 1; i < argc; ++i) {
+
+        if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--version") == 0) {
+            // exit immediately if only --version was asked
+            return 0;
+        } else if (std::strcmp(argv[i], "-d") == 0) {
+            if (++i < argc) {
+                discoveryEntriesFile = argv[i];
+            } else {
+                return nullptr;
+            }
+            break;
+        }
+
+        const std::string settingsFileName(argv[i]);
+
+        // Read the settings file
+        JOYNR_LOG_INFO(logger, "Loading settings file: {}", settingsFileName);
+        Settings currentSettings(settingsFileName);
+
+        // Check for errors
+        if (!currentSettings.isLoaded()) {
+            JOYNR_LOG_FATAL(
+                    logger, "Provided settings file {} could not be loaded.", settingsFileName);
+            return nullptr;
+        }
+
+        // Merge
+        Settings::merge(currentSettings, *settings, true);
+    }
+    return create(std::move(settings), discoveryEntriesFile);
 }
 
 void JoynrClusterControllerRuntime::initializeAllDependencies()
@@ -781,13 +829,13 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     // this ensures all asynchronous operations are stopped now
     // which allows a safe shutdown
     singleThreadIOService->stop();
-    stopMessaging();
+
+    stopExternalCommunication();
 
     multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
 
     if (joynrDispatcher != nullptr) {
         JOYNR_LOG_TRACE(logger, "joynrDispatcher");
-        // joynrDispatcher->stopMessaging();
         delete joynrDispatcher;
     }
 
@@ -801,14 +849,13 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     delete ccDbusMessageRouterAdapter;
     delete dbusSettings;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-
     JOYNR_LOG_TRACE(logger, "leaving ~JoynrClusterControllerRuntime");
 }
 
-void JoynrClusterControllerRuntime::startMessaging()
+void JoynrClusterControllerRuntime::startExternalCommunication()
 {
     //    assert(joynrDispatcher!=NULL);
-    //    joynrDispatcher->startMessaging();
+    //    joynrDispatcher->startExternalCommunication();
     //    joynrDispatcher->waitForMessaging();
     if (doHttpMessaging) {
         assert(httpMessageReceiver != nullptr);
@@ -825,9 +872,9 @@ void JoynrClusterControllerRuntime::startMessaging()
     }
 }
 
-void JoynrClusterControllerRuntime::stopMessaging()
+void JoynrClusterControllerRuntime::stopExternalCommunication()
 {
-    // joynrDispatcher->stopMessaging();
+    // joynrDispatcher->stopExternalCommunication();
     if (doHttpMessaging) {
         if (httpMessagingIsRunning) {
             httpMessageReceiver->stopReceiveQueue();
@@ -842,9 +889,15 @@ void JoynrClusterControllerRuntime::stopMessaging()
     }
 }
 
+void JoynrClusterControllerRuntime::shutdown()
+{
+    JOYNR_LOG_TRACE(logger, "Shutdown Cluster Controller");
+    lifetimeSemaphore.notify();
+}
+
 void JoynrClusterControllerRuntime::runForever()
 {
-    singleThreadIOService->join();
+    lifetimeSemaphore.wait();
 }
 
 std::unique_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
@@ -862,7 +915,7 @@ std::unique_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
 
 void JoynrClusterControllerRuntime::start()
 {
-    startMessaging();
+    startExternalCommunication();
     registerRoutingProvider();
     registerDiscoveryProvider();
     registerMessageNotificationProvider();
@@ -874,7 +927,7 @@ void JoynrClusterControllerRuntime::stop(bool deleteChannel)
     if (deleteChannel) {
         this->deleteChannel();
     }
-    stopMessaging();
+    stopExternalCommunication();
     singleThreadIOService->stop();
 }
 

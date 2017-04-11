@@ -19,7 +19,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
-#include "cluster-controller/access-control/AceValidator.h"
+#include "libjoynrclustercontroller/access-control/AceValidator.h"
 using namespace ::testing;
 using namespace joynr;
 using namespace joynr::infrastructure::DacTypes;
