@@ -1,4 +1,4 @@
-/*global Buffer: true */
+/*global Buffer: true, requirejs: true */
 
 /*
  * #%L
@@ -25,21 +25,38 @@
  *
  */
 define([
-    "ws",
     "global/Smrf",
     "joynr/messaging/JoynrMessage",
     "joynr/util/JSONSerializer",
     "joynr/exceptions/JoynrRuntimeException",
     "joynr/system/LoggerFactory"
-], function(ws, smrf, JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
+], function(smrf, JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
     if (typeof Buffer !== "function") {
         throw new JoynrRuntimeException(
                 "Decoding of binary websocket messages not possible. Buffer not available.");
     }
     var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocket");
 
+    var ws;
+
+    /*
+     * try to load the native C++ websocket implementation first; only if this fails
+     * fall back to JS implementation. Temporarily silence error output for first
+     * load attempt.
+     */
+    var savedOnError = requirejs.onError;
+    requirejs.onError = function() {};
+    ws = requirejs("wscpp");
+    requirejs.onError = savedOnError;
+    if (!ws) {
+        ws = requirejs("ws");
+        if (!ws) {
+            throw new Error("No websocket module available");
+        }
+    }
+
     ws.encodeString = function(string) {
-        return string;
+        return Buffer.from(string);
     };
     ws.decodeEventData = function(data) {
         return data;
