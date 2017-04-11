@@ -16,23 +16,22 @@
  * limitations under the License.
  * #L%
  */
-#include "WebSocketMessagingStub.h"
+#include "libjoynr/websocket/WebSocketMessagingStub.h"
 
-#include "WebSocketMessagingStubFactory.h"
 #include "joynr/IWebSocketSendInterface.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
+#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 
 namespace joynr
 {
 
 INIT_LOGGER(WebSocketMessagingStub);
 
-WebSocketMessagingStub::WebSocketMessagingStub(
-        const std::shared_ptr<IWebSocketSendInterface>& webSocket)
-        : webSocket(webSocket)
+WebSocketMessagingStub::WebSocketMessagingStub(std::shared_ptr<IWebSocketSendInterface> webSocket)
+        : webSocket(std::move(webSocket))
 {
 }
 
