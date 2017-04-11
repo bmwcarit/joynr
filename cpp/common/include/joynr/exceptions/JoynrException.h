@@ -392,9 +392,7 @@ private:
     std::string name;
 };
 
-inline ApplicationExceptionError::~ApplicationExceptionError()
-{
-}
+inline ApplicationExceptionError::~ApplicationExceptionError() = default;
 
 /**
  * @brief Joynr exception used to return error enums defined in the corresponding
