@@ -54,7 +54,7 @@ public:
     /**
      * @return The detail message string of the exception.
      */
-    virtual const std::string getMessage() const noexcept;
+    virtual std::string getMessage() const noexcept;
     /**
      * return The typeName of the exception used for serialization and logging.
      */

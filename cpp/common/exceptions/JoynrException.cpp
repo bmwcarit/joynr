@@ -92,7 +92,7 @@ const char* JoynrException::what() const noexcept
     return message.is_initialized() ? message->c_str() : std::exception::what();
 }
 
-const std::string JoynrException::getMessage() const noexcept
+std::string JoynrException::getMessage() const noexcept
 {
     return message.is_initialized() ? *message : std::string(std::exception::what());
 }
