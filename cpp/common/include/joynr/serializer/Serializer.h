@@ -63,7 +63,8 @@ template <typename Variant>
 class ArchiveVariantWrapper
 {
 public:
-    ArchiveVariantWrapper(Variant&& archiveVariant) : archiveVariant(std::move(archiveVariant))
+    explicit ArchiveVariantWrapper(Variant&& archiveVariant)
+            : archiveVariant(std::move(archiveVariant))
     {
     }
 

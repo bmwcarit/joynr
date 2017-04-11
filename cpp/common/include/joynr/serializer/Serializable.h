@@ -53,7 +53,7 @@ template <typename Variant, typename... Ts>
 struct Serializable : ISerializable<Variant>
 {
     template <typename... Xs>
-    Serializable(Xs&&... data)
+    explicit Serializable(Xs&&... data)
             : storage(std::forward<Xs>(data)...)
     {
     }

@@ -154,7 +154,7 @@ struct LogLevelInitializer
 
 struct Logger
 {
-    Logger(const std::string& prefix) : spdlog()
+    explicit Logger(const std::string& prefix) : spdlog()
     {
         static LogLevelInitializer logLevelInitializer;
         std::vector<spdlog::sink_ptr> sinks;

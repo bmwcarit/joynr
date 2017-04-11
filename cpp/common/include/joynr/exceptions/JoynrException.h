@@ -370,10 +370,10 @@ public:
     ApplicationExceptionError() : name()
     {
     }
-    ApplicationExceptionError(const std::string& name) : name(name)
+    explicit ApplicationExceptionError(const std::string& name) : name(name)
     {
     }
-    ApplicationExceptionError(std::string&& name) : name(std::move(name))
+    explicit ApplicationExceptionError(std::string&& name) : name(std::move(name))
     {
     }
     // shall be polymorphic AND abstract
