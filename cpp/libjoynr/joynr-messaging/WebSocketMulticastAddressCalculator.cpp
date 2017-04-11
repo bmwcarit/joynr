@@ -41,4 +41,4 @@ std::shared_ptr<const system::RoutingTypes::Address> WebSocketMulticastAddressCa
     std::ignore = message;
     return clusterControllerAddress;
 }
-}
+} // namespace joynr

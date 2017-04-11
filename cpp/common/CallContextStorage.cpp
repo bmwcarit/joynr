@@ -38,4 +38,5 @@ void CallContextStorage::invalidate()
 {
     callContext.invalidate();
 }
-}
+
+} // namespace joynr

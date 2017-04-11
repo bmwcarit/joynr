@@ -47,7 +47,7 @@ namespace joynr
 namespace exceptions
 {
 class JoynrRuntimeException;
-}
+} // namespace exceptions
 
 class IMessaging;
 class IMessagingStubFactory;

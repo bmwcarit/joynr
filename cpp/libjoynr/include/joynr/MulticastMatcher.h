@@ -55,5 +55,5 @@ public:
     }
 };
 
-} // joynr
+} // namespace joynr
 #endif // MULTICASTMATCHER_H

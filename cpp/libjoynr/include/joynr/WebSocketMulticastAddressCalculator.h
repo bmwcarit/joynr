@@ -26,22 +26,17 @@
 
 namespace joynr
 {
+
 namespace system
 {
 namespace RoutingTypes
 {
-
 class WebSocketAddress;
 class Address;
-
-} // RoutingTypes
-} // system
+} // namespace RoutingTypes
+} // namespace system
 
 class JoynrMessage;
-}
-
-namespace joynr
-{
 
 class WebSocketMulticastAddressCalculator : public IMulticastAddressCalculator
 {

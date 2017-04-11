@@ -31,7 +31,7 @@ class JoynrMessage;
 namespace exceptions
 {
 class JoynrRuntimeException;
-}
+} // namespace exceptions
 
 /**
  * Interface for sending joynr messages in both directions between clustercontroller and libjoynr.

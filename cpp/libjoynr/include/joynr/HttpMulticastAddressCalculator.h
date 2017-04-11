@@ -26,22 +26,17 @@
 
 namespace joynr
 {
+
 namespace system
 {
 namespace RoutingTypes
 {
-
 class ChannelAddress;
 class Address;
-
-} // RoutingTypes
-} // system
+} // namespace RoutingTypes
+} // namespace system
 
 class JoynrMessage;
-}
-
-namespace joynr
-{
 
 class HttpMulticastAddressCalculator : public IMulticastAddressCalculator
 {

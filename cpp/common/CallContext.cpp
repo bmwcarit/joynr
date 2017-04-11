@@ -46,4 +46,5 @@ bool CallContext::operator!=(const CallContext& other) const
 {
     return !(*this == other);
 }
-}
+
+} // namespace joynr

@@ -26,6 +26,7 @@
 
 namespace joynr
 {
+
 namespace system
 {
 namespace RoutingTypes
@@ -38,10 +39,6 @@ class Address;
 } // system
 
 class JoynrMessage;
-}
-
-namespace joynr
-{
 
 class MqttMulticastAddressCalculator : public IMulticastAddressCalculator
 {

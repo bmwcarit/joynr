@@ -35,14 +35,14 @@ namespace system
 namespace RoutingTypes
 {
 class Address;
-} // RoutingTypes
+} // namespace RoutingTypes
 } // namespace system
 
 namespace exceptions
 {
 class ProviderRuntimeException;
 class JoynrRuntimeException;
-} // exceptions
+} // namespace exceptions
 
 class JOYNR_EXPORT IMessageRouter
 {

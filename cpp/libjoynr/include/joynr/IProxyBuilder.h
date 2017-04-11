@@ -31,7 +31,7 @@ class DiscoveryQos;
 namespace exceptions
 {
 class DiscoveryException;
-}
+} // namespace exceptions
 
 /**
  * @brief Interface to create a proxy object for the given interface T.

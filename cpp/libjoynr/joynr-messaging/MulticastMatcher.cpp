@@ -64,4 +64,4 @@ bool MulticastMatcher::operator==(const MulticastMatcher& other) const
     return multicastId == other.multicastId;
 }
 
-} // joynr
+} // namespace joynr

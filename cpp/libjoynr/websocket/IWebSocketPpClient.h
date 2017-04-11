@@ -31,14 +31,15 @@ class IWebSocketSendInterface;
 namespace exceptions
 {
 class JoynrRuntimeException;
-}
+} // namespace exceptions
+
 namespace system
 {
 namespace RoutingTypes
 {
 class WebSocketAddress;
-}
-}
+} // namespace RoutingTypes
+} // namespace system
 
 class IWebSocketPpClient
 {
