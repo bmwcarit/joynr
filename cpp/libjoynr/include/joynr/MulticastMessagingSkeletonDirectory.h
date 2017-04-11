@@ -50,7 +50,7 @@ public:
         JOYNR_LOG_DEBUG(
                 logger, "register messaging skeleton for address type {}", typeIndex.name());
         std::lock_guard<std::recursive_mutex> lock(mutex);
-        multicastSkeletons[typeIndex] = skeleton;
+        multicastSkeletons[typeIndex] = std::move(skeleton);
     }
 
     template <class T,

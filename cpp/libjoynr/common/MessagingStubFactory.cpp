@@ -65,7 +65,7 @@ bool MessagingStubFactory::contains(
 void MessagingStubFactory::registerStubFactory(
         std::shared_ptr<IMiddlewareMessagingStubFactory> factory)
 {
-    this->factoryList.push_back(factory);
+    this->factoryList.push_back(std::move(factory));
 }
 
 } // namespace joynr
