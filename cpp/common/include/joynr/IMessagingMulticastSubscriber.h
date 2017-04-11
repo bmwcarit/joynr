@@ -30,7 +30,7 @@ namespace joynr
 class JOYNRCOMMON_EXPORT IMessagingMulticastSubscriber : public IMessaging
 {
 public:
-    virtual ~IMessagingMulticastSubscriber() = default;
+    ~IMessagingMulticastSubscriber() override = default;
     virtual void registerMulticastSubscription(const std::string& multicastId) = 0;
     virtual void unregisterMulticastSubscription(const std::string& multicastId) = 0;
 };

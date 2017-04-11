@@ -33,7 +33,7 @@ class JOYNRCOMMON_EXPORT Reply : public BaseReply
 {
 public:
     Reply();
-    virtual ~Reply() = default;
+    ~Reply() override = default;
 
     Reply(Reply&) = default;
     Reply& operator=(Reply&) = default;
