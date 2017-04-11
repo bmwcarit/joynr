@@ -123,6 +123,13 @@ public:
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress,
                          std::string parentParticipantId);
 
+    /*
+     * Method specific to LibJoynrMessageRouter,
+     * removes parentRouter shared ptr in order to break cyclic dependency
+     * SubscriptionManager -> LibJoynrMessageRouter -> RoutingProxy -> SubscriptionManager
+     */
+    void shutdown();
+
     void queryGlobalClusterControllerAddress(
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);

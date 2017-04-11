@@ -14,7 +14,6 @@ The software listed below included in some products is licensed under the "Apach
 - com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.6.2
   Notice file: WEB-INF/lib/jackson-module-jaxb-annotations-2.6.2.jar:META-INF/NOTICE
   License file: WEB-INF/lib/jackson-module-jaxb-annotations-2.6.2.jar:META-INF/LICENSE
-- com.google.code.gson:gson:2.1
 - com.google.guava:guava:11.0.2
 - com.google.inject.extensions:guice-assistedinject:3.0
   Notice file: WEB-INF/lib/guice-assistedinject-3.0.jar:META-INF/NOTICE
@@ -22,12 +21,6 @@ The software listed below included in some products is licensed under the "Apach
 - com.google.inject.extensions:guice-multibindings:3.0
   Notice file: WEB-INF/lib/guice-multibindings-3.0.jar:META-INF/NOTICE
   License file: WEB-INF/lib/guice-multibindings-3.0.jar:META-INF/LICENSE
-- com.google.inject.extensions:guice-persist:3.0
-  Notice file: WEB-INF/lib/guice-persist-3.0.jar:META-INF/NOTICE
-  License file: WEB-INF/lib/guice-persist-3.0.jar:META-INF/LICENSE
-- com.google.inject.extensions:guice-servlet:3.0
-  Notice file: WEB-INF/lib/guice-servlet-3.0.jar:META-INF/NOTICE
-  License file: WEB-INF/lib/guice-servlet-3.0.jar:META-INF/LICENSE
 - com.google.inject:guice:3.0
   Notice file: WEB-INF/lib/guice-3.0.jar:META-INF/NOTICE
   License file: WEB-INF/lib/guice-3.0.jar:META-INF/LICENSE
@@ -41,6 +34,9 @@ The software listed below included in some products is licensed under the "Apach
   Notice file: WEB-INF/lib/commons-logging-1.0.4.jar:META-INF/NOTICE.txt
   License file: WEB-INF/lib/commons-logging-1.0.4.jar:META-INF/LICENSE.txt
 - javax.inject:javax.inject:1
+- log4j:log4j:1.2.17
+  Notice file: WEB-INF/lib/log4j-1.2.17.jar:META-INF/NOTICE
+  License file: WEB-INF/lib/log4j-1.2.17.jar:META-INF/LICENSE
 - net.sf.ehcache:ehcache:2.8.1
   License file: WEB-INF/lib/ehcache-2.8.1.jar:LICENSE
 - org.apache.httpcomponents:httpclient:4.3
@@ -49,14 +45,9 @@ The software listed below included in some products is licensed under the "Apach
 - org.apache.httpcomponents:httpcore:4.3
   Notice file: WEB-INF/lib/httpcore-4.3.jar:META-INF/NOTICE
   License file: WEB-INF/lib/httpcore-4.3.jar:META-INF/LICENSE
-- org.javassist:javassist:3.18.1-GA
 - xml-apis:xml-apis:1.4.01
   License file: WEB-INF/lib/xml-apis-1.4.01.jar:license/LICENSE
   Notice file: WEB-INF/lib/xml-apis-1.4.01.jar:license/NOTICE
-
-The software listed below included in some products is licensed under the "Common Development and Distribution-License 1.0". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/CDDL-1.0.txt".
-- javax.interceptor:javax.interceptor-api:1.2
-  License file: WEB-INF/lib/javax.interceptor-api-1.2.jar:META-INF/LICENSE.txt
 
 The software listed below included in some products is licensed under the "DOM4J License". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/DOM4J-License.txt".
 - dom4j:dom4j:1.6.1
@@ -74,18 +65,9 @@ The software listed below included in some products is licensed under the "MIT/X
   License: META-INF/licenses/MIT.slf4j.txt
 - org.slf4j:slf4j-jdk14:1.7.21
   License: META-INF/licenses/MIT.slf4j.txt
+- org.slf4j:slf4j-log4j12:1.7.21
+  License: META-INF/licenses/MIT.slf4j.txt
 
 The software listed below included in some products is licensed under the "W3C® Software Notice and License". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/W3C-Software-Notice.txt".
 - files in WEB-INF/lib/xml-apis-1.4.01.jar:org/w3c/dom
   License: WEB-INF/lib/xml-apis-1.4.01.jar:license/LICENSE.dom-software.txt
-
-Software libraries listed below included in some products is licensed under the “Eclipse Distribution License 1.0”. A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/Eclipse-Distribution-License-1.0.txt".
-- io.joynr.mqtt:mqtt-client:0.1
-  License: about.html
-
-The software listed below included in some products is licensed under the "DWTFYWT Public Licence". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/COPYING.txt".
-- org.reflections:reflections:0.9.8
-
-The software listed below included in some products is licensed under the "Public Domain".
-- aopalliance:aopalliance:1.0
-  License: http://aopalliance.sourceforge.net

@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+#include <cassert>
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
 #include "joynr/SingleThreadedIOService.h"
@@ -35,17 +36,23 @@ namespace joynr
 INIT_LOGGER(LibJoynrWebSocketRuntime);
 
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings)
-        : LibJoynrRuntime(std::move(settings)), wsSettings(*this->settings)
+        : LibJoynrRuntime(std::move(settings)),
+          wsSettings(*this->settings),
+          websocket(nullptr),
+          initializationMsg()
 {
     createWebsocketClient();
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 {
+    assert(websocket);
     websocket->close();
+
     // synchronously stop the underlying boost::asio::io_service
     // this ensures all asynchronous operations are stopped now
     // which allows a safe shutdown
+    assert(singleThreadIOService);
     singleThreadIOService->stop();
 }
 

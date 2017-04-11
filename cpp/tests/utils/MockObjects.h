@@ -96,6 +96,7 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/IClusterControllerSignalHandler.h"
 
 #include "libjoynr/websocket/IWebSocketPpClient.h"
 #include "joynr/IWebSocketSendInterface.h"
@@ -1293,6 +1294,14 @@ public:
                              const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
     MOCK_CONST_METHOD0(isInitialized, bool ());
     MOCK_CONST_METHOD0(isConnected, bool ());
+};
+
+class MockClusterControllerSignalHandler: public joynr::IClusterControllerSignalHandler
+{
+public:
+    MOCK_METHOD0(shutdown, void());
+    MOCK_METHOD0(startExternalCommunication, void());
+    MOCK_METHOD0(stopExternalCommunication, void());
 };
 
 #ifdef _MSC_VER

@@ -54,7 +54,8 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
           inProcessDispatcher(nullptr),
           settings(std::move(settings)),
           libjoynrSettings(new LibjoynrSettings(*this->settings)),
-          dispatcherMessagingSkeleton(nullptr)
+          dispatcherMessagingSkeleton(nullptr),
+          libJoynrMessageRouter(nullptr)
 {
     libjoynrSettings->printSettings();
     singleThreadIOService->start();
@@ -77,6 +78,9 @@ LibJoynrRuntime::~LibJoynrRuntime()
     if (inProcessPublicationSender) {
         delete inProcessPublicationSender;
         inProcessPublicationSender = nullptr;
+    }
+    if (libJoynrMessageRouter) {
+        libJoynrMessageRouter->shutdown();
     }
 }
 

@@ -41,7 +41,7 @@ Arbitrator::Arbitrator(
         const std::string& domain,
         const std::string& interfaceName,
         const joynr::types::Version& interfaceVersion,
-        joynr::system::IDiscoveryAsync& discoveryProxy,
+        std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
         const DiscoveryQos& discoveryQos,
         std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction)
         : discoveryProxy(discoveryProxy),
@@ -146,17 +146,22 @@ void Arbitrator::attemptArbitration()
 {
     std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     try {
-        if (discoveryQos.getArbitrationStrategy() ==
-            DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
-            types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
-            std::string fixedParticipantId =
-                    discoveryQos.getCustomParameter("fixedParticipantId").getValue();
-            auto future = discoveryProxy.lookupAsync(fixedParticipantId);
-            future->get(fixedParticipantResult);
-            result.push_back(fixedParticipantResult);
+        if (auto discoveryProxySharedPtr = discoveryProxy.lock()) {
+            if (discoveryQos.getArbitrationStrategy() ==
+                DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
+                types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
+                std::string fixedParticipantId =
+                        discoveryQos.getCustomParameter("fixedParticipantId").getValue();
+                auto future = discoveryProxySharedPtr->lookupAsync(fixedParticipantId);
+                future->get(fixedParticipantResult);
+                result.push_back(fixedParticipantResult);
+            } else {
+                auto future = discoveryProxySharedPtr->lookupAsync(
+                        domains, interfaceName, systemDiscoveryQos);
+                future->get(result);
+            }
         } else {
-            auto future = discoveryProxy.lookupAsync(domains, interfaceName, systemDiscoveryQos);
-            future->get(result);
+            throw exceptions::JoynrRuntimeException("discoveryProxy not available");
         }
         receiveCapabilitiesLookupResults(result);
     } catch (const exceptions::JoynrException& e) {

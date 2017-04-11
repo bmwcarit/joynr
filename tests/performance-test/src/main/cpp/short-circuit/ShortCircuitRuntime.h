@@ -171,7 +171,7 @@ public:
     {
         return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
                                                           &requestCallerDirectory,
-                                                          *discoveryProxy,
+                                                          discoveryProxy,
                                                           domain,
                                                           dispatcherAddress,
                                                           messageRouter,
@@ -181,7 +181,7 @@ public:
 private:
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<IMessageRouter> messageRouter;
-    std::unique_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
+    std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     std::shared_ptr<JoynrMessageSender> joynrMessageSender;
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;

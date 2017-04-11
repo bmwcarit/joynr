@@ -61,14 +61,14 @@ public:
     /**
      * @brief Constructor
      * @param proxyFactory Pointer to proxy factory object
-     * @param discoveryProxy Reference to IDiscoverySync object
+     * @param discoveryProxy weak ptr to IDiscoverySync object
      * @param domain The provider domain
      * @param dispatcherAddress The address of the dispatcher
      * @param messageRouter A shared pointer to the message router object
      */
     ProxyBuilder(ProxyFactory& proxyFactory,
                  IRequestCallerDirectory* requestCallerDirectory,
-                 joynr::system::IDiscoveryAsync& discoveryProxy,
+                 std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
                  const std::string& domain,
                  std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
                  std::shared_ptr<IMessageRouter> messageRouter,
@@ -118,7 +118,7 @@ private:
     MessagingQos messagingQos;
     ProxyFactory& proxyFactory;
     IRequestCallerDirectory* requestCallerDirectory;
-    joynr::system::IDiscoveryAsync& discoveryProxy;
+    std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     std::unique_ptr<Arbitrator> arbitrator;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
@@ -133,7 +133,7 @@ template <class T>
 ProxyBuilder<T>::ProxyBuilder(
         ProxyFactory& proxyFactory,
         IRequestCallerDirectory* requestCallerDirectory,
-        system::IDiscoveryAsync& discoveryProxy,
+        std::weak_ptr<system::IDiscoveryAsync> discoveryProxy,
         const std::string& domain,
         std::shared_ptr<const system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<IMessageRouter> messageRouter,

@@ -223,7 +223,7 @@ public:
         }
         return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
                                                           requestCallerDirectory,
-                                                          *discoveryProxy,
+                                                          discoveryProxy,
                                                           domain,
                                                           dispatcherAddress,
                                                           getMessageRouter(),
@@ -324,7 +324,7 @@ protected:
     /** @brief Address of the dispatcher */
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     /** @brief Wrapper for discovery proxies */
-    std::unique_ptr<LocalDiscoveryAggregator> discoveryProxy;
+    std::shared_ptr<LocalDiscoveryAggregator> discoveryProxy;
     /**
      * @brief Publication manager receives subscription requests and prepares publications
      * which are send back to the subscription manager.

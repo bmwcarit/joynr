@@ -110,6 +110,28 @@ void CombinedEnd2EndTest::TearDown()
     std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
 }
 
+TEST_P(CombinedEnd2EndTest, surviveDestructionOfRuntime)
+{
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    // consumer for testinterface
+    {
+        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+                runtime2->createProxyBuilder<tests::testProxy>(domainName);
+        std::uint64_t qosRoundTripTTL = 40000;
+
+        // destroy runtime
+        runtime2 = nullptr;
+
+        // try to build a proxy, it must not run into SIGSEGV
+        EXPECT_THROW(std::unique_ptr<tests::testProxy> testProxy(
+            testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build()),
+             exceptions::DiscoveryException);
+    }
+}
+
 TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
 {
 

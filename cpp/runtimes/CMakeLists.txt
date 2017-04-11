@@ -64,6 +64,7 @@ file(
     "*.h"
     "cluster-controller-runtime/*.h"
     "cluster-controller-runtime/websocket/*.h"
+    "cluster-controller-runtime/signal-handler/*.h"
 )
 
 set(
@@ -78,6 +79,7 @@ file(
     "JoynrRuntime.cpp"
     "cluster-controller-runtime/*.cpp"
     "cluster-controller-runtime/websocket/*.cpp"
+    "cluster-controller-runtime/signal-handler/*.cpp"
 )
 
 add_library(
