@@ -51,10 +51,10 @@ public:
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
     void addClient(const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress,
-                   const std::shared_ptr<IWebSocketSendInterface>& webSocket);
+                   std::shared_ptr<IWebSocketSendInterface> webSocket);
     void removeClient(const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress);
     void addServer(const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,
-                   const std::shared_ptr<IWebSocketSendInterface>& webSocket);
+                   std::shared_ptr<IWebSocketSendInterface> webSocket);
     void onMessagingStubClosed(const joynr::system::RoutingTypes::Address& address);
     void registerOnMessagingStubClosedCallback(std::function<void(
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)>

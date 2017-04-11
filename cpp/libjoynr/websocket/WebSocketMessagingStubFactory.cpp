@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "WebSocketMessagingStubFactory.h"
+#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
@@ -81,14 +81,13 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
 
 void WebSocketMessagingStubFactory::addClient(
         const system::RoutingTypes::WebSocketClientAddress& clientAddress,
-        const std::shared_ptr<IWebSocketSendInterface>& webSocket)
+        std::shared_ptr<IWebSocketSendInterface> webSocket)
 {
     if (clientStubMap.count(clientAddress) == 0) {
-        WebSocketMessagingStub* wsClientStub = new WebSocketMessagingStub(webSocket);
-        std::shared_ptr<IMessaging> clientStub(wsClientStub);
+        auto wsClientStub = std::make_shared<WebSocketMessagingStub>(std::move(webSocket));
         {
             std::lock_guard<std::mutex> lock(clientStubMapMutex);
-            clientStubMap[clientAddress] = clientStub;
+            clientStubMap[clientAddress] = std::move(wsClientStub);
         }
     } else {
         JOYNR_LOG_ERROR(logger,
@@ -106,12 +105,12 @@ void WebSocketMessagingStubFactory::removeClient(
 
 void WebSocketMessagingStubFactory::addServer(
         const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,
-        const std::shared_ptr<IWebSocketSendInterface>& webSocket)
+        std::shared_ptr<IWebSocketSendInterface> webSocket)
 {
-    auto serverStub = std::make_shared<WebSocketMessagingStub>(webSocket);
+    auto serverStub = std::make_shared<WebSocketMessagingStub>(std::move(webSocket));
     {
         std::lock_guard<std::mutex> lock(serverStubMapMutex);
-        serverStubMap[serverAddress] = serverStub;
+        serverStubMap[serverAddress] = std::move(serverStub);
     }
 }
 
