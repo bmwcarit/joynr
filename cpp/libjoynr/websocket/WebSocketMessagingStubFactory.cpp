@@ -18,12 +18,6 @@
  */
 #include "WebSocketMessagingStubFactory.h"
 
-#include <algorithm>
-#include <cctype>
-#include <string>
-
-#include <boost/format.hpp>
-
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 
@@ -150,17 +144,6 @@ void WebSocketMessagingStubFactory::registerOnMessagingStubClosedCallback(
                                    destinationAddress)> onMessagingStubClosedCallback)
 {
     this->onMessagingStubClosedCallback = std::move(onMessagingStubClosedCallback);
-}
-
-Url WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(
-        const system::RoutingTypes::WebSocketAddress& address)
-{
-    std::string protocol =
-            joynr::system::RoutingTypes::WebSocketProtocol::getLiteral(address.getProtocol());
-    std::transform(protocol.begin(), protocol.end(), protocol.begin(), ::tolower);
-
-    return Url((boost::format("%1%://%2%:%3%%4%") % protocol % address.getHost() %
-                address.getPort() % address.getPath()).str());
 }
 
 } // namespace joynr

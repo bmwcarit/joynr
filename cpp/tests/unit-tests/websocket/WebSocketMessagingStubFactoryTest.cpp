@@ -176,28 +176,4 @@ TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == nullptr);
 }
 
-TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {
-    joynr::system::RoutingTypes::WebSocketAddress wsAddress(
-                joynr::system::RoutingTypes::WebSocketProtocol::WS,
-                "localhost",
-                42,
-                "/some/path/"
-    );
-    Url expectedWsUrl("ws://localhost:42/some/path/");
-
-    Url wsUrl(WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(wsAddress));
-    EXPECT_EQ(expectedWsUrl, wsUrl);
-
-    joynr::system::RoutingTypes::WebSocketAddress wssAddress(
-                joynr::system::RoutingTypes::WebSocketProtocol::WSS,
-                "localhost",
-                42,
-                "/some/path"
-    );
-    Url expectedWssUrl("wss://localhost:42/some/path");
-
-    Url wssUrl(WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(wssAddress));
-    EXPECT_EQ(expectedWssUrl, wssUrl);
-}
-
 } // namespace joynr

@@ -25,13 +25,14 @@
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 #include "joynr/Logger.h"
-#include "joynr/Url.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 namespace joynr
 {
+
 class IWebSocketSendInterface;
+class IMessaging;
 
 namespace system
 {
@@ -58,9 +59,6 @@ public:
     void registerOnMessagingStubClosedCallback(std::function<void(
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)>
                                                        onMessagingStubClosedCallback) override;
-
-    static Url convertWebSocketAddressToUrl(
-            const joynr::system::RoutingTypes::WebSocketAddress& address);
 
 private:
     std::unordered_map<joynr::system::RoutingTypes::WebSocketAddress, std::shared_ptr<IMessaging>>
