@@ -34,9 +34,6 @@ class JOYNRCOMMON_EXPORT OneWayRequest
 public:
     OneWayRequest();
 
-    OneWayRequest(const OneWayRequest&) = default;
-    OneWayRequest& operator=(const OneWayRequest&) = default;
-
     OneWayRequest(OneWayRequest&&) = default;
     OneWayRequest& operator=(OneWayRequest&&) = default;
 

@@ -35,9 +35,6 @@ public:
     Reply();
     ~Reply() override = default;
 
-    Reply(Reply&) = default;
-    Reply& operator=(Reply&) = default;
-
     Reply(Reply&&) = default;
     Reply& operator=(Reply&&) = default;
 

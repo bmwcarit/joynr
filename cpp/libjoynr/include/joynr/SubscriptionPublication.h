@@ -36,9 +36,6 @@ public:
 
     explicit SubscriptionPublication(BaseReply&& reply);
 
-    SubscriptionPublication(const SubscriptionPublication&) = default;
-    SubscriptionPublication& operator=(const SubscriptionPublication&) = default;
-
     SubscriptionPublication(SubscriptionPublication&&) = default;
     SubscriptionPublication& operator=(SubscriptionPublication&&) = default;
 

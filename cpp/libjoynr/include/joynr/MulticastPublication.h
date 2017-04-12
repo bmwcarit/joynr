@@ -37,9 +37,6 @@ public:
 
     explicit MulticastPublication(BaseReply&& reply);
 
-    MulticastPublication(const MulticastPublication&) = default;
-    MulticastPublication& operator=(const MulticastPublication&) = default;
-
     MulticastPublication(MulticastPublication&&) = default;
     MulticastPublication& operator=(MulticastPublication&&) = default;
 

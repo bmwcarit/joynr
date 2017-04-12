@@ -37,9 +37,6 @@ public:
     BaseReply();
     virtual ~BaseReply() = default;
 
-    BaseReply(const BaseReply&) = default;
-    BaseReply& operator=(const BaseReply&) = default;
-
     BaseReply(BaseReply&&) = default;
     BaseReply& operator=(BaseReply&&) = default;
 
