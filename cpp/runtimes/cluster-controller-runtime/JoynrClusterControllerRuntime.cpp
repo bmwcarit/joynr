@@ -535,7 +535,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             dispatcherAddress,
             ccMessageRouter,
             messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
-            *publicationManager);
+            *publicationManager,
+            globalClusterControllerAddress);
 
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);

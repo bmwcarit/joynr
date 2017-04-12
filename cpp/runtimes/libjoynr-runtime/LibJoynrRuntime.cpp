@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "joynr/Dispatcher.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
@@ -156,10 +157,6 @@ void LibJoynrRuntime::init(
     participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
 
     // initialize the dispatchers
-    std::vector<IDispatcher*> dispatcherList;
-    dispatcherList.push_back(inProcessDispatcher);
-    dispatcherList.push_back(joynrDispatcher);
-
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
@@ -179,9 +176,12 @@ void LibJoynrRuntime::init(
 
     std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
             createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
-    auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(10000))
+
+    std::uint64_t routingProxyTtl = 10000;
+    auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(routingProxyTtl))
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
+    auto globalAddressFuture = routingProxy->getGlobalAddressAsync();
     libJoynrMessageRouter->setParentRouter(std::move(routingProxy));
 
     // setup discovery
@@ -203,16 +203,43 @@ void LibJoynrRuntime::init(
                          ->build();
 
     discoveryProxy->setDiscoveryProxy(std::move(proxy));
-    capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
-            dispatcherList,
-            *discoveryProxy,
-            participantIdStorage,
-            dispatcherAddress,
-            libJoynrMessageRouter,
-            messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
-            *publicationManager);
 
-    libJoynrMessageRouter->queryReplyToAddress(std::move(onSuccess), std::move(onError));
+    auto onSuccessWrapper = [
+        onSuccess = std::move(onSuccess),
+        globalAddressFuture = std::move(globalAddressFuture),
+        this,
+        onError,
+        routingProxyTtl
+    ]()
+    {
+        std::vector<IDispatcher*> dispatcherList;
+        dispatcherList.push_back(inProcessDispatcher);
+        dispatcherList.push_back(joynrDispatcher);
+
+        std::string globalAddress;
+        try {
+            globalAddressFuture->get(routingProxyTtl, globalAddress);
+        } catch (const exceptions::JoynrRuntimeException& error) {
+            exceptions::JoynrRuntimeException wrappedError(
+                    "Failed to retrieve global address from cluster controller: " +
+                    error.getMessage());
+            onError(wrappedError);
+            return;
+        }
+
+        capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
+                dispatcherList,
+                *discoveryProxy,
+                participantIdStorage,
+                dispatcherAddress,
+                libJoynrMessageRouter,
+                messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
+                *publicationManager,
+                globalAddress);
+        onSuccess();
+    };
+
+    libJoynrMessageRouter->queryReplyToAddress(std::move(onSuccessWrapper), std::move(onError));
 }
 
 std::shared_ptr<IMessageRouter> LibJoynrRuntime::getMessageRouter()
