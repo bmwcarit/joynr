@@ -110,7 +110,8 @@ ShortCircuitRuntime::ShortCircuitRuntime()
                                                     dispatcherAddress,
                                                     messageRouter,
                                                     std::numeric_limits<std::int64_t>::max(),
-                                                    *publicationManager);
+                                                    *publicationManager,
+                                                    globalClusterControllerAddress);
 
     maximumTtlMs = std::chrono::milliseconds(std::chrono::hours(24) * 30).count();
 }
