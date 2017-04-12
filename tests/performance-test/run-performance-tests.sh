@@ -266,7 +266,7 @@ function startJavaPerformanceTestProvider {
 
     if [ "$USE_MAVEN" != "ON" ]
     then
-        java -jar performance-test-provider.jar $PROVIDERARGS 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
+        java -jar target/performance-test-provider*.jar $PROVIDERARGS 1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
     else
         mvn exec:java -o -Dexec.mainClass="$PROVIDERCLASS" -Dexec.args="$PROVIDERARGS" \
             1>$PROVIDER_STDOUT 2>$PROVIDER_STDERR & PROVIDER_PID=$!
@@ -310,10 +310,10 @@ function performJavaConsumerTest {
 
         if [ "$USE_MAVEN" != "ON" ]
         then
-            java -jar performance-test-consumer.jar $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
+            java -jar target/performance-test-consumer*.jar $CONSUMERARGS 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
         else
-           mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" \
-           -Dexec.args="$CONSUMERARGS" 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
+            mvn exec:java -o -Dexec.mainClass="$CONSUMERCLASS" \
+            -Dexec.args="$CONSUMERARGS" 1>>$STDOUT_PARAM 2>>$REPORTFILE_PARAM & CUR_PID=$!
         fi
 
         TEST_PIDS+=$CUR_PID
