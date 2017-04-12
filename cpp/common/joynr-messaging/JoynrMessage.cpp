@@ -128,8 +128,8 @@ JoynrMessage::JoynrMessage(JoynrMessage&& message)
         : type(std::move(message.type)),
           header(std::move(message.header)),
           payload(std::move(message.payload)),
-          receivedFromGlobal(std::move(message.receivedFromGlobal)),
-          localMessage(std::move(message.localMessage))
+          receivedFromGlobal(message.receivedFromGlobal),
+          localMessage(message.localMessage)
 {
     generateAndSetMsgIdHeaderIfAbsent();
 }
@@ -139,8 +139,8 @@ JoynrMessage& JoynrMessage::operator=(JoynrMessage&& message)
     type = std::move(message.type);
     header = std::move(message.header);
     payload = std::move(message.payload);
-    receivedFromGlobal = std::move(message.receivedFromGlobal);
-    localMessage = std::move(message.localMessage);
+    receivedFromGlobal = message.receivedFromGlobal;
+    localMessage = message.localMessage;
     generateAndSetMsgIdHeaderIfAbsent();
     return *this;
 }
