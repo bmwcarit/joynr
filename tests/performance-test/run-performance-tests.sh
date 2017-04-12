@@ -551,6 +551,14 @@ function checkDirExists {
     fi
 }
 
+function checkForJavaTestCase {
+    case "$1" in
+        JAVA_*)
+            return 1;;
+    esac
+    return 0
+}
+
 while getopts "a:c:d:j:k:m:n:p:r:s:t:x:y:z:B:" OPTIONS;
 do
     case $OPTIONS in
@@ -654,6 +662,11 @@ fi
 
 if [ "$TESTCASE" != "OAP_TO_BACKEND_MOSQ" ] && [ "$TESTCASE" != "JEE_PROVIDER" ]
 then
+    checkForJavaTestCase $TESTCASE
+    if [ "$?" -eq 1 ]
+    then
+        startServices
+    fi
     startCppClusterController
     startMeasureCpuUsage
 
@@ -665,7 +678,7 @@ then
             startCppPerformanceTestProvider
             for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
                 echo "Testcase: JAVA $testcase" | tee -a $REPORTFILE
-                performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "LOCAL_ONLY"
+                performJavaConsumerTest $mode $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS "LOCAL_THEN_GLOBAL"
             done
         fi
     done
@@ -675,7 +688,7 @@ then
         startCppPerformanceTestProvider
         for testcase in 'SEND_STRING' 'SEND_STRUCT' 'SEND_BYTEARRAY'; do
             echo "Testcase: JAVA $testcase / MULTIPLE CONSUMERS" | tee -a $REPORTFILE
-            performJavaConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS "LOCAL_ONLY"
+            performJavaConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE $MULTICONSUMER_NUMINSTANCES $MULTICONSUMER_RUNS "LOCAL_THEN_GLOBAL"
         done
     fi
 
@@ -735,6 +748,11 @@ then
     stopMeasureCpuUsage $REPORTFILE
     stopAnyProvider
     stopCppClusterController
+    checkForJavaTestCase $TESTCASE
+    if [ "$?" -eq 1 ]
+    then
+        stopServices
+    fi
 fi
 
 if [ "$TESTCASE" == "JEE_PROVIDER" ]
