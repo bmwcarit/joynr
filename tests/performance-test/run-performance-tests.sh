@@ -551,7 +551,7 @@ function checkDirExists {
     fi
 }
 
-while getopts "c:d:j:k:p:r:s:t:x:y:m:z:n:a:" OPTIONS;
+while getopts "a:c:d:j:k:m:n:p:r:s:t:x:y:z:B:" OPTIONS;
 do
     case $OPTIONS in
         a)
@@ -568,6 +568,12 @@ do
             ;;
         k)
             SKIPBYTEARRAYSIZETIMESK=$OPTARG
+            ;;
+        m)
+            USE_MAVEN=$OPTARG
+            ;;
+        n)
+            USE_NPM=$OPTARG
             ;;
         p)
             PERFORMANCETESTS_BIN_DIR=${OPTARG%/}
@@ -588,14 +594,8 @@ do
         y)
             JOYNR_BIN_DIR=${OPTARG%/}
             ;;
-        m)
-            USE_MAVEN=$OPTARG
-            ;;
         z)
             MOSQUITTO_CONF=$OPTARG
-            ;;
-        n)
-            USE_NPM=$OPTARG
             ;;
         B)
             BACKEND_SERVICES=$OPTARG
