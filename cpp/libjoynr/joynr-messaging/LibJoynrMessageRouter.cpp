@@ -113,7 +113,16 @@ void LibJoynrMessageRouter::queryReplyToAddress(
         onSuccess();
     };
 
-    parentRouter->getReplyToAddressAsync(std::move(onSuccessWrapper), std::move(onError));
+    auto onErrorWrapper = [onError = std::move(onError)](
+            const joynr::exceptions::JoynrRuntimeException& error)
+    {
+        exceptions::JoynrRuntimeException wrappedError(
+                "Failed to retrieve replyTo address from cluster controller: " +
+                error.getMessage());
+        onError(wrappedError);
+    };
+
+    parentRouter->getReplyToAddressAsync(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 }
 
 /**
