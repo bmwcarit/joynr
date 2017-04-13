@@ -50,7 +50,11 @@ public class RadioConsumerRestEndpoint {
     @GET
     @Path("/current-station")
     public RadioStation getCurrentRadioStation() {
-        return getRadioClient().getCurrentStation();
+        try {
+            return getRadioClient().getCurrentStation();
+        } catch (Exception e) {
+            throw new WebApplicationException(e);
+        }
     }
 
     @GET
@@ -72,9 +76,9 @@ public class RadioConsumerRestEndpoint {
     }
 
     @POST
-    public boolean addRadioStation(RadioStation radioStation) {
+    public boolean addRadioStation(String name) {
         try {
-            return getRadioClient().addFavoriteStation(radioStation);
+            return getRadioClient().addFavoriteStation(new RadioStation(name, true, Country.GERMANY));
         } catch (ApplicationException e) {
             throw new WebApplicationException(e.getMessage());
         }
