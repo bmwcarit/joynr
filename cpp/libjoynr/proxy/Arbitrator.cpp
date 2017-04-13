@@ -166,7 +166,7 @@ void Arbitrator::attemptArbitration()
         receiveCapabilitiesLookupResults(result);
     } catch (const exceptions::JoynrException& e) {
         std::string errorMsg = "Unable to lookup provider (domain: " +
-                               (domains.size() > 0 ? domains.at(0) : std::string("EMPTY")) +
+                               (domains.empty() ? std::string("EMPTY") : domains.at(0)) +
                                ", interface: " + interfaceName + ") from discovery. Error: " +
                                e.getMessage();
         JOYNR_LOG_ERROR(logger, errorMsg);
@@ -180,9 +180,9 @@ void Arbitrator::receiveCapabilitiesLookupResults(
     discoveredIncompatibleVersions.clear();
 
     // Check for empty results
-    if (discoveryEntries.size() == 0) {
+    if (discoveryEntries.empty()) {
         arbitrationError.setMessage("No entries found for domain: " +
-                                    (domains.size() > 0 ? domains.at(0) : std::string("EMPTY")) +
+                                    (domains.empty() ? std::string("EMPTY") : domains.at(0)) +
                                     ", interface: " + interfaceName);
         return;
     }
