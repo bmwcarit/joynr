@@ -26,7 +26,7 @@ SubscriptionStop::SubscriptionStop() : subscriptionId()
 {
 }
 
-std::string SubscriptionStop::getSubscriptionId() const
+const std::string& SubscriptionStop::getSubscriptionId() const
 {
     return subscriptionId;
 }

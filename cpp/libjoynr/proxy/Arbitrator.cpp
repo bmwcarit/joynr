@@ -191,8 +191,8 @@ void Arbitrator::receiveCapabilitiesLookupResults(
     joynr::types::Version providerVersion;
     std::size_t providersWithoutSupportOnChange = 0;
     std::size_t providersWithIncompatibleVersion = 0;
-    for (const joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
-        types::ProviderQos providerQos = discoveryEntry.getQos();
+    for (const joynr::types::DiscoveryEntryWithMetaInfo& discoveryEntry : discoveryEntries) {
+        const types::ProviderQos& providerQos = discoveryEntry.getQos();
         JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
         providerVersion = discoveryEntry.getProviderVersion();
 

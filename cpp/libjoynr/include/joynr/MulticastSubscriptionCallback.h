@@ -58,7 +58,7 @@ public:
         std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
                 Base::subscriptionManager->getMulticastSubscriptionListeners(
                         multicastPublication.getMulticastId());
-        for (auto listener : listeners) {
+        for (const auto& listener : listeners) {
             listener->onError(error);
         }
     }
@@ -72,7 +72,7 @@ public:
         std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
                 Base::subscriptionManager->getMulticastSubscriptionListeners(
                         multicastPublication.getMulticastId());
-        for (auto listener : listeners) {
+        for (const auto& listener : listeners) {
             auto voidListener = std::dynamic_pointer_cast<ISubscriptionListener<void>>(listener);
             voidListener->onReceive();
         }
@@ -89,7 +89,7 @@ public:
         std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
                 Base::subscriptionManager->getMulticastSubscriptionListeners(
                         multicastPublication.getMulticastId());
-        for (auto listener : listeners) {
+        for (const auto& listener : listeners) {
             auto typedListener =
                     std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(listener);
             typedListener->onReceive(value, values...);

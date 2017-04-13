@@ -81,7 +81,7 @@ void InProcessPublicationSender::sendSubscriptionReply(const std::string& sender
     std::ignore = receiverParticipantId;
     std::ignore = qos;
 
-    const std::string subscriptionId = subscriptionReply.getSubscriptionId();
+    const std::string& subscriptionId = subscriptionReply.getSubscriptionId();
     JOYNR_LOG_DEBUG(logger, "Sending publication. id={}", subscriptionId);
     assert(subscriptionManager != nullptr);
     std::shared_ptr<ISubscriptionCallback> callback =

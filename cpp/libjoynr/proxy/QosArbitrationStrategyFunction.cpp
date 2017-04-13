@@ -40,7 +40,7 @@ types::DiscoveryEntryWithMetaInfo QosArbitrationStrategyFunction::select(
     std::int64_t highestPriority = types::ProviderQos().getPriority(); // get default value
 
     for (auto it = discoveryEntries.cbegin(); it != discoveryEntries.cend(); ++it) {
-        types::ProviderQos providerQos = it->getQos();
+        const types::ProviderQos& providerQos = it->getQos();
         JOYNR_LOG_TRACE(logger, "Looping over discoveryEntry: {}", it->toString());
 
         if (providerQos.getPriority() >= highestPriority) {

@@ -42,7 +42,7 @@ public:
     bool operator==(const SubscriptionPublication& other) const;
     bool operator!=(const SubscriptionPublication& other) const;
 
-    std::string getSubscriptionId() const;
+    const std::string& getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
 
     template <typename Archive>

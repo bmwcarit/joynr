@@ -31,7 +31,7 @@ SubscriptionPublication::SubscriptionPublication(BaseReply&& baseReply)
 {
 }
 
-std::string SubscriptionPublication::getSubscriptionId() const
+const std::string& SubscriptionPublication::getSubscriptionId() const
 {
     return subscriptionId;
 }
