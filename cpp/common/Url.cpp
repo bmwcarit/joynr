@@ -338,8 +338,9 @@ void UrlQuery::addQueryItem(const std::string& itemName, const std::string& item
 
 std::string UrlQuery::toString()
 {
-    if (queryItems.empty())
+    if (queryItems.empty()) {
         return "";
+    }
 
     std::string result = boost::algorithm::join(queryItems, "&");
     return result;

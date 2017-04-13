@@ -32,11 +32,13 @@ types::DiscoveryEntryWithMetaInfo FixedParticipantArbitrationStrategyFunction::s
         const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const
 {
     std::ignore = customParameters;
-    if (discoveryEntries.empty())
+    if (discoveryEntries.empty()) {
         throw exceptions::DiscoveryException("No provider found for given ParticipantId");
+    }
 
-    if (discoveryEntries.size() > 1)
+    if (discoveryEntries.size() > 1) {
         throw exceptions::DiscoveryException("No provider found for given ParticipantId");
+    }
 
     return discoveryEntries.front();
 }
