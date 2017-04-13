@@ -1,3 +1,10 @@
+# joynr 0.25.1
+
+## API relevant changes
+
+## Other changes
+* **[C++]** Fixed a race condition in DelayedScheduler potentially leading to an assertion.
+
 # joynr 0.25.0
 
 ## API relevant changes
