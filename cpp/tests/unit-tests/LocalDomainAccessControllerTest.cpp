@@ -97,7 +97,7 @@ public:
         joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
     }
 
-    void SetUp(){
+    void SetUp() override {
         std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore;
         if(GetParam()) {
             // copy access entry file to bin folder for the test so that runtimes will find and load the file
