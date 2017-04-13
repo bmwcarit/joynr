@@ -17,8 +17,8 @@
  * #L%
  */
 
-#ifndef MESSAGEROUTER_H
-#define MESSAGEROUTER_H
+#ifndef ABSTRACTMESSAGEROUTER_H
+#define ABSTRACTMESSAGEROUTER_H
 
 #include <chrono>
 #include <memory>
@@ -156,4 +156,4 @@ private:
 };
 
 } // namespace joynr
-#endif // MESSAGEROUTER_H
+#endif // ABSTRACTMESSAGEROUTER_H

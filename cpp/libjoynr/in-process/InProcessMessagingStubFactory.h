@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef INPROCESSMESSAGINGSTUBFACTORYB_H
-#define INPROCESSMESSAGINGSTUBFACTORYB_H
+#ifndef INPROCESSMESSAGINGSTUBFACTORY_H
+#define INPROCESSMESSAGINGSTUBFACTORY_H
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 
@@ -39,4 +39,4 @@ public:
 
 } // namespace joynr
 
-#endif // INPROCESSMESSAGINGSTUBFACTORYB_H
+#endif // INPROCESSMESSAGINGSTUBFACTORY_H
