@@ -16,7 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include "InProcessMessagingStubFactory.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
+
 #include "common/in-process/InProcessMessagingStub.h"
 #include "joynr/InProcessMessagingAddress.h"
 

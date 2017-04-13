@@ -17,7 +17,7 @@
  * #L%
  */
 
-#include "CallContextStorage.h"
+#include "common/CallContextStorage.h"
 
 namespace joynr
 {

@@ -17,10 +17,10 @@
  * #L%
  */
 
-#include "AccessControlAlgorithm.h"
-#include "AceValidator.h"
-#include "TrustLevelComparator.h"
+#include "libjoynrclustercontroller/access-control/AccessControlAlgorithm.h"
 
+#include "libjoynrclustercontroller/access-control/AceValidator.h"
+#include "libjoynrclustercontroller/access-control/TrustLevelComparator.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 
