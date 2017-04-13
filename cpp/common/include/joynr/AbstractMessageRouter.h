@@ -60,7 +60,6 @@ class IMulticastAddressCalculator;
 
 namespace system
 {
-class Address;
 class RoutingProxy;
 } // namespace system
 
