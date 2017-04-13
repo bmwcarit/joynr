@@ -34,7 +34,8 @@
 
 namespace
 {
-static const std::string getVersionInfo()
+
+std::string getVersionInfo()
 {
     return "Joynr cluster-controller."
            "\nJoynr version: " JOYNR_VERSION_STRING "."
