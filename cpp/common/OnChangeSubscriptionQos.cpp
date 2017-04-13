@@ -18,7 +18,8 @@
  */
 #include "joynr/OnChangeSubscriptionQos.h"
 
-using namespace joynr;
+namespace joynr
+{
 
 const std::int64_t& OnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL_MS()
 {
@@ -90,3 +91,5 @@ bool OnChangeSubscriptionQos::operator==(const OnChangeSubscriptionQos& other) c
            publicationTtlMs == other.getPublicationTtlMs() &&
            minIntervalMs == other.getMinIntervalMs();
 }
+
+} // namespace joynr

@@ -18,7 +18,8 @@
  */
 #include "joynr/PeriodicSubscriptionQos.h"
 
-using namespace joynr;
+namespace joynr
+{
 
 INIT_LOGGER(PeriodicSubscriptionQos);
 
@@ -170,3 +171,5 @@ bool PeriodicSubscriptionQos::operator==(const PeriodicSubscriptionQos& other) c
            publicationTtlMs == other.getPublicationTtlMs() && periodMs == other.getPeriodMs() &&
            alertAfterIntervalMs == other.getAlertAfterIntervalMs();
 }
+
+} // namespace joynr

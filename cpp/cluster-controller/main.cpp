@@ -32,8 +32,6 @@
 #include "joynr/Logger.h"
 #include "runtimes/cluster-controller-runtime/signal-handler/PosixSignalHandler.h"
 
-using namespace joynr;
-
 namespace
 {
 static const std::string getVersionInfo()
@@ -43,7 +41,7 @@ static const std::string getVersionInfo()
            "\nPackage revision: " JOYNR_PACKAGE_REVISION " build on " JOYNR_BUILD_TIME;
 }
 
-void printUsage(Logger& logger, const std::string& programName)
+void printUsage(joynr::Logger& logger, const std::string& programName)
 {
     JOYNR_LOG_INFO(logger, "Joynr package revision: " JOYNR_PACKAGE_REVISION ".");
     JOYNR_LOG_INFO(logger, "USAGE: No settings provided. Starting with default settings.");
@@ -67,7 +65,7 @@ int main(int argc, char* argv[])
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
     // init a logger
-    Logger logger("Runtime");
+    joynr::Logger logger("Runtime");
 
     // Check the usage
     const std::string programName(argv[0]);
@@ -79,14 +77,14 @@ int main(int argc, char* argv[])
     printVersionToStdOut();
 
     // create the cluster controller runtime
-    std::shared_ptr<JoynrClusterControllerRuntime> clusterControllerRuntime =
-            JoynrClusterControllerRuntime::create(argc, argv);
+    std::shared_ptr<joynr::JoynrClusterControllerRuntime> clusterControllerRuntime =
+            joynr::JoynrClusterControllerRuntime::create(argc, argv);
     if (!clusterControllerRuntime) {
         printUsage(logger, programName);
         return 1;
     }
 
-    PosixSignalHandler::setHandleAndRegisterForSignals(clusterControllerRuntime);
+    joynr::PosixSignalHandler::setHandleAndRegisterForSignals(clusterControllerRuntime);
 
     // run the cluster controller forever
     clusterControllerRuntime->runForever();

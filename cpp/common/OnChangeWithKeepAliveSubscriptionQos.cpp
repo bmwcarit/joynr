@@ -17,9 +17,9 @@
  * #L%
  */
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/Logger.h"
 
-using namespace joynr;
+namespace joynr
+{
 
 INIT_LOGGER(OnChangeWithKeepAliveSubscriptionQos);
 
@@ -199,3 +199,5 @@ bool OnChangeWithKeepAliveSubscriptionQos::operator==(
            minIntervalMs == other.getMinIntervalMs() && maxIntervalMs == other.getMaxIntervalMs() &&
            alertAfterIntervalMs == other.getAlertAfterIntervalMs();
 }
+
+} // namespace joynr
