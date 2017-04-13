@@ -222,7 +222,7 @@ bool LocalDomainAccessController::hasRole(const std::string& userId,
     }
 
     // Subscribe changes in the users roles
-    if (!dreSubscriptions.count(userId)) {
+    if (dreSubscriptions.count(userId) == 0) {
         dreSubscriptions.insert(std::make_pair(userId, subscribeForDreChange(userId)));
     }
 
@@ -243,7 +243,7 @@ void LocalDomainAccessController::getConsumerPermission(
     bool needsInit = false;
     {
         std::lock_guard<std::mutex> lock(initStateMutex);
-        if (!aceSubscriptions.count(compoundKey)) {
+        if (aceSubscriptions.count(compoundKey) == 0) {
             // Queue the request
             ConsumerPermissionRequest request = {
                     userId, domain, interfaceName, trustLevel, callback};
@@ -577,7 +577,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
     AceSubscription subscriptionIds;
     {
         std::lock_guard<std::mutex> lock(initStateMutex);
-        if (!aceSubscriptions.count(compoundKey)) {
+        if (aceSubscriptions.count(compoundKey) == 0) {
             return;
         }
         subscriptionIds = aceSubscriptions[compoundKey];
@@ -781,7 +781,7 @@ bool LocalDomainAccessController::queueConsumerRequest(const std::string& key,
 {
     // This function assumes that the initStateMutex has already been obtained
 
-    if (consumerPermissionRequests.count(key)) {
+    if (consumerPermissionRequests.count(key) != 0) {
         consumerPermissionRequests[key].push_back(request);
         return true;
     } else {

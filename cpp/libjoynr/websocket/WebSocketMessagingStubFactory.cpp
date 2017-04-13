@@ -38,8 +38,9 @@ WebSocketMessagingStubFactory::WebSocketMessagingStubFactory()
 bool WebSocketMessagingStubFactory::canCreate(
         const joynr::system::RoutingTypes::Address& destAddress)
 {
-    return dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(&destAddress) ||
-           dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(&destAddress);
+    return dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(&destAddress) != nullptr ||
+           dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(&destAddress) !=
+                   nullptr;
 }
 
 std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(

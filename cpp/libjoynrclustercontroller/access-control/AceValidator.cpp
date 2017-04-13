@@ -68,7 +68,7 @@ bool AceValidator::isMediatorValid()
 
     auto masterPossiblePermissions =
             util::vectorToSet(masterAceOptional->getPossibleConsumerPermissions());
-    if (!masterPossiblePermissions.count(mediatorAceOptional->getDefaultConsumerPermission())) {
+    if (masterPossiblePermissions.count(mediatorAceOptional->getDefaultConsumerPermission()) == 0) {
         isMediatorValid = false;
     } else {
         // Convert the lists to sets so that intersections can be easily calculated
@@ -81,7 +81,7 @@ bool AceValidator::isMediatorValid()
 
     auto masterPossibleTrustLevels =
             util::vectorToSet(masterAceOptional->getPossibleRequiredTrustLevels());
-    if (!masterPossibleTrustLevels.count(mediatorAceOptional->getDefaultRequiredTrustLevel())) {
+    if (masterPossibleTrustLevels.count(mediatorAceOptional->getDefaultRequiredTrustLevel()) == 0) {
         isMediatorValid = false;
     } else {
         // Convert the lists to sets so that intersections can be easily calculated
