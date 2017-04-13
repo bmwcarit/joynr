@@ -18,11 +18,11 @@
  */
 #include "joynr/FixedParticipantArbitrationStrategyFunction.h"
 
-#include "joynr/DiscoveryQos.h"
+#include <tuple> // for std::ignore
+
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/CustomParameter.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
-#include "joynr/types/ProviderQos.h"
 
 namespace joynr
 {
