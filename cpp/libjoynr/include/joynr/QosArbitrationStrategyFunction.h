@@ -45,7 +45,7 @@ class QosArbitrationStrategyFunction : public ArbitrationStrategyFunction
 {
 
 public:
-    ~QosArbitrationStrategyFunction() = default;
+    ~QosArbitrationStrategyFunction() final = default;
     QosArbitrationStrategyFunction() = default;
     types::DiscoveryEntryWithMetaInfo select(
             const std::map<std::string, types::CustomParameter> customParameters,

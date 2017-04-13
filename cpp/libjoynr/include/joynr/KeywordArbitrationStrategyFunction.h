@@ -44,7 +44,7 @@ class KeywordArbitrationStrategyFunction : public ArbitrationStrategyFunction
 {
 
 public:
-    ~KeywordArbitrationStrategyFunction() = default;
+    ~KeywordArbitrationStrategyFunction() final = default;
     KeywordArbitrationStrategyFunction() = default;
 
     types::DiscoveryEntryWithMetaInfo select(

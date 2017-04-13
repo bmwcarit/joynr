@@ -52,10 +52,10 @@ public:
     /**
      * @brief Destructor
      */
-    ~WebSocketMessagingStub() = default;
-    void transmit(JoynrMessage& message,
-                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-            override;
+    ~WebSocketMessagingStub() final = default;
+    void transmit(
+            JoynrMessage& message,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) final;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketMessagingStub);

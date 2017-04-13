@@ -42,7 +42,7 @@ class FixedParticipantArbitrationStrategyFunction : public ArbitrationStrategyFu
 {
 
 public:
-    ~FixedParticipantArbitrationStrategyFunction() = default;
+    ~FixedParticipantArbitrationStrategyFunction() final = default;
     FixedParticipantArbitrationStrategyFunction() = default;
     types::DiscoveryEntryWithMetaInfo select(
             const std::map<std::string, types::CustomParameter> customParameters,

@@ -40,7 +40,7 @@ public:
     {
     }
 
-    ~WebSocketPpSender() = default;
+    ~WebSocketPpSender() final = default;
 
     void send(
             const std::string& msg,

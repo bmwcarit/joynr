@@ -88,17 +88,17 @@ public:
         sender = std::make_shared<WebSocketPpSender<Client>>(endpoint);
     }
 
-    virtual ~WebSocketPpClient()
+    ~WebSocketPpClient() override
     {
         close();
     }
 
-    void registerConnectCallback(std::function<void()> callback)
+    void registerConnectCallback(std::function<void()> callback) final
     {
         onConnectionOpenedCallback = std::move(callback);
     }
 
-    void registerReconnectCallback(std::function<void()> callback)
+    void registerReconnectCallback(std::function<void()> callback) final
     {
         onConnectionReestablishedCallback = std::move(callback);
     }
@@ -111,7 +111,7 @@ public:
      *      So WebSocketMessagingStubFactory needs to be informed about a
      *      disconnect.
      */
-    virtual void registerDisconnectCallback(std::function<void()> onWebSocketDisconnected)
+    void registerDisconnectCallback(std::function<void()> onWebSocketDisconnected) final
     {
         onConnectionClosedCallback = std::move(onWebSocketDisconnected);
     }
@@ -121,20 +121,20 @@ public:
      * @param onMessageReceived Callback method with message as parameter
      * @note All received messages will be forwarded to this receive callback.
      */
-    void registerReceiveCallback(std::function<void(const std::string&)> onMessageReceived)
+    void registerReceiveCallback(std::function<void(const std::string&)> onMessageReceived) final
     {
         receiver.registerReceiveCallback(onMessageReceived);
     }
 
-    void connect(const system::RoutingTypes::WebSocketAddress& address)
+    void connect(const system::RoutingTypes::WebSocketAddress& address) final
     {
-        this->address = std::move(address);
+        this->address = address;
 
         performingInitialConnect = true;
         reconnect();
     }
 
-    void close()
+    void close() final
     {
         if (isRunning) {
             isRunning = false;
@@ -148,30 +148,21 @@ public:
     }
 
     /**
-     * @brief Returns whether the socket is initialized or not
-     * @return Initialization flag
-     */
-    bool isInitialized() const
-    {
-        return isConnected();
-    }
-
-    /**
      * @brief Returns whether the socket is connected or not
      * @return Connection flag
      */
-    bool isConnected() const
+    bool isConnected() const final
     {
         return state == State::Connected;
     }
 
     void send(const std::string& msg,
-              const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+              const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) final
     {
         sender->send(msg, onFailure);
     }
 
-    std::shared_ptr<IWebSocketSendInterface> getSender() const
+    std::shared_ptr<IWebSocketSendInterface> getSender() const final
     {
         return sender;
     }
