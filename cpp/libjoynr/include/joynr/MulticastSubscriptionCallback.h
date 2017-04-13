@@ -19,6 +19,7 @@
 #ifndef MULTICASTSUBSCRIPTIONCALLBACK_H
 #define MULTICASTSUBSCRIPTIONCALLBACK_H
 
+#include <cassert>
 #include <memory>
 
 #include "ISubscriptionManager.h"
@@ -74,6 +75,7 @@ public:
                         multicastPublication.getMulticastId());
         for (const auto& listener : listeners) {
             auto voidListener = std::dynamic_pointer_cast<ISubscriptionListener<void>>(listener);
+            assert(voidListener);
             voidListener->onReceive();
         }
     }
@@ -92,6 +94,7 @@ public:
         for (const auto& listener : listeners) {
             auto typedListener =
                     std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(listener);
+            assert(typedListener);
             typedListener->onReceive(value, values...);
         }
     }

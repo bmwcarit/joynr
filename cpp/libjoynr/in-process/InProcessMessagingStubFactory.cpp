@@ -18,6 +18,8 @@
  */
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
+#include <cassert>
+
 #include "common/in-process/InProcessMessagingStub.h"
 #include "joynr/InProcessMessagingAddress.h"
 
@@ -39,6 +41,7 @@ std::shared_ptr<IMessaging> InProcessMessagingStubFactory::create(
 {
     const InProcessMessagingAddress* inprocessAddress =
             dynamic_cast<const InProcessMessagingAddress*>(&destAddress);
+    assert(inprocessAddress);
     return std::make_shared<InProcessMessagingStub>(inprocessAddress->getSkeleton());
 }
 
