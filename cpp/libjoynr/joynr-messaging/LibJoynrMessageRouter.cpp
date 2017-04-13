@@ -374,7 +374,7 @@ void LibJoynrMessageRouter::addMulticastReceiver(
                 onErrorWrapper(exception);
             }
         };
-        auto onResolveError = [this, onErrorWrapper, providerParticipantId](
+        auto onResolveError = [onErrorWrapper, providerParticipantId](
                 const joynr::exceptions::JoynrRuntimeException& error) {
             exceptions::ProviderRuntimeException exception(
                     "error resolving next hop for multicast provider (providerParticipantId=" +

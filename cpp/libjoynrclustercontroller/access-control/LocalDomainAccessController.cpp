@@ -631,7 +631,7 @@ void LocalDomainAccessController::initialiseDomainRoleTable(const std::string& u
     };
 
     std::function<void(const exceptions::JoynrException&)> domainRoleOnError =
-            [this](const exceptions::JoynrException& error) {
+            [](const exceptions::JoynrException& error) {
         JOYNR_LOG_ERROR(logger,
                         "Aborting ACL initialisation due to communication error:\n{}",
                         error.getMessage());
@@ -660,7 +660,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     };
 
     std::function<void(const exceptions::JoynrException& error)> masterAceOnError =
-            [this, initialiser](const exceptions::JoynrException& error) {
+            [initialiser](const exceptions::JoynrException& error) {
         JOYNR_LOG_ERROR(logger,
                         "Aborting ACL initialisation due to communication error:\n{}",
                         error.getMessage());
@@ -707,7 +707,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
     };
 
     std::function<void(const exceptions::JoynrException& error)> ownerAceOnError =
-            [this, initialiser](const exceptions::JoynrException& error) {
+            [initialiser](const exceptions::JoynrException& error) {
         JOYNR_LOG_ERROR(logger,
                         "Aborting ACL initialisation due to communication error:\n{}",
                         error.getMessage());
