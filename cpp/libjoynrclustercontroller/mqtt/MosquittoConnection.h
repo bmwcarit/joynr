@@ -52,7 +52,7 @@ public:
 
     ~MosquittoConnection() override;
 
-    virtual std::uint16_t getMqttQos() const;
+    std::uint16_t getMqttQos() const;
     std::string getMqttPrio() const;
     bool isMqttRetain() const;
 

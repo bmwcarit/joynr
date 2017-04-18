@@ -75,12 +75,14 @@ MosquittoConnection::~MosquittoConnection()
 
 void MosquittoConnection::on_disconnect(int rc)
 {
-
     if (rc == 0) {
         JOYNR_LOG_DEBUG(logger, "Disconnected from tcp://{}:{}", host, port);
     } else {
-        JOYNR_LOG_ERROR(
-                logger, "Unexpectedly disconnected from tcp://{}:{}, error: {}", host, port, rc);
+        JOYNR_LOG_ERROR(logger,
+                        "Unexpectedly disconnected from tcp://{}:{}, error: {}",
+                        host,
+                        port,
+                        mosqpp::strerror(rc));
     }
 }
 
@@ -103,7 +105,7 @@ void MosquittoConnection::on_error()
     JOYNR_LOG_WARN(logger, "Mosquitto Error");
 }
 
-uint16_t MosquittoConnection::getMqttQos() const
+std::uint16_t MosquittoConnection::getMqttQos() const
 {
     return mqttQos;
 }
