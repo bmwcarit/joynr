@@ -4,6 +4,7 @@
 
 ## Other changes
 * **[C++]** Fixed a race condition in DelayedScheduler potentially leading to an assertion.
+* **[JEE]** Fixed Mqtt reconnect bug by updating the mqtt-client
 
 # joynr 0.25.0
 
