@@ -101,6 +101,8 @@ void LibJoynrRuntime::init(
     messagingStubFactory->registerStubFactory(middlewareMessagingStubFactory);
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
+    std::string routingProviderParticipantId =
+            systemServicesSettings.getCcRoutingProviderParticipantId();
     // create message router
     libJoynrMessageRouter =
             std::make_shared<LibJoynrMessageRouter>(libjoynrMessagingAddress,
@@ -110,6 +112,7 @@ void LibJoynrRuntime::init(
 
     libJoynrMessageRouter->loadRoutingTable(
             libjoynrSettings->getMessageRouterPersistenceFilename());
+    libJoynrMessageRouter->setParentAddress(routingProviderParticipantId, ccMessagingAddress);
     startLibJoynrMessagingSkeleton(libJoynrMessageRouter);
 
     joynrMessageSender = std::make_shared<JoynrMessageSender>(
@@ -165,8 +168,6 @@ void LibJoynrRuntime::init(
     requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
 
     std::string systemServicesDomain = systemServicesSettings.getDomain();
-    std::string routingProviderParticipantId =
-            systemServicesSettings.getCcRoutingProviderParticipantId();
 
     DiscoveryQos routingProviderDiscoveryQos;
     routingProviderDiscoveryQos.setCacheMaxAgeMs(1000);
@@ -181,8 +182,7 @@ void LibJoynrRuntime::init(
     auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(10000))
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
-    libJoynrMessageRouter->setParentRouter(
-            std::move(routingProxy), ccMessagingAddress, routingProviderParticipantId);
+    libJoynrMessageRouter->setParentRouter(std::move(routingProxy));
 
     // setup discovery
     std::string discoveryProviderParticipantId =

@@ -82,17 +82,21 @@ void LibJoynrMessageRouter::shutdown()
     parentAddress.reset();
 }
 
-void LibJoynrMessageRouter::setParentRouter(
-        std::unique_ptr<system::RoutingProxy> parentRouter,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress,
-        std::string parentParticipantId)
+void LibJoynrMessageRouter::setParentAddress(
+        std::string parentParticipantId,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress)
 {
-    this->parentRouter = std::move(parentRouter);
     this->parentAddress = std::move(parentAddress);
+    addProvisionedNextHop(parentParticipantId, this->parentAddress);
+}
+
+void LibJoynrMessageRouter::setParentRouter(std::unique_ptr<system::RoutingProxy> parentRouter)
+{
+    assert(parentAddress);
+    this->parentRouter = std::move(parentRouter);
 
     // add the next hop to parent router
     // this is necessary because during normal registration, the parent proxy is not yet set
-    addProvisionedNextHop(parentParticipantId, this->parentAddress);
     addNextHopToParent(this->parentRouter->getProxyParticipantId());
 }
 

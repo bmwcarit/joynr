@@ -116,12 +116,14 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
+    void setParentAddress(
+            std::string parentParticipantId,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress);
+
     /*
      * Method specific to LibJoynrMessageRouter
      */
-    void setParentRouter(std::unique_ptr<joynr::system::RoutingProxy> parentRouter,
-                         std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress,
-                         std::string parentParticipantId);
+    void setParentRouter(std::unique_ptr<joynr::system::RoutingProxy> parentRouter);
 
     /*
      * Method specific to LibJoynrMessageRouter,
