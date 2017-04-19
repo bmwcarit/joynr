@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>0.25.0</version>
+	<version>0.25.1</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -487,7 +487,7 @@
 			<dependency>
 				<groupId>io.joynr.mqtt</groupId>
 				<artifactId>mqtt-client</artifactId>
-				<version>0.0.1</version>
+				<version>0.0.2</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject</groupId>

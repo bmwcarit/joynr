@@ -75,9 +75,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     public void start() {
         while (!mqttClient.isConnected()) {
             try {
-                mqttClient.connect(getConnectOptions());
-                mqttClient.setTimeToWait(timeToWaitMs);
                 mqttClient.setCallback(this);
+                mqttClient.setTimeToWait(timeToWaitMs);
+                mqttClient.connect(getConnectOptions());
                 logger.debug("MQTT Connected client");
                 for (String topic : subscribedTopics) {
                     subscribe(topic);

@@ -51,6 +51,8 @@ DelayedScheduler::~DelayedScheduler()
 DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable,
                                                             std::chrono::milliseconds delay)
 {
+    std::lock_guard<std::mutex> lock(writeLock);
+
     JOYNR_LOG_TRACE(logger, "schedule: enter with {} ms delay", delay.count());
 
     if (stoppingDelayedScheduler) {
@@ -68,45 +70,42 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable,
 
     RunnableHandle newRunnableHandle = INVALID_RUNNABLE_HANDLE;
 
-    {
-        std::lock_guard<std::mutex> lock(writeLock);
-        newRunnableHandle = ++nextRunnableHandle;
+    newRunnableHandle = ++nextRunnableHandle;
 
-        delayedRunnables.emplace(
-                std::piecewise_construct,
-                std::forward_as_tuple(newRunnableHandle),
-                std::forward_as_tuple(
-                        std::unique_ptr<Runnable>(runnable),
-                        ioService,
-                        std::chrono::milliseconds(delay),
-                        [this, newRunnableHandle](const boost::system::error_code& errorCode) {
-                            if (!errorCode) {
-                                std::lock_guard<std::mutex> lock(this->writeLock);
-                                {
-                                    // Look up the runnable because it might have been removed
-                                    // by another thread while we were waiting for the mutex.
-                                    auto it = this->delayedRunnables.find(newRunnableHandle);
+    delayedRunnables.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(newRunnableHandle),
+            std::forward_as_tuple(
+                    std::unique_ptr<Runnable>(runnable),
+                    ioService,
+                    std::chrono::milliseconds(delay),
+                    [this, newRunnableHandle](const boost::system::error_code& errorCode) {
+                        if (!errorCode) {
+                            std::lock_guard<std::mutex> lock(this->writeLock);
+                            {
+                                // Look up the runnable because it might have been removed
+                                // by another thread while we were waiting for the mutex.
+                                auto it = this->delayedRunnables.find(newRunnableHandle);
 
-                                    if (it == this->delayedRunnables.end()) {
-                                        JOYNR_LOG_WARN(this->logger,
-                                                       "Timed runnable with ID {} not found.",
-                                                       newRunnableHandle);
-                                        return;
-                                    }
-
-                                    if (!this->stoppingDelayedScheduler) {
-                                        Runnable* runnable = it->second.takeRunnable();
-                                        this->onWorkAvailable(runnable);
-                                    }
-                                    this->delayedRunnables.erase(it);
+                                if (it == this->delayedRunnables.end()) {
+                                    JOYNR_LOG_WARN(this->logger,
+                                                   "Timed runnable with ID {} not found.",
+                                                   newRunnableHandle);
+                                    return;
                                 }
-                            } else if (errorCode != boost::system::errc::operation_canceled) {
-                                JOYNR_LOG_ERROR(this->logger,
-                                                "Failed to schedule delayed runnable: {}",
-                                                errorCode.message());
+
+                                if (!this->stoppingDelayedScheduler) {
+                                    Runnable* runnable = it->second.takeRunnable();
+                                    this->onWorkAvailable(runnable);
+                                }
+                                this->delayedRunnables.erase(it);
                             }
-                        }));
-    }
+                        } else if (errorCode != boost::system::errc::operation_canceled) {
+                            JOYNR_LOG_ERROR(this->logger,
+                                            "Failed to schedule delayed runnable: {}",
+                                            errorCode.message());
+                        }
+                    }));
 
     JOYNR_LOG_TRACE(logger, "Added timer with ID {}", newRunnableHandle);
 
@@ -143,6 +142,7 @@ void DelayedScheduler::unschedule(const RunnableHandle runnableHandle)
 void DelayedScheduler::shutdown()
 {
     std::lock_guard<std::mutex> lock(writeLock);
+    stoppingDelayedScheduler = true;
     delayedRunnables.clear();
 }
 
