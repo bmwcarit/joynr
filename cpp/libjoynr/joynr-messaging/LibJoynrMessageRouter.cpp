@@ -71,8 +71,8 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
           incomingAddress(incomingAddress),
           runningParentResolves(),
           parentResolveMutex(),
-          globalParentClusterControllerAddressMutex(),
-          globalParentClusterControllerAddress()
+          parentClusterControllerReplyToAddressMutex(),
+          parentClusterControllerReplyToAddress()
 {
 }
 
@@ -96,18 +96,18 @@ void LibJoynrMessageRouter::setParentRouter(
     addNextHopToParent(this->parentRouter->getProxyParticipantId());
 }
 
-void LibJoynrMessageRouter::queryGlobalClusterControllerAddress(
+void LibJoynrMessageRouter::queryReplyToAddress(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError)
 {
     assert(parentRouter);
 
     auto onSuccessWrapper = [ onSuccess = std::move(onSuccess), this ](
-            const std::string& globalAddress)
+            const std::string& replyToAddress)
     {
         {
-            std::lock_guard<std::mutex> lock(globalParentClusterControllerAddressMutex);
-            globalParentClusterControllerAddress = globalAddress;
+            std::lock_guard<std::mutex> lock(parentClusterControllerReplyToAddressMutex);
+            parentClusterControllerReplyToAddress = replyToAddress;
         }
 
         onSuccess();
@@ -145,8 +145,8 @@ void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
          message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
          message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
          message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
-        std::lock_guard<std::mutex> lock(globalParentClusterControllerAddressMutex);
-        message.setHeaderReplyAddress(globalParentClusterControllerAddress);
+        std::lock_guard<std::mutex> lock(parentClusterControllerReplyToAddressMutex);
+        message.setHeaderReplyAddress(parentClusterControllerReplyToAddress);
     }
 
     // if destination address is not known

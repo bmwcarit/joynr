@@ -130,7 +130,7 @@ public:
      */
     void shutdown();
 
-    void queryGlobalClusterControllerAddress(
+    void queryReplyToAddress(
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
@@ -154,8 +154,8 @@ private:
 
     void removeRunningParentResolvers(const std::string& destinationPartId);
 
-    std::mutex globalParentClusterControllerAddressMutex;
-    std::string globalParentClusterControllerAddress;
+    std::mutex parentClusterControllerReplyToAddressMutex;
+    std::string parentClusterControllerReplyToAddress;
 };
 
 } // namespace joynr
