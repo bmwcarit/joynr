@@ -40,6 +40,7 @@ public class AccessControlClientModule extends AbstractModule {
     public CacheManager provideCacheManager() {
         Configuration configuration = new Configuration();
         configuration.setName("LDACEhCacheManager");
+        configuration.setUpdateCheck(false);
         return CacheManager.create(configuration);
     }
 }
