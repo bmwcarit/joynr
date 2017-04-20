@@ -36,20 +36,17 @@ class JoynrMessageSender;
 class JOYNR_EXPORT ProxyFactory
 {
 public:
-    ProxyFactory(
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingEndpointAddress,
-            std::unique_ptr<ConnectorFactory> connectorFactory);
+    ProxyFactory(std::unique_ptr<ConnectorFactory> connectorFactory);
 
     // Create a proxy of type T
     template <class T>
     T* createProxy(const std::string& domain, const MessagingQos& qosSettings)
     {
-        return new T(messagingEndpointAddress, connectorFactory.get(), domain, qosSettings);
+        return new T(connectorFactory.get(), domain, qosSettings);
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyFactory);
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingEndpointAddress;
     std::unique_ptr<ConnectorFactory> connectorFactory;
 };
 

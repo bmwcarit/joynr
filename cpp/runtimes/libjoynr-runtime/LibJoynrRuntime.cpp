@@ -149,8 +149,7 @@ void LibJoynrRuntime::init(
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
-    proxyFactory =
-            std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
+    proxyFactory = std::make_unique<ProxyFactory>(std::move(connectorFactory));
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();

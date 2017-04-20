@@ -468,8 +468,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             singleThreadIOService->getIOService(), ccMessageRouter);
     inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
 
-    auto libjoynrMessagingAddress =
-            std::make_shared<InProcessMessagingAddress>(libJoynrMessagingSkeleton);
+    dispatcherAddress = std::make_shared<InProcessMessagingAddress>(libJoynrMessagingSkeleton);
     // subscriptionManager = new SubscriptionManager(...)
     auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
             subscriptionManager.get(),
@@ -481,8 +480,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
-    proxyFactory =
-            std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
+    proxyFactory = std::make_unique<ProxyFactory>(std::move(connectorFactory));
 
     dispatcherList.push_back(joynrDispatcher);
     dispatcherList.push_back(inProcessDispatcher);
@@ -490,8 +488,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings.getParticipantIdsPersistenceFilename();
     participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
-
-    dispatcherAddress = libjoynrMessagingAddress;
 
     auto provisionedDiscoveryEntries = getProvisionedEntries();
     discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(provisionedDiscoveryEntries);

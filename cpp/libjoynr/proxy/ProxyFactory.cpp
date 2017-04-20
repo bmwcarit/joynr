@@ -22,11 +22,8 @@
 namespace joynr
 {
 
-ProxyFactory::ProxyFactory(
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingEndpointAddress,
-        std::unique_ptr<ConnectorFactory> connectorFactory)
-        : messagingEndpointAddress(messagingEndpointAddress),
-          connectorFactory(std::move(connectorFactory))
+ProxyFactory::ProxyFactory(std::unique_ptr<ConnectorFactory> connectorFactory)
+        : connectorFactory(std::move(connectorFactory))
 {
 }
 
