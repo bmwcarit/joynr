@@ -287,6 +287,20 @@ function startJavaJeePerformanceTestProvider {
     echo "Performance test provider started"
 }
 
+function startJsPerformanceTestProvider {
+    PROVIDER_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/provider_stdout.txt
+    PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
+
+    if [ "$USE_NPM" == "ON" ]
+    then
+        npm run-script --performance-test:domain=$DOMAINNAME \
+                         startprovider 1>>$PROVIDER_STDOUT 2>>$PROVIDER_STDERR & PROVIDER_PID=$!
+    else
+        # This call assumes that the required js dependencies are installed locally
+        node src/main/js/provider.js $DOMAINNAME 1>>$PROVIDER_STDOUT 2>>$PROVIDER_STDERR & PROVIDER_PID=$!
+    fi
+}
+
 function performJavaConsumerTest {
     MODE_PARAM=$1
     TESTCASE_PARAM=$2
@@ -379,14 +393,7 @@ function performJsConsumerTest {
 
     if [ "$STARTPROVIDER" == "ON" ]
     then
-        if [ "$USE_NPM" == "ON" ]
-        then
-            npm run-script --performance-test:domain=$DOMAINNAME \
-                             startprovider 1>>$PROVIDER_STDOUT 2>>$PROVIDER_STDERR & PROVIDER_PID=$!
-        else
-            # This call assumes that the required js dependencies are installed locally
-            node src/main/js/provider.js $DOMAINNAME 1>>$PROVIDER_STDOUT 2>>$REPORTFILE_PARAM & PROVIDER_PID=$!
-        fi
+        startJsPerformanceTestProvider
     fi
 
     if [ "$USE_NPM" == "ON" ]
@@ -622,12 +629,13 @@ if [ "$TESTCASE" != "JAVA_SYNC" ] && [ "$TESTCASE" != "JAVA_ASYNC" ] && \
    [ "$TESTCASE" != "CPP_SYNC" ] && [ "$TESTCASE" != "CPP_ASYNC" ] && \
    [ "$TESTCASE" != "CPP_MULTICONSUMER" ] && [ "$TESTCASE" != "CPP_SERIALIZER" ] && \
    [ "$TESTCASE" != "CPP_SHORTCIRCUIT" ] && [ "$TESTCASE" != "CPP_PROVIDER" ] && \
-   [ "$TESTCASE" != "JEE_PROVIDER" ]
+   [ "$TESTCASE" != "JEE_PROVIDER" ] && [ "$TESTCASE" != "JS_CONSUMER_CPP_PROVIDER" ] && \
+   [ "$TESTCASE" != "CPP_CONSUMER_JS_PROVIDER" ]
 then
     echo "\"$TESTCASE\" is not a valid testcase"
     echo "-t option can be either JAVA_SYNC, JAVA_ASYNC, JAVA_MULTICONSUMER, JS_ASYNC, \
 JS_CONSUMER, JS_SHORTCIRCUIT, OAP_TO_BACKEND_MOSQ, CPP_SYNC, CPP_ASYNC, CPP_MULTICONSUMER, \
-CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, JEE_PROVIDER"
+CPP_SERIALIZER, CPP_SHORTCIRCUIT, CPP_PROVIDER, JEE_PROVIDER, JS_CONSUMER_CPP_PROVIDER, CPP_CONSUMER_JS_PROVIDER"
     echoUsage
     exit 1
 fi
@@ -736,10 +744,26 @@ then
         performJsConsumerTest $STDOUT $REPORTFILE true OFF $SKIPBYTEARRAYSIZETIMESK
     fi
 
+    if [ "$TESTCASE" == "JS_CONSUMER_CPP_PROVIDER" ]
+    then
+        echo "Testcase: JS_CONSUMER_CPP_PROVIDER" | tee -a $REPORTFILE
+        startCppPerformanceTestProvider
+        performJsConsumerTest $STDOUT $REPORTFILE true OFF $SKIPBYTEARRAYSIZETIMESK
+    fi
+
+    if [ "$TESTCASE" == "CPP_CONSUMER_JS_PROVIDER" ]
+    then
+         startJsPerformanceTestProvider
+         for testcase in ${TESTCASES[@]}; do
+                echo "Testcase: $TESTCASE::$testcase" | tee -a $REPORTFILE
+                performCppConsumerTest "ASYNC" $testcase $STDOUT $REPORTFILE 1 $SINGLECONSUMER_RUNS
+         done
+    fi
+
     if [ "$TESTCASE" == "CPP_PROVIDER" ]
     then
         echo "Testcase: CPP_PROVIDER for domain $DOMAINNAME" | tee -a $REPORTFILE
-        startCppPerformanceTestProvider $STDOUT $REPORTFILE true OFF
+        startCppPerformanceTestProvider
         # this testcase is used to start a provider which is then accessed from an external consumer
         # in order to keep the provider running, we sleep for a long time here
         sleep 100000000
