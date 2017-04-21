@@ -22,6 +22,8 @@ package io.joynr.messaging.mqtt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
+
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.JoynrMessageSerializer;
@@ -57,7 +59,7 @@ public class MqttMessagingStub implements IMessaging {
         if (!JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
             topic += PRIORITY_LOW + message.getTo();
         }
-        String serializedMessage = messageSerializer.serialize(message);
+        byte[] serializedMessage = messageSerializer.serialize(message).getBytes(Charsets.UTF_8);
         int qosLevel = DEFAULT_QOS_LEVEL;
         String effortHeaderValue = message.getHeaderValue(JoynrMessage.HEADER_NAME_EFFORT);
         if (effortHeaderValue != null && String.valueOf(MessagingQosEffort.BEST_EFFORT).equals(effortHeaderValue)) {
@@ -76,7 +78,7 @@ public class MqttMessagingStub implements IMessaging {
         // Unable to access participantId, so publishing to RAW topic
         String topic = address.getTopic() + RAW;
         try {
-            mqttClient.publishMessage(topic, serializedMessage);
+            mqttClient.publishMessage(topic, serializedMessage.getBytes(Charsets.UTF_8));
         } catch (Exception error) {
             failureAction.execute(error);
         }

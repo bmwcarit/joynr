@@ -34,6 +34,8 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
+
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -186,18 +188,18 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void publishMessage(String topic, String serializedMessage) {
+    public void publishMessage(String topic, byte[] serializedMessage) {
         publishMessage(topic, serializedMessage, MqttMessagingStub.DEFAULT_QOS_LEVEL);
     }
 
     @Override
-    public void publishMessage(String topic, String serializedMessage, int qosLevel) {
+    public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
         if (messagingSkeleton == null) {
             throw new JoynrDelayMessageException("MQTT Publish failed: messagingSkeleton has not been set yet");
         }
         try {
             MqttMessage message = new MqttMessage();
-            message.setPayload(serializedMessage.getBytes(Charset.forName("UTF-8")));
+            message.setPayload(serializedMessage);
             message.setQos(qosLevel);
             message.setRetained(false);
 
@@ -232,7 +234,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             throw new JoynrMessageNotSentException(e.getMessage(), e);
         }
 
-        logger.debug("Published message: " + serializedMessage);
+        logger.debug("Published message: " + new String(serializedMessage, Charsets.UTF_8));
     }
 
     @Override

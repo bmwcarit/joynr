@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.google.common.base.Charsets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -128,9 +129,10 @@ public class MqttPahoClientTest {
     @Test
     public void mqttClientTest() throws Exception {
         client.setMessageListener(mockReceiver);
-        String serializedMessage = "test";
+        String message = "test";
+        byte[] serializedMessage = message.getBytes(Charsets.UTF_8);
         client.publishMessage(ownTopic.getTopic(), serializedMessage);
-        verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
+        verify(mockReceiver, timeout(100).times(1)).transmit(eq(message), any(FailureAction.class));
         client.shutdown();
     }
 

@@ -20,6 +20,7 @@ package io.joynr.messaging.mqtt;
  */
 
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -62,11 +63,13 @@ public class MqttMessagingStubTest {
     public void testReactToBestEffortQosInJoynrMessageHeader() {
         JoynrMessage joynrMessage = mock(JoynrMessage.class);
         when(joynrMessage.getHeaderValue(JoynrMessage.HEADER_NAME_EFFORT)).thenReturn(String.valueOf(MessagingQosEffort.BEST_EFFORT));
+        when(messageSerializer.serialize(joynrMessage)).thenReturn("");
         FailureAction failureAction = mock(FailureAction.class);
 
         subject.transmit(joynrMessage, failureAction);
 
-        Mockito.verify(mqttClient)
-               .publishMessage(anyString(), anyString(), eq(MqttMessagingStub.BEST_EFFORT_QOS_LEVEL));
+        Mockito.verify(mqttClient).publishMessage(anyString(),
+                                                  any(byte[].class),
+                                                  eq(MqttMessagingStub.BEST_EFFORT_QOS_LEVEL));
     }
 }
