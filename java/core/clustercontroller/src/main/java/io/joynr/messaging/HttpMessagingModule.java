@@ -29,8 +29,6 @@ import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
 
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
-import io.joynr.messaging.http.HttpMessageSender;
-import io.joynr.messaging.http.IMessageSender;
 import io.joynr.messaging.http.operation.ApacheHttpRequestFactory;
 import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
@@ -46,7 +44,6 @@ public class HttpMessagingModule extends AbstractModule {
     protected void configure() {
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
-        bind(IMessageSender.class).to(HttpMessageSender.class);
         bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
         bind(JoynrMessageSerializer.class).to(JsonSerializer.class);
 

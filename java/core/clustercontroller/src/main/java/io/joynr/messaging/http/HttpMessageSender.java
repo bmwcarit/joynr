@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class HttpMessageSender implements IMessageSender {
+public class HttpMessageSender {
     private static final Logger logger = LoggerFactory.getLogger(HttpMessageSender.class);
     private static final int DELAY_RECEIVER_NOT_STARTED_MS = 100;
     private static final String RECEIVER_NOT_STARTED_REASON = "cannot send until receiver is started";
@@ -84,7 +84,6 @@ public class HttpMessageSender implements IMessageSender {
         this.urlResolver = urlResolver;
     }
 
-    @Override
     public void sendMessage(ChannelAddress address, String serializedMessage, FailureAction failureAction) {
         // check if messageReceiver is ready to receive replies otherwise delay request by at least 100 ms
         if (!messageReceiver.isReady()) {

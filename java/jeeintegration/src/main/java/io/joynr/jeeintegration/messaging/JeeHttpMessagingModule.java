@@ -41,8 +41,6 @@ import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
-import io.joynr.messaging.http.HttpMessageSender;
-import io.joynr.messaging.http.IMessageSender;
 import io.joynr.messaging.http.ServletHttpGlobalAddressFactory;
 import io.joynr.messaging.http.operation.ApacheHttpRequestFactory;
 import io.joynr.messaging.http.operation.HttpClientProvider;
@@ -92,7 +90,6 @@ public class JeeHttpMessagingModule extends AbstractModule {
 
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
-        bind(IMessageSender.class).to(HttpMessageSender.class);
         bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
 
         bind(MessageRouter.class).to(io.joynr.jeeintegration.messaging.JeeMessageRouter.class).in(Singleton.class);
