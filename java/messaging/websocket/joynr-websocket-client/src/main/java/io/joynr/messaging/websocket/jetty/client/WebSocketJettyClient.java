@@ -212,11 +212,11 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     }
 
     @Override
-    public synchronized void writeText(Address to,
-                                       String message,
-                                       long timeout,
-                                       TimeUnit unit,
-                                       final FailureAction failureAction) {
+    public synchronized void writeBytes(Address to,
+                                        byte[] message,
+                                        long timeout,
+                                        TimeUnit unit,
+                                        final FailureAction failureAction) {
         if (messageListener == null) {
             throw new JoynrDelayMessageException(20, "WebSocket write failed: receiver has not been set yet");
         }
@@ -231,7 +231,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
 
         try {
             Session session = sessionFuture.get(timeout, unit);
-            session.getRemote().sendBytes(ByteBuffer.wrap(message.getBytes(CHARSET)), new WriteCallback() {
+            session.getRemote().sendBytes(ByteBuffer.wrap(message), new WriteCallback() {
 
                 @Override
                 public void writeSuccess() {

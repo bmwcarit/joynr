@@ -164,11 +164,11 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
     }
 
     @Override
-    public synchronized void writeText(Address toAddress,
-                                       String message,
-                                       long timeout,
-                                       TimeUnit unit,
-                                       final FailureAction failureAction) {
+    public synchronized void writeBytes(Address toAddress,
+                                        byte[] message,
+                                        long timeout,
+                                        TimeUnit unit,
+                                        final FailureAction failureAction) {
         if (!(toAddress instanceof WebSocketClientAddress)) {
             throw new JoynrIllegalStateException("Web Socket Server can only send to WebSocketClientAddresses");
         }
@@ -181,7 +181,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                     + toClientAddress.getId());
         }
         try {
-            session.getRemote().sendBytes(ByteBuffer.wrap(message.getBytes(CHARSET)), new WriteCallback() {
+            session.getRemote().sendBytes(ByteBuffer.wrap(message), new WriteCallback() {
                 @Override
                 public void writeSuccess() {
                     // Nothing to do

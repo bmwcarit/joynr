@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
@@ -35,7 +36,7 @@ import joynr.system.RoutingTypes.Address;
 public class WebSocketMessagingStub implements IMessaging {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketMessagingStub.class);
 
-    protected ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
     private JoynrWebSocketEndpoint webSocketEndpoint;
 
     private Address toAddress;
@@ -53,7 +54,11 @@ public class WebSocketMessagingStub implements IMessaging {
         String serializedMessage;
         try {
             serializedMessage = objectMapper.writeValueAsString(message);
-            webSocketEndpoint.writeText(toAddress, serializedMessage, timeout, TimeUnit.MILLISECONDS, failureAction);
+            webSocketEndpoint.writeBytes(toAddress,
+                                         serializedMessage.getBytes(Charsets.UTF_8),
+                                         timeout,
+                                         TimeUnit.MILLISECONDS,
+                                         failureAction);
         } catch (JsonProcessingException error) {
             failureAction.execute(error);
         }
@@ -62,6 +67,10 @@ public class WebSocketMessagingStub implements IMessaging {
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
         logger.debug(">>> OUTGOING >>> {}", serializedMessage);
-        webSocketEndpoint.writeText(toAddress, serializedMessage, 30, TimeUnit.SECONDS, failureAction);
+        webSocketEndpoint.writeBytes(toAddress,
+                                     serializedMessage.getBytes(Charsets.UTF_8),
+                                     30,
+                                     TimeUnit.SECONDS,
+                                     failureAction);
     }
 }
