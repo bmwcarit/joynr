@@ -112,6 +112,9 @@ public class JoynrIntegrationBean {
                     break;
                 }
             }
+            if (providerQos == null) {
+                providerQos = new ProviderQos();
+            }
             runtime.registerProvider(getDomainForProvider(beanClass), provider, providerQos);
             registeredProviders.add(provider);
         }
