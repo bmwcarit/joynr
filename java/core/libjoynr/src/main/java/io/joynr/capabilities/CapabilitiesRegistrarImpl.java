@@ -85,6 +85,9 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
      */
     @Override
     public Future<Void> registerProvider(final String domain, Object provider, ProviderQos providerQos) {
+        if (providerQos == null) {
+            throw new JoynrRuntimeException("providerQos == null. It must not be null");
+        }
         ProviderContainer providerContainer = providerContainerFactory.create(provider);
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              providerContainer.getInterfaceName());
