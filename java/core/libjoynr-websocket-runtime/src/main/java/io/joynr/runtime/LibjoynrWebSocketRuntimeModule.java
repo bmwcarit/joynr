@@ -21,7 +21,6 @@ package io.joynr.runtime;
 import com.google.inject.name.Names;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.websocket.WebSocketMessageSerializerFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketMulticastAddressCalculator;
@@ -52,7 +51,6 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
 
         messagingSkeletonFactory.addBinding(WebSocketAddress.class).to(WebSocketMessagingSkeleton.class);
         messagingStubFactory.addBinding(WebSocketAddress.class).to(WebSocketMessagingStubFactory.class);
-        messageSerializerFactory.addBinding(WebSocketAddress.class).to(WebSocketMessageSerializerFactory.class);
         multicastAddressCalculators.addBinding().to(WebSocketMulticastAddressCalculator.class);
     }
 
