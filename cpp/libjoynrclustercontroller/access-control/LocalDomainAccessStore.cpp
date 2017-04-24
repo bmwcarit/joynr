@@ -65,15 +65,15 @@ std::set<std::pair<std::string, std::string>> LocalDomainAccessStore::
         result.insert(std::make_pair(entry.getDomain(), entry.getInterfaceName()));
     };
 
-    for (const auto& masterACE : masterTable) {
+    for (const auto& masterACE : masterAccessTable) {
         insertInResult(masterACE);
     }
 
-    for (const auto& mediatorACE : mediatorTable) {
+    for (const auto& mediatorACE : mediatorAccessTable) {
         insertInResult(mediatorACE);
     }
 
-    for (const auto& ownerACE : ownerTable) {
+    for (const auto& ownerACE : ownerAccessTable) {
         insertInResult(ownerACE);
     }
 
@@ -123,15 +123,16 @@ bool LocalDomainAccessStore::removeDomainRole(const std::string& userId, Role::E
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
         const std::string& uid) const
 {
-    return getEqualRangeWithUidWildcard(masterTable, uid);
+    return getEqualRangeWithUidWildcard(masterAccessTable, uid);
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
         const std::string& domain,
         const std::string& interfaceName) const
 {
-    return getEqualRange(
-            masterTable.get<access_control::tags::DomainAndInterface>(), domain, interfaceName);
+    return getEqualRange(masterAccessTable.get<access_control::tags::DomainAndInterface>(),
+                         domain,
+                         interfaceName);
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntries(
@@ -139,7 +140,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessCon
         const std::string& domain,
         const std::string& interfaceName)
 {
-    return getEqualRangeWithUidWildcard(masterTable, uid, domain, interfaceName);
+    return getEqualRangeWithUidWildcard(masterAccessTable, uid, domain, interfaceName);
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterAccessControlEntries(
@@ -148,7 +149,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterA
     JOYNR_LOG_TRACE(
             logger, "execute: entering getEditableMasterAccessControlEntry with uId {}", userId);
 
-    return getEditableAccessControlEntries(masterTable, userId, Role::MASTER);
+    return getEditableAccessControlEntries(masterAccessTable, userId, Role::MASTER);
 }
 
 boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntry(
@@ -157,7 +158,7 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAcces
         const std::string& interfaceName,
         const std::string& operation)
 {
-    return lookupOptionalWithWildcard(masterTable, uid, domain, interfaceName, operation);
+    return lookupOptionalWithWildcard(masterAccessTable, uid, domain, interfaceName, operation);
 }
 
 bool LocalDomainAccessStore::updateMasterAccessControlEntry(
@@ -166,7 +167,7 @@ bool LocalDomainAccessStore::updateMasterAccessControlEntry(
     JOYNR_LOG_TRACE(
             logger, "execute: entering updateMasterAce with uId {}", updatedMasterAce.getUid());
 
-    return insertOrReplace(masterTable, updatedMasterAce);
+    return insertOrReplace(masterAccessTable, updatedMasterAce);
 }
 
 bool LocalDomainAccessStore::removeMasterAccessControlEntry(const std::string& userId,
@@ -174,21 +175,22 @@ bool LocalDomainAccessStore::removeMasterAccessControlEntry(const std::string& u
                                                             const std::string& interfaceName,
                                                             const std::string& operation)
 {
-    return removeFromTable(masterTable, userId, domain, interfaceName, operation);
+    return removeFromTable(masterAccessTable, userId, domain, interfaceName, operation);
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
         const std::string& uid)
 {
-    return getEqualRangeWithUidWildcard(mediatorTable, uid);
+    return getEqualRangeWithUidWildcard(mediatorAccessTable, uid);
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    return getEqualRange(
-            mediatorTable.get<access_control::tags::DomainAndInterface>(), domain, interfaceName);
+    return getEqualRange(mediatorAccessTable.get<access_control::tags::DomainAndInterface>(),
+                         domain,
+                         interfaceName);
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
@@ -196,7 +198,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
         const std::string& domain,
         const std::string& interfaceName)
 {
-    return getEqualRangeWithUidWildcard(mediatorTable, uid, domain, interfaceName);
+    return getEqualRangeWithUidWildcard(mediatorAccessTable, uid, domain, interfaceName);
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
@@ -205,7 +207,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
     JOYNR_LOG_TRACE(logger, "execute: entering getEditableMediatorAces with uId {}", userId);
 
     // Get all the Mediator ACEs for the domains where the user is master
-    return getEditableAccessControlEntries(mediatorTable, userId, Role::MASTER);
+    return getEditableAccessControlEntries(mediatorAccessTable, userId, Role::MASTER);
 }
 
 boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntry(
@@ -214,7 +216,7 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAcc
         const std::string& interfaceName,
         const std::string& operation)
 {
-    return lookupOptionalWithWildcard(mediatorTable, uid, domain, interfaceName, operation);
+    return lookupOptionalWithWildcard(mediatorAccessTable, uid, domain, interfaceName, operation);
 }
 
 bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
@@ -236,7 +238,7 @@ bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
 
     if (aceValidator.isMediatorValid()) {
         // Add/update a mediator ACE
-        updateSuccess = insertOrReplace(mediatorTable, updatedMediatorAce);
+        updateSuccess = insertOrReplace(mediatorAccessTable, updatedMediatorAce);
     }
 
     return updateSuccess;
@@ -254,21 +256,22 @@ bool LocalDomainAccessStore::removeMediatorAccessControlEntry(const std::string&
                     domain,
                     interfaceName,
                     operation);
-    return removeFromTable(mediatorTable, userId, domain, interfaceName, operation);
+    return removeFromTable(mediatorAccessTable, userId, domain, interfaceName, operation);
 }
 
 std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
         const std::string& uid)
 {
-    return getEqualRangeWithUidWildcard(ownerTable, uid);
+    return getEqualRangeWithUidWildcard(ownerAccessTable, uid);
 }
 
 std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    return getEqualRange(
-            ownerTable.get<access_control::tags::DomainAndInterface>(), domain, interfaceName);
+    return getEqualRange(ownerAccessTable.get<access_control::tags::DomainAndInterface>(),
+                         domain,
+                         interfaceName);
 }
 
 std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntries(
@@ -276,7 +279,7 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessContr
         const std::string& domain,
         const std::string& interfaceName)
 {
-    return getEqualRangeWithUidWildcard(ownerTable, userId, domain, interfaceName);
+    return getEqualRangeWithUidWildcard(ownerAccessTable, userId, domain, interfaceName);
 }
 
 std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAccessControlEntries(
@@ -285,7 +288,7 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAcc
     JOYNR_LOG_TRACE(logger, "execute: entering getEditableOwnerAces with uId {}", userId);
 
     // Get all the Owner ACEs for the domains owned by the user
-    return getEditableAccessControlEntries(ownerTable, userId, Role::OWNER);
+    return getEditableAccessControlEntries(ownerAccessTable, userId, Role::OWNER);
 }
 
 boost::optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntry(
@@ -294,7 +297,7 @@ boost::optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessC
         const std::string& interfaceName,
         const std::string& operation)
 {
-    return lookupOptionalWithWildcard(ownerTable, userId, domain, interfaceName, operation);
+    return lookupOptionalWithWildcard(ownerAccessTable, userId, domain, interfaceName, operation);
 }
 
 bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
@@ -320,7 +323,7 @@ bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
                               boost::optional<OwnerAccessControlEntry>(updatedOwnerAce));
 
     if (aceValidator.isOwnerValid()) {
-        updateSuccess = insertOrReplace(ownerTable, updatedOwnerAce);
+        updateSuccess = insertOrReplace(ownerAccessTable, updatedOwnerAce);
     }
     return updateSuccess;
 }
@@ -338,7 +341,7 @@ bool LocalDomainAccessStore::removeOwnerAccessControlEntry(const std::string& us
                     interfaceName,
                     operation);
 
-    return removeFromTable(ownerTable, userId, domain, interfaceName, operation);
+    return removeFromTable(ownerAccessTable, userId, domain, interfaceName, operation);
 }
 
 std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomainAccessStore::
@@ -439,9 +442,9 @@ bool LocalDomainAccessStore::onlyWildcardOperations(const std::string& userId,
                                                     const std::string& domain,
                                                     const std::string& interfaceName)
 {
-    return checkOnlyWildcardOperations(masterTable, userId, domain, interfaceName) &&
-           checkOnlyWildcardOperations(mediatorTable, userId, domain, interfaceName) &&
-           checkOnlyWildcardOperations(ownerTable, userId, domain, interfaceName);
+    return checkOnlyWildcardOperations(masterAccessTable, userId, domain, interfaceName) &&
+           checkOnlyWildcardOperations(mediatorAccessTable, userId, domain, interfaceName) &&
+           checkOnlyWildcardOperations(ownerAccessTable, userId, domain, interfaceName);
 }
 
 void LocalDomainAccessStore::persistToFile() const

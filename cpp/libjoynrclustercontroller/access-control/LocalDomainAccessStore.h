@@ -595,9 +595,9 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(masterTable),
-                MUESLI_NVP(mediatorTable),
-                MUESLI_NVP(ownerTable),
+        archive(MUESLI_NVP(masterAccessTable),
+                MUESLI_NVP(mediatorAccessTable),
+                MUESLI_NVP(ownerAccessTable),
                 MUESLI_NVP(domainRoleTable));
     }
 
@@ -616,16 +616,16 @@ private:
     void persistToFile() const;
     std::string persistenceFileName;
 
-    using MasterTable =
+    using MasterAccessControlTable =
             access_control::TableMaker<access_control::dac::MasterAccessControlEntry>::Type;
-    MasterTable masterTable;
+    MasterAccessControlTable masterAccessTable;
 
-    using MediatorTable = MasterTable;
-    MediatorTable mediatorTable;
+    using MediatorAccessControlTable = MasterAccessControlTable;
+    MediatorAccessControlTable mediatorAccessTable;
 
-    using OwnerTable =
+    using OwnerAccessControlTable =
             access_control::TableMaker<access_control::dac::OwnerAccessControlEntry>::Type;
-    OwnerTable ownerTable;
+    OwnerAccessControlTable ownerAccessTable;
 
     using DomainRoleTable = access_control::domain_role::Table;
     DomainRoleTable domainRoleTable;
