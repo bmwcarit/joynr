@@ -36,8 +36,8 @@
 #include "joynr/Logger.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -59,18 +59,41 @@ struct DomainAndInterface;
 struct Domain;
 } // namespace tags
 
-template <typename Entry>
-struct TableMaker
+namespace tableTags
 {
-    using UidKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry, const std::string&, getUid);
-    using DomainKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry,
-                                                      const std::string&,
-                                                      getDomain);
-    using InterfaceKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry,
-                                                         const std::string&,
-                                                         getInterfaceName);
-    using OperationKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(Entry, const std::string&, getOperation);
+struct access;
+struct registration;
+} // namespace tableTags
 
+template <typename T>
+struct MetaTableView;
+
+template <>
+struct MetaTableView<access_control::dac::MasterAccessControlEntry>
+{
+    using tag = tableTags::access;
+};
+
+template <>
+struct MetaTableView<access_control::dac::OwnerAccessControlEntry>
+{
+    using tag = tableTags::access;
+};
+
+template <>
+struct MetaTableView<access_control::dac::MasterRegistrationControlEntry>
+{
+    using tag = tableTags::registration;
+};
+
+template <>
+struct MetaTableView<access_control::dac::OwnerRegistrationControlEntry>
+{
+    using tag = tableTags::registration;
+};
+
+struct TableViewTraitsBase
+{
     // this custom comparator ensures that wildcards come last
     struct WildcardComparator
     {
@@ -85,22 +108,55 @@ struct TableMaker
             return (lhs < rhs);
         }
     };
-
     using DefaultComparator = std::less<std::string>;
+
+    using UidKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry, const std::string&, getUid);
+    using DomainKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry,
+                                                      const std::string&,
+                                                      getDomain);
+    using InterfaceKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry,
+                                                         const std::string&,
+                                                         getInterfaceName);
+};
+
+template <typename AccessTag, typename Entry>
+struct TableViewTraits;
+
+template <typename Entry>
+struct TableViewTraits<tableTags::access, Entry> : TableViewTraitsBase
+{
+    using OperationKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(Entry, const std::string&, getOperation);
+
+    using Type = bmi::ordered_unique<
+            bmi::tag<tags::UidDomainInterfaceOperation>,
+            bmi::composite_key<Entry, UidKey, DomainKey, InterfaceKey, OperationKey>,
+            bmi::composite_key_compare<WildcardComparator,
+                                       DefaultComparator,
+                                       DefaultComparator,
+                                       WildcardComparator>>;
+};
+
+template <typename Entry>
+struct TableViewTraits<tableTags::registration, Entry> : TableViewTraitsBase
+{
+    using Type = bmi::ordered_unique<
+            bmi::tag<tags::UidDomainInterfaceOperation>,
+            bmi::composite_key<Entry, UidKey, DomainKey, InterfaceKey>,
+            bmi::composite_key_compare<WildcardComparator, DefaultComparator, DefaultComparator>>;
+};
+
+template <typename Entry>
+struct TableMaker
+{
+    using Tag = typename MetaTableView<Entry>::tag;
+    using TableViewType = typename TableViewTraits<Tag, Entry>::Type;
+    using DomainKey = typename TableViewTraits<Tag, Entry>::DomainKey;
+    using InterfaceKey = typename TableViewTraits<Tag, Entry>::InterfaceKey;
 
     using Type = bmi::multi_index_container<
             Entry,
             bmi::indexed_by<
-                    bmi::ordered_unique<bmi::tag<tags::UidDomainInterfaceOperation>,
-                                        bmi::composite_key<Entry,
-                                                           UidKey,
-                                                           DomainKey,
-                                                           InterfaceKey,
-                                                           OperationKey>,
-                                        bmi::composite_key_compare<WildcardComparator,
-                                                                   DefaultComparator,
-                                                                   DefaultComparator,
-                                                                   WildcardComparator>>,
+                    TableViewType,
                     bmi::ordered_non_unique<bmi::tag<tags::DomainAndInterface>,
                                             bmi::composite_key<Entry, DomainKey, InterfaceKey>>,
                     bmi::hashed_non_unique<bmi::tag<tags::Domain>, DomainKey>>>;
@@ -598,6 +654,9 @@ public:
         archive(MUESLI_NVP(masterAccessTable),
                 MUESLI_NVP(mediatorAccessTable),
                 MUESLI_NVP(ownerAccessTable),
+                MUESLI_NVP(masterRegistrationTable),
+                MUESLI_NVP(mediatorRegistrationTable),
+                MUESLI_NVP(ownerRegistrationTable),
                 MUESLI_NVP(domainRoleTable));
     }
 
@@ -626,6 +685,17 @@ private:
     using OwnerAccessControlTable =
             access_control::TableMaker<access_control::dac::OwnerAccessControlEntry>::Type;
     OwnerAccessControlTable ownerAccessTable;
+
+    using MasterRegistrationControlTable =
+            access_control::TableMaker<access_control::dac::MasterRegistrationControlEntry>::Type;
+    MasterRegistrationControlTable masterRegistrationTable;
+
+    using MediatorRegistrationControlTable = MasterRegistrationControlTable;
+    MediatorRegistrationControlTable mediatorRegistrationTable;
+
+    using OwnerRegistrationControlTable =
+            access_control::TableMaker<access_control::dac::OwnerRegistrationControlEntry>::Type;
+    OwnerRegistrationControlTable ownerRegistrationTable;
 
     using DomainRoleTable = access_control::domain_role::Table;
     DomainRoleTable domainRoleTable;
