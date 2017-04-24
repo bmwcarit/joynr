@@ -51,6 +51,7 @@ class GlobalDomainAccessControllerProxy;
 class GlobalDomainRoleControllerProxy;
 class GlobalDomainAccessControlListEditorProxy;
 } // namespace infrastructure
+class MulticastSubscriptionQos;
 
 /**
  * Object that controls access to providers
@@ -489,6 +490,43 @@ private:
 
     std::unordered_map<std::string, AceSubscription> aceSubscriptions;
 
+    struct RceSubscription
+    {
+        std::shared_ptr<Future<std::string>> masterRceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> mediatorRceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> ownerRceSubscriptionIdFuture;
+
+        const std::string getMasterRceSubscriptionId()
+        {
+            std::string masterRceSubscriptionId;
+            masterRceSubscriptionIdFuture->get(1000, masterRceSubscriptionId);
+            return masterRceSubscriptionId;
+        }
+
+        const std::string getMediatorRceSubscriptionId()
+        {
+            std::string mediatorRceSubscriptionId;
+            mediatorRceSubscriptionIdFuture->get(1000, mediatorRceSubscriptionId);
+            return mediatorRceSubscriptionId;
+        }
+
+        const std::string getOwnerRceSubscriptionId()
+        {
+            std::string ownerRceSubscriptionId;
+            ownerRceSubscriptionIdFuture->get(1000, ownerRceSubscriptionId);
+            return ownerRceSubscriptionId;
+        }
+
+        RceSubscription()
+                : masterRceSubscriptionIdFuture(),
+                  mediatorRceSubscriptionIdFuture(),
+                  ownerRceSubscriptionIdFuture()
+        {
+        }
+    };
+
+    std::unordered_map<std::string, RceSubscription> rceSubscriptions;
+
     std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy>
             globalDomainAccessControllerProxy;
     std::shared_ptr<infrastructure::GlobalDomainAccessControlListEditorProxy>
@@ -516,6 +554,8 @@ private:
     std::shared_ptr<Future<std::string>> subscribeForDreChange(const std::string& userId);
     AceSubscription subscribeForAceChange(const std::string& domain,
                                           const std::string& interfaceName);
+    RceSubscription subscribeForRceChange(const std::string& domain,
+                                          const std::string& interfaceName);
     std::string createCompoundKey(const std::string& domain, const std::string& interfaceName);
 
     // Requests waiting to get consumer permission
@@ -534,10 +574,14 @@ private:
     bool queueConsumerRequest(const std::string& key, const ConsumerPermissionRequest& request);
     void processConsumerRequests(const std::vector<ConsumerPermissionRequest>& requests);
 
+    std::vector<std::string> createPartitionsVector(const std::string& domain,
+                                                    const std::string& interfaceName);
+
     // Mutex that protects all member variables involved in initialisation
     // of data for a domain/interface
     // - aceSubscriptions
     // - consumerPermissionRequests
+    // - rceSubscriptions
     std::mutex initStateMutex;
 
     // Class that keeps track of initialisation for a domain/interface
@@ -560,6 +604,20 @@ private:
     class OwnerAccessControlEntryChangedBroadcastListener;
     std::shared_ptr<OwnerAccessControlEntryChangedBroadcastListener>
             ownerAccessControlEntryChangedBroadcastListener;
+
+    class MasterRegistrationControlEntryChangedBroadcastListener;
+    std::shared_ptr<MasterRegistrationControlEntryChangedBroadcastListener>
+            masterRegistrationControlEntryChangedBroadcastListener;
+
+    class MediatorRegistrationControlEntryChangedBroadcastListener;
+    std::shared_ptr<MediatorRegistrationControlEntryChangedBroadcastListener>
+            mediatorRegistrationControlEntryChangedBroadcastListener;
+
+    class OwnerRegistrationControlEntryChangedBroadcastListener;
+    std::shared_ptr<OwnerRegistrationControlEntryChangedBroadcastListener>
+            ownerRegistrationControlEntryChangedBroadcastListener;
+
+    std::shared_ptr<joynr::MulticastSubscriptionQos> multicastSubscriptionQos;
 
     static std::string sanitizeForPartition(const std::string& value);
 };

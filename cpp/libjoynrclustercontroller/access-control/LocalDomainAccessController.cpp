@@ -153,6 +153,57 @@ private:
     LocalDomainAccessController& parent;
 };
 
+class LocalDomainAccessController::MasterRegistrationControlEntryChangedBroadcastListener
+        : public ISubscriptionListener<infrastructure::DacTypes::ChangeType::Enum,
+                                       infrastructure::DacTypes::MasterRegistrationControlEntry>
+{
+public:
+    explicit MasterRegistrationControlEntryChangedBroadcastListener(
+            LocalDomainAccessController& parent);
+    void onSubscribed(const std::string& subscriptionId) override;
+    void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
+                   const infrastructure::DacTypes::MasterRegistrationControlEntry& changedMasterRce)
+            override;
+    void onError(const exceptions::JoynrRuntimeException& error) override;
+
+private:
+    LocalDomainAccessController& parent;
+};
+
+class LocalDomainAccessController::MediatorRegistrationControlEntryChangedBroadcastListener
+        : public ISubscriptionListener<infrastructure::DacTypes::ChangeType::Enum,
+                                       infrastructure::DacTypes::MasterRegistrationControlEntry>
+{
+public:
+    explicit MediatorRegistrationControlEntryChangedBroadcastListener(
+            LocalDomainAccessController& parent);
+    void onSubscribed(const std::string& subscriptionId) override;
+    void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
+                   const infrastructure::DacTypes::MasterRegistrationControlEntry&
+                           changedMediatorRce) override;
+    void onError(const exceptions::JoynrRuntimeException& error) override;
+
+private:
+    LocalDomainAccessController& parent;
+};
+
+class LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastListener
+        : public ISubscriptionListener<infrastructure::DacTypes::ChangeType::Enum,
+                                       infrastructure::DacTypes::OwnerRegistrationControlEntry>
+{
+public:
+    explicit OwnerRegistrationControlEntryChangedBroadcastListener(
+            LocalDomainAccessController& parent);
+    void onSubscribed(const std::string& subscriptionId) override;
+    void onReceive(const infrastructure::DacTypes::ChangeType::Enum& changeType,
+                   const infrastructure::DacTypes::OwnerRegistrationControlEntry& changedOwnerRce)
+            override;
+    void onError(const exceptions::JoynrRuntimeException& error) override;
+
+private:
+    LocalDomainAccessController& parent;
+};
+
 //--- LocalDomainAccessController ----------------------------------------------
 
 LocalDomainAccessController::LocalDomainAccessController(
@@ -160,6 +211,7 @@ LocalDomainAccessController::LocalDomainAccessController(
         : accessControlAlgorithm(),
           dreSubscriptions(),
           aceSubscriptions(),
+          rceSubscriptions(),
           globalDomainAccessControllerProxy(),
           globalDomainAccessControlListEditorProxy(),
           globalDomainRoleControllerProxy(),
@@ -173,7 +225,16 @@ LocalDomainAccessController::LocalDomainAccessController(
           mediatorAccessControlEntryChangedBroadcastListener(
                   std::make_shared<MediatorAccessControlEntryChangedBroadcastListener>(*this)),
           ownerAccessControlEntryChangedBroadcastListener(
-                  std::make_shared<OwnerAccessControlEntryChangedBroadcastListener>(*this))
+                  std::make_shared<OwnerAccessControlEntryChangedBroadcastListener>(*this)),
+          masterRegistrationControlEntryChangedBroadcastListener(
+                  std::make_shared<MasterRegistrationControlEntryChangedBroadcastListener>(*this)),
+          mediatorRegistrationControlEntryChangedBroadcastListener(
+                  std::make_shared<MediatorRegistrationControlEntryChangedBroadcastListener>(
+                          *this)),
+          ownerRegistrationControlEntryChangedBroadcastListener(
+                  std::make_shared<OwnerRegistrationControlEntryChangedBroadcastListener>(*this)),
+          multicastSubscriptionQos(std::make_shared<joynr::MulticastSubscriptionQos>(
+                  broadcastSubscriptionValidity.count()))
 {
 }
 
@@ -429,10 +490,11 @@ Permission::Enum LocalDomainAccessController::getProviderPermission(
     std::ignore = domain;
     std::ignore = interfaceName;
 
-    return accessControlAlgorithm.getProviderPermission(boost::optional<MasterAccessControlEntry>(),
-                                                        boost::optional<MasterAccessControlEntry>(),
-                                                        boost::optional<OwnerAccessControlEntry>(),
-                                                        trustLevel);
+    return accessControlAlgorithm.getProviderPermission(
+            boost::optional<MasterRegistrationControlEntry>(),
+            boost::optional<MasterRegistrationControlEntry>(),
+            boost::optional<OwnerRegistrationControlEntry>(),
+            trustLevel);
 }
 
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
@@ -442,8 +504,6 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
     globalDomainAccessControllerProxy->getMasterRegistrationControlEntries(resultMasterRces, uid);
     return resultMasterRces;
 }
-
-//---- Unused methods copied from Java implementation --------------------------
 
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getEditableMasterRegistrationControlEntries(const std::string& uid)
@@ -551,50 +611,110 @@ bool LocalDomainAccessController::removeOwnerRegistrationControlEntry(
 void LocalDomainAccessController::unregisterProvider(const std::string& domain,
                                                      const std::string& interfaceName)
 {
-    // Get the subscription ids
     std::string compoundKey = createCompoundKey(domain, interfaceName);
-    AceSubscription subscriptionIds;
+    AceSubscription aceSubscriptionIds;
+    bool subscriptionsFound = false;
     {
         std::lock_guard<std::mutex> lock(initStateMutex);
-        if (aceSubscriptions.count(compoundKey) == 0) {
-            return;
+        if (aceSubscriptions.count(compoundKey) > 0) {
+            // Get the subscription ids
+            aceSubscriptionIds = aceSubscriptions[compoundKey];
+            aceSubscriptions.erase(compoundKey);
+            subscriptionsFound = true;
         }
-        subscriptionIds = aceSubscriptions[compoundKey];
+    }
+    if (subscriptionsFound) {
+        JOYNR_LOG_TRACE(logger,
+                        "Unsubscribing from ACL broadcasts for domain {}, interface {}",
+                        domain,
+                        interfaceName);
+
+        // Unsubscribe from ACE change subscriptions
+        try {
+            std::string masterAceSubscriptionId = aceSubscriptionIds.getMasterAceSubscriptionId();
+            globalDomainAccessControllerProxy
+                    ->unsubscribeFromMasterAccessControlEntryChangedBroadcast(
+                            masterAceSubscriptionId);
+        } catch (const exceptions::JoynrException& error) {
+            JOYNR_LOG_ERROR(logger,
+                            "Unsubscribe from MasterAccessControlEntryChangedBroadcast failed: " +
+                                    error.getMessage());
+        }
+        try {
+            std::string mediatorAceSubscriptionId =
+                    aceSubscriptionIds.getMediatorAceSubscriptionId();
+            globalDomainAccessControllerProxy
+                    ->unsubscribeFromMediatorAccessControlEntryChangedBroadcast(
+                            mediatorAceSubscriptionId);
+        } catch (const exceptions::JoynrException& error) {
+            JOYNR_LOG_ERROR(logger,
+                            "Unsubscribe from MediatorAccessControlEntryChangedBroadcast failed: " +
+                                    error.getMessage());
+        }
+        try {
+            std::string ownerAceSubscriptionId = aceSubscriptionIds.getOwnerAceSubscriptionId();
+            globalDomainAccessControllerProxy
+                    ->unsubscribeFromOwnerAccessControlEntryChangedBroadcast(
+                            ownerAceSubscriptionId);
+        } catch (const exceptions::JoynrException& error) {
+            JOYNR_LOG_ERROR(logger,
+                            "Unsubscribe from OwnerAccessControlEntryChangedBroadcast failed: " +
+                                    error.getMessage());
+        }
     }
 
-    JOYNR_LOG_TRACE(logger,
-                    "Unsubscribing from ACL broadcasts for domain {}, interface {}",
-                    domain,
-                    interfaceName);
+    RceSubscription rceSubscriptionIds;
+    subscriptionsFound = false;
+    {
+        std::lock_guard<std::mutex> lock(initStateMutex);
+        if (rceSubscriptions.count(compoundKey) > 0) {
+            // Get the subscription ids
+            rceSubscriptionIds = rceSubscriptions[compoundKey];
+            rceSubscriptions.erase(compoundKey);
+            subscriptionsFound = true;
+        }
+    }
+    if (subscriptionsFound) {
+        JOYNR_LOG_TRACE(logger,
+                        "Unsubscribing from RCL broadcasts for domain {}, interface {}",
+                        domain,
+                        interfaceName);
 
-    // Unsubscribe from ACE change subscriptions
-    try {
-        std::string masterAceSubscriptionId = subscriptionIds.getMasterAceSubscriptionId();
-        globalDomainAccessControllerProxy->unsubscribeFromMasterAccessControlEntryChangedBroadcast(
-                masterAceSubscriptionId);
-    } catch (const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger,
-                        "Unsubscribe from MasterAccessControlEntryChangedBroadcast failed: " +
-                                error.getMessage());
-    }
-    try {
-        std::string mediatorAceSubscriptionId = subscriptionIds.getMediatorAceSubscriptionId();
-        globalDomainAccessControllerProxy
-                ->unsubscribeFromMediatorAccessControlEntryChangedBroadcast(
-                        mediatorAceSubscriptionId);
-    } catch (const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger,
-                        "Unsubscribe from MediatorAccessControlEntryChangedBroadcast failed: " +
-                                error.getMessage());
-    }
-    try {
-        std::string ownerAceSubscriptionId = subscriptionIds.getOwnerAceSubscriptionId();
-        globalDomainAccessControllerProxy->unsubscribeFromOwnerAccessControlEntryChangedBroadcast(
-                ownerAceSubscriptionId);
-    } catch (const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger,
-                        "Unsubscribe from OwnerAccessControlEntryChangedBroadcast failed: " +
-                                error.getMessage());
+        // Unsubscribe from RCE change subscriptions
+        try {
+            std::string masterRceSubscriptionId = rceSubscriptionIds.getMasterRceSubscriptionId();
+            globalDomainAccessControllerProxy
+                    ->unsubscribeFromMasterRegistrationControlEntryChangedBroadcast(
+                            masterRceSubscriptionId);
+        } catch (const exceptions::JoynrException& error) {
+            JOYNR_LOG_ERROR(
+                    logger,
+                    "Unsubscribe from MasterRegistrationControlEntryChangedBroadcast failed: " +
+                            error.getMessage());
+        }
+        try {
+            std::string mediatorRceSubscriptionId =
+                    rceSubscriptionIds.getMediatorRceSubscriptionId();
+            globalDomainAccessControllerProxy
+                    ->unsubscribeFromMediatorRegistrationControlEntryChangedBroadcast(
+                            mediatorRceSubscriptionId);
+        } catch (const exceptions::JoynrException& error) {
+            JOYNR_LOG_ERROR(
+                    logger,
+                    "Unsubscribe from MediatorRegistrationControlEntryChangedBroadcast failed: " +
+                            error.getMessage());
+        }
+        try {
+            std::string ownerRceSubscriptionId = rceSubscriptionIds.getOwnerRceSubscriptionId();
+            globalDomainAccessControllerProxy
+                    ->unsubscribeFromOwnerRegistrationControlEntryChangedBroadcast(
+                            ownerRceSubscriptionId);
+        } catch (const exceptions::JoynrException& error) {
+            JOYNR_LOG_ERROR(
+                    logger,
+                    "Unsubscribe from OwnerRegistrationControlEntryChangedBroadcast failed: " +
+                            error.getMessage());
+        }
     }
 }
 
@@ -715,6 +835,10 @@ void LocalDomainAccessController::initialised(const std::string& domain,
         aceSubscriptions.insert(
                 std::make_pair(compoundKey, subscribeForAceChange(domain, interfaceName)));
 
+        // Subscribe to RCL broadcasts about this domain/interface
+        rceSubscriptions.insert(
+                std::make_pair(compoundKey, subscribeForRceChange(domain, interfaceName)));
+
         if (!restoringFromFile) {
             // Remove requests for processing
             auto it = consumerPermissionRequests.find(compoundKey);
@@ -792,8 +916,6 @@ std::string LocalDomainAccessController::sanitizeForPartition(const std::string&
 std::shared_ptr<Future<std::string>> LocalDomainAccessController::subscribeForDreChange(
         const std::string& userId)
 {
-    auto multicastSubscriptionQos = std::make_shared<MulticastSubscriptionQos>();
-    multicastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
     std::vector<std::string> partitions = {sanitizeForPartition(userId)};
 
     return globalDomainRoleControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
@@ -803,18 +925,20 @@ std::shared_ptr<Future<std::string>> LocalDomainAccessController::subscribeForDr
             partitions);
 }
 
+std::vector<std::string> LocalDomainAccessController::createPartitionsVector(
+        const std::string& domain,
+        const std::string& interfaceName)
+{
+    static const std::string wildcardForUserId = "+";
+    return {wildcardForUserId, sanitizeForPartition(domain), sanitizeForPartition(interfaceName)};
+}
+
 LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscribeForAceChange(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    auto multicastSubscriptionQos = std::make_shared<MulticastSubscriptionQos>();
-    multicastSubscriptionQos->setValidityMs(broadcastSubscriptionValidity.count());
-
     AceSubscription subscriptionIds;
-
-    static const std::string wildcardForUserId = "+";
-    std::vector<std::string> partitions = {
-            wildcardForUserId, sanitizeForPartition(domain), sanitizeForPartition(interfaceName)};
+    std::vector<std::string> partitions = createPartitionsVector(domain, interfaceName);
     subscriptionIds.masterAceSubscriptionIdFuture =
             globalDomainAccessControllerProxy->subscribeToMasterAccessControlEntryChangedBroadcast(
                     std::static_pointer_cast<
@@ -840,6 +964,45 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
                             ownerAccessControlEntryChangedBroadcastListener),
                     multicastSubscriptionQos,
                     partitions);
+
+    return subscriptionIds;
+}
+
+LocalDomainAccessController::RceSubscription LocalDomainAccessController::subscribeForRceChange(
+        const std::string& domain,
+        const std::string& interfaceName)
+{
+    RceSubscription subscriptionIds;
+    std::vector<std::string> partitions = createPartitionsVector(domain, interfaceName);
+    subscriptionIds.masterRceSubscriptionIdFuture =
+            globalDomainAccessControllerProxy
+                    ->subscribeToMasterRegistrationControlEntryChangedBroadcast(
+                            std::static_pointer_cast<
+                                    ISubscriptionListener<ChangeType::Enum,
+                                                          MasterRegistrationControlEntry>>(
+                                    masterRegistrationControlEntryChangedBroadcastListener),
+                            multicastSubscriptionQos,
+                            partitions);
+
+    subscriptionIds.mediatorRceSubscriptionIdFuture =
+            globalDomainAccessControllerProxy
+                    ->subscribeToMediatorRegistrationControlEntryChangedBroadcast(
+                            std::static_pointer_cast<
+                                    ISubscriptionListener<ChangeType::Enum,
+                                                          MasterRegistrationControlEntry>>(
+                                    mediatorRegistrationControlEntryChangedBroadcastListener),
+                            multicastSubscriptionQos,
+                            partitions);
+
+    subscriptionIds.ownerRceSubscriptionIdFuture =
+            globalDomainAccessControllerProxy
+                    ->subscribeToOwnerRegistrationControlEntryChangedBroadcast(
+                            std::static_pointer_cast<
+                                    ISubscriptionListener<ChangeType::Enum,
+                                                          OwnerRegistrationControlEntry>>(
+                                    ownerRegistrationControlEntryChangedBroadcastListener),
+                            multicastSubscriptionQos,
+                            partitions);
 
     return subscriptionIds;
 }
@@ -990,6 +1153,110 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
 {
     std::ignore = error;
     JOYNR_LOG_ERROR(parent.logger, "Change of OwnerAce failed!");
+}
+
+LocalDomainAccessController::MasterRegistrationControlEntryChangedBroadcastListener::
+        MasterRegistrationControlEntryChangedBroadcastListener(LocalDomainAccessController& parent)
+        : parent(parent)
+{
+}
+
+void LocalDomainAccessController::MasterRegistrationControlEntryChangedBroadcastListener::
+        onSubscribed(const std::string& subscriptionId)
+{
+    std::ignore = subscriptionId;
+}
+
+void LocalDomainAccessController::MasterRegistrationControlEntryChangedBroadcastListener::onReceive(
+        const ChangeType::Enum& changeType,
+        const MasterRegistrationControlEntry& changedMasterRce)
+{
+    if (changeType != ChangeType::REMOVE) {
+        parent.localDomainAccessStore->updateMasterRegistrationControlEntry(changedMasterRce);
+        JOYNR_LOG_TRACE(parent.logger, "Changed MasterAce: {}", changedMasterRce.toString());
+    } else {
+        parent.localDomainAccessStore->removeMasterRegistrationControlEntry(
+                changedMasterRce.getUid(),
+                changedMasterRce.getDomain(),
+                changedMasterRce.getInterfaceName());
+        JOYNR_LOG_TRACE(parent.logger, "Removed MasterAce: {}", changedMasterRce.toString());
+    }
+}
+
+void LocalDomainAccessController::MasterRegistrationControlEntryChangedBroadcastListener::onError(
+        const exceptions::JoynrRuntimeException& error)
+{
+    std::ignore = error;
+    JOYNR_LOG_ERROR(parent.logger, "Change of MasterAce failed!");
+}
+
+LocalDomainAccessController::MediatorRegistrationControlEntryChangedBroadcastListener::
+        MediatorRegistrationControlEntryChangedBroadcastListener(
+                LocalDomainAccessController& parent)
+        : parent(parent)
+{
+}
+
+void LocalDomainAccessController::MediatorRegistrationControlEntryChangedBroadcastListener::
+        onSubscribed(const std::string& subscriptionId)
+{
+    std::ignore = subscriptionId;
+}
+
+void LocalDomainAccessController::MediatorRegistrationControlEntryChangedBroadcastListener::
+        onReceive(const ChangeType::Enum& changeType,
+                  const MasterRegistrationControlEntry& changedMediatorRce)
+{
+    if (changeType != ChangeType::REMOVE) {
+        parent.localDomainAccessStore->updateMediatorRegistrationControlEntry(changedMediatorRce);
+    } else {
+        parent.localDomainAccessStore->removeMediatorRegistrationControlEntry(
+                changedMediatorRce.getUid(),
+                changedMediatorRce.getDomain(),
+                changedMediatorRce.getInterfaceName());
+    }
+    JOYNR_LOG_TRACE(parent.logger, "Changed MediatorRce: {}", changedMediatorRce.toString());
+}
+
+void LocalDomainAccessController::MediatorRegistrationControlEntryChangedBroadcastListener::onError(
+        const exceptions::JoynrRuntimeException& error)
+{
+    std::ignore = error;
+    JOYNR_LOG_ERROR(parent.logger, "Change of MediatorRce failed!");
+}
+
+LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastListener::
+        OwnerRegistrationControlEntryChangedBroadcastListener(LocalDomainAccessController& parent)
+        : parent(parent)
+{
+}
+
+void LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastListener::
+        onSubscribed(const std::string& subscriptionId)
+{
+    std::ignore = subscriptionId;
+}
+
+void LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastListener::onReceive(
+        const ChangeType::Enum& changeType,
+        const OwnerRegistrationControlEntry& changedOwnerRce)
+{
+    if (changeType != ChangeType::REMOVE) {
+        parent.localDomainAccessStore->updateOwnerRegistrationControlEntry(changedOwnerRce);
+    } else {
+        parent.localDomainAccessStore->removeOwnerRegistrationControlEntry(
+                changedOwnerRce.getUid(),
+                changedOwnerRce.getDomain(),
+                changedOwnerRce.getInterfaceName());
+    }
+    JOYNR_LOG_TRACE(parent.logger, "Changed OwnerRce: {}", changedOwnerRce.toString());
+}
+
+void LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastListener::onError(
+        const exceptions::JoynrRuntimeException& error)
+{
+    std::ignore = error;
+    JOYNR_LOG_ERROR(parent.logger, "Change of OwnerRce failed!");
 }
 
 } // namespace joynr
