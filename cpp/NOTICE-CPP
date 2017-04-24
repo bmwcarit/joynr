@@ -31,6 +31,7 @@ spdlog under MIT License
 Boost under Boost Software License, Version 1.0
 WebSocket++ under BSD 3-clause License (BSD-3-clause)
 muesli under The Apache License 2.0 (Apache-2)
+smrf under The Apache License 2.0 (Apache-2)
 
 --- Libraries used during joynr build ------------------------------------------
 

@@ -52,6 +52,7 @@ set(
     JoynrLib_TARGET_LIBRARIES
     Boost::system
     Boost::thread
+    smrf::smrf
 )
 
 if(JOYNR_ENABLE_DLT_LOGGING)
