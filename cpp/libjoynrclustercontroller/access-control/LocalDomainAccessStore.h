@@ -37,6 +37,8 @@
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr
@@ -145,7 +147,7 @@ public:
      * @param role The user to get the domain role for. No wildcards supported.
      * @return Domain Role Entry that apply to the user uid and role.
      * Returned domain role entry domains value is empty list, if no domain role entry for uid
-     *found.
+     * found.
      */
     boost::optional<infrastructure::DacTypes::DomainRoleEntry> getDomainRole(
             const std::string& uid,
@@ -153,7 +155,7 @@ public:
 
     /**
      * Updates given domain role entry. If such doesn't already exist in the store, it will be added
-     *to the store.
+     * to the store.
      *
      * @param updatedEntry Entry that has to be updated.
      * @return If operation succeeded return true.
@@ -165,16 +167,16 @@ public:
      *
      * @param userId UserId whose DRE is going to be removed.
      * @param role UserId role that builds with userId primary key that identifies DRE that has to
-     *be removed.
+     * be removed.
      * @return If operation succeeded return true.
      */
     bool removeDomainRole(const std::string& userId, infrastructure::DacTypes::Role::Enum role);
 
     /**
      * Returns a list of entries that apply to user uid, i.e. the entries that define the access
-     *rights of the user uid.
+     * rights of the user uid.
      * This method is called when a user logs in and a client wishes to cache MasterAcl for that
-     *user.
+     * user.
      *
      * @param uid The user id that owns the domains.
      * @return std::vector of master ACEs with entries owned by the user.
@@ -249,7 +251,7 @@ public:
 
     /**
      * Remove master access control entry uniquely identified with userId, domain, interface and
-     *operation.
+     * operation.
      *
      * @param userId
      * @param domain
@@ -266,19 +268,19 @@ public:
      * Returns a list of master ACEs from Mediator ACL that apply to user uid,
      * i.e. the entries that define the access rights of the user uid.
      * This method is called when a user logs in and a client wishes to cache MediatorAcl for that
-     *user.
+     * user.
      *
      * @param uid The user id that owns the domains.
      * @return List of master ACEs with entries owned by the uid.
      * If no entry has been found for specified uid, then returns master ACE from Mediator ACL with
-     *uid "*".
+     * uid "*".
      */
     std::vector<infrastructure::DacTypes::MasterAccessControlEntry> getMediatorAccessControlEntries(
             const std::string& uid);
 
     /**
      * Returns a list of master ACEs from Mediator ACL applying to domains the user uid has role
-     *MASTER,
+     * MASTER,
      * i.e. the entries the user uid is allowed to edit. Used by an Mediator ACL editor app.
      *
      * @param userId The user id that owns the domains.
@@ -290,7 +292,7 @@ public:
 
     /**
      * Returns a list of master ACEs from Mediator ACL that apply to the domain and interface
-     *combination.
+     * combination.
      * Used when a provider is registered to prefetch applying entries.
      *
      * @param domain The domain you search ACE's for.
@@ -324,7 +326,7 @@ public:
      * @param interfaceName The interface being called.
      * @param operation The operation being called
      * @return Mediator ACE  associated to given uid, domain, interface and
-     *operation.
+     * operation.
      * If no mediator ACE found for given parameters, returned boost::optional is not initialized.
      */
     boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>
@@ -360,7 +362,7 @@ public:
      * Returns a list of owner ACEs that apply to user uid,
      * i.e. the entries that define the access rights of the user uid.
      * This method is called when a user logs in and a client wishes to cache OwnerAcl for that
-     *user.
+     * user.
      *
      * @param uid The user id that owns the domains.
      * @return std::vector of owner ACEs with entries owned by the user.
@@ -370,16 +372,16 @@ public:
 
     /**
      * Returns a std::vector of owner ACEs from Owner ACL applying to domains the user uid has role
-     *OWNER,
+     * OWNER,
      * i.e. the entries the user uid is allowed to edit. Used by an Owner ACL editor app.
      * This method is called when a user logs in and a client wishes to cache OwnerAcl for that
-     *user.
+     * user.
      *
      * @param userId The user id that owns the domains.
      * @return std::vector of owner ACEs with entries owned by the user.
      * In case userId has no domains with role OWNER, this function returns std::vector of all
-     *userId
-     *owner ACEs.
+     * userId
+     * owner ACEs.
      */
     std::vector<infrastructure::DacTypes::OwnerAccessControlEntry>
     getEditableOwnerAccessControlEntries(const std::string& userId);
@@ -448,6 +450,135 @@ public:
                                        const std::string& domain,
                                        const std::string& interfaceName,
                                        const std::string& operation);
+
+    /**
+     * Returns a list of master registration control entries that define the registration rights
+     * of the provider uid.
+     * Calling this function blocks the calling thread until update operation finishes.
+     *
+     * @param uid The provider userId.
+     * @return A list of master RCEs for the specified uid.
+     */
+    std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry>
+    getMasterRegistrationControlEntries(const std::string& uid) const;
+
+    /**
+     * Returns a list of editable master registration entries for domains for which
+     * the user uid has got the role Master,
+     *
+     * @param uid The userId of the caller.
+     * @return A list of entries applying to domains the user uid has role Master.
+     */
+    std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry>
+    getEditableMasterRegistrationControlEntries(const std::string& uid);
+
+    /**
+     * Updates an existing entry (according to primary key) or adds a new entry if not already
+     * existent.
+     *
+     * @param updatedMasterRce The master RCE to be updated.
+     * @return true if update succeeded, false otherwise.
+     */
+    bool updateMasterRegistrationControlEntry(
+            const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMasterRce);
+
+    /**
+     * Removes an existing entry (according to primary key).
+     *
+     * @param uid Provider userId.
+     * @param domain Domain where provider has been registered.
+     * @param interfaceName Provider interface.
+     * @return true if remove succeeded, false otherwise.
+     */
+    bool removeMasterRegistrationControlEntry(const std::string& uid,
+                                              const std::string& domain,
+                                              const std::string& interfaceName);
+
+    /**
+     * Returns a list of mediator registration control entries that define the registration rights
+     * of the provider uid.
+     * Calling this function blocks the calling thread until the update operation finishes.
+     *
+     * @param uid The provider userId.
+     * @return A list of mediator RCEs for specified uid.
+     */
+    std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry>
+    getMediatorRegistrationControlEntries(const std::string& uid);
+
+    /**
+     * Returns a list of editable mediator registration entries for domains for which
+     * the user uid has got the role Master,
+     *
+     * @param uid The userId of the caller.
+     * @return A list of entries applying to domains the user uid has role Master.
+     */
+    std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry>
+    getEditableMediatorRegistrationControlEntries(const std::string& uid);
+
+    /**
+     * Updates an existing entry (according to primary key) or adds a new entry if not already
+     * existent.
+     *
+     * @param updatedMediatorRce The mediator RCE to be updated.
+     * @return true if update succeeded, false otherwise.
+     */
+    bool updateMediatorRegistrationControlEntry(
+            const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMediatorRce);
+
+    /**
+     * Removes an existing entry (according to primary key).
+     *
+     * @param uid Provider userId.
+     * @param domain Domain where provider has been registered.
+     * @param interfaceName Provider interface.
+     * @return true if remove succeeded, false otherwise.
+     */
+    bool removeMediatorRegistrationControlEntry(const std::string& uid,
+                                                const std::string& domain,
+                                                const std::string& interfaceName);
+
+    /**
+     * Returns a list of owner registration control entries that define the registration rights
+     * of the provider uid.
+     * Calling this function blocks the calling thread until the update operation finishes.
+     *
+     * @param uid The provider userId.
+     * @return A list of owner RCEs for specified uid.
+     */
+    std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry>
+    getOwnerRegistrationControlEntries(const std::string& uid);
+
+    /**
+     * Returns a list of editable owner registration entries for domains for which
+     * the user uid has got the role Owner.
+     *
+     * @param uid The userId of the caller.
+     * @return A list of entries applying to domains the user uid has role Owner.
+     */
+    std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry>
+    getEditableOwnerRegistrationControlEntries(const std::string& uid);
+
+    /**
+     * Updates an existing entry (according to primary key) or adds a new entry if not already
+     * existent.
+     *
+     * @param updatedOwnerRce The owner RCE to be updated.
+     * @return true if update succeeded, false otherwise.
+     */
+    bool updateOwnerRegistrationControlEntry(
+            const infrastructure::DacTypes::OwnerRegistrationControlEntry& updatedOwnerRce);
+
+    /**
+     * Removes an existing entry (according to primary key).
+     *
+     * @param uid Provider userId.
+     * @param domain Domain where provider has been registered.
+     * @param interfaceName Provider interface.
+     * @return true if remove succeeded, false otherwise.
+     */
+    bool removeOwnerRegistrationControlEntry(const std::string& uid,
+                                             const std::string& domain,
+                                             const std::string& interfaceName);
 
     /**
      * Check if only wildcard operations exist for the given combination of
