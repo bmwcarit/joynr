@@ -438,9 +438,9 @@ Permission::Enum LocalDomainAccessController::getProviderPermission(
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getMasterRegistrationControlEntries(const std::string& uid)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = uid;
-    return std::vector<MasterRegistrationControlEntry>();
+    std::vector<MasterRegistrationControlEntry> resultMasterRces;
+    globalDomainAccessControllerProxy->getMasterRegistrationControlEntries(resultMasterRces, uid);
+    return resultMasterRces;
 }
 
 //---- Unused methods copied from Java implementation --------------------------
@@ -448,17 +448,19 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getEditableMasterRegistrationControlEntries(const std::string& uid)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = uid;
-    return std::vector<MasterRegistrationControlEntry>();
+    std::vector<MasterRegistrationControlEntry> resultMasterRces;
+    globalDomainAccessControlListEditorProxy->getEditableMasterRegistrationControlEntries(
+            resultMasterRces, uid);
+    return resultMasterRces;
 }
 
 bool LocalDomainAccessController::updateMasterRegistrationControlEntry(
         const MasterRegistrationControlEntry& updatedMasterRce)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = updatedMasterRce;
-    return false;
+    bool success = false;
+    globalDomainAccessControlListEditorProxy->updateMasterRegistrationControlEntry(
+            success, updatedMasterRce);
+    return success;
 }
 
 bool LocalDomainAccessController::removeMasterRegistrationControlEntry(
@@ -466,35 +468,36 @@ bool LocalDomainAccessController::removeMasterRegistrationControlEntry(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = uid;
-    std::ignore = domain;
-    std::ignore = interfaceName;
-    return false;
+    bool success = false;
+    globalDomainAccessControlListEditorProxy->removeMasterRegistrationControlEntry(
+            success, uid, domain, interfaceName);
+    return success;
 }
 
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getMediatorRegistrationControlEntries(const std::string& uid)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = uid;
-    return std::vector<MasterRegistrationControlEntry>();
+    std::vector<MasterRegistrationControlEntry> resultMasterRces;
+    globalDomainAccessControllerProxy->getMediatorRegistrationControlEntries(resultMasterRces, uid);
+    return resultMasterRces;
 }
 
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getEditableMediatorRegistrationControlEntries(const std::string& uid)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = uid;
-    return std::vector<MasterRegistrationControlEntry>();
+    std::vector<MasterRegistrationControlEntry> resultMasterRces;
+    globalDomainAccessControlListEditorProxy->getEditableMasterRegistrationControlEntries(
+            resultMasterRces, uid);
+    return resultMasterRces;
 }
 
 bool LocalDomainAccessController::updateMediatorRegistrationControlEntry(
         const MasterRegistrationControlEntry& updatedMediatorRce)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = updatedMediatorRce;
-    return false;
+    bool success = false;
+    globalDomainAccessControlListEditorProxy->updateMediatorRegistrationControlEntry(
+            success, updatedMediatorRce);
+    return success;
 }
 
 bool LocalDomainAccessController::removeMediatorRegistrationControlEntry(
@@ -502,35 +505,36 @@ bool LocalDomainAccessController::removeMediatorRegistrationControlEntry(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = uid;
-    std::ignore = domain;
-    std::ignore = interfaceName;
-    return false;
+    bool success = false;
+    globalDomainAccessControlListEditorProxy->removeMediatorRegistrationControlEntry(
+            success, uid, domain, interfaceName);
+    return success;
 }
 
 std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
         getOwnerRegistrationControlEntries(const std::string& uid)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = uid;
-    return std::vector<OwnerRegistrationControlEntry>();
+    std::vector<OwnerRegistrationControlEntry> resultOwnerRces;
+    globalDomainAccessControllerProxy->getOwnerRegistrationControlEntries(resultOwnerRces, uid);
+    return resultOwnerRces;
 }
 
 std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
         getEditableOwnerRegistrationControlEntries(const std::string& uid)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = uid;
-    return std::vector<OwnerRegistrationControlEntry>();
+    std::vector<OwnerRegistrationControlEntry> resultOwnerRces;
+    globalDomainAccessControlListEditorProxy->getEditableOwnerRegistrationControlEntries(
+            resultOwnerRces, uid);
+    return resultOwnerRces;
 }
 
 bool LocalDomainAccessController::updateOwnerRegistrationControlEntry(
         const OwnerRegistrationControlEntry& updatedOwnerRce)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = updatedOwnerRce;
-    return false;
+    bool success = false;
+    globalDomainAccessControlListEditorProxy->updateOwnerRegistrationControlEntry(
+            success, updatedOwnerRce);
+    return success;
 }
 
 bool LocalDomainAccessController::removeOwnerRegistrationControlEntry(
@@ -538,11 +542,10 @@ bool LocalDomainAccessController::removeOwnerRegistrationControlEntry(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = uid;
-    std::ignore = domain;
-    std::ignore = interfaceName;
-    return false;
+    bool success = false;
+    globalDomainAccessControlListEditorProxy->removeOwnerRegistrationControlEntry(
+            success, uid, domain, interfaceName);
+    return success;
 }
 
 void LocalDomainAccessController::unregisterProvider(const std::string& domain,
