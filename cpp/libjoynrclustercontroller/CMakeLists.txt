@@ -98,7 +98,7 @@ file(
     "messaging/in-process/*.h"
     "messaging/joynr-messaging/*.h"
     "mqtt/*.h"
-    "ClusterControllerSettings.cpp"
+    "websocket/*.h"
 )
 
 set(
@@ -119,6 +119,8 @@ file(
     "messaging/in-process/*.cpp"
     "messaging/joynr-messaging/*.cpp"
     "mqtt/*.cpp"
+    "websocket/*.cpp"
+    "ClusterControllerSettings.cpp"
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})

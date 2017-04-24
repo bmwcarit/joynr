@@ -19,7 +19,7 @@
 #ifndef WEBSOCKETCCMESSAGINGSKELETONNONTLS_H
 #define WEBSOCKETCCMESSAGINGSKELETONNONTLS_H
 
-#include "runtimes/cluster-controller-runtime/websocket/WebSocketCcMessagingSkeleton.h"
+#include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeleton.h"
 
 #include <websocketpp/config/asio_no_tls.hpp>
 

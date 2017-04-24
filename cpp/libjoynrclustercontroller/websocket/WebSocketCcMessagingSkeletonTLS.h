@@ -19,7 +19,7 @@
 #ifndef WEBSOCKETCCMESSAGINGSKELETONTLS_H
 #define WEBSOCKETCCMESSAGINGSKELETONTLS_H
 
-#include "runtimes/cluster-controller-runtime/websocket/WebSocketCcMessagingSkeleton.h"
+#include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeleton.h"
 
 #include <string>
 

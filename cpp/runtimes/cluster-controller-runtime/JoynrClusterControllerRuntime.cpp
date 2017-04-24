@@ -93,8 +93,8 @@
 #include "libjoynrclustercontroller/mqtt/MqttMessagingSkeleton.h"
 #include "libjoynrclustercontroller/mqtt/MqttReceiver.h"
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
-#include "websocket/WebSocketCcMessagingSkeletonNonTLS.h"
-#include "websocket/WebSocketCcMessagingSkeletonTLS.h"
+#include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonNonTLS.h"
+#include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonTLS.h"
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "libjoynr/dbus/DbusMessagingStubFactory.h"

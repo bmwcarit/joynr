@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "runtimes/cluster-controller-runtime/websocket/WebSocketCcMessagingSkeletonTLS.h"
+#include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonTLS.h"
 
 #include <openssl/ssl.h>
 
