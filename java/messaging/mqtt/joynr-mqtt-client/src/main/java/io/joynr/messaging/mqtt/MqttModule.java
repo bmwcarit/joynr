@@ -30,12 +30,12 @@ import com.google.inject.name.Names;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
-import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
-import io.joynr.messaging.serialize.MessageSerializerFactory;
+import io.joynr.messaging.serialize.JsonSerializer;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
@@ -91,11 +91,7 @@ public class MqttModule extends AbstractModule {
         }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
         messagingStubFactory.addBinding(MqttAddress.class).to(MqttMessagingStubFactory.class);
 
-        MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
-        messageSerializerFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<AbstractMiddlewareMessageSerializerFactory<? extends Address>>() {
-        }, Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
-        messageSerializerFactory.addBinding(MqttAddress.class).to(MqttMessageSerializerFactory.class);
+        bind(JoynrMessageSerializer.class).to(JsonSerializer.class);
 
         MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
         messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {

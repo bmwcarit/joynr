@@ -35,6 +35,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
+import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -54,7 +55,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private MqttAddress ownAddress;
     private MqttAddress replyToAddress;
     private MessageRouter messageRouter;
-    private MqttMessageSerializerFactory messageSerializerFactory;
+    private JoynrMessageSerializer messageSerializer;
     private String channelId;
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private RawMessagingPreprocessor rawMessagingPreprocessor;
@@ -67,7 +68,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          MessageRouter messageRouter,
                                          MqttClientFactory mqttClientFactory,
-                                         MqttMessageSerializerFactory messageSerializerFactory,
+                                         JoynrMessageSerializer messageSerializer,
                                          @Named(CHANNELID) String channelId,
                                          MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                          RawMessagingPreprocessor rawMessagingPreprocessor,
@@ -79,7 +80,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
-        this.messageSerializerFactory = messageSerializerFactory;
+        this.messageSerializer = messageSerializer;
         this.channelId = channelId;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}", new Object[]{
@@ -93,7 +94,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                 replyToAddress,
                                                                 messageRouter,
                                                                 mqttClientFactory,
-                                                                messageSerializerFactory,
+                                                                messageSerializer,
                                                                 channelId,
                                                                 mqttTopicPrefixProvider,
                                                                 rawMessagingPreprocessor,
@@ -102,7 +103,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         return new MqttMessagingSkeleton(ownAddress,
                                          messageRouter,
                                          mqttClientFactory,
-                                         messageSerializerFactory,
+                                         messageSerializer,
                                          mqttTopicPrefixProvider,
                                          rawMessagingPreprocessor,
                                          messageProcessors);

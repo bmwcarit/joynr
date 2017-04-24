@@ -36,9 +36,9 @@ import com.google.inject.name.Named;
 
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
+import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
-import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.routing.MessageRouter;
@@ -64,7 +64,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                             MessageRouter messageRouter,
                                             MqttClientFactory mqttClientFactory,
-                                            MqttMessageSerializerFactory messageSerializerFactory,
+                                            JoynrMessageSerializer messageSerializer,
                                             @Named(CHANNELID) String channelId,
                                             MqttTopicPrefixProvider mqttTopicPrefixProvider) {
         // CHECKSTYLE:ON
@@ -73,7 +73,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               replyToAddress,
               messageRouter,
               mqttClientFactory,
-              messageSerializerFactory,
+              messageSerializer,
               channelId,
               mqttTopicPrefixProvider,
               new NoOpRawMessagingPreprocessor(),

@@ -30,6 +30,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.JoynrMessageProcessor;
+import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
@@ -53,7 +54,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
-                                                    MqttMessageSerializerFactory messageSerializerFactory,
+                                                    JoynrMessageSerializer messageSerializer,
                                                     @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                                     MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                                     RawMessagingPreprocessor rawMessagingPreprocessor,
@@ -61,7 +62,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
         super(ownAddress,
               messageRouter,
               mqttClientFactory,
-              messageSerializerFactory,
+              messageSerializer,
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
               messageProcessors);

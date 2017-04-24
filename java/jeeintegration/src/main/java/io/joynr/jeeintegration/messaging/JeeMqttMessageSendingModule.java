@@ -33,12 +33,12 @@ import com.google.inject.name.Names;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.mqtt.DefaultMqttClientIdProvider;
 import io.joynr.messaging.mqtt.DefaultMqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
-import io.joynr.messaging.mqtt.MqttMessageSerializerFactory;
 import io.joynr.messaging.mqtt.MqttMessagingStubFactory;
 import io.joynr.messaging.mqtt.MqttMulticastAddressCalculator;
 import io.joynr.messaging.mqtt.MqttReplyToAddressFactory;
@@ -46,7 +46,7 @@ import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoClientFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
-import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
+import io.joynr.messaging.serialize.JsonSerializer;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
@@ -67,15 +67,12 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS = "joynr.messaging.mqtt.reconnect.sleepms";
     public static final String PROPERTY_KEY_MQTT_BROKER_URI = "joynr.messaging.mqtt.brokeruri";
     private MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
-    private MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
     private MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
 
     public JeeMqttMessageSendingModule(MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory,
-                                       MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory,
-                                       MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory) {
+                                       MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory) {
         this.messagingSkeletonFactory = messagingSkeletonFactory;
         this.messagingStubFactory = messagingStubFactory;
-        this.messageSerializerFactory = messageSerializerFactory;
     }
 
     @Provides
@@ -92,8 +89,8 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(JoynrMessageSerializer.class).to(JsonSerializer.class);
         messagingStubFactory.addBinding(MqttAddress.class).to(MqttMessagingStubFactory.class);
-        messageSerializerFactory.addBinding(MqttAddress.class).to(MqttMessageSerializerFactory.class);
         messagingSkeletonFactory.addBinding(MqttAddress.class).toProvider(JeeMqttMessagingSkeletonProvider.class);
 
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;

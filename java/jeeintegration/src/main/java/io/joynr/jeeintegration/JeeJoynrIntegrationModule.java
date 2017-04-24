@@ -96,8 +96,7 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
         install(new JeeHttpMessagingModule(messagingSkeletonFactory, messagingStubFactory, messageSerializerFactory));
         install(new HttpBridgeEndpointRegistryClientModule());
         install(new JeeMqttMessageSendingModule(messagingSkeletonFactory,
-                                                messagingStubFactory,
-                                                messageSerializerFactory));
+                                                messagingStubFactory));
     }
 
 }

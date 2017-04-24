@@ -64,17 +64,17 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
-                                 MqttMessageSerializerFactory messageSerializerFactory,
+                                 JoynrMessageSerializer messageSerializer,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
                                  Set<JoynrMessageProcessor> messageProcessors) {
         this.ownAddress = ownAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
+        this.messageSerializer = messageSerializer;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
-        messageSerializer = messageSerializerFactory.create(ownAddress);
     }
 
     @Override
