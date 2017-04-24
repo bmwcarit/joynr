@@ -82,7 +82,6 @@ import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
-import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
@@ -94,7 +93,6 @@ import joynr.system.RoutingTypes.Address;
 abstract class AbstractRuntimeModule extends AbstractModule {
 
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
-    MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
     MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
     @SuppressWarnings("URF_UNREAD_FIELD")
     Multibinder<MulticastAddressCalculator> multicastAddressCalculators;
