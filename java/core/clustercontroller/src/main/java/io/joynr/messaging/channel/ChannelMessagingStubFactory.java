@@ -30,19 +30,17 @@ import joynr.system.RoutingTypes.ChannelAddress;
  */
 public class ChannelMessagingStubFactory extends
         AbstractMiddlewareMessagingStubFactory<ChannelMessagingStub, ChannelAddress> {
+    private JoynrMessageSerializer messageSerializer;
     private HttpMessageSender httpMessageSender;
-    private ChannelMessageSerializerFactory channelMessageSerializerFactory;
 
     @Inject
-    public ChannelMessagingStubFactory(ChannelMessageSerializerFactory channelMessageSerializerFactory,
-                                       HttpMessageSender messageSender) {
-        this.channelMessageSerializerFactory = channelMessageSerializerFactory;
+    public ChannelMessagingStubFactory(JoynrMessageSerializer messageSerializer, HttpMessageSender messageSender) {
+        this.messageSerializer = messageSerializer;
         this.httpMessageSender = messageSender;
     }
 
     @Override
     protected ChannelMessagingStub createInternal(final ChannelAddress address) {
-        final JoynrMessageSerializer messageSerializer = channelMessageSerializerFactory.create(address);
         ChannelMessagingStub messagingStub = new ChannelMessagingStub(address, messageSerializer, httpMessageSender);
         return messagingStub;
     }

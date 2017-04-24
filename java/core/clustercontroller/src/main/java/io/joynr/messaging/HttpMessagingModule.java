@@ -28,7 +28,6 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
 
-import io.joynr.messaging.channel.ChannelMessageSerializerFactory;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.http.HttpMessageSender;
 import io.joynr.messaging.http.IMessageSender;
@@ -37,8 +36,7 @@ import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.http.operation.HttpRequestFactory;
 import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
-import io.joynr.messaging.serialize.MessageSerializerFactory;
+import io.joynr.messaging.serialize.JsonSerializer;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -50,17 +48,12 @@ public class HttpMessagingModule extends AbstractModule {
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
         bind(IMessageSender.class).to(HttpMessageSender.class);
         bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
+        bind(JoynrMessageSerializer.class).to(JsonSerializer.class);
 
         MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
         messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
         }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
         }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
         messagingStubFactory.addBinding(ChannelAddress.class).to(ChannelMessagingStubFactory.class);
-
-        MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
-        messageSerializerFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<AbstractMiddlewareMessageSerializerFactory<? extends Address>>() {
-        }, Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
-        messageSerializerFactory.addBinding(ChannelAddress.class).to(ChannelMessageSerializerFactory.class);
     }
 }

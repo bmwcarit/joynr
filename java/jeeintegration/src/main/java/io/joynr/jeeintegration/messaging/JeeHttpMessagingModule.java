@@ -37,8 +37,8 @@ import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.channel.ChannelMessageSerializerFactory;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.http.HttpMessageSender;
@@ -50,7 +50,7 @@ import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.http.operation.HttpRequestFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
+import io.joynr.messaging.serialize.JsonSerializer;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
@@ -64,21 +64,17 @@ public class JeeHttpMessagingModule extends AbstractModule {
 
     private MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
     private MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
-    private MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
 
     public JeeHttpMessagingModule(MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory,
-                                  MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory,
-                                  MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory) {
+                                  MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory) {
         this.messagingSkeletonFactory = messagingSkeletonFactory;
         this.messagingStubFactory = messagingStubFactory;
-        this.messageSerializerFactory = messageSerializerFactory;
     }
 
     @Override
     protected void configure() {
         messagingSkeletonFactory.addBinding(ChannelAddress.class).to(ChannelMessagingSkeleton.class);
         messagingStubFactory.addBinding(ChannelAddress.class).to(ChannelMessagingStubFactory.class);
-        messageSerializerFactory.addBinding(ChannelAddress.class).to(ChannelMessageSerializerFactory.class);
 
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
         globalAddresses = Multibinder.newSetBinder(binder(),
@@ -102,6 +98,7 @@ public class JeeHttpMessagingModule extends AbstractModule {
         bind(MessageRouter.class).to(io.joynr.jeeintegration.messaging.JeeMessageRouter.class).in(Singleton.class);
         bind(MessageReceiver.class).to(JeeServletMessageReceiver.class);
         bind(ServletMessageReceiver.class).to(JeeServletMessageReceiver.class);
+        bind(JoynrMessageSerializer.class).to(JsonSerializer.class);
     }
 
 }

@@ -93,7 +93,7 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
 
         Multibinder.newSetBinder(binder(), JoynrMessageProcessor.class);
 
-        install(new JeeHttpMessagingModule(messagingSkeletonFactory, messagingStubFactory, messageSerializerFactory));
+        install(new JeeHttpMessagingModule(messagingSkeletonFactory, messagingStubFactory));
         install(new HttpBridgeEndpointRegistryClientModule());
         install(new JeeMqttMessageSendingModule(messagingSkeletonFactory,
                                                 messagingStubFactory));
