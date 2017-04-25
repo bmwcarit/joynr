@@ -57,6 +57,7 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
@@ -86,6 +87,8 @@ public class DispatcherImplTest {
     private PublicationManager publicationManagerMock;
     @Mock
     private MessageRouter messageRouterMock;
+    @Mock
+    private MessageSender messageSenderMock;
     @Spy
     private MessageReceiverMock messageReceiverMock = new MessageReceiverMock();
 
@@ -103,6 +106,7 @@ public class DispatcherImplTest {
                 bind(RequestReplyManager.class).toInstance(requestReplyManagerMock);
                 bind(SubscriptionManager.class).toInstance(subscriptionManagerMock);
                 bind(PublicationManager.class).toInstance(publicationManagerMock);
+                bind(MessageSender.class).toInstance(messageSenderMock);
                 bind(MessageRouter.class).toInstance(messageRouterMock);
                 bind(MessageReceiver.class).toInstance(messageReceiverMock);
                 Multibinder.newSetBinder(binder(), new TypeLiteral<JoynrMessageProcessor>() {
@@ -183,7 +187,7 @@ public class DispatcherImplTest {
         fixture.messageArrived(joynrMessage);
 
         verify(requestReplyManagerMock).handleOneWayRequest(toParticipantId, request, joynrMessage.getExpiryDate());
-        verify(messageRouterMock, never()).route((JoynrMessage) any());
+        verify(messageSenderMock, never()).sendMessage((JoynrMessage) any());
     }
 
     @Test
@@ -195,6 +199,7 @@ public class DispatcherImplTest {
                                      subscriptionManagerMock,
                                      publicationManagerMock,
                                      messageRouterMock,
+                                     messageSenderMock,
                                      joynrMessageFactoryMock,
                                      objectMapperMock);
 
@@ -207,7 +212,7 @@ public class DispatcherImplTest {
         verify(joynrMessageFactoryMock).createMulticast(eq(fromParticipantId),
                                                         eq(multicastPublication),
                                                         eq(messagingQos));
-        verify(messageRouterMock).route(Mockito.<JoynrMessage> any());
+        verify(messageSenderMock).sendMessage(Mockito.<JoynrMessage> any());
     }
 
     @Test
@@ -231,6 +236,7 @@ public class DispatcherImplTest {
                                      subscriptionManagerMock,
                                      publicationManagerMock,
                                      messageRouterMock,
+                                     messageSenderMock,
                                      joynrMessageFactoryMock,
                                      objectMapperMock);
 

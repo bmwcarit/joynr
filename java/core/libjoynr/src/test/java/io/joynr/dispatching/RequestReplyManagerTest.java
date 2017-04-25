@@ -62,6 +62,7 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
@@ -112,6 +113,9 @@ public class RequestReplyManagerTest {
     private MessageRouter messageRouterMock;
 
     @Mock
+    private MessageSender messageSenderMock;
+
+    @Mock
     private AbstractSubscriptionPublisher subscriptionPublisherMock;
 
     @Mock
@@ -136,6 +140,7 @@ public class RequestReplyManagerTest {
             @Override
             protected void configure() {
                 install(new JoynrMessageScopeModule());
+                bind(MessageSender.class).toInstance(messageSenderMock);
                 bind(MessageRouter.class).toInstance(messageRouterMock);
                 bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
@@ -206,7 +211,7 @@ public class RequestReplyManagerTest {
                                               new MessagingQos(TIME_TO_LIVE));
 
         ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
-        verify(messageRouterMock, times(1)).route(messageCapture.capture());
+        verify(messageSenderMock, times(1)).sendMessage(messageCapture.capture());
         assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                      testSenderParticipantId);
         assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
@@ -223,7 +228,7 @@ public class RequestReplyManagerTest {
                                         new MessagingQos(TIME_TO_LIVE));
 
         ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
-        verify(messageRouterMock, times(1)).route(messageCapture.capture());
+        verify(messageSenderMock, times(1)).sendMessage(messageCapture.capture());
         assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
                      testSenderParticipantId);
         assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),

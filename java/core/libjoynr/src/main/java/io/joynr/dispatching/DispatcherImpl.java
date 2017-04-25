@@ -36,6 +36,7 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.ProviderCallback;
 import joynr.JoynrMessage;
 import joynr.MulticastPublication;
@@ -60,6 +61,7 @@ public class DispatcherImpl implements Dispatcher {
     private SubscriptionManager subscriptionManager;
     private PublicationManager publicationManager;
     private final MessageRouter messageRouter;
+    private final MessageSender messageSender;
     private ObjectMapper objectMapper;
 
     @Inject
@@ -69,12 +71,14 @@ public class DispatcherImpl implements Dispatcher {
                           SubscriptionManager subscriptionManager,
                           PublicationManager publicationManager,
                           MessageRouter messageRouter,
+                          MessageSender messageSender,
                           JoynrMessageFactory joynrMessageFactory,
                           ObjectMapper objectMapper) {
         this.requestReplyManager = requestReplyManager;
         this.subscriptionManager = subscriptionManager;
         this.publicationManager = publicationManager;
         this.messageRouter = messageRouter;
+        this.messageSender = messageSender;
         this.joynrMessageFactory = joynrMessageFactory;
         this.objectMapper = objectMapper;
     }
@@ -97,7 +101,7 @@ public class DispatcherImpl implements Dispatcher {
                 String multicastId = ((MulticastSubscriptionRequest) subscriptionRequest).getMulticastId();
                 messageRouter.addMulticastReceiver(multicastId, fromParticipantId, toDiscoveryEntry.getParticipantId());
             }
-            messageRouter.route(message);
+            messageSender.sendMessage(message);
         }
     }
 
@@ -112,7 +116,7 @@ public class DispatcherImpl implements Dispatcher {
                                                                               subscriptionStop,
                                                                               messagingQos);
             message.setLocalMessage(toDiscoveryEntry.getIsLocal());
-            messageRouter.route(message);
+            messageSender.sendMessage(message);
         }
 
     }
@@ -128,7 +132,7 @@ public class DispatcherImpl implements Dispatcher {
                                                                          toParticipantId,
                                                                          publication,
                                                                          messagingQos);
-            messageRouter.route(message);
+            messageSender.sendMessage(message);
         }
     }
 
@@ -140,7 +144,7 @@ public class DispatcherImpl implements Dispatcher {
         MessagingQos messagingQos = new MessagingQos(expiryDateMs);
         messagingQos.getCustomMessageHeaders().putAll(customHeaders);
         JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId, toParticipantId, reply, messagingQos);
-        messageRouter.route(message);
+        messageSender.sendMessage(message);
     }
 
     @Override
@@ -153,7 +157,7 @@ public class DispatcherImpl implements Dispatcher {
                                                                            toParticipantId,
                                                                            subscriptionReply,
                                                                            messagingQos);
-        messageRouter.route(message);
+        messageSender.sendMessage(message);
     }
 
     @Override
@@ -371,6 +375,6 @@ public class DispatcherImpl implements Dispatcher {
         JoynrMessage message = joynrMessageFactory.createMulticast(fromParticipantId,
                                                                    multicastPublication,
                                                                    messagingQos);
-        messageRouter.route(message);
+        messageSender.sendMessage(message);
     }
 }

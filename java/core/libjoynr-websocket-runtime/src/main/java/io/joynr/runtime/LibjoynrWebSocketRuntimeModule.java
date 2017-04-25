@@ -21,6 +21,8 @@ package io.joynr.runtime;
 import com.google.inject.name.Names;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.sender.LibJoynrMessageSender;
+import io.joynr.messaging.sender.MessageSender;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketMulticastAddressCalculator;
@@ -46,6 +48,7 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
         install(new WebSocketJettyClientModule());
         bind(JoynrRuntime.class).to(LibjoynrRuntime.class).in(Singleton.class);
         bind(MessageRouter.class).to(LibJoynrMessageRouter.class);
+        bind(MessageSender.class).to(LibJoynrMessageSender.class);
         bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
                            .toInstance(Boolean.TRUE);
 
