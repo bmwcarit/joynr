@@ -62,7 +62,7 @@ void ReceivedMessageRunnable::run()
     CallContext callContext;
     callContext.setPrincipal(message.getHeaderCreatorUserId());
 
-    CallContextStorage::set(callContext);
+    CallContextStorage::set(std::move(callContext));
 
     if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
         dispatcher.handleRequestReceived(message);

@@ -42,12 +42,20 @@ namespace joynr
 class JOYNR_EXPORT CallContext
 {
 public:
+    CallContext() = default;
+    CallContext(CallContext&&) = default;
+    CallContext& operator=(CallContext&&) = default;
+    CallContext(const CallContext&) = default;
+    CallContext& operator=(const CallContext&) = default;
+
     /**
      * @brief setPrincipal sets the principal identifier of the
      * entity that caused the current call.
      * @param principal the new principal identifier
      */
     void setPrincipal(const std::string& principal);
+    void setPrincipal(std::string&& principal);
+
     /**
      * @brief getPrincipal gets the principal indentifier of the
      * entity that caused the current call
