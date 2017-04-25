@@ -21,16 +21,16 @@
 
 #include <memory>
 
-#include "joynr/JoynrCommonExport.h"
-#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {
 
 class InProcessMessagingSkeleton;
 
-class JOYNRCOMMON_EXPORT InProcessMessagingAddress : public joynr::system::RoutingTypes::Address
+class JOYNR_EXPORT InProcessMessagingAddress : public joynr::system::RoutingTypes::Address
 {
 public:
     InProcessMessagingAddress() = default;

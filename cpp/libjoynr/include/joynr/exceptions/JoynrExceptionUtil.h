@@ -32,7 +32,7 @@ namespace exceptions
 /**
  * @brief Util class to transforms between Variant and joynr exceptions.
  */
-class JOYNRCOMMON_EXPORT JoynrExceptionUtil
+class JOYNR_EXPORT JoynrExceptionUtil
 {
 public:
     static void throwJoynrException(const exceptions::JoynrException& error)

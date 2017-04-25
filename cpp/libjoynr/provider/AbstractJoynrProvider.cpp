@@ -22,7 +22,8 @@
 #include <cassert>
 
 #include "joynr/Util.h"
-#include "common/CallContextStorage.h"
+
+#include "libjoynr/common/CallContextStorage.h"
 
 namespace joynr
 {

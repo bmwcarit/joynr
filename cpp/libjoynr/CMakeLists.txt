@@ -9,7 +9,25 @@ include(CheckOpenSSLImportTargets)
 
 include(AddWebSocketPP)
 
-get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
+# generate JoynrVersion.h which contains the version of joynr
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/git-revision-description")
+include(GetGitRevisionDescription)
+get_git_head_revision(GIT_REFSPEC JOYNR_HEAD_SHA1)
+string(SUBSTRING ${JOYNR_HEAD_SHA1} 0 10 JOYNR_HEAD_SHA1_SHORT)
+set(JOYNR_PACKAGE_REVISION ${JOYNR_VERSION}.${JOYNR_HEAD_SHA1_SHORT})
+string(TIMESTAMP JOYNR_BUILD_TIME)
+
+configure_file(
+    "common/JoynrVersion.h.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/joynr/JoynrVersion.h"
+    @ONLY
+)
+
+configure_file(
+    "common/RuntimeConfig.h.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/joynr/RuntimeConfig.h"
+    @ONLY
+)
 
 if(${GENERATE_SOURCES})
     JoynrGenerator(
@@ -28,13 +46,33 @@ set(
     JoynrLib_INCLUDE_DIRECTORIES
     ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
 )
 
 set(
     JoynrLib_TARGET_LIBRARIES
-    JoynrCommon
+    Boost::system
+    Boost::thread
 )
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+    list(
+        APPEND JoynrLib_TARGET_LIBRARIES
+        DLT::DLT
+    )
+endif(JOYNR_ENABLE_DLT_LOGGING)
+
+if(${USE_DBUS_COMMONAPI_COMMUNICATION})
+    list(
+        APPEND JoynrLib_TARGET_LIBRARIES
+        JoynrCommonAPI
+    )
+
+    get_target_property(JoynrCommonAPI_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
+    list(
+        APPEND Joynr_INCLUDE_DIRECTORIES
+        ${JoynrCommonAPI_PUBLIC_INCLUDE_DIRECTORY}
+    )
+endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 set(
     JoynrLib_EXPORT_HEADER
@@ -45,6 +83,8 @@ file(
     GLOB_RECURSE JoynrLib_PUBLIC_HEADERS
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "include/joynr/*.h"
+    "include/joynr/serializer/*.h"
+    "include/joynr/exceptions/*.h"
 )
 
 file(GLOB_RECURSE JoynrLib_GENERATED_HEADERS
@@ -66,14 +106,17 @@ file(GLOB_RECURSE JoynrLib_GENERATED_SOURCES
 )
 
 set(JoynrLib_PRIVATE_HEADERS
-    "in-process/InProcessMessagingStubFactory.h"
+    "common/CallContextStorage.h"
     "in-process/InProcessLibJoynrMessagingSkeleton.h"
+    "in-process/InProcessMessagingSkeleton.h"
+    "in-process/InProcessMessagingStubFactory.h"
+    "in-process/InProcessMessagingStub.h"
     "joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
     "joynr-messaging/DummyPlatformSecurityManager.h"
     "websocket/IWebSocketPpClient.h"
     "websocket/WebSocketLibJoynrMessagingSkeleton.h"
-    "websocket/WebSocketMessagingStub.h"
     "websocket/WebSocketMessagingStubFactory.h"
+    "websocket/WebSocketMessagingStub.h"
     "websocket/WebSocketPpClient.h"
     "websocket/WebSocketPpClientNonTLS.h"
     "websocket/WebSocketPpClientTLS.h"
@@ -92,9 +135,42 @@ set(JoynrLib_SOURCES
     "capabilities/LocalDiscoveryAggregator.cpp"
     "capabilities/ParticipantIdStorage.cpp"
     "CapabilitiesRegistrar.cpp"
+    "common/CallContext.cpp"
+    "common/CallContextStorage.cpp"
+    "common/CapabilityUtils.cpp"
+    "common/concurrency/BlockingQueue.cpp"
+    "common/concurrency/DelayedScheduler.cpp"
+    "common/concurrency/Runnable.cpp"
+    "common/concurrency/Semaphore.cpp"
+    "common/concurrency/SingleThreadedDelayedScheduler.cpp"
+    "common/concurrency/Thread.cpp"
+    "common/concurrency/ThreadPool.cpp"
+    "common/concurrency/ThreadPoolDelayedScheduler.cpp"
+    "common/DispatcherUtils.cpp"
+    "common/InterfaceAddress.cpp"
+    "common/MessagingQos.cpp"
     "common/MessagingStubFactory.cpp"
     "common/MulticastMessagingSkeletonDirectory.cpp"
+    "common/MulticastReceiverDirectory.cpp"
+    "common/MulticastSubscriptionQos.cpp"
+    "common/ObjectWithDecayTime.cpp"
+    "common/OnChangeSubscriptionQos.cpp"
+    "common/OnChangeWithKeepAliveSubscriptionQos.cpp"
+    "common/PeriodicSubscriptionQos.cpp"
+    "common/rpc/BaseReply.cpp"
+    "common/rpc/OneWayRequest.cpp"
+    "common/rpc/Reply.cpp"
+    "common/rpc/Request.cpp"
+    "common/Settings.cpp"
     "common/StatusCode.cpp"
+    "common/SteadyTimer.cpp"
+    "common/SubscriptionQos.cpp"
+    "common/SubscriptionUtil.cpp"
+    "common/SystemServicesSettings.cpp"
+    "common/UnicastSubscriptionQos.cpp"
+    "common/Url.cpp"
+    "common/Util.cpp"
+    "exceptions/JoynrException.cpp"
     "exceptions/MethodInvocationException.cpp"
     "exceptions/NoCompatibleProviderFoundException.cpp"
     "exceptions/SubscriptionException.cpp"
@@ -103,20 +179,25 @@ set(JoynrLib_SOURCES
     "in-process/InProcessDispatcher.cpp"
     "in-process/InProcessLibJoynrMessagingSkeleton.cpp"
     "in-process/InProcessMessagingAddress.cpp"
+    "in-process/InProcessMessagingStub.cpp"
     "in-process/InProcessMessagingStubFactory.cpp"
     "in-process/InProcessPublicationSender.cpp"
     "joynr-messaging/AbstractJoynrMessagingConnector.cpp"
+    "joynr-messaging/AbstractMessageRouter.cpp"
     "joynr-messaging/BrokerUrl.cpp"
     "joynr-messaging/dispatcher/Dispatcher.cpp"
     "joynr-messaging/dispatcher/ReceivedMessageRunnable.cpp"
     "joynr-messaging/DummyPlatformSecurityManager.cpp"
     "joynr-messaging/HttpMulticastAddressCalculator.cpp"
+    "joynr-messaging/JoynrMessage.cpp"
     "joynr-messaging/JoynrMessageFactory.cpp"
     "joynr-messaging/JoynrMessageSender.cpp"
     "joynr-messaging/JoynrMessagingConnectorFactory.cpp"
     "joynr-messaging/LibJoynrMessageRouter.cpp"
+    "joynr-messaging/MessageQueue.cpp"
     "joynr-messaging/MessagingSettings.cpp"
     "joynr-messaging/MqttMulticastAddressCalculator.cpp"
+    "joynr-messaging/MulticastMatcher.cpp"
     "joynr-messaging/WebSocketMulticastAddressCalculator.cpp"
     "LibjoynrSettings.cpp"
     "provider/AbstractJoynrProvider.cpp"
@@ -159,14 +240,22 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrLib_HEADERS
         ${JoynrLib_HEADERS}
+        "dbus/DbusMessagingStubAdapter.h"
         "dbus/DbusMessagingStubFactory.h"
+        "dbus/IDbusStubWrapper.h"
+        "dbus/DbusMessagingUtil.h"
+        "dbus/DbusSettings.h"
     )
 
     set(
         JoynrLib_SOURCES
         ${JoynrLib_SOURCES}
         "dbus/DBusMessageRouterAdapter.cpp"
+        "dbus/DbusMessagingSkeleton.cpp"
+        "dbus/DbusMessagingStubAdapter.cpp"
         "dbus/DbusMessagingStubFactory.cpp"
+        "dbus/DbusMessagingUtil.cpp"
+        "dbus/DbusSettings.cpp"
     )
 
     list(
@@ -197,11 +286,43 @@ target_include_directories(
 
 target_include_directories(
     Joynr
-    SYSTEM
-    PUBLIC
+    SYSTEM PUBLIC
+        "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>"
         "$<BUILD_INTERFACE:${WEBSOCKETPP_INCLUDE_DIR}>"
         "$<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>" # necessary, because requirements are not propagated properly in cmake 2.8.x
 )
+
+if(JOYNR_ENABLE_STDOUT_LOGGING)
+    target_compile_definitions(
+        Joynr
+        PUBLIC
+        JOYNR_ENABLE_STDOUT_LOGGING)
+endif(JOYNR_ENABLE_STDOUT_LOGGING)
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+    target_compile_definitions(
+        Joynr
+        PUBLIC
+        JOYNR_ENABLE_DLT_LOGGING)
+    
+    target_include_directories(
+        Joynr
+        SYSTEM PUBLIC
+        "$<BUILD_INTERFACE:${dlt_INCLUDE_DIRS}>"
+    )
+endif(JOYNR_ENABLE_DLT_LOGGING)
+
+add_dependencies(Joynr muesli::muesli)
+get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(Joynr SYSTEM PUBLIC "$<BUILD_INTERFACE:${muesli_INCLUDE_DIRECTORIES}>")
+
+if(NOT USE_PLATFORM_SPDLOG)
+    add_dependencies(Joynr spdlog)
+endif(NOT USE_PLATFORM_SPDLOG)
+
+if(JOYNR_ENABLE_DLT_LOGGING)
+add_dependencies(Joynr DLT::DLT)
+endif(JOYNR_ENABLE_DLT_LOGGING)
 
 if(NOT USE_PLATFORM_WEBSOCKETPP)
     add_dependencies(Joynr websocketpp)
@@ -219,6 +340,7 @@ set_target_properties(
     SOVERSION "${JOYNR_SOVERSION}"
     VERSION "${JOYNR_VERSION}"
     PUBLIC_INCLUDE_DIRECTORY "${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}"
+    COMPILE_DEFINITIONS CMAKE_JOYNR_SETTINGS_INSTALL_DIR="${JOYNR_INSTALL_FULL_SYSCONFDIR}"
 )
 
 include(GenerateJoynrExports)
@@ -249,3 +371,31 @@ install(
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     FILES_MATCHING PATTERN "*.h"
 )
+
+# Visual Studio compiles to Debug and Release directories
+if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-system-services.settings
+        @ONLY
+    )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-system-services.settings
+        @ONLY
+    )
+else()
+    # copy resources for build tree
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-system-services.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings
+        @ONLY
+    )
+    # ...and for install tree
+    install(
+        FILES
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings
+        DESTINATION ${JOYNR_INSTALL_FULL_SYSCONFDIR}
+    )
+endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
+

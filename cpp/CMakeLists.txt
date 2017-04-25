@@ -717,7 +717,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     add_subdirectory(common-api)
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
-add_subdirectory(common)
 add_subdirectory(libjoynr)
 add_subdirectory(libjoynrclustercontroller)
 add_subdirectory(runtimes)
@@ -733,7 +732,6 @@ endif(${BUILD_TESTS})
 
 set(
     TARGET_LIBS
-    JoynrCommon
     Joynr
     JoynrWsRuntime
     JoynrClusterController
@@ -769,7 +767,6 @@ install(
 # Create the JoynrConfig.cmake and JoynrConfigVersion files
 set(
     JoynrConfig_LIB_COMMON_LIBRARIES
-    JoynrCommon
     Joynr
     ${CMAKE_THREAD_LIBS_INIT}
 )
@@ -799,14 +796,12 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 # ... for the build tree
-get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     JoynrConfig_LIB_COMMON_INCLUDE_DIRS
-    ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_INCLUDE_DIRS}
     ${muesli_INCLUDE_DIRECTORIES}
@@ -815,7 +810,6 @@ set(
 
 set(
     JoynrConfig_LIB_WS_INCLUDE_DIRS
-    ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_INCLUDE_DIRS}
     ${muesli_INCLUDE_DIRECTORIES}
@@ -824,7 +818,6 @@ set(
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrConfig_LIB_DBUS_INCLUDE_DIRS
-        ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${spdlog_INCLUDE_DIRS}
         ${muesli_INCLUDE_DIRECTORIES}
