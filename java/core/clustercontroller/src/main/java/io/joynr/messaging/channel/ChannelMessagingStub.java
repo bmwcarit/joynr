@@ -22,6 +22,8 @@ package io.joynr.messaging.channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
+
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.JoynrMessageSerializer;
@@ -54,6 +56,6 @@ public class ChannelMessagingStub implements IMessaging {
     @Override
     public void transmit(String serializedMessage, FailureAction failureAction) {
         LOG.debug(">>> OUTGOING >>> {}", serializedMessage);
-        httpMessageSender.sendMessage(address, serializedMessage, failureAction);
+        httpMessageSender.sendMessage(address, serializedMessage.getBytes(Charsets.UTF_8), failureAction);
     }
 }
