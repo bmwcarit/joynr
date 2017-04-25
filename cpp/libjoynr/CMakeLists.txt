@@ -43,51 +43,116 @@ set(
 
 file(
     GLOB_RECURSE JoynrLib_PUBLIC_HEADERS
-	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "include/joynr/*.h"
 )
 
-file(
-    GLOB_RECURSE JoynrLib_PRIVATE_HEADERS
-	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "capabilities/*.h"
-    "common/*.h"
-    "communication-model/*.h"
-    "dispatcher/*.h"
-    "in-process/*.h"
-    "joynr-messaging/*.h"
-    "some-ip/*.h"
-    "provider/*.h"
-    "proxy/*.h"
-    "subscription/*.h"
-    "websocket/*.h"
-    "CapabilitiesRegistrar.h"
-    "LibjoynrSettings.h"
+file(GLOB_RECURSE JoynrLib_GENERATED_HEADERS
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "communication-model/generated/*.h"
+    "in-process/generated/*.h"
+    "joynr-messaging/generated/*.h"
+    "proxy/generated/*.h"
+    "provider/generated/*.h"
+)
+
+file(GLOB_RECURSE JoynrLib_GENERATED_SOURCES
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "communication-model/generated/*.cpp"
+    "in-process/generated/*.cpp"
+    "joynr-messaging/generated/*.cpp"
+    "proxy/generated/*.cpp"
+    "provider/generated/*.cpp"
+)
+
+set(JoynrLib_PRIVATE_HEADERS
+    "in-process/InProcessMessagingStubFactory.h"
+    "in-process/InProcessLibJoynrMessagingSkeleton.h"
+    "joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
+    "joynr-messaging/DummyPlatformSecurityManager.h"
+    "websocket/IWebSocketPpClient.h"
+    "websocket/WebSocketLibJoynrMessagingSkeleton.h"
+    "websocket/WebSocketMessagingStub.h"
+    "websocket/WebSocketMessagingStubFactory.h"
+    "websocket/WebSocketPpClient.h"
+    "websocket/WebSocketPpClientNonTLS.h"
+    "websocket/WebSocketPpClientTLS.h"
+    "websocket/WebSocketPpReceiver.h"
+    "websocket/WebSocketPpSender.h"
 )
 
 set(
     JoynrLib_HEADERS
     ${JoynrLib_PRIVATE_HEADERS}
     ${JoynrLib_PUBLIC_HEADERS}
+    ${JoynrLib_GENERATED_HEADERS}
 )
 
-file(
-    GLOB_RECURSE JoynrLib_SOURCES
-	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "capabilities/*.cpp"
-    "common/*.cpp"
-    "communication-model/*.cpp"
-    "dispatcher/*.cpp"
-    "exceptions/*.cpp"
-    "in-process/*.cpp"
-    "joynr-messaging/*.cpp"
-    "some-ip/*.cpp"
-    "provider/*.cpp"
-    "proxy/*.cpp"
-    "subscription/*.cpp"
-    "websocket/*.cpp"
+set(JoynrLib_SOURCES
+    "capabilities/LocalDiscoveryAggregator.cpp"
+    "capabilities/ParticipantIdStorage.cpp"
     "CapabilitiesRegistrar.cpp"
+    "common/MessagingStubFactory.cpp"
+    "common/MulticastMessagingSkeletonDirectory.cpp"
+    "common/StatusCode.cpp"
+    "exceptions/MethodInvocationException.cpp"
+    "exceptions/NoCompatibleProviderFoundException.cpp"
+    "exceptions/SubscriptionException.cpp"
+    "in-process/InProcessAddress.cpp"
+    "in-process/InProcessConnectorFactory.cpp"
+    "in-process/InProcessDispatcher.cpp"
+    "in-process/InProcessLibJoynrMessagingSkeleton.cpp"
+    "in-process/InProcessMessagingAddress.cpp"
+    "in-process/InProcessMessagingStubFactory.cpp"
+    "in-process/InProcessPublicationSender.cpp"
+    "joynr-messaging/AbstractJoynrMessagingConnector.cpp"
+    "joynr-messaging/BrokerUrl.cpp"
+    "joynr-messaging/dispatcher/Dispatcher.cpp"
+    "joynr-messaging/dispatcher/ReceivedMessageRunnable.cpp"
+    "joynr-messaging/DummyPlatformSecurityManager.cpp"
+    "joynr-messaging/HttpMulticastAddressCalculator.cpp"
+    "joynr-messaging/JoynrMessageFactory.cpp"
+    "joynr-messaging/JoynrMessageSender.cpp"
+    "joynr-messaging/JoynrMessagingConnectorFactory.cpp"
+    "joynr-messaging/LibJoynrMessageRouter.cpp"
+    "joynr-messaging/MessagingSettings.cpp"
+    "joynr-messaging/MqttMulticastAddressCalculator.cpp"
+    "joynr-messaging/WebSocketMulticastAddressCalculator.cpp"
     "LibjoynrSettings.cpp"
+    "provider/AbstractJoynrProvider.cpp"
+    "provider/InterfaceRegistrar.cpp"
+    "provider/RequestCaller.cpp"
+    "proxy/Arbitrator.cpp"
+    "proxy/ArbitratorFactory.cpp"
+    "proxy/ConnectorFactory.cpp"
+    "proxy/DiscoveryQos.cpp"
+    "proxy/FixedParticipantArbitrationStrategyFunction.cpp"
+    "proxy/KeywordArbitrationStrategyFunction.cpp"
+    "proxy/LastSeenArbitrationStrategyFunction.cpp"
+    "proxy/ProxyBase.cpp"
+    "proxy/ProxyFactory.cpp"
+    "proxy/QosArbitrationStrategyFunction.cpp"
+    "subscription/BasePublication.cpp"
+    "subscription/BroadcastFilterParameters.cpp"
+    "subscription/BroadcastSubscriptionRequest.cpp"
+    "subscription/BroadcastSubscriptionRequestInformation.cpp"
+    "subscription/ISubscriptionManager.cpp"
+    "subscription/MulticastPublication.cpp"
+    "subscription/MulticastSubscriptionRequest.cpp"
+    "subscription/PublicationManager.cpp"
+    "subscription/SubscriptionInformation.cpp"
+    "subscription/SubscriptionManager.cpp"
+    "subscription/SubscriptionPublication.cpp"
+    "subscription/SubscriptionReply.cpp"
+    "subscription/SubscriptionRequest.cpp"
+    "subscription/SubscriptionRequestInformation.cpp"
+    "subscription/SubscriptionStop.cpp"
+    "websocket/WebSocketLibJoynrMessagingSkeleton.cpp"
+    "websocket/WebSocketMessagingStub.cpp"
+    "websocket/WebSocketMessagingStubFactory.cpp"
+    "websocket/WebSocketPpClientTLS.cpp"
+    "websocket/WebSocketSettings.cpp"
+    ${JoynrLib_GENERATED_SOURCES}
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
