@@ -153,10 +153,6 @@ request.setParams(
 {
 }
 
-bool «className»::usesClusterController() const{
-	return joynr::AbstractJoynrMessagingConnector::usesClusterController();
-}
-
 «FOR attribute: getAttributes(francaIntf)»
 	«val returnType = getTypeName(attribute)»
 	«val attributeName = attribute.joynrName»

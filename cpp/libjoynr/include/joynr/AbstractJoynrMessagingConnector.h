@@ -22,7 +22,6 @@
 #include <memory>
 #include <string>
 
-#include "joynr/IConnector.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
@@ -38,7 +37,7 @@ class ISubscriptionManager;
 class OneWayRequest;
 class Request;
 
-class JOYNR_EXPORT AbstractJoynrMessagingConnector : public IConnector
+class JOYNR_EXPORT AbstractJoynrMessagingConnector
 {
 public:
     AbstractJoynrMessagingConnector(
@@ -49,8 +48,8 @@ public:
             const std::string& proxyParticipantId,
             const MessagingQos& qosSettings,
             const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry);
-    bool usesClusterController() const override;
-    ~AbstractJoynrMessagingConnector() override = default;
+
+    virtual ~AbstractJoynrMessagingConnector() = default;
 
     /**
      * @brief Makes a request and returns the received response via the callback.

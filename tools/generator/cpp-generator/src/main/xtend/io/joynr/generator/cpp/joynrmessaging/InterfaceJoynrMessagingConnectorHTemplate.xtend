@@ -156,12 +156,6 @@ public:
 		const joynr::MessagingQos &qosSettings,
 		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryInfo);
 
-	/**
-	 * @brief Checks whether cluster controller is used
-	 * @return true, if cluster controller is used
-	 */
-	bool usesClusterController() const override;
-
 	/** @brief Destructor */
 	~«interfaceName»JoynrMessagingConnector() override = default;
 

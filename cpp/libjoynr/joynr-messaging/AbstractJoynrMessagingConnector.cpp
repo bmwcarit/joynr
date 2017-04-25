@@ -44,11 +44,6 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
 {
 }
 
-bool AbstractJoynrMessagingConnector::usesClusterController() const
-{
-    return true;
-}
-
 void AbstractJoynrMessagingConnector::operationRequest(std::shared_ptr<IReplyCaller> replyCaller,
                                                        const Request& request)
 {
