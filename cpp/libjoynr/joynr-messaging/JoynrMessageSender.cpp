@@ -23,7 +23,6 @@
 
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessageRouter.h"
-#include "joynr/IMessaging.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/Reply.h"
 #include "joynr/Request.h"

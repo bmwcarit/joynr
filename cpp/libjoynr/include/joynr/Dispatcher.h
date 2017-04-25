@@ -45,7 +45,6 @@ class MessagingQos;
 class RequestCaller;
 class JoynrMessage;
 class JoynrMessageSender;
-class CallContext;
 
 class JOYNR_EXPORT Dispatcher : public IDispatcher
 {

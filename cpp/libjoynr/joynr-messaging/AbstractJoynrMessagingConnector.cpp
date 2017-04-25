@@ -18,7 +18,7 @@
  */
 #include "joynr/AbstractJoynrMessagingConnector.h"
 
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/IJoynrMessageSender.h"
 
 namespace joynr
 {

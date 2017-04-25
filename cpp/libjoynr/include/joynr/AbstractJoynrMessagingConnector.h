@@ -19,29 +19,24 @@
 #ifndef ABSTRACTJOYNRMESSAGINGCONNECTOR_H
 #define ABSTRACTJOYNRMESSAGINGCONNECTOR_H
 
-#include <cassert>
 #include <memory>
 #include <string>
 
-#include <boost/any.hpp>
-
-#include "joynr/DispatcherUtils.h"
 #include "joynr/IConnector.h"
-#include "joynr/IReplyCaller.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/Reply.h"
-#include "joynr/ReplyCaller.h"
-#include "joynr/Request.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
 
 class IJoynrMessageSender;
+class IReplyCaller;
 class ISubscriptionManager;
+class OneWayRequest;
+class Request;
 
 class JOYNR_EXPORT AbstractJoynrMessagingConnector : public IConnector
 {

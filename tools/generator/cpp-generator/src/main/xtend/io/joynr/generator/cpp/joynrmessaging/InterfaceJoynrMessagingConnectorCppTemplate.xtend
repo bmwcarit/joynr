@@ -96,8 +96,7 @@ request.setParams(
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»JoynrMessagingConnector.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/ReplyCaller.h"
-#include "joynr/JoynrMessageSender.h"
-#include "joynr/ISubscriptionManager.h"
+#include "joynr/IJoynrMessageSender.h"
 #include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/MulticastSubscriptionCallback.h"
 #include "joynr/Util.h"
@@ -106,7 +105,8 @@ request.setParams(
 #include <cstdint>
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/Request.h"
+#include "joynr/OneWayRequest.h"
 «IF !francaIntf.attributes.empty»
 	#include "joynr/SubscriptionRequest.h"
 «ENDIF»

@@ -31,7 +31,6 @@ namespace joynr
 {
 
 class MessagingQos;
-class JoynrMessageSender;
 
 class JOYNR_EXPORT ProxyFactory
 {
