@@ -141,7 +141,7 @@ abstract public class AbstractMessageRouter implements MessageRouter {
     }
 
     @Override
-    public void addNextHop(String participantId, Address address) {
+    public void addNextHop(String participantId, Address address, boolean isGloballyVisible) {
         routingTable.put(participantId, address);
     }
 

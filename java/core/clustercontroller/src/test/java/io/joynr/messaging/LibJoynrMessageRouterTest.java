@@ -132,8 +132,11 @@ public class LibJoynrMessageRouterTest {
 
     @Test
     public void passesNextHopToParent() {
-        messageRouter.addNextHop(unknownParticipantId, nextHopAddress);
-        Mockito.verify(messageRouterParent).addNextHop(Mockito.eq(unknownParticipantId), Mockito.eq(incomingAddress));
+        final boolean isGloballyVisible = true;
+        messageRouter.addNextHop(unknownParticipantId, nextHopAddress, isGloballyVisible);
+        Mockito.verify(messageRouterParent).addNextHop(Mockito.eq(unknownParticipantId),
+                                                       Mockito.eq(incomingAddress),
+                                                       Mockito.eq(isGloballyVisible));
     }
 
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {

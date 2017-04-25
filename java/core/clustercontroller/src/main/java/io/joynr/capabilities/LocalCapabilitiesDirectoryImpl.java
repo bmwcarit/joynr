@@ -487,7 +487,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             // TODO when are entries purged from the messagingEndpointDirectory?
             if (ce.getParticipantId() != null && ce.getAddress() != null) {
                 Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(ce);
-                messageRouter.addNextHop(ce.getParticipantId(), address);
+                final boolean isGloballyVisible = (ce.getQos().getScope() == ProviderScope.GLOBAL);
+                messageRouter.addNextHop(ce.getParticipantId(), address, isGloballyVisible);
             }
         }
     }

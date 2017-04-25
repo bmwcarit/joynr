@@ -94,38 +94,42 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     }
 
     @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, ChannelAddress address) {
-        messageRouter.addNextHop(participantId, address);
+    public Promise<DeferredVoid> addNextHop(String participantId, ChannelAddress address, Boolean isGloballyVisible) {
+        messageRouter.addNextHop(participantId, address, isGloballyVisible);
         return resolvedDeferred();
     }
 
     @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, MqttAddress address) {
-        messageRouter.addNextHop(participantId, address);
+    public Promise<DeferredVoid> addNextHop(String participantId, MqttAddress address, Boolean isGloballyVisible) {
+        messageRouter.addNextHop(participantId, address, isGloballyVisible);
         return resolvedDeferred();
     }
 
     @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, CommonApiDbusAddress address) {
-        messageRouter.addNextHop(participantId, address);
+    public Promise<DeferredVoid> addNextHop(String participantId,
+                                            CommonApiDbusAddress address,
+                                            Boolean isGloballyVisible) {
+        messageRouter.addNextHop(participantId, address, isGloballyVisible);
         return resolvedDeferred();
     }
 
     @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, BrowserAddress address) {
-        messageRouter.addNextHop(participantId, address);
+    public Promise<DeferredVoid> addNextHop(String participantId, BrowserAddress address, Boolean isGloballyVisible) {
+        messageRouter.addNextHop(participantId, address, isGloballyVisible);
         return resolvedDeferred();
     }
 
     @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, WebSocketAddress address) {
-        messageRouter.addNextHop(participantId, address);
+    public Promise<DeferredVoid> addNextHop(String participantId, WebSocketAddress address, Boolean isGloballyVisible) {
+        messageRouter.addNextHop(participantId, address, isGloballyVisible);
         return resolvedDeferred();
     }
 
     @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, WebSocketClientAddress address) {
-        messageRouter.addNextHop(participantId, address);
+    public Promise<DeferredVoid> addNextHop(String participantId,
+                                            WebSocketClientAddress address,
+                                            Boolean isGloballyVisible) {
+        messageRouter.addNextHop(participantId, address, isGloballyVisible);
         return resolvedDeferred();
     }
 

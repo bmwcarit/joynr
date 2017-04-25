@@ -89,7 +89,9 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
         if (replyToSerializedAddress != null && !replyToSerializedAddress.isEmpty()) {
             Address address;
             address = RoutingTypesUtil.fromAddressString(replyToSerializedAddress);
-            messageRouter.addNextHop(requestorParticipantId, address);
+            // participants from ChannelMessagingSkeleton are always globally visible
+            final boolean isGloballyVisible = true;
+            messageRouter.addNextHop(requestorParticipantId, address, isGloballyVisible);
         } else {
             /*
              * TODO make sure that all requests (ie not one-way) also have replyTo
