@@ -20,12 +20,26 @@ package io.joynr.messaging.sender;
  */
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.TransportReadyListener;
+import io.joynr.runtime.ReplyToAddressProvider;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
+@Singleton
 public class CcMessageSender extends AbstractMessageSender {
     @Inject
-    public CcMessageSender(MessageRouter messageRouter) {
+    public CcMessageSender(MessageRouter messageRouter, ReplyToAddressProvider globalAddressProvider) {
         super(messageRouter);
+
+        globalAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
+            @Override
+            public void transportReady(Address address) {
+                String globalAddressString = RoutingTypesUtil.toAddressString(address);
+                setReplyToAddress(globalAddressString);
+            }
+        });
     }
 }

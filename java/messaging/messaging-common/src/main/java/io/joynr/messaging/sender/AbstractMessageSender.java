@@ -19,18 +19,53 @@ package io.joynr.messaging.sender;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.JoynrMessage;
 
 public abstract class AbstractMessageSender implements MessageSender {
     private MessageRouter messageRouter;
+    private String replyToAddress = null;
+    private List<JoynrMessage> noReplyToAddressQueue = new ArrayList<JoynrMessage>();
 
     protected AbstractMessageSender(MessageRouter messageRouter) {
         this.messageRouter = messageRouter;
     }
 
     @Override
-    public void sendMessage(JoynrMessage message) {
-        messageRouter.route(message);
+    public synchronized void sendMessage(JoynrMessage message) {
+        boolean needsReplyToAddress = needsReplyToAddress(message);
+
+        if (replyToAddress == null && needsReplyToAddress) {
+            noReplyToAddressQueue.add(message);
+        } else {
+            if (needsReplyToAddress) {
+                message.setReplyTo(replyToAddress);
+            }
+            messageRouter.route(message);
+        }
+    }
+
+    private boolean needsReplyToAddress(JoynrMessage message) {
+        final String msgType = message.getType();
+        boolean noReplyTo = message.getReplyTo() == null;
+        boolean msgTypeNeedsReplyTo = msgType.equals(JoynrMessage.MESSAGE_TYPE_REQUEST)
+                || msgType.equals(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
+                || msgType.equals(JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)
+                || msgType.equals(JoynrMessage.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
+
+        return noReplyTo && msgTypeNeedsReplyTo && !message.isLocalMessage();
+    }
+
+    protected synchronized void setReplyToAddress(String replyToAddress) {
+        this.replyToAddress = replyToAddress;
+
+        for (JoynrMessage queuedMessage : noReplyToAddressQueue) {
+            queuedMessage.setReplyTo(replyToAddress);
+            messageRouter.route(queuedMessage);
+        }
+        noReplyToAddressQueue.clear();
     }
 }

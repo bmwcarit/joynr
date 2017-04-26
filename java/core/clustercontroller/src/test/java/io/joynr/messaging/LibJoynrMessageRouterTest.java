@@ -20,7 +20,6 @@ package io.joynr.messaging;
  */
 
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -29,11 +28,9 @@ import java.util.concurrent.TimeUnit;
 
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -104,16 +101,6 @@ public class LibJoynrMessageRouterTest {
                                                   addressManager,
                                                   multicastReceiverRegistry);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
-    }
-
-    @Test
-    public void itSetsReplyTo() throws Exception {
-        // message that is a request and not directed to routing provider should get set replyTo
-        messageRouter.route(message);
-        Thread.sleep(100);
-        ArgumentCaptor<JoynrMessage> messageCaptor = ArgumentCaptor.forClass(JoynrMessage.class);
-        Mockito.verify(messagingStub).transmit(messageCaptor.capture(), any(FailureAction.class));
-        assertEquals(globalAddress, messageCaptor.getValue().getReplyTo());
     }
 
     @Test

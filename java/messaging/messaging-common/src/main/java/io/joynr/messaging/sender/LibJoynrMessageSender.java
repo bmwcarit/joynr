@@ -19,12 +19,18 @@ package io.joynr.messaging.sender;
  * #L%
  */
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import io.joynr.messaging.routing.MessageRouter;
 
+@Singleton
 public class LibJoynrMessageSender extends AbstractMessageSender {
     @Inject
     public LibJoynrMessageSender(MessageRouter messageRouter) {
         super(messageRouter);
+    }
+
+    public void setReplyToAddress(String replyToAddress) {
+        super.setReplyToAddress(replyToAddress);
     }
 }

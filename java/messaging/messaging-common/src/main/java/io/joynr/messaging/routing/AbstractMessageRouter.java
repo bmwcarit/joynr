@@ -27,8 +27,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.CheckForNull;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -79,9 +77,6 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         this.addressManager = addressManager;
         this.multicastReceiverRegistry = multicastReceiverRegistry;
     }
-
-    @CheckForNull
-    abstract protected String getReplyToAddress();
 
     @Override
     public void removeNextHop(String participantId) {
@@ -174,24 +169,6 @@ abstract public class AbstractMessageRouter implements MessageRouter {
                     try {
                         checkExpiry(message);
 
-                        if (needsReplyTo(message)) {
-                            if (getReplyToAddress() == null) {
-                                String messageId = message.getId().substring(UUID_TAIL);
-                                logger.trace(">>>>> SEND  ID:{}:{} from: {} to: {} header: {}",
-                                             new String[]{
-                                                     messageId,
-                                                     message.getType(),
-                                                     message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                                                     message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                                                     message.getHeader().toString() });
-                                logger.trace(">>>>> body  ID:{}:{}: {}", new String[]{ messageId, message.getType(),
-                                        message.getPayload() });
-                                FailureAction failureAction = createFailureAction(message, retriesCount);
-                                failureAction.execute(new JoynrDelayMessageException("replyToAddress still unavailable in scheduled message router thread"));
-                                return;
-                            }
-                            message.setReplyTo(getReplyToAddress());
-                        }
                         Set<Address> addresses = getAddresses(message);
                         if (addresses.isEmpty()) {
                             throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
@@ -233,19 +210,6 @@ abstract public class AbstractMessageRouter implements MessageRouter {
             logger.error(errorMessage);
             throw new JoynrMessageNotSentException(errorMessage);
         }
-    }
-
-    private boolean needsReplyTo(final JoynrMessage message) {
-        String type = message.getType();
-        if (message.isLocalMessage()) {
-            return false;
-        }
-        if (message.getReplyTo() == null
-                && (type.equals(message.MESSAGE_TYPE_REQUEST) || type.equals(message.MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
-                        || type.equals(message.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) || type.equals(message.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST))) {
-            return true;
-        }
-        return false;
     }
 
     private FailureAction createFailureAction(final JoynrMessage message, final int retriesCount) {

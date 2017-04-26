@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
-import javax.annotation.CheckForNull;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -64,7 +62,6 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     private Address incomingAddress;
     private Set<String> deferredParentHopsParticipantIds = new HashSet<>();
     private Map<String, DeferrableRegistration> deferredMulticastRegistrations = new HashMap<>();
-    private String replyToAddress;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -85,13 +82,6 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
               addressManager,
               multicastReceiverRegistry);
         this.incomingAddress = incomingAddress;
-        this.replyToAddress = null;
-    }
-
-    @Override
-    @CheckForNull
-    protected String getReplyToAddress() {
-        return replyToAddress;
     }
 
     @Override
@@ -195,8 +185,6 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
             }
         }
         deferredParentHopsParticipantIds.clear();
-
-        replyToAddress = parentRouter.getReplyToAddress();
     }
 
     /**

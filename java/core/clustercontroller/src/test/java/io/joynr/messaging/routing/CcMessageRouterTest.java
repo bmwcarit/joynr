@@ -169,11 +169,6 @@ public class CcMessageRouterTest {
     }
 
     @Test
-    public void testReplyToAddress() throws Exception {
-        Assert.assertEquals(expectedReplyToAddress, ((CcMessageRouter) messageRouter).getReplyToAddress());
-    }
-
-    @Test
     public void testScheduleMessageOk() throws Exception {
         joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(100000000));
         messageRouter.route(joynrMessage);

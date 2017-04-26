@@ -35,14 +35,7 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import joynr.JoynrMessage;
 
-import javax.annotation.CheckForNull;
-
-import io.joynr.runtime.ReplyToAddressProvider;
-import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
-
 public class CcMessageRouter extends AbstractMessageRouter {
-    private String replyToAddress;
     private static final Logger logger = LoggerFactory.getLogger(CcMessageRouter.class);
     private AccessController accessController;
     private boolean enableAccessControl;
@@ -50,8 +43,7 @@ public class CcMessageRouter extends AbstractMessageRouter {
     @Inject
     @Singleton
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 8 LINES
-    public CcMessageRouter(ReplyToAddressProvider globalAddressProvider,
-                           RoutingTable routingTable,
+    public CcMessageRouter(RoutingTable routingTable,
                            @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                            @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                            MessagingStubFactory messagingStubFactory,
@@ -67,15 +59,6 @@ public class CcMessageRouter extends AbstractMessageRouter {
               messagingSkeletonFactory,
               addressManager,
               multicastReceiverRegistry);
-        this.replyToAddress = null;
-
-        globalAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
-            @Override
-            public void transportReady(Address address) {
-                String globalAddressString = RoutingTypesUtil.toAddressString(address);
-                replyToAddress = globalAddressString;
-            }
-        });
 
         this.accessController = accessController;
         this.enableAccessControl = enableAccessControl;
@@ -100,11 +83,5 @@ public class CcMessageRouter extends AbstractMessageRouter {
         } else {
             super.route(message);
         }
-    }
-
-    @Override
-    @CheckForNull
-    protected String getReplyToAddress() {
-        return replyToAddress;
     }
 }
