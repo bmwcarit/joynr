@@ -63,13 +63,13 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             TrustLevel::Enum trustLevel,
-            std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
+            std::shared_ptr<LocalDomainAccessController::IGetPermissionCallback> callback
     ) {
         std::ignore = userId;
         std::ignore = domain;
         std::ignore = interfaceName;
         std::ignore = trustLevel;
-        callback->consumerPermission(permission);
+        callback->permission(permission);
     }
 
     void operationNeeded(
@@ -77,7 +77,7 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             TrustLevel::Enum trustLevel,
-            std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
+            std::shared_ptr<LocalDomainAccessController::IGetPermissionCallback> callback
     ) {
         std::ignore = userId;
         std::ignore = domain;

@@ -1186,7 +1186,7 @@ public:
                      const std::string& domain,
                      const std::string& interfaceName,
                      joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                     std::shared_ptr<joynr::LocalDomainAccessController::IGetConsumerPermissionCallback> callback));
+                     std::shared_ptr<joynr::LocalDomainAccessController::IGetPermissionCallback> callback));
 
     MOCK_METHOD5(getConsumerPermission,
                  joynr::infrastructure::DacTypes::Permission::Enum(

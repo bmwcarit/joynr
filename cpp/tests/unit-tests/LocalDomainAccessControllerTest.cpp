@@ -41,19 +41,19 @@ using namespace joynr::infrastructure;
 using namespace joynr::infrastructure::DacTypes;
 
 // Consumer permissions are obtained asynchronously
-class ConsumerPermissionCallback : public LocalDomainAccessController::IGetConsumerPermissionCallback
+class PermissionCallback : public LocalDomainAccessController::IGetPermissionCallback
 {
 public:
-    ConsumerPermissionCallback() :
+    PermissionCallback() :
         isValid(false),
-        permission(Permission::YES),
+        storedPermission(Permission::YES),
         sem(0)
     {}
 
-    ~ConsumerPermissionCallback() = default;
+    ~PermissionCallback() = default;
 
-    void consumerPermission(Permission::Enum permission) {
-        this->permission = permission;
+    void permission(Permission::Enum permission) {
+        this->storedPermission = permission;
         isValid = true;
         sem.notify();
     }
@@ -67,7 +67,7 @@ public:
     }
 
     Permission::Enum getPermission() const {
-        return permission;
+        return storedPermission;
     }
 
     // Returns true if the callback was made
@@ -77,7 +77,7 @@ public:
 
 private:
     bool isValid;
-    Permission::Enum permission;
+    Permission::Enum storedPermission;
     Semaphore sem;
 };
 
@@ -322,7 +322,7 @@ TEST_P(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
-    auto getConsumerPermissionCallback = std::make_shared<ConsumerPermissionCallback>();
+    auto getConsumerPermissionCallback = std::make_shared<PermissionCallback>();
 
     localDomainAccessController->getConsumerPermission(
             LocalDomainAccessControllerTest::TEST_USER,
@@ -390,7 +390,7 @@ TEST_P(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
     DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
-    auto getConsumerPermissionCallback = std::make_shared<ConsumerPermissionCallback>();
+    auto getConsumerPermissionCallback = std::make_shared<PermissionCallback>();
 
     localDomainAccessController->getConsumerPermission(
             LocalDomainAccessControllerTest::TEST_USER,
@@ -453,7 +453,7 @@ TEST_P(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
-    auto getConsumerPermissionCallback1 = std::make_shared<ConsumerPermissionCallback>();
+    auto getConsumerPermissionCallback1 = std::make_shared<PermissionCallback>();
 
     localDomainAccessController->getConsumerPermission(
             LocalDomainAccessControllerTest::TEST_USER,
@@ -464,7 +464,7 @@ TEST_P(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     );
 
     // Make another request for consumer permission
-    auto getConsumerPermissionCallback2 = std::make_shared<ConsumerPermissionCallback>();
+    auto getConsumerPermissionCallback2 = std::make_shared<PermissionCallback>();
 
     localDomainAccessController->getConsumerPermission(
                 LocalDomainAccessControllerTest::TEST_USER,

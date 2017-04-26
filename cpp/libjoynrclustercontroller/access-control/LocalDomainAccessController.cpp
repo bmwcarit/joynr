@@ -295,7 +295,7 @@ void LocalDomainAccessController::getConsumerPermission(
         const std::string& domain,
         const std::string& interfaceName,
         TrustLevel::Enum trustLevel,
-        std::shared_ptr<IGetConsumerPermissionCallback> callback)
+        std::shared_ptr<IGetPermissionCallback> callback)
 {
     JOYNR_LOG_TRACE(logger, "Entering getConsumerPermission with unknown operation");
 
@@ -341,7 +341,7 @@ void LocalDomainAccessController::getConsumerPermission(
         // The operations are all wildcards
         Permission::Enum permission = getConsumerPermission(
                 userId, domain, interfaceName, access_control::WILDCARD, trustLevel);
-        callback->consumerPermission(permission);
+        callback->permission(permission);
     }
 }
 
@@ -874,7 +874,7 @@ void LocalDomainAccessController::abortInitialisation(const std::string& domain,
     // Mark all the requests as failed - we have no information from the Global
     // Domain Access Controller
     for (const ConsumerPermissionRequest& request : requests) {
-        request.callbacks->consumerPermission(Permission::NO);
+        request.callbacks->permission(Permission::NO);
     }
 }
 

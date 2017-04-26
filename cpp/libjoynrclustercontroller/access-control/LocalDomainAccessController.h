@@ -60,16 +60,16 @@ class JOYNRCLUSTERCONTROLLER_EXPORT LocalDomainAccessController
 {
 public:
     /**
-     * The LocalDomainAccessController gets consumer permissions asynchronously.
+     * The LocalDomainAccessController gets consumer / provider permissions asynchronously.
      * When using the LocalDomainAccessController the caller provides a callback object.
      */
-    class IGetConsumerPermissionCallback
+    class IGetPermissionCallback
     {
     public:
-        virtual ~IGetConsumerPermissionCallback() = default;
+        virtual ~IGetPermissionCallback() = default;
 
-        // Called with the result of a consumer permission request
-        virtual void consumerPermission(infrastructure::DacTypes::Permission::Enum permission) = 0;
+        // Called with the result of a consumer / provider permission request
+        virtual void permission(infrastructure::DacTypes::Permission::Enum permission) = 0;
 
         // Called when an operation is needed to get the consumer permission
         virtual void operationNeeded() = 0;
@@ -129,7 +129,7 @@ public:
                                        const std::string& domain,
                                        const std::string& interfaceName,
                                        infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                                       std::shared_ptr<IGetConsumerPermissionCallback> callback);
+                                       std::shared_ptr<IGetPermissionCallback> callback);
 
     /**
       * Get consumer permission to access an interface operation
@@ -565,7 +565,7 @@ private:
         std::string domain;
         std::string interfaceName;
         infrastructure::DacTypes::TrustLevel::Enum trustLevel;
-        std::shared_ptr<IGetConsumerPermissionCallback> callbacks;
+        std::shared_ptr<IGetPermissionCallback> callbacks;
     };
 
     std::unordered_map<std::string, std::vector<ConsumerPermissionRequest>>
