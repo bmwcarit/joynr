@@ -24,10 +24,10 @@
 
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/IJoynrMessageSender.h"
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/ISubscriptionManager.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/JoynrMessageSender.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/MulticastSubscriptionRequest.h"
@@ -48,7 +48,7 @@ namespace joynr
 
 INIT_LOGGER(Dispatcher);
 
-Dispatcher::Dispatcher(std::shared_ptr<JoynrMessageSender> messageSender,
+Dispatcher::Dispatcher(std::shared_ptr<IJoynrMessageSender> messageSender,
                        boost::asio::io_service& ioService,
                        int maxThreads)
         : messageSender(messageSender),

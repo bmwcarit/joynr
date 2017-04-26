@@ -62,7 +62,7 @@ class MqttMessagingSkeleton;
 class MulticastMessagingSkeletonDirectory;
 class IPlatformSecurityManager;
 class Settings;
-class JoynrMessageSender;
+class IJoynrMessageSender;
 class IMessaging;
 class CcMessageRouter;
 class WebSocketMessagingStubFactory;
@@ -130,7 +130,7 @@ protected:
 
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     IMessaging* joynrMessagingSendSkeleton;
-    std::shared_ptr<JoynrMessageSender> joynrMessageSender;
+    std::shared_ptr<IJoynrMessageSender> joynrMessageSender;
 
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
 

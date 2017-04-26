@@ -26,7 +26,6 @@
 
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/IMessaging.h"
-#include "joynr/JoynrMessageSender.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -42,7 +41,7 @@ namespace joynr
 class IMessageRouter;
 class IMessaging;
 class LibJoynrMessageRouter;
-class JoynrMessageSender;
+class IJoynrMessageSender;
 class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
 class IMulticastAddressCalculator;
@@ -61,7 +60,7 @@ protected:
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
     std::shared_ptr<IMessaging> joynrMessagingSendStub;
-    std::shared_ptr<JoynrMessageSender> joynrMessageSender;
+    std::shared_ptr<IJoynrMessageSender> joynrMessageSender;
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
 

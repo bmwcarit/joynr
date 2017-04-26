@@ -44,13 +44,13 @@ class IReplyCaller;
 class MessagingQos;
 class RequestCaller;
 class JoynrMessage;
-class JoynrMessageSender;
+class IJoynrMessageSender;
 
 class JOYNR_EXPORT Dispatcher : public IDispatcher
 {
 
 public:
-    Dispatcher(std::shared_ptr<JoynrMessageSender> messageSender,
+    Dispatcher(std::shared_ptr<IJoynrMessageSender> messageSender,
                boost::asio::io_service& ioService,
                int maxThreads = 1);
 
@@ -88,7 +88,7 @@ private:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Dispatcher);
-    std::shared_ptr<JoynrMessageSender> messageSender;
+    std::shared_ptr<IJoynrMessageSender> messageSender;
     RequestCallerDirectory requestCallerDirectory;
     ReplyCallerDirectory replyCallerDirectory;
     PublicationManager* publicationManager;

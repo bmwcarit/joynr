@@ -57,7 +57,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/AbstractMessageRouter.h"
 #include "joynr/JoynrMessageFactory.h"
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/IJoynrMessageSender.h"
 
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingProxy.h"
