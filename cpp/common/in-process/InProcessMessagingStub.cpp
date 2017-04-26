@@ -20,6 +20,8 @@
 
 #include <cassert>
 
+#include "joynr/IMessaging.h"
+
 namespace joynr
 {
 

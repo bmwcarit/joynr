@@ -54,7 +54,7 @@ class error_code;
 namespace joynr
 {
 
-class IMessaging;
+class IMessagingStub;
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
 
@@ -137,7 +137,7 @@ class JOYNRCOMMON_EXPORT MessageRunnable : public Runnable, public ObjectWithDec
 {
 public:
     MessageRunnable(const JoynrMessage& message,
-                    std::shared_ptr<IMessaging> messagingStub,
+                    std::shared_ptr<IMessagingStub> messagingStub,
                     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
                     AbstractMessageRouter& messageRouter,
                     std::uint32_t tryCount);
@@ -146,7 +146,7 @@ public:
 
 private:
     JoynrMessage message;
-    std::shared_ptr<IMessaging> messagingStub;
+    std::shared_ptr<IMessagingStub> messagingStub;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
     AbstractMessageRouter& messageRouter;
     std::uint32_t tryCount;

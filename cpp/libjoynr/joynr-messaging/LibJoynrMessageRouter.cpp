@@ -23,7 +23,6 @@
 
 #include <boost/asio/io_service.hpp>
 
-#include "joynr/IMessaging.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMulticastAddressCalculator.h"

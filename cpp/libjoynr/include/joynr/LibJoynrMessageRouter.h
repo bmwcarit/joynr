@@ -49,7 +49,6 @@ namespace exceptions
 class JoynrRuntimeException;
 } // namespace exceptions
 
-class IMessaging;
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
 class JoynrMessage;

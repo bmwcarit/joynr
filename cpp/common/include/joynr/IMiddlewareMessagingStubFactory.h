@@ -33,13 +33,13 @@ namespace RoutingTypes
 class Address;
 } // namespace RoutingTypes
 } // namespace system
-class IMessaging;
+class IMessagingStub;
 
 class IMiddlewareMessagingStubFactory
 {
 public:
     virtual ~IMiddlewareMessagingStubFactory() = default;
-    virtual std::shared_ptr<IMessaging> create(
+    virtual std::shared_ptr<IMessagingStub> create(
             const joynr::system::RoutingTypes::Address& destAddress) = 0;
     virtual bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) = 0;
     virtual void registerOnMessagingStubClosedCallback(std::function<void(

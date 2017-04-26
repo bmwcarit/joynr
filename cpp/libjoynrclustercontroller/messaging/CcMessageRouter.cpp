@@ -22,7 +22,6 @@
 #include <cassert>
 #include <functional>
 
-#include "joynr/IMessaging.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMulticastAddressCalculator.h"

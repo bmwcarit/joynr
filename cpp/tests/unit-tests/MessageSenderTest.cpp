@@ -78,7 +78,7 @@ protected:
     std::string requestID;
     MessagingQos qosSettings;
     MockDispatcher mockDispatcher;
-    MockMessaging mockMessagingStub;
+    MockMessagingStub mockMessagingStub;
     std::shared_ptr<IReplyCaller> callBack;
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;

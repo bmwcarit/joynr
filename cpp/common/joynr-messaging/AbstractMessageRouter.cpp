@@ -23,7 +23,7 @@
 
 #include <boost/asio/io_service.hpp>
 
-#include "joynr/IMessaging.h"
+#include "joynr/IMessagingStub.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessMessagingAddress.h"
@@ -268,7 +268,7 @@ INIT_LOGGER(MessageRunnable);
 
 MessageRunnable::MessageRunnable(
         const JoynrMessage& message,
-        std::shared_ptr<IMessaging> messagingStub,
+        std::shared_ptr<IMessagingStub> messagingStub,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
         AbstractMessageRouter& messageRouter,
         std::uint32_t tryCount)

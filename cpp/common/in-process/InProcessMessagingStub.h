@@ -20,7 +20,7 @@
 #define INPROCESSMESSAGINGSTUB_H
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/IMessaging.h"
+#include "joynr/IMessagingStub.h"
 #include "joynr/JoynrCommonExport.h"
 
 #include <memory>
@@ -30,8 +30,9 @@ namespace joynr
 
 class JoynrMessage;
 class InProcessMessagingSkeleton;
+class IMessaging;
 
-class JOYNRCOMMON_EXPORT InProcessMessagingStub : public IMessaging
+class JOYNRCOMMON_EXPORT InProcessMessagingStub : public IMessagingStub
 {
 public:
     explicit InProcessMessagingStub(std::shared_ptr<IMessaging> skeleton);

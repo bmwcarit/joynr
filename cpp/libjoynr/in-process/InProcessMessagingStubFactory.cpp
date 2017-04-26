@@ -36,7 +36,7 @@ bool InProcessMessagingStubFactory::canCreate(
     return dynamic_cast<const InProcessMessagingAddress*>(&destAddress) != nullptr;
 }
 
-std::shared_ptr<IMessaging> InProcessMessagingStubFactory::create(
+std::shared_ptr<IMessagingStub> InProcessMessagingStubFactory::create(
         const joynr::system::RoutingTypes::Address& destAddress)
 {
     const InProcessMessagingAddress* inprocessAddress =

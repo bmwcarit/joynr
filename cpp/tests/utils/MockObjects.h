@@ -51,6 +51,7 @@
 #include "joynr/ITransportMessageSender.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessaging.h"
+#include "joynr/IMessagingStub.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/MessagingQos.h"
@@ -320,15 +321,9 @@ public:
     MOCK_METHOD1(containsRequestCaller, bool(const std::string& participantId));
 };
 
-class MockMessaging : public joynr::IMessaging {
-public:
-  MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
-  MOCK_METHOD2(test1, void(int a0, int a1));
-};
-
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
 public:
-    MOCK_METHOD1(create, std::shared_ptr<joynr::IMessaging>(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
+    MOCK_METHOD1(create, std::shared_ptr<joynr::IMessagingStub>(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
     MOCK_METHOD1(remove, void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
     MOCK_METHOD1(contains, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
 };
@@ -695,7 +690,7 @@ public:
     MOCK_METHOD1(registerReceiver, void(std::shared_ptr<joynr::ITransportMessageReceiver> receiver));
 };
 
-class MockMessagingStub : public joynr::IMessaging {
+class MockMessagingStub : public joynr::IMessagingStub {
 public:
     MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
 };

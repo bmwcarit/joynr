@@ -43,7 +43,7 @@ bool WebSocketMessagingStubFactory::canCreate(
                    nullptr;
 }
 
-std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
+std::shared_ptr<IMessagingStub> WebSocketMessagingStubFactory::create(
         const joynr::system::RoutingTypes::Address& destAddress)
 {
     // if destination is a WS client address
@@ -51,13 +51,13 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
                 dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(&destAddress)) {
         std::lock_guard<std::mutex> lock(clientStubMapMutex);
         const std::unordered_map<joynr::system::RoutingTypes::WebSocketClientAddress,
-                                 std::shared_ptr<IMessaging>>::const_iterator stub =
+                                 std::shared_ptr<IMessagingStub>>::const_iterator stub =
                 clientStubMap.find(*webSocketClientAddress);
         if (stub == clientStubMap.cend()) {
             JOYNR_LOG_ERROR(logger,
                             "No websocket found for address {}",
                             webSocketClientAddress->toString());
-            return std::shared_ptr<IMessaging>();
+            return std::shared_ptr<IMessagingStub>();
         }
         return stub->second;
     }
@@ -66,18 +66,18 @@ std::shared_ptr<IMessaging> WebSocketMessagingStubFactory::create(
                 dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(&destAddress)) {
         std::lock_guard<std::mutex> lock(serverStubMapMutex);
         const std::unordered_map<joynr::system::RoutingTypes::WebSocketAddress,
-                                 std::shared_ptr<IMessaging>>::const_iterator stub =
+                                 std::shared_ptr<IMessagingStub>>::const_iterator stub =
                 serverStubMap.find(*webSocketServerAddress);
         if (stub == serverStubMap.cend()) {
             JOYNR_LOG_ERROR(logger,
                             "No websocket found for address {}",
                             webSocketServerAddress->toString());
-            return std::shared_ptr<IMessaging>();
+            return std::shared_ptr<IMessagingStub>();
         }
         return stub->second;
     }
 
-    return std::shared_ptr<IMessaging>();
+    return std::shared_ptr<IMessagingStub>();
 }
 
 void WebSocketMessagingStubFactory::addClient(

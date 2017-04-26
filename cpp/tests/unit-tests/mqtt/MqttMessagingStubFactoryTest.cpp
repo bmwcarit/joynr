@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 
-#include "joynr/IMessaging.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"

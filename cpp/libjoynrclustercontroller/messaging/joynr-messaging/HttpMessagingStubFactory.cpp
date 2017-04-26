@@ -36,7 +36,7 @@ bool HttpMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::Addr
     return dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destAddress);
 }
 
-std::shared_ptr<IMessaging> HttpMessagingStubFactory::create(
+std::shared_ptr<IMessagingStub> HttpMessagingStubFactory::create(
         const joynr::system::RoutingTypes::Address& destAddress)
 {
     const system::RoutingTypes::ChannelAddress* channelAddress =

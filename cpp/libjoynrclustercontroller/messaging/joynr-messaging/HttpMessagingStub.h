@@ -22,7 +22,7 @@
 #include <memory>
 #include <string>
 
-#include "joynr/IMessaging.h"
+#include "joynr/IMessagingStub.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
@@ -36,7 +36,7 @@ class JoynrMessage;
 /**
   * Is used by the ClusterController to contact another (remote) ClusterController
   */
-class HttpMessagingStub : public IMessaging
+class HttpMessagingStub : public IMessagingStub
 {
 public:
     explicit HttpMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,

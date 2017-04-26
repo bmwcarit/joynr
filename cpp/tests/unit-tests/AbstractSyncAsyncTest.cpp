@@ -708,7 +708,7 @@ protected:
     CallBackActions callBackActions;
     MessagingQos qosSettings;
     MockDispatcher mockDispatcher;
-    MockMessaging mockMessagingStub;
+    MockMessagingStub mockMessagingStub;
     std::shared_ptr<IReplyCaller> callBack;
     std::shared_ptr<MockMessageSender> mockMessageSender;
     std::string proxyParticipantId;

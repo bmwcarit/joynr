@@ -38,7 +38,7 @@ bool MqttMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::Addr
     return dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destAddress);
 }
 
-std::shared_ptr<IMessaging> MqttMessagingStubFactory::create(
+std::shared_ptr<IMessagingStub> MqttMessagingStubFactory::create(
         const joynr::system::RoutingTypes::Address& destAddress)
 {
     const system::RoutingTypes::MqttAddress* mqttAddress =
