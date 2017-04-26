@@ -17,6 +17,7 @@
  * #L%
  */
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
+
 #include "joynr/IDispatcher.h"
 
 namespace joynr
@@ -32,7 +33,6 @@ void InProcessMessagingSkeleton::transmit(
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     std::ignore = onFailure;
-    // cast
     dispatcher->receive(message);
 }
 

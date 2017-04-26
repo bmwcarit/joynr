@@ -21,7 +21,6 @@
 
 #include <string>
 
-#include "joynr/IMessaging.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
@@ -31,16 +30,20 @@ namespace joynr
 class IMessageRouter;
 class JoynrMessage;
 
-class HttpMessagingSkeleton : public IMessaging
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
+
+class HttpMessagingSkeleton
 {
 public:
     explicit HttpMessagingSkeleton(IMessageRouter& messageRouter);
 
-    ~HttpMessagingSkeleton() override = default;
+    ~HttpMessagingSkeleton() = default;
 
     void transmit(JoynrMessage& message,
-                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-            override;
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
     void onTextMessageReceived(const std::string& message);
 

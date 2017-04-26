@@ -63,7 +63,7 @@ class MulticastMessagingSkeletonDirectory;
 class IPlatformSecurityManager;
 class Settings;
 class IMessageSender;
-class IMessaging;
+class IWebsocketCcMessagingSkeleton;
 class CcMessageRouter;
 class WebSocketMessagingStubFactory;
 class MosquittoConnection;
@@ -157,8 +157,8 @@ protected:
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
-    std::shared_ptr<IMessaging> wsCcMessagingSkeleton;
-    std::shared_ptr<IMessaging> wsTLSCcMessagingSkeleton;
+    std::shared_ptr<IWebsocketCcMessagingSkeleton> wsCcMessagingSkeleton;
+    std::shared_ptr<IWebsocketCcMessagingSkeleton> wsTLSCcMessagingSkeleton;
     bool httpMessagingIsRunning;
     bool mqttMessagingIsRunning;
     bool doMqttMessaging;

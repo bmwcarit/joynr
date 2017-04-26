@@ -18,24 +18,23 @@
  */
 #ifndef INPROCESSMESSAGINGSTUB_H
 #define INPROCESSMESSAGINGSTUB_H
-#include "joynr/PrivateCopyAssign.h"
+
+#include <memory>
 
 #include "joynr/IMessagingStub.h"
 #include "joynr/JoynrCommonExport.h"
-
-#include <memory>
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
 
 class JoynrMessage;
 class InProcessMessagingSkeleton;
-class IMessaging;
 
 class JOYNRCOMMON_EXPORT InProcessMessagingStub : public IMessagingStub
 {
 public:
-    explicit InProcessMessagingStub(std::shared_ptr<IMessaging> skeleton);
+    explicit InProcessMessagingStub(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
     ~InProcessMessagingStub() override = default;
     void transmit(JoynrMessage& message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
@@ -43,7 +42,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessMessagingStub);
-    std::shared_ptr<IMessaging> skeleton;
+    std::shared_ptr<InProcessMessagingSkeleton> skeleton;
 };
 
 } // namespace joynr

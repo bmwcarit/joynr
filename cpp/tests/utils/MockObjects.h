@@ -50,7 +50,7 @@
 #include "joynr/ITransportMessageReceiver.h"
 #include "joynr/ITransportMessageSender.h"
 #include "joynr/IDispatcher.h"
-#include "joynr/IMessaging.h"
+#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/IMessagingStub.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/ISubscriptionListener.h"
@@ -194,9 +194,10 @@ public:
     }
 };
 
-class MockInProcessMessagingSkeleton : public joynr::IMessaging
+class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:
+    MockInProcessMessagingSkeleton() : InProcessMessagingSkeleton(nullptr){}
     MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
 };
 
@@ -758,7 +759,6 @@ public:
 
     MOCK_METHOD1(registerMulticastSubscription, void(const std::string& multicastId));
     MOCK_METHOD1(unregisterMulticastSubscription, void(const std::string& multicastId));
-    MOCK_METHOD2(transmit, void (joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
 };
 
 class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider

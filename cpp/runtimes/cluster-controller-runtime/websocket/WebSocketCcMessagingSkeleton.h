@@ -29,7 +29,6 @@
 #include <websocketpp/server.hpp>
 
 #include "joynr/IMessageRouter.h"
-#include "joynr/IMessaging.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -43,11 +42,23 @@ namespace joynr
 {
 
 /**
+ * @brief This interface provides type erasure for the templatized class below
+ */
+class IWebsocketCcMessagingSkeleton
+{
+public:
+    virtual ~IWebsocketCcMessagingSkeleton() = default;
+    virtual void transmit(
+            JoynrMessage& message,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
+};
+
+/**
  * @class WebSocketCcMessagingSkeleton
  * @brief Messaging skeleton for the cluster controller
  */
 template <typename Config>
-class WebSocketCcMessagingSkeleton : public IMessaging
+class WebSocketCcMessagingSkeleton : public IWebsocketCcMessagingSkeleton
 {
 public:
     /**

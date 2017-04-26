@@ -21,7 +21,6 @@
 
 #include <functional>
 
-#include "joynr/IMessaging.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
 
@@ -36,14 +35,14 @@ namespace exceptions
 class JoynrRuntimeException;
 } // namespace exceptions
 
-class JOYNR_EXPORT InProcessMessagingSkeleton : public IMessaging
+class JOYNR_EXPORT InProcessMessagingSkeleton
 {
 public:
     explicit InProcessMessagingSkeleton(IDispatcher* dispatcher);
-    ~InProcessMessagingSkeleton() override = default;
-    void transmit(JoynrMessage& message,
-                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-            override;
+    virtual ~InProcessMessagingSkeleton() = default;
+    virtual void transmit(
+            JoynrMessage& message,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessMessagingSkeleton);
