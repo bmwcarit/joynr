@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef IJOYNRMESSAGESENDER_H
-#define IJOYNRMESSAGESENDER_H
+#ifndef IMESSAGESENDER_H
+#define IMESSAGESENDER_H
 
 #include <memory>
 #include <string>
@@ -63,10 +63,10 @@ class SubscriptionStop;
   *     No reference to the dispatcher.
   */
 
-class IJoynrMessageSender : public IPublicationSender
+class IMessageSender : public IPublicationSender
 {
 public:
-    ~IJoynrMessageSender() override = default;
+    ~IMessageSender() override = default;
 
     /*
      * registers Dispatcher. See above comment why this is necessary.
@@ -131,4 +131,4 @@ public:
 };
 
 } // namespace joynr
-#endif // IJOYNRMESSAGESENDER_H
+#endif // IMESSAGESENDER_H

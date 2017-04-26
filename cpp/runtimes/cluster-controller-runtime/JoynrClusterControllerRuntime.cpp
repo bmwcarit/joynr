@@ -118,7 +118,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           inProcessDispatcher(nullptr),
           subscriptionManager(nullptr),
           joynrMessagingSendSkeleton(nullptr),
-          joynrMessageSender(nullptr),
+          messageSender(nullptr),
           localCapabilitiesDirectory(nullptr),
           libJoynrMessagingSkeleton(nullptr),
           httpMessageReceiver(httpMessageReceiver),
@@ -370,10 +370,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     /* LibJoynr */
     assert(ccMessageRouter);
-    joynrMessageSender =
+    messageSender =
             std::make_shared<MessageSender>(ccMessageRouter, messagingSettings.getTtlUpliftMs());
-    joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
-    joynrMessageSender->registerDispatcher(joynrDispatcher);
+    joynrDispatcher = new Dispatcher(messageSender, singleThreadIOService->getIOService());
+    messageSender->registerDispatcher(joynrDispatcher);
 
     /* CC */
     // TODO: libjoynrmessagingskeleton now uses the Dispatcher, should it use the
@@ -457,7 +457,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       *
       */
     publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
-                                                joynrMessageSender.get(),
+                                                messageSender.get(),
                                                 messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings.getSubscriptionRequestPersistenceFilename());
@@ -476,8 +476,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             publicationManager,
             inProcessPublicationSender,
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
-    auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(
-            joynrMessageSender, subscriptionManager);
+    auto joynrMessagingConnectorFactory =
+            std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));

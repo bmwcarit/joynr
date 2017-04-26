@@ -28,7 +28,7 @@
 namespace joynr
 {
 
-class IJoynrMessageSender;
+class IMessageSender;
 class ISubscriptionManager;
 class MessagingQos;
 
@@ -46,7 +46,7 @@ struct JoynrMessagingTraits;
 class JOYNR_EXPORT JoynrMessagingConnectorFactory
 {
 public:
-    JoynrMessagingConnectorFactory(std::shared_ptr<IJoynrMessageSender> messageSender,
+    JoynrMessagingConnectorFactory(std::shared_ptr<IMessageSender> messageSender,
                                    std::shared_ptr<ISubscriptionManager> subscriptionManager);
 
     template <class T>
@@ -65,7 +65,7 @@ public:
     }
 
 private:
-    std::shared_ptr<IJoynrMessageSender> messageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     std::shared_ptr<ISubscriptionManager> subscriptionManager;
 };
 

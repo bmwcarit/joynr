@@ -55,7 +55,7 @@ public:
         AbstractSyncAsyncTest::SetUp();
         auto mockInProcessConnectorFactoryPtr = std::make_unique<MockInProcessConnectorFactory>();
         mockInProcessConnectorFactory = mockInProcessConnectorFactoryPtr.get();
-        auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(mockJoynrMessageSender, nullptr);
+        auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(mockMessageSender, nullptr);
         mockConnectorFactory = new ConnectorFactory(std::move(mockInProcessConnectorFactoryPtr), std::move(joynrMessagingConnectorFactory));
     }
 
@@ -74,7 +74,7 @@ public:
             bool isLocalMessage
     )>& setExpectationsForSendRequestCall(std::string methodName) override {
         return EXPECT_CALL(
-                    *mockJoynrMessageSender,
+                    *mockMessageSender,
                     sendRequest(
                         _, // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID

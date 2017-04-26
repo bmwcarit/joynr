@@ -33,7 +33,7 @@
 namespace joynr
 {
 
-class IJoynrMessageSender;
+class IMessageSender;
 class InProcessMessagingSkeleton;
 class Settings;
 class SubscriptionManager;
@@ -182,7 +182,7 @@ private:
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<IMessageRouter> messageRouter;
     std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
-    std::shared_ptr<IJoynrMessageSender> joynrMessageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
     std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;

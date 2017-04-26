@@ -108,7 +108,7 @@ protected:
     std::string proxyParticipantId;
     std::string subscriptionId;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    IJoynrMessageSender* messageSender;
+    IMessageSender* messageSender;
     PublicationManager publicationManager;
     MockPublicationSender publicationSender;
     BroadcastSubscriptionRequest request;

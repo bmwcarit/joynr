@@ -22,7 +22,7 @@
 #include <memory>
 #include <string>
 
-#include "joynr/IJoynrMessageSender.h"
+#include "joynr/IMessageSender.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/Logger.h"
@@ -68,7 +68,7 @@ class SubscriptionPublication;
   *     No reference to the dispatcher.
   */
 
-class JOYNR_EXPORT MessageSender : public IJoynrMessageSender
+class JOYNR_EXPORT MessageSender : public IMessageSender
 {
 public:
     MessageSender(std::shared_ptr<IMessageRouter> messagingRouter, std::uint64_t ttlUpliftMs = 0);

@@ -126,10 +126,10 @@ PublicationManager::~PublicationManager()
 }
 
 PublicationManager::PublicationManager(boost::asio::io_service& ioService,
-                                       IJoynrMessageSender* messageSender,
+                                       IMessageSender* messageSender,
                                        std::uint64_t ttlUplift,
                                        int maxThreads)
-        : joynrMessageSender(messageSender),
+        : messageSender(messageSender),
           publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),

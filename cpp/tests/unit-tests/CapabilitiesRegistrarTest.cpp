@@ -26,7 +26,7 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/types/Version.h"
-#include "joynr/IJoynrMessageSender.h"
+#include "joynr/IMessageSender.h"
 #include "joynr/SingleThreadedIOService.h"
 
 using ::testing::DoAll;
@@ -48,8 +48,8 @@ public:
             singleThreadedIOService(),
             mockMessageRouter(new MockMessageRouter(singleThreadedIOService.getIOService())),
             expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION),
-            mockJoynrMessageSender(new MockJoynrMessageSender()),
-            pubManager(singleThreadedIOService.getIOService(), mockJoynrMessageSender)
+            mockMessageSender(new MockMessageSender()),
+            pubManager(singleThreadedIOService.getIOService(), mockMessageSender)
     {
         singleThreadedIOService.start();
     }
@@ -73,7 +73,7 @@ public:
     void TearDown(){
         delete capabilitiesRegistrar;
         delete mockDispatcher;
-        delete mockJoynrMessageSender;
+        delete mockMessageSender;
     }
 
 protected:
@@ -89,7 +89,7 @@ protected:
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     const types::Version expectedProviderVersion;
-    IJoynrMessageSender* mockJoynrMessageSender;
+    IMessageSender* mockMessageSender;
     PublicationManager pubManager;
 };
 

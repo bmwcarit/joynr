@@ -43,7 +43,7 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/Semaphore.h"
-#include "joynr/IJoynrMessageSender.h"
+#include "joynr/IMessageSender.h"
 #include "common/CallContextStorage.h"
 
 using ::testing::A;
@@ -62,7 +62,7 @@ using namespace joynr;
 
 class PublicationManagerTest : public testing::Test {
 public:
-    PublicationManagerTest() : singleThreadedIOService(), messageSender(new MockJoynrMessageSender())
+    PublicationManagerTest() : singleThreadedIOService(), messageSender(new MockMessageSender())
     {
         singleThreadedIOService.start();
     }
@@ -85,7 +85,7 @@ protected:
     void sendSubscriptionReplyOnSuccessfulRegistration(SubscriptionRequest& subscriptionRequest);
     void sendSubscriptionExceptionOnExpiredRegistration(SubscriptionRequest& subscriptionRequest);
     SingleThreadedIOService singleThreadedIOService;
-    IJoynrMessageSender* messageSender;
+    IMessageSender* messageSender;
     joynr::CallContext savedCallContext;
     joynr::Semaphore getLocationCalledSemaphore;
     ADD_LOGGER(PublicationManagerTest);

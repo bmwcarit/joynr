@@ -41,7 +41,7 @@ namespace joynr
 class IMessageRouter;
 class IMessaging;
 class LibJoynrMessageRouter;
-class IJoynrMessageSender;
+class IMessageSender;
 class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
 class IMulticastAddressCalculator;
@@ -60,7 +60,7 @@ protected:
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
     std::shared_ptr<IMessaging> joynrMessagingSendStub;
-    std::shared_ptr<IJoynrMessageSender> joynrMessageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
 

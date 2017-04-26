@@ -81,7 +81,7 @@ public:
             bool isLocalMessage
     )>& setExpectationsForSendRequestCall(std::string methodName) override {
         return EXPECT_CALL(
-                    *mockJoynrMessageSender,
+                    *mockMessageSender,
                     sendRequest(
                         Eq(proxyParticipantId), // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID
@@ -106,7 +106,7 @@ public:
         discoveryEntry.setIsLocal(false);
 
         return new tests::testJoynrMessagingConnector(
-                    mockJoynrMessageSender,
+                    mockMessageSender,
                     mockSubscriptionManager,
                     "myDomain",
                     proxyParticipantId,

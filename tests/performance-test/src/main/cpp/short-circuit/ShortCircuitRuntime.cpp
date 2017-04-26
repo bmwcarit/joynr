@@ -65,16 +65,16 @@ ShortCircuitRuntime::ShortCircuitRuntime()
                                                       std::move(addressCalculator),
                                                       globalClusterControllerAddress);
 
-    joynrMessageSender = std::make_shared<MessageSender>(messageRouter);
-    joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadedIOService.getIOService());
-    joynrMessageSender->registerDispatcher(joynrDispatcher);
+    messageSender = std::make_shared<MessageSender>(messageRouter);
+    joynrDispatcher = new Dispatcher(messageSender, singleThreadedIOService.getIOService());
+    messageSender->registerDispatcher(joynrDispatcher);
 
     dispatcherMessagingSkeleton =
             std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager = new PublicationManager(
-            singleThreadedIOService.getIOService(), joynrMessageSender.get());
+    publicationManager =
+            new PublicationManager(singleThreadedIOService.getIOService(), messageSender.get());
     subscriptionManager = std::make_shared<SubscriptionManager>(
             singleThreadedIOService.getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadedIOService.getIOService());
@@ -85,8 +85,8 @@ ShortCircuitRuntime::ShortCircuitRuntime()
             publicationManager,
             inProcessPublicationSender.get(),
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
-    auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(
-            joynrMessageSender, subscriptionManager);
+    auto joynrMessagingConnectorFactory =
+            std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
     proxyFactory =

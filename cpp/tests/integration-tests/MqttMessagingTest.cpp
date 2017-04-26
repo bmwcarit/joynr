@@ -64,7 +64,7 @@ INIT_LOGGER(MqttMessagingTest);
 TEST_F(MqttMessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager)
 {
     // Test Outline: send message from JoynrMessageSender to ICommunicationManager
-    // - JoynrMessageSender.sendRequest (IJoynrMessageSender)
+    // - MessageSender.sendRequest (IMessageSender)
     //   -> adds reply caller to dispatcher (IDispatcher.addReplyCaller)
     // - InProcessMessagingStub.transmit (IMessaging)
     // - InProcessClusterControllerMessagingSkeleton.transmit (IMessaging)

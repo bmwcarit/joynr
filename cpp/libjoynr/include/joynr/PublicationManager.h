@@ -30,7 +30,7 @@
 #include "joynr/BroadcastFilterParameters.h"
 #include "joynr/BroadcastSubscriptionRequestInformation.h"
 #include "joynr/DelayedScheduler.h"
-#include "joynr/IJoynrMessageSender.h"
+#include "joynr/IMessageSender.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
@@ -80,7 +80,7 @@ class JOYNR_EXPORT PublicationManager
 {
 public:
     PublicationManager(boost::asio::io_service& ioService,
-                       IJoynrMessageSender* messageSender,
+                       IMessageSender* messageSender,
                        std::uint64_t ttlUplift = 0,
                        int maxThreads = 1);
     virtual ~PublicationManager();
@@ -212,7 +212,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
 
     // Used for multicast publication
-    IJoynrMessageSender* joynrMessageSender;
+    IMessageSender* messageSender;
 
     // A class that groups together the information needed for a publication
     class Publication;
@@ -459,7 +459,7 @@ void PublicationManager::broadcastOccurred(const std::string& broadcastName,
     publication.setMulticastId(multicastID);
     publication.setResponse(values...);
     MessagingQos mQos;
-    joynrMessageSender->sendMulticast(providerParticipantId, publication, mQos);
+    messageSender->sendMulticast(providerParticipantId, publication, mQos);
 }
 
 template <typename... Ts>

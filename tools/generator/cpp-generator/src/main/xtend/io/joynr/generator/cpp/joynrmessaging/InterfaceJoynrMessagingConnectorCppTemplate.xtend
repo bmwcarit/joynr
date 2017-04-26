@@ -96,7 +96,7 @@ request.setParams(
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»JoynrMessagingConnector.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/ReplyCaller.h"
-#include "joynr/IJoynrMessageSender.h"
+#include "joynr/IMessageSender.h"
 #include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/MulticastSubscriptionCallback.h"
 #include "joynr/Util.h"
@@ -143,13 +143,13 @@ request.setParams(
 «getNamespaceStarter(francaIntf)»
 «val className = interfaceName + "JoynrMessagingConnector"»
 «className»::«className»(
-		std::shared_ptr<joynr::IJoynrMessageSender> joynrMessageSender,
+		std::shared_ptr<joynr::IMessageSender> messageSender,
 		std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager,
 		const std::string& domain,
 		const std::string& proxyParticipantId,
 		const joynr::MessagingQos &qosSettings,
 		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
-	: joynr::AbstractJoynrMessagingConnector(joynrMessageSender, subscriptionManager, domain, INTERFACE_NAME(), proxyParticipantId, qosSettings, providerDiscoveryEntry)
+	: joynr::AbstractJoynrMessagingConnector(messageSender, subscriptionManager, domain, INTERFACE_NAME(), proxyParticipantId, qosSettings, providerDiscoveryEntry)
 {
 }
 
@@ -334,7 +334,7 @@ request.setParams(
 					joynr::serializer::serializeToJson(*subscriptionQos),
 					proxyParticipantId,
 					providerParticipantId);
-			joynrMessageSender->sendSubscriptionRequest(
+			messageSender->sendSubscriptionRequest(
 						proxyParticipantId,
 						providerParticipantId,
 						clonedMessagingQos,
@@ -349,7 +349,7 @@ request.setParams(
 			subscriptionStop.setSubscriptionId(subscriptionId);
 
 			subscriptionManager->unregisterSubscription(subscriptionId);
-			joynrMessageSender->sendSubscriptionStop(
+			messageSender->sendSubscriptionStop(
 						proxyParticipantId,
 						providerParticipantId,
 						qosSettings,
@@ -504,7 +504,7 @@ request.setParams(
 							subscriptionListener,
 							subscriptionQos,
 							subscriptionRequest);
-			joynrMessageSender->sendBroadcastSubscriptionRequest(
+			messageSender->sendBroadcastSubscriptionRequest(
 						proxyParticipantId,
 						providerParticipantId,
 						clonedMessagingQos,
@@ -515,12 +515,12 @@ request.setParams(
 			auto subscriptionCallback = std::make_shared<joynr::MulticastSubscriptionCallback<«returnTypes»>
 			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager.get());
 			std::function<void()> onSuccess =
-					[joynrMessageSender = joynr::util::as_weak_ptr(joynrMessageSender),
+					[messageSender = joynr::util::as_weak_ptr(messageSender),
 					proxyParticipantId = proxyParticipantId,
 					providerParticipantId = providerParticipantId,
 					clonedMessagingQos, subscriptionRequest,
 					isLocalMessage = providerDiscoveryEntry.getIsLocal()] () {
-						if (auto ptr = joynrMessageSender.lock())
+						if (auto ptr = messageSender.lock())
 						{
 							ptr->sendMulticastSubscriptionRequest(
 										proxyParticipantId,
@@ -579,7 +579,7 @@ request.setParams(
 		subscriptionStop.setSubscriptionId(subscriptionId);
 
 		subscriptionManager->unregisterSubscription(subscriptionId);
-		joynrMessageSender->sendSubscriptionStop(
+		messageSender->sendSubscriptionStop(
 					proxyParticipantId,
 					providerParticipantId,
 					qosSettings,

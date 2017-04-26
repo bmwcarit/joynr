@@ -31,7 +31,7 @@
 namespace joynr
 {
 
-class IJoynrMessageSender;
+class IMessageSender;
 class IReplyCaller;
 class ISubscriptionManager;
 class OneWayRequest;
@@ -41,7 +41,7 @@ class JOYNR_EXPORT AbstractJoynrMessagingConnector
 {
 public:
     AbstractJoynrMessagingConnector(
-            std::shared_ptr<IJoynrMessageSender> joynrMessageSender,
+            std::shared_ptr<IMessageSender> messageSender,
             std::shared_ptr<ISubscriptionManager> subscriptionManager,
             const std::string& domain,
             const std::string& interfaceName,
@@ -61,7 +61,7 @@ public:
     void operationOneWayRequest(const OneWayRequest& request);
 
 protected:
-    std::shared_ptr<IJoynrMessageSender> joynrMessageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     std::shared_ptr<ISubscriptionManager> subscriptionManager;
     std::string domain;
     std::string interfaceName;
