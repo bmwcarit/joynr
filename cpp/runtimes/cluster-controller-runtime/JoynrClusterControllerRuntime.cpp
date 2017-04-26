@@ -75,7 +75,7 @@
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttProtocol.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
+#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
@@ -378,8 +378,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     /* CC */
     // TODO: libjoynrmessagingskeleton now uses the Dispatcher, should it use the
     // InprocessDispatcher?
-    libJoynrMessagingSkeleton =
-            std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
+    libJoynrMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
     // EndpointAddress to messagingStub is transmitted when a provider is registered
     // messagingStubFactory->registerInProcessMessagingSkeleton(libJoynrMessagingSkeleton);
 

@@ -16,34 +16,39 @@
  * limitations under the License.
  * #L%
  */
-#ifndef INPROCESSLIBJOYNRMESSAGINGSKELETON_H
-#define INPROCESSLIBJOYNRMESSAGINGSKELETON_H
+#ifndef INPROCESSMESSAGINGSKELETON_H
+#define INPROCESSMESSAGINGSKELETON_H
 
-#include "joynr/PrivateCopyAssign.h"
+#include <functional>
 
-#include "common/in-process/InProcessMessagingSkeleton.h"
-#include "joynr/IDispatcher.h"
+#include "joynr/IMessaging.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
 
-class MessagingQos;
+class IDispatcher;
 class JoynrMessage;
 
-class JOYNR_EXPORT InProcessLibJoynrMessagingSkeleton : public InProcessMessagingSkeleton
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
+
+class JOYNR_EXPORT InProcessMessagingSkeleton : public IMessaging
 {
 public:
-    explicit InProcessLibJoynrMessagingSkeleton(IDispatcher* dispatcher);
-    ~InProcessLibJoynrMessagingSkeleton() override = default;
+    explicit InProcessMessagingSkeleton(IDispatcher* dispatcher);
+    ~InProcessMessagingSkeleton() override = default;
     void transmit(JoynrMessage& message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(InProcessLibJoynrMessagingSkeleton);
+    DISALLOW_COPY_AND_ASSIGN(InProcessMessagingSkeleton);
     IDispatcher* dispatcher;
 };
 
 } // namespace joynr
-#endif // INPROCESSLIBJOYNRMESSAGINGSKELETON_H
+#endif // INPROCESSMESSAGINGSKELETON_H

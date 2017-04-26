@@ -28,14 +28,14 @@
 namespace joynr
 {
 
-class InProcessMessagingSkeleton;
+class IMessaging;
 
 class JOYNRCOMMON_EXPORT InProcessMessagingAddress : public joynr::system::RoutingTypes::Address
 {
 public:
     InProcessMessagingAddress() = default;
-    explicit InProcessMessagingAddress(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
-    std::shared_ptr<InProcessMessagingSkeleton> getSkeleton() const;
+    explicit InProcessMessagingAddress(std::shared_ptr<IMessaging> skeleton);
+    std::shared_ptr<joynr::IMessaging> getSkeleton() const;
 
     template <typename Archive>
     void serialize(Archive&)
@@ -43,7 +43,7 @@ public:
     }
 
 private:
-    std::shared_ptr<InProcessMessagingSkeleton> skeleton;
+    std::shared_ptr<IMessaging> skeleton;
 };
 
 } // namespace joynr

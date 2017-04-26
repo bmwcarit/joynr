@@ -38,7 +38,7 @@
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
-#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
+#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
 namespace joynr
@@ -118,8 +118,7 @@ void LibJoynrRuntime::init(
     messageSender->registerDispatcher(joynrDispatcher);
 
     // create the inprocess skeleton for the dispatcher
-    dispatcherMessagingSkeleton =
-            std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
+    dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
     publicationManager = new PublicationManager(singleThreadIOService->getIOService(),

@@ -29,7 +29,7 @@
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
+#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessPublicationSender.h"
@@ -69,8 +69,7 @@ ShortCircuitRuntime::ShortCircuitRuntime()
     joynrDispatcher = new Dispatcher(messageSender, singleThreadedIOService.getIOService());
     messageSender->registerDispatcher(joynrDispatcher);
 
-    dispatcherMessagingSkeleton =
-            std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
+    dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
     publicationManager =

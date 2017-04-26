@@ -21,13 +21,12 @@
 namespace joynr
 {
 
-InProcessMessagingAddress::InProcessMessagingAddress(
-        std::shared_ptr<InProcessMessagingSkeleton> skeleton)
+InProcessMessagingAddress::InProcessMessagingAddress(std::shared_ptr<IMessaging> skeleton)
         : Address(), skeleton(skeleton)
 {
 }
 
-std::shared_ptr<InProcessMessagingSkeleton> InProcessMessagingAddress::getSkeleton() const
+std::shared_ptr<IMessaging> InProcessMessagingAddress::getSkeleton() const
 {
     return skeleton;
 }

@@ -20,12 +20,10 @@
 
 #include <cassert>
 
-#include "common/in-process/InProcessMessagingSkeleton.h"
-
 namespace joynr
 {
 
-InProcessMessagingStub::InProcessMessagingStub(std::shared_ptr<InProcessMessagingSkeleton> skeleton)
+InProcessMessagingStub::InProcessMessagingStub(std::shared_ptr<IMessaging> skeleton)
         : skeleton(skeleton)
 {
 }

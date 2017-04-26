@@ -16,19 +16,18 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
-
-#include "joynr/JoynrMessage.h"
+#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
+#include "joynr/IDispatcher.h"
 
 namespace joynr
 {
 
-InProcessLibJoynrMessagingSkeleton::InProcessLibJoynrMessagingSkeleton(IDispatcher* dispatcher)
+InProcessMessagingSkeleton::InProcessMessagingSkeleton(IDispatcher* dispatcher)
         : dispatcher(dispatcher)
 {
 }
 
-void InProcessLibJoynrMessagingSkeleton::transmit(
+void InProcessMessagingSkeleton::transmit(
         JoynrMessage& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {

@@ -73,7 +73,6 @@
 
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "common/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
 
@@ -194,7 +193,7 @@ public:
     }
 };
 
-class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
+class MockInProcessMessagingSkeleton : public joynr::IMessaging
 {
 public:
     MOCK_METHOD2(transmit, void(joynr::JoynrMessage& message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
