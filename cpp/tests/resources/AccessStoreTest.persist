@@ -1,5 +1,5 @@
 {
-   "masterTable":[
+   "masterAccessTable":[
       {
          "_typeName":"joynr.infrastructure.DacTypes.MasterAccessControlEntry",
          "uid":"testUser",
@@ -24,10 +24,10 @@
          ]
       }
    ],
-   "mediatorTable":[
+   "mediatorAccessTable":[
 
    ],
-   "ownerTable":[
+   "ownerAccessTable":[
       {
          "_typeName":"joynr.infrastructure.DacTypes.OwnerAccessControlEntry",
          "uid":"testUser",
