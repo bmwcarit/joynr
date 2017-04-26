@@ -129,7 +129,6 @@ protected:
     IDispatcher* inProcessDispatcher;
 
     std::shared_ptr<SubscriptionManager> subscriptionManager;
-    IMessaging* joynrMessagingSendSkeleton;
     std::shared_ptr<IMessageSender> messageSender;
 
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;

@@ -117,7 +117,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           joynrDispatcher(nullptr),
           inProcessDispatcher(nullptr),
           subscriptionManager(nullptr),
-          joynrMessagingSendSkeleton(nullptr),
           messageSender(nullptr),
           localCapabilitiesDirectory(nullptr),
           libJoynrMessagingSkeleton(nullptr),
