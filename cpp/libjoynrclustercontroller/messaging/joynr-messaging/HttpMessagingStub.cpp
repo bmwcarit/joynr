@@ -18,7 +18,7 @@
  */
 #include "HttpMessagingStub.h"
 
-#include "joynr/IMessageSender.h"
+#include "joynr/ITransportMessageSender.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessagingQos.h"
 
@@ -27,7 +27,7 @@ namespace joynr
 
 INIT_LOGGER(HttpMessagingStub);
 
-HttpMessagingStub::HttpMessagingStub(std::shared_ptr<IMessageSender> messageSender,
+HttpMessagingStub::HttpMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                      const system::RoutingTypes::ChannelAddress& destinationAddress)
         : messageSender(messageSender), destinationAddress(destinationAddress)
 {

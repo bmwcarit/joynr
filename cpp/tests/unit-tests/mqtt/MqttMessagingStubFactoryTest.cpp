@@ -60,14 +60,14 @@ protected:
 INIT_LOGGER(MqttMessagingStubFactoryTest);
 
 TEST_F(MqttMessagingStubFactoryTest, canCreateMqttAddressses) {
-    auto mockMessageSender = std::make_shared<MockMessageSender>();
+    auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
     MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_TRUE(factory.canCreate(mqttAddress));
 }
 
 TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses) {
-    auto mockMessageSender = std::make_shared<MockMessageSender>();
+    auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
     MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_FALSE(factory.canCreate(channelAddress));
@@ -78,7 +78,7 @@ TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses) {
 }
 
 TEST_F(MqttMessagingStubFactoryTest, createReturnsMessagingStub) {
-    auto mockMessageSender = std::make_shared<MockMessageSender>();
+    auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
     MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_TRUE(factory.create(mqttAddress).get() != nullptr);

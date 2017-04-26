@@ -19,6 +19,7 @@
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
 
 #include "joynr/ITransportMessageReceiver.h"
+#include "joynr/JoynrMessage.h"
 #include "joynr/MessagingQosEffort.h"
 #include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"

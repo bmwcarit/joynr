@@ -30,7 +30,7 @@
 namespace joynr
 {
 
-class IMessageSender;
+class ITransportMessageSender;
 class JoynrMessage;
 /**
   * Is used by the ClusterController to contact another (remote) ClusterController
@@ -38,7 +38,7 @@ class JoynrMessage;
 class MqttMessagingStub : public IMessaging
 {
 public:
-    explicit MqttMessagingStub(std::shared_ptr<IMessageSender> messageSender,
+    explicit MqttMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                const system::RoutingTypes::MqttAddress& destinationAddress);
     ~MqttMessagingStub() override = default;
     void transmit(JoynrMessage& message,
@@ -47,7 +47,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingStub);
-    std::shared_ptr<IMessageSender> messageSender;
+    std::shared_ptr<ITransportMessageSender> messageSender;
     const system::RoutingTypes::MqttAddress destinationAddress;
     ADD_LOGGER(MqttMessagingStub);
 };

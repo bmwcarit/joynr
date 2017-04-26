@@ -45,7 +45,7 @@ public:
     std::unique_ptr<JoynrClusterControllerRuntime> runtime;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
-    std::shared_ptr<IMessageSender> mockMessageSenderMqtt;
+    std::shared_ptr<ITransportMessageSender> mockMessageSenderMqtt;
     DiscoveryQos discoveryQos;
     std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder;
     std::unique_ptr<joynr::system::DiscoveryProxy> discoveryProxy;
@@ -61,7 +61,7 @@ public:
         runtime(nullptr),
         mockMessageReceiverHttp(std::make_shared<MockTransportMessageReceiver>()),
         mockMessageReceiverMqtt(std::make_shared<MockTransportMessageReceiver>()),
-        mockMessageSenderMqtt(std::make_shared<MockMessageSender>()),
+        mockMessageSenderMqtt(std::make_shared<MockTransportMessageSender>()),
         discoveryQos(),
         discoveryProxyBuilder(nullptr),
         discoveryProxy(nullptr),

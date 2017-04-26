@@ -41,7 +41,7 @@ class MqttMessagingStubTest : public ::testing::Test {
 public:
     MqttMessagingStubTest() :
         destinationAddress(),
-        mockMessageSender(std::make_shared<MockMessageSender>()),
+        mockMessageSender(std::make_shared<MockTransportMessageSender>()),
         mqttMessagingStub(mockMessageSender, destinationAddress),
         messageFactory(),
         message(),
@@ -56,7 +56,7 @@ protected:
     void transmitSetsHeaderReplyAddress();
     system::RoutingTypes::MqttAddress destinationAddress;
     std::string globalClusterControllerAddress;
-    std::shared_ptr<MockMessageSender> mockMessageSender;
+    std::shared_ptr<MockTransportMessageSender> mockMessageSender;
     MqttMessagingStub mqttMessagingStub;
     JoynrMessageFactory messageFactory;
     JoynrMessage message;

@@ -30,7 +30,7 @@
 namespace joynr
 {
 
-class IMessageSender;
+class ITransportMessageSender;
 class JoynrMessage;
 
 /**
@@ -39,7 +39,7 @@ class JoynrMessage;
 class HttpMessagingStub : public IMessaging
 {
 public:
-    explicit HttpMessagingStub(std::shared_ptr<IMessageSender> messageSender,
+    explicit HttpMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                const system::RoutingTypes::ChannelAddress& destinationAddress);
     ~HttpMessagingStub() override = default;
     void transmit(JoynrMessage& message,
@@ -48,7 +48,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingStub);
-    std::shared_ptr<IMessageSender> messageSender;
+    std::shared_ptr<ITransportMessageSender> messageSender;
     const system::RoutingTypes::ChannelAddress destinationAddress;
 
     ADD_LOGGER(HttpMessagingStub);

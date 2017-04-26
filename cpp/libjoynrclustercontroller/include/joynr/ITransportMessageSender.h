@@ -16,26 +16,35 @@
  * limitations under the License.
  * #L%
  */
-#ifndef IMESSAGESENDER_H
-#define IMESSAGESENDER_H
+#ifndef ITRANSPORTMESSAGESENDER_H
+#define ITRANSPORTMESSAGESENDER_H
 
+#include <functional>
 #include <memory>
-#include <string>
-
-#include "joynr/JoynrMessage.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {
 
-class ITransportMessageReceiver;
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+} // RoutingTypes
+} // namespace system
 
-class IMessageSender
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
+
+class ITransportMessageReceiver;
+class JoynrMessage;
+
+class ITransportMessageSender
 {
 public:
-    virtual ~IMessageSender() = default;
+    virtual ~ITransportMessageSender() = default;
     /**
     * @brief Sends the message to the given channel.
     */
@@ -48,4 +57,4 @@ public:
 };
 } // namespace joynr
 
-#endif // IMESSAGESENDER_H
+#endif // ITRANSPORTMESSAGESENDER_H

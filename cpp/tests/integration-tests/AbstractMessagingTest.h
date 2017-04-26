@@ -59,7 +59,7 @@ public:
 
     JoynrMessageFactory messageFactory;
     std::shared_ptr<MockTransportMessageReceiver> mockMessageReceiver;
-    std::shared_ptr<MockMessageSender> mockMessageSender;
+    std::shared_ptr<MockTransportMessageSender> mockMessageSender;
     std::shared_ptr<MessagingStubFactory> messagingStubFactory;
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<CcMessageRouter> messageRouter;
@@ -78,7 +78,7 @@ public:
         isLocalMessage(false),
         messageFactory(),
         mockMessageReceiver(new MockTransportMessageReceiver()),
-        mockMessageSender(new MockMessageSender()),
+        mockMessageSender(new MockTransportMessageSender()),
         messagingStubFactory(std::make_shared<MessagingStubFactory>()),
         singleThreadedIOService(),
         messageRouter(nullptr)

@@ -48,6 +48,7 @@
 #include "joynr/Runnable.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
 #include "joynr/ITransportMessageReceiver.h"
+#include "joynr/ITransportMessageSender.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessaging.h"
 #include "joynr/ReplyCaller.h"
@@ -86,7 +87,6 @@
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/IMessageSender.h"
 #include "joynr/BrokerUrl.h"
 #include "joynr/Settings.h"
 #include "joynr/Logger.h"
@@ -688,7 +688,7 @@ public:
     MOCK_METHOD0(isConnected, bool());
 };
 
-class MockMessageSender : public joynr::IMessageSender
+class MockTransportMessageSender : public joynr::ITransportMessageSender
 {
 public:
     MOCK_METHOD3(sendMessage,void(const joynr::system::RoutingTypes::Address&, const joynr::JoynrMessage&, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));

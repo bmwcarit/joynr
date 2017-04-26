@@ -21,7 +21,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/IMessageSender.h"
+#include "joynr/ITransportMessageSender.h"
 #include "joynr/Logger.h"
 
 namespace joynr
@@ -31,7 +31,7 @@ class JoynrMessage;
 class MessagingSettings;
 class MosquittoConnection;
 
-class MqttSender : public IMessageSender
+class MqttSender : public ITransportMessageSender
 {
 
 public:

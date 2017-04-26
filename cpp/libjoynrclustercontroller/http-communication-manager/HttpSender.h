@@ -25,7 +25,7 @@
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/IMessageSender.h"
+#include "joynr/ITransportMessageSender.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Runnable.h"
@@ -38,7 +38,7 @@ class JoynrMessage;
 class MessagingSettings;
 class HttpResult;
 
-class HttpSender : public IMessageSender
+class HttpSender : public ITransportMessageSender
 {
 public:
     static std::chrono::milliseconds MIN_ATTEMPT_TTL();

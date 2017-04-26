@@ -24,6 +24,7 @@
 
 #include <curl/curl.h>
 
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Util.h"

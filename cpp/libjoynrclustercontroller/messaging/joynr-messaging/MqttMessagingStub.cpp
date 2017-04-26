@@ -18,7 +18,7 @@
  */
 #include "MqttMessagingStub.h"
 
-#include "joynr/IMessageSender.h"
+#include "joynr/ITransportMessageSender.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessagingQos.h"
 
@@ -27,7 +27,7 @@ namespace joynr
 
 INIT_LOGGER(MqttMessagingStub);
 
-MqttMessagingStub::MqttMessagingStub(std::shared_ptr<IMessageSender> messageSender,
+MqttMessagingStub::MqttMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                      const system::RoutingTypes::MqttAddress& destinationAddress)
         : messageSender(messageSender), destinationAddress(destinationAddress)
 {

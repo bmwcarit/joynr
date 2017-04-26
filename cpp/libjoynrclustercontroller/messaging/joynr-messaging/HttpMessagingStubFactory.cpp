@@ -19,13 +19,14 @@
 #include "HttpMessagingStubFactory.h"
 
 #include "HttpMessagingStub.h"
-#include "joynr/IMessageSender.h"
+#include "joynr/ITransportMessageSender.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
 {
 
-HttpMessagingStubFactory::HttpMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender)
+HttpMessagingStubFactory::HttpMessagingStubFactory(
+        std::shared_ptr<ITransportMessageSender> messageSender)
         : messageSender(messageSender)
 {
 }

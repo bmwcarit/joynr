@@ -16,16 +16,19 @@
  * limitations under the License.
  * #L%
  */
-#include "MqttMessagingStubFactory.h"
-#include "MqttMessagingStub.h"
 
-#include "joynr/IMessageSender.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
+
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/ITransportMessageSender.h"
+
+#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStub.h"
 
 namespace joynr
 {
 
-MqttMessagingStubFactory::MqttMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender)
+MqttMessagingStubFactory::MqttMessagingStubFactory(
+        std::shared_ptr<ITransportMessageSender> messageSender)
         : messageSender(messageSender)
 {
 }

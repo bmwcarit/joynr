@@ -26,13 +26,13 @@
 namespace joynr
 {
 
-class IMessageSender;
+class ITransportMessageSender;
 
 class HttpMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {
 
 public:
-    HttpMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender);
+    HttpMessagingStubFactory(std::shared_ptr<ITransportMessageSender> messageSender);
     std::shared_ptr<IMessaging> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
@@ -41,7 +41,7 @@ public:
                                                        onMessagingStubClosedCallback) override;
 
 private:
-    std::shared_ptr<IMessageSender> messageSender;
+    std::shared_ptr<ITransportMessageSender> messageSender;
 };
 
 } // namespace joynr
