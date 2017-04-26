@@ -50,9 +50,6 @@ class JOYNR_EXPORT Dispatcher : public IDispatcher
 {
 
 public:
-    // ownership of messageSender is not passed to dispatcher, so dispatcher is not responsible for
-    // deleting it.
-    // Todo: should be changed to a std::shared_ptr or reference.
     Dispatcher(std::shared_ptr<JoynrMessageSender> messageSender,
                boost::asio::io_service& ioService,
                int maxThreads = 1);
