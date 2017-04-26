@@ -39,6 +39,7 @@ import io.joynr.runtime.SystemServicesSettings;
 import joynr.JoynrMessage;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
+import joynr.system.RoutingSync.ResolveNextHopReturned;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BrowserAddress;
 import joynr.system.RoutingTypes.ChannelAddress;
@@ -116,9 +117,10 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
         }
         String toParticipantId = message.getTo();
         if (result.isEmpty() && parentRouter != null) {
-            Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
-            if (parentHasNextHop) {
-                super.addNextHop(toParticipantId, parentRouterMessagingAddress, true); // TODO: use appropriate boolean value in subsequent patch
+            ResolveNextHopReturned parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
+            if (parentHasNextHop.resolved) {
+                boolean isGloballyVisible = parentHasNextHop.isGloballyVisible;
+                super.addNextHop(toParticipantId, parentRouterMessagingAddress, isGloballyVisible);
                 result.add(parentRouterMessagingAddress);
             }
         }

@@ -47,6 +47,7 @@ import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.JoynrMessage;
 import joynr.system.RoutingProxy;
+import joynr.system.RoutingSync.ResolveNextHopReturned;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -80,6 +81,7 @@ public class LibJoynrMessageRouterTest {
     private String unknownParticipantId = "unknownParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;
     private String globalAddress = "global-address";
+    private final boolean isGloballyVisible = true;
 
     @Before
     public void setUp() {
@@ -88,9 +90,11 @@ public class LibJoynrMessageRouterTest {
         message.setTo(unknownParticipantId);
         message.setLocalMessage(false);
         message.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
-
+        boolean resolved = true;
         when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
-        when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
+        // Presumably the participant of next hop is globally visible.
+        when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(new ResolveNextHopReturned(resolved,
+                                                                                                             isGloballyVisible));
         when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(Mockito.any(Address.class))).thenReturn(messagingStub);
         when(parentAddress.getChannelId()).thenReturn("LibJoynrMessageRouterTestChannel");
@@ -127,7 +131,6 @@ public class LibJoynrMessageRouterTest {
     public void addsNextHopAfterQueryingParent() throws Exception {
         messageRouter.route(message);
         Thread.sleep(100);
-        final boolean isGloballyVisible = true;
         Mockito.verify(routingTable).put(Mockito.eq(unknownParticipantId),
                                          Mockito.eq(parentAddress),
                                          Mockito.eq(isGloballyVisible));
