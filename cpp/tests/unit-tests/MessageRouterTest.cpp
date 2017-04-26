@@ -39,6 +39,7 @@
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
+#include "joynr/IPlatformSecurityManager.h"
 
 #include "tests/utils/MockObjects.h"
 

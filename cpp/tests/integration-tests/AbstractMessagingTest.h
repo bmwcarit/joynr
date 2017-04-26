@@ -33,6 +33,7 @@
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/IPlatformSecurityManager.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -57,7 +58,7 @@ public:
     Semaphore semaphore;
     const bool isLocalMessage;
 
-    JoynrMessageFactory messageFactory;
+    MutableMessageFactory messageFactory;
     std::shared_ptr<MockTransportMessageReceiver> mockMessageReceiver;
     std::shared_ptr<MockTransportMessageSender> mockMessageSender;
     std::shared_ptr<MessagingStubFactory> messagingStubFactory;
@@ -86,7 +87,7 @@ public:
         const std::string globalCCAddress("globalAddress");
 
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
-        messageRouter = std::make_unique<CcMessageRouter>(messagingStubFactory,
+        messageRouter = std::make_shared<CcMessageRouter>(messagingStubFactory,
                                                           std::make_shared<MulticastMessagingSkeletonDirectory>(),
                                                           nullptr,
                                                           singleThreadedIOService.getIOService(),

@@ -40,6 +40,7 @@
 #include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/IPlatformSecurityManager.h"
 
 using ::testing::Pointee;
 using ::testing::Return;

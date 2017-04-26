@@ -31,6 +31,7 @@
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/MutableMessageFactory.h"
 
 #include "tests/utils/MockObjects.h"
 
@@ -58,7 +59,7 @@ protected:
     std::string globalClusterControllerAddress;
     std::shared_ptr<MockTransportMessageSender> mockMessageSender;
     MqttMessagingStub mqttMessagingStub;
-    JoynrMessageFactory messageFactory;
+    MutableMessageFactory messageFactory;
     JoynrMessage message;
     std::string replyAddressSerialized;
     std::string senderID;

@@ -23,7 +23,7 @@
 
 #include "joynr/MessagingQos.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageFactory.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/MessageSender.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -71,7 +71,7 @@ public:
     }
 
 protected:
-    JoynrMessageFactory messageFactory;
+    MutableMessageFactory messageFactory;
     std::string postFix;
     std::string senderID;
     std::string receiverID;

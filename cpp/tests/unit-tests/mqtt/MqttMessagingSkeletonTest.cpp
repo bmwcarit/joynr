@@ -40,6 +40,7 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/MutableMessageFactory.h"
 
 #include "tests/utils/MockObjects.h"
 
@@ -108,7 +109,7 @@ protected:
     void transmitCallsAddNextHop();
     SingleThreadedIOService singleThreadedIOService;
     MockMessageRouter mockMessageRouter;
-    JoynrMessageFactory messageFactory;
+    MutableMessageFactory messageFactory;
     JoynrMessage message;
     std::string replyAddressSerialized;
     std::string senderID;

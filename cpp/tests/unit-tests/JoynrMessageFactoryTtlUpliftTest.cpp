@@ -24,7 +24,7 @@
 
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/JoynrMessageFactory.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/MulticastSubscriptionRequest.h"
@@ -58,7 +58,7 @@ public:
 
 protected:
     ADD_LOGGER(JoynrMessageFactoryTtlUpliftTest);
-    JoynrMessageFactory messageFactory;
+    MutableMessageFactory messageFactory;
     std::string senderID;
     std::string receiverID;
 
@@ -67,7 +67,7 @@ protected:
     const std::int64_t upliftedTtl;
     const bool isLocalMessage;
     MessagingQos messagingQos;
-    JoynrMessageFactory factoryWithTtlUplift;
+    MutableMessageFactory factoryWithTtlUplift;
 };
 
 INIT_LOGGER(JoynrMessageFactoryTtlUpliftTest);

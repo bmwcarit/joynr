@@ -27,7 +27,7 @@
 #include <gtest/gtest.h>
 
 #include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageFactory.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -312,7 +312,7 @@ TYPED_TEST(RequestReplySerializerTest, serializeJoynrMessage)
     // Create a Request
     const bool isLocalMessage = true;
     joynr::Request outgoingRequest = this->initializeRequestWithPrimitiveValues();
-    joynr::JoynrMessage outgoingMessage = joynr::JoynrMessageFactory().createRequest("sender",
+    joynr::JoynrMessage outgoingMessage = joynr::MutableMessageFactory().createRequest("sender",
                                                                                      "receiver",
                                                                                      joynr::MessagingQos(),
                                                                                      outgoingRequest,

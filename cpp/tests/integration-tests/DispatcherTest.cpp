@@ -27,7 +27,7 @@
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionCallback.h"
-#include "joynr/JoynrMessageFactory.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/MessageSender.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/Dispatcher.h"
@@ -116,7 +116,7 @@ protected:
     std::string proxyParticipantId;
     std::string requestReplyId;
 
-    JoynrMessageFactory messageFactory;
+    MutableMessageFactory messageFactory;
     std::shared_ptr<MessageSender> messageSender;
     Dispatcher dispatcher;
     joynr::CallContext callContext;

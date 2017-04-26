@@ -22,6 +22,7 @@
 
 #include <gtest/gtest.h>
 
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/Request.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "tests/utils/MockObjects.h"
@@ -173,7 +174,7 @@ protected:
     MockMessagingSettings messagingSettingsMock;
     MockLocalCapabilitiesDirectory localCapabilitiesDirectoryMock;
     AccessController accessController;
-    JoynrMessageFactory messageFactory;
+    MutableMessageFactory messageFactory;
     JoynrMessage message;
     MessagingQos messagingQos;
     DiscoveryEntryWithMetaInfo discoveryEntry;

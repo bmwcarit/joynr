@@ -23,7 +23,7 @@
 #include <gmock/gmock.h>
 
 #include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageFactory.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/MessageSender.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/UnicastSubscriptionCallback.h"
@@ -107,7 +107,7 @@ protected:
     std::string proxyParticipantId;
     std::string requestReplyId;
 
-    JoynrMessageFactory messageFactory;
+    MutableMessageFactory messageFactory;
     std::shared_ptr<MessageSender> messageSender;
     Dispatcher dispatcher;
     std::shared_ptr<SubscriptionManager> subscriptionManager;

@@ -24,7 +24,7 @@
 
 #include "joynr/IMessageSender.h"
 #include "joynr/JoynrExport.h"
-#include "joynr/JoynrMessageFactory.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
@@ -143,7 +143,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MessageSender);
     IDispatcher* dispatcher;
     std::shared_ptr<IMessageRouter> messageRouter;
-    JoynrMessageFactory messageFactory;
+    MutableMessageFactory messageFactory;
     ADD_LOGGER(MessageSender);
 };
 

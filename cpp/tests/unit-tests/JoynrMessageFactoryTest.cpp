@@ -22,7 +22,7 @@
 
 #include <gtest/gtest.h>
 
-#include "joynr/JoynrMessageFactory.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/MessagingQos.h"
@@ -146,7 +146,7 @@ public:
 
 protected:
     ADD_LOGGER(JoynrMessageFactoryTest);
-    JoynrMessageFactory messageFactory;
+    MutableMessageFactory messageFactory;
     std::string senderID;
     std::string receiverID;
     std::string requestReplyID;

@@ -25,7 +25,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessageSender.h"
-#include "joynr/JoynrMessageFactory.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
@@ -90,7 +90,7 @@ protected:
     std::string providerParticipantId;
     std::string proxyParticipantId;
 
-    JoynrMessageFactory messageFactory;
+    MutableMessageFactory messageFactory;
     std::shared_ptr<MessageSender> messageSender;
     Dispatcher dispatcher;
     std::shared_ptr<SubscriptionManager> subscriptionManager;

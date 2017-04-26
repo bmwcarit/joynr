@@ -27,6 +27,8 @@
 #include "joynr/Logger.h"
 #include "joynr/serializer/Serializer.h"
 
+#include "joynr/MutableMessage.h"
+
 namespace joynr
 {
 
@@ -47,6 +49,11 @@ class JOYNR_EXPORT JoynrMessage
 
 public:
     JoynrMessage();
+
+    // temporary constructor to ease transition
+    JoynrMessage(const MutableMessage& mutableMessage)
+    {
+    }
 
     /**
      * @brief HEADER_CONTENT_TYPE The "content type" header contains the type information of the
