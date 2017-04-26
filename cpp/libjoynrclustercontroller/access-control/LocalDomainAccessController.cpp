@@ -312,7 +312,6 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::getMasterAcce
 {
     std::vector<MasterAccessControlEntry> resultMasterAces;
     globalDomainAccessControllerProxy->getMasterAccessControlEntries(resultMasterAces, uid);
-
     return resultMasterAces;
 }
 
@@ -322,7 +321,6 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::
     std::vector<MasterAccessControlEntry> resultMasterAces;
     globalDomainAccessControlListEditorProxy->getEditableMasterAccessControlEntries(
             resultMasterAces, uid);
-
     return resultMasterAces;
 }
 
@@ -332,7 +330,6 @@ bool LocalDomainAccessController::updateMasterAccessControlEntry(
     bool success = false;
     globalDomainAccessControlListEditorProxy->updateMasterAccessControlEntry(
             success, updatedMasterAce);
-
     return success;
 }
 
@@ -344,7 +341,6 @@ bool LocalDomainAccessController::removeMasterAccessControlEntry(const std::stri
     bool success = false;
     globalDomainAccessControlListEditorProxy->removeMasterAccessControlEntry(
             success, uid, domain, interfaceName, operation);
-
     return success;
 }
 
@@ -353,7 +349,6 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::getMediatorAc
 {
     std::vector<MasterAccessControlEntry> resultMediatorAces;
     globalDomainAccessControllerProxy->getMediatorAccessControlEntries(resultMediatorAces, uid);
-
     return resultMediatorAces;
 }
 
@@ -363,7 +358,6 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::
     std::vector<MasterAccessControlEntry> resultMediatorAces;
     globalDomainAccessControlListEditorProxy->getEditableMediatorAccessControlEntries(
             resultMediatorAces, uid);
-
     return resultMediatorAces;
 }
 
@@ -373,7 +367,6 @@ bool LocalDomainAccessController::updateMediatorAccessControlEntry(
     bool success = false;
     globalDomainAccessControlListEditorProxy->updateMediatorAccessControlEntry(
             success, updatedMediatorAce);
-
     return success;
 }
 
@@ -385,7 +378,6 @@ bool LocalDomainAccessController::removeMediatorAccessControlEntry(const std::st
     bool success = false;
     globalDomainAccessControlListEditorProxy->removeMediatorAccessControlEntry(
             success, uid, domain, interfaceName, operation);
-
     return success;
 }
 
@@ -394,7 +386,6 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessController::getOwnerAccess
 {
     std::vector<OwnerAccessControlEntry> resultOwnerAces;
     globalDomainAccessControllerProxy->getOwnerAccessControlEntries(resultOwnerAces, uid);
-
     return resultOwnerAces;
 }
 
@@ -404,7 +395,6 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessController::
     std::vector<OwnerAccessControlEntry> resultOwnerAces;
     globalDomainAccessControlListEditorProxy->getEditableOwnerAccessControlEntries(
             resultOwnerAces, uid);
-
     return resultOwnerAces;
 }
 
@@ -414,7 +404,6 @@ bool LocalDomainAccessController::updateOwnerAccessControlEntry(
     bool success = false;
     globalDomainAccessControlListEditorProxy->updateOwnerAccessControlEntry(
             success, updatedOwnerAce);
-
     return success;
 }
 
@@ -426,7 +415,6 @@ bool LocalDomainAccessController::removeOwnerAccessControlEntry(const std::strin
     bool success = false;
     globalDomainAccessControlListEditorProxy->removeOwnerAccessControlEntry(
             success, uid, domain, interfaceName, operation);
-
     return success;
 }
 
@@ -452,7 +440,6 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 {
     assert(false && "Not implemented yet");
     std::ignore = uid;
-
     return std::vector<MasterRegistrationControlEntry>();
 }
 
@@ -463,7 +450,6 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 {
     assert(false && "Not implemented yet");
     std::ignore = uid;
-
     return std::vector<MasterRegistrationControlEntry>();
 }
 
@@ -472,7 +458,6 @@ bool LocalDomainAccessController::updateMasterRegistrationControlEntry(
 {
     assert(false && "Not implemented yet");
     std::ignore = updatedMasterRce;
-
     return false;
 }
 
@@ -485,7 +470,6 @@ bool LocalDomainAccessController::removeMasterRegistrationControlEntry(
     std::ignore = uid;
     std::ignore = domain;
     std::ignore = interfaceName;
-
     return false;
 }
 
@@ -494,7 +478,6 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 {
     assert(false && "Not implemented yet");
     std::ignore = uid;
-
     return std::vector<MasterRegistrationControlEntry>();
 }
 
@@ -503,7 +486,6 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
 {
     assert(false && "Not implemented yet");
     std::ignore = uid;
-
     return std::vector<MasterRegistrationControlEntry>();
 }
 
@@ -512,7 +494,6 @@ bool LocalDomainAccessController::updateMediatorRegistrationControlEntry(
 {
     assert(false && "Not implemented yet");
     std::ignore = updatedMediatorRce;
-
     return false;
 }
 
@@ -525,7 +506,6 @@ bool LocalDomainAccessController::removeMediatorRegistrationControlEntry(
     std::ignore = uid;
     std::ignore = domain;
     std::ignore = interfaceName;
-
     return false;
 }
 
@@ -534,7 +514,6 @@ std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
 {
     assert(false && "Not implemented yet");
     std::ignore = uid;
-
     return std::vector<OwnerRegistrationControlEntry>();
 }
 
@@ -543,7 +522,6 @@ std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
 {
     assert(false && "Not implemented yet");
     std::ignore = uid;
-
     return std::vector<OwnerRegistrationControlEntry>();
 }
 
@@ -552,7 +530,6 @@ bool LocalDomainAccessController::updateOwnerRegistrationControlEntry(
 {
     assert(false && "Not implemented yet");
     std::ignore = updatedOwnerRce;
-
     return false;
 }
 
@@ -565,7 +542,6 @@ bool LocalDomainAccessController::removeOwnerRegistrationControlEntry(
     std::ignore = uid;
     std::ignore = domain;
     std::ignore = interfaceName;
-
     return false;
 }
 
@@ -871,7 +847,6 @@ std::string LocalDomainAccessController::createCompoundKey(const std::string& do
     std::string subscriptionMapKey(domain);
     subscriptionMapKey.push_back('\x1e'); // ascii record separator
     subscriptionMapKey.insert(0, interfaceName);
-
     return subscriptionMapKey;
 }
 
