@@ -67,14 +67,13 @@ void HttpSender::sendMessage(
         const JoynrMessage& message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    if (dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destinationAddress) == nullptr) {
+    const auto* channelAddress =
+            dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destinationAddress);
+    if (channelAddress == nullptr) {
         JOYNR_LOG_DEBUG(logger, "Invalid destination address type provided");
         onFailure(exceptions::JoynrRuntimeException("Invalid destination address type provided"));
         return;
     }
-
-    auto channelAddress =
-            dynamic_cast<const system::RoutingTypes::ChannelAddress&>(destinationAddress);
 
     JOYNR_LOG_TRACE(logger, "sendMessage: ...");
     std::string&& serializedMessage = joynr::serializer::serializeToJson(message);
@@ -97,12 +96,12 @@ void HttpSender::sendMessage(
 
     JOYNR_LOG_TRACE(logger,
                     "Sending message; url: {}, time left: {}",
-                    toUrl(channelAddress),
+                    toUrl(*channelAddress),
                     DispatcherUtils::convertAbsoluteTimeToTtlString(message.getHeaderExpiryDate()));
 
     JOYNR_LOG_TRACE(logger, "going to buildRequest");
     HttpResult sendMessageResult = buildRequestAndSend(
-            serializedMessage, toUrl(channelAddress), std::chrono::milliseconds(curlTimeout));
+            serializedMessage, toUrl(*channelAddress), std::chrono::milliseconds(curlTimeout));
 
     // Delay the next request if an error occurs
     auto now = std::chrono::system_clock::now();
@@ -136,7 +135,7 @@ void HttpSender::sendMessage(
     } else {
         JOYNR_LOG_DEBUG(logger,
                         "sending message - success; url: {} status code: {} at ",
-                        toUrl(channelAddress),
+                        toUrl(*channelAddress),
                         sendMessageResult.getStatusCode(),
                         DispatcherUtils::nowInMilliseconds());
     }
