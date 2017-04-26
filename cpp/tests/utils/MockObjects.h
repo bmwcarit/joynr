@@ -47,7 +47,7 @@
 #include "joynr/DelayedScheduler.h"
 #include "joynr/Runnable.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
-#include "joynr/IMessageReceiver.h"
+#include "joynr/ITransportMessageReceiver.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessaging.h"
 #include "joynr/ReplyCaller.h"
@@ -674,10 +674,10 @@ inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<MockProvider>
 }
 } // namespace joynr;
 
-class MockMessageReceiver : public joynr::IMessageReceiver
+class MockTransportMessageReceiver : public joynr::ITransportMessageReceiver
 {
 public:
-    MockMessageReceiver() = default;
+    MockTransportMessageReceiver() = default;
     MOCK_METHOD0(init, void());
     MOCK_CONST_METHOD0(getGlobalClusterControllerAddress, std::string&());
     MOCK_METHOD0(startReceiveQueue, void());
@@ -693,7 +693,7 @@ class MockMessageSender : public joynr::IMessageSender
 public:
     MOCK_METHOD3(sendMessage,void(const joynr::system::RoutingTypes::Address&, const joynr::JoynrMessage&, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
     MOCK_METHOD1(init,void(const joynr::MessagingSettings& settings));
-    MOCK_METHOD1(registerReceiver, void(std::shared_ptr<joynr::IMessageReceiver> receiver));
+    MOCK_METHOD1(registerReceiver, void(std::shared_ptr<joynr::ITransportMessageReceiver> receiver));
 };
 
 class MockMessagingStub : public joynr::IMessaging {

@@ -35,7 +35,7 @@
 #include "joynr/Dispatcher.h"
 #include "joynr/HttpMulticastAddressCalculator.h"
 #include "joynr/IDispatcher.h"
-#include "joynr/IMessageReceiver.h"
+#include "joynr/ITransportMessageReceiver.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/IRequestCallerDirectory.h"
@@ -109,9 +109,9 @@ static const std::string ACC_ENTRIES_FILE = "CCAccessControl.entries";
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::unique_ptr<Settings> settings,
-        std::shared_ptr<IMessageReceiver> httpMessageReceiver,
+        std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver,
         std::shared_ptr<IMessageSender> httpMessageSender,
-        std::shared_ptr<IMessageReceiver> mqttMessageReceiver,
+        std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver,
         std::shared_ptr<IMessageSender> mqttMessageSender)
         : JoynrRuntime(*settings),
           joynrDispatcher(nullptr),

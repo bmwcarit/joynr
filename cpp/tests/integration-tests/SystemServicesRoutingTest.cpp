@@ -40,8 +40,8 @@ public:
             routingDomain(),
             routingProviderParticipantId(),
             runtime(nullptr),
-            mockMessageReceiverHttp(std::make_shared<MockMessageReceiver>()),
-            mockMessageReceiverMqtt(std::make_shared<MockMessageReceiver>()),
+            mockMessageReceiverHttp(std::make_shared<MockTransportMessageReceiver>()),
+            mockMessageReceiverMqtt(std::make_shared<MockTransportMessageReceiver>()),
             mockMessageSender(std::make_shared<MockMessageSender>()),
             discoveryQos(),
             routingProxyBuilder(nullptr),
@@ -68,9 +68,9 @@ public:
         std::string serializedChannelAddress = joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
         std::string serializedMqttAddress = joynr::serializer::serializeToJson(MqttAddress(mqttBrokerUrl, mqttTopic));
 
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
         //runtime can only be created, after MockMessageReceiver has been told to return
@@ -110,8 +110,8 @@ protected:
     std::string routingDomain;
     std::string routingProviderParticipantId;
     std::unique_ptr<JoynrClusterControllerRuntime> runtime;
-    std::shared_ptr<IMessageReceiver> mockMessageReceiverHttp;
-    std::shared_ptr<IMessageReceiver> mockMessageReceiverMqtt;
+    std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
+    std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
     std::shared_ptr<MockMessageSender> mockMessageSender;
     DiscoveryQos discoveryQos;
     std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder;

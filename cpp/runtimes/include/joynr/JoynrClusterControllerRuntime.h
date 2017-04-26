@@ -48,7 +48,7 @@ namespace joynr
 
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
-class IMessageReceiver;
+class ITransportMessageReceiver;
 class IMessageSender;
 class SubscriptionManager;
 class ConnectorFactory;
@@ -79,11 +79,12 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
           public IClusterControllerSignalHandler
 {
 public:
-    JoynrClusterControllerRuntime(std::unique_ptr<Settings> settings,
-                                  std::shared_ptr<IMessageReceiver> httpMessageReceiver = nullptr,
-                                  std::shared_ptr<IMessageSender> httpMessageSender = nullptr,
-                                  std::shared_ptr<IMessageReceiver> mqttMessageReceiver = nullptr,
-                                  std::shared_ptr<IMessageSender> mqttMessageSender = nullptr);
+    JoynrClusterControllerRuntime(
+            std::unique_ptr<Settings> settings,
+            std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver = nullptr,
+            std::shared_ptr<IMessageSender> httpMessageSender = nullptr,
+            std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver = nullptr,
+            std::shared_ptr<IMessageSender> mqttMessageSender = nullptr);
 
     static std::unique_ptr<JoynrClusterControllerRuntime> create(std::size_t argc, char* argv[]);
 
@@ -135,12 +136,12 @@ protected:
 
     std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
-    std::shared_ptr<IMessageReceiver> httpMessageReceiver;
+    std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver;
     std::shared_ptr<IMessageSender> httpMessageSender;
     std::shared_ptr<HttpMessagingSkeleton> httpMessagingSkeleton;
 
     std::shared_ptr<MosquittoConnection> mosquittoConnection;
-    std::shared_ptr<IMessageReceiver> mqttMessageReceiver;
+    std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver;
     std::shared_ptr<IMessageSender> mqttMessageSender;
     std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
 

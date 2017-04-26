@@ -23,7 +23,7 @@
 
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/IMessageReceiver.h"
+#include "joynr/ITransportMessageReceiver.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 
@@ -33,7 +33,7 @@ namespace joynr
 class MosquittoConnection;
 class MessagingSettings;
 
-class JOYNRCLUSTERCONTROLLER_EXPORT MqttReceiver : public IMessageReceiver
+class JOYNRCLUSTERCONTROLLER_EXPORT MqttReceiver : public ITransportMessageReceiver
 {
 public:
     explicit MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnection,

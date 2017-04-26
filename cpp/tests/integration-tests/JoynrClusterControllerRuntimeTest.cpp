@@ -54,9 +54,9 @@ public:
     std::string settingsFilenameHttp;
     std::unique_ptr<JoynrClusterControllerRuntime> runtime;
     joynr::types::Localisation::GpsLocation gpsLocation;
-    std::shared_ptr<MockMessageReceiver> mockHttpMessageReceiver;
+    std::shared_ptr<MockTransportMessageReceiver> mockHttpMessageReceiver;
     std::shared_ptr<MockMessageSender> mockHttpMessageSender;
-    std::shared_ptr<MockMessageReceiver> mockMqttMessageReceiver;
+    std::shared_ptr<MockTransportMessageReceiver> mockMqttMessageReceiver;
     std::shared_ptr<MockMessageSender> mockMqttMessageSender;
     Semaphore semaphore;
 
@@ -77,9 +77,9 @@ public:
                 444,                        // device time
                 444                         // time
             ),
-            mockHttpMessageReceiver(std::make_shared<MockMessageReceiver>()),
+            mockHttpMessageReceiver(std::make_shared<MockTransportMessageReceiver>()),
             mockHttpMessageSender(std::make_shared<MockMessageSender>()),
-            mockMqttMessageReceiver(std::make_shared<MockMessageReceiver>()),
+            mockMqttMessageReceiver(std::make_shared<MockTransportMessageReceiver>()),
             mockMqttMessageSender(std::make_shared<MockMessageSender>()),
             semaphore(0)
     {;

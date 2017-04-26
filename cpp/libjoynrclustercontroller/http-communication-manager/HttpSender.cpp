@@ -178,7 +178,7 @@ std::string HttpSender::toUrl(const system::RoutingTypes::ChannelAddress& channe
     return result;
 }
 
-void HttpSender::registerReceiver(std::shared_ptr<IMessageReceiver> receiver)
+void HttpSender::registerReceiver(std::shared_ptr<ITransportMessageReceiver> receiver)
 {
     std::ignore = receiver;
 }

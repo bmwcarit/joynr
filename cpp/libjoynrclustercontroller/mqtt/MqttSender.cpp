@@ -18,7 +18,7 @@
  */
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
 
-#include "joynr/IMessageReceiver.h"
+#include "joynr/ITransportMessageReceiver.h"
 #include "joynr/MessagingQosEffort.h"
 #include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"
@@ -81,7 +81,7 @@ void MqttSender::sendMessage(
     mosquittoConnection->publishMessage(topic, qosLevel, onFailure, payloadLength, payload);
 }
 
-void MqttSender::registerReceiver(std::shared_ptr<IMessageReceiver> receiver)
+void MqttSender::registerReceiver(std::shared_ptr<ITransportMessageReceiver> receiver)
 {
     this->receiver = std::move(receiver);
 }

@@ -22,7 +22,7 @@
 #include <memory>
 #include <string>
 
-#include "joynr/IMessageReceiver.h"
+#include "joynr/ITransportMessageReceiver.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingSettings.h"
@@ -40,10 +40,10 @@ class LongPollingMessageReceiver;
   * @class HttpReceiver
   * @brief Implements HTTP communication to the bounce proxy (backend)
   *
-  * Implements the IMessageReceiver interface using the httpnetworking
+  * Implements the ITransportMessageReceiver interface using the httpnetworking
   * subproject that uses libcurl.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public IMessageReceiver
+class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public ITransportMessageReceiver
 {
 
 public:

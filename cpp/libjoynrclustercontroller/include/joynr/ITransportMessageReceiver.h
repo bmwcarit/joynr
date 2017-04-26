@@ -16,30 +16,28 @@
  * limitations under the License.
  * #L%
  */
-#ifndef IMESSAGERECEIVER_H
-#define IMESSAGERECEIVER_H
+#ifndef ITRANSPORTMESSAGERECEIVER_H
+#define ITRANSPORTMESSAGERECEIVER_H
 
-#include <memory>
+#include <functional>
 #include <string>
-
-#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {
 
 /**
-  * @class IMessageReceiver
+  * @class ITransportMessageReceiver
   * @brief Interface for message receiver
   *
   * This interface describes basic messaging functionality available in
   * the Joynr framework. Especially, it offers a method to notify about
   * received messages.
   */
-class IMessageReceiver
+class ITransportMessageReceiver
 {
 
 public:
-    virtual ~IMessageReceiver() = default;
+    virtual ~ITransportMessageReceiver() = default;
 
     /**
       * Returns the serialized (json) receive address
@@ -78,4 +76,4 @@ public:
 };
 
 } // namespace joynr
-#endif // IMESSAGERECEIVER_H
+#endif // ITRANSPORTMESSAGERECEIVER_H

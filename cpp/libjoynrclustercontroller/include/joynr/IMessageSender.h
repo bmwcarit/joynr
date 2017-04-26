@@ -30,7 +30,7 @@
 namespace joynr
 {
 
-class IMessageReceiver;
+class ITransportMessageReceiver;
 
 class IMessageSender
 {
@@ -44,7 +44,7 @@ public:
             const JoynrMessage& message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
 
-    virtual void registerReceiver(std::shared_ptr<IMessageReceiver>) = 0;
+    virtual void registerReceiver(std::shared_ptr<ITransportMessageReceiver>) = 0;
 };
 } // namespace joynr
 

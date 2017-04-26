@@ -58,7 +58,7 @@ public:
     const bool isLocalMessage;
 
     JoynrMessageFactory messageFactory;
-    std::shared_ptr<MockMessageReceiver> mockMessageReceiver;
+    std::shared_ptr<MockTransportMessageReceiver> mockMessageReceiver;
     std::shared_ptr<MockMessageSender> mockMessageSender;
     std::shared_ptr<MessagingStubFactory> messagingStubFactory;
     SingleThreadedIOService singleThreadedIOService;
@@ -77,7 +77,7 @@ public:
         semaphore(0),
         isLocalMessage(false),
         messageFactory(),
-        mockMessageReceiver(new MockMessageReceiver()),
+        mockMessageReceiver(new MockTransportMessageReceiver()),
         mockMessageSender(new MockMessageSender()),
         messagingStubFactory(std::make_shared<MessagingStubFactory>()),
         singleThreadedIOService(),
