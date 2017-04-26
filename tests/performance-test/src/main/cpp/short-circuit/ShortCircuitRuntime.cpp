@@ -25,7 +25,7 @@
 #include "joynr/Util.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/MessagingStubFactory.h"
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/MessageSender.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
@@ -65,7 +65,7 @@ ShortCircuitRuntime::ShortCircuitRuntime()
                                                       std::move(addressCalculator),
                                                       globalClusterControllerAddress);
 
-    joynrMessageSender = std::make_shared<JoynrMessageSender>(messageRouter);
+    joynrMessageSender = std::make_shared<MessageSender>(messageRouter);
     joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadedIOService.getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);
 

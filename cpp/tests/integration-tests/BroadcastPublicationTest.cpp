@@ -22,7 +22,7 @@
 #include <memory>
 #include "tests/utils/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/MessageSender.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
 #include "joynr/SingleThreadedIOService.h"
@@ -48,7 +48,7 @@ public:
         proxyParticipantId("proxyParticipantId"),
         subscriptionId("subscriptionId"),
         mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
-        messageSender(new JoynrMessageSender(mockMessageRouter)),
+        messageSender(new MessageSender(mockMessageRouter)),
         publicationManager(singleThreadedIOService.getIOService(), messageSender),
         publicationSender(),
         request(),

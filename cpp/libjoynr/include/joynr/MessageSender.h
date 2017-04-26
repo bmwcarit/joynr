@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef JOYNRMESSAGESENDER_H
-#define JOYNRMESSAGESENDER_H
+#ifndef MESSAGESENDER_H
+#define MESSAGESENDER_H
 
 #include <memory>
 #include <string>
@@ -45,7 +45,7 @@ class SubscriptionStop;
 class SubscriptionPublication;
 
 /**
-  * The class JoynrMessageSender enables the exchange of JoynrMessages
+  * The class MessageSender enables the exchange of JoynrMessages
   * between the clusterController and libJoynr. It is used by both.
   * It uses a JoynrMessage factory to create a JoynrMessage
   * and sends it via a <Middleware>MessagingStub.
@@ -68,13 +68,12 @@ class SubscriptionPublication;
   *     No reference to the dispatcher.
   */
 
-class JOYNR_EXPORT JoynrMessageSender : public IJoynrMessageSender
+class JOYNR_EXPORT MessageSender : public IJoynrMessageSender
 {
 public:
-    JoynrMessageSender(std::shared_ptr<IMessageRouter> messagingRouter,
-                       std::uint64_t ttlUpliftMs = 0);
+    MessageSender(std::shared_ptr<IMessageRouter> messagingRouter, std::uint64_t ttlUpliftMs = 0);
 
-    ~JoynrMessageSender() override = default;
+    ~MessageSender() override = default;
 
     /*
       * registers Dispatcher. See above comment why this is necessary.
@@ -141,12 +140,12 @@ public:
                        const MessagingQos& messagingQos) override;
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(JoynrMessageSender);
+    DISALLOW_COPY_AND_ASSIGN(MessageSender);
     IDispatcher* dispatcher;
     std::shared_ptr<IMessageRouter> messageRouter;
     JoynrMessageFactory messageFactory;
-    ADD_LOGGER(JoynrMessageSender);
+    ADD_LOGGER(MessageSender);
 };
 
 } // namespace joynr
-#endif // JOYNRMESSAGESENDER_H
+#endif // MESSAGESENDER_H

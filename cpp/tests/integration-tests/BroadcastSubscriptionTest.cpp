@@ -21,7 +21,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/MessageSender.h"
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/UnicastSubscriptionCallback.h"
@@ -59,7 +59,7 @@ public:
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         messageFactory(),
-        messageSender(std::make_shared<JoynrMessageSender>(mockMessageRouter)),
+        messageSender(std::make_shared<MessageSender>(mockMessageRouter)),
         dispatcher(messageSender, singleThreadIOService.getIOService()),
         subscriptionManager(nullptr)
     {
@@ -89,7 +89,7 @@ protected:
     std::string proxyParticipantId;
 
     JoynrMessageFactory messageFactory;
-    std::shared_ptr<JoynrMessageSender> messageSender;
+    std::shared_ptr<MessageSender> messageSender;
     Dispatcher dispatcher;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
 private:

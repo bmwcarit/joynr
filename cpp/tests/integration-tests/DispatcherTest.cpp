@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 #include "joynr/JoynrMessageFactory.h"
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/MessageSender.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/Request.h"
@@ -69,7 +69,7 @@ public:
         proxyParticipantId("TEST-proxyParticipantId"),
         requestReplyId("TEST-requestReplyId"),
         messageFactory(),
-        messageSender(std::make_shared<JoynrMessageSender>(mockMessageRouter)),
+        messageSender(std::make_shared<MessageSender>(mockMessageRouter)),
         dispatcher(messageSender, singleThreadIOService.getIOService()),
         callContext(),
         getLocationCalledSemaphore(0),
@@ -114,7 +114,7 @@ protected:
     std::string requestReplyId;
 
     JoynrMessageFactory messageFactory;
-    std::shared_ptr<JoynrMessageSender> messageSender;
+    std::shared_ptr<MessageSender> messageSender;
     Dispatcher dispatcher;
     joynr::CallContext callContext;
     joynr::Semaphore getLocationCalledSemaphore;

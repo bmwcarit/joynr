@@ -27,7 +27,7 @@
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/InProcessPublicationSender.h"
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/MessageSender.h"
 #include "joynr/LibJoynrMessageRouter.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/PublicationManager.h"
@@ -112,7 +112,7 @@ void LibJoynrRuntime::init(
             libjoynrSettings->getMessageRouterPersistenceFilename());
     startLibJoynrMessagingSkeleton(libJoynrMessageRouter);
 
-    joynrMessageSender = std::make_shared<JoynrMessageSender>(
+    joynrMessageSender = std::make_shared<MessageSender>(
             libJoynrMessageRouter, messagingSettings.getTtlUpliftMs());
     joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
     joynrMessageSender->registerDispatcher(joynrDispatcher);

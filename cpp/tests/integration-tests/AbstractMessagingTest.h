@@ -22,7 +22,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/MessageSender.h"
 #include "joynr/CcMessageRouter.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
@@ -131,7 +131,7 @@ public:
         EXPECT_CALL(mockDispatcher, addReplyCaller(_,_,_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-        JoynrMessageSender messageSender(messageRouter);
+        MessageSender messageSender(messageRouter);
         std::shared_ptr<IReplyCaller> replyCaller;
         messageSender.registerDispatcher(&mockDispatcher);
 

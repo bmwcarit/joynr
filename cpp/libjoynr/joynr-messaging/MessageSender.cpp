@@ -17,7 +17,7 @@
  * #L%
  */
 
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/MessageSender.h"
 
 #include <cassert>
 
@@ -33,25 +33,25 @@
 namespace joynr
 {
 
-INIT_LOGGER(JoynrMessageSender);
+INIT_LOGGER(MessageSender);
 
-JoynrMessageSender::JoynrMessageSender(std::shared_ptr<IMessageRouter> messageRouter,
-                                       std::uint64_t ttlUpliftMs)
+MessageSender::MessageSender(std::shared_ptr<IMessageRouter> messageRouter,
+                             std::uint64_t ttlUpliftMs)
         : dispatcher(nullptr), messageRouter(messageRouter), messageFactory(ttlUpliftMs)
 {
 }
 
-void JoynrMessageSender::registerDispatcher(IDispatcher* dispatcher)
+void MessageSender::registerDispatcher(IDispatcher* dispatcher)
 {
     this->dispatcher = dispatcher;
 }
 
-void JoynrMessageSender::sendRequest(const std::string& senderParticipantId,
-                                     const std::string& receiverParticipantId,
-                                     const MessagingQos& qos,
-                                     const Request& request,
-                                     std::shared_ptr<IReplyCaller> callback,
-                                     bool isLocalMessage)
+void MessageSender::sendRequest(const std::string& senderParticipantId,
+                                const std::string& receiverParticipantId,
+                                const MessagingQos& qos,
+                                const Request& request,
+                                std::shared_ptr<IReplyCaller> callback,
+                                bool isLocalMessage)
 {
     assert(dispatcher != nullptr);
 
@@ -62,14 +62,12 @@ void JoynrMessageSender::sendRequest(const std::string& senderParticipantId,
     messageRouter->route(message);
 }
 
-void JoynrMessageSender::sendOneWayRequest(const std::string& senderParticipantId,
-                                           const std::string& receiverParticipantId,
-                                           const MessagingQos& qos,
-                                           const OneWayRequest& request,
-                                           bool isLocalMessage)
+void MessageSender::sendOneWayRequest(const std::string& senderParticipantId,
+                                      const std::string& receiverParticipantId,
+                                      const MessagingQos& qos,
+                                      const OneWayRequest& request,
+                                      bool isLocalMessage)
 {
-    assert(dispatcher != nullptr);
-
     try {
         JoynrMessage message = messageFactory.createOneWayRequest(
                 senderParticipantId, receiverParticipantId, qos, request, isLocalMessage);
@@ -80,10 +78,10 @@ void JoynrMessageSender::sendOneWayRequest(const std::string& senderParticipantI
     }
 }
 
-void JoynrMessageSender::sendReply(const std::string& senderParticipantId,
-                                   const std::string& receiverParticipantId,
-                                   const MessagingQos& qos,
-                                   const Reply& reply)
+void MessageSender::sendReply(const std::string& senderParticipantId,
+                              const std::string& receiverParticipantId,
+                              const MessagingQos& qos,
+                              const Reply& reply)
 {
     try {
         JoynrMessage message =
@@ -101,11 +99,11 @@ void JoynrMessageSender::sendReply(const std::string& senderParticipantId,
     }
 }
 
-void JoynrMessageSender::sendSubscriptionRequest(const std::string& senderParticipantId,
-                                                 const std::string& receiverParticipantId,
-                                                 const MessagingQos& qos,
-                                                 const SubscriptionRequest& subscriptionRequest,
-                                                 bool isLocalMessage)
+void MessageSender::sendSubscriptionRequest(const std::string& senderParticipantId,
+                                            const std::string& receiverParticipantId,
+                                            const MessagingQos& qos,
+                                            const SubscriptionRequest& subscriptionRequest,
+                                            bool isLocalMessage)
 {
     try {
         JoynrMessage message = messageFactory.createSubscriptionRequest(senderParticipantId,
@@ -120,7 +118,7 @@ void JoynrMessageSender::sendSubscriptionRequest(const std::string& senderPartic
     }
 }
 
-void JoynrMessageSender::sendBroadcastSubscriptionRequest(
+void MessageSender::sendBroadcastSubscriptionRequest(
         const std::string& senderParticipantId,
         const std::string& receiverParticipantId,
         const MessagingQos& qos,
@@ -141,7 +139,7 @@ void JoynrMessageSender::sendBroadcastSubscriptionRequest(
     }
 }
 
-void JoynrMessageSender::sendMulticastSubscriptionRequest(
+void MessageSender::sendMulticastSubscriptionRequest(
         const std::string& senderParticipantId,
         const std::string& receiverParticipantId,
         const MessagingQos& qos,
@@ -162,10 +160,10 @@ void JoynrMessageSender::sendMulticastSubscriptionRequest(
     }
 }
 
-void JoynrMessageSender::sendSubscriptionReply(const std::string& senderParticipantId,
-                                               const std::string& receiverParticipantId,
-                                               const MessagingQos& qos,
-                                               const SubscriptionReply& subscriptionReply)
+void MessageSender::sendSubscriptionReply(const std::string& senderParticipantId,
+                                          const std::string& receiverParticipantId,
+                                          const MessagingQos& qos,
+                                          const SubscriptionReply& subscriptionReply)
 {
     try {
         JoynrMessage message = messageFactory.createSubscriptionReply(
@@ -184,10 +182,10 @@ void JoynrMessageSender::sendSubscriptionReply(const std::string& senderParticip
     }
 }
 
-void JoynrMessageSender::sendSubscriptionStop(const std::string& senderParticipantId,
-                                              const std::string& receiverParticipantId,
-                                              const MessagingQos& qos,
-                                              const SubscriptionStop& subscriptionStop)
+void MessageSender::sendSubscriptionStop(const std::string& senderParticipantId,
+                                         const std::string& receiverParticipantId,
+                                         const MessagingQos& qos,
+                                         const SubscriptionStop& subscriptionStop)
 {
     try {
         JoynrMessage message = messageFactory.createSubscriptionStop(
@@ -199,11 +197,10 @@ void JoynrMessageSender::sendSubscriptionStop(const std::string& senderParticipa
     }
 }
 
-void JoynrMessageSender::sendSubscriptionPublication(
-        const std::string& senderParticipantId,
-        const std::string& receiverParticipantId,
-        const MessagingQos& qos,
-        SubscriptionPublication&& subscriptionPublication)
+void MessageSender::sendSubscriptionPublication(const std::string& senderParticipantId,
+                                                const std::string& receiverParticipantId,
+                                                const MessagingQos& qos,
+                                                SubscriptionPublication&& subscriptionPublication)
 {
     try {
         JoynrMessage message = messageFactory.createSubscriptionPublication(
@@ -222,9 +219,9 @@ void JoynrMessageSender::sendSubscriptionPublication(
     }
 }
 
-void JoynrMessageSender::sendMulticast(const std::string& fromParticipantId,
-                                       const MulticastPublication& multicastPublication,
-                                       const MessagingQos& messagingQos)
+void MessageSender::sendMulticast(const std::string& fromParticipantId,
+                                  const MulticastPublication& multicastPublication,
+                                  const MessagingQos& messagingQos)
 {
     try {
         JoynrMessage message = messageFactory.createMulticastPublication(
