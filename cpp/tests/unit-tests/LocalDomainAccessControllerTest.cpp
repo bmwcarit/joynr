@@ -494,7 +494,7 @@ INSTANTIATE_TEST_CASE_P(WithOrWithoutPersistFile,
     Bool()
 );
 
-TEST(LocalDomainAccessControllerPeristedTest, persistedAcesAreUsed) {
+TEST(LocalDomainAccessControllerPersistedTest, persistedAcesAreUsed) {
     auto mockGdacProxyPtr = std::make_unique<MockGlobalDomainAccessControllerProxy>();
     auto mockGdacProxy = mockGdacProxyPtr.get();
 
