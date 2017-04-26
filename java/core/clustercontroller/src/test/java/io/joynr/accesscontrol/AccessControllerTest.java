@@ -29,7 +29,6 @@ import java.util.Collection;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.doAnswer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -79,7 +78,6 @@ public class AccessControllerTest {
 
     private static JoynrMessageFactory messageFactory;
     private JoynrMessage message;
-    private static ObjectMapper objectMapper;
     private AccessController accessController;
     private Request request;
     private String fromParticipantId = "sender";
@@ -103,7 +101,7 @@ public class AccessControllerTest {
             }
 
         });
-        objectMapper = injector.getInstance(ObjectMapper.class);
+
         messageFactory = injector.getInstance(JoynrMessageFactory.class);
     }
 
@@ -113,7 +111,6 @@ public class AccessControllerTest {
         String routingProviderParticipantId = "";
         accessController = new AccessControllerImpl(localCapabilitiesDirectory,
                                                     localDomainAccessController,
-                                                    objectMapper,
                                                     new CapabilitiesProvisioning() {
                                                         @Override
                                                         public Collection<DiscoveryEntry> getDiscoveryEntries() {
@@ -167,32 +164,6 @@ public class AccessControllerTest {
                                                                    eq(testInterface),
                                                                    eq(TrustLevel.HIGH),
                                                                    any(GetConsumerPermissionCallback.class));
-
-        accessController.hasConsumerPermission(message, callback);
-        verify(callback, Mockito.times(1)).hasConsumerPermission(true);
-    }
-
-    @Test
-    public void testAccessWithOperationLevelAccessControl() {
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                GetConsumerPermissionCallback callback = (GetConsumerPermissionCallback) invocation.getArguments()[4];
-                callback.getConsumerPermission(null);
-                return null;
-            }
-
-        }).when(localDomainAccessController).getConsumerPermission(eq(DUMMY_USERID),
-                                                                   eq(testDomain),
-                                                                   eq(testInterface),
-                                                                   eq(TrustLevel.HIGH),
-                                                                   any(GetConsumerPermissionCallback.class));
-
-        when(localDomainAccessController.getConsumerPermission(DUMMY_USERID,
-                                                               testDomain,
-                                                               testInterface,
-                                                               testOperation,
-                                                               TrustLevel.HIGH)).thenReturn(Permission.YES);
 
         accessController.hasConsumerPermission(message, callback);
         verify(callback, Mockito.times(1)).hasConsumerPermission(true);

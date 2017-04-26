@@ -28,12 +28,10 @@ import io.joynr.capabilities.CapabilityListener;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.runtime.SystemServicesSettings;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 import joynr.JoynrMessage;
-import joynr.Request;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 
@@ -43,7 +41,6 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -52,20 +49,17 @@ public class AccessControllerImpl implements AccessController {
 
     private final LocalCapabilitiesDirectory localCapabilitiesDirectory;
     private final LocalDomainAccessController localDomainAccessController;
-    private final ObjectMapper objectMapper;
 
     private Set<String> whitelistedParticipantIds = new HashSet<String>();
 
     @Inject
     AccessControllerImpl(LocalCapabilitiesDirectory localCapabilitiesDirectory,
                          LocalDomainAccessController localDomainAccessController,
-                         ObjectMapper objectMapper,
                          CapabilitiesProvisioning capabilitiesProvisioning,
                          @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
                          @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId) {
         this.localCapabilitiesDirectory = localCapabilitiesDirectory;
         this.localDomainAccessController = localDomainAccessController;
-        this.objectMapper = objectMapper;
 
         defineAndRegisterCapabilityListener();
         whitelistProvisionedEntries(capabilitiesProvisioning);
@@ -138,43 +132,12 @@ public class AccessControllerImpl implements AccessController {
                 GetConsumerPermissionCallback consumerPermissionCallback = new GetConsumerPermissionCallback() {
                     @Override
                     public void getConsumerPermission(Permission permission) {
-                        // if permission still not defined, have to deserialize message and try again
-                        if (permission == null) {
-                            try {
-                                // Deserialize the request from message and take operation value
-                                Request request = objectMapper.readValue(message.getPayload(), Request.class);
-                                String operation = request.getMethodName();
-
-                                // Get the permission for the requested operation
-                                permission = localDomainAccessController.getConsumerPermission(msgCreatorUid,
-                                                                                               domain,
-                                                                                               interfaceName,
-                                                                                               operation,
-                                                                                               TrustLevel.HIGH);
-                            } catch (IOException e) {
-                                logger.error("Cannot deserialize message", e);
-                                permission = Permission.NO;
-                            }
+                        boolean permissionIsYes = false;
+                        if (permission == Permission.YES) {
+                            permissionIsYes = true;
                         }
 
-                        boolean hasPermissionResult = false;
-
-                        switch (permission) {
-                        case ASK:
-                            assert false : "Permission.ASK user dialog not yet implemnted.";
-                            hasPermissionResult = false;
-                            break;
-                        case YES:
-                            hasPermissionResult = true;
-                            break;
-                        default:
-                            logger.warn("Message {} to domain {}, interface {} failed AccessControl check",
-                                        new Object[]{ message.getId(), domain, interfaceName });
-                            hasPermissionResult = false;
-                            break;
-                        }
-
-                        hasConsumerPermissionCallback.hasConsumerPermission(hasPermissionResult);
+                        hasConsumerPermissionCallback.hasConsumerPermission(permissionIsYes);
                     }
 
                     @Override
