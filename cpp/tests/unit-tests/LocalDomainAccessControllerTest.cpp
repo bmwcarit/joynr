@@ -139,6 +139,25 @@ public:
                 TEST_OPERATION1, // operation
                 Permission::YES  // consumer permission
         );
+        masterRce = MasterRegistrationControlEntry(
+                TEST_USER,       // uid
+                TEST_DOMAIN1,    // domain
+                TEST_INTERFACE1, // interface name
+                TrustLevel::LOW, // default required trust level
+                TRUST_LEVELS,    // possible required trust levels
+                TrustLevel::LOW, // default required control entry change trust level
+                TRUST_LEVELS,    // possible required control entry change trust levels
+                Permission::NO,  // default provider permission
+                PERMISSIONS      // possible provider permissions
+        );
+        ownerRce = OwnerRegistrationControlEntry(
+                TEST_USER,       // uid
+                TEST_DOMAIN1,    // domain
+                TEST_INTERFACE1, // interface name
+                TrustLevel::LOW, // required trust level
+                TrustLevel::LOW, // required ACE change trust level
+                Permission::YES  // provider permission
+        );
     }
 
     static const std::string TEST_USER;
@@ -158,6 +177,8 @@ protected:
     std::shared_ptr<MockGlobalDomainRoleControllerProxy> mockGdrcProxy;
     OwnerAccessControlEntry ownerAce;
     MasterAccessControlEntry masterAce;
+    OwnerRegistrationControlEntry ownerRce;
+    MasterRegistrationControlEntry masterRce;
     DomainRoleEntry userDre;
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDomainAccessControllerTest);
