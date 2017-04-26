@@ -48,7 +48,6 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
         : JoynrRuntime(*settings),
           subscriptionManager(nullptr),
           inProcessPublicationSender(nullptr),
-          joynrMessagingSendStub(nullptr),
           messageSender(nullptr),
           joynrDispatcher(nullptr),
           inProcessDispatcher(nullptr),
