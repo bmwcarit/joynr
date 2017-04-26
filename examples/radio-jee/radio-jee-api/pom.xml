@@ -96,7 +96,7 @@
         <configuration>
           <filesets>
             <fileset>
-              <directory>${basedir}/src/main/generated</directory>
+              <directory>${basedir}/src</directory>
               <includes>
                 <include>**</include>
               </includes>
