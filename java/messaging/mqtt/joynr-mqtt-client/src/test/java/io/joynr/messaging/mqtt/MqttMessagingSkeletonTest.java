@@ -21,6 +21,7 @@ package io.joynr.messaging.mqtt;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -143,7 +144,7 @@ public class MqttMessagingSkeletonTest {
     public void testRawMessagePreprocessorIsCalled() throws Exception {
         RawMessagingPreprocessor preprocessor = mock(RawMessagingPreprocessor.class);
         ObjectMapper objectMapper = new ObjectMapper();
-        when(preprocessor.process(anyString(), anyMap())).then(returnsFirstArg());
+        when(preprocessor.process(any(byte[].class), anyMap())).then(returnsFirstArg());
         subject = new MqttMessagingSkeleton(ownAddress,
                                             messageRouter,
                                             mqttClientFactory,

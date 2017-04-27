@@ -72,7 +72,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
                                                                                  bind(RawMessagingPreprocessor.class).toInstance(new RawMessagingPreprocessor() {
 
                                                                                      @Override
-                                                                                     public String process(String rawMessage,
+                                                                                     public byte[] process(byte[] rawMessage,
                                                                                                            Map<String, Serializable> context) {
                                                                                          return rawMessage;
                                                                                      }

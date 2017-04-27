@@ -28,6 +28,7 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -149,8 +150,9 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     public void transmit(String serializedMessage, FailureAction failureAction) {
         try {
             HashMap<String, Serializable> context = new HashMap<String, Serializable>();
-            JoynrMessage message = messageSerializer.deserialize(rawMessagingPreprocessor.process(serializedMessage,
-                                                                                                  context));
+            byte[] processedMessage = rawMessagingPreprocessor.process(serializedMessage.getBytes(Charsets.UTF_8),
+                                                                       context);
+            JoynrMessage message = messageSerializer.deserialize(new String(processedMessage, Charsets.UTF_8));
             message.setContext(context);
 
             if (messageProcessors != null) {

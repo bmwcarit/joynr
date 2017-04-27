@@ -1,10 +1,16 @@
+# joynr 0.26.0
+
+## API relevant changes
+* **[Java, JEE]** RawMessagingPreprocessor now accepts a byte array as an input parameter and returns
+  a byte array instead of a string.
+
 # joynr 0.25.2
 
 ## API relevant changes
 
 ## Other changes
 * **[C++]** libCommon has been moved to libJoynr. This fixes issues with static linking with libjoynr.
-* **[JEE]** Shutdown MQTT client when undeploying WebApp. 
+* **[JEE]** Shutdown MQTT client when undeploying WebApp.
 
 # joynr 0.25.1
 
