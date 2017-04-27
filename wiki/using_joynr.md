@@ -155,7 +155,7 @@ There are two variant of the discovery directory, one using MQTT communication (
 using HTTP communication.
 
 #### MQTT (default)
-See [Infrastructure](wiki/infrastructure.md).
+See [Infrastructure](infrastructure.md).
 
 #### HTTP
 Run the discovery directories locally along with the bounceproxy:
