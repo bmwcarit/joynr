@@ -503,7 +503,7 @@ void LocalDomainAccessController::getProviderPermission(
         TrustLevel::Enum trustLevel,
         std::shared_ptr<IGetPermissionCallback> callback)
 {
-    JOYNR_LOG_TRACE(logger, "Entering getProviderPermission");
+    JOYNR_LOG_TRACE(logger, "Entering getProviderPermission with callback");
 
     // Is the RCL for this domain/interface available?
     std::string compoundKey = createCompoundKey(domain, interfaceName);
@@ -547,16 +547,17 @@ Permission::Enum LocalDomainAccessController::getProviderPermission(
         const std::string& interfaceName,
         TrustLevel::Enum trustLevel)
 {
-    assert(false && "Not implemented yet");
-    std::ignore = uid;
-    std::ignore = domain;
-    std::ignore = interfaceName;
+    JOYNR_LOG_TRACE(logger, "Entering getProviderPermission");
+
+    boost::optional<MasterRegistrationControlEntry> masterRceOptional =
+            localDomainAccessStore->getMasterRegistrationControlEntry(uid, domain, interfaceName);
+    boost::optional<MasterRegistrationControlEntry> mediatorRceOptional =
+            localDomainAccessStore->getMediatorRegistrationControlEntry(uid, domain, interfaceName);
+    boost::optional<OwnerRegistrationControlEntry> ownerRceOptional =
+            localDomainAccessStore->getOwnerRegistrationControlEntry(uid, domain, interfaceName);
 
     return accessControlAlgorithm.getProviderPermission(
-            boost::optional<MasterRegistrationControlEntry>(),
-            boost::optional<MasterRegistrationControlEntry>(),
-            boost::optional<OwnerRegistrationControlEntry>(),
-            trustLevel);
+            masterRceOptional, mediatorRceOptional, ownerRceOptional, trustLevel);
 }
 
 std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
