@@ -27,7 +27,6 @@
 namespace joynr
 {
 
-class JoynrMessage;
 class MessagingSettings;
 class MosquittoConnection;
 

@@ -16,22 +16,25 @@
  * limitations under the License.
  * #L%
  */
+
 #include <chrono>
+#include <string>
 #include <thread>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
 #include "joynr/ContentWithDecayTime.h"
-#include "joynr/JoynrMessage.h"
 
 using namespace joynr;
 
 TEST(ContentWithDecayTimeTest, messageWithDecayTime)
 {
     using namespace std::chrono_literals;
-    JoynrMessage message;
+    std::string message = "test-message";
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     JoynrTimePoint decaytime(std::chrono::milliseconds(now + 2000));
-    ContentWithDecayTime<JoynrMessage> mwdt =  ContentWithDecayTime<JoynrMessage>(message, decaytime);
+    ContentWithDecayTime<std::string> mwdt(message, decaytime);
     EXPECT_TRUE(!mwdt.isExpired());
     EXPECT_GT(mwdt.getRemainingTtl(), 1500ms);
     EXPECT_LT(mwdt.getRemainingTtl(), 2500ms);

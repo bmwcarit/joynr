@@ -30,13 +30,11 @@
 #include "joynr/ByteBuffer.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/Logger.h"
-#include "joynr/JoynrMessage.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/MulticastSubscriptionQos.h"
-#include "joynr/JoynrMessage.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
 #include "joynr/types/TestTypes/TStruct.h"
@@ -69,45 +67,6 @@ private:
 };
 
 INIT_LOGGER(JoynrJsonSerializerTest);
-
-TEST_F(JoynrJsonSerializerTest, receivedFromGlobalAttributeIsIgnoredBySerialization)
-{
-    // Create a JoynrMessage
-    JoynrMessage msg;
-    msg.setType("TESTTYPE");
-    std::string payload = "testPayload";
-    msg.setPayload(payload);
-
-    msg.setReceivedFromGlobal(true);
-    ASSERT_TRUE(msg.isReceivedFromGlobal());
-
-    // Serialize into JSON
-    std::string json = joynr::serializer::serializeToJson(msg);
-    JOYNR_LOG_TRACE(logger, "JoynrMessage JSON: {}",json);
-
-    JoynrMessage deserializedMsg;
-    joynr::serializer::deserializeFromJson(deserializedMsg, json);
-
-    EXPECT_FALSE(deserializedMsg.isReceivedFromGlobal());
-}
-
-TEST_F(JoynrJsonSerializerTest, serializeJoynrMessage)
-{
-    // Create a JoynrMessage
-    JoynrMessage msg;
-    msg.setType("TESTTYPE");
-    std::string payload = "/67589\?\?8zhkbv\?\?\?\?\?\?\?\?\?\?L\?\?Lkj\?\?jhljvhl\?\?\?\?\?\?/\?\?\?\?\?\?";
-    msg.setPayload(payload);
-
-    // Serialize into JSON
-    std::string json = joynr::serializer::serializeToJson(msg);
-    JOYNR_LOG_TRACE(logger, "JoynrMessage JSON: {}",json);
-
-    JoynrMessage deserializedMsg;
-    joynr::serializer::deserializeFromJson(deserializedMsg, json);
-
-    EXPECT_EQ(msg, deserializedMsg);
-}
 
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerApplicationException)
 {

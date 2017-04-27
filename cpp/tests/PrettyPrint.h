@@ -22,7 +22,6 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-#include "joynr/JoynrMessage.h"
 #include "joynr/StatusCode.h"
 #include "joynr/types/DiscoveryEntry.h"
 

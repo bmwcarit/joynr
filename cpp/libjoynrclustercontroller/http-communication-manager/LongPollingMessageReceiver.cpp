@@ -28,7 +28,7 @@
 
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Future.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"

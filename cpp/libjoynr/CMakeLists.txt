@@ -190,7 +190,6 @@ set(JoynrLib_SOURCES
     "joynr-messaging/DummyPlatformSecurityManager.cpp"
     "joynr-messaging/HttpMulticastAddressCalculator.cpp"
     "joynr-messaging/ImmutableMessage.cpp"
-    "joynr-messaging/JoynrMessage.cpp"
     "joynr-messaging/JoynrMessagingConnectorFactory.cpp"
     "joynr-messaging/LibJoynrMessageRouter.cpp"
     "joynr-messaging/MessageQueue.cpp"

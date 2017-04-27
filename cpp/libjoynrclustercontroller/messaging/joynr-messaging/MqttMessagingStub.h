@@ -31,7 +31,6 @@ namespace joynr
 {
 
 class ITransportMessageSender;
-class JoynrMessage;
 /**
   * Is used by the ClusterController to contact another (remote) ClusterController
   */

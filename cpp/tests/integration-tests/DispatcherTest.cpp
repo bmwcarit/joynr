@@ -24,7 +24,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/JoynrMessage.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionCallback.h"
 #include "joynr/MutableMessageFactory.h"

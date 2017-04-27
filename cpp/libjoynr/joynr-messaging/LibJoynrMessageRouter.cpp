@@ -24,6 +24,7 @@
 #include <boost/asio/io_service.hpp>
 
 #include "joynr/IMessagingStubFactory.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Message.h"

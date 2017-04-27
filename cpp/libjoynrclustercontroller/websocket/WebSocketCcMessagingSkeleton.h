@@ -29,7 +29,7 @@
 #include <websocketpp/server.hpp>
 
 #include "joynr/IMessageRouter.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/serializer/Serializer.h"
