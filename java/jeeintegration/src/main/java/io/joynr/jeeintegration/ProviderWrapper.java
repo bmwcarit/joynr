@@ -118,7 +118,6 @@ public class ProviderWrapper implements InvocationHandler {
      * @return the result of the delegate method call on the EJB, but wrapped in a promise, as all the provider methods
      *         in joynr are declared that way.
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         boolean isProviderMethod = matchesJoynrProviderMethod(method);
@@ -139,7 +138,7 @@ public class ProviderWrapper implements InvocationHandler {
             }
             if (delegate != this) {
                 AbstractDeferred deferred = createAndResolveOrRejectDeferred(method, result, joynrException);
-                Promise promiseResult = new Promise(deferred);
+                Promise<AbstractDeferred> promiseResult = new Promise<>(deferred);
                 return promiseResult;
             }
         } finally {
@@ -150,6 +149,7 @@ public class ProviderWrapper implements InvocationHandler {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     private AbstractDeferred createAndResolveOrRejectDeferred(Method method,
                                                               Object result,
                                                               JoynrException joynrException) {
@@ -166,9 +166,9 @@ public class ProviderWrapper implements InvocationHandler {
                     ((MultiValueDeferred) deferred).resolve(((MultiReturnValuesContainer) result).getValues());
                 }
             } else {
-                deferred = new Deferred();
+                deferred = new Deferred<Object>();
                 if (joynrException == null) {
-                    ((Deferred) deferred).resolve(result);
+                    ((Deferred<Object>) deferred).resolve(result);
                 }
             }
         }
