@@ -519,6 +519,21 @@ public:
     getMasterRegistrationControlEntries(const std::string& uid) const;
 
     /**
+     * Get the master registration control entry for an incoming message with
+     * the given uid, domain, interface
+     *
+     * @param uid The userid of the incoming message
+     * @param domain The domain being called
+     * @param interfaceName The interface being called.
+     * @return Master RCE associated to given uid, domain, interface and operation.
+     * If no master RCE found for given parameters, returned boost::optional is not initialized.
+     */
+    boost::optional<infrastructure::DacTypes::MasterRegistrationControlEntry>
+    getMasterRegistrationControlEntry(const std::string& uid,
+                                      const std::string& domain,
+                                      const std::string& interfaceName);
+
+    /**
      * Returns a list of editable master registration entries for domains for which
      * the user uid has got the role Master,
      *
@@ -572,6 +587,38 @@ public:
     getEditableMediatorRegistrationControlEntries(const std::string& uid);
 
     /**
+     * Get the mediator registration control entry for an incoming message with
+     * the given uid, domain, interface.
+     *
+     * @param uid The userid of the incoming message
+     * @param domain The domain being called
+     * @param interfaceName The interface being called.
+     * @return Mediator RCE  associated to given uid, domain, interface and
+     * operation.
+     * If no mediator RCE found for given parameters, returned boost::optional is not initialized.
+     */
+    boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>
+    getMediatorAccessControlEntry(const std::string& uid,
+                                  const std::string& domain,
+                                  const std::string& interfaceName);
+
+    /**
+     * Get the mediator registration control entry for an incoming message with
+     * the given uid, domain, interface, operation.
+     *
+     * @param uid The userid of the incoming message
+     * @param domain The domain being called
+     * @param interfaceName The interface being called.
+     * @return Mediator ACE  associated to given uid, domain, interface and
+     * operation.
+     * If no mediator ACE found for given parameters, returned boost::optional is not initialized.
+     */
+    boost::optional<infrastructure::DacTypes::MasterRegistrationControlEntry>
+    getMediatorRegistrationControlEntry(const std::string& uid,
+                                        const std::string& domain,
+                                        const std::string& interfaceName);
+
+    /**
      * Updates an existing entry (according to primary key) or adds a new entry if not already
      * existent.
      *
@@ -603,6 +650,20 @@ public:
      */
     std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry>
     getOwnerRegistrationControlEntries(const std::string& uid);
+
+    /**
+     * Get the Owner RCE for the given user,domain and interface and operation.
+     *
+     * @param userId The userid of the incoming message
+     * @param domain The domain being accessed
+     * @param interfaceName The interface being accessed
+     * @return Owner RCE associated to given uid, domain, interface.
+     * If no owner RCE found for given parameters, returned boost::optional is not initialized.
+     */
+    boost::optional<infrastructure::DacTypes::OwnerRegistrationControlEntry>
+    getOwnerRegistrationControlEntry(const std::string& userId,
+                                     const std::string& domain,
+                                     const std::string& interfaceName);
 
     /**
      * Returns a list of editable owner registration entries for domains for which
@@ -778,6 +839,19 @@ private:
         return entry;
     }
 
+    template <typename Table, typename Value = typename Table::value_type>
+    boost::optional<Value> lookupOptionalWithWildcard(const Table& table,
+                                                      const std::string& uid,
+                                                      const std::string& domain,
+                                                      const std::string& interfaceName) const
+    {
+        boost::optional<Value> entry = lookupOptional(table, uid, domain, interfaceName);
+        if (!entry) {
+            entry = lookupOptional(table, access_control::WILDCARD, domain, interfaceName);
+        }
+        return entry;
+    }
+
     template <typename Table>
     bool checkOnlyWildcardOperations(const Table& table,
                                      const std::string& userId,
@@ -802,6 +876,23 @@ private:
     std::vector<Value> getEditableAccessControlEntries(const Table& table,
                                                        const std::string& userId,
                                                        access_control::dac::Role::Enum role) const
+    {
+        std::vector<Value> entries;
+        auto it = domainRoleTable.find(std::make_tuple(userId, role));
+        if (it != domainRoleTable.end()) {
+            for (const std::string& domain : it->getDomains()) {
+                auto range = table.template get<access_control::tags::Domain>().equal_range(domain);
+                std::copy(range.first, range.second, std::back_inserter(entries));
+            }
+        }
+        return entries;
+    }
+
+    template <typename Table, typename Value = typename Table::value_type>
+    std::vector<Value> getEditableRegistrationControlEntries(
+            const Table& table,
+            const std::string& userId,
+            access_control::dac::Role::Enum role) const
     {
         std::vector<Value> entries;
         auto it = domainRoleTable.find(std::make_tuple(userId, role));

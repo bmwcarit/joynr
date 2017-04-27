@@ -344,56 +344,86 @@ bool LocalDomainAccessStore::removeOwnerAccessControlEntry(const std::string& us
     return removeFromTable(ownerAccessTable, userId, domain, interfaceName, operation);
 }
 
+// Registration tables
+
+// MasterRegistration
+
 std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomainAccessStore::
         getMasterRegistrationControlEntries(const std::string& uid) const
 {
-    std::ignore = uid;
-    assert(false && "Not implemented yet");
+    JOYNR_LOG_TRACE(
+            logger, "execute: entering getMasterRegistrationControlEntries with uid {}", uid);
+    return getEqualRangeWithUidWildcard(masterRegistrationTable, uid);
 }
 
 std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomainAccessStore::
         getEditableMasterRegistrationControlEntries(const std::string& uid)
 {
-    std::ignore = uid;
-    assert(false && "Not implemented yet");
+    JOYNR_LOG_TRACE(
+            logger, "execute: entering getEditableMasterRegistrationControlEntry with uid {}", uid);
+
+    return getEditableRegistrationControlEntries(masterRegistrationTable, uid, Role::MASTER);
+}
+
+boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
+        getMasterRegistrationControlEntry(const std::string& uid,
+                                          const std::string& domain,
+                                          const std::string& interfaceName)
+{
+    return lookupOptionalWithWildcard(masterRegistrationTable, uid, domain, interfaceName);
 }
 
 bool LocalDomainAccessStore::updateMasterRegistrationControlEntry(
         const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMasterRce)
 {
-    std::ignore = updatedMasterRce;
-    assert(false && "Not implemented yet");
+    JOYNR_LOG_TRACE(
+            logger, "execute: entering updateMasterRce with uid {}", updatedMasterRce.getUid());
+
+    return insertOrReplace(masterRegistrationTable, updatedMasterRce);
 }
 
 bool LocalDomainAccessStore::removeMasterRegistrationControlEntry(const std::string& uid,
                                                                   const std::string& domain,
                                                                   const std::string& interfaceName)
 {
-    std::ignore = uid;
-    std::ignore = domain;
-    std::ignore = interfaceName;
-    assert(false && "Not implemented yet");
+    return removeFromTable(masterRegistrationTable, uid, domain, interfaceName);
 }
+
+// MediatorRegistration
 
 std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomainAccessStore::
         getMediatorRegistrationControlEntries(const std::string& uid)
 {
-    std::ignore = uid;
-    assert(false && "Not implemented yet");
+    JOYNR_LOG_TRACE(
+            logger, "execute: entering getMediatorRegistrationControlEntries with uid {}", uid);
+    return getEqualRangeWithUidWildcard(mediatorRegistrationTable, uid);
 }
 
 std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomainAccessStore::
         getEditableMediatorRegistrationControlEntries(const std::string& uid)
 {
-    std::ignore = uid;
-    assert(false && "Not implemented yet");
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering getEditableMeditatorRegistrationControlEntry with uid {}",
+                    uid);
+
+    return getEditableRegistrationControlEntries(mediatorRegistrationTable, uid, Role::MASTER);
+}
+
+boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
+        getMediatorRegistrationControlEntry(const std::string& uid,
+                                            const std::string& domain,
+                                            const std::string& interfaceName)
+{
+    return lookupOptionalWithWildcard(mediatorRegistrationTable, uid, domain, interfaceName);
 }
 
 bool LocalDomainAccessStore::updateMediatorRegistrationControlEntry(
         const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMediatorRce)
 {
-    std::ignore = updatedMediatorRce;
-    assert(false && "Not implemented yet");
+    JOYNR_LOG_TRACE(
+            logger, "execute: entering updateMediatorRce with uid {}", updatedMediatorRce.getUid());
+
+    return insertOrReplace(mediatorRegistrationTable, updatedMediatorRce);
 }
 
 bool LocalDomainAccessStore::removeMediatorRegistrationControlEntry(
@@ -401,41 +431,50 @@ bool LocalDomainAccessStore::removeMediatorRegistrationControlEntry(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    std::ignore = uid;
-    std::ignore = domain;
-    std::ignore = interfaceName;
-    assert(false && "Not implemented yet");
+    return removeFromTable(mediatorRegistrationTable, uid, domain, interfaceName);
 }
+
+// OwnerRegistration
 
 std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry> LocalDomainAccessStore::
         getOwnerRegistrationControlEntries(const std::string& uid)
 {
-    std::ignore = uid;
-    assert(false && "Not implemented yet");
+    JOYNR_LOG_TRACE(
+            logger, "execute: entering getOwnerRegistrationControlEntries with uid {}", uid);
+    return getEqualRangeWithUidWildcard(ownerRegistrationTable, uid);
 }
 
 std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry> LocalDomainAccessStore::
         getEditableOwnerRegistrationControlEntries(const std::string& uid)
 {
-    std::ignore = uid;
-    assert(false && "Not implemented yet");
+    JOYNR_LOG_TRACE(
+            logger, "execute: entering getEditableOwnerRegistrationControlEntry with uid {}", uid);
+
+    return getEditableRegistrationControlEntries(ownerRegistrationTable, uid, Role::MASTER);
+}
+
+boost::optional<OwnerRegistrationControlEntry> LocalDomainAccessStore::
+        getOwnerRegistrationControlEntry(const std::string& userId,
+                                         const std::string& domain,
+                                         const std::string& interfaceName)
+{
+    return lookupOptionalWithWildcard(ownerRegistrationTable, userId, domain, interfaceName);
 }
 
 bool LocalDomainAccessStore::updateOwnerRegistrationControlEntry(
         const infrastructure::DacTypes::OwnerRegistrationControlEntry& updatedOwnerRce)
 {
-    std::ignore = updatedOwnerRce;
-    assert(false && "Not implemented yet");
+    JOYNR_LOG_TRACE(
+            logger, "execute: entering updateOwnerRce with uid {}", updatedOwnerRce.getUid());
+
+    return insertOrReplace(ownerRegistrationTable, updatedOwnerRce);
 }
 
 bool LocalDomainAccessStore::removeOwnerRegistrationControlEntry(const std::string& uid,
                                                                  const std::string& domain,
                                                                  const std::string& interfaceName)
 {
-    std::ignore = uid;
-    std::ignore = domain;
-    std::ignore = interfaceName;
-    assert(false && "Not implemented yet");
+    return removeFromTable(ownerRegistrationTable, uid, domain, interfaceName);
 }
 
 bool LocalDomainAccessStore::onlyWildcardOperations(const std::string& userId,
