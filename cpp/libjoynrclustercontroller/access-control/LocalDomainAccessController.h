@@ -559,16 +559,27 @@ private:
 
     // Initialise MasterACE, MediatorACE and OwnerACE for the given data/interface. This function is
     // non-blocking.
-    void initialiseLocalDomainAccessStore(const std::string& domain,
-                                          const std::string& interfaceName);
+    void initialiseLocalDomainAccessStoreAces(const std::string& domain,
+                                              const std::string& interfaceName);
+
+    // Initialize MasterRCE, MediatorRCE and OwnerRCE for the given data/interface. This function is
+    // non-blocking.
+    void initialiseLocalDomainAccessStoreRces(const std::string& userId,
+                                              const std::string& domain,
+                                              const std::string& interfaceName);
 
     // Initialise DRT for the given userId. This function is non-blocking.
     void initialiseDomainRoleTable(const std::string& userId);
 
     void initialised(const std::string& domain,
                      const std::string& interfaceName,
+                     const bool handleAces,
+                     const bool handleRces,
                      bool restoringFromFile = false);
-    void abortInitialisation(const std::string& domain, const std::string& interfaceName);
+    void abortInitialisation(const std::string& domain,
+                             const std::string& interfaceName,
+                             const bool handleAces,
+                             const bool handleRces);
 
     std::shared_ptr<Future<std::string>> subscribeForDreChange(const std::string& userId);
     AceSubscription subscribeForAceChange(const std::string& domain,

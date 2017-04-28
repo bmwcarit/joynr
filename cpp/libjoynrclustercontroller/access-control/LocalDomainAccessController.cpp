@@ -50,12 +50,16 @@ public:
     Initialiser(LocalDomainAccessController& parent,
                 const std::string& domain,
                 const std::string& interfaceName,
-                const std::uint8_t steps)
+                const std::uint8_t steps,
+                const bool handleAces,
+                const bool handleRces)
             : counter(steps),
               aborted(false),
               parent(parent),
               domain(domain),
-              interfaceName(interfaceName)
+              interfaceName(interfaceName),
+              handleAces(handleAces),
+              handleRces(handleRces)
     {
     }
 
@@ -66,9 +70,9 @@ public:
         if (prevValue == 1) {
             // Initialisation has finished
             if (aborted) {
-                parent.abortInitialisation(domain, interfaceName);
+                parent.abortInitialisation(domain, interfaceName, handleAces, handleRces);
             } else {
-                parent.initialised(domain, interfaceName);
+                parent.initialised(domain, interfaceName, handleAces, handleRces);
             }
         }
     }
@@ -87,6 +91,8 @@ private:
 
     const std::string domain;
     const std::string interfaceName;
+    const bool handleAces;
+    const bool handleRces;
 };
 
 class LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener
@@ -248,8 +254,14 @@ void LocalDomainAccessController::init(
     auto uniqueDomainInterfaceCombinations =
             localDomainAccessStore->getUniqueDomainInterfaceCombinations();
     const bool restoringFromFile = true;
+    const bool handleAces = true;
+    const bool handleRces = true;
     for (const auto& domainInterfacePair : uniqueDomainInterfaceCombinations) {
-        initialised(domainInterfacePair.first, domainInterfacePair.second, restoringFromFile);
+        initialised(domainInterfacePair.first,
+                    domainInterfacePair.second,
+                    handleAces,
+                    handleRces,
+                    restoringFromFile);
     }
 }
 
@@ -323,7 +335,7 @@ void LocalDomainAccessController::getConsumerPermission(
     // Do further initialisation outside of the mutex to prevent deadlocks
     if (needsInit) {
         // Get the data for this domain interface and do not wait for it
-        initialiseLocalDomainAccessStore(domain, interfaceName);
+        initialiseLocalDomainAccessStoreAces(domain, interfaceName);
 
         // Init domain roles as well
         initialiseDomainRoleTable(userId);
@@ -529,13 +541,15 @@ void LocalDomainAccessController::getProviderPermission(
     // Do further initialisation outside of the mutex to prevent deadlocks
     if (needsInit) {
         // Get the data for this domain interface and do not wait for it
-        initialiseLocalDomainAccessStore(domain, interfaceName);
+        initialiseLocalDomainAccessStoreRces(userId, domain, interfaceName);
 
         // Init domain roles as well
         initialiseDomainRoleTable(userId);
 
         return;
     }
+
+    // If this point is reached the data for the RCL check is available
 
     Permission::Enum permission = getProviderPermission(userId, domain, interfaceName, trustLevel);
     callback->permission(permission);
@@ -803,13 +817,17 @@ void LocalDomainAccessController::initialiseDomainRoleTable(const std::string& u
             userId, std::move(domainRoleOnSuccess), std::move(domainRoleOnError));
 }
 
-void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::string& domain,
-                                                                   const std::string& interfaceName)
+void LocalDomainAccessController::initialiseLocalDomainAccessStoreAces(
+        const std::string& domain,
+        const std::string& interfaceName)
 {
     // Create an object to keep track of the initialisation
     // steps == 3, because there are 3 init operations (MasterACE, MediatorACE, OwnerACE)
     const std::uint8_t steps = 3;
-    auto initialiser = std::make_shared<Initialiser>(*this, domain, interfaceName, steps);
+    const bool handleAces = true;
+    const bool handleRces = false;
+    auto initialiser = std::make_shared<Initialiser>(
+            *this, domain, interfaceName, steps, handleAces, handleRces);
 
     std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)>
             masterAceOnSuccess =
@@ -882,40 +900,152 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStore(const std::st
             domain, interfaceName, std::move(ownerAceOnSuccess), std::move(ownerAceOnError));
 }
 
+void LocalDomainAccessController::initialiseLocalDomainAccessStoreRces(
+        const std::string& userId,
+        const std::string& domain,
+        const std::string& interfaceName)
+{
+    // Create an object to keep track of the initialisation
+    // steps == 3, because there are 3 init operations (MasterRCE, MediatorRCE, OwnerRCE)
+    const std::uint8_t steps = 3;
+    const bool handleAces = false;
+    const bool handleRces = true;
+    auto initialiser = std::make_shared<Initialiser>(
+            *this, domain, interfaceName, steps, handleAces, handleRces);
+
+    std::function<void(const std::vector<MasterRegistrationControlEntry>& masterRces)>
+            masterRceOnSuccess = [this, initialiser](
+                    const std::vector<MasterRegistrationControlEntry>& masterRces) {
+        // Add the results
+        for (const MasterRegistrationControlEntry& masterRce : masterRces) {
+            localDomainAccessStore->updateMasterRegistrationControlEntry(masterRce);
+        }
+        initialiser->update();
+    };
+
+    std::function<void(const exceptions::JoynrException& error)> masterRceOnError =
+            [initialiser](const exceptions::JoynrException& error) {
+        JOYNR_LOG_ERROR(logger,
+                        "Aborting RCL initialisation due to communication error:\n{}",
+                        error.getMessage());
+
+        // Abort the initialisation
+        initialiser->abort();
+    };
+
+    globalDomainAccessControllerProxy->getMasterRegistrationControlEntriesAsync(
+            userId, std::move(masterRceOnSuccess), std::move(masterRceOnError));
+
+    // Initialise mediator access control entries from global data
+    std::function<void(const std::vector<MasterRegistrationControlEntry>& mediatorRces)>
+            mediatorRceOnSuccess = [this, initialiser](
+                    const std::vector<MasterRegistrationControlEntry>& mediatorRces) {
+        // Add the results
+        for (const MasterRegistrationControlEntry& mediatorRce : mediatorRces) {
+            localDomainAccessStore->updateMediatorRegistrationControlEntry(mediatorRce);
+        }
+        initialiser->update();
+    };
+
+    std::function<void(const exceptions::JoynrException& error)> mediatorRceOnError =
+            [this, initialiser](const exceptions::JoynrException& error) {
+        JOYNR_LOG_ERROR(logger,
+                        "Aborting RCL initialisation due to communication error:\n{}",
+                        error.getMessage());
+
+        // Abort the initialisation
+        initialiser->abort();
+    };
+
+    globalDomainAccessControllerProxy->getMediatorRegistrationControlEntriesAsync(
+            userId, std::move(mediatorRceOnSuccess), std::move(mediatorRceOnError));
+
+    // Initialise owner registration control entries from global data
+    std::function<
+            void(const std::vector<OwnerRegistrationControlEntry>& ownerRces)> ownerRceOnSuccess =
+            [this, initialiser](const std::vector<OwnerRegistrationControlEntry>& ownerRces) {
+        // Add the results
+        for (const OwnerRegistrationControlEntry& ownerRce : ownerRces) {
+            localDomainAccessStore->updateOwnerRegistrationControlEntry(ownerRce);
+        }
+        initialiser->update();
+    };
+
+    std::function<void(const exceptions::JoynrException& error)> ownerRceOnError =
+            [initialiser](const exceptions::JoynrException& error) {
+        JOYNR_LOG_ERROR(logger,
+                        "Aborting RCL initialisation due to communication error:\n{}",
+                        error.getMessage());
+
+        // Abort the initialisation
+        initialiser->abort();
+    };
+
+    globalDomainAccessControllerProxy->getOwnerRegistrationControlEntriesAsync(
+            userId, std::move(ownerRceOnSuccess), std::move(ownerRceOnError));
+}
+
 // Called when the data for the given domain/interface has been obtained from the GDAC
 // or from loading the accessStore from disk.
 void LocalDomainAccessController::initialised(const std::string& domain,
                                               const std::string& interfaceName,
+                                              const bool handleAces,
+                                              const bool handleRces,
                                               bool restoringFromFile)
 {
     std::string compoundKey = createCompoundKey(domain, interfaceName);
-    std::vector<ConsumerPermissionRequest> requests;
 
-    {
-        std::lock_guard<std::mutex> lock(initStateMutex);
+    if (handleAces) {
+        std::vector<ConsumerPermissionRequest> consumerRequests;
 
-        // Subscribe to ACL broadcasts about this domain/interface
-        aceSubscriptions.insert(
-                std::make_pair(compoundKey, subscribeForAceChange(domain, interfaceName)));
+        {
+            std::lock_guard<std::mutex> lock(initStateMutex);
 
-        // Subscribe to RCL broadcasts about this domain/interface
-        rceSubscriptions.insert(
-                std::make_pair(compoundKey, subscribeForRceChange(domain, interfaceName)));
+            // Subscribe to ACL broadcasts about this domain/interface
+            aceSubscriptions.insert(
+                    std::make_pair(compoundKey, subscribeForAceChange(domain, interfaceName)));
 
-        if (!restoringFromFile) {
-            // Remove requests for processing
-            auto it = consumerPermissionRequests.find(compoundKey);
-            requests = it->second;
-            consumerPermissionRequests.erase(it);
+            if (!restoringFromFile) {
+                // Remove requests for processing
+                auto it = consumerPermissionRequests.find(compoundKey);
+                if (it != consumerPermissionRequests.cend()) {
+                    consumerRequests = it->second;
+                    consumerPermissionRequests.erase(it);
+                }
+            }
         }
+        // Handle any queued requests for this domain/interface
+        processConsumerRequests(consumerRequests);
     }
 
-    // Handle any queued requests for this domain/interface
-    processConsumerRequests(requests);
+    if (handleRces) {
+        std::vector<ProviderPermissionRequest> providerRequests;
+
+        {
+            std::lock_guard<std::mutex> lock(initStateMutex);
+
+            // Subscribe to RCL broadcasts about this domain/interface
+            rceSubscriptions.insert(
+                    std::make_pair(compoundKey, subscribeForRceChange(domain, interfaceName)));
+
+            if (!restoringFromFile) {
+                // Remove requests for processing
+                auto it = providerPermissionRequests.find(compoundKey);
+                if (it != providerPermissionRequests.cend()) {
+                    providerRequests = it->second;
+                    providerPermissionRequests.erase(it);
+                }
+            }
+        }
+        // Handle any queued requests for this domain/interface
+        processProviderRequests(providerRequests);
+    }
 }
 
 void LocalDomainAccessController::abortInitialisation(const std::string& domain,
-                                                      const std::string& interfaceName)
+                                                      const std::string& interfaceName,
+                                                      const bool handleAces,
+                                                      const bool handleRces)
 {
     JOYNR_LOG_TRACE(logger,
                     "Removing outstanding ACL requests for domain {}, interface {}",
@@ -923,21 +1053,41 @@ void LocalDomainAccessController::abortInitialisation(const std::string& domain,
                     interfaceName);
 
     std::string compoundKey = createCompoundKey(domain, interfaceName);
-    std::vector<ConsumerPermissionRequest> requests;
 
-    {
+    if (handleAces) {
+        std::vector<ConsumerPermissionRequest> requests;
         std::lock_guard<std::mutex> lock(initStateMutex);
 
         // Remove requests that cannot be processed
         auto it = consumerPermissionRequests.find(compoundKey);
-        requests = it->second;
-        consumerPermissionRequests.erase(it);
+        if (it != consumerPermissionRequests.cend()) {
+            requests = it->second;
+            consumerPermissionRequests.erase(it);
+        }
+
+        // Mark all the requests as failed - we have no information from the Global
+        // Domain Access Controller
+        for (const ConsumerPermissionRequest& request : requests) {
+            request.callbacks->permission(Permission::NO);
+        }
     }
 
-    // Mark all the requests as failed - we have no information from the Global
-    // Domain Access Controller
-    for (const ConsumerPermissionRequest& request : requests) {
-        request.callbacks->permission(Permission::NO);
+    if (handleRces) {
+        std::vector<ProviderPermissionRequest> requests;
+        std::lock_guard<std::mutex> lock(initStateMutex);
+
+        // Remove requests that cannot be processed
+        auto it = providerPermissionRequests.find(compoundKey);
+        if (it != providerPermissionRequests.cend()) {
+            requests = it->second;
+            providerPermissionRequests.erase(it);
+        }
+
+        // Mark all the requests as failed - we have no information from the Global
+        // Domain Access Controller
+        for (const ProviderPermissionRequest& request : requests) {
+            request.callbacks->permission(Permission::NO);
+        }
     }
 }
 
@@ -963,6 +1113,18 @@ void LocalDomainAccessController::processConsumerRequests(
 {
     for (const ConsumerPermissionRequest& request : requests) {
         getConsumerPermission(request.userId,
+                              request.domain,
+                              request.interfaceName,
+                              request.trustLevel,
+                              request.callbacks);
+    }
+}
+
+void LocalDomainAccessController::processProviderRequests(
+        const std::vector<ProviderPermissionRequest>& requests)
+{
+    for (const ProviderPermissionRequest& request : requests) {
+        getProviderPermission(request.userId,
                               request.domain,
                               request.interfaceName,
                               request.trustLevel,
