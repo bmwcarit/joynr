@@ -199,6 +199,8 @@ set(JoynrLib_SOURCES
     "joynr-messaging/MessagingSettings.cpp"
     "joynr-messaging/MqttMulticastAddressCalculator.cpp"
     "joynr-messaging/MulticastMatcher.cpp"
+    "joynr-messaging/MutableMessage.cpp"
+    "joynr-messaging/MutableMessageFactory.cpp"    
     "joynr-messaging/WebSocketMulticastAddressCalculator.cpp"
     "LibjoynrSettings.cpp"
     "provider/AbstractJoynrProvider.cpp"
