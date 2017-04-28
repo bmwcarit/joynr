@@ -127,7 +127,10 @@ public class LibJoynrMessageRouterTest {
     public void addsNextHopAfterQueryingParent() throws Exception {
         messageRouter.route(message);
         Thread.sleep(100);
-        Mockito.verify(routingTable).put(Mockito.eq(unknownParticipantId), Mockito.eq(parentAddress));
+        final boolean isGloballyVisible = true;
+        Mockito.verify(routingTable).put(Mockito.eq(unknownParticipantId),
+                                         Mockito.eq(parentAddress),
+                                         Mockito.eq(isGloballyVisible));
     }
 
     @Test
