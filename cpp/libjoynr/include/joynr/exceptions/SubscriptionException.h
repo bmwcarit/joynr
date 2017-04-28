@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include "joynr/JoynrCommonExport.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 
@@ -35,7 +35,7 @@ namespace exceptions
  * subscription (e.g. the provided subscription parameters are not correct etc.)
  * that should be transmitted back to consumer side.
  */
-class JOYNRCOMMON_EXPORT SubscriptionException : public JoynrRuntimeException
+class JOYNR_EXPORT SubscriptionException : public JoynrRuntimeException
 {
 public:
     /**

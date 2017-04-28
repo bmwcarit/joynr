@@ -37,8 +37,8 @@
 #include "joynr/Semaphore.h"
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
+#include "libjoynr/common/dbus/DbusSettings.h"
 #include "joynr/DBusMessageRouterAdapter.h"
-#include "common/dbus/DbusSettings.h"
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
 class JoynrClusterControllerRuntimeTest;

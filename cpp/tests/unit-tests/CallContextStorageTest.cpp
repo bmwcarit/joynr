@@ -16,11 +16,12 @@
  * limitations under the License.
  * #L%
  */
-#include <thread>
 
-#include "gtest/gtest.h"
-#include "common/CallContextStorage.h"
+#include <thread>
 #include "boost/thread/barrier.hpp"
+#include "gtest/gtest.h"
+
+#include "libjoynr/common/CallContextStorage.h"
 
 using namespace ::testing;
 

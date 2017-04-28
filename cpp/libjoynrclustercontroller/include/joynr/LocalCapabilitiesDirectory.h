@@ -31,10 +31,9 @@
 
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 
-#include "common/InterfaceAddress.h"
-
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
+#include "joynr/InterfaceAddress.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingSettings.h"
@@ -57,7 +56,6 @@ class io_service;
 namespace joynr
 {
 
-class InterfaceAddress;
 class ICapabilitiesClient;
 class LibjoynrSettings;
 class IMessageRouter;

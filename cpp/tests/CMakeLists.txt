@@ -83,7 +83,6 @@ if(${GENERATE_SOURCES})
     )
 endif(${GENERATE_SOURCES})
 
-get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 
 get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
@@ -95,7 +94,6 @@ set(
     ${CMAKE_CURRENT_SOURCE_DIR}
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
     "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
-    ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
@@ -159,7 +157,6 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 ## Collect link targets for tests
 set(
     test_TARGET_LIBRARIES
-    JoynrCommon
     Joynr
     JoynrClusterController
     JoynrClusterControllerRuntime
