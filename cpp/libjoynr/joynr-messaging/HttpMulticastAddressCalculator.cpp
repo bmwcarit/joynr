@@ -22,9 +22,9 @@
 #include <memory>
 #include <tuple>
 
-#include <joynr/exceptions/JoynrException.h>
-#include <joynr/system/RoutingTypes/Address.h>
-#include <joynr/system/RoutingTypes/ChannelAddress.h>
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
 {

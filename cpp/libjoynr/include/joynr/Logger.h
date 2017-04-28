@@ -31,7 +31,7 @@
 #include <spdlog/sinks/stdout_sinks.h>
 #endif // JOYNR_ENABLE_STDOUT_LOGGING
 #ifdef JOYNR_ENABLE_DLT_LOGGING
-#include <joynr/DltSink.h>
+#include "joynr/DltSink.h"
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
 namespace joynr

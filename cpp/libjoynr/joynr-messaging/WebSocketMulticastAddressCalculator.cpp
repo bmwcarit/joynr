@@ -22,10 +22,10 @@
 #include <memory>
 #include <tuple>
 
-#include <joynr/JoynrMessage.h>
-#include <joynr/exceptions/JoynrException.h>
-#include <joynr/system/RoutingTypes/Address.h>
-#include <joynr/system/RoutingTypes/WebSocketAddress.h>
+#include "joynr/JoynrMessage.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 namespace joynr
 {
