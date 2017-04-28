@@ -45,7 +45,7 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const std::string& receiverId,
         const LongPollingMessageReceiverSettings& settings,
         std::shared_ptr<Semaphore> channelCreatedSemaphore,
-        std::function<void(const std::string&)> onTextMessageReceived)
+        std::function<void(smrf::ByteVector&&)> onMessageReceived)
         : Thread("LongPollRecv"),
           brokerUrl(brokerUrl),
           channelId(channelId),
@@ -55,7 +55,7 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
           interruptedMutex(),
           interruptedWait(),
           channelCreatedSemaphore(channelCreatedSemaphore),
-          onTextMessageReceived(onTextMessageReceived),
+          onMessageReceived(std::move(onMessageReceived)),
           currentRequest()
 {
 }
@@ -168,20 +168,12 @@ void LongPollingMessageReceiver::run()
 
 void LongPollingMessageReceiver::processReceivedInput(const std::string& receivedInput)
 {
-    std::vector<std::string> jsonObjects = util::splitIntoJsonObjects(receivedInput);
-    for (std::size_t i = 0; i < jsonObjects.size(); i++) {
-        processReceivedJsonObjects(jsonObjects.at(i));
-    }
-}
-
-void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& jsonObject)
-{
-    if (onTextMessageReceived) {
-        onTextMessageReceived(jsonObject);
+    if (onMessageReceived) {
+        smrf::ByteVector rawMessage(receivedInput.begin(), receivedInput.end());
+        onMessageReceived(std::move(rawMessage));
     } else {
         JOYNR_LOG_ERROR(
-                logger,
-                "Discarding received message, since onTextMessageReceived callback is empty.");
+                logger, "Discarding received message, since onMessageReceived callback is empty.");
     }
 }
 

@@ -52,7 +52,7 @@ public:
     * @brief Sends the message to the given channel.
     */
     void sendMessage(const joynr::system::RoutingTypes::Address& destinationAddress,
-                     const JoynrMessage& message,
+                     std::shared_ptr<ImmutableMessage> message,
                      const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 

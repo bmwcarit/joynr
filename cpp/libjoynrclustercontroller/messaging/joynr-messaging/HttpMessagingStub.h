@@ -31,7 +31,6 @@ namespace joynr
 {
 
 class ITransportMessageSender;
-class JoynrMessage;
 
 /**
   * Is used by the ClusterController to contact another (remote) ClusterController
@@ -42,7 +41,7 @@ public:
     explicit HttpMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                const system::RoutingTypes::ChannelAddress& destinationAddress);
     ~HttpMessagingStub() override = default;
-    void transmit(JoynrMessage& message,
+    void transmit(std::shared_ptr<ImmutableMessage> message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 

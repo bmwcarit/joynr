@@ -37,10 +37,10 @@
 
 using namespace joynr;
 
-class JoynrMessageFactoryTest : public ::testing::Test
+class MutableMessageFactoryTest : public ::testing::Test
 {
 public:
-    JoynrMessageFactoryTest()
+    MutableMessageFactoryTest()
             : messageFactory(0),
               senderID(),
               receiverID(),
@@ -76,18 +76,17 @@ public:
         subscriptionPublication.setResponse("publication");
     }
 
-    void checkHeaderCreatorFromTo(const JoynrMessage& joynrMessage)
+    void checkSenderRecipient(const MutableMessage& mutableMessage)
     {
-        EXPECT_TRUE(joynrMessage.containsHeaderCreatorUserId());
-        EXPECT_STREQ(senderID.c_str(), joynrMessage.getHeaderFrom().c_str());
-        EXPECT_STREQ(receiverID.c_str(), joynrMessage.getHeaderTo().c_str());
-        EXPECT_TRUE(joynrMessage.containsCustomHeader("test-header"));
-        EXPECT_STREQ("test-header-value", joynrMessage.getCustomHeader("test-header").c_str());
+        EXPECT_EQ(senderID, mutableMessage.getSender());
+        EXPECT_EQ(receiverID, mutableMessage.getRecipient());
+        boost::optional<std::string> customHeader = mutableMessage.getCustomHeader("test-header");
+        ASSERT_TRUE(customHeader);
+        EXPECT_EQ("test-header-value", *customHeader);
     }
 
-    void checkRequest(const JoynrMessage& joynrMessage)
+    void checkRequest(const MutableMessage& mutableMessage)
     {
-        // TODO create expected string from params and methodName
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.Request",)";
         expectedPayloadStream << R"("methodName":"methodName",)";
@@ -95,12 +94,11 @@ public:
         expectedPayloadStream << R"("params":[42,"value"],)";
         expectedPayloadStream << R"("requestReplyId":")" << request.getRequestReplyId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
-        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
+        EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
     }
 
-    void checkOneWayRequest(const JoynrMessage& joynrMessage)
+    void checkOneWayRequest(const MutableMessage& mutableMessage)
     {
-        // TODO create expected string from params and methodName
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.OneWayRequest",)";
         expectedPayloadStream << R"("methodName":"methodName",)";
@@ -108,20 +106,20 @@ public:
         expectedPayloadStream << R"("params":[42,"value"])";
         expectedPayloadStream << R"(})";
         std::string expectedPayload = expectedPayloadStream.str();
-        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
+        EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
     }
 
-    void checkReply(const JoynrMessage& joynrMessage)
+    void checkReply(const MutableMessage& mutableMessage)
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.Reply",)";
         expectedPayloadStream << R"("response":["response"],)";
         expectedPayloadStream << R"("requestReplyId":")" << reply.getRequestReplyId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
-        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
+        EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
     }
 
-    void checkSubscriptionPublication(const JoynrMessage& joynrMessage)
+    void checkSubscriptionPublication(const MutableMessage& mutableMessage)
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.SubscriptionPublication",)";
@@ -129,10 +127,10 @@ public:
         expectedPayloadStream << R"("subscriptionId":")"
                               << subscriptionPublication.getSubscriptionId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
-        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
+        EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
     }
 
-    void checkMulticastPublication(const JoynrMessage& joynrMessage,
+    void checkMulticastPublication(const MutableMessage& mutableMessage,
                                    const MulticastPublication& multicastPublication)
     {
         std::stringstream expectedPayloadStream;
@@ -141,11 +139,11 @@ public:
         expectedPayloadStream << R"("multicastId":")"
                               << multicastPublication.getMulticastId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
-        EXPECT_EQ(expectedPayload, joynrMessage.getPayload());
+        EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
     }
 
 protected:
-    ADD_LOGGER(JoynrMessageFactoryTest);
+    ADD_LOGGER(MutableMessageFactoryTest);
     MutableMessageFactory messageFactory;
     std::string senderID;
     std::string receiverID;
@@ -158,23 +156,23 @@ protected:
     SubscriptionPublication subscriptionPublication;
 };
 
-INIT_LOGGER(JoynrMessageFactoryTest);
+INIT_LOGGER(MutableMessageFactoryTest);
 
-TEST_F(JoynrMessageFactoryTest, createRequest_withContentType)
+TEST_F(MutableMessageFactoryTest, createRequest_withContentType)
 {
-    JoynrMessage joynrMessage = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
-    checkHeaderCreatorFromTo(joynrMessage);
+    MutableMessage mutableMessage = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
+    checkSenderRecipient(mutableMessage);
 }
 
-TEST_F(JoynrMessageFactoryTest, createRequest)
+TEST_F(MutableMessageFactoryTest, createRequest)
 {
-    JoynrMessage joynrMessage = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
+    MutableMessage mutableMessage = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
     // warning if prepareRequest needs to long this assert will fail as it compares absolute
     // timestamps
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now());
     JoynrTimePoint expectedExpiryDate = now + std::chrono::milliseconds(qos.getTtl());
-    JoynrTimePoint expiryDate = joynrMessage.getHeaderExpiryDate();
+    JoynrTimePoint expiryDate = mutableMessage.getExpiryDate();
     EXPECT_NEAR(expectedExpiryDate.time_since_epoch().count(),
                 expiryDate.time_since_epoch().count(),
                 100.);
@@ -189,74 +187,63 @@ TEST_F(JoynrMessageFactoryTest, createRequest)
                     std::chrono::duration_cast<std::chrono::milliseconds>(
                             expectedExpiryDate.time_since_epoch()).count());
 
-    checkHeaderCreatorFromTo(joynrMessage);
-    checkRequest(joynrMessage);
-    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST, joynrMessage.getType());
+    checkSenderRecipient(mutableMessage);
+    checkRequest(mutableMessage);
+    EXPECT_EQ(Message::VALUE_MESSAGE_TYPE_REQUEST(), mutableMessage.getType());
 }
 
-TEST_F(JoynrMessageFactoryTest, createReply)
+TEST_F(MutableMessageFactoryTest, createReply)
 {
-    JoynrMessage joynrMessage = messageFactory.createReply(senderID, receiverID, qos, reply);
-    checkHeaderCreatorFromTo(joynrMessage);
-    checkReply(joynrMessage);
-    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY, joynrMessage.getType());
+    MutableMessage mutableMessage = messageFactory.createReply(senderID, receiverID, qos, reply);
+    checkSenderRecipient(mutableMessage);
+    checkReply(mutableMessage);
+    EXPECT_EQ(Message::VALUE_MESSAGE_TYPE_REPLY(), mutableMessage.getType());
 }
 
-TEST_F(JoynrMessageFactoryTest, createOneWayRequest)
+TEST_F(MutableMessageFactoryTest, createOneWayRequest)
 {
-    JoynrMessage joynrMessage =
+    MutableMessage mutableMessage =
             messageFactory.createOneWayRequest(senderID, receiverID, qos, oneWayRequest, isLocalMessage);
-    checkHeaderCreatorFromTo(joynrMessage);
-    checkOneWayRequest(joynrMessage);
-    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY, joynrMessage.getType());
+    checkSenderRecipient(mutableMessage);
+    checkOneWayRequest(mutableMessage);
+    EXPECT_EQ(Message::VALUE_MESSAGE_TYPE_ONE_WAY(), mutableMessage.getType());
 }
 
-// TEST_F(JoynrMessageFactoryTest, createSubscriptionReply){
-//    std::string subscriptionId("subscriptionTestId");
-//    JoynrMessage joynrMessage = JoynrMessageFactory::prepareSubscriptionReply(senderID,
-//    receiverID, payload, subscriptionId);
-//    checkHeaderCreatorFromTo(joynrMessage);
-//    checkPayload(joynrMessage);
-//    EXPECT_QSTREQ(subscriptionId,
-//    joynrMessage.getHeader<std::string>(JoynrMessage::HEADER_NAME_SUBSCRIPTION_ID));
-//    EXPECT_QSTREQ(JoynrMessage::MESSAGE_TYPE_SUBSCRIPTION_REPLY, joynrMessage.getType());
-//}
-
-TEST_F(JoynrMessageFactoryTest, createPublication)
+TEST_F(MutableMessageFactoryTest, createPublication)
 {
-    JoynrMessage joynrMessage = messageFactory.createSubscriptionPublication(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
             senderID, receiverID, qos, subscriptionPublication);
-    checkHeaderCreatorFromTo(joynrMessage);
-    checkSubscriptionPublication(joynrMessage);
-    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION, joynrMessage.getType());
+    checkSenderRecipient(mutableMessage);
+    checkSubscriptionPublication(mutableMessage);
+    EXPECT_EQ(Message::VALUE_MESSAGE_TYPE_PUBLICATION(), mutableMessage.getType());
 }
 
-TEST_F(JoynrMessageFactoryTest, createMulticastPublication)
+TEST_F(MutableMessageFactoryTest, createMulticastPublication)
 {
     MulticastPublication multicastPublication;
     multicastPublication.setMulticastId(receiverID);
     multicastPublication.setResponse("publication");
-    JoynrMessage joynrMessage = messageFactory.createMulticastPublication(
+    MutableMessage mutableMessage = messageFactory.createMulticastPublication(
             senderID, qos, multicastPublication);
-    checkHeaderCreatorFromTo(joynrMessage);
-    checkMulticastPublication(joynrMessage, multicastPublication);
-    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
+    checkSenderRecipient(mutableMessage);
+    checkMulticastPublication(mutableMessage, multicastPublication);
+    EXPECT_EQ(Message::VALUE_MESSAGE_TYPE_MULTICAST(), mutableMessage.getType());
 }
 
-TEST_F(JoynrMessageFactoryTest, createSubscriptionRequest)
+TEST_F(MutableMessageFactoryTest, createSubscriptionRequest)
 {
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId("subscriptionId");
     subscriptionRequest.setSubscribeToName("attributeName");
     subscriptionRequest.setQos(subscriptionQos);
-    JoynrMessage joynrMessage = messageFactory.createSubscriptionRequest(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionRequest(
             senderID, receiverID, qos, subscriptionRequest, isLocalMessage);
-    checkHeaderCreatorFromTo(joynrMessage);
-    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST, joynrMessage.getType());
+    checkSenderRecipient(mutableMessage);
+    EXPECT_EQ(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST(), mutableMessage.getType());
 }
 
-TEST_F(JoynrMessageFactoryTest, createMulticastSubscriptionRequest)
+TEST_F(MutableMessageFactoryTest, createMulticastSubscriptionRequest)
 {
     auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
     MulticastSubscriptionRequest subscriptionRequest;
@@ -264,44 +251,36 @@ TEST_F(JoynrMessageFactoryTest, createMulticastSubscriptionRequest)
     subscriptionRequest.setMulticastId("multicastId");
     subscriptionRequest.setSubscribeToName("attributeName");
     subscriptionRequest.setQos(subscriptionQos);
-    JoynrMessage joynrMessage = messageFactory.createMulticastSubscriptionRequest(
+    MutableMessage mutableMessage = messageFactory.createMulticastSubscriptionRequest(
             senderID, receiverID, qos, subscriptionRequest, isLocalMessage);
-    checkHeaderCreatorFromTo(joynrMessage);
-    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, joynrMessage.getType());
+    checkSenderRecipient(mutableMessage);
+    EXPECT_EQ(Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST(), mutableMessage.getType());
 }
 
-TEST_F(JoynrMessageFactoryTest, createSubscriptionStop)
+TEST_F(MutableMessageFactoryTest, createSubscriptionStop)
 {
     std::string subscriptionId("TEST-SubscriptionId");
     SubscriptionStop subscriptionStop;
     subscriptionStop.setSubscriptionId(subscriptionId);
-    JoynrMessage joynrMessage =
+    MutableMessage mutableMessage =
             messageFactory.createSubscriptionStop(senderID, receiverID, qos, subscriptionStop);
-    checkHeaderCreatorFromTo(joynrMessage);
-    EXPECT_EQ(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP, joynrMessage.getType());
+    checkSenderRecipient(mutableMessage);
+    EXPECT_EQ(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP(), mutableMessage.getType());
 }
 
-TEST_F(JoynrMessageFactoryTest, testRequestContentType)
+TEST_F(MutableMessageFactoryTest, testSetNoEffortHeader)
 {
-    Request request;
-    request.setMethodName("methodName");
-    request.setParams(std::string("test"));
-
-    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
-    EXPECT_EQ(JoynrMessage::VALUE_CONTENT_TYPE_APPLICATION_JSON, message.getHeaderContentType());
+    MutableMessage mutableMessage = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
+    const boost::optional<std::string> optionalEffort = mutableMessage.getEffort();
+    EXPECT_FALSE(optionalEffort);
 }
 
-TEST_F(JoynrMessageFactoryTest, testSetNoEffortHeader)
-{
-    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
-    EXPECT_FALSE(message.containsHeaderEffort());
-}
-
-TEST_F(JoynrMessageFactoryTest, testSetBestEffortHeader)
+TEST_F(MutableMessageFactoryTest, testSetBestEffortHeader)
 {
     qos.setEffort(MessagingQosEffort::Enum::BEST_EFFORT);
-    JoynrMessage message = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
-    EXPECT_TRUE(message.containsHeaderEffort());
+    MutableMessage mutableMessage = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
+    const boost::optional<std::string> optionalEffort = mutableMessage.getEffort();
+    ASSERT_TRUE(optionalEffort);
     EXPECT_EQ(MessagingQosEffort::getLiteral(MessagingQosEffort::Enum::BEST_EFFORT),
-              message.getHeaderEffort());
+              *optionalEffort);
 }

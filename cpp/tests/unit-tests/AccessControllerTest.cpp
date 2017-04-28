@@ -23,6 +23,8 @@
 #include <gtest/gtest.h>
 
 #include "joynr/MutableMessageFactory.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/Request.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "tests/utils/MockObjects.h"
@@ -118,15 +120,21 @@ public:
         onSuccess(discoveryEntry);
     }
 
+    std::shared_ptr<ImmutableMessage> getImmutableMessage()
+    {
+        std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+        immutableMessage->setCreator(DUMMY_USERID);
+        return immutableMessage;
+    }
+
     void SetUp(){
         messagingQos = MessagingQos(5000);
         const bool isLocalMessage = true;
-        message = messageFactory.createRequest(fromParticipantId,
+        mutableMessage = messageFactory.createRequest(fromParticipantId,
                                      toParticipantId,
                                      messagingQos,
                                      initOutgoingRequest(TEST_OPERATION, {}),
                                      isLocalMessage);
-        message.setHeaderCreatorUserId(DUMMY_USERID);
 
         ON_CALL(
                 messagingSettingsMock,
@@ -175,7 +183,7 @@ protected:
     MockLocalCapabilitiesDirectory localCapabilitiesDirectoryMock;
     AccessController accessController;
     MutableMessageFactory messageFactory;
-    JoynrMessage message;
+    MutableMessage mutableMessage;
     MessagingQos messagingQos;
     DiscoveryEntryWithMetaInfo discoveryEntry;
     static const std::string fromParticipantId;
@@ -216,7 +224,7 @@ TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl) {
             .Times(1);
 
     accessController.hasConsumerPermission(
-            message,
+            getImmutableMessage(),
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(accessControllerCallback)
     );
 }
@@ -249,7 +257,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
             .Times(1);
 
     accessController.hasConsumerPermission(
-            message,
+            getImmutableMessage(),
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(accessControllerCallback)
     );
 }
@@ -268,10 +276,10 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
             .Times(1);
 
     std::string payload("invalid serialization of Request object");
-    message.setPayload(payload);
+    mutableMessage.setPayload(payload);
 
     accessController.hasConsumerPermission(
-            message,
+            getImmutableMessage(),
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(accessControllerCallback)
     );
 }

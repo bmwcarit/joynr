@@ -29,7 +29,7 @@ InProcessMessagingSkeleton::InProcessMessagingSkeleton(IDispatcher* dispatcher)
 }
 
 void InProcessMessagingSkeleton::transmit(
-        JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     std::ignore = onFailure;

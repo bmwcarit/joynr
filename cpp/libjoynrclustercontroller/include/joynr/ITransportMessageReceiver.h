@@ -22,6 +22,8 @@
 #include <functional>
 #include <string>
 
+#include <smrf/ByteVector.h>
+
 namespace joynr
 {
 
@@ -72,7 +74,7 @@ public:
     virtual bool tryToDeleteChannel() = 0;
 
     virtual void registerReceiveCallback(
-            std::function<void(const std::string&)> onTextMessageReceived) = 0;
+            std::function<void(smrf::ByteVector&&)> onMessageReceived) = 0;
 };
 
 } // namespace joynr

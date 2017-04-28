@@ -26,7 +26,7 @@
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessMessagingAddress.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/Message.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -131,48 +131,47 @@ void LibJoynrMessageRouter::queryReplyToAddress(
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
+void LibJoynrMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount)
 {
     assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now());
-    if (now > message.getHeaderExpiryDate()) {
+    if (now > message->getExpiryDate()) {
         std::string errorMessage("Received expired message. Dropping the message (ID: " +
-                                 message.getHeaderMessageId() + ").");
+                                 message->getId() + ").");
         JOYNR_LOG_WARN(logger, errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
-    JOYNR_LOG_TRACE(logger,
-                    "Route message with Id {} and payload {}",
-                    message.getHeaderMessageId(),
-                    message.getPayload());
+    JOYNR_LOG_TRACE(logger, "Route message with Id {}", message->getId());
     // search for the destination addresses
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
-            getDestinationAddresses(message);
+            getDestinationAddresses(*message);
 
+    // TODO: move to respective MessageSender
+    /*
     if (!message.isLocalMessage() &&
-        (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
-         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
-         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
-         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
-        std::lock_guard<std::mutex> lock(parentClusterControllerReplyToAddressMutex);
-        message.setHeaderReplyAddress(parentClusterControllerReplyToAddress);
-    }
+        (message.getType() == Message::VALUE_MESSAGE_TYPE_REQUEST() ||
+         message.getType() == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST() ||
+         message.getType() == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST() ||
+         message.getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST())) {
+        std::lock_guard<std::mutex> lock(globalParentClusterControllerAddressMutex);
+        message.setHeaderReplyAddress(globalParentClusterControllerAddress);
+    }*/
 
     // if destination address is not known
     if (destAddresses.empty()) {
-        if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
+        if (message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
             // Do not queue multicast messages for future multicast receivers.
             return;
         }
 
         // save the message for later delivery
-        queueMessage(message);
+        const std::string destinationPartId = message->getRecipient();
+        queueMessage(std::move(message));
 
         // and try to resolve destination address via parent message router
         std::lock_guard<std::mutex> lock(parentResolveMutex);
-        const std::string destinationPartId = message.getHeaderTo();
         if (runningParentResolves.find(destinationPartId) == runningParentResolves.end()) {
             EXIT_IF_PARENT_MESSAGE_ROUTER_IS_NOT_SET();
 

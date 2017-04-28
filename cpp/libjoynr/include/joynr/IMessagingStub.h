@@ -20,10 +20,11 @@
 #define IMESSAGINGSTUB_H
 
 #include <functional>
+#include <memory>
 
 namespace joynr
 {
-class JoynrMessage;
+class ImmutableMessage;
 
 namespace exceptions
 {
@@ -35,7 +36,7 @@ class IMessagingStub
 public:
     virtual ~IMessagingStub() = default;
     virtual void transmit(
-            JoynrMessage& message,
+            std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
 };
 

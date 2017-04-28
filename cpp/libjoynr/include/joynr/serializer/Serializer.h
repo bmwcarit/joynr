@@ -38,6 +38,8 @@
 #include <muesli/Registry.h>
 // clang-format on
 
+#include <smrf/ByteArrayView.h>
+
 #include "joynr/Util.h"
 #include "joynr/serializer/JsonDeserializable.h"
 
@@ -120,6 +122,21 @@ inline auto getInputArchive(const std::string& id, InputStream& stream)
 template <typename T>
 void deserializeFromJson(T& value, std::string str)
 {
+    using InputStream = muesli::StringIStream;
+    using InputArchive = muesli::JsonInputArchive<InputStream>;
+
+    InputStream stream(std::move(str));
+    auto iarchive = std::make_shared<InputArchive>(stream);
+    (*iarchive)(value);
+}
+
+template <typename T>
+void deserializeFromJson(T& value, const smrf::ByteArrayView& byteArrayView)
+{
+    // TODO we need to be able to directly parse from a smrf::ByteVector
+    // without having to copy to a string
+
+    std::string str(byteArrayView.data(), byteArrayView.data() + byteArrayView.size());
     using InputStream = muesli::StringIStream;
     using InputArchive = muesli::JsonInputArchive<InputStream>;
 

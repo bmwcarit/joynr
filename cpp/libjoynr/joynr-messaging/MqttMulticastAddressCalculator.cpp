@@ -22,7 +22,7 @@
 #include <memory>
 #include <tuple>
 
-#include <joynr/JoynrMessage.h>
+#include <joynr/ImmutableMessage.h>
 #include <joynr/exceptions/JoynrException.h>
 #include <joynr/system/RoutingTypes/Address.h>
 #include <joynr/system/RoutingTypes/MqttAddress.h>
@@ -37,12 +37,12 @@ MqttMulticastAddressCalculator::MqttMulticastAddressCalculator(
 }
 
 std::shared_ptr<const system::RoutingTypes::Address> MqttMulticastAddressCalculator::compute(
-        const JoynrMessage& message)
+        const ImmutableMessage& message)
 {
     if (!globalAddress) {
         return std::shared_ptr<const system::RoutingTypes::MqttAddress>();
     }
     return std::make_shared<const system::RoutingTypes::MqttAddress>(
-            globalAddress->getBrokerUri(), mqttMulticastTopicPrefix + message.getHeaderTo());
+            globalAddress->getBrokerUri(), mqttMulticastTopicPrefix + message.getRecipient());
 }
 }

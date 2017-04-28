@@ -21,6 +21,7 @@
 
 #include <functional>
 
+#include <smrf/ByteVector.h>
 #include <websocketpp/error.hpp>
 
 #include "joynr/IWebSocketSendInterface.h"
@@ -43,16 +44,20 @@ public:
     ~WebSocketPpSender() final = default;
 
     void send(
-            const std::string& msg,
+            const smrf::ByteArrayView& msg,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) override
     {
         JOYNR_LOG_TRACE(logger, "outgoing binary message of size {}", msg.size());
         websocketpp::lib::error_code websocketError;
-        endpoint.send(connectionHandle, msg, websocketpp::frame::opcode::binary, websocketError);
+        endpoint.send(connectionHandle,
+                      msg.data(),
+                      msg.size(),
+                      websocketpp::frame::opcode::binary,
+                      websocketError);
         if (websocketError) {
             onFailure(exceptions::JoynrDelayMessageException(
-                    "Error sending binary message via WebSocketPpBase: " +
-                    websocketError.message() + ", message: " + msg));
+                    "Error sending binary message via WebSocketPpSender: " +
+                    websocketError.message()));
         }
     }
 

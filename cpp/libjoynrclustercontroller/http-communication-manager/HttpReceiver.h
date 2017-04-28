@@ -79,7 +79,7 @@ public:
     void stopReceiveQueue() override;
 
     void registerReceiveCallback(
-            std::function<void(const std::string&)> onTextMessageReceived) override;
+            std::function<void(smrf::ByteVector&&)> onMessageReceived) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpReceiver);
@@ -102,7 +102,7 @@ private:
     std::unique_ptr<LongPollingMessageReceiver> messageReceiver;
 
     /*! On text message received callback */
-    std::function<void(const std::string&)> onTextMessageReceived;
+    std::function<void(smrf::ByteVector&&)> onMessageReceived;
 
     friend class ::CapabilitiesClientTest;
 

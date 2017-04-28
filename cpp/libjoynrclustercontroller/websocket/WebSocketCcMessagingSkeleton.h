@@ -49,7 +49,7 @@ class IWebsocketCcMessagingSkeleton
 public:
     virtual ~IWebsocketCcMessagingSkeleton() = default;
     virtual void transmit(
-            JoynrMessage& message,
+            std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
 };
 
@@ -102,7 +102,7 @@ public:
                                                std::placeholders::_2));
 
         receiver.registerReceiveCallback(
-                [this](const std::string& msg) { onMessageReceived(msg); });
+                [this](smrf::ByteVector&& msg) { onMessageReceived(std::move(msg)); });
     }
 
     /**
@@ -120,11 +120,11 @@ public:
     }
 
     void transmit(
-            JoynrMessage& message,
+            std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) override
     {
         try {
-            messageRouter->route(message);
+            messageRouter->route(std::move(message));
         } catch (exceptions::JoynrRuntimeException& e) {
             onFailure(e);
         }
@@ -211,44 +211,31 @@ private:
         }
     }
 
-    void onMessageReceived(const std::string& message)
+    void onMessageReceived(smrf::ByteVector&& message)
     {
         // deserialize message and transmit
-        JoynrMessage joynrMsg;
+        std::shared_ptr<ImmutableMessage> immutableMessage;
         try {
-            joynr::serializer::deserializeFromJson(joynrMsg, message);
+            immutableMessage = std::make_shared<ImmutableMessage>(std::move(message));
+        } catch (const smrf::EncodingException& e) {
+            JOYNR_LOG_ERROR(logger, "Unable to deserialize message - error: {}", e.what());
+            return;
         } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "Unable to deserialize joynr message object from: {} - error: {}",
-                            message,
-                            e.what());
+            JOYNR_LOG_ERROR(logger, "deserialized message is not valid - error: {}", e.what());
             return;
         }
 
-        if (joynrMsg.getType().empty()) {
-            JOYNR_LOG_ERROR(logger, "Message type is empty : {}", message);
-            return;
-        }
-        if (joynrMsg.getPayload().empty()) {
-            JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
-            return;
-        }
-        if (!joynrMsg.containsHeaderExpiryDate()) {
-            JOYNR_LOG_ERROR(logger,
-                            "received message [msgId=[{}] without decay time - dropping message",
-                            joynrMsg.getHeaderMessageId());
-            return;
-        }
+        JOYNR_LOG_DEBUG(logger, "<<<< INCOMING <<<< {}", immutableMessage->toLogMessage());
 
-        JOYNR_LOG_DEBUG(logger, "<<<< INCOMING <<<< {}", joynrMsg.toLogMessage());
-
-        auto onFailure = [joynrMsg](const exceptions::JoynrRuntimeException& e) {
+        auto onFailure = [messageId = immutableMessage->getId()](
+                const exceptions::JoynrRuntimeException& e)
+        {
             JOYNR_LOG_ERROR(logger,
                             "Incoming Message with ID {} could not be sent! reason: {}",
-                            joynrMsg.getHeaderMessageId(),
+                            messageId,
                             e.getMessage());
         };
-        transmit(joynrMsg, onFailure);
+        transmit(std::move(immutableMessage), onFailure);
     }
 
     bool isInitializationMessage(const std::string& message)

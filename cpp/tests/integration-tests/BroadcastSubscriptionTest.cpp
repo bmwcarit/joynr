@@ -23,7 +23,8 @@
 #include <gmock/gmock.h>
 
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/MutableMessage.h"
 #include "joynr/MessageSender.h"
 #include "joynr/MutableMessageFactory.h"
 #include "joynr/Dispatcher.h"
@@ -136,13 +137,13 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider
-    JoynrMessage msg = messageFactory.createSubscriptionPublication(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
                 providerParticipantId,
                 proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
@@ -187,13 +188,13 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider
-    JoynrMessage msg = messageFactory.createSubscriptionPublication(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
                 providerParticipantId,
                 proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));

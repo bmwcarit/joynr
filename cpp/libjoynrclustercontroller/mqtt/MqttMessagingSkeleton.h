@@ -24,6 +24,8 @@
 #include <string>
 #include <unordered_map>
 
+#include <smrf/ByteVector.h>
+
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -35,9 +37,9 @@ namespace exceptions
 class JoynrRuntimeException;
 } // namespace exceptions
 
+class ImmutableMessage;
 class IMessageRouter;
 class MqttReceiver;
-class JoynrMessage;
 
 class MqttMessagingSkeleton : public IMessagingMulticastSubscriber
 {
@@ -57,13 +59,13 @@ public:
 
     ~MqttMessagingSkeleton() override = default;
 
-    void transmit(JoynrMessage& message,
+    void transmit(std::shared_ptr<joynr::ImmutableMessage> message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
     void registerMulticastSubscription(const std::string& multicastId) override;
     void unregisterMulticastSubscription(const std::string& multicastId) override;
 
-    void onTextMessageReceived(const std::string& message);
+    void onMessageReceived(smrf::ByteVector&& rawMessage);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingSkeleton);

@@ -388,8 +388,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     if (doHttpMessaging) {
         if (!httpMessageReceiverSupplied) {
             httpMessagingSkeleton = std::make_shared<HttpMessagingSkeleton>(*ccMessageRouter);
-            httpMessageReceiver->registerReceiveCallback([&](const std::string& msg) {
-                httpMessagingSkeleton->onTextMessageReceived(msg);
+            httpMessageReceiver->registerReceiveCallback([&](smrf::ByteVector&& msg) {
+                httpMessagingSkeleton->onMessageReceived(std::move(msg));
             });
         }
 
@@ -420,8 +420,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                     std::static_pointer_cast<MqttReceiver>(mqttMessageReceiver),
                     clusterControllerSettings.getMqttMulticastTopicPrefix(),
                     messagingSettings.getTtlUpliftMs());
-            mqttMessageReceiver->registerReceiveCallback([&](const std::string& msg) {
-                mqttMessagingSkeleton->onTextMessageReceived(msg);
+            mqttMessageReceiver->registerReceiveCallback([&](smrf::ByteVector&& msg) {
+                mqttMessagingSkeleton->onMessageReceived(std::move(msg));
             });
             multicastMessagingSkeletonDirectory
                     ->registerSkeleton<system::RoutingTypes::MqttAddress>(mqttMessagingSkeleton);

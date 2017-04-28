@@ -25,9 +25,10 @@
 
 #include "joynr/IMessagingStub.h"
 #include "joynr/IMessagingStubFactory.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessMessagingAddress.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/Message.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -105,11 +106,11 @@ AbstractMessageRouter::lookupAddresses(const std::unordered_set<std::string>& pa
 }
 
 std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
-AbstractMessageRouter::getDestinationAddresses(const JoynrMessage& message)
+AbstractMessageRouter::getDestinationAddresses(const ImmutableMessage& message)
 {
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
-    if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
-        std::string multicastId = message.getHeaderTo();
+    if (message.getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
+        const std::string& multicastId = message.getRecipient();
 
         // lookup local multicast receivers
         std::unordered_set<std::string> multicastReceivers =
@@ -125,7 +126,7 @@ AbstractMessageRouter::getDestinationAddresses(const JoynrMessage& message)
             }
         }
     } else {
-        const std::string destinationPartId = message.getHeaderTo();
+        const std::string& destinationPartId = message.getRecipient();
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress =
                 routingTable.lookup(destinationPartId);
         if (destAddress) {
@@ -165,29 +166,35 @@ void AbstractMessageRouter::sendMessages(
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Message with Id {} could not be sent. Error: {}",
-                            item->getContent().getHeaderMessageId(),
+                            item->getContent()->getId(),
                             e.getMessage());
         }
     }
 }
 
 void AbstractMessageRouter::scheduleMessage(
-        const JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
         std::uint32_t tryCount,
         std::chrono::milliseconds delay)
 {
     auto stub = messagingStubFactory->create(destAddress);
     if (stub) {
-        messageScheduler.schedule(
-                new MessageRunnable(message, stub, destAddress, *this, tryCount), delay);
+        messageScheduler.schedule(new MessageRunnable(std::move(message),
+                                                      std::move(stub),
+                                                      std::move(destAddress),
+                                                      *this,
+                                                      tryCount),
+                                  delay);
     } else {
-        std::string errorMessage("Message with payload " + message.getPayload() +
-                                 "  could not be send to " + destAddress->toString() +
-                                 ". Stub creation failed. Queueing message.");
-        JOYNR_LOG_WARN(logger, errorMessage);
+        JOYNR_LOG_WARN(
+                logger,
+                "Message with id {} could not be send to {}. Stub creation failed. => Queueing "
+                "message.",
+                message->getId(),
+                destAddress->toString());
         // save the message for later delivery
-        queueMessage(message);
+        queueMessage(std::move(message));
     }
 }
 
@@ -210,10 +217,10 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(const boost::system::er
     }
 }
 
-void AbstractMessageRouter::queueMessage(const JoynrMessage& message)
+void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 {
-    JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
-    messageQueue->queueMessage(message);
+    JOYNR_LOG_TRACE(logger, "message queued: {}", message->toLogMessage());
+    messageQueue->queueMessage(std::move(message));
 }
 
 void AbstractMessageRouter::loadRoutingTable(std::string fileName)
@@ -267,13 +274,13 @@ void AbstractMessageRouter::addToRoutingTable(
 INIT_LOGGER(MessageRunnable);
 
 MessageRunnable::MessageRunnable(
-        const JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<IMessagingStub> messagingStub,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
         AbstractMessageRouter& messageRouter,
         std::uint32_t tryCount)
         : Runnable(true),
-          ObjectWithDecayTime(message.getHeaderExpiryDate()),
+          ObjectWithDecayTime(message->getExpiryDate()),
           message(message),
           messagingStub(messagingStub),
           destAddress(destAddress),
@@ -289,6 +296,7 @@ void MessageRunnable::shutdown()
 void MessageRunnable::run()
 {
     if (!isExpired()) {
+        // TODO is it safe to capture (this) here? rather capture members by value!
         auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
             try {
                 exceptions::JoynrDelayMessageException& delayException =
@@ -299,21 +307,20 @@ void MessageRunnable::run()
                 JOYNR_LOG_TRACE(logger,
                                 "Rescheduling message after error: messageId: {}, new delay {}ms, "
                                 "reason: {}",
-                                message.getHeaderMessageId(),
+                                message->getId(),
                                 delay.count(),
                                 e.getMessage());
                 messageRouter.scheduleMessage(message, destAddress, tryCount + 1, delay);
             } catch (const std::bad_cast&) {
                 JOYNR_LOG_ERROR(logger,
                                 "Message with ID {} could not be sent! reason: {}",
-                                message.getHeaderMessageId(),
+                                message->getId(),
                                 e.getMessage());
             }
         };
         messagingStub->transmit(message, onFailure);
     } else {
-        JOYNR_LOG_ERROR(
-                logger, "Message with ID {}  expired: dropping!", message.getHeaderMessageId());
+        JOYNR_LOG_ERROR(logger, "Message with ID {}  expired: dropping!", message->getId());
     }
 }
 

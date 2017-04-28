@@ -70,7 +70,7 @@ public:
     void stopReceiveQueue() override;
 
     void registerReceiveCallback(
-            std::function<void(const std::string&)> onTextMessageReceived) override;
+            std::function<void(smrf::ByteVector&&)> onMessageReceived) override;
 
     virtual void subscribeToTopic(const std::string& topic);
 

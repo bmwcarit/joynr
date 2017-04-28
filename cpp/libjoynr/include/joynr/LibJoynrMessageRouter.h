@@ -51,7 +51,6 @@ class JoynrRuntimeException;
 
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
-class JoynrMessage;
 
 namespace system
 {
@@ -88,7 +87,7 @@ public:
     /*
      * Implement methods from IMessageRouter
      */
-    void route(JoynrMessage& message, std::uint32_t tryCount = 0) final;
+    void route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) final;
 
     void addNextHop(const std::string& participantId,
                     const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,

@@ -36,7 +36,7 @@ WebSocketMulticastAddressCalculator::WebSocketMulticastAddressCalculator(
 }
 
 std::shared_ptr<const system::RoutingTypes::Address> WebSocketMulticastAddressCalculator::compute(
-        const JoynrMessage& message)
+        const ImmutableMessage& message)
 {
     std::ignore = message;
     return clusterControllerAddress;

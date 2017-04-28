@@ -23,6 +23,8 @@
 #include <memory>
 #include <string>
 
+#include <smrf/ByteVector.h>
+
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
@@ -30,7 +32,7 @@ namespace joynr
 {
 
 class IMessageRouter;
-class JoynrMessage;
+class ImmutableMessage;
 
 namespace exceptions
 {
@@ -44,10 +46,10 @@ public:
 
     ~WebSocketLibJoynrMessagingSkeleton() = default;
 
-    void transmit(JoynrMessage& message,
+    void transmit(std::shared_ptr<ImmutableMessage> message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
-    void onMessageReceived(const std::string& message);
+    void onMessageReceived(smrf::ByteVector&& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketLibJoynrMessagingSkeleton);

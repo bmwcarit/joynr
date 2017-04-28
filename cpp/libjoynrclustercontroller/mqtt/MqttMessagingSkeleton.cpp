@@ -16,16 +16,20 @@
  * limitations under the License.
  * #L%
  */
-#include "MqttMessagingSkeleton.h"
+#include "libjoynrclustercontroller/mqtt/MqttMessagingSkeleton.h"
 
-#include "MqttReceiver.h"
+#include <smrf/exceptions.h>
+
 #include "joynr/DispatcherUtils.h"
 #include "joynr/IMessageRouter.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/Message.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+
+#include "libjoynrclustercontroller/mqtt/MqttReceiver.h"
 
 namespace joynr
 {
@@ -84,69 +88,67 @@ void MqttMessagingSkeleton::unregisterMulticastSubscription(const std::string& m
 }
 
 void MqttMessagingSkeleton::transmit(
-        JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
-        message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
-        message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
-        message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
-        std::string serializedReplyAddress = message.getHeaderReplyAddress();
+    const std::string& messageType = message->getType();
 
+    if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST()) {
+
+        boost::optional<std::string> optionalReplyTo = message->getReplyTo();
+
+        if (!optionalReplyTo.is_initialized()) {
+            JOYNR_LOG_ERROR(logger,
+                            "message {} did not contain replyTo header, discarding",
+                            message->getId());
+            return;
+        }
+        const std::string& replyTo = *optionalReplyTo;
         try {
             using system::RoutingTypes::MqttAddress;
             MqttAddress address;
-            joynr::serializer::deserializeFromJson(address, serializedReplyAddress);
+            joynr::serializer::deserializeFromJson(address, replyTo);
             messageRouter.addNextHop(
-                    message.getHeaderFrom(), std::make_shared<const MqttAddress>(address));
+                    message->getSender(), std::make_shared<const MqttAddress>(address));
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger,
                             "could not deserialize MqttAddress from {} - error: {}",
-                            serializedReplyAddress,
+                            replyTo,
                             e.what());
             // do not try to route the message if address is not valid
             return;
         }
-    } else if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
-        message.setReceivedFromGlobal(true);
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
+        message->setReceivedFromGlobal(true);
     }
 
     try {
-        messageRouter.route(message);
+        messageRouter.route(std::move(message));
     } catch (const exceptions::JoynrRuntimeException& e) {
         onFailure(e);
     }
 }
 
-void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
+void MqttMessagingSkeleton::onMessageReceived(smrf::ByteVector&& rawMessage)
 {
-    JoynrMessage msg;
+    std::shared_ptr<ImmutableMessage> immutableMessage;
     try {
-        joynr::serializer::deserializeFromJson(msg, message);
+        immutableMessage = std::make_shared<ImmutableMessage>(std::move(rawMessage));
+    } catch (const smrf::EncodingException& e) {
+        JOYNR_LOG_ERROR(logger, "Unable to deserialize message - error: {}", e.what());
+        return;
     } catch (const std::invalid_argument& e) {
-        JOYNR_LOG_ERROR(logger,
-                        "Unable to deserialize message. Raw message: {} - error: {}",
-                        message,
-                        e.what());
+        JOYNR_LOG_ERROR(logger, "deserialized message is not valid - error: {}", e.what());
         return;
     }
 
-    if (msg.getType().empty()) {
-        JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
-        return;
-    }
-    if (msg.getPayload().empty()) {
-        JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
-        return;
-    }
-    if (!msg.containsHeaderExpiryDate()) {
-        JOYNR_LOG_ERROR(logger,
-                        "received message [msgId=[{}] without decay time - dropping message",
-                        msg.getHeaderMessageId());
-        return;
-    }
-    JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", msg.toLogMessage());
+    JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
 
+    /*
+    // TODO remove uplift ???? cannot modify msg here!
     const JoynrTimePoint maxAbsoluteTime = DispatcherUtils::getMaxAbsoluteTime();
     JoynrTimePoint msgExpiryDate = msg.getHeaderExpiryDate();
     std::int64_t maxDiff = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -157,15 +159,17 @@ void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
         JoynrTimePoint newExpiryDate = msgExpiryDate + std::chrono::milliseconds(ttlUplift);
         msg.setHeaderExpiryDate(newExpiryDate);
     }
-
-    auto onFailure = [msg](const exceptions::JoynrRuntimeException& e) {
+    */
+    auto onFailure = [messageId = immutableMessage->getId()](
+            const exceptions::JoynrRuntimeException& e)
+    {
         JOYNR_LOG_ERROR(logger,
                         "Incoming Message with ID {} could not be sent! reason: {}",
-                        msg.getHeaderMessageId(),
+                        messageId,
                         e.getMessage());
     };
 
-    transmit(msg, onFailure);
+    transmit(std::move(immutableMessage), onFailure);
 }
 
 } // namespace joynr

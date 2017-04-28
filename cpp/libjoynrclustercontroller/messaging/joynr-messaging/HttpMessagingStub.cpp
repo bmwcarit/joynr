@@ -16,8 +16,9 @@
  * limitations under the License.
  * #L%
  */
-#include "HttpMessagingStub.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/HttpMessagingStub.h"
 
+#include "joynr/ImmutableMessage.h"
 #include "joynr/ITransportMessageSender.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessagingQos.h"
@@ -34,11 +35,11 @@ HttpMessagingStub::HttpMessagingStub(std::shared_ptr<ITransportMessageSender> me
 }
 
 void HttpMessagingStub::transmit(
-        JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> {}", message.toLogMessage());
-    messageSender->sendMessage(destinationAddress, message, onFailure);
+    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> {}", message->toLogMessage());
+    messageSender->sendMessage(destinationAddress, std::move(message), onFailure);
 }
 
 } // namespace joynr

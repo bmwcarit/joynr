@@ -30,8 +30,6 @@
 
 namespace joynr {
 
-void PrintTo(const JoynrMessage& value, ::std::ostream* os);
-
 // NOTE: Choosing the right PrintTo method is done by template magic by
 //       the compiler. Therefore, the point in time when the PrintTo method
 //       is defined is crucial. So consider defining the method in the same

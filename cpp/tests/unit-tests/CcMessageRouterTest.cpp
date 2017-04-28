@@ -122,15 +122,15 @@ TEST_F(CcMessageRouterTest, routeMulticastMessageFromWebSocketProvider_multicast
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
     );
 
-    joynrMessage.setType(joynr::JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST);
-    joynrMessage.setHeaderFrom(providerParticipantId);
-    joynrMessage.setHeaderTo(multicastId);
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
+    mutableMessage.setSender(providerParticipantId);
+    mutableMessage.setRecipient(multicastId);
 
     EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress1)))).Times(1);
     EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress2)))).Times(1);
     EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*multicastAddress)))).Times(1);
 
-    messageRouter->route(joynrMessage);
+    messageRouter->route(mutableMessage.getImmutableMessage());
 }
 
 TEST_F(CcMessageRouterTest, removeMulticastReceiver_NonChildRouter_succeedsIfSkeletonNotAvailable) {

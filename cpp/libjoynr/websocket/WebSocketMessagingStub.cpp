@@ -18,6 +18,9 @@
  */
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 
+#include <smrf/ByteArrayView.h>
+
+#include "joynr/ImmutableMessage.h"
 #include "joynr/IWebSocketSendInterface.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -36,20 +39,20 @@ WebSocketMessagingStub::WebSocketMessagingStub(std::shared_ptr<IWebSocketSendInt
 }
 
 void WebSocketMessagingStub::transmit(
-        JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    std::string serializedMessage = joynr::serializer::serializeToJson(message);
 
     if (!webSocket->isInitialized()) {
         JOYNR_LOG_WARN(
-                logger, "WebSocket not ready. Unable to send message {}", message.toLogMessage());
+                logger, "WebSocket not ready. Unable to send message {}", message->toLogMessage());
         onFailure(exceptions::JoynrDelayMessageException(
                 "WebSocket not ready. Unable to send message"));
     }
 
-    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> {}", message.toLogMessage());
-    webSocket->send(serializedMessage, onFailure);
+    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> {}", message->toLogMessage());
+    smrf::ByteArrayView serializedMessageView(message->getSerializedMessage());
+    webSocket->send(serializedMessageView, onFailure);
 }
 
 } // namespace joynr

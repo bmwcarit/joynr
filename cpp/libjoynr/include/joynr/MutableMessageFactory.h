@@ -22,7 +22,6 @@
 #include <string>
 
 #include "joynr/JoynrExport.h"
-#include "joynr/JoynrMessage.h"
 #include "joynr/Logger.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -44,8 +43,8 @@ class MulticastSubscriptionRequest;
 class IPlatformSecurityManager;
 
 /**
-  * The JoynrMessageFactory creates JoynrMessages. It sets the headers and
-  * payload according to the message type. It is used by the JoynrMessageSender.
+  * The MutableMessageFactory creates MutableMessages. It sets the headers and
+  * payload according to the message type. It is used by the MessageSender.
   */
 class JOYNR_EXPORT MutableMessageFactory
 {

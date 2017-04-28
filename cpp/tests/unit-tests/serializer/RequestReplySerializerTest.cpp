@@ -26,8 +26,9 @@
 
 #include <gtest/gtest.h>
 
-#include "joynr/JoynrMessage.h"
 #include "joynr/MutableMessageFactory.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
@@ -307,24 +308,22 @@ TYPED_TEST(RequestReplySerializerTest, exampleSerializerTestWithJoynrRequestOfCo
     this->compareRequestWithComplexValues(request);
 }
 
-TYPED_TEST(RequestReplySerializerTest, serializeJoynrMessage)
+TYPED_TEST(RequestReplySerializerTest, serializeMessage)
 {
     // Create a Request
     const bool isLocalMessage = true;
     joynr::Request outgoingRequest = this->initializeRequestWithPrimitiveValues();
-    joynr::JoynrMessage outgoingMessage = joynr::MutableMessageFactory().createRequest("sender",
+    joynr::MutableMessage outgoingMessage = joynr::MutableMessageFactory().createRequest("sender",
                                                                                      "receiver",
                                                                                      joynr::MessagingQos(),
                                                                                      outgoingRequest,
                                                                                      isLocalMessage);
-
-    JOYNR_LOG_TRACE(this->logger, "outgoing JoynrMessage payload JSON: {}", outgoingMessage.getPayload());
-
-    joynr::JoynrMessage incomingMessage;
-    this->deserialize(this->serialize(outgoingMessage), incomingMessage);
+    std::unique_ptr<joynr::ImmutableMessage> incomingMessage = outgoingMessage.getImmutableMessage();
 
     joynr::Request incomingRequest;
-    this->deserialize(incomingMessage.getPayload(), incomingRequest);
+    smrf::ByteArrayView bodyView = incomingMessage->getUnencryptedBody();
+    std::string serializedPayloadStr(bodyView.data(), bodyView.data() + bodyView.size());
+    this->deserialize(serializedPayloadStr, incomingRequest);
     this->compareRequestWithPrimitiveValues(incomingRequest);
 }
 

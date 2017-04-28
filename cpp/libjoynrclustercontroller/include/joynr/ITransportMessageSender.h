@@ -39,7 +39,7 @@ class JoynrRuntimeException;
 } // namespace exceptions
 
 class ITransportMessageReceiver;
-class JoynrMessage;
+class ImmutableMessage;
 
 class ITransportMessageSender
 {
@@ -50,7 +50,7 @@ public:
     */
     virtual void sendMessage(
             const joynr::system::RoutingTypes::Address& destinationAddress,
-            const JoynrMessage& message,
+            std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
 
     virtual void registerReceiver(std::shared_ptr<ITransportMessageReceiver>) = 0;

@@ -29,6 +29,8 @@
 
 #include "joynr/UnicastBroadcastListener.h"
 
+#include "tests/JoynrTest.h"
+
 using namespace ::testing;
 using ::testing::InSequence;
 
@@ -167,11 +169,15 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
 
     const std::vector<std::string> singleParam = {"A", "B"};
 
+    using ImmutableMessagePtr = std::shared_ptr<ImmutableMessage>;
+
+    const std::string expectedRecipient = providerParticipantId+"/broadcastWithSingleArrayParameter";
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
-                         A<JoynrMessage>(),
-                         Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
-                         Property(&JoynrMessage::getHeaderTo, Eq(providerParticipantId+"/broadcastWithSingleArrayParameter"))),
+                         A<ImmutableMessagePtr>(),
+                         MessageHasSender(providerParticipantId),
+                         MessageHasRecipient(expectedRecipient)
+                        ),
                      _
                      ));
 

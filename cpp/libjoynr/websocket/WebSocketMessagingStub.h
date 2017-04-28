@@ -54,7 +54,7 @@ public:
      */
     ~WebSocketMessagingStub() final = default;
     void transmit(
-            JoynrMessage& message,
+            std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) final;
 
 private:

@@ -50,7 +50,6 @@ class IAccessController;
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
 class IPlatformSecurityManager;
-class JoynrMessage;
 class MulticastMessagingSkeletonDirectory;
 
 namespace system
@@ -62,7 +61,7 @@ class MessageNotificationProvider;
 class CcMessageNotificationProvider;
 
 /**
-  * MessageRouter specialization for cluster-controller. It receives incoming JoynrMessages
+  * MessageRouter specialization for cluster-controller. It receives incoming ImmutableMessages
   * on the ClusterController and forwards them either to a remote ClusterController or
   * to a LibJoynr on the machine.
   *
@@ -70,7 +69,7 @@ class CcMessageNotificationProvider;
   *     MessagingEndpointDirectory
   *  2 creates a <Middleware>MessagingStub by calling MessagingStubFactory.create(EndpointAddress
   *addr)
-  *  3 forwards the message using the <Middleware>MessagingStub.send(JoynrMessage msg)
+  *  3 forwards the message using the <Middleware>MessagingStub.transmit(ImmutableMessage msg)
   *
   *  In sending, a ThreadPool of default size 1 is used.
   */
@@ -95,7 +94,7 @@ public:
     /*
      * Implement methods from IMessageRouter
      */
-    void route(JoynrMessage& message, std::uint32_t tryCount = 0) final;
+    void route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) final;
 
     void addNextHop(const std::string& participantId,
                     const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
@@ -103,7 +102,7 @@ public:
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;
 
-    void queueMessage(const JoynrMessage& message) final;
+    void queueMessage(std::shared_ptr<ImmutableMessage> message) final;
 
     /*
      * Implement methods from RoutingAbstractProvider

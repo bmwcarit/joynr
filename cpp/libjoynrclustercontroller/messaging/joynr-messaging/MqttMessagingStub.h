@@ -41,7 +41,7 @@ public:
     explicit MqttMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                const system::RoutingTypes::MqttAddress& destinationAddress);
     ~MqttMessagingStub() override = default;
-    void transmit(JoynrMessage& message,
+    void transmit(std::shared_ptr<ImmutableMessage> message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 

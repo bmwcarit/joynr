@@ -16,13 +16,17 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+
 #include <string>
 #include <vector>
 
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include "joynr/ImmutableMessage.h"
+#include "joynr/Message.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/MutableMessage.h"
 #include "joynr/MutableMessageFactory.h"
 #include "joynr/MessageSender.h"
 #include "joynr/Request.h"
@@ -32,6 +36,8 @@
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/SingleThreadedIOService.h"
+
+#include "tests/JoynrTest.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -70,6 +76,19 @@ public:
         qosSettings = MessagingQos(456000);
     }
 
+    void expectRoutedMessage(const std::string& type, const std::string& payload)
+    {
+        EXPECT_CALL(
+                    *(mockMessageRouter.get()),
+                    route(
+                        AllOf(
+                            MessageHasType(type),
+                            ImmutableMessageHasPayload(payload)
+                            )
+                        ,_)
+                    );
+    }
+
 protected:
     MutableMessageFactory messageFactory;
     std::string postFix;
@@ -97,7 +116,7 @@ TEST_F(MessageSenderTest, sendRequest_normal){
     paramDatatypes.push_back("java.lang.String");
     request.setParamDatatypes(paramDatatypes);
 
-    JoynrMessage message = messageFactory.createRequest(
+    MutableMessage mutableMessage = messageFactory.createRequest(
                 senderID,
                 receiverID,
                 qosSettings,
@@ -105,8 +124,7 @@ TEST_F(MessageSenderTest, sendRequest_normal){
                 isLocalMessage
     );
 
-    EXPECT_CALL( *(mockMessageRouter.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST)),
-                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
+    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_REQUEST(), mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter);
     messageSender.registerDispatcher(&mockDispatcher);
@@ -122,7 +140,7 @@ TEST_F(MessageSenderTest, sendOneWayRequest_normal){
     paramDatatypes.push_back("java.lang.String");
     oneWayRequest.setParamDatatypes(paramDatatypes);
 
-    JoynrMessage message = messageFactory.createOneWayRequest(
+    MutableMessage mutableMessage = messageFactory.createOneWayRequest(
                 senderID,
                 receiverID,
                 qosSettings,
@@ -130,25 +148,12 @@ TEST_F(MessageSenderTest, sendOneWayRequest_normal){
                 isLocalMessage
     );
 
-    EXPECT_CALL( *(mockMessageRouter.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY)),
-                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
+    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_ONE_WAY(), mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter);
     messageSender.registerDispatcher(&mockDispatcher);
     messageSender.sendOneWayRequest(senderID, receiverID, qosSettings, oneWayRequest, isLocalMessage);
 }
-
-
-TEST_F(MessageSenderDeathTest, DISABLED_sendRequest_nullPayloadFails_death){
-    EXPECT_CALL(*(mockMessageRouter.get()), route(_,_)).Times(0);
-
-    MessageSender messageSender(mockMessageRouter);
-    messageSender.registerDispatcher(&mockDispatcher);
-
-    Request jsonRequest;
-    ASSERT_DEATH(messageSender.sendRequest(senderID, receiverID, qosSettings, jsonRequest, callBack, isLocalMessage), "Assertion.*");
-}
-
 
 TEST_F(MessageSenderTest, sendReply_normal){
     MessageSender messageSender(mockMessageRouter);
@@ -157,14 +162,13 @@ TEST_F(MessageSenderTest, sendReply_normal){
     reply.setRequestReplyId(util::createUuid());
     reply.setResponse(std::string("response"));
 
-    JoynrMessage message = messageFactory.createReply(
+    MutableMessage mutableMessage = messageFactory.createReply(
                 senderID,
                 receiverID,
                 qosSettings,
                 reply);
 
-    EXPECT_CALL(*(mockMessageRouter.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY)),
-                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
+    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_REPLY(), mutableMessage.getPayload());
 
     messageSender.sendReply(senderID, receiverID, qosSettings, reply);
 }
@@ -181,15 +185,14 @@ TEST_F(MessageSenderTest, sendSubscriptionRequest_normal){
     subscriptionRequest.setSubscribeToName("attributeName");
     subscriptionRequest.setQos(qos);
 
-    JoynrMessage message = messageFactory.createSubscriptionRequest(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionRequest(
                 senderID,
                 receiverID,
                 qosSettings,
                 subscriptionRequest,
                 isLocalMessage);
 
-    EXPECT_CALL(*mockMessageRouter, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)),
-                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
+    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST(), mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter);
     messageSender.registerDispatcher(&mockDispatcher);
@@ -211,15 +214,14 @@ TEST_F(MessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     subscriptionRequest.setSubscribeToName("broadcastName");
     subscriptionRequest.setQos(qos);
 
-    JoynrMessage message = messageFactory.createBroadcastSubscriptionRequest(
+    MutableMessage mutableMessage = messageFactory.createBroadcastSubscriptionRequest(
                 senderID,
                 receiverID,
                 qosSettings,
                 subscriptionRequest,
                 isLocalMessage);
 
-    EXPECT_CALL(*mockMessageRouter, route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)),
-                                                  Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
+    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST(), mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter);
     messageSender.registerDispatcher(&mockDispatcher);
@@ -230,8 +232,8 @@ TEST_F(MessageSenderTest, sendBroadcastSubscriptionRequest_normal){
 //TODO implement sending a reply to a subscription request!
 TEST_F(MessageSenderTest, DISABLED_sendSubscriptionReply_normal){
     std::string payload("subscriptionReply");
-    EXPECT_CALL(*(mockMessageRouter.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)),
-                                                  Property(&JoynrMessage::getPayload, Eq(payload))),_));
+
+    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY(), payload);
 
     MessageSender messageSender(mockMessageRouter);
     messageSender.registerDispatcher(&mockDispatcher);
@@ -245,14 +247,14 @@ TEST_F(MessageSenderTest, sendPublication_normal){
     SubscriptionPublication publication;
     publication.setSubscriptionId("ignoresubscriptionid");
     publication.setResponse(std::string("publication"));
-    JoynrMessage message = messageFactory.createSubscriptionPublication(
+
+    MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
                 senderID,
                 receiverID,
                 qosSettings,
                 publication);
 
-    EXPECT_CALL(*(mockMessageRouter.get()), route(AllOf(Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION)),
-                                                      Property(&JoynrMessage::getPayload, Eq(message.getPayload()))),_));
+    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_PUBLICATION(), mutableMessage.getPayload());
 
     messageSender.sendSubscriptionPublication(senderID, receiverID, qosSettings, std::move(publication));
 }
@@ -269,16 +271,14 @@ TEST_F(MessageSenderTest, sendMulticastSubscriptionRequest) {
     subscriptionRequest.setQos(subscriptionQos);
     subscriptionRequest.setMulticastId("multicastId");
 
-    JoynrMessage expectedMessage = messageFactory.createMulticastSubscriptionRequest(
+    MutableMessage mutableMessage = messageFactory.createMulticastSubscriptionRequest(
             senderParticipantId,
             receiverParticipantId,
             messagingQos,
             subscriptionRequest,
             isLocalMessage);
 
-    EXPECT_CALL(*mockMessageRouter, route(AllOf(
-            Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)),
-            Property(&JoynrMessage::getPayload, Eq(expectedMessage.getPayload()))),_));
+    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST(), mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter);
 

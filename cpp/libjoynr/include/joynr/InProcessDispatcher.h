@@ -44,6 +44,7 @@ namespace joynr
 class IReplyCaller;
 class MessagingQos;
 
+// TODO can this class be made obsolete?
 class JOYNR_EXPORT InProcessDispatcher : public IDispatcher, public IRequestCallerDirectory
 {
 public:
@@ -61,7 +62,7 @@ public:
 
     void removeRequestCaller(const std::string& participantId) override;
 
-    void receive(const JoynrMessage& message) override;
+    void receive(std::shared_ptr<ImmutableMessage> message) override;
 
     void registerSubscriptionManager(
             std::shared_ptr<ISubscriptionManager> subscriptionManager) override;

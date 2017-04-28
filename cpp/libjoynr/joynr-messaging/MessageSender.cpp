@@ -23,7 +23,9 @@
 
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessageRouter.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/MulticastPublication.h"
+#include "joynr/MutableMessage.h"
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionPublication.h"
@@ -56,10 +58,10 @@ void MessageSender::sendRequest(const std::string& senderParticipantId,
     assert(dispatcher != nullptr);
 
     dispatcher->addReplyCaller(request.getRequestReplyId(), callback, qos);
-    JoynrMessage message = messageFactory.createRequest(
+    MutableMessage message = messageFactory.createRequest(
             senderParticipantId, receiverParticipantId, qos, request, isLocalMessage);
     assert(messageRouter);
-    messageRouter->route(message);
+    messageRouter->route(message.getImmutableMessage());
 }
 
 void MessageSender::sendOneWayRequest(const std::string& senderParticipantId,
@@ -69,10 +71,10 @@ void MessageSender::sendOneWayRequest(const std::string& senderParticipantId,
                                       bool isLocalMessage)
 {
     try {
-        JoynrMessage message = messageFactory.createOneWayRequest(
+        MutableMessage message = messageFactory.createOneWayRequest(
                 senderParticipantId, receiverParticipantId, qos, request, isLocalMessage);
         assert(messageRouter);
-        messageRouter->route(message);
+        messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
@@ -84,10 +86,10 @@ void MessageSender::sendReply(const std::string& senderParticipantId,
                               const Reply& reply)
 {
     try {
-        JoynrMessage message =
+        MutableMessage message =
                 messageFactory.createReply(senderParticipantId, receiverParticipantId, qos, reply);
         assert(messageRouter);
-        messageRouter->route(message);
+        messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {
@@ -106,13 +108,13 @@ void MessageSender::sendSubscriptionRequest(const std::string& senderParticipant
                                             bool isLocalMessage)
 {
     try {
-        JoynrMessage message = messageFactory.createSubscriptionRequest(senderParticipantId,
-                                                                        receiverParticipantId,
-                                                                        qos,
-                                                                        subscriptionRequest,
-                                                                        isLocalMessage);
+        MutableMessage message = messageFactory.createSubscriptionRequest(senderParticipantId,
+                                                                          receiverParticipantId,
+                                                                          qos,
+                                                                          subscriptionRequest,
+                                                                          isLocalMessage);
         assert(messageRouter);
-        messageRouter->route(message);
+        messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
@@ -126,14 +128,14 @@ void MessageSender::sendBroadcastSubscriptionRequest(
         bool isLocalMessage)
 {
     try {
-        JoynrMessage message =
+        MutableMessage message =
                 messageFactory.createBroadcastSubscriptionRequest(senderParticipantId,
                                                                   receiverParticipantId,
                                                                   qos,
                                                                   subscriptionRequest,
                                                                   isLocalMessage);
         assert(messageRouter);
-        messageRouter->route(message);
+        messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
@@ -147,14 +149,14 @@ void MessageSender::sendMulticastSubscriptionRequest(
         bool isLocalMessage)
 {
     try {
-        JoynrMessage message =
+        MutableMessage message =
                 messageFactory.createMulticastSubscriptionRequest(senderParticipantId,
                                                                   receiverParticipantId,
                                                                   qos,
                                                                   subscriptionRequest,
                                                                   isLocalMessage);
         assert(messageRouter);
-        messageRouter->route(message);
+        messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
@@ -166,10 +168,10 @@ void MessageSender::sendSubscriptionReply(const std::string& senderParticipantId
                                           const SubscriptionReply& subscriptionReply)
 {
     try {
-        JoynrMessage message = messageFactory.createSubscriptionReply(
+        MutableMessage message = messageFactory.createSubscriptionReply(
                 senderParticipantId, receiverParticipantId, qos, subscriptionReply);
         assert(messageRouter);
-        messageRouter->route(message);
+        messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {
@@ -188,10 +190,10 @@ void MessageSender::sendSubscriptionStop(const std::string& senderParticipantId,
                                          const SubscriptionStop& subscriptionStop)
 {
     try {
-        JoynrMessage message = messageFactory.createSubscriptionStop(
+        MutableMessage message = messageFactory.createSubscriptionStop(
                 senderParticipantId, receiverParticipantId, qos, subscriptionStop);
         assert(messageRouter);
-        messageRouter->route(message);
+        messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
@@ -203,10 +205,10 @@ void MessageSender::sendSubscriptionPublication(const std::string& senderPartici
                                                 SubscriptionPublication&& subscriptionPublication)
 {
     try {
-        JoynrMessage message = messageFactory.createSubscriptionPublication(
+        MutableMessage message = messageFactory.createSubscriptionPublication(
                 senderParticipantId, receiverParticipantId, qos, subscriptionPublication);
         assert(messageRouter);
-        messageRouter->route(message);
+        messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {
@@ -224,10 +226,10 @@ void MessageSender::sendMulticast(const std::string& fromParticipantId,
                                   const MessagingQos& messagingQos)
 {
     try {
-        JoynrMessage message = messageFactory.createMulticastPublication(
+        MutableMessage message = messageFactory.createMulticastPublication(
                 fromParticipantId, messagingQos, multicastPublication);
         assert(messageRouter);
-        messageRouter->route(message);
+        messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {

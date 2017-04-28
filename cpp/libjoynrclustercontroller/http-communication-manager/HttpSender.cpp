@@ -64,7 +64,7 @@ HttpSender::~HttpSender()
 
 void HttpSender::sendMessage(
         const system::RoutingTypes::Address& destinationAddress,
-        const JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     const auto* channelAddress =
@@ -76,13 +76,12 @@ void HttpSender::sendMessage(
     }
 
     JOYNR_LOG_TRACE(logger, "sendMessage: ...");
-    std::string&& serializedMessage = joynr::serializer::serializeToJson(message);
 
     auto startTime = std::chrono::system_clock::now();
 
     std::chrono::milliseconds decayTimeMillis =
             std::chrono::duration_cast<std::chrono::milliseconds>(
-                    message.getHeaderExpiryDate().time_since_epoch());
+                    message->getExpiryDate().time_since_epoch());
     std::chrono::milliseconds nowMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch());
     std::chrono::milliseconds remainingTtl = decayTimeMillis - nowMillis;
@@ -97,9 +96,12 @@ void HttpSender::sendMessage(
     JOYNR_LOG_TRACE(logger,
                     "Sending message; url: {}, time left: {}",
                     toUrl(*channelAddress),
-                    DispatcherUtils::convertAbsoluteTimeToTtlString(message.getHeaderExpiryDate()));
+                    DispatcherUtils::convertAbsoluteTimeToTtlString(message->getExpiryDate()));
 
     JOYNR_LOG_TRACE(logger, "going to buildRequest");
+
+    // TODO transmit message->getSerializedMessage() instead
+    std::string serializedMessage = "FIX ME I AM EMPTY";
     HttpResult sendMessageResult = buildRequestAndSend(
             serializedMessage, toUrl(*channelAddress), std::chrono::milliseconds(curlTimeout));
 

@@ -20,6 +20,7 @@
 #define INPROCESSMESSAGINGSKELETON_H
 
 #include <functional>
+#include <memory>
 
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -28,7 +29,7 @@ namespace joynr
 {
 
 class IDispatcher;
-class JoynrMessage;
+class ImmutableMessage;
 
 namespace exceptions
 {
@@ -41,7 +42,7 @@ public:
     explicit InProcessMessagingSkeleton(IDispatcher* dispatcher);
     virtual ~InProcessMessagingSkeleton() = default;
     virtual void transmit(
-            JoynrMessage& message,
+            std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
 private:

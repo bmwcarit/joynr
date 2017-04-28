@@ -28,7 +28,6 @@
 #include "joynr/Directory.h"
 #include "joynr/IMessageRouter.h"
 #include "joynr/JoynrExport.h"
-#include "joynr/JoynrMessage.h"
 #include "joynr/Logger.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MulticastReceiverDirectory.h"
@@ -56,6 +55,7 @@ namespace joynr
 
 class IMessagingStub;
 class IMessagingStubFactory;
+class ImmutableMessage;
 class IMulticastAddressCalculator;
 
 namespace system
@@ -90,7 +90,7 @@ protected:
             std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
-    getDestinationAddresses(const JoynrMessage& message);
+    getDestinationAddresses(const ImmutableMessage& message);
 
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
             const std::unordered_set<std::string>& participantIds);
@@ -101,7 +101,7 @@ protected:
     void addToRoutingTable(std::string participantId,
                            std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
-    void scheduleMessage(const JoynrMessage& message,
+    void scheduleMessage(std::shared_ptr<ImmutableMessage> message,
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
                          std::uint32_t tryCount = 0,
                          std::chrono::milliseconds delay = std::chrono::milliseconds(0));
@@ -120,7 +120,7 @@ protected:
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
     SteadyTimer messageQueueCleanerTimer;
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
-    void queueMessage(const JoynrMessage& message);
+    void queueMessage(std::shared_ptr<ImmutableMessage> message) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessageRouter);
@@ -136,7 +136,7 @@ private:
 class JOYNR_EXPORT MessageRunnable : public Runnable, public ObjectWithDecayTime
 {
 public:
-    MessageRunnable(const JoynrMessage& message,
+    MessageRunnable(std::shared_ptr<ImmutableMessage> message,
                     std::shared_ptr<IMessagingStub> messagingStub,
                     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
                     AbstractMessageRouter& messageRouter,
@@ -145,7 +145,7 @@ public:
     void run() override;
 
 private:
-    JoynrMessage message;
+    std::shared_ptr<ImmutableMessage> message;
     std::shared_ptr<IMessagingStub> messagingStub;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
     AbstractMessageRouter& messageRouter;

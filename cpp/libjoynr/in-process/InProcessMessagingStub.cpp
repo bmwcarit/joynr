@@ -31,11 +31,11 @@ InProcessMessagingStub::InProcessMessagingStub(std::shared_ptr<InProcessMessagin
 }
 
 void InProcessMessagingStub::transmit(
-        JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     assert(skeleton != nullptr);
-    skeleton->transmit(message, onFailure);
+    skeleton->transmit(std::move(message), onFailure);
 }
 
 } // namespace joynr

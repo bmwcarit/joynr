@@ -20,16 +20,16 @@
 #ifndef IACCESSCONTROLLER_H
 #define IACCESSCONTROLLER_H
 
-#include "joynr/JoynrExport.h"
-#include "joynr/infrastructure/DacTypes/TrustLevel.h"
-
 #include <memory>
 #include <string>
+
+#include "joynr/JoynrExport.h"
+#include "joynr/infrastructure/DacTypes/TrustLevel.h"
 
 namespace joynr
 {
 
-class JoynrMessage;
+class ImmutableMessage;
 
 /**
  * Interface for objects that control access to providers
@@ -63,7 +63,7 @@ public:
      * @param callback An object that will be called back with the result
      */
     virtual void hasConsumerPermission(
-            const JoynrMessage& message,
+            std::shared_ptr<ImmutableMessage> message,
             std::shared_ptr<IHasConsumerPermissionCallback> callback) = 0;
 
     /**
