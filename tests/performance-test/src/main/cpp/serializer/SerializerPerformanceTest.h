@@ -17,20 +17,20 @@
  * #L%
  */
 
+#include "../common/PerformanceTest.h"
+
 #include <vector>
 #include <numeric>
 #include <string>
 
 #include <boost/type_index.hpp>
 
-#include "../common/PerformanceTest.h"
-#include "joynr/Request.h"
-#include "joynr/JoynrMessageFactory.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/JoynrMessage.h"
-
-#include "joynr/tests/performance/Types/ComplexStruct.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/Request.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/tests/performance/Types/ComplexStruct.h"
 
 template <typename Generator>
 class SerializerPerformanceTest : public PerformanceTest
@@ -42,11 +42,7 @@ class SerializerPerformanceTest : public PerformanceTest
 
 public:
     SerializerPerformanceTest(std::uint64_t runs, std::size_t length)
-            : runs(runs),
-              length(length),
-              request(Generator::generateRequest(length)),
-              messageFactory(),
-              qos()
+            : runs(runs), length(length), request(Generator::generateRequest(length)), qos()
     {
     }
 
@@ -59,11 +55,8 @@ public:
     void runFullMessageSerializationBenchmark() const
     {
         auto fun = [this]() {
-            joynr::JoynrMessage message = this->createMessage();
-            OutputStream ostream;
-            OutputArchive oarchive(ostream);
-            oarchive(message);
-            return ostream.getString();
+            joynr::MutableMessage mutableMessage = createMessage();
+            return mutableMessage.getImmutableMessage();
         };
         runAndPrintAverage(runs, getTestName("full message serialization"), fun);
     }
@@ -71,10 +64,10 @@ public:
     template <typename ParamType>
     void runDeSerializationBenchmark() const
     {
-        joynr::JoynrMessage message = createMessage();
-        auto fun = [&message]() {
+        joynr::MutableMessage mutableMessage = createMessage();
+        auto fun = [&mutableMessage]() {
             joynr::Request deserializedRequest;
-            InputStream istream(message.getPayload());
+            InputStream istream(mutableMessage.getPayload());
             auto iarchive = std::make_shared<InputArchive>(istream);
             (*iarchive)(deserializedRequest);
             ParamType param;
@@ -89,21 +82,18 @@ public:
     void runFullMessageDeSerializationBenchmark() const
     {
         // create a message, serialize it and then benchmark the deserialization
-        joynr::JoynrMessage message = createMessage();
+        joynr::MutableMessage mutableMessage = createMessage();
+        std::unique_ptr<joynr::ImmutableMessage> immutableMessage =
+                mutableMessage.getImmutableMessage();
+        const smrf::ByteVector& rawMessage = immutableMessage->getSerializedMessage();
+        auto fun = [&rawMessage]() {
+            joynr::ImmutableMessage deserializedMessage(rawMessage);
 
-        OutputStream ostream;
-        muesli::JsonOutputArchive<OutputStream> oarchive(ostream);
-        oarchive(message);
-        std::string serializedMessage = ostream.getString();
-
-        auto fun = [&serializedMessage]() {
-            InputStream msgStream(serializedMessage);
-            joynr::JoynrMessage deserializedMessage;
-            InputArchive messageInputArchive(msgStream);
-            messageInputArchive(deserializedMessage);
-
+            const smrf::ByteArrayView& deserializedBody = deserializedMessage.getUnencryptedBody();
+            std::string payloadStr(
+                    deserializedBody.data(), deserializedBody.data() + deserializedBody.size());
             joynr::Request deserializedRequest;
-            InputStream requestStream(deserializedMessage.getPayload());
+            InputStream requestStream(payloadStr);
             auto requestInputArchive = std::make_shared<InputArchive>(requestStream);
             (*requestInputArchive)(deserializedRequest);
 
@@ -116,12 +106,12 @@ public:
     }
 
 private:
-    joynr::JoynrMessage createMessage() const
+    joynr::MutableMessage createMessage() const
     {
         OutputStream ostream;
         muesli::JsonOutputArchive<OutputStream> oarchive(ostream);
         oarchive(request);
-        joynr::JoynrMessage msg;
+        joynr::MutableMessage msg;
         msg.setPayload(ostream.getString());
         return msg;
     }
@@ -135,7 +125,6 @@ private:
     std::uint64_t runs;
     std::size_t length;
     joynr::Request request;
-    joynr::JoynrMessageFactory messageFactory;
     joynr::MessagingQos qos;
 
     const std::string senderParticipantId = "sender";
