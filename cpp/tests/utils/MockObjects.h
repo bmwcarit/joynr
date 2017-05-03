@@ -72,7 +72,7 @@
 
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "common/in-process/InProcessMessagingSkeleton.h"
+#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
 

@@ -448,10 +448,10 @@ Start up the Payara server by changing to the Payara install directory and execu
 Configure your JEE application server with a `ManagedScheduledExecutorService`
 resource which has the name `'concurrent/joynrMessagingScheduledExecutor'`:
 
-    bin/asadmin create-managed-scheduled-executor-service --corepoolsize=10 concurrent/joynrMessagingScheduledExecutor
+    bin/asadmin create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor
 
-Note the `--corepoolsize=10` option. The default will only create one thread,
-which can lead to blocking, so you should use at least 10 threads.
+Note the `--corepoolsize=100` option. The default will only create one thread,
+which can lead to blocking.
 
 You also need a connection pool for the database which shall be used by the backend services
 to persist data.
@@ -461,9 +461,7 @@ installed as part of Payara:
     bin/asadmin create-jdbc-connection-pool \
         --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
         --restype javax.sql.XADataSource \
-        --property portNumber=1527:password=APP:user=APP:serverName=\
-        localhost:databaseName=joynr-discovery-directory:connectionAttributes=\; \
-        create\\=true JoynrPool
+        --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool
 
 Next, create a datasource resource pointing to that database connection. Here's an
 example of what that would look like when using the connection pool created above:

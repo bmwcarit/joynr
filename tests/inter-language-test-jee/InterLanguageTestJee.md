@@ -137,12 +137,10 @@ Configure your container runtime with a `ManagedScheduledExecutorService`
 resource which has the name `'concurrent/joynrMessagingScheduledExecutor'`.
 
 For example for Glassfish/Payara:
-`asadmin create-managed-scheduled-executor-service --corepoolsize=10 concurrent/joynrMessagingScheduledExecutor`
+`asadmin create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor`
 
->Note the `--corepoolsize=10` option. The default will only create one thread,
->which can lead to blocking, so you should use at least 10 threads. Depending on your
->load, you can experiment with higher values to enable more concurrency when
->communicating joynr messages.
+>Note the `--corepoolsize=100` option. The default will only create one thread,
+>which can lead to blocking
 
 ## Example
 
@@ -180,9 +178,7 @@ on the JavaDB (based on Derby) database which is installed as part of Payara / G
     bin/asadmin create-jdbc-connection-pool \
         --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
         --restype javax.sql.XADataSource \
-        --property portNumber=1527:password=APP:user=APP:serverName=\
-        localhost:databaseName=joynr-discovery-directory:connectionAttributes=\; \
-        create\\=true JoynrPool
+        --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool
 
 Next, create a datasource resource pointing to that database connection. Here's an
 example of what that would look like when using the connection pool created above:

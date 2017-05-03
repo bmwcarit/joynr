@@ -25,7 +25,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/asio/io_service.hpp>
 
-#include "common/InterfaceAddress.h"
 #include "joynr/CapabilityUtils.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
@@ -36,6 +35,8 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/Util.h"
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 
 namespace joynr

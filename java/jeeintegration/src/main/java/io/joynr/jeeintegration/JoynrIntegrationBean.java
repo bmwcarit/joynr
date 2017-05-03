@@ -42,6 +42,8 @@ import com.google.inject.Injector;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.types.ProviderQos;
 import org.slf4j.Logger;
@@ -152,6 +154,10 @@ public class JoynrIntegrationBean {
                 }
             }
         }
+        MessagingStubFactory messagingStubFactory = getJoynrInjector().getInstance(MessagingStubFactory.class);
+        MessagingSkeletonFactory messagingSkeletonFactory = getJoynrInjector().getInstance(MessagingSkeletonFactory.class);
+        messagingSkeletonFactory.shutdown();
+        messagingStubFactory.shutdown();
     }
 
     /**

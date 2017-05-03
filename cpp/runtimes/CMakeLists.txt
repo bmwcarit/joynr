@@ -2,7 +2,6 @@ message(STATUS "#############################################")
 message(STATUS "Configuring runtimes...")
 message(STATUS "#############################################\n")
 
-get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 
 set(
@@ -25,7 +24,6 @@ set(
     JoynrRuntime_INCLUDE_DIRECTORIES
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
 )
 
@@ -48,7 +46,6 @@ set(
 
 set(
     JoynrClusterControllerRuntime_TARGET_LIBRARIES
-    JoynrCommon
     Joynr
     JoynrClusterController
 )
@@ -197,7 +194,6 @@ AddClangTidy(JoynrWsRuntime)
 
 target_link_libraries(
     JoynrWsRuntime
-    JoynrCommon
     Joynr
 )
 
@@ -274,7 +270,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
     target_link_libraries(
         JoynrDbusRuntime
-        JoynrCommon
         Joynr
     )
 

@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include "joynr/JoynrCommonExport.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/types/Version.h"
@@ -35,7 +35,7 @@ namespace exceptions
  * @brief Joynr exception class to report error during method invocations (RPC) at a provider
  * ("no such method", invalid arguments, etc.)
  */
-class JOYNRCOMMON_EXPORT MethodInvocationException : public JoynrRuntimeException
+class JOYNR_EXPORT MethodInvocationException : public JoynrRuntimeException
 {
 public:
     /**
