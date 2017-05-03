@@ -1,6 +1,6 @@
 {
   "name": "performance-test",
-  "version": "0.25.2",
+  "version": "0.26.0-SNAPSHOT",
   "license": "Apache-2.0",
   "description": "Performance tests",
   "main": "src/main/js/consumer.js",
@@ -10,7 +10,7 @@
   },
   "dependencies": {
       "bluebird" : "3.3.5",
-      "joynr" : ">=0.25.2",
+      "joynr" : ">=0.26.0-SNAPSHOT",
       "mqtt" : "2.0.1"
   },
   "config": {
