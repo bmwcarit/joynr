@@ -32,7 +32,8 @@
     "ws" : "1.0.1",
     "mqtt" : "2.0.1",
     "bluebird" : "3.3.5",
-    "promise": ">=7.1.1"
+    "promise": ">=7.1.1",
+    "smrf-native": "0.1.4"
   },
   "engines": {
     "node": ">=0.10.40",
