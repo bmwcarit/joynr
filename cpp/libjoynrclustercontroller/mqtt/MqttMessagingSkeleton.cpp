@@ -128,6 +128,7 @@ void MqttMessagingSkeleton::onTextMessageReceived(const std::string& message)
                         "Unable to deserialize message. Raw message: {} - error: {}",
                         message,
                         e.what());
+        return;
     }
 
     if (msg.getType().empty()) {

@@ -82,13 +82,13 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             runtimeModule = new LibjoynrWebSocketRuntimeModule();
         } else {
             runtimeModule = new CCInProcessRuntimeModule();
-            // always install HTTP for now
-            backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
-
             if (invocationParameters.getBackendTransportMode() == BackendConfig.MQTT) {
                 joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParameters.getMqttBrokerUri());
                 joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
+            } else {
+                // HTTP
+                backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
             }
         }
 

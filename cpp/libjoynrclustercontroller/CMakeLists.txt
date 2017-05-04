@@ -2,7 +2,6 @@ message(STATUS "#############################################")
 message(STATUS "Configuring JoynrClusterController...")
 message(STATUS "#############################################\n")
 
-get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(JoynrLib_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
 
 ### Add mosquitto mqtt ###########################################################
@@ -56,7 +55,6 @@ set(
     JoynrClusterController_INCLUDE_DIRECTORIES
     ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
     "../"
-    ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${JoynrLib_PUBLIC_INCLUDE_DIRECTORY}
 )
 
@@ -69,7 +67,6 @@ set(
 set(
     JoynrClusterController_TARGET_LIBRARIES
     Joynr
-    JoynrCommon
     cURL::curl
 )
 
@@ -98,7 +95,7 @@ file(
     "messaging/in-process/*.h"
     "messaging/joynr-messaging/*.h"
     "mqtt/*.h"
-    "ClusterControllerSettings.cpp"
+    "websocket/*.h"
 )
 
 set(
@@ -119,6 +116,8 @@ file(
     "messaging/in-process/*.cpp"
     "messaging/joynr-messaging/*.cpp"
     "mqtt/*.cpp"
+    "websocket/*.cpp"
+    "ClusterControllerSettings.cpp"
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})

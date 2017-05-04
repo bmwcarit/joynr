@@ -62,9 +62,8 @@ TEST_F(LibJoynrMessageRouterTest, routeMulticastMessageFromLocalProvider_multica
         )
     );
 
-    messageRouter->setParentRouter(std::move(mockRoutingProxy),
-                                   localTransport,
-                                   std::string("parentParticipantId"));
+    messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
+    messageRouter->setParentRouter(std::move(mockRoutingProxy));
 
     messageRouter->addMulticastReceiver(
         multicastId,
@@ -89,7 +88,6 @@ TEST_F(LibJoynrMessageRouterTest, routeMulticastMessageFromLocalProvider_multica
 
 TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouterIfProviderAddressNotAvailable) {
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
-    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
 
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
@@ -116,10 +114,8 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouterIfProvid
                 )
             );;
 
-    messageRouter->setParentRouter(
-                std::move(mockRoutingProxy),
-                parentAddress,
-                std::string("parentParticipantId"));
+    messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
+    messageRouter->setParentRouter(std::move(mockRoutingProxy));
 
     Semaphore errorCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,
@@ -154,15 +150,15 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouterIfProvid
 TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiver_CallsParentRouter) {
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
     auto mockRoutingProxyRef = mockRoutingProxy.get();
-    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
 
-    messageRouter->setParentRouter(std::move(mockRoutingProxy), parentAddress, std::string("parentParticipantId"));
+    messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
+    messageRouter->setParentRouter(std::move(mockRoutingProxy));
 
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
 
-    messageRouter->addProvisionedNextHop(providerParticipantId, parentAddress);
+    messageRouter->addProvisionedNextHop(providerParticipantId, localTransport);
 
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
@@ -184,9 +180,9 @@ TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiver_CallsParentRouter) {
 TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiverOfInProcessProvider_callsParentRouter) {
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
     auto mockRoutingProxyRef = mockRoutingProxy.get();
-    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
 
-    messageRouter->setParentRouter(std::move(mockRoutingProxy), parentAddress, std::string("parentParticipantId"));
+    messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
+    messageRouter->setParentRouter(std::move(mockRoutingProxy));
 
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
@@ -224,14 +220,14 @@ TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiverOfInProcessProvider_cal
 TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouter) {
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
     auto mockRoutingProxyRef = mockRoutingProxy.get();
-    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
 
-    messageRouter->setParentRouter(std::move(mockRoutingProxy), parentAddress, std::string("parentParticipantId"));
+    messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
+    messageRouter->setParentRouter(std::move(mockRoutingProxy));
 
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
-    messageRouter->addProvisionedNextHop(providerParticipantId, parentAddress);
+    messageRouter->addProvisionedNextHop(providerParticipantId, localTransport);
 
     // Call shall be forwarded to the parent proxy
     EXPECT_CALL(*mockRoutingProxyRef,
@@ -247,9 +243,9 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouter) {
 TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForWebSocketProvider_callsParentRouter) {
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
     auto mockRoutingProxyRef = mockRoutingProxy.get();
-    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
 
-    messageRouter->setParentRouter(std::move(mockRoutingProxy), parentAddress, std::string("parentParticipantId"));
+    messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
+    messageRouter->setParentRouter(std::move(mockRoutingProxy));
 
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
@@ -280,9 +276,9 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForWebSocketProvider_calls
 TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForInProcessProvider_callsParentRouter) {
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
     auto mockRoutingProxyRef = mockRoutingProxy.get();
-    auto parentAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
 
-    messageRouter->setParentRouter(std::move(mockRoutingProxy), parentAddress, std::string("parentParticipantId"));
+    messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
+    messageRouter->setParentRouter(std::move(mockRoutingProxy));
 
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");

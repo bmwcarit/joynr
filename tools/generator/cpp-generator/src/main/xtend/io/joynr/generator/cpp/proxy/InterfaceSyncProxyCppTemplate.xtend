@@ -54,14 +54,13 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 // the connectors will contain the JSON related code
 
 «syncClassName»::«syncClassName»(
-		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		const std::string &domain,
 		const joynr::MessagingQos &qosSettings
 ) :
 		joynr::ProxyBase(connectorFactory, domain, qosSettings),
-		«className»Base(messagingAddress, connectorFactory, domain, qosSettings)«IF hasFireAndForgetMethods(francaIntf)»,
-		«interfaceName»FireAndForgetProxy(messagingAddress, connectorFactory, domain, qosSettings)«ENDIF»
+		«className»Base(connectorFactory, domain, qosSettings)«IF hasFireAndForgetMethods(francaIntf)»,
+		«interfaceName»FireAndForgetProxy(connectorFactory, domain, qosSettings)«ENDIF»
 {
 }
 

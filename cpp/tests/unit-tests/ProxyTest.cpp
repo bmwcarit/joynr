@@ -89,7 +89,6 @@ public:
     tests::testProxy* createFixture() override {
         EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
         tests::testProxy* proxy = new tests::testProxy(
-                    endPointAddress,
                     mockConnectorFactory,
                     "myDomain",
                     MessagingQos());

@@ -114,12 +114,6 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
-# copy joynr executables
-file(
-    COPY ${Joynr_EXECUTABLES}
-    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-)
-
 # Link with the joynr libraries
 set(jsit-tests_LIBRARIES
     ${Joynr_LIB_COMMON_LIBRARIES}

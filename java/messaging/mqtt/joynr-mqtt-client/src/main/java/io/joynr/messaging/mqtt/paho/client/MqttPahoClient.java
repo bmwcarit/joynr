@@ -180,7 +180,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     public void shutdown() {
         logger.info("Attempting shutdown of MQTT connection.");
         try {
-            mqttClient.disconnect();
+            mqttClient.disconnectForcibly(10000, 10000);
             mqttClient.close();
         } catch (Exception e) {
             logger.error("MQTT Close failed", e);

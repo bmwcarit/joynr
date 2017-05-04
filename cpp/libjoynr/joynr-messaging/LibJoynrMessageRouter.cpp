@@ -69,8 +69,8 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
           incomingAddress(incomingAddress),
           runningParentResolves(),
           parentResolveMutex(),
-          globalParentClusterControllerAddressMutex(),
-          globalParentClusterControllerAddress()
+          parentClusterControllerReplyToAddressMutex(),
+          parentClusterControllerReplyToAddress()
 {
 }
 
@@ -80,38 +80,51 @@ void LibJoynrMessageRouter::shutdown()
     parentAddress.reset();
 }
 
-void LibJoynrMessageRouter::setParentRouter(
-        std::unique_ptr<system::RoutingProxy> parentRouter,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress,
-        std::string parentParticipantId)
+void LibJoynrMessageRouter::setParentAddress(
+        std::string parentParticipantId,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress)
 {
-    this->parentRouter = std::move(parentRouter);
     this->parentAddress = std::move(parentAddress);
+    addProvisionedNextHop(parentParticipantId, this->parentAddress);
+}
+
+void LibJoynrMessageRouter::setParentRouter(std::unique_ptr<system::RoutingProxy> parentRouter)
+{
+    assert(parentAddress);
+    this->parentRouter = std::move(parentRouter);
 
     // add the next hop to parent router
     // this is necessary because during normal registration, the parent proxy is not yet set
-    addProvisionedNextHop(parentParticipantId, this->parentAddress);
     addNextHopToParent(this->parentRouter->getProxyParticipantId());
 }
 
-void LibJoynrMessageRouter::queryGlobalClusterControllerAddress(
+void LibJoynrMessageRouter::queryReplyToAddress(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError)
 {
     assert(parentRouter);
 
     auto onSuccessWrapper = [ onSuccess = std::move(onSuccess), this ](
-            const std::string& globalAddress)
+            const std::string& replyToAddress)
     {
         {
-            std::lock_guard<std::mutex> lock(globalParentClusterControllerAddressMutex);
-            globalParentClusterControllerAddress = globalAddress;
+            std::lock_guard<std::mutex> lock(parentClusterControllerReplyToAddressMutex);
+            parentClusterControllerReplyToAddress = replyToAddress;
         }
 
         onSuccess();
     };
 
-    parentRouter->getReplyToAddressAsync(std::move(onSuccessWrapper), std::move(onError));
+    auto onErrorWrapper = [onError = std::move(onError)](
+            const joynr::exceptions::JoynrRuntimeException& error)
+    {
+        exceptions::JoynrRuntimeException wrappedError(
+                "Failed to retrieve replyTo address from cluster controller: " +
+                error.getMessage());
+        onError(wrappedError);
+    };
+
+    parentRouter->getReplyToAddressAsync(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 }
 
 /**
@@ -143,8 +156,8 @@ void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
          message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
          message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
          message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
-        std::lock_guard<std::mutex> lock(globalParentClusterControllerAddressMutex);
-        message.setHeaderReplyAddress(globalParentClusterControllerAddress);
+        std::lock_guard<std::mutex> lock(parentClusterControllerReplyToAddressMutex);
+        message.setHeaderReplyAddress(parentClusterControllerReplyToAddress);
     }
 
     // if destination address is not known

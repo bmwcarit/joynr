@@ -33,7 +33,6 @@
 #include "joynr/IReplyCaller.h"
 #include "tests/utils/MockObjects.h"
 #include "utils/MockCallback.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/serializer/Serializer.h"
@@ -120,14 +119,12 @@ public:
         mockMessageSender(),
         proxyParticipantId(),
         providerParticipantId(),
-        endPointAddress(),
         asyncTestFixture(nullptr),
         error(nullptr)
     {}
     virtual ~AbstractSyncAsyncTest() = default;
     void SetUp(){
         qosSettings = MessagingQos(456000);
-        endPointAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>("endPointUrl", "endPointAddress");
         proxyParticipantId = "participantId";
         providerParticipantId = "providerParticipantId";
         mockMessageSender = std::make_shared<MockMessageSender>();
@@ -713,7 +710,6 @@ protected:
     std::shared_ptr<MockMessageSender> mockMessageSender;
     std::string proxyParticipantId;
     std::string providerParticipantId;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> endPointAddress;
     tests::Itest* asyncTestFixture;
     std::shared_ptr<exceptions::JoynrException> error;
 private:

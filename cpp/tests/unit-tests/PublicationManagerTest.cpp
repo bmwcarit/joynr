@@ -44,7 +44,7 @@
 #include "joynr/SubscriptionReply.h"
 #include "joynr/Semaphore.h"
 #include "joynr/IMessageSender.h"
-#include "common/CallContextStorage.h"
+#include "libjoynr/common/CallContextStorage.h"
 
 using ::testing::A;
 using ::testing::_;

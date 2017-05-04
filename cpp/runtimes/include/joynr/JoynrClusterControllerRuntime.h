@@ -37,8 +37,8 @@
 #include "joynr/WebSocketSettings.h"
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-#include "common/dbus/DbusSettings.h"
 #include "joynr/DBusMessageRouterAdapter.h"
+#include "libjoynr/common/dbus/DbusSettings.h"
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
 class JoynrClusterControllerRuntimeTest;
