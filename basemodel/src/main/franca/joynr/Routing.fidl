@@ -277,8 +277,6 @@ interface Routing {
 		out {
 			<** @description: true, if the participant ID could be resolved **>
 			Boolean resolved
-			<** @description: true, if the routing entry corresponding to participant ID isGloballyVisible **>
-			Boolean isGloballyVisible
 		}
 	}
 
