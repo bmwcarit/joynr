@@ -46,11 +46,10 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.tests.testProxy;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-/**
- *
- */
+@Ignore("HTTP does not support binary messages (SMRF)")
 public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
 
     private static final long CONST_DEFAULT_TEST_TIMEOUT = 10000;

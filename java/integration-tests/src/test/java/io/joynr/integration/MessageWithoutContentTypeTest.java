@@ -35,6 +35,7 @@ import joynr.ImmutableMessage;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,6 +44,7 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 
+@Ignore("Bounceproxy not supported at the moment")
 @RunWith(MultipleBounceProxySetupsTestRunner.class)
 @BounceProxyServerSetups(value = { SingleBounceProxy.class })
 public class MessageWithoutContentTypeTest {

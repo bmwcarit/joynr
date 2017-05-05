@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import joynr.ImmutableMessage;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -49,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Charsets;
 import com.jayway.restassured.response.Response;
 
+@Ignore("HTTP not supported at the moment")
 @RunWith(MultipleBounceProxySetupsTestRunner.class)
 @BounceProxyServerSetups(value = { SingleBounceProxy.class })
 public class ChannelServicesTest {
