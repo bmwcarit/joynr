@@ -26,11 +26,12 @@
  */
 define([
     "ws",
+    "global/Smrf",
     "joynr/messaging/JoynrMessage",
     "joynr/util/JSONSerializer",
     "joynr/exceptions/JoynrRuntimeException",
     "joynr/system/LoggerFactory"
-], function(ws, JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
+], function(ws, smrf, JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
     if (typeof Buffer !== "function") {
         throw new JoynrRuntimeException(
                 "Decoding of binary websocket messages not possible. Buffer not available.");
@@ -44,13 +45,88 @@ define([
         return data;
     };
 
-    ws.marshalJoynrMessage = function(joynrMessage) {
-        return JSONSerializer.stringify(joynrMessage);
-    };
+    ws.marshalJoynrMessage =
+            function(joynrMessage) {
+                var smrfMsg = {};
+                var headerKey;
+                smrfMsg.sender = joynrMessage.header.from;
+                smrfMsg.recipient = joynrMessage.header.to;
+                smrfMsg.ttlMs = joynrMessage.header.expiryDate;
+                smrfMsg.isTtlAbsolute = true;
+                smrfMsg.isCompressed = false;
+                smrfMsg.body = new Buffer(joynrMessage.payload);
+                smrfMsg.encryptionCert = null;
+                smrfMsg.signingCert = null;
+                smrfMsg.signingKey = null;
+                smrfMsg.headers = {};
+                smrfMsg.headers.type = joynrMessage.type;
+                smrfMsg.headers.id = joynrMessage.header.msgId;
+                if (joynrMessage.header.replyChannelId) {
+                    smrfMsg.headers.replyTo = joynrMessage.header.replyChannelId;
+                }
+                // no special handling required for 'creator' and 'effort'
+                // since there names are identical in header fields of JoynrMessage
+                // and smrfMessage
+                for (headerKey in joynrMessage.header) {
+                    if (joynrMessage.header.hasOwnProperty(headerKey)) {
+                        if (headerKey !== "contentType"
+                            && headerKey !== "from"
+                            && headerKey !== "msgId"
+                            && headerKey !== "replyChannelId"
+                            && headerKey !== "to"
+                            && headerKey !== "expiryDate") {
+                            smrfMsg.headers[headerKey] = joynrMessage.header[headerKey];
+                        }
+                    }
+                }
+                var serializedMsg;
+                try {
+                    serializedMsg = smrf.serialize(smrfMsg);
+                } catch (e) {
+                    throw new Error("ws.marshalJoynrMessage: got exception " + e);
+                }
+                return serializedMsg;
+            };
 
     ws.unmarshalJoynrMessage = function(event, callback) {
         if (typeof event.data === "object") {
-            callback(new JoynrMessage(JSON.parse(event.data.toString())));
+            var headerKey;
+            var smrfMsg;
+            try {
+                smrfMsg = smrf.deserialize(event.data);
+            } catch (e) {
+                throw new Error("ws.marshalJoynrMessage: got exception " + e);
+            }
+            var convertedMsg = {};
+            convertedMsg.header = {};
+            convertedMsg.header.from = smrfMsg.sender;
+            convertedMsg.header.to = smrfMsg.recipient;
+            convertedMsg.header.msgId = smrfMsg.headers.id;
+            if (smrfMsg.headers.replyTo) {
+                convertedMsg.header.replyChannelId = smrfMsg.headers.replyTo;
+            }
+            convertedMsg.type = smrfMsg.headers.type;
+            // ignore for now:
+            //   smrfMsg.headers.isCompressed
+            //   smrfMsg.headers.encryptionCert
+            //   smrfMsg.headers.signingKey
+            //   smrfMsg.headers.signingCert
+            if (smrfMsg.isTtlAbsolute === true) {
+                convertedMsg.header.expiryDate = smrfMsg.ttlMs;
+            } else {
+                convertedMsg.header.expiryDate = smrfMsg.ttlMs + Date.now();
+            }
+            convertedMsg.header.effort = smrfMsg.effort;
+            convertedMsg.payload = smrfMsg.body.toString();
+            for (headerKey in smrfMsg.headers) {
+                if (smrfMsg.headers.hasOwnProperty(headerKey)) {
+                    if (headerKey !== 'type' && headerKey !== 'id' && headerKey !== 'replyTo') {
+                        convertedMsg.header[headerKey] = smrfMsg.headers[headerKey];
+                    }
+                }
+            }
+            var joynrMessage = new JoynrMessage(convertedMsg);
+            callback(joynrMessage);
         } else {
             log.error("Received unsupported message from websocket.");
         }
