@@ -36,7 +36,6 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
-import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.smrf.EncodingException;
@@ -65,7 +64,6 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
-                                 JoynrMessageSerializer messageSerializer,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
                                  Set<JoynrMessageProcessor> messageProcessors) {

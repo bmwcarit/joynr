@@ -37,7 +37,6 @@ import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
-import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
@@ -50,7 +49,6 @@ import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.CcMessageSender;
 import io.joynr.messaging.sender.MessageSender;
-import io.joynr.messaging.serialize.JsonSerializer;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
@@ -98,7 +96,5 @@ public class JeeHttpMessagingModule extends AbstractModule {
         bind(MessageSender.class).to(CcMessageSender.class);
         bind(MessageReceiver.class).to(JeeServletMessageReceiver.class);
         bind(ServletMessageReceiver.class).to(JeeServletMessageReceiver.class);
-        bind(JoynrMessageSerializer.class).to(JsonSerializer.class);
     }
-
 }

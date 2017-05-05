@@ -34,7 +34,6 @@ import io.joynr.messaging.http.operation.HttpClientProvider;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.http.operation.HttpRequestFactory;
 import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.messaging.serialize.JsonSerializer;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -45,7 +44,6 @@ public class HttpMessagingModule extends AbstractModule {
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
         bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
-        bind(JoynrMessageSerializer.class).to(JsonSerializer.class);
 
         MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
         messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {

@@ -35,7 +35,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
-import joynr.JoynrMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
 /**
@@ -94,7 +94,7 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMes
     public void transmit(ImmutableMessage message, FailureAction failureAction) {
         LOG.debug("<<< INCOMING <<< {}", message.toLogMessage());
         try {
-            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType()) && this.isMainTransport()) {
+            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType()) && this.isMainTransport()) {
                 message.setReceivedFromGlobal(true);
             }
             messageRouter.route(message);

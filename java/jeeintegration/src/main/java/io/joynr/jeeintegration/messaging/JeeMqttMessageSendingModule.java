@@ -33,7 +33,6 @@ import com.google.inject.name.Names;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
-import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.mqtt.DefaultMqttClientIdProvider;
 import io.joynr.messaging.mqtt.DefaultMqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.MqttClientFactory;
@@ -46,7 +45,6 @@ import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoClientFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
-import io.joynr.messaging.serialize.JsonSerializer;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
@@ -89,7 +87,6 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(JoynrMessageSerializer.class).to(JsonSerializer.class);
         messagingStubFactory.addBinding(MqttAddress.class).to(MqttMessagingStubFactory.class);
         messagingSkeletonFactory.addBinding(MqttAddress.class).toProvider(JeeMqttMessagingSkeletonProvider.class);
 

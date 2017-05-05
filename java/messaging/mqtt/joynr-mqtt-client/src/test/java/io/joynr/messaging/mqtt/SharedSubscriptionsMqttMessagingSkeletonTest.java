@@ -35,17 +35,13 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.joynr.messaging.JoynrMessageProcessor;
-import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.serialize.JsonSerializer;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -53,8 +49,6 @@ import joynr.system.RoutingTypes.MqttAddress;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class SharedSubscriptionsMqttMessagingSkeletonTest {
-
-    private JoynrMessageSerializer messageSerializer;
 
     @Mock
     private MqttClientFactory mqttClientFactory;
@@ -81,8 +75,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Before
     public void setup() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        messageSerializer = new JsonSerializer(objectMapper);
         when(mqttClientFactory.create()).thenReturn(mqttClient);
     }
 
@@ -95,7 +87,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
-                                                               messageSerializer,
                                                                "channelId",
                                                                mqttTopicPrefixProvider,
                                                                new NoOpRawMessagingPreprocessor(),
@@ -111,7 +102,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
-                                                               messageSerializer,
                                                                "channel@123_bling$$",
                                                                mqttTopicPrefixProvider,
                                                                new NoOpRawMessagingPreprocessor(),
@@ -126,7 +116,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
-                                                               messageSerializer,
                                                                "@123_$$-!",
                                                                mqttTopicPrefixProvider,
                                                                new NoOpRawMessagingPreprocessor(),

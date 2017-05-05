@@ -32,16 +32,13 @@ import static org.mockito.Mockito.when;
 import java.util.HashSet;
 
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
-import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.serialize.JsonSerializer;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MutableMessage;
@@ -62,7 +59,6 @@ import com.google.common.collect.Sets;
 public class MqttMessagingSkeletonTest {
 
     private MqttMessagingSkeleton subject;
-    private JoynrMessageSerializer messageSerializer;
 
     @Mock
     private MqttAddress ownAddress;
@@ -88,13 +84,9 @@ public class MqttMessagingSkeletonTest {
 
     @Before
     public void setup() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        messageSerializer = new JsonSerializer(objectMapper);
-
         subject = new MqttMessagingSkeleton(ownAddress,
                                             messageRouter,
                                             mqttClientFactory,
-                                            messageSerializer,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>());
@@ -150,7 +142,6 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownAddress,
                                             messageRouter,
                                             mqttClientFactory,
-                                            messageSerializer,
                                             mqttTopicPrefixProvider,
                                             preprocessor,
                                             new HashSet<JoynrMessageProcessor>());
@@ -175,7 +166,6 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownAddress,
                                             messageRouter,
                                             mqttClientFactory,
-                                            messageSerializer,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             Sets.newHashSet(processorMock));
