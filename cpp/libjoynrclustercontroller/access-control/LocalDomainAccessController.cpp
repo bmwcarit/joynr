@@ -44,10 +44,10 @@ std::chrono::milliseconds LocalDomainAccessController::broadcastSubscriptionVali
 
 //--- Declarations of nested classes -------------------------------------------
 
-class LocalDomainAccessController::Initialiser
+class LocalDomainAccessController::Initializer
 {
 public:
-    Initialiser(LocalDomainAccessController& parent,
+    Initializer(LocalDomainAccessController& parent,
                 const std::string& domain,
                 const std::string& interfaceName,
                 const std::uint8_t steps,
@@ -63,16 +63,16 @@ public:
     {
     }
 
-    // Called to indicate that some data has been initialised
+    // Called to indicate that some data has been initialized
     void update()
     {
         std::uint8_t prevValue = counter--;
         if (prevValue == 1) {
-            // Initialisation has finished
+            // Initialization has finished
             if (aborted) {
-                parent.abortInitialisation(domain, interfaceName, handleAces, handleRces);
+                parent.abortInitialization(domain, interfaceName, handleAces, handleRces);
             } else {
-                parent.initialised(domain, interfaceName, handleAces, handleRces);
+                parent.initialized(domain, interfaceName, handleAces, handleRces);
             }
         }
     }
@@ -257,7 +257,7 @@ void LocalDomainAccessController::init(
     const bool handleAces = true;
     const bool handleRces = true;
     for (const auto& domainInterfacePair : uniqueDomainInterfaceCombinations) {
-        initialised(domainInterfacePair.first,
+        initialized(domainInterfacePair.first,
                     domainInterfacePair.second,
                     handleAces,
                     handleRces,
@@ -335,10 +335,10 @@ void LocalDomainAccessController::getConsumerPermission(
     // Do further initialisation outside of the mutex to prevent deadlocks
     if (needsInit) {
         // Get the data for this domain interface and do not wait for it
-        initialiseLocalDomainAccessStoreAces(domain, interfaceName);
+        initializeLocalDomainAccessStoreAces(domain, interfaceName);
 
         // Init domain roles as well
-        initialiseDomainRoleTable(userId);
+        initializeDomainRoleTable(userId);
 
         return;
     }
@@ -541,10 +541,10 @@ void LocalDomainAccessController::getProviderPermission(
     // Do further initialisation outside of the mutex to prevent deadlocks
     if (needsInit) {
         // Get the data for this domain interface and do not wait for it
-        initialiseLocalDomainAccessStoreRces(userId, domain, interfaceName);
+        initializeLocalDomainAccessStoreRces(userId, domain, interfaceName);
 
         // Init domain roles as well
-        initialiseDomainRoleTable(userId);
+        initializeDomainRoleTable(userId);
 
         return;
     }
@@ -795,9 +795,9 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
     }
 }
 
-void LocalDomainAccessController::initialiseDomainRoleTable(const std::string& userId)
+void LocalDomainAccessController::initializeDomainRoleTable(const std::string& userId)
 {
-    // Initialise domain roles from global data
+    // Initialize domain roles from global data
     std::function<void(const std::vector<DomainRoleEntry>& domainRoleEntries)> domainRoleOnSuccess =
             [this](const std::vector<DomainRoleEntry>& domainRoleEntries) {
         // Add the results
@@ -817,7 +817,7 @@ void LocalDomainAccessController::initialiseDomainRoleTable(const std::string& u
             userId, std::move(domainRoleOnSuccess), std::move(domainRoleOnError));
 }
 
-void LocalDomainAccessController::initialiseLocalDomainAccessStoreAces(
+void LocalDomainAccessController::initializeLocalDomainAccessStoreAces(
         const std::string& domain,
         const std::string& interfaceName)
 {
@@ -826,81 +826,81 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStoreAces(
     const std::uint8_t steps = 3;
     const bool handleAces = true;
     const bool handleRces = false;
-    auto initialiser = std::make_shared<Initialiser>(
+    auto initializer = std::make_shared<Initializer>(
             *this, domain, interfaceName, steps, handleAces, handleRces);
 
     std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)>
             masterAceOnSuccess =
-                    [this, initialiser](const std::vector<MasterAccessControlEntry>& masterAces) {
+                    [this, initializer](const std::vector<MasterAccessControlEntry>& masterAces) {
         // Add the results
         for (const MasterAccessControlEntry& masterAce : masterAces) {
             localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
         }
-        initialiser->update();
+        initializer->update();
     };
 
     std::function<void(const exceptions::JoynrException& error)> masterAceOnError =
-            [initialiser](const exceptions::JoynrException& error) {
+            [initializer](const exceptions::JoynrException& error) {
         JOYNR_LOG_ERROR(logger,
                         "Aborting ACL initialisation due to communication error:\n{}",
                         error.getMessage());
 
         // Abort the initialisation
-        initialiser->abort();
+        initializer->abort();
     };
 
     globalDomainAccessControllerProxy->getMasterAccessControlEntriesAsync(
             domain, interfaceName, std::move(masterAceOnSuccess), std::move(masterAceOnError));
 
-    // Initialise mediator access control entries from global data
+    // Initialize mediator access control entries from global data
     std::function<void(const std::vector<MasterAccessControlEntry>& mediatorAces)>
             mediatorAceOnSuccess =
-                    [this, initialiser](const std::vector<MasterAccessControlEntry>& mediatorAces) {
+                    [this, initializer](const std::vector<MasterAccessControlEntry>& mediatorAces) {
         // Add the results
         for (const MasterAccessControlEntry& mediatorAce : mediatorAces) {
             localDomainAccessStore->updateMediatorAccessControlEntry(mediatorAce);
         }
-        initialiser->update();
+        initializer->update();
     };
 
     std::function<void(const exceptions::JoynrException& error)> mediatorAceOnError =
-            [this, initialiser](const exceptions::JoynrException& error) {
+            [this, initializer](const exceptions::JoynrException& error) {
         JOYNR_LOG_ERROR(logger,
                         "Aborting ACL initialisation due to communication error:\n{}",
                         error.getMessage());
 
         // Abort the initialisation
-        initialiser->abort();
+        initializer->abort();
     };
 
     globalDomainAccessControllerProxy->getMediatorAccessControlEntriesAsync(
             domain, interfaceName, std::move(mediatorAceOnSuccess), std::move(mediatorAceOnError));
 
-    // Initialise owner access control entries from global data
+    // Initialize owner access control entries from global data
     std::function<void(const std::vector<OwnerAccessControlEntry>& ownerAces)> ownerAceOnSuccess =
-            [this, initialiser](const std::vector<OwnerAccessControlEntry>& ownerAces) {
+            [this, initializer](const std::vector<OwnerAccessControlEntry>& ownerAces) {
         // Add the results
         for (const OwnerAccessControlEntry& ownerAce : ownerAces) {
             localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
         }
-        initialiser->update();
+        initializer->update();
     };
 
     std::function<void(const exceptions::JoynrException& error)> ownerAceOnError =
-            [initialiser](const exceptions::JoynrException& error) {
+            [initializer](const exceptions::JoynrException& error) {
         JOYNR_LOG_ERROR(logger,
                         "Aborting ACL initialisation due to communication error:\n{}",
                         error.getMessage());
 
         // Abort the initialisation
-        initialiser->abort();
+        initializer->abort();
     };
 
     globalDomainAccessControllerProxy->getOwnerAccessControlEntriesAsync(
             domain, interfaceName, std::move(ownerAceOnSuccess), std::move(ownerAceOnError));
 }
 
-void LocalDomainAccessController::initialiseLocalDomainAccessStoreRces(
+void LocalDomainAccessController::initializeLocalDomainAccessStoreRces(
         const std::string& userId,
         const std::string& domain,
         const std::string& interfaceName)
@@ -910,75 +910,75 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStoreRces(
     const std::uint8_t steps = 3;
     const bool handleAces = false;
     const bool handleRces = true;
-    auto initialiser = std::make_shared<Initialiser>(
+    auto initializer = std::make_shared<Initializer>(
             *this, domain, interfaceName, steps, handleAces, handleRces);
 
     std::function<void(const std::vector<MasterRegistrationControlEntry>& masterRces)>
-            masterRceOnSuccess = [this, initialiser](
+            masterRceOnSuccess = [this, initializer](
                     const std::vector<MasterRegistrationControlEntry>& masterRces) {
         // Add the results
         for (const MasterRegistrationControlEntry& masterRce : masterRces) {
             localDomainAccessStore->updateMasterRegistrationControlEntry(masterRce);
         }
-        initialiser->update();
+        initializer->update();
     };
 
     std::function<void(const exceptions::JoynrException& error)> masterRceOnError =
-            [initialiser](const exceptions::JoynrException& error) {
+            [initializer](const exceptions::JoynrException& error) {
         JOYNR_LOG_ERROR(logger,
                         "Aborting RCL initialisation due to communication error:\n{}",
                         error.getMessage());
 
         // Abort the initialisation
-        initialiser->abort();
+        initializer->abort();
     };
 
     globalDomainAccessControllerProxy->getMasterRegistrationControlEntriesAsync(
             userId, std::move(masterRceOnSuccess), std::move(masterRceOnError));
 
-    // Initialise mediator access control entries from global data
+    // Initialize mediator access control entries from global data
     std::function<void(const std::vector<MasterRegistrationControlEntry>& mediatorRces)>
-            mediatorRceOnSuccess = [this, initialiser](
+            mediatorRceOnSuccess = [this, initializer](
                     const std::vector<MasterRegistrationControlEntry>& mediatorRces) {
         // Add the results
         for (const MasterRegistrationControlEntry& mediatorRce : mediatorRces) {
             localDomainAccessStore->updateMediatorRegistrationControlEntry(mediatorRce);
         }
-        initialiser->update();
+        initializer->update();
     };
 
     std::function<void(const exceptions::JoynrException& error)> mediatorRceOnError =
-            [this, initialiser](const exceptions::JoynrException& error) {
+            [this, initializer](const exceptions::JoynrException& error) {
         JOYNR_LOG_ERROR(logger,
                         "Aborting RCL initialisation due to communication error:\n{}",
                         error.getMessage());
 
         // Abort the initialisation
-        initialiser->abort();
+        initializer->abort();
     };
 
     globalDomainAccessControllerProxy->getMediatorRegistrationControlEntriesAsync(
             userId, std::move(mediatorRceOnSuccess), std::move(mediatorRceOnError));
 
-    // Initialise owner registration control entries from global data
+    // Initialize owner registration control entries from global data
     std::function<
             void(const std::vector<OwnerRegistrationControlEntry>& ownerRces)> ownerRceOnSuccess =
-            [this, initialiser](const std::vector<OwnerRegistrationControlEntry>& ownerRces) {
+            [this, initializer](const std::vector<OwnerRegistrationControlEntry>& ownerRces) {
         // Add the results
         for (const OwnerRegistrationControlEntry& ownerRce : ownerRces) {
             localDomainAccessStore->updateOwnerRegistrationControlEntry(ownerRce);
         }
-        initialiser->update();
+        initializer->update();
     };
 
     std::function<void(const exceptions::JoynrException& error)> ownerRceOnError =
-            [initialiser](const exceptions::JoynrException& error) {
+            [initializer](const exceptions::JoynrException& error) {
         JOYNR_LOG_ERROR(logger,
                         "Aborting RCL initialisation due to communication error:\n{}",
                         error.getMessage());
 
         // Abort the initialisation
-        initialiser->abort();
+        initializer->abort();
     };
 
     globalDomainAccessControllerProxy->getOwnerRegistrationControlEntriesAsync(
@@ -987,7 +987,7 @@ void LocalDomainAccessController::initialiseLocalDomainAccessStoreRces(
 
 // Called when the data for the given domain/interface has been obtained from the GDAC
 // or from loading the accessStore from disk.
-void LocalDomainAccessController::initialised(const std::string& domain,
+void LocalDomainAccessController::initialized(const std::string& domain,
                                               const std::string& interfaceName,
                                               const bool handleAces,
                                               const bool handleRces,
@@ -1042,7 +1042,7 @@ void LocalDomainAccessController::initialised(const std::string& domain,
     }
 }
 
-void LocalDomainAccessController::abortInitialisation(const std::string& domain,
+void LocalDomainAccessController::abortInitialization(const std::string& domain,
                                                       const std::string& interfaceName,
                                                       const bool handleAces,
                                                       const bool handleRces)

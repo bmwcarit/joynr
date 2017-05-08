@@ -557,26 +557,26 @@ private:
     ADD_LOGGER(LocalDomainAccessController);
     static std::chrono::milliseconds broadcastSubscriptionValidity;
 
-    // Initialise MasterACE, MediatorACE and OwnerACE for the given data/interface. This function is
+    // Initialize MasterACE, MediatorACE and OwnerACE for the given data/interface. This function is
     // non-blocking.
-    void initialiseLocalDomainAccessStoreAces(const std::string& domain,
+    void initializeLocalDomainAccessStoreAces(const std::string& domain,
                                               const std::string& interfaceName);
 
     // Initialize MasterRCE, MediatorRCE and OwnerRCE for the given data/interface. This function is
     // non-blocking.
-    void initialiseLocalDomainAccessStoreRces(const std::string& userId,
+    void initializeLocalDomainAccessStoreRces(const std::string& userId,
                                               const std::string& domain,
                                               const std::string& interfaceName);
 
-    // Initialise DRT for the given userId. This function is non-blocking.
-    void initialiseDomainRoleTable(const std::string& userId);
+    // Initialize DRT for the given userId. This function is non-blocking.
+    void initializeDomainRoleTable(const std::string& userId);
 
-    void initialised(const std::string& domain,
+    void initialized(const std::string& domain,
                      const std::string& interfaceName,
                      const bool handleAces,
                      const bool handleRces,
                      bool restoringFromFile = false);
-    void abortInitialisation(const std::string& domain,
+    void abortInitialization(const std::string& domain,
                              const std::string& interfaceName,
                              const bool handleAces,
                              const bool handleRces);
@@ -622,15 +622,15 @@ private:
     std::vector<std::string> createPartitionsVector(const std::string& domain,
                                                     const std::string& interfaceName);
 
-    // Mutex that protects all member variables involved in initialisation
+    // Mutex that protects all member variables involved in initialization
     // of data for a domain/interface
     // - aceSubscriptions
     // - consumerPermissionRequests
     // - rceSubscriptions
     std::mutex initStateMutex;
 
-    // Class that keeps track of initialisation for a domain/interface
-    class Initialiser;
+    // Class that keeps track of initialization for a domain/interface
+    class Initializer;
 
     // Classes used to receive broadcasts
 
