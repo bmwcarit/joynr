@@ -171,13 +171,6 @@ define(
              * @static
              * @readonly
              * @type String
-             * @name JoynrMessage.JOYNRMESSAGE_HEADER_SUBSCRIPTION_ATTRIBUTE
-             */
-            JoynrMessage.JOYNRMESSAGE_HEADER_SUBSCRIPTION_ATTRIBUTE = "subscriptionAttribute";
-            /**
-             * @static
-             * @readonly
-             * @type String
              * @name JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID
              */
             JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID = "to";
