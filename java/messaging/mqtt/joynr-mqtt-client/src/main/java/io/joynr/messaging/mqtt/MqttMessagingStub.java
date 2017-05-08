@@ -26,7 +26,7 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.MessagingQosEffort;
 import joynr.ImmutableMessage;
-import joynr.JoynrMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -52,7 +52,7 @@ public class MqttMessagingStub implements IMessaging {
     public void transmit(ImmutableMessage message, FailureAction failureAction) {
         LOG.debug(">>> OUTGOING >>> {}", message.toLogMessage());
         String topic = address.getTopic();
-        if (!JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+        if (!Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
             topic += PRIORITY_LOW + message.getRecipient();
         }
 

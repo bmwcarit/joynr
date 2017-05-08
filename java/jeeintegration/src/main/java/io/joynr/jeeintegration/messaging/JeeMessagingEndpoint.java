@@ -19,8 +19,6 @@ package io.joynr.jeeintegration.messaging;
  * #L%
  */
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Charsets;
 import com.google.inject.Injector;
 
@@ -30,7 +28,6 @@ import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
-import joynr.JoynrMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,13 +83,13 @@ public class JeeMessagingEndpoint {
     }
 
     /**
-     * Receives a message for the given channel ID, parses the plain-text content as JSON, and forwards to
-     * {@link #postMessage(String, String, UriInfo)}.
+     * Receives a message for the given channel ID, parses the binary content as SMRF, and forwards to
+     * {@link #postMessage(String, byte[], UriInfo)}.
      *
      * @param ccid
      *            the channel id.
-     * @param messageString
-     *            the message to be send.
+     * @param serializedMessage
+     *            a serialized SMRF message to be send.
      * @param uriInfo
      *            the URI Information for the request being processed.
      * @return Response the endpoint where the status of the message can be queried.
@@ -104,39 +101,38 @@ public class JeeMessagingEndpoint {
      *             in case JSON could not be mapped.
      */
     @POST
-    @Consumes({ MediaType.TEXT_PLAIN })
+    @Consumes({ MediaType.APPLICATION_OCTET_STREAM })
     @Path("/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}/messageWithoutContentType")
     public Response postMessageWithoutContentType(@PathParam("ccid") String ccid,
-                                                  String messageString,
-                                                  @Context UriInfo uriInfo) throws IOException, JsonParseException,
-                                                                           JsonMappingException {
-        return postMessage(ccid, messageString, uriInfo);
+                                                  byte[] serializedMessage,
+                                                  @Context UriInfo uriInfo) throws IOException {
+        return postMessage(ccid, serializedMessage, uriInfo);
     }
 
     /**
-     * Receives a JSON encoded {@link JoynrMessage} which it then routes to the {@link #messageReceiver message
+     * Receives a binary encoded {@link ImmutableMessage} which it then routes to the {@link #messageReceiver message
      * receiver} in the joynr runtime.
      *
      * @param channelId
      *            channel id of the receiver.
-     * @param messageString
-     *            the content being sent.
+     * @param serializedMessage
+     *            a serialized SMRF message being sent.
      * @param uriInfo
      *            the URI Information for the request being processed.
      * @return a location for querying the message status.
      */
     @POST
     @Path("/{channelId: [A-Z,a-z,0-9,_,\\-,\\.]+}/message")
-    @Produces({ MediaType.APPLICATION_JSON })
-    public Response postMessage(@PathParam("channelId") String channelId, String messageString, @Context UriInfo uriInfo) {
+    @Produces({ MediaType.APPLICATION_OCTET_STREAM })
+    public Response postMessage(@PathParam("channelId") String channelId, byte[] serializedMessage, @Context UriInfo uriInfo) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Incoming message:\n" + messageString);
+            LOG.debug("Incoming message:\n" + new String(serializedMessage, Charsets.UTF_8));
         }
         try {
             ImmutableMessage message;
 
             try {
-                message = new ImmutableMessage(messageString.getBytes(Charsets.UTF_8));
+                message = new ImmutableMessage(serializedMessage);
             } catch (EncodingException | UnsuppportedVersionException exception) {
                 LOG.error("Failed to deserialize message for channelId {}: {}", channelId, exception.getMessage());
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED);

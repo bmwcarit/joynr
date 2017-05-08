@@ -20,8 +20,6 @@ package io.joynr.messaging.service;
  * #L%
  */
 
-import joynr.JoynrMessage;
-
 /**
  * Interface for the implementation for messaging service.
  * 
@@ -43,9 +41,9 @@ public interface MessagingService {
      * Passes the message to the registered message receiver.
      * 
      * @param ccid the channel to pass the message on
-     * @param message the message to send
+     * @param message the message to send (serialized SMRF message)
      */
-    void passMessageToReceiver(String ccid, JoynrMessage message);
+    void passMessageToReceiver(String ccid, byte[] serializedMessage);
 
     /**
      * Check whether the messaging component is responsible to send messages on

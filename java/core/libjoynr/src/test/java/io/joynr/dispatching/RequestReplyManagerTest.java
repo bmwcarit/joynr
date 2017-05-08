@@ -33,7 +33,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,7 +42,6 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
@@ -68,7 +66,6 @@ import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
-import joynr.JoynrMessage;
 import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
@@ -186,17 +183,6 @@ public class RequestReplyManagerTest {
         oneWay1 = new OneWayRequest(fireAndForgetMethod.getName(),
                                     new Object[]{ payload1 },
                                     fireAndForgetMethod.getParameterTypes());
-        Map<String, String> headerToResponder = Maps.newHashMap();
-        headerToResponder.put(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID, testSenderParticipantId);
-        headerToResponder.put(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID, testMessageResponderParticipantId);
-        headerToResponder.put(JoynrMessage.HEADER_NAME_CONTENT_TYPE, JoynrMessage.CONTENT_TYPE_TEXT_PLAIN);
-
-        Map<String, String> requestHeader = Maps.newHashMap();
-        requestHeader.put(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID, testSenderParticipantId);
-        requestHeader.put(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID, testResponderUnregisteredParticipantId);
-        requestHeader.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE,
-                          String.valueOf(System.currentTimeMillis() + TIME_TO_LIVE));
-        requestHeader.put(JoynrMessage.HEADER_NAME_CONTENT_TYPE, JoynrMessage.CONTENT_TYPE_APPLICATION_JSON);
     }
 
     @After

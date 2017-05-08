@@ -26,7 +26,6 @@ import com.google.inject.Inject;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.routing.TransportReadyListener;
 import joynr.ImmutableMessage;
-import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import org.slf4j.Logger;

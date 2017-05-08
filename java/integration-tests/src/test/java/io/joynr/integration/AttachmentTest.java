@@ -36,7 +36,7 @@ import java.util.concurrent.Future;
 
 import javax.annotation.Nullable;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +44,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 
@@ -82,8 +83,8 @@ public class AttachmentTest {
     @Nullable
     private Response sendAttachmentMessage(String channelId) throws Exception {
         long ttl_ms = 1000000;
-        String payload = "attachmentTest";
-        String serializedMessageWrapper = bpMock.createSerializedJoynrMessage(ttl_ms, payload);
+        byte[] payload = "attachmentTest".getBytes(Charsets.UTF_8);
+        byte[] serializedMessageWrapper = bpMock.createImmutableMessage(ttl_ms, payload).getSerializedMessage();
 
         String content = "This is a binary content";
         Response response = given().multiPart("wrapper", serializedMessageWrapper, "application/json")
@@ -115,12 +116,12 @@ public class AttachmentTest {
         Future<Response> response = bpMock.longPollInOwnThread(channelId, 1000000, 200);
         Response longPoll = response.get();
 
-        List<JoynrMessage> messages = bpMock.getJoynrMessagesFromResponse(longPoll);
+        List<ImmutableMessage> messages = bpMock.getJoynrMessagesFromResponse(longPoll);
 
         assertEquals(1, messages.size());
 
-        JoynrMessage message = messages.get(0);
-        assertTrue(message.getPayload() != null);
+        ImmutableMessage message = messages.get(0);
+        assertTrue(message.getUnencryptedBody() != null);
 
         Response attachment = getAttachment(channelId, msgId);
         logger.debug("received attachment: " + convertStreamToString(attachment.getBody().asInputStream()));

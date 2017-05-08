@@ -31,7 +31,7 @@ import com.google.common.collect.Sets;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import joynr.ImmutableMessage;
-import joynr.JoynrMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.Address;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,14 +69,14 @@ public class AddressManagerTest {
     @Test(expected = JoynrMessageNotSentException.class)
     public void testNoAddressAvailableForMulticast() {
         createAddressManager(null);
-        when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_MULTICAST);
+        when(joynrMessage.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_MULTICAST);
         subject.getAddresses(joynrMessage);
     }
 
     @Test(expected = JoynrIllegalStateException.class)
     public void testNoAddressFoundForNonMulticastMessage() {
         createAddressManager(null);
-        when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_REQUEST);
+        when(joynrMessage.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
         subject.getAddresses(joynrMessage);
     }
 
@@ -97,7 +97,7 @@ public class AddressManagerTest {
     @Test
     public void testGetMulticastAddressFromSingleCalculator() {
         createAddressManager(null, multicastAddressCalculator);
-        when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_MULTICAST);
+        when(joynrMessage.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_MULTICAST);
         when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(address);
 
         Set<Address> result = subject.getAddresses(joynrMessage);
@@ -111,7 +111,7 @@ public class AddressManagerTest {
     public void testMultipleCalculatorsNoPrimaryGlobalTransport() {
         MulticastAddressCalculator anotherMulticastAddressCalculator = mock(MulticastAddressCalculator.class);
         createAddressManager(null, multicastAddressCalculator, anotherMulticastAddressCalculator);
-        when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_MULTICAST);
+        when(joynrMessage.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_MULTICAST);
 
         subject.getAddresses(joynrMessage);
     }
@@ -122,7 +122,7 @@ public class AddressManagerTest {
         when(anotherMulticastAddressCalculator.supports("mqtt")).thenReturn(true);
         when(anotherMulticastAddressCalculator.calculate(joynrMessage)).thenReturn(address);
         createAddressManager("mqtt", multicastAddressCalculator, anotherMulticastAddressCalculator);
-        when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_MULTICAST);
+        when(joynrMessage.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_MULTICAST);
 
         Set<Address> result = subject.getAddresses(joynrMessage);
 
@@ -133,7 +133,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetLocalMulticastParticipantAddresses() {
-        when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_MULTICAST);
+        when(joynrMessage.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_MULTICAST);
         when(joynrMessage.isReceivedFromGlobal()).thenReturn(true);
         when(joynrMessage.getSender()).thenReturn("from");
         String multicastId = "from/to";
@@ -156,7 +156,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetLocalMulticastParticipantWithoutGlobalTransports() {
-        when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_MULTICAST);
+        when(joynrMessage.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_MULTICAST);
         when(joynrMessage.getSender()).thenReturn("from");
         String multicastId = "from/to";
         when(joynrMessage.getRecipient()).thenReturn(multicastId);
@@ -175,7 +175,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetLocalAndGlobalAddresses() {
-        when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_MULTICAST);
+        when(joynrMessage.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_MULTICAST);
         when(joynrMessage.getSender()).thenReturn("from");
         String multicastId = "from/to";
         when(joynrMessage.getRecipient()).thenReturn(multicastId);

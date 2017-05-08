@@ -29,7 +29,7 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.ImmutableMessage;
-import joynr.JoynrMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
@@ -67,7 +67,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
         logger.debug("<<< INCOMING <<< {}", message.toLogMessage());
         final String replyToChannelId = message.getReplyTo();
         try {
-            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                 message.setReceivedFromGlobal(true);
             }
             addRequestorToMessageRouter(message.getSender(), replyToChannelId);

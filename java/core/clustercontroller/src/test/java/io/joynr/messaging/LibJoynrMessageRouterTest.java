@@ -43,7 +43,7 @@ import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.ImmutableMessage;
-import joynr.JoynrMessage;
+import joynr.Message;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
@@ -86,7 +86,7 @@ public class LibJoynrMessageRouterTest {
         when(message.isTtlAbsolute()).thenReturn(true);
         when(message.getRecipient()).thenReturn(unknownParticipantId);
         when(message.isLocalMessage()).thenReturn(false);
-        when(message.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_REQUEST);
+        when(message.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
 
         when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
         when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);

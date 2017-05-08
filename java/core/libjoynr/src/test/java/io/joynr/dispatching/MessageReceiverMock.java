@@ -30,7 +30,6 @@ import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import joynr.ImmutableMessage;
-import joynr.JoynrMessage;
 
 /**
  * CommunicationManagerMock used in DispatcherTest.java to simulate the HttpCommunicationManager
@@ -40,7 +39,6 @@ import joynr.JoynrMessage;
 @Singleton
 public class MessageReceiverMock implements MessageReceiver {
 
-    private List<JoynrMessage> sentMessages = Lists.newArrayList();
     private List<ImmutableMessage> receivedMessages = Lists.newArrayList();
 
     private MessageArrivedListener messageArrivedListener;
@@ -57,10 +55,6 @@ public class MessageReceiverMock implements MessageReceiver {
         if (messageArrivedListener != null) {
             messageArrivedListener.messageArrived(message);
         }
-    }
-
-    public List<JoynrMessage> getSentMessages() {
-        return sentMessages;
     }
 
     public List<ImmutableMessage> getReceivedMessages() {

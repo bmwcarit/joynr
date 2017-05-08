@@ -42,7 +42,6 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
-import joynr.JoynrMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;

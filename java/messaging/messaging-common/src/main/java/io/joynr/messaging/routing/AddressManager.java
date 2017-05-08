@@ -28,7 +28,7 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import joynr.ImmutableMessage;
-import joynr.JoynrMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +98,7 @@ public class AddressManager {
     public Set<Address> getAddresses(ImmutableMessage message) {
         Set<Address> result = new HashSet<>();
         String toParticipantId = message.getRecipient();
-        if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+        if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
             handleMulticastMessage(message, result);
         } else if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
             Address address = routingTable.get(toParticipantId);
@@ -108,7 +108,7 @@ public class AddressManager {
         }
         logger.trace("Found the following addresses for {}: {}", new Object[]{ message, result });
         if (result.size() == 0) {
-            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                 throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
                         + message);
             } else {

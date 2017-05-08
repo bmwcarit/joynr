@@ -24,9 +24,13 @@ import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGIN
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_RELATIVE_TTL_UNSPORTED;
 import io.joynr.communications.exceptions.JoynrHttpException;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -34,7 +38,7 @@ import java.util.List;
 
 import javax.ws.rs.core.Response.Status;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -47,9 +51,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Class that implements long poll messaging routines to be used by bounce
  * proxies.
- * 
+ *
  * @author christina.strobel
- * 
+ *
  */
 public class LongPollingMessagingDelegate {
 
@@ -57,7 +61,7 @@ public class LongPollingMessagingDelegate {
 
     /**
      * Gets a list of all channel information.
-     * 
+     *
      * @return list of all channel informations
      */
     public List<ChannelInformation> listChannels() {
@@ -80,7 +84,7 @@ public class LongPollingMessagingDelegate {
 
     /**
      * Creates a long polling channel.
-     * 
+     *
      * @param ccid
      *            the identifier of the channel
      * @param atmosphereTrackingId
@@ -131,7 +135,7 @@ public class LongPollingMessagingDelegate {
 
     /**
      * Deletes a channel from the broadcaster.
-     * 
+     *
      * @param ccid
      *            the channel to delete
      * @return <code>true</code> if the channel existed and could be deleted,
@@ -155,7 +159,7 @@ public class LongPollingMessagingDelegate {
 
     /*
      * Opens a channel for long polling.
-     * 
+     *
      * @param ccid
      *            the ID of the channel
      * @param atmosphereTrackingId
@@ -189,15 +193,15 @@ public class LongPollingMessagingDelegate {
 
     /**
      * Posts a message to a long polling channel.
-     * 
+     *
      * @param ccid
      *            the identifier of the long polling channel
-     * @param message
-     *            the message to send
+     * @param serializedMessage
+     *            the message to send serialized as a SMRF message
      * @return the path segment for the message status. The path, appended to
      *         the base URI of the messaging service, can be used to query the
      *         message status
-     * 
+     *
      * @throws JoynrHttpException
      *             if one of:
      *             <ul>
@@ -206,7 +210,15 @@ public class LongPollingMessagingDelegate {
      *             <li>no channel registered for ccid</li>
      *             </ul>
      */
-    public String postMessage(String ccid, JoynrMessage message) {
+    public String postMessage(String ccid, byte[] serializedMessage) {
+        ImmutableMessage message;
+
+        try {
+            message = new ImmutableMessage(serializedMessage);
+        } catch (EncodingException | UnsuppportedVersionException e) {
+            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED);
+        }
+
         if (ccid == null) {
             log.error("POST message {} to cluster controller: NULL. Dropped because: channel Id was not set.",
                       message.getId());
@@ -215,14 +227,19 @@ public class LongPollingMessagingDelegate {
         }
 
         // send the message to the receiver.
-        if (message.getExpiryDate() == 0) {
+        if (message.getTtlMs() == 0) {
             log.error("POST message {} to cluster controller: {} dropped because: expiry date not set",
                       ccid,
                       message.getId());
             throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATENOTSET);
         }
 
-        if (message.getExpiryDate() < System.currentTimeMillis()) {
+        // Relative TTLs are not supported yet.
+        if (!message.isTtlAbsolute()) {
+            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_RELATIVE_TTL_UNSPORTED);
+        }
+
+        if (message.getTtlMs() < System.currentTimeMillis()) {
             log.warn("POST message {} to cluster controller: {} dropped because: TTL expired", ccid, message.getId());
             throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED);
         }

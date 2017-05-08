@@ -69,7 +69,7 @@ import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
 import joynr.ImmutableMessage;
-import joynr.JoynrMessage;
+import joynr.Message;
 import joynr.MutableMessage;
 import joynr.Request;
 import joynr.system.RoutingTypes.Address;
@@ -226,7 +226,7 @@ public class CcMessageRouterTest {
     @Test
     public void testNoRetryForMulticastWithoutAddress() throws Exception {
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1000).getValue());
-        joynrMessage.setType(JoynrMessage.MESSAGE_TYPE_MULTICAST);
+        joynrMessage.setType(Message.VALUE_MESSAGE_TYPE_MULTICAST);
         joynrMessage.setRecipient("multicastId");
 
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();

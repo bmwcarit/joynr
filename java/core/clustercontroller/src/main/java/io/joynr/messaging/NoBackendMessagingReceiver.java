@@ -24,8 +24,6 @@ import java.util.concurrent.Future;
 import com.google.common.util.concurrent.Futures;
 import com.google.inject.Singleton;
 
-import joynr.JoynrMessage;
-
 /**
  * A Dummy implementation that does not perform any backend communication
  *
@@ -37,10 +35,6 @@ public class NoBackendMessagingReceiver implements MessageReceiver {
     @Override
     public String getChannelId() {
         return "null";
-    }
-
-    public void receiveMessage(JoynrMessage message) {
-        throw new UnsupportedOperationException("The NoBackendMessagingSenderReceiver cannot receive messages");
     }
 
     @Override
