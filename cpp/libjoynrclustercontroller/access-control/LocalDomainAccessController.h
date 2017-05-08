@@ -292,6 +292,25 @@ public:
                                        const std::string& operation);
 
     /**
+      * Get provider permission to register for an interface
+      *
+      * @param userId        The user registering for the interface
+      * @param domain        The domain that is being registered for
+      * @param interfaceName The interface that is being accessed
+      * @param trustLevel    The trust level of the device accessing the interface
+      * @param callbacks     Object that will receive the result and then be deleted
+      *
+      * Use :
+      *    getProviderPermission(String, String, String, TrustLevel, callbacks)
+      * to gain exact Permission on interface registration.
+      */
+    virtual void getProviderPermission(const std::string& userId,
+                                       const std::string& domain,
+                                       const std::string& interfaceName,
+                                       infrastructure::DacTypes::TrustLevel::Enum trustLevel,
+                                       std::shared_ptr<IGetPermissionCallback> callback);
+
+    /**
      * Get provider permission to expose an interface
      *
      * @param uid        The userId of the provider exposing the interface
@@ -574,6 +593,21 @@ private:
     bool queueConsumerRequest(const std::string& key, const ConsumerPermissionRequest& request);
     void processConsumerRequests(const std::vector<ConsumerPermissionRequest>& requests);
 
+    // Requests waiting to get provider permission
+    struct ProviderPermissionRequest
+    {
+        std::string userId;
+        std::string domain;
+        std::string interfaceName;
+        infrastructure::DacTypes::TrustLevel::Enum trustLevel;
+        std::shared_ptr<IGetPermissionCallback> callbacks;
+    };
+
+    std::unordered_map<std::string, std::vector<ProviderPermissionRequest>>
+            providerPermissionRequests;
+
+    bool queueProviderRequest(const std::string& key, const ProviderPermissionRequest& request);
+    void processProviderRequests(const std::vector<ProviderPermissionRequest>& requests);
     std::vector<std::string> createPartitionsVector(const std::string& domain,
                                                     const std::string& interfaceName);
 

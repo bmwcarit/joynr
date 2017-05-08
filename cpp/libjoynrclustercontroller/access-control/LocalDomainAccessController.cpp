@@ -479,6 +479,68 @@ bool LocalDomainAccessController::removeOwnerAccessControlEntry(const std::strin
     return success;
 }
 
+// Returns true if other requests have already been queued
+bool LocalDomainAccessController::queueProviderRequest(const std::string& key,
+                                                       const ProviderPermissionRequest& request)
+{
+    // This function assumes that the initStateMutex has already been obtained
+
+    if (providerPermissionRequests.count(key) != 0) {
+        providerPermissionRequests[key].push_back(request);
+        return true;
+    } else {
+        std::vector<ProviderPermissionRequest> requestList;
+        requestList.push_back(request);
+        providerPermissionRequests.insert(std::make_pair(key, requestList));
+        return false;
+    }
+}
+
+void LocalDomainAccessController::getProviderPermission(
+        const std::string& userId,
+        const std::string& domain,
+        const std::string& interfaceName,
+        TrustLevel::Enum trustLevel,
+        std::shared_ptr<IGetPermissionCallback> callback)
+{
+    JOYNR_LOG_TRACE(logger, "Entering getProviderPermission");
+
+    // Is the RCL for this domain/interface available?
+    std::string compoundKey = createCompoundKey(domain, interfaceName);
+    bool needsInit = false;
+    {
+        std::lock_guard<std::mutex> lock(initStateMutex);
+        if (rceSubscriptions.count(compoundKey) == 0) {
+            // Queue the request
+            ProviderPermissionRequest request = {
+                    userId, domain, interfaceName, trustLevel, callback};
+
+            if (queueProviderRequest(compoundKey, request)) {
+                // There are requests already queued - do nothing
+                return;
+            } else {
+                // There are no requests already queued - further
+                // initialisation is needed
+                needsInit = true;
+            }
+        }
+    }
+
+    // Do further initialisation outside of the mutex to prevent deadlocks
+    if (needsInit) {
+        // Get the data for this domain interface and do not wait for it
+        initialiseLocalDomainAccessStore(domain, interfaceName);
+
+        // Init domain roles as well
+        initialiseDomainRoleTable(userId);
+
+        return;
+    }
+
+    Permission::Enum permission = getProviderPermission(userId, domain, interfaceName, trustLevel);
+    callback->permission(permission);
+}
+
 Permission::Enum LocalDomainAccessController::getProviderPermission(
         const std::string& uid,
         const std::string& domain,
