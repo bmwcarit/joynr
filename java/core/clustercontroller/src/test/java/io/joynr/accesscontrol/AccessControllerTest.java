@@ -29,21 +29,12 @@ import java.util.Collection;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.doAnswer;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.TypeLiteral;
-import com.google.inject.multibindings.Multibinder;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilitiesProvisioning;
 import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.dispatching.JoynrMessageFactory;
-import io.joynr.messaging.JoynrMessageProcessor;
-import io.joynr.messaging.JsonMessageSerializerModule;
-import io.joynr.messaging.MessagingQos;
-import joynr.JoynrMessage;
-import joynr.Request;
+import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.DiscoveryEntry;
@@ -51,7 +42,6 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -74,36 +64,18 @@ public class AccessControllerTest {
     @Mock
     private LocalDomainAccessController localDomainAccessController;
 
+    @Mock
+    private ImmutableMessage messageMock;
+
     private static final String DUMMY_USERID = "dummyUserId";
 
-    private static JoynrMessageFactory messageFactory;
-    private JoynrMessage message;
     private AccessController accessController;
-    private Request request;
     private String fromParticipantId = "sender";
     private String toParticipantId = "receiver";
     private String testDomain = "testDomain";
     private String testInterface = "testInterface";
-    private String testOperation = "testOperation";
     private String testPublicKeyId = "testPublicKeyId";
-    private MessagingQos messagingQos = new MessagingQos(1000);
     private HasConsumerPermissionCallback callback = Mockito.mock(HasConsumerPermissionCallback.class);
-
-    @BeforeClass
-    public static void initialize() {
-        Injector injector = Guice.createInjector(new JsonMessageSerializerModule(), new AbstractModule() {
-
-            @Override
-            protected void configure() {
-                requestStaticInjection(Request.class);
-                Multibinder.newSetBinder(binder(), new TypeLiteral<JoynrMessageProcessor>() {
-                });
-            }
-
-        });
-
-        messageFactory = injector.getInstance(JoynrMessageFactory.class);
-    }
 
     @Before
     public void setup() {
@@ -120,10 +92,11 @@ public class AccessControllerTest {
                                                     discoveryProviderParticipantId,
                                                     routingProviderParticipantId);
 
-        // Create a dummy message
-        request = new Request(testOperation, new String[]{}, new Class<?>[]{});
-        message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, messagingQos);
-        message.setHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID, DUMMY_USERID);
+        when(messageMock.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        when(messageMock.getRecipient()).thenReturn(toParticipantId);
+        when(messageMock.getSender()).thenReturn(fromParticipantId);
+        when(messageMock.getCreatorUserId()).thenReturn(DUMMY_USERID);
+        when(messageMock.getId()).thenReturn("someId");
 
         final DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
                                                                                          testDomain,
@@ -165,34 +138,7 @@ public class AccessControllerTest {
                                                                    eq(TrustLevel.HIGH),
                                                                    any(GetConsumerPermissionCallback.class));
 
-        accessController.hasConsumerPermission(message, callback);
+        accessController.hasConsumerPermission(messageMock, callback);
         verify(callback, Mockito.times(1)).hasConsumerPermission(true);
-    }
-
-    @Test
-    public void testAccessWithOperationLevelAccessControlAndFaultyMessage() {
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                GetConsumerPermissionCallback callback = (GetConsumerPermissionCallback) invocation.getArguments()[4];
-                callback.getConsumerPermission(null);
-                return null;
-            }
-
-        }).when(localDomainAccessController).getConsumerPermission(eq(DUMMY_USERID),
-                                                                   eq(testDomain),
-                                                                   eq(testInterface),
-                                                                   eq(TrustLevel.HIGH),
-                                                                   any(GetConsumerPermissionCallback.class));
-
-        when(localDomainAccessController.getConsumerPermission(DUMMY_USERID,
-                                                               testDomain,
-                                                               testInterface,
-                                                               testOperation,
-                                                               TrustLevel.HIGH)).thenReturn(Permission.NO);
-        message.setPayload("invalid serialization of Request object");
-
-        accessController.hasConsumerPermission(message, callback);
-        verify(callback, Mockito.times(1)).hasConsumerPermission(false);
     }
 }

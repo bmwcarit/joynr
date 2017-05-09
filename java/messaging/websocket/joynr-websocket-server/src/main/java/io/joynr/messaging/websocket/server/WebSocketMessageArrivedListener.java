@@ -21,6 +21,6 @@ package io.joynr.messaging.websocket.server;
 
 public interface WebSocketMessageArrivedListener {
 
-    void messageArrived(String message);
+    void messageArrived(byte[] message);
 
 }

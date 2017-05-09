@@ -42,11 +42,14 @@ import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.serialize.JsonSerializer;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.Message;
+import joynr.MutableMessage;
 import joynr.system.RoutingTypes.MqttAddress;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.Assert;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -141,9 +144,8 @@ public class MqttMessagingSkeletonTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testRawMessagePreprocessorIsCalled() throws Exception {
+    public void testMessageRouterIsCalled() throws Exception {
         RawMessagingPreprocessor preprocessor = mock(RawMessagingPreprocessor.class);
-        ObjectMapper objectMapper = new ObjectMapper();
         when(preprocessor.process(any(byte[].class), anyMap())).then(returnsFirstArg());
         subject = new MqttMessagingSkeleton(ownAddress,
                                             messageRouter,
@@ -152,23 +154,23 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             preprocessor,
                                             new HashSet<JoynrMessageProcessor>());
-        JoynrMessage message = new JoynrMessage();
-        message.setPayload("payload");
-        subject.transmit(objectMapper.writeValueAsString(message), failIfCalledAction);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        MqttAddress address = new MqttAddress("testBrokerUri", "testTopic");
+
+        ImmutableMessage message = Mockito.mock(ImmutableMessage.class);
+        when(message.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        when(message.getReplyTo()).thenReturn(objectMapper.writeValueAsString(address));
+
+        subject.transmit(message, failIfCalledAction);
         verify(messageRouter).route(message);
     }
 
     @Test
     public void testJoynrMessageProcessorIsCalled() throws Exception {
-        JoynrMessage testMessage = new JoynrMessage();
-        testMessage.setPayload("testPayload");
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String serializedJoynrMessage = objectMapper.writeValueAsString(testMessage);
-
         JoynrMessageProcessor processorMock = mock(JoynrMessageProcessor.class);
 
-        when(processorMock.processIncoming(Mockito.any(JoynrMessage.class))).then(returnsFirstArg());
+        when(processorMock.processIncoming(Mockito.any(ImmutableMessage.class))).then(returnsFirstArg());
 
         subject = new MqttMessagingSkeleton(ownAddress,
                                             messageRouter,
@@ -178,10 +180,20 @@ public class MqttMessagingSkeletonTest {
                                             new NoOpRawMessagingPreprocessor(),
                                             Sets.newHashSet(processorMock));
 
-        subject.transmit(serializedJoynrMessage, failIfCalledAction);
+        byte[] payload = new byte[]{ 0, 1, 2 };
+        MutableMessage message = new MutableMessage();
+        message.setSender("someSender");
+        message.setRecipient("someRecipient");
+        message.setTtlAbsolute(true);
+        message.setTtlMs(100000);
+        message.setPayload(payload);
+        message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
 
-        ArgumentCaptor<JoynrMessage> argCaptor = ArgumentCaptor.forClass(JoynrMessage.class);
+        subject.transmit(message.getImmutableMessage().getSerializedMessage(), failIfCalledAction);
+
+        ArgumentCaptor<ImmutableMessage> argCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
         verify(processorMock).processIncoming(argCaptor.capture());
-        assertEquals(testMessage.getPayload(), argCaptor.getValue().getPayload());
+
+        Assert.assertArrayEquals(payload, argCaptor.getValue().getUnencryptedBody());
     }
 }

@@ -21,7 +21,6 @@ package io.joynr.messaging.channel;
 import com.google.inject.Inject;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.http.HttpMessageSender;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -30,18 +29,16 @@ import joynr.system.RoutingTypes.ChannelAddress;
  */
 public class ChannelMessagingStubFactory extends
         AbstractMiddlewareMessagingStubFactory<ChannelMessagingStub, ChannelAddress> {
-    private JoynrMessageSerializer messageSerializer;
     private HttpMessageSender httpMessageSender;
 
     @Inject
-    public ChannelMessagingStubFactory(JoynrMessageSerializer messageSerializer, HttpMessageSender messageSender) {
-        this.messageSerializer = messageSerializer;
+    public ChannelMessagingStubFactory(HttpMessageSender messageSender) {
         this.httpMessageSender = messageSender;
     }
 
     @Override
     protected ChannelMessagingStub createInternal(final ChannelAddress address) {
-        ChannelMessagingStub messagingStub = new ChannelMessagingStub(address, messageSerializer, httpMessageSender);
+        ChannelMessagingStub messagingStub = new ChannelMessagingStub(address, httpMessageSender);
         return messagingStub;
     }
 

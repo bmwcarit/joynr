@@ -55,7 +55,8 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.runtime.JoynrRuntime;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.MutableMessage;
 import joynr.Request;
 import joynr.jeeintegration.servicelocator.MyService;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
@@ -77,12 +78,12 @@ public class DefaultJoynrRuntimeFactoryTest {
     @Stateless
     private class JoynrMessageProcessorTest implements JoynrMessageProcessor {
         @Override
-        public JoynrMessage processOutgoing(JoynrMessage joynrMessage) {
-            joynrMessage.getHeader().put("test", "test");
+        public MutableMessage processOutgoing(MutableMessage joynrMessage) {
+            joynrMessage.getCustomHeaders().put("test", "test");
             return joynrMessage;
         }
         @Override
-        public JoynrMessage processIncoming(JoynrMessage joynrMessage) {
+        public ImmutableMessage processIncoming(ImmutableMessage joynrMessage) {
             return joynrMessage;
         }
     }
@@ -135,15 +136,15 @@ public class DefaultJoynrRuntimeFactoryTest {
     }
 
     @Test
-    public void testJoynrMessageProcessUsed() throws Exception {
+    public void testJoynrMessageProcessorUsed() throws Exception {
         createFixture();
         Injector injector = fixture.getInjector();
         JoynrMessageFactory joynrMessageFactory = injector.getInstance(JoynrMessageFactory.class);
-        JoynrMessage request = joynrMessageFactory.createRequest("from",
+        MutableMessage request = joynrMessageFactory.createRequest("from",
                                                                  "to",
                                                                  new Request("name", new Object[0], new Class[0]),
                                                                  new MessagingQos());
-        assertEquals("test", request.getHeader().get("test"));
+        assertEquals("test", request.getCustomHeaders().get("test"));
     }
 
     @Test

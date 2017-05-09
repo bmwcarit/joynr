@@ -35,7 +35,7 @@ import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,8 +70,10 @@ public class JeeMessageRouterTest {
     @Test
     public void testScheduleMessage() {
         Address address = new Address();
-        JoynrMessage message = new JoynrMessage();
-        message.setTo("to");
+        ImmutableMessage message = Mockito.mock(ImmutableMessage.class);
+        when(message.isTtlAbsolute()).thenReturn(true);
+        when(message.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(60000L).getValue());
+        when(message.getRecipient()).thenReturn("to");
         when(routingTable.get("to")).thenReturn(address);
 
         JeeMessageRouter subject = new JeeMessageRouter(routingTable,
@@ -84,7 +86,6 @@ public class JeeMessageRouterTest {
                                                         null,
                                                         false);
 
-        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000L));
         subject.route(message);
 
         verify(scheduler).schedule((Runnable) Mockito.any(), Mockito.eq(0L), Mockito.eq(TimeUnit.MILLISECONDS));

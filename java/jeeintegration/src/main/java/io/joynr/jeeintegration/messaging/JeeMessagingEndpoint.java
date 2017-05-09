@@ -21,12 +21,15 @@ package io.joynr.jeeintegration.messaging;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import com.google.inject.Injector;
 
 import io.joynr.communications.exceptions.JoynrHttpException;
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
 import joynr.JoynrMessage;
 
 import org.slf4j.Logger;
@@ -51,6 +54,7 @@ import java.net.URI;
 
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED;
 import static java.lang.String.format;
 
 /**
@@ -66,14 +70,12 @@ public class JeeMessagingEndpoint {
     private static final Logger LOG = LoggerFactory.getLogger(JeeMessagingEndpoint.class);
 
     private Injector injector;
-    private ObjectMapper objectMapper;
 
     private ServletMessageReceiver messageReceiver;
 
     @Inject
     public JeeMessagingEndpoint(JoynrIntegrationBean jeeIntegrationBean) {
         injector = jeeIntegrationBean.getJoynrInjector();
-        objectMapper = injector.getInstance(ObjectMapper.class);
         messageReceiver = injector.getInstance(ServletMessageReceiver.class);
     }
 
@@ -131,25 +133,33 @@ public class JeeMessagingEndpoint {
             LOG.debug("Incoming message:\n" + messageString);
         }
         try {
-            JoynrMessage message = objectMapper.readValue(messageString, JoynrMessage.class);
+            ImmutableMessage message;
+
+            try {
+                message = new ImmutableMessage(messageString.getBytes(Charsets.UTF_8));
+            } catch (EncodingException | UnsuppportedVersionException exception) {
+                LOG.error("Failed to deserialize message for channelId {}: {}", channelId, exception.getMessage());
+                throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED);
+            }
+
             if (LOG.isDebugEnabled()) {
-                LOG.debug("POST to channel: {} message: {}", channelId, message);
+                LOG.debug("POST to channel: {} message: {}", channelId, message.toLogMessage());
             }
 
             if (channelId == null) {
-                LOG.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set", message);
+                LOG.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set", message.toLogMessage());
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
             }
 
-            if (message.getExpiryDate() == 0) {
-                LOG.error("POST message to channel: {} message: {} dropped because: TTL not set", channelId, message);
+            if (message.getTtlMs() == 0) {
+                LOG.error("POST message to channel: {} message: {} dropped because: TTL not set", channelId, message.toLogMessage());
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATENOTSET);
             }
 
             if (messageReceiver == null) {
                 LOG.error("POST message to channel: {} message: {} no receiver for the given channel",
                           channelId,
-                          message);
+                          message.toLogMessage());
                 return Response.noContent().build();
             }
 

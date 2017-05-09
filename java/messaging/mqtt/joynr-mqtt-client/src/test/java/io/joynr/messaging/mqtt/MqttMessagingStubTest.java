@@ -26,9 +26,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.MessagingQosEffort;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.MqttAddress;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,21 +48,17 @@ public class MqttMessagingStubTest {
     @Mock
     private JoynrMqttClient mqttClient;
 
-    @Mock
-    private JoynrMessageSerializer messageSerializer;
-
     private MqttMessagingStub subject;
 
     @Before
     public void setup() {
-        subject = new MqttMessagingStub(mqttAddress, mqttClient, messageSerializer);
+        subject = new MqttMessagingStub(mqttAddress, mqttClient);
     }
 
     @Test
     public void testReactToBestEffortQosInJoynrMessageHeader() {
-        JoynrMessage joynrMessage = mock(JoynrMessage.class);
-        when(joynrMessage.getHeaderValue(JoynrMessage.HEADER_NAME_EFFORT)).thenReturn(String.valueOf(MessagingQosEffort.BEST_EFFORT));
-        when(messageSerializer.serialize(joynrMessage)).thenReturn("");
+        ImmutableMessage joynrMessage = mock(ImmutableMessage.class);
+        when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.BEST_EFFORT));
         FailureAction failureAction = mock(FailureAction.class);
 
         subject.transmit(joynrMessage, failureAction);

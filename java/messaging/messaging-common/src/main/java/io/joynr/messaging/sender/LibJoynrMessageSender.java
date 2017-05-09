@@ -18,6 +18,7 @@ package io.joynr.messaging.sender;
  * limitations under the License.
  * #L%
  */
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 

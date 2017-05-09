@@ -42,6 +42,7 @@ import java.util.concurrent.ThreadFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -68,6 +69,7 @@ import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 import joynr.JoynrMessage;
+import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -210,12 +212,10 @@ public class RequestReplyManagerTest {
                                               oneWay1,
                                               new MessagingQos(TIME_TO_LIVE));
 
-        ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
+        ArgumentCaptor<MutableMessage> messageCapture = ArgumentCaptor.forClass(MutableMessage.class);
         verify(messageSenderMock, times(1)).sendMessage(messageCapture.capture());
-        assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                     testSenderParticipantId);
-        assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                     testOneWayRecipientParticipantId);
+        assertEquals(messageCapture.getValue().getSender(), testSenderParticipantId);
+        assertEquals(messageCapture.getValue().getRecipient(), testOneWayRecipientParticipantId);
 
         assertEquals(oneWay1, objectMapper.readValue(messageCapture.getValue().getPayload(), OneWayRequest.class));
     }
@@ -227,14 +227,13 @@ public class RequestReplyManagerTest {
                                         request1,
                                         new MessagingQos(TIME_TO_LIVE));
 
-        ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
+        ArgumentCaptor<MutableMessage> messageCapture = ArgumentCaptor.forClass(MutableMessage.class);
         verify(messageSenderMock, times(1)).sendMessage(messageCapture.capture());
-        assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                     testSenderParticipantId);
-        assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                     testMessageResponderParticipantId);
+        assertEquals(messageCapture.getValue().getSender(), testSenderParticipantId);
+        assertEquals(messageCapture.getValue().getRecipient(), testMessageResponderParticipantId);
 
-        assertEquals(messageCapture.getValue().getPayload(), objectMapper.writeValueAsString(request1));
+        assertEquals(new String(messageCapture.getValue().getPayload(), Charsets.UTF_8),
+                     objectMapper.writeValueAsString(request1));
     }
 
     private abstract class ReplyCallback extends ProviderCallback<Reply> {
@@ -267,8 +266,6 @@ public class RequestReplyManagerTest {
         providerDirectory.add(testMessageResponderParticipantId, providerContainer);
         ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
         requestReplyManager.handleRequest(replyCallbackMock, testMessageResponderParticipantId, request3, TIME_TO_LIVE);
-
-        String reply = (String) testRequestCallerSpy.getSentPayloadFor(request1);
 
         ArgumentCaptor<JoynrException> exceptionCapture = ArgumentCaptor.forClass(JoynrException.class);
         verify(replyCallbackMock).onFailure(exceptionCapture.capture());

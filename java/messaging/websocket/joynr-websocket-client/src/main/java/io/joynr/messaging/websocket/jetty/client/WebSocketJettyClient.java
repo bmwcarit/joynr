@@ -22,6 +22,7 @@ package io.joynr.messaging.websocket.jetty.client;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
@@ -200,9 +201,8 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
 
     @Override
     public void onWebSocketBinary(byte[] payload, int offset, int len) {
-        String serializedMessage = new String(payload, offset, len, CHARSET);
-        logger.trace(this.getClass().getSimpleName() + ": Received TEXT message: " + serializedMessage);
-        messageListener.transmit(serializedMessage, new FailureAction() {
+        logger.trace(this.getClass().getSimpleName() + ": Received message: " + new String(payload, CHARSET));
+        messageListener.transmit(Arrays.copyOfRange(payload, offset, offset + len), new FailureAction() {
 
             @Override
             public void execute(Throwable error) {

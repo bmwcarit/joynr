@@ -21,8 +21,11 @@ package io.joynr.messaging;
 
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED;
 import io.joynr.communications.exceptions.JoynrHttpException;
 import io.joynr.dispatcher.ServletMessageReceiver;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -42,17 +45,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Guice;
+import com.google.common.base.Charsets;
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 
 @Path("/channels")
 /**
@@ -67,9 +68,6 @@ import com.google.inject.Injector;
 public class MessagingService {
 
     private static final Logger log = LoggerFactory.getLogger(MessagingService.class);
-
-    private static final Injector injector = Guice.createInjector(new JsonMessageSerializerModule());
-    private static final ObjectMapper objectMapper = injector.getInstance(ObjectMapper.class);
 
     @Context
     UriInfo ui;
@@ -115,7 +113,12 @@ public class MessagingService {
                                                                                                        throws IOException,
                                                                                                        JsonParseException,
                                                                                                        JsonMappingException {
-        JoynrMessage message = objectMapper.readValue(messageString, JoynrMessage.class);
+        ImmutableMessage message;
+        try {
+            message = new ImmutableMessage(messageString.getBytes(Charsets.UTF_8));
+        } catch (EncodingException | UnsuppportedVersionException exception) {
+            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED);
+        }
         return postMessage(ccid, message);
     }
 
@@ -131,7 +134,7 @@ public class MessagingService {
     @POST
     @Path("/{channelId: [A-Z,a-z,0-9,_,\\-,\\.]+}/message")
     @Produces({ MediaType.APPLICATION_JSON })
-    public Response postMessage(@PathParam("channelId") String channelId, JoynrMessage message) {
+    public Response postMessage(@PathParam("channelId") String channelId, ImmutableMessage message) {
         try {
             log.debug("POST message to channel: " + channelId + " message: " + message);
 
@@ -141,7 +144,7 @@ public class MessagingService {
             }
 
             // send the message to the receiver.
-            if (message.getExpiryDate() == 0) {
+            if (message.getTtlMs() == 0) {
                 log.error("POST message to channel: {} message: {} dropped because: TTL not set", channelId, message);
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATENOTSET);
             }

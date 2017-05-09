@@ -19,9 +19,9 @@ package io.joynr.messaging.sender;
  * #L%
  */
 
-import joynr.JoynrMessage;
+import joynr.MutableMessage;
 
 public interface MessageSender {
 
-    void sendMessage(JoynrMessage message);
+    void sendMessage(MutableMessage message);
 }

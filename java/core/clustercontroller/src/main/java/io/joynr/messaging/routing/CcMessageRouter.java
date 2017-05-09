@@ -33,7 +33,7 @@ import io.joynr.accesscontrol.HasConsumerPermissionCallback;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 public class CcMessageRouter extends AbstractMessageRouter {
     private static final Logger logger = LoggerFactory.getLogger(CcMessageRouter.class);
@@ -65,7 +65,7 @@ public class CcMessageRouter extends AbstractMessageRouter {
     }
 
     @Override
-    public void route(final JoynrMessage message) {
+    public void route(final ImmutableMessage message) {
         if (enableAccessControl) {
             accessController.hasConsumerPermission(message, new HasConsumerPermissionCallback() {
                 @Override
@@ -75,8 +75,8 @@ public class CcMessageRouter extends AbstractMessageRouter {
                     } else {
                         logger.warn("Dropping message {} from {} to {} because of insufficient access rights",
                                     message.getId(),
-                                    message.getFrom(),
-                                    message.getTo());
+                                    message.getSender(),
+                                    message.getRecipient());
                     }
                 }
             });

@@ -22,40 +22,32 @@ package io.joynr.messaging.channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
-
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.http.HttpMessageSender;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.ChannelAddress;
 
 public class ChannelMessagingStub implements IMessaging {
     private static final Logger LOG = LoggerFactory.getLogger(ChannelMessagingStub.class);
 
     private ChannelAddress address;
-    private JoynrMessageSerializer messageSerializer;
     private HttpMessageSender httpMessageSender;
 
-    public ChannelMessagingStub(ChannelAddress address,
-                                JoynrMessageSerializer messageSerializer,
-                                HttpMessageSender httpMessageSender) {
+    public ChannelMessagingStub(ChannelAddress address, HttpMessageSender httpMessageSender) {
         this.address = address;
-        this.messageSerializer = messageSerializer;
         this.httpMessageSender = httpMessageSender;
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
         LOG.debug(">>> OUTGOING >>> {}", message.toLogMessage());
-        String serializedMessage = messageSerializer.serialize(message);
-        transmit(serializedMessage, failureAction);
+        transmit(message.getSerializedMessage(), failureAction);
     }
 
     @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         LOG.debug(">>> OUTGOING >>> {}", serializedMessage);
-        httpMessageSender.sendMessage(address, serializedMessage.getBytes(Charsets.UTF_8), failureAction);
+        httpMessageSender.sendMessage(address, serializedMessage, failureAction);
     }
 }

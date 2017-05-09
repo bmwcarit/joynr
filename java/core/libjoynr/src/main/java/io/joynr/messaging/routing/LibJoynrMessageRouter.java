@@ -34,7 +34,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.SystemServicesSettings;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
@@ -85,7 +85,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     }
 
     @Override
-    protected Set<Address> getAddresses(JoynrMessage message) {
+    protected Set<Address> getAddresses(ImmutableMessage message) {
         Set<Address> result;
         JoynrRuntimeException noAddressException = null;
         try {
@@ -94,7 +94,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
             noAddressException = e;
             result = new HashSet<>();
         }
-        String toParticipantId = message.getTo();
+        String toParticipantId = message.getRecipient();
         if (result.isEmpty() && parentRouter != null) {
             Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
             if (parentHasNextHop) {

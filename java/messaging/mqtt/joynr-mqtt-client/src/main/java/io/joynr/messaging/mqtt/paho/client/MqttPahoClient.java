@@ -19,7 +19,6 @@ package io.joynr.messaging.mqtt.paho.client;
  * #L%
  */
 
-import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -309,13 +308,13 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-        String serializedMessage = new String(mqttMessage.getPayload(), Charset.forName("UTF-8"));
-        logger.debug("Received message via MQTT from topic {}:\n{}", topic, serializedMessage);
+        logger.debug("Received message via MQTT from topic {}:\n{}", topic, new String(mqttMessage.getPayload(),
+                                                                                       Charsets.UTF_8));
         if (messagingSkeleton == null) {
             logger.error("MQTT message not processed: messagingSkeleton has not been set yet");
             return;
         }
-        messagingSkeleton.transmit(serializedMessage, new FailureAction() {
+        messagingSkeleton.transmit(mqttMessage.getPayload(), new FailureAction() {
 
             @Override
             public void execute(Throwable error) {

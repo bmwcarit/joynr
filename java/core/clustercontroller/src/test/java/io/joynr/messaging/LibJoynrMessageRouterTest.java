@@ -42,6 +42,7 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
+import joynr.ImmutableMessage;
 import joynr.JoynrMessage;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
@@ -71,8 +72,9 @@ public class LibJoynrMessageRouterTest {
     private AddressManager addressManager;
     @Mock
     private MulticastReceiverRegistry multicastReceiverRegistry;
+    @Mock
+    private ImmutableMessage message;
 
-    private JoynrMessage message;
     private LibJoynrMessageRouter messageRouter;
     private String unknownParticipantId = "unknownParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;
@@ -80,11 +82,11 @@ public class LibJoynrMessageRouterTest {
 
     @Before
     public void setUp() {
-        message = new JoynrMessage();
-        message.setExpirationDate(ExpiryDate.fromRelativeTtl(10000));
-        message.setTo(unknownParticipantId);
-        message.setLocalMessage(false);
-        message.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
+        when(message.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(10000).getValue());
+        when(message.isTtlAbsolute()).thenReturn(true);
+        when(message.getRecipient()).thenReturn(unknownParticipantId);
+        when(message.isLocalMessage()).thenReturn(false);
+        when(message.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_REQUEST);
 
         when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
         when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);

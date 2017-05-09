@@ -19,7 +19,7 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.infrastructure.DacTypes.TrustLevel;
 
 /**
@@ -27,7 +27,7 @@ import joynr.infrastructure.DacTypes.TrustLevel;
  */
 public class AccessControllerDummy implements AccessController {
     @Override
-    public void hasConsumerPermission(final JoynrMessage message, final HasConsumerPermissionCallback callback) {
+    public void hasConsumerPermission(final ImmutableMessage message, final HasConsumerPermissionCallback callback) {
         if (callback != null) {
             callback.hasConsumerPermission(true);
         }

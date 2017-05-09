@@ -21,7 +21,7 @@ package io.joynr.messaging;
 
 import static org.junit.Assert.assertTrue;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +35,7 @@ public class LongPollingHttpMulticastAddressCalculatorTest {
     private LongPollingHttpGlobalAddressFactory globalAddressFactory;
 
     @Mock
-    private JoynrMessage joynrMessage;
+    private ImmutableMessage joynrMessage;
 
     private LongPollingHttpMulticastAddressCalculator subject;
 

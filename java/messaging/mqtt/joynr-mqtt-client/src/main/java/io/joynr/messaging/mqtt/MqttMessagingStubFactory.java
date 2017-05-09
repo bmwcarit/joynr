@@ -22,23 +22,20 @@ package io.joynr.messaging.mqtt;
 import com.google.inject.Inject;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.JoynrMessageSerializer;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<MqttMessagingStub, MqttAddress> {
 
-    private JoynrMessageSerializer messageSerializer;
     private JoynrMqttClient mqttClient;
 
     @Inject
-    public MqttMessagingStubFactory(JoynrMessageSerializer messageSerializer, MqttClientFactory mqttClientFactory) {
-        this.messageSerializer = messageSerializer;
+    public MqttMessagingStubFactory(MqttClientFactory mqttClientFactory) {
         this.mqttClient = mqttClientFactory.create();
     }
 
     @Override
     protected MqttMessagingStub createInternal(MqttAddress address) {
-        return new MqttMessagingStub(address, mqttClient, messageSerializer);
+        return new MqttMessagingStub(address, mqttClient);
     }
 
     @Override

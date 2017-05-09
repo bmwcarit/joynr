@@ -39,7 +39,7 @@ import io.joynr.messaging.websocket.WebSocketMessagingStub;
 import io.joynr.messaging.websocket.jetty.client.WebSocketJettyClientFactory;
 import io.joynr.messaging.websocket.server.WebSocketJettyServerFactory;
 import io.joynr.servlet.ServletUtil;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.OneWayRequest;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
@@ -92,7 +92,7 @@ public class WebSocketTest {
                 logger.debug("message arrived: " + invocationOnMock.getArguments().toString());
                 return null;
             }
-        }).when(messageRouterMock).route(Mockito.any(JoynrMessage.class));
+        }).when(messageRouterMock).route(Mockito.any(ImmutableMessage.class));
         joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper(), new HashSet<JoynrMessageProcessor>());
     }
 
@@ -106,7 +106,6 @@ public class WebSocketTest {
         ccWebSocketMessagingSkeleton = new WebSocketMessagingSkeleton(serverAddress,
                                                                       webSocketJettyServerFactory,
                                                                       messageRouterMock,
-                                                                      objectMapper,
                                                                       new WebSocketMessagingSkeleton.MainTransportFlagBearer(),
                                                                       messageProcessor);
 
@@ -117,12 +116,10 @@ public class WebSocketTest {
                                                                       websocketIdleTimeout,
                                                                       objectMapper);
         webSocketMessagingStub = new WebSocketMessagingStub(serverAddress,
-                                                            webSocketJettyClientFactory.create(serverAddress),
-                                                            new ObjectMapper());
+                                                            webSocketJettyClientFactory.create(serverAddress));
         libWebSocketMessagingSkeleton = new WebSocketMessagingSkeleton(serverAddress,
                                                                        webSocketJettyClientFactory,
                                                                        messageRouterMock,
-                                                                       new ObjectMapper(),
                                                                        new WebSocketMessagingSkeleton.MainTransportFlagBearer(),
                                                                        messageProcessor);
         ccWebSocketMessagingSkeleton.init();
@@ -165,7 +162,7 @@ public class WebSocketTest {
     @Test
     public void testJoynrMessageProcessorIsCalled() throws Throwable {
         JoynrMessageProcessor processorMock = mock(JoynrMessageProcessor.class);
-        when(processorMock.processIncoming(any(JoynrMessage.class))).then(returnsFirstArg());
+        when(processorMock.processIncoming(any(ImmutableMessage.class))).then(returnsFirstArg());
 
         int millis = 1000;
         int maxMessageSize = 100000;
@@ -175,16 +172,16 @@ public class WebSocketTest {
         sendMessage();
         Thread.sleep(millis);
 
-        verify(processorMock).processIncoming(any(JoynrMessage.class));
+        verify(processorMock).processIncoming(any(ImmutableMessage.class));
     }
 
     private void sendMessage() throws Throwable {
         OneWayRequest request = new OneWayRequest("method", new Object[0], new Class<?>[0]);
         MessagingQos messagingQos = new MessagingQos(100000);
-        JoynrMessage msg = joynrMessageFactory.createOneWayRequest("fromID", "toID", request, messagingQos);
+        ImmutableMessage msg = joynrMessageFactory.createOneWayRequest("fromID", "toID", request, messagingQos)
+                                                  .getImmutableMessage();
 
         webSocketMessagingStub.transmit(msg, new FailureAction() {
-
             @Override
             public void execute(Throwable error) {
                 Assert.fail(error.getMessage());

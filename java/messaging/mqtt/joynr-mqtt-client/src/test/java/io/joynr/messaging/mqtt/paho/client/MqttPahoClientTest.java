@@ -132,7 +132,7 @@ public class MqttPahoClientTest {
         String message = "test";
         byte[] serializedMessage = message.getBytes(Charsets.UTF_8);
         client.publishMessage(ownTopic.getTopic(), serializedMessage);
-        verify(mockReceiver, timeout(100).times(1)).transmit(eq(message), any(FailureAction.class));
+        verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
         client.shutdown();
     }
 

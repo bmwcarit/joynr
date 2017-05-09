@@ -29,6 +29,7 @@ import com.google.inject.Singleton;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
+import joynr.ImmutableMessage;
 import joynr.JoynrMessage;
 
 /**
@@ -40,7 +41,7 @@ import joynr.JoynrMessage;
 public class MessageReceiverMock implements MessageReceiver {
 
     private List<JoynrMessage> sentMessages = Lists.newArrayList();
-    private List<JoynrMessage> receivedMessages = Lists.newArrayList();
+    private List<ImmutableMessage> receivedMessages = Lists.newArrayList();
 
     private MessageArrivedListener messageArrivedListener;
     private boolean blockInitialisation = false;
@@ -51,7 +52,7 @@ public class MessageReceiverMock implements MessageReceiver {
         return "abc";
     }
 
-    public void receiveMessage(JoynrMessage message) {
+    public void receiveMessage(ImmutableMessage message) {
         receivedMessages.add(message);
         if (messageArrivedListener != null) {
             messageArrivedListener.messageArrived(message);
@@ -62,7 +63,7 @@ public class MessageReceiverMock implements MessageReceiver {
         return sentMessages;
     }
 
-    public List<JoynrMessage> getReceivedMessages() {
+    public List<ImmutableMessage> getReceivedMessages() {
         return receivedMessages;
     }
 

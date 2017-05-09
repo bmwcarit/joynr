@@ -80,9 +80,8 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
     }
 
     @Override
-    public void messageArrived(String message) {
+    public void messageArrived(byte[] message) {
         messageListener.transmit(message, new FailureAction() {
-
             @Override
             public void execute(Throwable error) {
                 logger.error("Unable to process message: {}", error.getMessage());
@@ -233,7 +232,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                     logger.error("Error parsing WebSocketClientAddress: ", e);
                 }
             } else {
-                messageArrivedListener.messageArrived(serializedMessage);
+                messageArrivedListener.messageArrived(payload);
             }
         }
 

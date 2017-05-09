@@ -33,6 +33,7 @@ import javax.inject.Singleton;
 import com.google.inject.name.Named;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -41,7 +42,7 @@ import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.MessagingSkeletonFactory;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,6 @@ abstract public class AbstractMessageRouter implements MessageRouter {
 
     private Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
     private final RoutingTable routingTable;
-    private static final int UUID_TAIL = 32;
     private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
@@ -141,7 +141,7 @@ abstract public class AbstractMessageRouter implements MessageRouter {
     }
 
     @Override
-    public void route(final JoynrMessage message) {
+    public void route(final ImmutableMessage message) {
         checkExpiry(message);
         routeInternal(message, 0, 0);
     }
@@ -155,11 +155,11 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         scheduler.schedule(runnable, delay, timeUnit);
     }
 
-    protected Set<Address> getAddresses(JoynrMessage message) {
+    protected Set<Address> getAddresses(ImmutableMessage message) {
         return addressManager.getAddresses(message);
     }
 
-    private void routeInternal(final JoynrMessage message, final long delayMs, final int retriesCount) {
+    private void routeInternal(final ImmutableMessage message, final long delayMs, final int retriesCount) {
         try {
             logger.trace("Scheduling {} with delay {} and retries {}", new Object[]{ message, delayMs, retriesCount });
             schedule(new Runnable() {
@@ -172,14 +172,11 @@ abstract public class AbstractMessageRouter implements MessageRouter {
                         Set<Address> addresses = getAddresses(message);
                         if (addresses.isEmpty()) {
                             throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
-                                    + message.getTo());
+                                    + message.getRecipient());
                         }
                         for (Address address : addresses) {
-                            String messageId = message.getId().substring(UUID_TAIL);
-                            logger.trace(">>>>> SEND  ID:{}:{} header: {}", new Object[]{ messageId, message.getType(),
-                                    message.getHeader().toString() });
-                            logger.trace(">>>>> body  ID:{}:{}: {}", new Object[]{ messageId, message.getType(),
-                                    message.getPayload() });
+                            logger.trace(">>>>> SEND  {}", message.toLogMessage());
+
                             IMessaging messagingStub = messagingStubFactory.create(address);
                             messagingStub.transmit(message, createFailureAction(message, retriesCount));
                         }
@@ -199,9 +196,13 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         }
     }
 
-    private void checkExpiry(final JoynrMessage message) {
+    private void checkExpiry(final ImmutableMessage message) {
+        if (!message.isTtlAbsolute()) {
+            throw new JoynrRuntimeException("Relative ttl not supported");
+        }
+
         long currentTimeMillis = System.currentTimeMillis();
-        long ttlExpirationDateMs = message.getExpiryDate();
+        long ttlExpirationDateMs = message.getTtlMs();
 
         if (ttlExpirationDateMs <= currentTimeMillis) {
             String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} abs_ttl: {1}",
@@ -212,7 +213,7 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         }
     }
 
-    private FailureAction createFailureAction(final JoynrMessage message, final int retriesCount) {
+    private FailureAction createFailureAction(final ImmutableMessage message, final int retriesCount) {
         final FailureAction failureAction = new FailureAction() {
             final String messageId = message.getId();
 
@@ -238,10 +239,9 @@ abstract public class AbstractMessageRouter implements MessageRouter {
                 }
 
                 try {
-                    logger.error("Rescheduling messageId: {} with delay " + delayMs
-                                         + " ms, new TTL expiration date: {}",
+                    logger.error("Rescheduling messageId: {} with delay " + delayMs + " ms, TTL is: {} ms",
                                  messageId,
-                                 DateFormatter.format(message.getExpiryDate()));
+                                 DateFormatter.format(message.getTtlMs()));
                     routeInternal(message, delayMs, retriesCount + 1);
                     return;
                 } catch (JoynrSendBufferFullException e) {

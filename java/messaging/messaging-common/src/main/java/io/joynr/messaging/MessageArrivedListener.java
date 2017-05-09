@@ -19,12 +19,12 @@ package io.joynr.messaging;
  * #L%
  */
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 public interface MessageArrivedListener {
 
-    public void messageArrived(JoynrMessage message);
+    public void messageArrived(ImmutableMessage message);
 
-    void error(JoynrMessage message, Throwable error);
+    void error(ImmutableMessage message, Throwable error);
 
 }

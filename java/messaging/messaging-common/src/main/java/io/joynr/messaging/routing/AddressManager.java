@@ -27,6 +27,7 @@ import com.google.inject.name.Named;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.MessagingPropertyKeys;
+import joynr.ImmutableMessage;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import org.slf4j.Logger;
@@ -94,9 +95,9 @@ public class AddressManager {
      * @return the address to send the message to. Will not be null, because if an address can't be determined an exception is thrown.
      * @throws JoynrMessageNotSentException if no address can be determined / found for the given message.
      */
-    public Set<Address> getAddresses(JoynrMessage message) {
+    public Set<Address> getAddresses(ImmutableMessage message) {
         Set<Address> result = new HashSet<>();
-        String toParticipantId = message.getTo();
+        String toParticipantId = message.getRecipient();
         if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
             handleMulticastMessage(message, result);
         } else if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
@@ -118,14 +119,14 @@ public class AddressManager {
         return result;
     }
 
-    private void handleMulticastMessage(JoynrMessage message, Set<Address> result) {
+    private void handleMulticastMessage(ImmutableMessage message, Set<Address> result) {
         if (!message.isReceivedFromGlobal() && multicastAddressCalculator != null) {
             Address calculatedAddress = multicastAddressCalculator.calculate(message);
             if (calculatedAddress != null) {
                 result.add(calculatedAddress);
             }
         }
-        Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getTo());
+        Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getRecipient());
         for (String receiverParticipantId : receivers) {
             Address address = routingTable.get(receiverParticipantId);
             if (address != null) {

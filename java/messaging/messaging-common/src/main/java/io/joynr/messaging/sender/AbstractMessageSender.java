@@ -22,20 +22,25 @@ package io.joynr.messaging.sender;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
 import joynr.JoynrMessage;
+import joynr.MutableMessage;
 
 public abstract class AbstractMessageSender implements MessageSender {
     private MessageRouter messageRouter;
     private String replyToAddress = null;
-    private List<JoynrMessage> noReplyToAddressQueue = new ArrayList<JoynrMessage>();
+    private List<MutableMessage> noReplyToAddressQueue = new ArrayList<MutableMessage>();
 
     protected AbstractMessageSender(MessageRouter messageRouter) {
         this.messageRouter = messageRouter;
     }
 
     @Override
-    public synchronized void sendMessage(JoynrMessage message) {
+    public synchronized void sendMessage(MutableMessage message) {
         boolean needsReplyToAddress = needsReplyToAddress(message);
 
         if (replyToAddress == null && needsReplyToAddress) {
@@ -44,11 +49,11 @@ public abstract class AbstractMessageSender implements MessageSender {
             if (needsReplyToAddress) {
                 message.setReplyTo(replyToAddress);
             }
-            messageRouter.route(message);
+            routeMutableMessage(message);
         }
     }
 
-    private boolean needsReplyToAddress(JoynrMessage message) {
+    private boolean needsReplyToAddress(MutableMessage message) {
         final String msgType = message.getType();
         boolean noReplyTo = message.getReplyTo() == null;
         boolean msgTypeNeedsReplyTo = msgType.equals(JoynrMessage.MESSAGE_TYPE_REQUEST)
@@ -62,10 +67,21 @@ public abstract class AbstractMessageSender implements MessageSender {
     protected synchronized void setReplyToAddress(String replyToAddress) {
         this.replyToAddress = replyToAddress;
 
-        for (JoynrMessage queuedMessage : noReplyToAddressQueue) {
+        for (MutableMessage queuedMessage : noReplyToAddressQueue) {
             queuedMessage.setReplyTo(replyToAddress);
-            messageRouter.route(queuedMessage);
+            routeMutableMessage(queuedMessage);
         }
         noReplyToAddressQueue.clear();
+    }
+
+    private void routeMutableMessage(MutableMessage mutableMessage) {
+        ImmutableMessage immutableMessage;
+        try {
+            immutableMessage = mutableMessage.getImmutableMessage();
+        } catch (SecurityException | EncodingException | UnsuppportedVersionException exception) {
+            throw new JoynrRuntimeException(exception.getMessage());
+        }
+
+        messageRouter.route(immutableMessage);
     }
 }

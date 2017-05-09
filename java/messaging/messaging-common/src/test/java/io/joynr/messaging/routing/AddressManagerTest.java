@@ -30,6 +30,7 @@ import java.util.Set;
 import com.google.common.collect.Sets;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import joynr.ImmutableMessage;
 import joynr.JoynrMessage;
 import joynr.system.RoutingTypes.Address;
 import org.junit.Before;
@@ -51,7 +52,7 @@ public class AddressManagerTest {
     private MulticastReceiverRegistry multicastReceiverRegistry;
 
     @Mock
-    private JoynrMessage joynrMessage;
+    private ImmutableMessage joynrMessage;
 
     @Mock
     private Address address;
@@ -84,7 +85,7 @@ public class AddressManagerTest {
         createAddressManager(null);
         when(routingTable.containsKey(participantId)).thenReturn(true);
         when(routingTable.get(participantId)).thenReturn(address);
-        when(joynrMessage.getTo()).thenReturn(participantId);
+        when(joynrMessage.getRecipient()).thenReturn(participantId);
 
         Set<Address> result = subject.getAddresses(joynrMessage);
 
@@ -134,9 +135,9 @@ public class AddressManagerTest {
     public void testGetLocalMulticastParticipantAddresses() {
         when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_MULTICAST);
         when(joynrMessage.isReceivedFromGlobal()).thenReturn(true);
-        when(joynrMessage.getFrom()).thenReturn("from");
+        when(joynrMessage.getSender()).thenReturn("from");
         String multicastId = "from/to";
-        when(joynrMessage.getTo()).thenReturn(multicastId);
+        when(joynrMessage.getRecipient()).thenReturn(multicastId);
         Set<String> participantIds = Sets.newHashSet("one", "two");
         when(multicastReceiverRegistry.getReceivers(multicastId)).thenReturn(participantIds);
         Address addressOne = mock(Address.class);
@@ -156,9 +157,9 @@ public class AddressManagerTest {
     @Test
     public void testGetLocalMulticastParticipantWithoutGlobalTransports() {
         when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_MULTICAST);
-        when(joynrMessage.getFrom()).thenReturn("from");
+        when(joynrMessage.getSender()).thenReturn("from");
         String multicastId = "from/to";
-        when(joynrMessage.getTo()).thenReturn(multicastId);
+        when(joynrMessage.getRecipient()).thenReturn(multicastId);
         Set<String> particpantIds = Sets.newHashSet("one");
         when(multicastReceiverRegistry.getReceivers(multicastId)).thenReturn(particpantIds);
         Address one = mock(Address.class);
@@ -175,9 +176,9 @@ public class AddressManagerTest {
     @Test
     public void testGetLocalAndGlobalAddresses() {
         when(joynrMessage.getType()).thenReturn(JoynrMessage.MESSAGE_TYPE_MULTICAST);
-        when(joynrMessage.getFrom()).thenReturn("from");
+        when(joynrMessage.getSender()).thenReturn("from");
         String multicastId = "from/to";
-        when(joynrMessage.getTo()).thenReturn(multicastId);
+        when(joynrMessage.getRecipient()).thenReturn(multicastId);
         Set<String> localParticipantIds = Sets.newHashSet("one");
         when(multicastReceiverRegistry.getReceivers(multicastId)).thenReturn(localParticipantIds);
         Address localAddress = mock(Address.class);

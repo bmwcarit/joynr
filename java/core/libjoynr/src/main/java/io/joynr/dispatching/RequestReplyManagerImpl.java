@@ -48,7 +48,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
-import joynr.JoynrMessage;
+import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -109,10 +109,10 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
         logger.trace("SEND USING RequestReplySenderImpl with Id: " + System.identityHashCode(this));
 
-        JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
-                                                                 toDiscoveryEntry.getParticipantId(),
-                                                                 request,
-                                                                 messagingQos);
+        MutableMessage message = joynrMessageFactory.createRequest(fromParticipantId,
+                                                                   toDiscoveryEntry.getParticipantId(),
+                                                                   request,
+                                                                   messagingQos);
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
         messageSender.sendMessage(message);
     }
@@ -178,10 +178,10 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                                   OneWayRequest oneWayRequest,
                                   MessagingQos messagingQos) {
         for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
-            JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
-                                                                           toDiscoveryEntry.getParticipantId(),
-                                                                           oneWayRequest,
-                                                                           messagingQos);
+            MutableMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
+                                                                             toDiscoveryEntry.getParticipantId(),
+                                                                             oneWayRequest,
+                                                                             messagingQos);
             messageSender.sendMessage(message);
         }
     }

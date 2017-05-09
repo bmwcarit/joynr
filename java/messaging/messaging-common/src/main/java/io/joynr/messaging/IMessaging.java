@@ -1,6 +1,6 @@
 package io.joynr.messaging;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 /*
  * #%L
@@ -22,5 +22,5 @@ import joynr.JoynrMessage;
  */
 
 public interface IMessaging extends IRawMessaging {
-    public void transmit(JoynrMessage message, FailureAction failureAction);
+    public void transmit(ImmutableMessage message, FailureAction failureAction);
 }

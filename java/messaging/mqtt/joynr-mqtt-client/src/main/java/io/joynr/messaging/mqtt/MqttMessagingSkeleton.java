@@ -28,12 +28,10 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.joynr.exceptions.JoynrSerializationException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
@@ -41,7 +39,11 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
 import joynr.JoynrMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
@@ -53,7 +55,6 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
     private MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
-    private JoynrMessageSerializer messageSerializer;
     private MqttClientFactory mqttClientFactory;
     private MqttAddress ownAddress;
     private ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount = Maps.newConcurrentMap();
@@ -72,7 +73,6 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
         this.ownAddress = ownAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
-        this.messageSerializer = messageSerializer;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
@@ -129,30 +129,30 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
         LOG.debug("<<< INCOMING <<< {}", message.toLogMessage());
         try {
-            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            if (message.getType().equals(Message.VALUE_MESSAGE_TYPE_MULTICAST)) {
                 message.setReceivedFromGlobal(true);
             }
-            String replyToMqttAddress = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
+            String replyToMqttAddress = message.getReplyTo();
             if (replyToMqttAddress != null && !replyToMqttAddress.isEmpty()) {
-                messageRouter.addNextHop(message.getFrom(), RoutingTypesUtil.fromAddressString(replyToMqttAddress));
+                messageRouter.addNextHop(message.getSender(), RoutingTypesUtil.fromAddressString(replyToMqttAddress));
             }
             messageRouter.route(message);
         } catch (Exception e) {
-            LOG.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader(), e);
+            LOG.error("Error processing incoming message. Message will be dropped: {} ", e);
             failureAction.execute(e);
         }
     }
 
     @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         try {
             HashMap<String, Serializable> context = new HashMap<String, Serializable>();
-            byte[] processedMessage = rawMessagingPreprocessor.process(serializedMessage.getBytes(Charsets.UTF_8),
-                                                                       context);
-            JoynrMessage message = messageSerializer.deserialize(new String(processedMessage, Charsets.UTF_8));
+            byte[] processedMessage = rawMessagingPreprocessor.process(serializedMessage, context);
+
+            ImmutableMessage message = new ImmutableMessage(processedMessage);
             message.setContext(context);
 
             if (messageProcessors != null) {
@@ -162,7 +162,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
             }
 
             transmit(message, failureAction);
-        } catch (JoynrSerializationException e) {
+        } catch (UnsuppportedVersionException | EncodingException e) {
             LOG.error("Message: \"{}\", could not be serialized, exception: {}", serializedMessage, e.getMessage());
         }
     }
