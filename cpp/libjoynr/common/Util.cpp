@@ -75,41 +75,6 @@ std::string loadStringFromFile(const std::string& fileName)
     return fileContents;
 }
 
-std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream)
-{
-    // This code relies assumes jsonStream is a valid JSON string
-    std::vector<std::string> jsonObjects;
-    int parenthesisCount = 0;
-    int currentObjectStart = -1;
-    bool isInsideString = false;
-    /*A string starts with an unescaped " and ends with an unescaped "
-     * } or { within a string must be ignored.
-    */
-    for (std::size_t i = 0; i < jsonStream.size(); i++) {
-        if (jsonStream.at(i) == '"' && (i > 0) && jsonStream.at(i - 1) != '\\') {
-            // only switch insideString if " is not escaped
-            isInsideString = !isInsideString;
-        } else if (!isInsideString && jsonStream.at(i) == '{') {
-            parenthesisCount++;
-        } else if (!isInsideString && jsonStream.at(i) == '}') {
-            parenthesisCount--;
-        }
-
-        if (parenthesisCount == 1 && currentObjectStart < 0) {
-            // found start of object
-            currentObjectStart = i;
-        }
-        if (parenthesisCount == 0 && currentObjectStart >= 0) {
-            // found end of object
-            jsonObjects.push_back(
-                    jsonStream.substr(currentObjectStart, i - currentObjectStart + 1));
-
-            currentObjectStart = -1;
-        }
-    }
-    return jsonObjects;
-}
-
 std::string attributeGetterFromName(const std::string& attributeName)
 {
     std::string result = attributeName;

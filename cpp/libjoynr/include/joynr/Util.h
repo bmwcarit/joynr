@@ -64,12 +64,6 @@ std::string extractParticipantIdFromMulticastId(const std::string& multicastId);
 
 void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards = false);
 
-/**
-  * Splits a byte array representation of multiple JSON objects into
-  * a list of byte arrays, each containing a single JSON object.
-  */
-std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream);
-
 std::string attributeGetterFromName(const std::string& attributeName);
 
 /*
