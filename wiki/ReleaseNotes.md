@@ -3,6 +3,8 @@
 ## API relevant changes
 * **[Java, JEE]** RawMessagingPreprocessor now accepts a byte array as an input parameter and returns
   a byte array instead of a string.
+* **[Java]** JoynrMessageProcessor uses the new SMRF message types: MutableMessage for outgoing messages
+  and ImmutableMessage for incoming messages.
 
 # joynr 0.25.2
 
