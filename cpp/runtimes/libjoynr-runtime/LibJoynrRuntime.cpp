@@ -178,7 +178,47 @@ void LibJoynrRuntime::init(
     auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(routingProxyTtl))
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
+
     auto globalAddressFuture = routingProxy->getGlobalAddressAsync();
+    auto onSuccessWrapper = [
+        this,
+        onSuccess = std::move(onSuccess),
+        onError,
+        globalAddressFuture = std::move(globalAddressFuture),
+        routingProxyTtl
+    ](const std::string& replyAddress)
+    {
+        std::string globalAddress;
+        try {
+            globalAddressFuture->get(routingProxyTtl, globalAddress);
+        } catch (const exceptions::JoynrRuntimeException& error) {
+            exceptions::JoynrRuntimeException wrappedError(
+                    "Failed to retrieve global address from cluster controller: " +
+                    error.getMessage());
+            onError(wrappedError);
+            return;
+        }
+        messageSender->setReplyToAddress(replyAddress);
+
+        std::vector<IDispatcher*> dispatcherList;
+        dispatcherList.push_back(inProcessDispatcher);
+        dispatcherList.push_back(joynrDispatcher);
+
+        capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
+                dispatcherList,
+                *discoveryProxy,
+                participantIdStorage,
+                dispatcherAddress,
+                libJoynrMessageRouter,
+                messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
+                *publicationManager,
+                globalAddress);
+
+        onSuccess();
+    };
+
+    routingProxy->getReplyToAddressAsync(onSuccessWrapper, onError);
+
     libJoynrMessageRouter->setParentRouter(std::move(routingProxy));
 
     // setup discovery
@@ -200,43 +240,6 @@ void LibJoynrRuntime::init(
                          ->build();
 
     discoveryProxy->setDiscoveryProxy(std::move(proxy));
-
-    auto onSuccessWrapper = [
-        onSuccess = std::move(onSuccess),
-        globalAddressFuture = std::move(globalAddressFuture),
-        this,
-        onError,
-        routingProxyTtl
-    ]()
-    {
-        std::vector<IDispatcher*> dispatcherList;
-        dispatcherList.push_back(inProcessDispatcher);
-        dispatcherList.push_back(joynrDispatcher);
-
-        std::string globalAddress;
-        try {
-            globalAddressFuture->get(routingProxyTtl, globalAddress);
-        } catch (const exceptions::JoynrRuntimeException& error) {
-            exceptions::JoynrRuntimeException wrappedError(
-                    "Failed to retrieve global address from cluster controller: " +
-                    error.getMessage());
-            onError(wrappedError);
-            return;
-        }
-
-        capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
-                dispatcherList,
-                *discoveryProxy,
-                participantIdStorage,
-                dispatcherAddress,
-                libJoynrMessageRouter,
-                messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
-                *publicationManager,
-                globalAddress);
-        onSuccess();
-    };
-
-    libJoynrMessageRouter->queryReplyToAddress(std::move(onSuccessWrapper), std::move(onError));
 }
 
 std::shared_ptr<IMessageRouter> LibJoynrRuntime::getMessageRouter()

@@ -75,6 +75,8 @@ public:
 
     ~MessageSender() override = default;
 
+    void setReplyToAddress(const std::string& replyToAddress) override;
+
     /*
       * registers Dispatcher. See above comment why this is necessary.
       */
@@ -144,6 +146,7 @@ private:
     IDispatcher* dispatcher;
     std::shared_ptr<IMessageRouter> messageRouter;
     MutableMessageFactory messageFactory;
+    std::string replyToAddress;
     ADD_LOGGER(MessageSender);
 };
 

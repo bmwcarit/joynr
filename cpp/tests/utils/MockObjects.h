@@ -406,6 +406,11 @@ class MockMessageSender : public joynr::IMessageSender {
 public:
 
     MOCK_METHOD1(
+            setReplyToAddress,
+            void(const std::string& replyToAddress)
+    );
+
+    MOCK_METHOD1(
             registerDispatcher,
             void(joynr::IDispatcher* dispatcher)
     );

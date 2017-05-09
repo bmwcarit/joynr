@@ -39,8 +39,16 @@ INIT_LOGGER(MessageSender);
 
 MessageSender::MessageSender(std::shared_ptr<IMessageRouter> messageRouter,
                              std::uint64_t ttlUpliftMs)
-        : dispatcher(nullptr), messageRouter(messageRouter), messageFactory(ttlUpliftMs)
+        : dispatcher(nullptr),
+          messageRouter(messageRouter),
+          messageFactory(ttlUpliftMs),
+          replyToAddress()
 {
+}
+
+void MessageSender::setReplyToAddress(const std::string& replyToAddress)
+{
+    this->replyToAddress = replyToAddress;
 }
 
 void MessageSender::registerDispatcher(IDispatcher* dispatcher)
@@ -60,6 +68,11 @@ void MessageSender::sendRequest(const std::string& senderParticipantId,
     dispatcher->addReplyCaller(request.getRequestReplyId(), callback, qos);
     MutableMessage message = messageFactory.createRequest(
             senderParticipantId, receiverParticipantId, qos, request, isLocalMessage);
+
+    if (!message.isLocalMessage()) {
+        message.setReplyTo(replyToAddress);
+    }
+
     assert(messageRouter);
     messageRouter->route(message.getImmutableMessage());
 }
@@ -113,6 +126,9 @@ void MessageSender::sendSubscriptionRequest(const std::string& senderParticipant
                                                                           qos,
                                                                           subscriptionRequest,
                                                                           isLocalMessage);
+        if (!message.isLocalMessage()) {
+            message.setReplyTo(replyToAddress);
+        }
         assert(messageRouter);
         messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
@@ -134,6 +150,9 @@ void MessageSender::sendBroadcastSubscriptionRequest(
                                                                   qos,
                                                                   subscriptionRequest,
                                                                   isLocalMessage);
+        if (!message.isLocalMessage()) {
+            message.setReplyTo(replyToAddress);
+        }
         assert(messageRouter);
         messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
@@ -155,6 +174,9 @@ void MessageSender::sendMulticastSubscriptionRequest(
                                                                   qos,
                                                                   subscriptionRequest,
                                                                   isLocalMessage);
+        if (!message.isLocalMessage()) {
+            message.setReplyTo(replyToAddress);
+        }
         assert(messageRouter);
         messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {

@@ -130,10 +130,6 @@ public:
      */
     void shutdown();
 
-    void queryReplyToAddress(
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
-
     friend class MessageRunnable;
 
 private:
@@ -153,9 +149,6 @@ private:
     mutable std::mutex parentResolveMutex;
 
     void removeRunningParentResolvers(const std::string& destinationPartId);
-
-    std::mutex parentClusterControllerReplyToAddressMutex;
-    std::string parentClusterControllerReplyToAddress;
 };
 
 } // namespace joynr

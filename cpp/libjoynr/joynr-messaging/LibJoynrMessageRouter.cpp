@@ -69,9 +69,7 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
           parentAddress(nullptr),
           incomingAddress(incomingAddress),
           runningParentResolves(),
-          parentResolveMutex(),
-          parentClusterControllerReplyToAddressMutex(),
-          parentClusterControllerReplyToAddress()
+          parentResolveMutex()
 {
 }
 
@@ -99,35 +97,6 @@ void LibJoynrMessageRouter::setParentRouter(std::unique_ptr<system::RoutingProxy
     addNextHopToParent(this->parentRouter->getProxyParticipantId());
 }
 
-void LibJoynrMessageRouter::queryReplyToAddress(
-        std::function<void()> onSuccess,
-        std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError)
-{
-    assert(parentRouter);
-
-    auto onSuccessWrapper = [ onSuccess = std::move(onSuccess), this ](
-            const std::string& replyToAddress)
-    {
-        {
-            std::lock_guard<std::mutex> lock(parentClusterControllerReplyToAddressMutex);
-            parentClusterControllerReplyToAddress = replyToAddress;
-        }
-
-        onSuccess();
-    };
-
-    auto onErrorWrapper = [onError = std::move(onError)](
-            const joynr::exceptions::JoynrRuntimeException& error)
-    {
-        exceptions::JoynrRuntimeException wrappedError(
-                "Failed to retrieve replyTo address from cluster controller: " +
-                error.getMessage());
-        onError(wrappedError);
-    };
-
-    parentRouter->getReplyToAddressAsync(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-}
-
 /**
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
@@ -148,17 +117,6 @@ void LibJoynrMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std
     // search for the destination addresses
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
             getDestinationAddresses(*message);
-
-    // TODO: move to respective MessageSender
-    /*
-    if (!message.isLocalMessage() &&
-        (message.getType() == Message::VALUE_MESSAGE_TYPE_REQUEST() ||
-         message.getType() == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST() ||
-         message.getType() == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST() ||
-         message.getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST())) {
-        std::lock_guard<std::mutex> lock(globalParentClusterControllerAddressMutex);
-        message.setHeaderReplyAddress(globalParentClusterControllerAddress);
-    }*/
 
     // if destination address is not known
     if (destAddresses.empty()) {

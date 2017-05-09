@@ -27,6 +27,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/asio/io_service.hpp>
 #include <websocketpp/server.hpp>
+#include <smrf/exceptions.h>
 
 #include "joynr/IMessageRouter.h"
 #include "joynr/ImmutableMessage.h"

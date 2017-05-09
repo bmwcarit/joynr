@@ -275,17 +275,6 @@ void CcMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std::uint
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
-    // TODO move to messageSender
-    /*
-    if (message->getHeaderReplyAddress().empty() && !message.isLocalMessage() &&
-        (message->getType() == Message::VALUE_MESSAGE_TYPE_REQUEST() ||
-         message->getType() == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST() ||
-         message->getType() == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST() ||
-         message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST())) {
-        message.setHeaderReplyAddress(globalClusterControllerAddress);
-    }
-    */
-
     JOYNR_LOG_TRACE(logger, "Route message with Id {}", message->getId());
     // search for the destination addresses
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =

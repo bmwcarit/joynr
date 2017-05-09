@@ -373,6 +373,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             std::make_shared<MessageSender>(ccMessageRouter, messagingSettings.getTtlUpliftMs());
     joynrDispatcher = new Dispatcher(messageSender, singleThreadIOService->getIOService());
     messageSender->registerDispatcher(joynrDispatcher);
+    messageSender->setReplyToAddress(globalClusterControllerAddress);
 
     /* CC */
     // TODO: libjoynrmessagingskeleton now uses the Dispatcher, should it use the

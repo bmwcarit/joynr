@@ -68,6 +68,8 @@ class IMessageSender : public IPublicationSender
 public:
     ~IMessageSender() override = default;
 
+    virtual void setReplyToAddress(const std::string& replyAddress) = 0;
+
     /*
      * registers Dispatcher. See above comment why this is necessary.
      */
