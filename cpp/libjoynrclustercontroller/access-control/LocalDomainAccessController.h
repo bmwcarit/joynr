@@ -588,8 +588,8 @@ private:
                                           const std::string& interfaceName);
     std::string createCompoundKey(const std::string& domain, const std::string& interfaceName);
 
-    // Requests waiting to get consumer permission
-    struct ConsumerPermissionRequest
+    // Requests waiting to get consumer / provider permission
+    struct PermissionRequest
     {
         std::string userId;
         std::string domain;
@@ -597,6 +597,8 @@ private:
         infrastructure::DacTypes::TrustLevel::Enum trustLevel;
         std::shared_ptr<IGetPermissionCallback> callbacks;
     };
+
+    using ConsumerPermissionRequest = PermissionRequest;
 
     std::unordered_map<std::string, std::vector<ConsumerPermissionRequest>>
             consumerPermissionRequests;
@@ -605,14 +607,7 @@ private:
     void processConsumerRequests(const std::vector<ConsumerPermissionRequest>& requests);
 
     // Requests waiting to get provider permission
-    struct ProviderPermissionRequest
-    {
-        std::string userId;
-        std::string domain;
-        std::string interfaceName;
-        infrastructure::DacTypes::TrustLevel::Enum trustLevel;
-        std::shared_ptr<IGetPermissionCallback> callbacks;
-    };
+    using ProviderPermissionRequest = PermissionRequest;
 
     std::unordered_map<std::string, std::vector<ProviderPermissionRequest>>
             providerPermissionRequests;
