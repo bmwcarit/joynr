@@ -64,3 +64,18 @@ RUN cd /opt \
     && cd /opt/ \
     && rm -rf googletest
 
+###################################################
+# install smrf
+###################################################
+
+RUN export SMRF_VERSION=0.1.0 \
+    && cd /opt \
+    && git clone https://github.com/bmwcarit/smrf.git \
+    && cd smrf \
+    && git checkout $SMRF_VERSION \
+    && mkdir build \
+    && cd build \
+    && cmake -DBUILD_TESTS=Off .. \
+    && make install -j"$(nproc)" \
+    && cd /opt \
+    && rm -rf smrf

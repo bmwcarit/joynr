@@ -118,6 +118,37 @@ RUN chmod -R a+rw /opt \
     && chown -R 1000 /usr/local
 
 ###################################################
+# install flatbuffers
+###################################################
+
+RUN export FLATBUFFERS_VERSION=v1.6.0 \
+        && cd /tmp \
+        && git clone https://github.com/google/flatbuffers.git \
+        && cd flatbuffers \
+        && git checkout $FLATBUFFERS_VERSION \
+        && mkdir build \
+        && cd build \
+        && cmake .. -DFLATBUFFERS_BUILD_TESTS=OFF \
+        && make install -j"$(nproc)" \
+        && rm -rf /tmp/flatbuffers
+
+###################################################
+# install smrf
+###################################################
+
+RUN export SMRF_VERSION=0.1.0 \
+    && cd /opt \
+    && git clone https://github.com/bmwcarit/smrf.git \
+    && cd smrf \
+    && git checkout $SMRF_VERSION \
+    && mkdir build \
+    && cd build \
+    && cmake -DBUILD_TESTS=Off .. \
+    && make install -j"$(nproc)" \
+    && cd /opt \
+    && rm -rf smrf
+
+###################################################
 # Copy build scripts
 ###################################################
 COPY scripts /data/scripts
