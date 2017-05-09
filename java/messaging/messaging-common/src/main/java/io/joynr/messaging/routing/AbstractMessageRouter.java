@@ -94,11 +94,6 @@ abstract public class AbstractMessageRouter implements MessageRouter {
     }
 
     @Override
-    public boolean getIsGloballyVisible(String participantId) {
-        return routingTable.getIsGloballyVisible(participantId);
-    }
-
-    @Override
     public void addMulticastReceiver(final String multicastId,
                                      String subscriberParticipantId,
                                      String providerParticipantId) {

@@ -36,8 +36,6 @@ public interface MessageRouter {
 
     public boolean resolveNextHop(String participantId);
 
-    public boolean getIsGloballyVisible(String participantId);
-
     void addMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId);
 
     void removeMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId);

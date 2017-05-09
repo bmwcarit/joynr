@@ -142,12 +142,8 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     @Override
     public Promise<ResolveNextHopDeferred> resolveNextHop(String participantId) {
         boolean resolved = messageRouter.resolveNextHop(participantId);
-        boolean isGloballyVisible = false;
-        if (resolved) {
-            isGloballyVisible = messageRouter.getIsGloballyVisible(participantId);
-        }
         ResolveNextHopDeferred deferred = new ResolveNextHopDeferred();
-        deferred.resolve(resolved, isGloballyVisible);
+        deferred.resolve(resolved);
         return new Promise<>(deferred);
     }
 
