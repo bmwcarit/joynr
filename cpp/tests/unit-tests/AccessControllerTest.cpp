@@ -152,6 +152,9 @@ public:
                 TEST_PUBLICKEYID,
                 false
         );
+    }
+
+    void prepareConsumerTest() {
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,
                 lookup(toParticipantId,
@@ -199,6 +202,7 @@ const std::string AccessControllerTest::TEST_PUBLICKEYID("publicKeyId");
 //----- Tests ------------------------------------------------------------------
 
 TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl) {
+    prepareConsumerTest();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
     EXPECT_CALL(
             localDomainAccessControllerMock,
@@ -217,6 +221,7 @@ TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl) {
 }
 
 TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
+    prepareConsumerTest();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
     EXPECT_CALL(
             localDomainAccessControllerMock,
@@ -249,6 +254,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
 }
 
 TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessage) {
+    prepareConsumerTest();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
     EXPECT_CALL(
             localDomainAccessControllerMock,
@@ -268,4 +274,3 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(accessControllerCallback)
     );
 }
-
