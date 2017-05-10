@@ -29,6 +29,7 @@
 #include "joynr/types/ProviderQos.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/CapabilityUtils.h"
+#include "joynr/IPlatformSecurityManager.h"
 
 namespace joynr
 {
