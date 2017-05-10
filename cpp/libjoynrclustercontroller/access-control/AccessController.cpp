@@ -308,13 +308,10 @@ bool AccessController::hasProviderPermission(const std::string& userId,
                                              const std::string& domain,
                                              const std::string& interfaceName)
 {
-    std::ignore = userId;
-    std::ignore = trustLevel;
-    std::ignore = domain;
-    std::ignore = interfaceName;
-
-    assert(false && "Not yet implemented.");
-    return true;
+    return (localDomainAccessController.getProviderPermission(
+                    userId, domain, interfaceName, trustLevel) == Permission::Enum::YES)
+                   ? true
+                   : false;
 }
 
 } // namespace joynr
