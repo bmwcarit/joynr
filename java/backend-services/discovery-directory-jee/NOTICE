@@ -83,6 +83,7 @@ This project has dependencies to:
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
+  io.joynr.java:jeeintegration under The Apache Software License, Version 2.0
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
@@ -96,7 +97,6 @@ This project has dependencies to:
   Javassist under MPL 1.1 or LGPL 2.1
   javax.inject under The Apache Software License, Version 2.0
   javax.interceptor API under CDDL + GPLv2 with classpath exception
-  jeeintegration under The Apache Software License, Version 2.0
   jsoup under The MIT License
   JUnit under Common Public License Version 1.0
   Logging under The Apache Software License, Version 2.0

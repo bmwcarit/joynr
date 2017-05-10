@@ -56,7 +56,8 @@ public:
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
             std::shared_ptr<IMessageRouter> messageRouter,
             std::int64_t defaultExpiryIntervalMs,
-            PublicationManager& publicationManager);
+            PublicationManager& publicationManager,
+            const std::string& globalAddress);
 
     template <class T>
     std::string addAsync(
@@ -152,6 +153,7 @@ private:
     std::shared_ptr<IMessageRouter> messageRouter;
     std::int64_t defaultExpiryIntervalMs;
     PublicationManager& publicationManager;
+    const std::string globalAddress;
     ADD_LOGGER(CapabilitiesRegistrar);
 };
 

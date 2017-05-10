@@ -16,11 +16,12 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
+
+#include "InProcessMessagingStubFactory.h"
 
 #include <cassert>
 
-#include "common/in-process/InProcessMessagingStub.h"
+#include "InProcessMessagingStub.h"
 #include "joynr/InProcessMessagingAddress.h"
 
 namespace joynr

@@ -47,7 +47,6 @@ class InterfaceProxyBaseHTemplate extends InterfaceTemplate {
 «FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
-#include "joynr/system/RoutingTypes/Address.h"
 #include <memory>
 
 «getDllExportIncludeStatement()»
@@ -72,13 +71,11 @@ class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, vi
 public:
 	/**
 	 * @brief Parameterized constructor
-	 * @param messagingAddress The address
 	 * @param connectorFactory The connector factory
 	 * @param domain The provider domain
 	 * @param qosSettings The quality of service settings
 	 */
 	«className»(
-			std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			const std::string& domain,
 			const joynr::MessagingQos& qosSettings
@@ -97,8 +94,6 @@ public:
 	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, false)»
 
 protected:
-	/** @brief The joynr messaging address */
-	std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress;
 	/** @brief The kind of connector */
 	std::unique_ptr<I«interfaceName»Connector> connector;
 

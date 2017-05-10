@@ -22,7 +22,7 @@
 #include <map>
 #include <string>
 
-#include "joynr/JoynrCommonExport.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr
@@ -33,7 +33,7 @@ namespace joynr
  * @brief The BroadcastFilterParameters class represents generic filter parameters
  * for selective broadcasts by using std types
  */
-class JOYNRCOMMON_EXPORT BroadcastFilterParameters
+class JOYNR_EXPORT BroadcastFilterParameters
 {
 
 public:

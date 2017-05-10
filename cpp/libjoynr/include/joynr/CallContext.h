@@ -22,7 +22,7 @@
 
 #include <string>
 
-#include "joynr/JoynrCommonExport.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr
@@ -39,7 +39,7 @@ namespace joynr
  *  - Calling principal: Identifies the entity which caused the provider call. This value
  *    equals the creator user id from the joynr message header field.
  */
-class JOYNRCOMMON_EXPORT CallContext
+class JOYNR_EXPORT CallContext
 {
 public:
     /**

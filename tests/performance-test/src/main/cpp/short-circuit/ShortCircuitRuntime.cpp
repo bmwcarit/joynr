@@ -22,7 +22,6 @@
 #include <chrono>
 #include <limits>
 
-#include "joynr/Util.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/JoynrMessageSender.h"
@@ -33,7 +32,6 @@
 #include "joynr/SubscriptionManager.h"
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessPublicationSender.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
 #include "libjoynrclustercontroller/include/joynr/CcMessageRouter.h"
 
@@ -42,11 +40,6 @@ namespace joynr
 
 ShortCircuitRuntime::ShortCircuitRuntime()
 {
-    std::string libjoynrMessagingId = "libjoynr.messaging.participantid_short-circuit-uuid";
-    auto libjoynrMessagingAddress =
-            std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>(
-                    libjoynrMessagingId);
-
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
 
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
@@ -89,8 +82,7 @@ ShortCircuitRuntime::ShortCircuitRuntime()
             joynrMessageSender, subscriptionManager);
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
-    proxyFactory =
-            std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
+    proxyFactory = std::make_unique<ProxyFactory>(std::move(connectorFactory));
 
     std::string persistenceFilename = "dummy.txt";
     participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
@@ -110,7 +102,8 @@ ShortCircuitRuntime::ShortCircuitRuntime()
                                                     dispatcherAddress,
                                                     messageRouter,
                                                     std::numeric_limits<std::int64_t>::max(),
-                                                    *publicationManager);
+                                                    *publicationManager,
+                                                    globalClusterControllerAddress);
 
     maximumTtlMs = std::chrono::milliseconds(std::chrono::hours(24) * 30).count();
 }

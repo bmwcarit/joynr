@@ -77,13 +77,11 @@ class «getDllExportMacro()» «className» : virtual public I«interfaceName»,
 public:
 	/**
 	 * @brief Parameterized constructor
-	 * @param messagingAddress The address
 	 * @param connectorFactory The connector factory
 	 * @param domain The provider domain
 	 * @param qosSettings The quality of service settings
 	 */
 	«className»(
-			std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
 			const std::string& domain,
 			const joynr::MessagingQos& qosSettings

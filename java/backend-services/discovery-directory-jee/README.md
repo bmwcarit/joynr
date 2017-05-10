@@ -31,12 +31,10 @@ First, if not already done so, create a connection pool for the database you wan
 discovery directory to use for persistence. For this example, we'll create a database
 on the JavaDB (based on Derby) database which is installed as part of Payara / Glassfish:
 
-    create-jdbc-connection-pool \
+    bin/asadmin create-jdbc-connection-pool \
         --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
         --restype javax.sql.XADataSource \
-        --property portNumber=1527:password=APP:user=APP:serverName=\
-        localhost:databaseName=joynr-discovery-directory:connectionAttributes=\; \
-        create\\=true JoynrPool
+        --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool
 
 Next, create a datasource resource pointing to that database connection. Here's an
 example of what that would look like when using the connection pool created above:
@@ -47,16 +45,20 @@ After this, you can start the database:
 
 `bin/asadmin start-database`
 
+Next, create the executor service:
+
+    bin/asadmin create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor
+
+Start a MQTT broker, e.g. [Mosquitto](http://mosquitto.org), and make sure it's accepting traffic
+on port `1883`.
+
 And finally deploy the discovery directory:
 
     bin/asadmin deploy \
-        --contextroot discovery-directory-jee \
         <joynr home>/java/backend-services/discovery-directory-jee/target/discovery-directory-jee-<version>.war
 
-__Important__: by default the configuration expects the application to be available under
-the context root `discovery-directory-jee`, so you will either have to specify the context root
-during deployment, as seen in the example above, or else change the servlet
-context root configuration via environment or Java system property
-(see [Java Configuration Reference](../../../wiki/JavaSettings.md) for details). Note that when
-specifying the servlet context root via configuration you have to include the `/messaging` part
-of the URL.
+>Note: by default the configuration expects the application to be available under
+>the context root `discovery-directory-jee` as it is configured in JoynrConfigurationProvider.
+>Note that when specifying the servlet context root via configuration you have to include the
+>`/messaging` part of the URL.
+

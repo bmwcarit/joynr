@@ -29,8 +29,10 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
+  <groupId>io.joynr.examples.radio-jee</groupId>
   <artifactId>radio-jee-api</artifactId>
   <packaging>jar</packaging>
+  <name>${project.groupId}:${project.artifactId}</name>
 
   <build>
 
@@ -96,7 +98,7 @@
         <configuration>
           <filesets>
             <fileset>
-              <directory>${basedir}/src/main/generated</directory>
+              <directory>${basedir}/src</directory>
               <includes>
                 <include>**</include>
               </includes>

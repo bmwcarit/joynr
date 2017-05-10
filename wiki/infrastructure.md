@@ -62,6 +62,9 @@ Next, we start the new domain and create the executor service:
     bin/asadmin start-domain joynr-infrastructure
     bin/asadmin create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor
 
+>Note the `--corepoolsize=100` option. The default will only create one thread, which can lead to
+>blocking.
+
 ### Database
 
 Both the Discovery and Domain Access Controller services require

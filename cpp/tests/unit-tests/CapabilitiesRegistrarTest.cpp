@@ -59,6 +59,7 @@ public:
         mockDispatcher = new MockDispatcher();
         dispatcherList.push_back(mockDispatcher);
 
+        const std::string globalAddress = "testGlobalAddressString";
         capabilitiesRegistrar = new CapabilitiesRegistrar(
                     dispatcherList,
                     mockDiscovery,
@@ -66,7 +67,8 @@ public:
                     dispatcherAddress,
                     mockMessageRouter,
                     std::numeric_limits<std::int64_t>::max(),
-                    pubManager
+                    pubManager,
+                    globalAddress
         );
     }
 

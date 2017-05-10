@@ -31,14 +31,16 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<IMessageRouter> messageRouter,
         std::int64_t defaultExpiryIntervalMs,
-        PublicationManager& publicationManager)
+        PublicationManager& publicationManager,
+        const std::string& globalAddress)
         : dispatcherList(dispatcherList),
           discoveryProxy(discoveryProxy),
           participantIdStorage(participantIdStorage),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
           defaultExpiryIntervalMs(defaultExpiryIntervalMs),
-          publicationManager(publicationManager)
+          publicationManager(publicationManager),
+          globalAddress(globalAddress)
 {
 }
 
