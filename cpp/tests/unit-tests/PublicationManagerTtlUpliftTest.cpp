@@ -491,7 +491,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWi
                                                            expectedPublicationTtlMs, triggerPublication);
 }
 
-TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWithLargeExpiryDate) {
+TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testAttributeSubscriptionWithTtlUpliftWithLargeExpiryDate) {
 
     auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender, ttlUpliftMs);
 
@@ -530,7 +530,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWi
                                                            expectedPublicationTtlMs, triggerPublication);
 }
 
-TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWithLargeExpiryDate) {
+TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testBroadcastSubscriptionWithTtlUpliftWithLargeExpiryDate) {
 
     auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender, ttlUpliftMs);
 

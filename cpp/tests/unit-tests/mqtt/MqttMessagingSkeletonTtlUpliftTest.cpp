@@ -101,7 +101,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, testDefaultTtlUplift) {
     mqttMessagingSkeleton.onMessageReceived(std::move(serializedMessage));
 }
 
-TEST_F(MqttMessagingSkeletonTtlUpliftTest, testTtlUplift) {
+TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUplift) {
     std::int64_t ttlMs = 1024;
     MessagingQos qos(ttlMs);
     Request request;
@@ -126,7 +126,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, testTtlUplift) {
     mqttMessagingSkeleton.onMessageReceived(std::move(serializedMessage));
 }
 
-TEST_F(MqttMessagingSkeletonTtlUpliftTest, testTtlUpliftWithLargeTtl) {
+TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl) {
     const JoynrTimePoint maxAbsoluteTime = DispatcherUtils::getMaxAbsoluteTime();
     std::int64_t ttlMs = 1024;
     MessagingQos qos(ttlMs);
