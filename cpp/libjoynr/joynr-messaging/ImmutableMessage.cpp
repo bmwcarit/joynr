@@ -29,9 +29,13 @@ INIT_LOGGER(ImmutableMessage);
 ImmutableMessage::ImmutableMessage(smrf::ByteVector&& serializedMessage, bool verifyInput)
         : serializedMessage(std::move(serializedMessage)),
           messageDeserializer(smrf::ByteArrayView(this->serializedMessage), verifyInput),
-          receivedFromGlobal(false),
+          headers(),
           bodyView(),
-          decompressedBody()
+          decompressedBody(),
+          receivedFromGlobal(false),
+          creator(),
+          id(),
+          type()
 {
     init();
 }
@@ -39,9 +43,13 @@ ImmutableMessage::ImmutableMessage(smrf::ByteVector&& serializedMessage, bool ve
 ImmutableMessage::ImmutableMessage(const smrf::ByteVector& serializedMessage, bool verifyInput)
         : serializedMessage(serializedMessage),
           messageDeserializer(smrf::ByteArrayView(this->serializedMessage), verifyInput),
-          receivedFromGlobal(false),
+          headers(),
           bodyView(),
-          decompressedBody()
+          decompressedBody(),
+          receivedFromGlobal(false),
+          creator(),
+          id(),
+          type()
 {
     init();
 }
