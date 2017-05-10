@@ -124,6 +124,30 @@ public:
      */
     void setLocalMessage(bool localMessage);
 
+    /**
+     * @brief Sets the encrypt flag
+     * @param encrypt specifies whether message will be sent encrypted
+     */
+    void setEncrypt(bool encrypt);
+
+    /**
+     * @brief Gets the encrypt flag
+     * @return whether message will be sent encrypted
+     */
+    bool getEncrypt() const;
+
+    /**
+     * @brief Sets the compress flag
+     * @param compress specifies whether message will be sent compressed
+     */
+    void setCompress(bool compress);
+
+    /**
+     * @brief Gets the compress flag
+     * @return whether message will be sent compressed
+     */
+    bool getCompress() const;
+
     template <typename Archive>
     void save(Archive& archive)
     {
@@ -156,6 +180,12 @@ private:
     // Transient flag which marks message that are send to a provider which is registered
     // on the local cluster-controller.
     bool localMessage;
+
+    /** @brief Specifies whether message will be sent encrypted */
+    bool encrypt;
+
+    /** @brief Specifies whether message will be sent compressed */
+    bool compress;
 };
 
 } // namespace joynr

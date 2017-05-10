@@ -38,7 +38,9 @@ MutableMessage::MutableMessage()
           customHeaders(),
           payload(),
           ttlAbsolute(true),
-          localMessage(false)
+          localMessage(false),
+          encrypt(false),
+          compress(false)
 {
 }
 
@@ -162,6 +164,26 @@ bool MutableMessage::isLocalMessage() const
 void MutableMessage::setLocalMessage(bool localMessage)
 {
     this->localMessage = localMessage;
+}
+
+void MutableMessage::setEncrypt(bool encrypt)
+{
+    this->encrypt = encrypt;
+}
+
+bool MutableMessage::getEncrypt() const
+{
+    return encrypt;
+}
+
+void MutableMessage::setCompress(bool compress)
+{
+    this->compress = compress;
+}
+
+bool MutableMessage::getCompress() const
+{
+    return compress;
 }
 
 void MutableMessage::setEffort(std::string&& effort)
