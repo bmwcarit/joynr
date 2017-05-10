@@ -1269,6 +1269,20 @@ public:
                      const std::string& interfaceName,
                      const std::string& operation,
                      joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
+    MOCK_METHOD5(getProviderPermission,
+                 void(
+                     const std::string& userId,
+                     const std::string& domain,
+                     const std::string& interfaceName,
+                     joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
+                     std::shared_ptr<joynr::LocalDomainAccessController::IGetPermissionCallback> callback));
+
+    MOCK_METHOD4(getProviderPermission,
+                 joynr::infrastructure::DacTypes::Permission::Enum(
+                     const std::string& userId,
+                     const std::string& domain,
+                     const std::string& interfaceName,
+                     joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
 };
 
 class MockMessagingSettings : public joynr::MessagingSettings {
