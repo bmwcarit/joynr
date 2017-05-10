@@ -24,6 +24,8 @@
 namespace joynr
 {
 
+INIT_LOGGER(ImmutableMessage);
+
 ImmutableMessage::ImmutableMessage(smrf::ByteVector&& serializedMessage, bool verifyInput)
         : serializedMessage(std::move(serializedMessage)),
           messageDeserializer(smrf::ByteArrayView(this->serializedMessage), verifyInput),
@@ -169,6 +171,8 @@ void ImmutableMessage::init()
     headers = messageDeserializer.getHeaders();
     boost::optional<std::string> optionalId = getOptionalHeaderByKey(Message::HEADER_ID());
     boost::optional<std::string> optionalType = getOptionalHeaderByKey(Message::HEADER_TYPE());
+
+    JOYNR_LOG_TRACE(logger, "init: {}", toLogMessage());
 
     // check if necessary headers are set
     if (!optionalId.is_initialized() || !optionalType.is_initialized()) {

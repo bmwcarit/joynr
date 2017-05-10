@@ -28,6 +28,7 @@
 #include <smrf/MessageDeserializer.h>
 
 #include "joynr/DispatcherUtils.h"
+#include "joynr/Logger.h"
 #include "serializer/Serializer.h"
 
 namespace joynr
@@ -131,6 +132,7 @@ private:
     std::string creator;
     std::string id;
     std::string type;
+    ADD_LOGGER(ImmutableMessage);
 };
 
 } // namespace joynr
