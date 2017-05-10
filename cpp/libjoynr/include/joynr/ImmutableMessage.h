@@ -121,6 +121,8 @@ private:
     smrf::ByteVector serializedMessage;
     smrf::MessageDeserializer messageDeserializer;
     std::unordered_map<std::string, std::string> headers;
+    mutable boost::optional<smrf::ByteArrayView> bodyView;
+    mutable boost::optional<smrf::ByteVector> decompressedBody;
 
     // receivedFromGlobal is a transient attribute which will not be serialized.
     // It is only used locally for routing decisions.

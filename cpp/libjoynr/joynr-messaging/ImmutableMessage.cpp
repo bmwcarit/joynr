@@ -27,7 +27,9 @@ namespace joynr
 ImmutableMessage::ImmutableMessage(smrf::ByteVector&& serializedMessage, bool verifyInput)
         : serializedMessage(std::move(serializedMessage)),
           messageDeserializer(smrf::ByteArrayView(this->serializedMessage), verifyInput),
-          receivedFromGlobal(false)
+          receivedFromGlobal(false),
+          bodyView(),
+          decompressedBody()
 {
     init();
 }
@@ -35,7 +37,9 @@ ImmutableMessage::ImmutableMessage(smrf::ByteVector&& serializedMessage, bool ve
 ImmutableMessage::ImmutableMessage(const smrf::ByteVector& serializedMessage, bool verifyInput)
         : serializedMessage(serializedMessage),
           messageDeserializer(smrf::ByteArrayView(this->serializedMessage), verifyInput),
-          receivedFromGlobal(false)
+          receivedFromGlobal(false),
+          bodyView(),
+          decompressedBody()
 {
     init();
 }
@@ -72,7 +76,15 @@ bool ImmutableMessage::isSigned() const
 
 smrf::ByteArrayView ImmutableMessage::getUnencryptedBody() const
 {
-    return messageDeserializer.getBody();
+    if (!bodyView) {
+        if (!messageDeserializer.isCompressed()) {
+            bodyView = messageDeserializer.getBody();
+        } else {
+            decompressedBody = messageDeserializer.decompressBody();
+            bodyView = smrf::ByteArrayView(*decompressedBody);
+        }
+    }
+    return *bodyView;
 }
 
 std::string ImmutableMessage::toLogMessage() const
