@@ -23,6 +23,7 @@
 #include <gtest/gtest.h>
 
 #include "joynr/MutableMessageFactory.h"
+#include "joynr/MutableMessage.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/MessagingQos.h"
@@ -283,4 +284,12 @@ TEST_F(MutableMessageFactoryTest, testSetBestEffortHeader)
     ASSERT_TRUE(optionalEffort);
     EXPECT_EQ(MessagingQosEffort::getLiteral(MessagingQosEffort::Enum::BEST_EFFORT),
               *optionalEffort);
+}
+
+TEST_F(MutableMessageFactoryTest, compressFlagIsPropagated)
+{
+    const bool compress = true;
+    qos.setCompress(compress);
+    MutableMessage mutableMessage = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
+    EXPECT_EQ(compress, mutableMessage.getCompress());
 }

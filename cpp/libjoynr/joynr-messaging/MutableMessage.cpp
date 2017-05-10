@@ -48,6 +48,9 @@ std::unique_ptr<ImmutableMessage> MutableMessage::getImmutableMessage() const
 {
     smrf::MessageSerializer messageSerializer;
 
+    // propagate flags
+    messageSerializer.setCompressed(compress);
+
     // explicit headers
     messageSerializer.setSender(sender);
     messageSerializer.setRecipient(recipient);

@@ -219,6 +219,10 @@ void MutableMessageFactory::initMsg(MutableMessage& msg,
 
     // set payload
     msg.setPayload(std::move(payload));
+
+    // set flags
+    msg.setEncrypt(qos.getEncrypt());
+    msg.setCompress(qos.getCompress());
 }
 
 } // namespace joynr
