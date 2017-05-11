@@ -168,7 +168,9 @@ if (typeof requireJsDefine === 'function' && requireJsDefine.amd) {
 
     // using joynr with native nodejs require
 } else if (exports !== undefined) {
-    requirejs = require("requirejs");
+    if (typeof requirejs !== 'function') {
+        requirejs = require("requirejs");
+    }
     joynr.selectRuntime = function selectRuntime(runtime) {
         if (joynr.loaded) {
             throw new Error("joynr.selectRuntime: this method must " +
