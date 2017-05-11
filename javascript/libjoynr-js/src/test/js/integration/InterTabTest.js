@@ -911,7 +911,8 @@ define([
                                         // test participant as ChannelAddress to be resolved
                                         return routingProxy.addNextHop({
                                             participantId : testParticipantId,
-                                            channelAddress : channelAddress
+                                            channelAddress : channelAddress,
+                                            isGloballyVisible : true
                                         });
                                     }).then(function() {
                                         return routingProxy.resolveNextHop({
@@ -936,7 +937,8 @@ define([
                                         expect(success).toBeFalsy();
                                         return routingProxy.addNextHop({
                                             participantId : testParticipantId,
-                                            browserAddress : browserAddress
+                                            browserAddress : browserAddress,
+                                            isGloballyVisible : false
                                         });
                                     }).then(function() {
                                         return routingProxy.resolveNextHop({
@@ -963,7 +965,8 @@ define([
                                         expect(success).toBeFalsy();
                                         return routingProxy.addNextHop({
                                             participantId : testParticipantId,
-                                            webSocketAddress : webSocketAddress
+                                            webSocketAddress : webSocketAddress,
+                                            isGloballyVisible : false
                                         });
                                     }).then(function() {
                                         return routingProxy.resolveNextHop({
@@ -990,7 +993,8 @@ define([
                                         expect(success).toBeFalsy();
                                         return routingProxy.addNextHop({
                                             participantId : testParticipantId,
-                                            commonApiDbusAddress : commonApiDbusAddress
+                                            commonApiDbusAddress : commonApiDbusAddress,
+                                            isGloballyVisible : false
                                         });
                                     }).then(function() {
                                         return routingProxy.resolveNextHop({

@@ -410,6 +410,8 @@ define([
                                         .toEqual(arbitratedCaps[0].participantId);
                                         expect(messageRouterSpy.addNextHop.calls.mostRecent().args[1])
                                                 .toEqual(libjoynrMessagingAddress);
+                                        expect(messageRouterSpy.addNextHop.calls.mostRecent().args[2])
+                                        .toEqual(true);
                                         done();
                                         return null;
                                     }).catch(fail);

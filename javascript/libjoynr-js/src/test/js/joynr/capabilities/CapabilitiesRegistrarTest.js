@@ -230,10 +230,12 @@ define([
                             }).catch(function() {
                                return null;
                             });
+                            var isGloballyVisible = (providerQos.scope === ProviderScope.GLOBAL);
                             expect(messageRouterSpy.addNextHop).toHaveBeenCalled();
                             expect(messageRouterSpy.addNextHop).toHaveBeenCalledWith(
                                     participantId,
-                                    libjoynrMessagingAddress);
+                                    libjoynrMessagingAddress,
+                                    isGloballyVisible);
                             done();
                         });
 

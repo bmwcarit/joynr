@@ -41,6 +41,8 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
 
         var messageRouter = settings.messageRouter;
         var typeRegistry = TypeRegistrySingleton.getInstance();
+        // participants from ChannelMessagingSkeleton are always globally visible
+        var isGloballyVisible = true;
 
         /**
          * Lets all listeners receive a message
@@ -59,7 +61,10 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
                                     Typing.augmentTypes(
                                             JSON.parse(joynrMessage.replyChannelId),
                                             typeRegistry);
-                            messageRouter.addNextHop(joynrMessage.from, replyToAddress);
+                            messageRouter.addNextHop(
+                                    joynrMessage.from,
+                                    replyToAddress,
+                                    isGloballyVisible);
                         } catch (e) {
                             // message dropped if unknown replyTo address type
                             log.error("unable to process message: replyTo address type unknown: "

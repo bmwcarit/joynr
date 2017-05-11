@@ -176,36 +176,42 @@ define(
                  * @function MessageRouter#addNextHopToParentRoutingTable
                  *
                  * @param {String} participantId
+                 * @param {boolean} isGloballyVisible
                  *
                  * @returns result
                  */
                 this.addNextHopToParentRoutingTable =
-                        function addNextHopToParentRoutingTable(participantId) {
+                        function addNextHopToParentRoutingTable(participantId, isGloballyVisible) {
                             var result;
                             if (Typing.getObjectType(incomingAddress) === "BrowserAddress") {
                                 result = routingProxy.addNextHop({
                                     participantId : participantId,
-                                    browserAddress : incomingAddress
+                                    browserAddress : incomingAddress,
+                                    isGloballyVisible : isGloballyVisible
                                 });
                             } else if (Typing.getObjectType(incomingAddress) === "ChannelAddress") {
                                 result = routingProxy.addNextHop({
                                     participantId : participantId,
-                                    channelAddress : incomingAddress
+                                    channelAddress : incomingAddress,
+                                    isGloballyVisible : isGloballyVisible
                                 });
                             } else if (Typing.getObjectType(incomingAddress) === "WebSocketAddress") {
                                 result = routingProxy.addNextHop({
                                     participantId : participantId,
-                                    webSocketAddress : incomingAddress
+                                    webSocketAddress : incomingAddress,
+                                    isGloballyVisible : isGloballyVisible
                                 });
                             } else if (Typing.getObjectType(incomingAddress) === "WebSocketClientAddress") {
                                 result = routingProxy.addNextHop({
                                     participantId : participantId,
-                                    webSocketClientAddress : incomingAddress
+                                    webSocketClientAddress : incomingAddress,
+                                    isGloballyVisible : isGloballyVisible
                                 });
                             } else if (Typing.getObjectType(incomingAddress) === "CommonApiDbusAddress") {
                                 result = routingProxy.addNextHop({
                                     participantId : participantId,
-                                    commonApiDbusAddress : incomingAddress
+                                    commonApiDbusAddress : incomingAddress,
+                                    isGloballyVisible : isGloballyVisible
                                 });
                             }
                             return result;
@@ -241,15 +247,17 @@ define(
 
                             if (routingProxy !== undefined) {
                                 if (routingProxy.proxyParticipantId !== undefined) {
+                                    // isGloballyVisible is false because the routing provider is local
+                                    var isGloballyVisible = false;
                                     that.addNextHopToParentRoutingTable(
-                                            routingProxy.proxyParticipantId).catch(errorFct);
+                                            routingProxy.proxyParticipantId, isGloballyVisible).catch(errorFct);
                                 }
                                 for (hop in queuedAddNextHopCalls) {
                                     if (queuedAddNextHopCalls.hasOwnProperty(hop)) {
                                         queuedCall = queuedAddNextHopCalls[hop];
                                         if (queuedCall.participantId !== routingProxy.proxyParticipantId) {
                                             that.addNextHopToParentRoutingTable(
-                                                    queuedCall.participantId).then(
+                                                    queuedCall.participantId, queuedCall.isGloballyVisible).then(
                                                     queuedCall.resolve).catch(queuedCall.reject);
                                         }
                                     }
@@ -482,9 +490,11 @@ define(
                  *            participantId
                  * @param {InProcessAddress|BrowserAddress|ChannelAddress}
                  *            address the address to register
+                 * @param {boolean}
+                 *            isGloballyVisible
                  */
                 this.addNextHop =
-                        function addNextHop(participantId, address) {
+                        function addNextHop(participantId, address, isGloballyVisible) {
                             if (!isReady()) {
                                 log.debug("addNextHop: ignore call as message router is already shut down");
                                 return Promise.reject(new Error("message router is already shut down"));
@@ -507,13 +517,14 @@ define(
 
                             if (routingProxy !== undefined) {
                                 // register remotely
-                                promise = that.addNextHopToParentRoutingTable(participantId);
+                                promise = that.addNextHopToParentRoutingTable(participantId, isGloballyVisible);
                             } else {
                                 if (parentMessageRouterAddress !== undefined) {
                                     promise = new Promise(function(resolve, reject){
                                         queuedAddNextHopCalls[queuedAddNextHopCalls.length] =
                                         {
                                             participantId : participantId,
+                                            isGloballyVisible : isGloballyVisible,
                                             resolve : resolve,
                                             reject : reject
                                         };

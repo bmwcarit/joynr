@@ -200,13 +200,19 @@ define("joynr/proxy/ProxyBuilder", [
                                                         proxy.proxyParticipantId,
                                                         settings.loggingContext);
                                             }
+                                            var isGloballyVisible = false;
                                             if (arbitratedCaps && arbitratedCaps.length > 0) {
                                                 proxy.providerDiscoveryEntry =
                                                         arbitratedCaps[0];
+                                                if (!arbitratedCaps[0].isLocal) {
+                                                    isGloballyVisible = true;
+                                                }
                                             }
+
                                             dependencies.messageRouter.addNextHop(
                                                     proxy.proxyParticipantId,
-                                                    dependencies.libjoynrMessagingAddress).catch(function(error){
+                                                    dependencies.libjoynrMessagingAddress,
+                                                    isGloballyVisible).catch(function(error){
                                                         log.debug("Exception occured while registering the address for interface "
                                                                 + proxy.interfaceName + ", domain " + proxy.domain
                                                                 + ", proxyParticipantId " + proxy.proxyParticipantId
