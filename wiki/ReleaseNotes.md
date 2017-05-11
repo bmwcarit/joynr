@@ -2,10 +2,12 @@
 
 ## API relevant changes
 
-## Other changes
-### Backward compatibility
+## Backward compatibility
 This version of joynr is NOT compatible with previous versions due to internal changes:
 * **[cluster-controller]** cluster-controller expects libjoynr to signal globally visible providers
+
+## Other changes
+**[Java]** Updated to use of Jackson 2.8.8 in order to improve compatibility with Payara.
 
 # joynr 0.25.2
 

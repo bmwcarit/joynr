@@ -51,12 +51,12 @@ This project has dependencies to:
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   Jackson under The Apache Software License, Version 2.0
+  Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
   Jackson-JAXRS-base under The Apache Software License, Version 2.0
   Jackson-JAXRS-JSON under The Apache Software License, Version 2.0
-  Jackson-module-JAXB-annotations under The Apache Software License, Version 2.0
   Java Servlet API under CDDL + GPLv2 with classpath exception
   javax.inject under The Apache Software License, Version 2.0
   jersey-core under CDDL 1.1 or GPL2 w/ CPE

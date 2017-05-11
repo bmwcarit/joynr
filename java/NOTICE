@@ -165,12 +165,12 @@ This project has dependencies to:
   io.joynr:java under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
   Jackson under The Apache Software License, Version 2.0
+  Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
   Jackson-JAXRS-base under The Apache Software License, Version 2.0
   Jackson-JAXRS-JSON under The Apache Software License, Version 2.0
-  Jackson-module-JAXB-annotations under The Apache Software License, Version 2.0
   Java Annotation Indexer under AL 2.0
   Java API for XML Based RPC under CDDL-1.0
   Java API for XML Registries 1.0 under lgpl

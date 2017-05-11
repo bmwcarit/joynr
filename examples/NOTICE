@@ -69,12 +69,12 @@ This project has dependencies to:
   io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr:examples under The Apache Software License, Version 2.0
+  Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
   Jackson-JAXRS-base under The Apache Software License, Version 2.0
   Jackson-JAXRS-JSON under The Apache Software License, Version 2.0
-  Jackson-module-JAXB-annotations under The Apache Software License, Version 2.0
   Java Servlet API under CDDL + GPLv2 with classpath exception
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
