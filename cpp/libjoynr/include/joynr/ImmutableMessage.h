@@ -105,13 +105,15 @@ public:
         const auto& recipient = getRecipient();
         const auto& sender = getSender();
         const auto expiryDate = messageDeserializer.getTtlMs();
-
+        smrf::ByteArrayView body = getUnencryptedBody();
+        const std::string payload(body.data(), body.data() + body.size());
         archive(MUESLI_NVP(sender),
                 MUESLI_NVP(recipient),
                 MUESLI_NVP(expiryDate),
                 MUESLI_NVP(headers),
                 MUESLI_NVP(receivedFromGlobal),
-                MUESLI_NVP(creator));
+                MUESLI_NVP(creator),
+                MUESLI_NVP(payload));
     }
 
 private:
