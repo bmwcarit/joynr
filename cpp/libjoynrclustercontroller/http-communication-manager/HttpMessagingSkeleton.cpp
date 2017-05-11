@@ -49,7 +49,9 @@ void HttpMessagingSkeleton::transmit(
             joynr::serializer::deserializeFromJson(channelAddress, message.getHeaderReplyAddress());
 
             auto address = std::make_shared<const ChannelAddress>(channelAddress);
-            messageRouter.addNextHop(message.getHeaderFrom(), address);
+            // because the message is received via global transport, isGloballyVisible must be true
+            const bool isGloballyVisible = true;
+            messageRouter.addNextHop(message.getHeaderFrom(), address, isGloballyVisible);
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger,
                             "could not deserialize ChannelAddress from {} - error: {}",

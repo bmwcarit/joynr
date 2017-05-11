@@ -93,6 +93,7 @@ public:
 
     void addNextHop(const std::string& participantId,
                     const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+                    bool isGloballyVisible,
                     std::function<void()> onSuccess = nullptr,
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;
@@ -144,6 +145,7 @@ private:
 
     bool isParentMessageRouterSet();
     void addNextHopToParent(std::string participantId,
+                            bool isGloballyVisible,
                             std::function<void(void)> callbackFct = nullptr,
                             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                                     onError = nullptr);

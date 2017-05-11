@@ -97,7 +97,9 @@ void LibJoynrMessageRouter::setParentRouter(std::unique_ptr<system::RoutingProxy
 
     // add the next hop to parent router
     // this is necessary because during normal registration, the parent proxy is not yet set
-    addNextHopToParent(this->parentRouter->getProxyParticipantId());
+    // because the routing provider is local, therefore isGloballyVisible is false
+    const bool isGloballyVisible = false;
+    addNextHopToParent(this->parentRouter->getProxyParticipantId(), isGloballyVisible);
 }
 
 void LibJoynrMessageRouter::queryReplyToAddress(
@@ -224,6 +226,7 @@ bool LibJoynrMessageRouter::isParentMessageRouterSet()
 
 void LibJoynrMessageRouter::addNextHopToParent(
         std::string participantId,
+        bool isGloballyVisible,
         std::function<void(void)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
@@ -246,33 +249,47 @@ void LibJoynrMessageRouter::addNextHopToParent(
     if (auto channelAddress =
                 std::dynamic_pointer_cast<const joynr::system::RoutingTypes::ChannelAddress>(
                         incomingAddress)) {
-        parentRouter->addNextHopAsync(
-                participantId, *channelAddress, std::move(onSuccess), std::move(onErrorWrapper));
+        parentRouter->addNextHopAsync(participantId,
+                                      *channelAddress,
+                                      isGloballyVisible,
+                                      std::move(onSuccess),
+                                      std::move(onErrorWrapper));
     } else if (auto mqttAddress =
                        std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(
                                incomingAddress)) {
-        parentRouter->addNextHopAsync(
-                participantId, *mqttAddress, std::move(onSuccess), std::move(onErrorWrapper));
+        parentRouter->addNextHopAsync(participantId,
+                                      *mqttAddress,
+                                      isGloballyVisible,
+                                      std::move(onSuccess),
+                                      std::move(onErrorWrapper));
     } else if (auto commonApiDbusAddress = std::dynamic_pointer_cast<
                        const joynr::system::RoutingTypes::CommonApiDbusAddress>(incomingAddress)) {
         parentRouter->addNextHopAsync(participantId,
                                       *commonApiDbusAddress,
+                                      isGloballyVisible,
                                       std::move(onSuccess),
                                       std::move(onErrorWrapper));
     } else if (auto browserAddress =
                        std::dynamic_pointer_cast<const joynr::system::RoutingTypes::BrowserAddress>(
                                incomingAddress)) {
-        parentRouter->addNextHopAsync(
-                participantId, *browserAddress, std::move(onSuccess), std::move(onErrorWrapper));
+        parentRouter->addNextHopAsync(participantId,
+                                      *browserAddress,
+                                      isGloballyVisible,
+                                      std::move(onSuccess),
+                                      std::move(onErrorWrapper));
     } else if (auto webSocketAddress = std::dynamic_pointer_cast<
                        const joynr::system::RoutingTypes::WebSocketAddress>(incomingAddress)) {
-        parentRouter->addNextHopAsync(
-                participantId, *webSocketAddress, std::move(onSuccess), std::move(onErrorWrapper));
+        parentRouter->addNextHopAsync(participantId,
+                                      *webSocketAddress,
+                                      isGloballyVisible,
+                                      std::move(onSuccess),
+                                      std::move(onErrorWrapper));
     } else if (auto webSocketClientAddress = std::dynamic_pointer_cast<
                        const joynr::system::RoutingTypes::WebSocketClientAddress>(
                        incomingAddress)) {
         parentRouter->addNextHopAsync(participantId,
                                       *webSocketClientAddress,
+                                      isGloballyVisible,
                                       std::move(onSuccess),
                                       std::move(onErrorWrapper));
     }
@@ -281,11 +298,12 @@ void LibJoynrMessageRouter::addNextHopToParent(
 void LibJoynrMessageRouter::addNextHop(
         const std::string& participantId,
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+        bool isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     addToRoutingTable(participantId, address);
-    addNextHopToParent(participantId, std::move(onSuccess), std::move(onError));
+    addNextHopToParent(participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
     sendMessages(participantId, address);
 }
 

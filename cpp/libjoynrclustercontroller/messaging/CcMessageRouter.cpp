@@ -346,10 +346,12 @@ void CcMessageRouter::removeNextHop(
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+        bool isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
+    std::ignore = isGloballyVisible;
     addToRoutingTable(participantId, address);
     sendMessages(participantId, address);
     if (onSuccess) {
@@ -361,77 +363,83 @@ void CcMessageRouter::addNextHop(
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::ChannelAddress& channelAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address =
             std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(channelAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::MqttAddress& mqttAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(mqttAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address = std::make_shared<const joynr::system::RoutingTypes::CommonApiDbusAddress>(
             commonApiDbusAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::BrowserAddress& browserAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address =
             std::make_shared<const joynr::system::RoutingTypes::BrowserAddress>(browserAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::WebSocketAddress& webSocketAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address =
             std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(webSocketAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
             webSocketClientAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 void CcMessageRouter::resolveNextHop(
