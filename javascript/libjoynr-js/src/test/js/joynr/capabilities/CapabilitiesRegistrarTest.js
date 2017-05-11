@@ -88,7 +88,12 @@ define([
                             spyOn(provider, "checkImplementation").and.callThrough();
 
                             providerQos =
-                                    new ProviderQos([], 1, Date.now(), ProviderScope.GLOBAL, true);
+                                    new ProviderQos({
+                                        customParameters : [],
+                                        priority : Date.now(),
+                                        scope : ProviderScope.GLOBAL,
+                                        supportsOnChangeSubscriptions : true
+                                    });
 
                             provider.myAttribute = new ProviderAttributeNotifyReadWrite(provider, {
                                 dependencies : {
