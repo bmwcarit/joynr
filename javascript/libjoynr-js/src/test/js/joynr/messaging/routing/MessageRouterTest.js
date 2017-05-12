@@ -60,6 +60,7 @@ define([
                         var messageQueueSpy, messageRouter, routingProxySpy, parentMessageRouterAddress, incomingAddress;
                         var multicastAddressCalculatorSpy;
                         var serializedTestGlobalClusterControllerAddress;
+                        var multicastAddress;
 
                         var createMessageRouter =
                                 function(
@@ -121,9 +122,8 @@ define([
                                 addressInformation : "some info"
                             };
                             multicastAddressCalculatorSpy = jasmine.createSpyObj("multicastAddressCalculator", [ "calculate" ]);
-                            multicastAddressCalculatorSpy.calculate.and.returnValue(new BrowserAddress({
-                                windowId : "incomingAddress"
-                            }));
+                            multicastAddress = new BrowserAddress({ windowId : "incomingAddress" });
+                            multicastAddressCalculatorSpy.calculate.and.returnValue(multicastAddress);
 
                             messagingStubSpy = jasmine.createSpyObj("messagingStub", [ "transmit"
                             ]);
@@ -454,6 +454,10 @@ define([
 
                             it("once, if message is NOT received from global and NO local receiver", function() {
                                 messageRouter.route(multicastMessage);
+                                expect(messagingStubFactorySpy.createMessagingStub).toHaveBeenCalled();
+                                expect(messagingStubFactorySpy.createMessagingStub.calls.count()).toEqual(1);
+                                var address = messagingStubFactorySpy.createMessagingStub.calls.argsFor(0)[0];
+                                expect(address).toEqual(multicastAddress);
                                 expect(messagingStubSpy.transmit).toHaveBeenCalled();
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(1);
                             });
