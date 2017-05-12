@@ -243,7 +243,7 @@ function start_services {
 	else
 		start_payara
 	fi
-	sleep 5
+	sleep 10
 }
 
 function stop_services {
