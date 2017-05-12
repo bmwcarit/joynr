@@ -458,14 +458,14 @@ define([
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(1);
                             });
 
-                            it("twice, if message is received from global and local receiver available", function() {
+                            it("twice, if message is NOT received from global and local receiver available", function() {
                                 messageRouter.addMulticastReceiver(parameters);
                                 messageRouter.route(multicastMessage);
                                 expect(messagingStubSpy.transmit).toHaveBeenCalled();
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(2);
                             });
 
-                            it("twice, if message is received from global and two local receivers available with same receiver address", function() {
+                            it("twice, if message is NOT received from global and two local receivers available with same receiver address", function() {
                                 messageRouter.addMulticastReceiver(parameters);
                                 var parametersForSndReceiver = {
                                     multicastId : parameters.multicastId,
@@ -480,7 +480,7 @@ define([
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(2);
                             });
 
-                            it("three times, if message is received from global and two local receivers available with different receiver address", function() {
+                            it("three times, if message is NOT received from global and two local receivers available with different receiver address", function() {
                                 messageRouter.addMulticastReceiver(parameters);
                                 var parametersForSndReceiver = {
                                     multicastId : parameters.multicastId,
