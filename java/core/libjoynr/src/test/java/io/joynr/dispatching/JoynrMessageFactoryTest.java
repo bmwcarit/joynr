@@ -326,4 +326,17 @@ public class JoynrMessageFactoryTest {
         assertExpiryDateEquals(expiryDate.getValue(), result);
     }
 
+    @Test
+    public void testCompressedFlagIsSet() {
+        MutableMessage message;
+        MessagingQos messagingQos = new MessagingQos();
+
+        messagingQos.setCompress(true);
+        message = joynrMessageFactory.createRequest("from", "to", request, messagingQos);
+        assertEquals(true, message.getCompressed());
+
+        messagingQos.setCompress(false);
+        message = joynrMessageFactory.createRequest("from", "to", request, messagingQos);
+        assertEquals(false, message.getCompressed());
+    }
 }

@@ -47,6 +47,8 @@ public class MutableMessage extends Message {
     private String effort;
     private Map<String, String> customHeaders = Maps.newHashMap();
 
+    private transient boolean compressed = false;
+
     public MutableMessage() {
         id = UUID.randomUUID().toString();
     }
@@ -61,8 +63,7 @@ public class MutableMessage extends Message {
         messageSerializer.setTtlAbsolute(isTtlAbsolute());
         messageSerializer.setHeaders(createHeader());
         messageSerializer.setBody(getPayload());
-
-        messageSerializer.setCompressed(false);
+        messageSerializer.setCompressed(compressed);
 
         return new ImmutableMessage(messageSerializer.serialize());
     }
@@ -170,5 +171,13 @@ public class MutableMessage extends Message {
 
     public void setCustomHeaders(Map<String, String> customHeaders) {
         this.customHeaders.putAll(customHeaders);
+    }
+
+    public void setCompressed(boolean compressed) {
+        this.compressed = compressed;
+    }
+
+    public boolean getCompressed() {
+        return this.compressed;
     }
 }

@@ -99,6 +99,7 @@ public class JoynrMessageFactory {
         message.setTtlMs(expiryDate.getValue());
         message.setPayload(serializePayload(payload));
         message.setCustomHeaders(messagingQos.getCustomMessageHeaders());
+        message.setCompressed(messagingQos.getCompress());
         for (JoynrMessageProcessor processor : messageProcessors) {
             message = processor.processOutgoing(message);
         }
