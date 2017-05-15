@@ -274,3 +274,29 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(accessControllerCallback)
     );
 }
+
+TEST_F(AccessControllerTest, hasProviderPermission) {
+    Permission::Enum permissionYes = Permission::YES;
+    DefaultValue<Permission::Enum>::Set(permissionYes);
+    EXPECT_CALL(
+            localDomainAccessControllerMock,
+            getProviderPermission(_, _, _, _)
+    )
+            .Times(1)
+            .WillOnce(Return(permissionYes));
+    bool retval = accessController.hasProviderPermission(DUMMY_USERID, TrustLevel::HIGH, TEST_DOMAIN, TEST_INTERFACE);
+    EXPECT_TRUE(retval);
+}
+
+TEST_F(AccessControllerTest, hasNoProviderPermission) {
+    Permission::Enum permissionNo = Permission::NO;
+    DefaultValue<Permission::Enum>::Set(permissionNo);
+    EXPECT_CALL(
+            localDomainAccessControllerMock,
+            getProviderPermission(_, _, _, _)
+    )
+            .Times(1)
+            .WillOnce(Return(permissionNo));
+    bool retval = accessController.hasProviderPermission(DUMMY_USERID, TrustLevel::HIGH, TEST_DOMAIN, TEST_INTERFACE);
+    EXPECT_FALSE(retval);
+}
