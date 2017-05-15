@@ -341,6 +341,17 @@ define(
                 }
             });
 
+            JoynrMessage.prototype.compress = false;
+
+            Object.defineProperty(JoynrMessage.prototype, "setCompress", {
+                enumerable : false,
+                configurable : false,
+                writable : false,
+                value : function(compress) {
+                    this.compress = compress;
+                }
+            });
+
             return JoynrMessage;
 
         });
