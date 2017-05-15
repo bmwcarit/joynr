@@ -318,7 +318,7 @@ public:
      * @param interfaceName The interface that is being accessed
      * @param trustLevel    The trust level of the device accessing the interface
      */
-    infrastructure::DacTypes::Permission::Enum getProviderPermission(
+    virtual infrastructure::DacTypes::Permission::Enum getProviderPermission(
             const std::string& uid,
             const std::string& domain,
             const std::string& interfacename,
