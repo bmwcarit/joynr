@@ -53,7 +53,7 @@ define([
                 smrfMsg.recipient = joynrMessage.header.to;
                 smrfMsg.ttlMs = joynrMessage.header.expiryDate;
                 smrfMsg.isTtlAbsolute = true;
-                smrfMsg.isCompressed = false;
+                smrfMsg.isCompressed = joynrMessage.compress;
                 smrfMsg.body = new Buffer(joynrMessage.payload);
                 smrfMsg.encryptionCert = null;
                 smrfMsg.signingCert = null;
