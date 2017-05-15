@@ -19,13 +19,14 @@
 package joynr;
 
 public abstract class Message {
-    public static final String CUSTOM_HEADER_PREFIX = "custom-";
-    public static final String HEADER_EFFORT = "effort";
+    public static final String CUSTOM_HEADER_PREFIX = "c-";
+    public static final String HEADER_EFFORT = "ef";
     public static final String HEADER_ID = "id";
-    public static final String HEADER_MSG_TYPE = "type";
-    public static final String HEADER_REPLY_TO = "replyTo";
+    public static final String HEADER_MSG_TYPE = "t";
+    public static final String HEADER_REPLY_TO = "re";
 
     public static final String CUSTOM_HEADER_REQUEST_REPLY_ID = "z4";
+
     public static final String VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST = "brq";
     public static final String VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST = "mrq";
     public static final String VALUE_MESSAGE_TYPE_MULTICAST = "m";
