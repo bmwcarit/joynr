@@ -26,16 +26,16 @@ public abstract class Message {
     public static final String HEADER_REPLY_TO = "replyTo";
 
     public static final String CUSTOM_HEADER_REQUEST_REPLY_ID = "z4";
-    public static final String VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST = "broadcastSubscriptionRequest";
-    public static final String VALUE_MESSAGE_TYPE_MULTICAST = "multicast";
-    public static final String VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST = "multicastSubscriptionRequest";
-    public static final String VALUE_MESSAGE_TYPE_ONE_WAY = "oneWay";
-    public static final String VALUE_MESSAGE_TYPE_PUBLICATION = "subscriptionPublication";
-    public static final String VALUE_MESSAGE_TYPE_REPLY = "reply";
-    public static final String VALUE_MESSAGE_TYPE_REQUEST = "request";
-    public static final String VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY = "subscriptionReply";
-    public static final String VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST = "subscriptionRequest";
-    public static final String VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP = "subscriptionStop";
+    public static final String VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST = "brq";
+    public static final String VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST = "mrq";
+    public static final String VALUE_MESSAGE_TYPE_MULTICAST = "m";
+    public static final String VALUE_MESSAGE_TYPE_ONE_WAY = "o";
+    public static final String VALUE_MESSAGE_TYPE_PUBLICATION = "p";
+    public static final String VALUE_MESSAGE_TYPE_REPLY = "rp";
+    public static final String VALUE_MESSAGE_TYPE_REQUEST = "rq";
+    public static final String VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY = "srp";
+    public static final String VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST = "arq";
+    public static final String VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP = "sst";
 
     private transient boolean localMessage;
 
