@@ -34,6 +34,7 @@
 #include "tests/utils/MockObjects.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
@@ -63,6 +64,7 @@ public:
                          4242,
                          "path")
                        ),
+        webSocketClientAddress(std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("testWebSocketClientAddress")),
         globalTransport(std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerURL, mqttTopic))
     {
         singleThreadedIOService.start();
@@ -88,7 +90,7 @@ protected:
         messageQueue = messageQueueForMessageRouter.get();
 
         auto libJoynrMessageRouter = std::make_unique<LibJoynrMessageRouter>(
-                    nullptr,
+                    webSocketClientAddress,
                     messagingStubFactory,
                     singleThreadedIOService.getIOService(),
                     std::make_unique<WebSocketMulticastAddressCalculator>(localTransport),
@@ -135,6 +137,7 @@ protected:
     std::string mqttTopic;
 
     std::shared_ptr<const joynr::system::RoutingTypes::WebSocketAddress> localTransport;
+    const std::shared_ptr<const joynr::system::RoutingTypes::WebSocketClientAddress> webSocketClientAddress;
     std::shared_ptr<const joynr::system::RoutingTypes::MqttAddress> globalTransport;
 
     void routeMessageToAddress(){

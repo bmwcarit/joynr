@@ -733,6 +733,14 @@ public:
                 joynr::MessagingQos())
     { }
 
+    MOCK_METHOD5(addNextHopAsync, std::shared_ptr<joynr::Future<void>>(
+            const std::string& participantId,
+            const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
+            const bool& isGloballyVisible,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError));
+
     MOCK_METHOD3(resolveNextHopAsync,
                  std::shared_ptr<joynr::Future<bool>>(
                      const std::string& participantId,

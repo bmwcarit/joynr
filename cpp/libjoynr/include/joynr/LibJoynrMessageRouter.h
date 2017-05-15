@@ -25,6 +25,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_set>
+//#include <gtest/gtest_prod.h>
 
 #include "joynr/AbstractMessageRouter.h"
 #include "joynr/JoynrExport.h"
@@ -160,6 +161,7 @@ private:
 
     std::mutex parentClusterControllerReplyToAddressMutex;
     std::string parentClusterControllerReplyToAddress;
+    // FRIEND_TEST(LibJoynrMessageRouterTest, addNextHop_callsAddToRoutingTable);
 };
 
 } // namespace joynr

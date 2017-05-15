@@ -86,8 +86,9 @@ void LibJoynrMessageRouter::setParentAddress(
         std::string parentParticipantId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress)
 {
+    bool isGloballyVisible = false;
     this->parentAddress = std::move(parentAddress);
-    addProvisionedNextHop(parentParticipantId, this->parentAddress);
+    addProvisionedNextHop(parentParticipantId, this->parentAddress, isGloballyVisible);
 }
 
 void LibJoynrMessageRouter::setParentRouter(std::unique_ptr<system::RoutingProxy> parentRouter)
@@ -189,7 +190,9 @@ void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
                                    "Got destination address for participant {}",
                                    destinationPartId);
                     // save next hop in the routing table
-                    this->addProvisionedNextHop(destinationPartId, this->parentAddress);
+                    bool isGloballyVisible = false;
+                    this->addProvisionedNextHop(
+                            destinationPartId, this->parentAddress, isGloballyVisible);
                     this->removeRunningParentResolvers(destinationPartId);
                     this->sendMessages(destinationPartId, this->parentAddress);
                 } else {
@@ -302,7 +305,10 @@ void LibJoynrMessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    addToRoutingTable(participantId, address);
+    assert(address);
+    const auto routingEntry =
+            std::make_shared<RoutingEntry>(RoutingEntry(address, isGloballyVisible));
+    addToRoutingTable(participantId, std::move(routingEntry));
     addNextHopToParent(participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
     sendMessages(participantId, address);
 }
@@ -360,7 +366,12 @@ void LibJoynrMessageRouter::addMulticastReceiver(
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
         ReadLocker lock(routingTableLock);
-        providerAddress = routingTable.lookup(providerParticipantId);
+        const auto routingEntry = routingTable.lookup(providerParticipantId);
+        if (!routingEntry) {
+            providerAddress = nullptr;
+        } else {
+            providerAddress = routingEntry->address;
+        }
     }
 
     std::function<void()> onSuccessWrapper =
@@ -392,7 +403,8 @@ void LibJoynrMessageRouter::addMulticastReceiver(
                            onSuccessWrapper,
                            onErrorWrapper](const bool& resolved) {
             if (resolved) {
-                addProvisionedNextHop(providerParticipantId, parentAddress);
+                bool isGloballyVisible = false;
+                addProvisionedNextHop(providerParticipantId, parentAddress, isGloballyVisible);
                 parentRouter->addMulticastReceiverAsync(multicastId,
                                                         subscriberParticipantId,
                                                         providerParticipantId,
@@ -436,7 +448,9 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
         ReadLocker lock(routingTableLock);
-        providerAddress = routingTable.lookup(providerParticipantId);
+        const auto routingEntry = routingTable.lookup(providerParticipantId);
+        assert(routingEntry);
+        providerAddress = routingEntry->address;
     }
 
     if (!providerAddress) {

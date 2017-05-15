@@ -48,7 +48,11 @@ using namespace joynr;
 
 class CcMessageRouterTest : public MessageRouterTest<CcMessageRouter> {
 public:
-    CcMessageRouterTest() = default;
+    CcMessageRouterTest() :
+        isGloballyVisible(true) {
+    }
+protected:
+    const bool isGloballyVisible;
 };
 
 TEST_F(CcMessageRouterTest, removeMulticastReceiver_failsIfProviderAddressNotAvailable) {
@@ -57,7 +61,7 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiver_failsIfProviderAddressNotAva
     const std::string providerParticipantId("providerParticipantId");
 
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>();
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
     multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::WebSocketClientAddress>(
@@ -97,9 +101,9 @@ TEST_F(CcMessageRouterTest, routeMulticastMessageFromWebSocketProvider_multicast
     auto expectedAddress2 = std::make_shared<const joynr::InProcessMessagingAddress>();
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("providerTopic");
 
-    messageRouter->addProvisionedNextHop(subscriberParticipantId1, expectedAddress1);
-    messageRouter->addProvisionedNextHop(subscriberParticipantId2, expectedAddress2);
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+    messageRouter->addProvisionedNextHop(subscriberParticipantId1, expectedAddress1, isGloballyVisible);
+    messageRouter->addProvisionedNextHop(subscriberParticipantId2, expectedAddress2, isGloballyVisible);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
     multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::WebSocketClientAddress>(
@@ -138,7 +142,7 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiver_NonChildRouter_succeedsIfSke
     const std::string providerParticipantId("providerParticipantId");
 
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
     multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
@@ -172,7 +176,7 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiverOfStandaloneProvider_NonChild
 
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
 
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
 
@@ -207,7 +211,7 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiverOfWebSocketProvider_NonChildR
     const std::string providerParticipantId("providerParticipantId");
 
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>();
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     messageRouter->addMulticastReceiver(
         multicastId,
@@ -236,7 +240,7 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiverOfInProcessProvider_NonChildR
     auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>();
 
     auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     messageRouter->addMulticastReceiver(multicastId,
         subscriberParticipantId,
@@ -261,7 +265,7 @@ TEST_F(CcMessageRouterTest, addMulticastReceiverForMqttProvider_NonChildRouter_c
     const std::string multicastId("participantId1/methodName/partition0");
 
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     auto mockMqttMessagingMulticastSubscriber = std::make_shared<MockMessagingMulticastSubscriber>();
     std::shared_ptr<IMessagingMulticastSubscriber> mqttMessagingMulticastSubscriber = mockMqttMessagingMulticastSubscriber;
@@ -286,7 +290,7 @@ TEST_F(CcMessageRouterTest, addMulticastReceiverForHttpProvider_NonChildRouter_c
     const std::string multicastId("participantId1/methodName/partition0");
 
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>();
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
 
@@ -310,7 +314,7 @@ TEST_F(CcMessageRouterTest, addMulticastReceiverForWebSocketProvider_NonChildRou
     const std::string multicastId("participantId1/methodName/partition0");
 
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>();
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     Semaphore successCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,
@@ -329,7 +333,7 @@ TEST_F(CcMessageRouterTest, addMulticastReceiverForInProcessProvider_NonChildRou
     auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>();
 
     auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     Semaphore successCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,
@@ -363,7 +367,7 @@ TEST_F(CcMessageRouterTest, addMulticastReceiver_NonChildRouter_succeedsIfSkelet
     const std::string providerParticipantId("providerParticipantId");
 
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress);
+    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     Semaphore successCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,

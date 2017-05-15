@@ -210,7 +210,8 @@ TYPED_TEST(MessageRouterTest, restoreRoutingTable) {
     this->messageRouter->loadRoutingTable(routingTablePersistenceFilename);
 
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
-    this->messageRouter->addProvisionedNextHop(participantId, address); // Saves routingTable to the persistence file.
+    const bool isGloballyVisible = true;
+    this->messageRouter->addProvisionedNextHop(participantId, address, isGloballyVisible); // Saves routingTable to the persistence file.
 
     // create a new MessageRouter
     this->messageRouter = this->createMessageRouter();
