@@ -22,6 +22,7 @@
 #include <string>
 #include <unordered_set>
 
+#include "joynr/ByteBuffer.h"
 #include "joynr/types/TestTypes/Word.h"
 #include "joynr/types/TestTypes/Vowel.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
@@ -126,7 +127,7 @@ protected:
     float tFloat;
     std::string tString;
     bool tBoolean;
-    std::vector<std::uint8_t> tByteBuffer;
+    joynr::ByteBuffer tByteBuffer;
     std::vector<std::uint8_t>  tUInt8Array;
     TestTypes::TEnum::Enum tEnum;
     std::vector<joynr::types::TestTypes::TEnum::Enum>  tEnumArray;

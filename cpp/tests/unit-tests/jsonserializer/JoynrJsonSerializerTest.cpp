@@ -27,6 +27,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include "joynr/ByteBuffer.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/Logger.h"
 #include "joynr/JoynrMessage.h"
@@ -453,7 +454,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
 {
     using namespace joynr::types::TestTypes;
 
-    std::vector<std::uint8_t> byteBuffer({1, 2, 3});
+    ByteBuffer byteBuffer({1, 2, 3});
     std::vector<std::uint8_t> uInt8Array({3, 2, 1});
     std::vector<TEnum::Enum> enumArray({TEnum::TLITERALB});
     std::vector<std::string> stringArray({"one", "four"});
