@@ -32,7 +32,7 @@ public:
 
     static const std::string& CUSTOM_HEADER_PREFIX()
     {
-        static const std::string value("custom-");
+        static const std::string value("c-");
         return value;
     }
 
@@ -44,25 +44,25 @@ public:
 
     static const std::string& HEADER_TYPE()
     {
-        static const std::string value("type");
+        static const std::string value("t");
         return value;
     }
 
     static const std::string& HEADER_CREATOR()
     {
-        static const std::string value("creator");
+        static const std::string value("cr");
         return value;
     }
 
     static const std::string& HEADER_REPLY_TO()
     {
-        static const std::string value("replyTo");
+        static const std::string value("re");
         return value;
     }
 
     static const std::string& HEADER_EFFORT()
     {
-        static const std::string value("effort");
+        static const std::string value("ef");
         return value;
     }
 
