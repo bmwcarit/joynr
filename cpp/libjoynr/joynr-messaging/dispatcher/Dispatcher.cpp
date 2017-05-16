@@ -126,7 +126,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
 
     // lookup necessary data
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
-    if (caller == nullptr) {
+    if (!caller) {
         JOYNR_LOG_ERROR(
                 logger,
                 "caller not found in the RequestCallerDirectory for receiverId {}, ignoring",
@@ -138,6 +138,11 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
     // Get the request interpreter that has been registered with this interface name
     std::shared_ptr<IRequestInterpreter> requestInterpreter =
             InterfaceRegistrar::instance().getRequestInterpreter(interfaceName);
+
+    if (!requestInterpreter) {
+        JOYNR_LOG_ERROR(logger, "requestInterpreter not found for interface {}", interfaceName);
+        return;
+    }
 
     // deserialize Request
     Request request;
@@ -199,7 +204,7 @@ void Dispatcher::handleOneWayRequestReceived(const JoynrMessage& message)
     // json request
     // lookup necessary data
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
-    if (caller == nullptr) {
+    if (!caller) {
         JOYNR_LOG_ERROR(
                 logger,
                 "caller not found in the RequestCallerDirectory for receiverId {}, ignoring",
@@ -211,6 +216,12 @@ void Dispatcher::handleOneWayRequestReceived(const JoynrMessage& message)
     // Get the request interpreter that has been registered with this interface name
     std::shared_ptr<IRequestInterpreter> requestInterpreter =
             InterfaceRegistrar::instance().getRequestInterpreter(interfaceName);
+
+    if (!requestInterpreter) {
+        JOYNR_LOG_ERROR(
+                logger, "requestInterpreter not found for receiverId {}, ignoring", interfaceName);
+        return;
+    }
 
     // deserialize json
     OneWayRequest request;

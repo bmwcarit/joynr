@@ -914,13 +914,22 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
             }
         }
 
+        std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
+        const std::string& interfaceName = requestCaller->getInterfaceName();
+        std::shared_ptr<IRequestInterpreter> requestInterpreter =
+                InterfaceRegistrar::instance().getRequestInterpreter(interfaceName);
+        if (!requestInterpreter) {
+            JOYNR_LOG_ERROR(
+                    logger,
+                    "requestInterpreter not found for interface {} while polling subscriptionId {}",
+                    interfaceName,
+                    subscriptionId);
+            return;
+        }
+
         // Get the value of the attribute
         std::string attributeGetter(
                 util::attributeGetterFromName(subscriptionRequest->getSubscribeToName()));
-        std::shared_ptr<RequestCaller> requestCaller(publication->requestCaller);
-        std::shared_ptr<IRequestInterpreter> requestInterpreter(
-                InterfaceRegistrar::instance().getRequestInterpreter(
-                        requestCaller->getInterfaceName()));
 
         std::function<void(Reply && )> onSuccess =
                 [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
