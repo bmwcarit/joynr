@@ -151,7 +151,7 @@ void Dispatcher::handleRequestReceived(const JoynrMessage& message)
         return;
     }
 
-    const std::string& requestReplyId = request.getRequestReplyId();
+    std::string requestReplyId = request.getRequestReplyId();
     JoynrTimePoint requestExpiryDate = message.getHeaderExpiryDate();
 
     auto onSuccess =
