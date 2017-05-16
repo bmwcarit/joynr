@@ -22,9 +22,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "PrettyPrint.h"
-
 #include "joynr/exceptions/JoynrException.h"
+
+#include "tests/PrettyPrint.h"
 
 template <typename ... Ts>
 class MockCallback{

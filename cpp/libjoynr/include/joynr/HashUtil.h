@@ -47,7 +47,7 @@ std::enable_if_t<joynr::util::IsDerivedFromTemplate<std::map, T>::value, std::si
 
 } // namespace boost
 
-#include "boost/functional/hash.hpp"
+#include <boost/functional/hash.hpp>
 
 namespace boost
 {

@@ -19,18 +19,20 @@
 #include <memory>
 #include <string>
 
-#include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "tests/utils/MockObjects.h"
+
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
-#include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
-#include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/types/Version.h"
 
-#include "JoynrTest.h"
+#include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
+#include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
+
+#include "tests/utils/MockObjects.h"
+#include "tests/JoynrTest.h"
 
 using namespace ::testing;
 using namespace joynr;

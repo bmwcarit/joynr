@@ -16,15 +16,17 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include <string>
+#include <vector>
 #include <memory>
 #include <string>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include "joynr/JoynrMessage.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/SubscriptionCallback.h"
-#include <string>
-#include <vector>
 #include "joynr/JoynrMessageFactory.h"
 #include "joynr/JoynrMessageSender.h"
 #include "joynr/MulticastPublication.h"
@@ -33,8 +35,6 @@
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/exceptions/SubscriptionException.h"
-#include "tests/utils/MockObjects.h"
-#include "utils/MockCallback.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/Semaphore.h"
 #include "joynr/tests/Itest.h"
@@ -42,9 +42,12 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/CallContext.h"
+
 #include "libjoynr/common/CallContextStorage.h"
 
-#include "JoynrTest.h"
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/MockCallback.h"
 
 using namespace ::testing;
 using namespace joynr;

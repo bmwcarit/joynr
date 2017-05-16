@@ -35,9 +35,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "PrettyPrint.h"
-#include "LibJoynrMockObjects.h"
-
 #include "joynr/access-control/IAccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "joynr/tests/DefaulttestProvider.h"
@@ -112,6 +109,9 @@
 #include "joynr/Request.h"
 
 #include "joynr/IMulticastAddressCalculator.h"
+
+#include "tests/PrettyPrint.h"
+#include "tests/utils/LibJoynrMockObjects.h"
 
 namespace joynr
 {

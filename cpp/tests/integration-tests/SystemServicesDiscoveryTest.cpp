@@ -22,17 +22,17 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
-
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/Settings.h"
 #include "joynr/types/Version.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/serializer/Serializer.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 

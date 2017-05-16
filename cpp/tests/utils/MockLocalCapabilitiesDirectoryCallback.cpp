@@ -16,9 +16,9 @@
  * limitations under the License.
  * #L%
  */
-#include "MockLocalCapabilitiesDirectoryCallback.h"
-
 #include <thread>
+
+#include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 
 using namespace joynr;
 

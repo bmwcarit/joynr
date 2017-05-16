@@ -29,10 +29,10 @@
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
-#include "JoynrTest.h"
 #include "joynr/Semaphore.h"
 #include "joynr/PrivateCopyAssign.h"
 
+#include "tests/JoynrTest.h"
 #include "tests/utils/MockObjects.h"
 
 using namespace ::testing;

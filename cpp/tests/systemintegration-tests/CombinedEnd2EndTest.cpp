@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-
 #include <cstdint>
 #include <chrono>
 #include <future>
@@ -39,13 +38,14 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "PrettyPrint.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Logger.h"
-#include "JoynrTest.h"
+
+#include "tests/PrettyPrint.h"
+#include "tests/JoynrTest.h"
 
 using namespace ::testing;
 using namespace joynr;

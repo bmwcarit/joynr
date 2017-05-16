@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-
-#include "MockArchive.h"
-#include "joynr/serializer/Serializer.h"
-
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
+#include "tests/unit-tests/serializer/MockArchive.h" // must be included prior to Serializer.h
+#include "joynr/serializer/Serializer.h"
+
 
 template <typename ExpectedArchive>
 struct DemoType

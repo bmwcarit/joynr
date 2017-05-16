@@ -28,9 +28,10 @@
 #include "joynr/vehicle/GpsRequestInterpreter.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/IRequestInterpreter.h"
-#include "tests/utils/MockObjects.h"
-#include "utils/MockCallback.h"
 #include "joynr/exceptions/MethodInvocationException.h"
+
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/MockCallback.h"
 
 using ::testing::A;
 using ::testing::_;

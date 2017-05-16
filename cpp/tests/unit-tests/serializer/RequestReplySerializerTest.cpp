@@ -35,11 +35,9 @@
 #include "joynr/Logger.h"
 
 #include "joynr/types/TestTypes/TEverythingStruct.h"
+#include "joynr/types/TestTypes/TEverythingExtendedStruct.h"
 #include "joynr/types/TestTypes/TStruct.h"
 #include "joynr/types/TestTypes/TEnum.h"
-#include "joynr/types/TestTypes/TEverythingMap.h"
-#include "joynr/types/TestTypes/TStringKeyMap.h"
-#include "joynr/types/TestTypes/TStringToByteBufferMap.h"
 #include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnum.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"

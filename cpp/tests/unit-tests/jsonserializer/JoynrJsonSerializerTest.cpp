@@ -24,8 +24,8 @@
 #include <functional>
 #include <memory>
 
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "joynr/ByteBuffer.h"
 #include "joynr/serializer/Serializer.h"

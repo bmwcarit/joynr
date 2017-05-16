@@ -18,13 +18,13 @@
  */
 #include <gtest/gtest.h>
 
-#include "PrettyPrint.h"
-
 #include "joynr/tests/testTypes/TestEnum.h"
 #include "joynr/tests/testTypes/TestEnumExtended.h"
 #include "joynr/tests/EnumInsideInterface.h"
 #include "joynr/tests/EnumInsideInterfaceWithoutVersion.h"
 #include "joynr/types/TestTypesWithoutVersion/EnumInsideTypeCollectionWithoutVersion.h"
+
+#include "tests/PrettyPrint.h"
 
 using namespace joynr::tests::testTypes;
 

@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+#include "tests/unit-tests/MessageRouterTest.h"
 
 #include <cstdint>
 #include <chrono>
@@ -24,10 +25,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "MessageRouterTest.h"
-
 #include "joynr/Semaphore.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -41,6 +39,8 @@
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
+
+#include "tests/utils/MockObjects.h"
 
 using ::testing::InvokeArgument;
 using ::testing::Pointee;
@@ -217,4 +217,3 @@ TYPED_TEST(MessageRouterTest, restoreRoutingTable) {
                 create(Pointee(Eq(*address)))).Times(1);
     this->messageRouter->route(this->joynrMessage);
 }
-

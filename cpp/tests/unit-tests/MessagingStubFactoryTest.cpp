@@ -19,10 +19,11 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "utils/MockObjects.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
+
+#include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 using namespace testing;

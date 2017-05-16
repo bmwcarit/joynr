@@ -23,8 +23,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
-
 #include "joynr/DiscoveryQos.h"
 #include "joynr/Arbitrator.h"
 #include "joynr/exceptions/NoCompatibleProviderFoundException.h"
@@ -37,6 +35,7 @@
 #include "joynr/Semaphore.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
+#include "tests/JoynrTest.h"
 #include "tests/utils/MockObjects.h"
 
 using ::testing::AtLeast;

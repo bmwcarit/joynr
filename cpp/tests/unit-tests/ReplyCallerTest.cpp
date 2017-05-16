@@ -16,12 +16,15 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <memory>
+
 #include "joynr/ReplyCaller.h"
+
 #include "tests/utils/MockObjects.h"
-#include "utils/MockCallback.h"
+#include "tests/utils/MockCallback.h"
 
 using ::testing::Property;
 using ::testing::Eq;

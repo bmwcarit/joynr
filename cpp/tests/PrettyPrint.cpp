@@ -16,8 +16,9 @@
  * limitations under the License.
  * #L%
  */
+#include "tests/PrettyPrint.h"
+
 #include <gtest/gtest.h>
-#include "PrettyPrint.h"
 
 #include "joynr/serializer/Serializer.h"
 #include "joynr/types/Localisation/GpsLocation.h"

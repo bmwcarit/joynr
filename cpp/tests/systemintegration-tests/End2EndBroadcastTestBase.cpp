@@ -27,8 +27,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/MessagingSettings.h"
@@ -36,6 +34,9 @@
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;

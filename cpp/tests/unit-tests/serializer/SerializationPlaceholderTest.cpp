@@ -25,8 +25,9 @@
 #include <muesli/streams/StringIStream.h>
 #include <muesli/streams/StringOStream.h>
 
-#include "MockArchive.h"
+#include "tests/unit-tests/serializer/MockArchive.h" // must be included prior to Serializer.h
 
+#include "joynr/serializer/Serializer.h"
 #include "joynr/serializer/SerializationPlaceholder.h"
 
 using namespace testing;
