@@ -55,8 +55,9 @@ public:
 
     void setQos(std::shared_ptr<SubscriptionQos> qos) override;
 
-    std::string getMulticastId() const;
+    const std::string& getMulticastId() const;
     void setMulticastId(const std::string& id);
+    void setMulticastId(std::string&& id);
 
     template <typename Archive>
     void serialize(Archive& archive)

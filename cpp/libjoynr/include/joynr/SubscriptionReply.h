@@ -38,8 +38,9 @@ public:
     SubscriptionReply(const SubscriptionReply& other);
     SubscriptionReply();
 
-    std::string getSubscriptionId() const;
+    const std::string& getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
+    void setSubscriptionId(std::string&& subscriptionId);
 
     std::shared_ptr<exceptions::SubscriptionException> getError() const;
     void setError(std::shared_ptr<exceptions::SubscriptionException> error);

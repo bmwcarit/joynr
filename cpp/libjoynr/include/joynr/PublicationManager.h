@@ -454,9 +454,8 @@ void PublicationManager::broadcastOccurred(const std::string& broadcastName,
                                            const Ts&... values)
 {
     MulticastPublication publication;
-    std::string multicastID =
-            util::createMulticastId(providerParticipantId, broadcastName, partitions);
-    publication.setMulticastId(multicastID);
+    publication.setMulticastId(
+            util::createMulticastId(providerParticipantId, broadcastName, partitions));
     publication.setResponse(values...);
     MessagingQos mQos;
     joynrMessageSender->sendMulticast(providerParticipantId, publication, mQos);

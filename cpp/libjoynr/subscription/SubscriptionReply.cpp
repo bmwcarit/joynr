@@ -25,6 +25,7 @@ namespace joynr
 SubscriptionReply::SubscriptionReply() : subscriptionId(), error(nullptr)
 {
 }
+
 SubscriptionReply::SubscriptionReply(const SubscriptionReply& other)
         : subscriptionId(other.getSubscriptionId()), error(other.getError())
 {
@@ -36,7 +37,7 @@ SubscriptionReply& SubscriptionReply::operator=(const SubscriptionReply& other)
     return *this;
 }
 
-std::string SubscriptionReply::getSubscriptionId() const
+const std::string& SubscriptionReply::getSubscriptionId() const
 {
     return subscriptionId;
 }
@@ -44,6 +45,11 @@ std::string SubscriptionReply::getSubscriptionId() const
 void SubscriptionReply::setSubscriptionId(const std::string& subscriptionId)
 {
     this->subscriptionId = subscriptionId;
+}
+
+void SubscriptionReply::setSubscriptionId(std::string&& subscriptionId)
+{
+    this->subscriptionId = std::move(subscriptionId);
 }
 
 std::shared_ptr<exceptions::SubscriptionException> SubscriptionReply::getError() const

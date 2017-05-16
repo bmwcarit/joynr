@@ -104,7 +104,7 @@ bool MulticastReceiverDirectory::contains(const std::string& multicastId,
                                           const std::string& receiverId)
 {
     std::lock_guard<std::recursive_mutex> lock(mutex);
-    auto receivers = getReceivers(multicastId);
+    const auto& receivers = getReceivers(multicastId);
     return receivers.find(receiverId) != receivers.cend();
 }
 

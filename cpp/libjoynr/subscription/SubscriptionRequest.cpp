@@ -29,12 +29,12 @@ SubscriptionRequest::SubscriptionRequest() : subscriptionId(), subscribedToName(
     subscriptionId = util::createUuid();
 }
 
-std::string SubscriptionRequest::getSubscriptionId() const
+const std::string& SubscriptionRequest::getSubscriptionId() const
 {
     return subscriptionId;
 }
 
-std::string SubscriptionRequest::getSubscribeToName() const
+const std::string& SubscriptionRequest::getSubscribeToName() const
 {
     return subscribedToName;
 }
@@ -51,9 +51,19 @@ void SubscriptionRequest::setSubscriptionId(const std::string& id)
     this->subscriptionId = id;
 }
 
-void SubscriptionRequest::setSubscribeToName(const std::string& attributeName)
+void SubscriptionRequest::setSubscriptionId(std::string&& id)
 {
-    this->subscribedToName = attributeName;
+    this->subscriptionId = std::move(id);
+}
+
+void SubscriptionRequest::setSubscribeToName(const std::string& subscribedToName)
+{
+    this->subscribedToName = subscribedToName;
+}
+
+void SubscriptionRequest::setSubscribeToName(std::string&& subscribedToName)
+{
+    this->subscribedToName = std::move(subscribedToName);
 }
 
 std::string SubscriptionRequest::toString() const
