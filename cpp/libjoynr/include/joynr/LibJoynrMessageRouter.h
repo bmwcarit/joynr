@@ -162,6 +162,7 @@ private:
     std::mutex parentClusterControllerReplyToAddressMutex;
     std::string parentClusterControllerReplyToAddress;
     // FRIEND_TEST(LibJoynrMessageRouterTest, addNextHop_callsAddToRoutingTable);
+    const bool DEFAULT_IS_GLOBALLY_VISIBLE;
 };
 
 } // namespace joynr

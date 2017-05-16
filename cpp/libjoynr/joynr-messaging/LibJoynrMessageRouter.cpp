@@ -72,7 +72,8 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
           runningParentResolves(),
           parentResolveMutex(),
           parentClusterControllerReplyToAddressMutex(),
-          parentClusterControllerReplyToAddress()
+          parentClusterControllerReplyToAddress(),
+          DEFAULT_IS_GLOBALLY_VISIBLE(false)
 {
 }
 
@@ -86,9 +87,8 @@ void LibJoynrMessageRouter::setParentAddress(
         std::string parentParticipantId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress)
 {
-    bool isGloballyVisible = false;
     this->parentAddress = std::move(parentAddress);
-    addProvisionedNextHop(parentParticipantId, this->parentAddress, isGloballyVisible);
+    addProvisionedNextHop(parentParticipantId, this->parentAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
 }
 
 void LibJoynrMessageRouter::setParentRouter(std::unique_ptr<system::RoutingProxy> parentRouter)
@@ -190,9 +190,8 @@ void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
                                    "Got destination address for participant {}",
                                    destinationPartId);
                     // save next hop in the routing table
-                    bool isGloballyVisible = false;
                     this->addProvisionedNextHop(
-                            destinationPartId, this->parentAddress, isGloballyVisible);
+                            destinationPartId, this->parentAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
                     this->removeRunningParentResolvers(destinationPartId);
                     this->sendMessages(destinationPartId, this->parentAddress);
                 } else {
@@ -403,8 +402,8 @@ void LibJoynrMessageRouter::addMulticastReceiver(
                            onSuccessWrapper,
                            onErrorWrapper](const bool& resolved) {
             if (resolved) {
-                bool isGloballyVisible = false;
-                addProvisionedNextHop(providerParticipantId, parentAddress, isGloballyVisible);
+                addProvisionedNextHop(
+                        providerParticipantId, parentAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
                 parentRouter->addMulticastReceiverAsync(multicastId,
                                                         subscriberParticipantId,
                                                         providerParticipantId,
