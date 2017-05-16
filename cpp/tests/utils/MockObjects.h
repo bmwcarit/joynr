@@ -1136,6 +1136,80 @@ public:
                 const std::vector<std::string>& partitions
             )
     );
+
+    // Registration control
+
+    MOCK_METHOD3(
+            getMasterRegistrationControlEntriesAsync,
+            std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>>>(
+                const std::string& uid,
+                std::function<void(
+                    const std::vector<joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>& masterAces
+                )> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+            )
+    );
+
+    MOCK_METHOD3(
+            getMediatorRegistrationControlEntriesAsync,
+            std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>>>(
+                const std::string& uid,
+                std::function<void(
+                    const std::vector<joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>& mediatorAces
+                )> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+            )
+    );
+
+    MOCK_METHOD3(
+            getOwnerRegistrationControlEntriesAsync,
+            std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry>>>(
+                const std::string& uid,
+                std::function<void(
+                    const std::vector<joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry>& ownerAces
+                )> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+            )
+    );
+
+    MOCK_METHOD3(
+            subscribeToMasterRegistrationControlEntryChangedBroadcast,
+            std::shared_ptr<joynr::Future<std::string>>(
+                std::shared_ptr<
+                    joynr::ISubscriptionListener<
+                        joynr::infrastructure::DacTypes::ChangeType::Enum,
+                        joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>
+                    >subscriptionListener,
+                std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
+                const std::vector<std::string>& partitions
+            )
+    );
+
+    MOCK_METHOD3(
+            subscribeToMediatorRegistrationControlEntryChangedBroadcast,
+            std::shared_ptr<joynr::Future<std::string>>(
+                std::shared_ptr<
+                    joynr::ISubscriptionListener<
+                        joynr::infrastructure::DacTypes::ChangeType::Enum,
+                        joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>
+                    >subscriptionListener,
+                std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
+                const std::vector<std::string>& partitions
+            )
+    );
+
+    MOCK_METHOD3(
+            subscribeToOwnerRegistrationControlEntryChangedBroadcast,
+            std::shared_ptr<joynr::Future<std::string>>(
+                std::shared_ptr<
+                    joynr::ISubscriptionListener<
+                        joynr::infrastructure::DacTypes::ChangeType::Enum,
+                        joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry>
+                    >subscriptionListener,
+                std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
+                const std::vector<std::string>& partitions
+            )
+    );
 };
 
 class MockGlobalDomainRoleControllerProxy : public virtual joynr::infrastructure::GlobalDomainRoleControllerProxy {
@@ -1186,7 +1260,7 @@ public:
                      const std::string& domain,
                      const std::string& interfaceName,
                      joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                     std::shared_ptr<joynr::LocalDomainAccessController::IGetConsumerPermissionCallback> callback));
+                     std::shared_ptr<joynr::LocalDomainAccessController::IGetPermissionCallback> callback));
 
     MOCK_METHOD5(getConsumerPermission,
                  joynr::infrastructure::DacTypes::Permission::Enum(
@@ -1194,6 +1268,20 @@ public:
                      const std::string& domain,
                      const std::string& interfaceName,
                      const std::string& operation,
+                     joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
+    MOCK_METHOD5(getProviderPermission,
+                 void(
+                     const std::string& userId,
+                     const std::string& domain,
+                     const std::string& interfaceName,
+                     joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
+                     std::shared_ptr<joynr::LocalDomainAccessController::IGetPermissionCallback> callback));
+
+    MOCK_METHOD4(getProviderPermission,
+                 joynr::infrastructure::DacTypes::Permission::Enum(
+                     const std::string& userId,
+                     const std::string& domain,
+                     const std::string& interfaceName,
                      joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
 };
 
