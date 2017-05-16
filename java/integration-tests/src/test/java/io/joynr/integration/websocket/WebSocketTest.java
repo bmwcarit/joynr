@@ -20,6 +20,7 @@ package io.joynr.integration.websocket;
  */
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -49,6 +50,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -61,6 +63,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.argThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -187,6 +190,24 @@ public class WebSocketTest {
                 Assert.fail(error.getMessage());
             }
         });
-        Mockito.verify(messageRouterMock, Mockito.timeout(1000)).route(msg);
+        Mockito.verify(messageRouterMock, Mockito.timeout(1000))
+               .route(argThat(new SerializedDataOfImmutableMessageMatcher(msg)));
+    }
+
+    static class SerializedDataOfImmutableMessageMatcher extends ArgumentMatcher<ImmutableMessage> {
+        private final byte[] expectedSerializedData;
+
+        public SerializedDataOfImmutableMessageMatcher(ImmutableMessage message) {
+            this.expectedSerializedData = message.getSerializedMessage();
+        }
+
+        @Override
+        public boolean matches(Object argument) {
+            if (!(argument instanceof ImmutableMessage)) {
+                return false;
+            }
+            return Arrays.equals(expectedSerializedData, ((ImmutableMessage) argument).getSerializedMessage());
+        }
+
     }
 }

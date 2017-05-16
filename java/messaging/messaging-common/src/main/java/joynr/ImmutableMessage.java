@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.MessageDeserializer;
 import io.joynr.smrf.MessageDeserializerImpl;
@@ -41,17 +40,13 @@ public class ImmutableMessage extends Message {
     private final byte[] serializedMessage;
     private transient Map<String, Serializable> context = new HashMap<String, Serializable>();
 
-    // Findbugs doesn't want us to store a reference to the serialized message but to copy it.
-    // However, this may have an impact on the performance.
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public ImmutableMessage(byte[] serializedMessage) throws EncodingException, UnsuppportedVersionException {
-        messageDeserializer = new MessageDeserializerImpl(serializedMessage);
-        this.serializedMessage = serializedMessage;
+        this.serializedMessage = serializedMessage.clone();
+        messageDeserializer = new MessageDeserializerImpl(this.serializedMessage);
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public byte[] getSerializedMessage() {
-        return serializedMessage;
+        return serializedMessage.clone();
     }
 
     public long getTtlMs() {
