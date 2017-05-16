@@ -539,6 +539,41 @@ define(
                             done();
                         });
 
+                        it("sets compress in request messages", function(done) {
+                            var sentMessage;
+                            var messagingQos = new MessagingQos();
+                            messagingQos.compress = true;
+
+                            var request = new Request({
+                                methodName : "methodName"
+                            });
+                            dispatcher.sendRequest({
+                                from : "from",
+                                toDiscoveryEntry : toDiscoveryEntry,
+                                messagingQos : messagingQos,
+                                request : request
+                            });
+                            expect(clusterControllerMessagingStub.transmit)
+                                    .toHaveBeenCalled();
+                            sentMessage = clusterControllerMessagingStub.transmit.calls
+                                        .mostRecent().args[0];
+                            expect(sentMessage.isLocalMessage).toEqual(true);
+
+                            dispatcher.sendRequest({
+                                from : "from",
+                                toDiscoveryEntry : globalToDiscoveryEntry,
+                                messagingQos : messagingQos,
+                                request : request
+                            });
+                            expect(clusterControllerMessagingStub.transmit)
+                                    .toHaveBeenCalled();
+                            sentMessage = clusterControllerMessagingStub.transmit.calls
+                                        .mostRecent().args[0];
+                            expect(sentMessage.compress).toEqual(true);
+
+                            done();
+                        });
+
                         it(
                                 "enriches requests with custom headers",
                                 function(done) {
