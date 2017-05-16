@@ -73,60 +73,60 @@ public:
     }
     static const std::string& VALUE_MESSAGE_TYPE_ONE_WAY()
     {
-        static const std::string value("oneWay");
+        static const std::string value("o");
         return value;
     }
 
     static const std::string& VALUE_MESSAGE_TYPE_REPLY()
     {
-        static const std::string value("reply");
+        static const std::string value("rp");
         return value;
     }
 
     static const std::string& VALUE_MESSAGE_TYPE_REQUEST()
     {
-        static const std::string value("request");
+        static const std::string value("rq");
         return value;
     }
 
     static const std::string& VALUE_MESSAGE_TYPE_PUBLICATION()
     {
-        static const std::string value("subscriptionPublication");
+        static const std::string value("p");
         return value;
     }
 
     static const std::string& VALUE_MESSAGE_TYPE_MULTICAST()
     {
-        static const std::string value("multicast");
+        static const std::string value("m");
         return value;
     }
 
     static const std::string& VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY()
     {
-        static const std::string value("subscriptionReply");
+        static const std::string value("srp");
         return value;
     }
 
     static const std::string& VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST()
     {
-        static const std::string value("subscriptionRequest");
+        static const std::string value("arq");
         return value;
     }
     static const std::string& VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST()
     {
-        static const std::string value("multicastSubscriptionRequest");
+        static const std::string value("mrq");
         return value;
     }
 
     static const std::string& VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST()
     {
-        static const std::string value("broadcastSubscriptionRequest");
+        static const std::string value("brq");
         return value;
     }
 
     static const std::string& VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP()
     {
-        static const std::string value("subscriptionStop");
+        static const std::string value("sst");
         return value;
     }
 };
