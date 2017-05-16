@@ -366,9 +366,7 @@ void LibJoynrMessageRouter::addMulticastReceiver(
     {
         ReadLocker lock(routingTableLock);
         const auto routingEntry = routingTable.lookup(providerParticipantId);
-        if (!routingEntry) {
-            providerAddress = nullptr;
-        } else {
+        if (routingEntry) {
             providerAddress = routingEntry->address;
         }
     }
