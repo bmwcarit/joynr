@@ -200,7 +200,9 @@ void ProxyBuilder<T>::buildAsync(
         std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos));
         proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
 
-        messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);
+        bool isGloballyVisible = !discoverEntry.getIsLocal();
+        messageRouter->addNextHop(
+                proxy->getProxyParticipantId(), dispatcherAddress, isGloballyVisible);
 
         onSuccess(std::move(proxy));
     };

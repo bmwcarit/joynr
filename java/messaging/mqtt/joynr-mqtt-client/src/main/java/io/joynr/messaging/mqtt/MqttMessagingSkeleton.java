@@ -135,8 +135,12 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
                 message.setReceivedFromGlobal(true);
             }
             String replyToMqttAddress = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
+            // because the message is received via global transport, isGloballyVisible must be true
+            final boolean isGloballyVisible = true;
             if (replyToMqttAddress != null && !replyToMqttAddress.isEmpty()) {
-                messageRouter.addNextHop(message.getFrom(), RoutingTypesUtil.fromAddressString(replyToMqttAddress));
+                messageRouter.addNextHop(message.getFrom(),
+                                         RoutingTypesUtil.fromAddressString(replyToMqttAddress),
+                                         isGloballyVisible);
             }
             messageRouter.route(message);
         } catch (Exception e) {

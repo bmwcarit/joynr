@@ -42,6 +42,8 @@ import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
+import joynr.types.ProviderScope;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,8 +86,10 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
         for (DiscoveryEntry discoveryEntry : discoveryEntries) {
             if (discoveryEntry instanceof GlobalDiscoveryEntry) {
                 GlobalDiscoveryEntry globalDiscoveryEntry = (GlobalDiscoveryEntry) discoveryEntry;
+                boolean isGloballyVisible = (globalDiscoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
                 routingTable.put(globalDiscoveryEntry.getParticipantId(),
-                                 CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry));
+                                 CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry),
+                                 isGloballyVisible);
             }
         }
     }

@@ -226,10 +226,8 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
             continue;
         }
 
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress =
-                routingTable.lookup(providerParticipantId);
-
-        if (!providerAddress) {
+        const auto routingEntry = routingTable.lookup(providerParticipantId);
+        if (!routingEntry) {
             JOYNR_LOG_WARN(logger,
                            "Persisted multicast receivers: No provider address found for "
                            "multicast ID {}",
@@ -237,6 +235,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
             continue;
         }
 
+        const auto providerAddress = routingEntry->address;
         std::shared_ptr<IMessagingMulticastSubscriber> multicastSubscriber =
                 multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
 
@@ -324,6 +323,16 @@ void CcMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
     }
 }
 
+bool CcMessageRouter::publishToGlobal(const JoynrMessage& message)
+{
+    const std::string& participantId = message.getHeaderFrom();
+    const auto routingEntry = routingTable.lookup(participantId);
+    if (routingEntry && routingEntry->isGloballyVisible) {
+        return true;
+    }
+    return false;
+}
+
 // inherited from joynr::IMessageRouter and joynr::system::RoutingProvider
 void CcMessageRouter::removeNextHop(
         const std::string& participantId,
@@ -346,11 +355,15 @@ void CcMessageRouter::removeNextHop(
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+        bool isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    addToRoutingTable(participantId, address);
+    assert(address);
+    const auto routingEntry =
+            std::make_shared<RoutingEntry>(RoutingEntry(std::move(address), isGloballyVisible));
+    addToRoutingTable(participantId, std::move(routingEntry));
     sendMessages(participantId, address);
     if (onSuccess) {
         onSuccess();
@@ -361,77 +374,83 @@ void CcMessageRouter::addNextHop(
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::ChannelAddress& channelAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address =
             std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(channelAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::MqttAddress& mqttAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(mqttAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address = std::make_shared<const joynr::system::RoutingTypes::CommonApiDbusAddress>(
             commonApiDbusAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::BrowserAddress& browserAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address =
             std::make_shared<const joynr::system::RoutingTypes::BrowserAddress>(browserAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::WebSocketAddress& webSocketAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address =
             std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(webSocketAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
             webSocketClientAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 void CcMessageRouter::resolveNextHop(
@@ -485,10 +504,11 @@ void CcMessageRouter::addMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    std::shared_ptr<RoutingEntry> routingEntry;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
         ReadLocker lock(routingTableLock);
-        providerAddress = routingTable.lookup(providerParticipantId);
+        routingEntry = routingTable.lookup(providerParticipantId);
     }
 
     std::function<void()> onSuccessWrapper =
@@ -512,13 +532,14 @@ void CcMessageRouter::addMulticastReceiver(
         onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
     };
 
-    if (!providerAddress) {
+    if (!routingEntry) {
         exceptions::ProviderRuntimeException exception(
                 "No routing entry for multicast provider (providerParticipantId=" +
                 providerParticipantId + ") found.");
         onErrorWrapper(exception);
         return;
     }
+    providerAddress = routingEntry->address;
 
     registerMulticastReceiver(multicastId,
                               subscriberParticipantId,
@@ -539,12 +560,13 @@ void CcMessageRouter::removeMulticastReceiver(
 
     saveMulticastReceiverDirectory();
 
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
+    std::shared_ptr<RoutingEntry> routingEntry;
     {
         ReadLocker lock(routingTableLock);
-        providerAddress = routingTable.lookup(providerParticipantId);
+        routingEntry = routingTable.lookup(providerParticipantId);
     }
-    if (!providerAddress) {
+
+    if (!routingEntry) {
         exceptions::ProviderRuntimeException exception(
                 "No routing entry for multicast provider (providerParticipantId=" +
                 providerParticipantId + ") found.");
@@ -552,6 +574,7 @@ void CcMessageRouter::removeMulticastReceiver(
         onError(exception);
         return;
     } else {
+        const auto providerAddress = routingEntry->address;
         std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
                 multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
         if (skeleton) {

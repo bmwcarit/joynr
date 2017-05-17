@@ -94,6 +94,7 @@ public:
 
     void SetUp(){
         participantId = util::createUuid();
+        isGloballyVisible = true;
         routingProxyBuilder = runtime->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
     }
 
@@ -118,7 +119,8 @@ protected:
     std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder;
     std::unique_ptr<joynr::system::RoutingProxy> routingProxy;
     std::string participantId;
-    
+    bool isGloballyVisible;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(SystemServicesRoutingTest);
 };
@@ -169,7 +171,7 @@ TEST_F(SystemServicesRoutingTest, addNextHopHttp)
     EXPECT_FALSE(isResolvable);
 
     try {
-        routingProxy->addNextHop(participantId, address);
+        routingProxy->addNextHop(participantId, address, isGloballyVisible);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "addNextHop was not successful";
     }
@@ -199,7 +201,7 @@ TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
     EXPECT_FALSE(isResolvable);
 
     try {
-        routingProxy->addNextHop(participantId, address);
+        routingProxy->addNextHop(participantId, address, isGloballyVisible);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "addNextHop was not successful";
     }
@@ -242,7 +244,7 @@ TEST_F(SystemServicesRoutingTest, addNextHopMqtt)
     EXPECT_FALSE(isResolvable);
 
     try {
-        routingProxy->addNextHop(participantId, address);
+        routingProxy->addNextHop(participantId, address, isGloballyVisible);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "addNextHop was not successful";
     }
@@ -272,7 +274,7 @@ TEST_F(SystemServicesRoutingTest, removeNextHopMqtt)
     EXPECT_FALSE(isResolvable);
 
     try {
-        routingProxy->addNextHop(participantId, address);
+        routingProxy->addNextHop(participantId, address, isGloballyVisible);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "addNextHop was not successful";
     }

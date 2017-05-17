@@ -139,8 +139,8 @@ public class CcMessageRouterTest {
 
                 Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
                 });
-
-                routingTable.put(toParticipantId, channelAddress);
+                final boolean isGloballyVisible = true; // toParticipantId is globally visible
+                routingTable.put(toParticipantId, channelAddress, isGloballyVisible);
                 joynrMessage = new JoynrMessage();
                 joynrMessage.setTo(toParticipantId);
                 joynrMessage.setLocalMessage(true);

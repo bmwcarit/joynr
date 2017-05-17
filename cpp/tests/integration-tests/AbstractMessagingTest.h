@@ -135,7 +135,9 @@ public:
         std::shared_ptr<IReplyCaller> replyCaller;
         messageSender.registerDispatcher(&mockDispatcher);
 
-        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
+        // local messages
+        const bool isGloballyVisible = false;
+        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible);
 
         messageSender.sendRequest(senderId, receiverId, qos, request, replyCaller, isLocalMessage);
 
@@ -183,8 +185,9 @@ public:
                 .Times(0);
 
         auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
+        const bool isGloballyVisible = false;
 
-        messageRouter->addNextHop(receiverId, messagingSkeletonEndpointAddr);
+        messageRouter->addNextHop(receiverId, messagingSkeletonEndpointAddr, isGloballyVisible);
 
         messageRouter->route(message);
 
@@ -209,7 +212,8 @@ public:
         EXPECT_CALL(*mockMessageSender, sendMessage(_,Eq(message),_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
+        const bool isGloballyVisible = false;
+        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible);
 
         messageRouter->route(message);
 
@@ -247,9 +251,10 @@ public:
                 .WillRepeatedly(ReturnRefOfCopy(globalClusterControllerAddress));
 
         auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
+        const bool isGloballyVisible = false;
 
-        messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr);
-        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr);
+        messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr, isGloballyVisible);
+        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible);
 
         messageRouter->route(message);
         messageRouter->route(message2);

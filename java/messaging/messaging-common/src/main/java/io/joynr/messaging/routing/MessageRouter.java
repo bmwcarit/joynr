@@ -28,7 +28,7 @@ public interface MessageRouter {
 
     public void route(JoynrMessage message);
 
-    public void addNextHop(String participantId, Address address);
+    public void addNextHop(String participantId, Address address, boolean isGloballyVisible);
 
     public void shutdown();
 

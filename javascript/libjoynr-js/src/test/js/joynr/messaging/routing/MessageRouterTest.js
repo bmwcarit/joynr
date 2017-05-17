@@ -60,6 +60,7 @@ define([
                         var messageQueueSpy, messageRouter, routingProxySpy, parentMessageRouterAddress, incomingAddress;
                         var multicastAddressCalculatorSpy;
                         var serializedTestGlobalClusterControllerAddress;
+                        var multicastAddress;
 
                         var createMessageRouter =
                                 function(
@@ -121,9 +122,8 @@ define([
                                 addressInformation : "some info"
                             };
                             multicastAddressCalculatorSpy = jasmine.createSpyObj("multicastAddressCalculator", [ "calculate" ]);
-                            multicastAddressCalculatorSpy.calculate.and.returnValue(new BrowserAddress({
-                                windowId : "incomingAddress"
-                            }));
+                            multicastAddress = new BrowserAddress({ windowId : "incomingAddress" });
+                            multicastAddressCalculatorSpy.calculate.and.returnValue(multicastAddress);
 
                             messagingStubSpy = jasmine.createSpyObj("messagingStub", [ "transmit"
                             ]);
@@ -309,7 +309,8 @@ define([
                                                 .toHaveBeenCalled();
                                         expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
 
-                                        messageRouter.addNextHop(joynrMessage2.to, address).catch(function() {});
+                                        var isGloballyVisible = true;
+                                        messageRouter.addNextHop(joynrMessage2.to, address, isGloballyVisible).catch(function() {});
                                         messageQueueSpy.getAndRemoveMessages
                                                 .and.returnValue(messageQueue);
                                         messageRouter.participantRegistered(joynrMessage2.to);
@@ -353,7 +354,8 @@ define([
                                                 joynrMessage2);
 
                                         increaseFakeTime(2000 + 1);
-                                        messageRouter.addNextHop(joynrMessage2.to, address);
+                                        var isGloballyVisible = true;
+                                        messageRouter.addNextHop(joynrMessage2.to, address, isGloballyVisible);
                                         messageRouter.participantRegistered(joynrMessage2.to);
                                         increaseFakeTime(1);
 
@@ -374,7 +376,8 @@ define([
                                 });
 
                         it("sets replyTo address for non local messages", function(done) {
-                            messageRouter.addNextHop(joynrMessage.to, address);
+                            var isGloballyVisible = true;
+                            messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
                             joynrMessage.setIsLocalMessage(false);
                             expect(joynrMessage.replyChannelId).toEqual(undefined);
@@ -388,7 +391,8 @@ define([
                         });
 
                         it("does not set replyTo address for local messages", function(done) {
-                            messageRouter.addNextHop(joynrMessage.to, address);
+                            var isGloballyVisible = false;
+                            messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
                             joynrMessage.setIsLocalMessage(true);
                             expect(joynrMessage.replyChannelId).toEqual(undefined);
@@ -406,6 +410,7 @@ define([
                             var parameters;
                             var multicastMessage;
                             var addressOfSubscriberParticipant;
+                            var isGloballyVisible;
                             beforeEach(function() {
                                 parameters = {
                                     multicastId : "multicastId- " + uuid(),
@@ -428,7 +433,9 @@ define([
                                 addressOfSubscriberParticipant = new BrowserAddress({
                                     windowId : "windowIdOfSubscriberParticipant"
                                 });
-                                messageRouter.addNextHop(parameters.subscriberParticipantId, addressOfSubscriberParticipant);
+                                isGloballyVisible = true;
+                                messageRouter.addNextHop(parameters.subscriberParticipantId, addressOfSubscriberParticipant, isGloballyVisible);
+
                             });
 
                             it("never, if message is received from global and NO local receiver", function() {
@@ -447,18 +454,22 @@ define([
 
                             it("once, if message is NOT received from global and NO local receiver", function() {
                                 messageRouter.route(multicastMessage);
+                                expect(messagingStubFactorySpy.createMessagingStub).toHaveBeenCalled();
+                                expect(messagingStubFactorySpy.createMessagingStub.calls.count()).toEqual(1);
+                                var address = messagingStubFactorySpy.createMessagingStub.calls.argsFor(0)[0];
+                                expect(address).toEqual(multicastAddress);
                                 expect(messagingStubSpy.transmit).toHaveBeenCalled();
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(1);
                             });
 
-                            it("twice, if message is received from global and local receiver available", function() {
+                            it("twice, if message is NOT received from global and local receiver available", function() {
                                 messageRouter.addMulticastReceiver(parameters);
                                 messageRouter.route(multicastMessage);
                                 expect(messagingStubSpy.transmit).toHaveBeenCalled();
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(2);
                             });
 
-                            it("twice, if message is received from global and two local receivers available with same receiver address", function() {
+                            it("twice, if message is NOT received from global and two local receivers available with same receiver address", function() {
                                 messageRouter.addMulticastReceiver(parameters);
                                 var parametersForSndReceiver = {
                                     multicastId : parameters.multicastId,
@@ -467,13 +478,13 @@ define([
                                 };
 
                                 messageRouter.addMulticastReceiver(parametersForSndReceiver);
-                                messageRouter.addNextHop(parametersForSndReceiver.subscriberParticipantId, addressOfSubscriberParticipant);
+                                messageRouter.addNextHop(parametersForSndReceiver.subscriberParticipantId, addressOfSubscriberParticipant, isGloballyVisible);
                                 messageRouter.route(multicastMessage);
                                 expect(messagingStubSpy.transmit).toHaveBeenCalled();
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(2);
                             });
 
-                            it("three times, if message is received from global and two local receivers available with different receiver address", function() {
+                            it("three times, if message is NOT received from global and two local receivers available with different receiver address", function() {
                                 messageRouter.addMulticastReceiver(parameters);
                                 var parametersForSndReceiver = {
                                     multicastId : parameters.multicastId,
@@ -484,7 +495,7 @@ define([
                                 messageRouter.addMulticastReceiver(parametersForSndReceiver);
                                 messageRouter.addNextHop(parametersForSndReceiver.subscriberParticipantId, new BrowserAddress({
                                     windowId : "windowIdOfNewSubscribeParticipant"
-                                }));
+                                }), isGloballyVisible);
                                 messageRouter.route(multicastMessage);
                                 expect(messagingStubSpy.transmit).toHaveBeenCalled();
                                 expect(messagingStubSpy.transmit.calls.count()).toBe(3);
@@ -495,8 +506,8 @@ define([
                         it(
                                 "routes messages using the messagingStubFactory and messageStub",
                                 function(done) {
-
-                                    messageRouter.addNextHop(joynrMessage.to, address);
+                                    var isGloballyVisible = true;
+                                    messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
                                     messageRouter.route(joynrMessage);
                                     increaseFakeTime(1);
 
@@ -566,7 +577,8 @@ define([
                             });
 
                             it("sets replyTo address for non local messages", function(done) {
-                                messageRouter.addNextHop(joynrMessage.to, address);
+                                var isGloballyVisible = true;
+                                messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
                                 joynrMessage.setIsLocalMessage(false);
                                 expect(joynrMessage.replyChannelId).toEqual(undefined);
@@ -580,7 +592,8 @@ define([
                             });
 
                             it("does not set replyTo address for local messages", function(done) {
-                                messageRouter.addNextHop(joynrMessage.to, address);
+                                var isGloballyVisible = true;
+                                messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
                                 joynrMessage.setIsLocalMessage(true);
                                 expect(joynrMessage.replyChannelId).toEqual(undefined);
@@ -594,6 +607,7 @@ define([
                             });
 
                             it("queues non local messages until global address is available", function(done) {
+                                var isGloballyVisible = true;
                                 messageRouter =
                                     createMessageRouter(
                                             persistencySpy,
@@ -601,7 +615,7 @@ define([
                                             incomingAddress,
                                             parentMessageRouterAddress);
                                 routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
-                                messageRouter.addNextHop(joynrMessage.to, address);
+                                messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
                                 joynrMessage.setIsLocalMessage(false);
                                 var expectedJoynrMessage = new JoynrMessage(Util.extendDeep({}, joynrMessage));
@@ -678,10 +692,11 @@ define([
                                 });
 
                                 it("does not call routing proxy for in process provider", function() {
+                                    var isGloballyVisible = true;
                                     messageRouter.setRoutingProxy(routingProxySpy);
 
                                     parameters.providerParticipantId = "inProcessParticipant";
-                                    messageRouter.addNextHop(parameters.providerParticipantId, new InProcessAddress(undefined));
+                                    messageRouter.addNextHop(parameters.providerParticipantId, new InProcessAddress(undefined), isGloballyVisible);
                                     messageRouter.addMulticastReceiver(parameters);
 
                                     expect(routingProxySpy.addMulticastReceiver).not.toHaveBeenCalled();
@@ -757,13 +772,50 @@ define([
                                 });
                             }); // describe removeMulticastReceiver
 
+                            function checkRoutingProxyAddNextHop(done, participantId, address, isGloballyVisible) {
+                                routingProxySpy.addNextHop.calls.reset();
+
+                                var expectedParticipantId = participantId;
+                                var expectedAddress = incomingAddress;
+                                var expectedIsGloballyVisible = isGloballyVisible;
+
+                                messageRouter.addNextHop(participantId, address, isGloballyVisible).catch(
+                                        done.fail);
+
+                                expect(routingProxySpy.addNextHop).toHaveBeenCalledTimes(1);
+                                expect(
+                                        routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId)
+                                        .toEqual(expectedParticipantId);
+                                expect(
+                                        routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress)
+                                        .toEqual(expectedAddress);
+                                expect(
+                                        routingProxySpy.addNextHop.calls.argsFor(0)[0].isGloballyVisible)
+                                        .toEqual(expectedIsGloballyVisible);
+                            }
+
+                            it(
+                                    "check if routing proxy is called correctly for hop additions",
+                                    function(done) {
+                                        routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
+                                        messageRouter.setRoutingProxy(routingProxySpy);
+
+                                        var isGloballyVisible = true;
+                                        checkRoutingProxyAddNextHop(done, joynrMessage.to, address, isGloballyVisible);
+
+                                        isGloballyVisible = false;
+                                        checkRoutingProxyAddNextHop(done, joynrMessage.to, address, isGloballyVisible);
+                                        done();
+                                    });
+
                             it(
                                     "check if routing proxy is called with queued hop additions",
                                     function(done) {
                                         routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
                                         var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
-                                        messageRouter.addNextHop(joynrMessage.to, address).then(
+                                        var isGloballyVisible = true;
+                                        messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible).then(
                                                 onFulfilledSpy);
                                         increaseFakeTime(1);
 
@@ -804,8 +856,9 @@ define([
                                     function(done) {
                                         var onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
 
-                                        messageRouter.addNextHop(joynrMessage.to, address);
-                                        messageRouter.addNextHop(joynrMessage2.to, address).then(
+                                        var isGloballyVisible = true;
+                                        messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
+                                        messageRouter.addNextHop(joynrMessage2.to, address, isGloballyVisible).then(
                                                 onFulfilledSpy);
                                         routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
                                         increaseFakeTime(1);
@@ -939,7 +992,8 @@ define([
                             it(
                                     " reject pending promises when shut down",
                                     function(done) {
-                                        var addNextHopPromise = messageRouter.addNextHop(joynrMessage.to, address).then(fail);
+                                        var isGloballyVisible = true;
+                                        var addNextHopPromise = messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible).then(fail);
                                         var removeNextHopPromise = messageRouter.removeNextHop(joynrMessage.to).then(fail);
                                         increaseFakeTime(1);
 

@@ -34,10 +34,8 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.util.VersionUtil;
 import joynr.system.DiscoveryAsync;
-import joynr.system.RoutingTypes.Address;
 import joynr.types.Version;
 
 public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
@@ -55,8 +53,6 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private Version interfaceVersion;
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
-    private MessageRouter messageRouter;
-    private Address libjoynrMessagingAddress;
     private long maxMessagingTtl;
 
     private T proxy;
@@ -65,13 +61,9 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                             Set<String> domains,
                             Class<T> interfaceClass,
                             ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
-                            MessageRouter messageRouter,
-                            long maxMessagingTtl,
-                            Address libjoynrMessagingAddress) {
+                            long maxMessagingTtl) {
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
-        this.messageRouter = messageRouter;
         this.maxMessagingTtl = maxMessagingTtl;
-        this.libjoynrMessagingAddress = libjoynrMessagingAddress;
         try {
             interfaceName = (String) interfaceClass.getField("INTERFACE_NAME").get(String.class);
         } catch (Exception e) {
@@ -211,7 +203,6 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             public void onSuccess(ArbitrationResult arbitrationResult) {
                 logger.debug("DISCOVERY proxy created for:{}", arbitrationResult.getDiscoveryEntries());
                 proxyInvocationHandler.createConnector(arbitrationResult);
-                messageRouter.addNextHop(getParticipantId(), libjoynrMessagingAddress);
                 callback.onProxyCreationFinished(proxy);
             }
 

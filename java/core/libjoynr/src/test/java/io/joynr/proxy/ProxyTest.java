@@ -19,12 +19,10 @@ package io.joynr.proxy;
  * #L%
  */
 
-import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -72,7 +70,6 @@ import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -210,9 +207,7 @@ public class ProxyTest {
 
         proxyBuilderFactory = new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                           injector.getInstance(ProxyInvocationHandlerFactory.class),
-                                                          messageRouter,
-                                                          MAX_TTL_MS,
-                                                          new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
+                                                          MAX_TTL_MS);
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -504,7 +499,6 @@ public class ProxyTest {
         Assert.assertEquals("", reply);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxySubscribeToBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
@@ -523,7 +517,6 @@ public class ProxyTest {
         assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscriptionName());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxySubscribeAndUnsubscribeFromSelectiveBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
@@ -557,7 +550,6 @@ public class ProxyTest {
                                                                      any(MessagingQos.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxySubscribeAndUnsubscribeFromBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
@@ -585,7 +577,6 @@ public class ProxyTest {
                                                                      any(MessagingQos.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxySubscribeToBroadcastWithSubscriptionId() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
@@ -611,7 +602,6 @@ public class ProxyTest {
         assertEquals(subscriptionId, subscriptionRequest.getValue().getSubscriptionId());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxySubscribeAndUnsubscribeFromAttribute() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
@@ -626,7 +616,6 @@ public class ProxyTest {
 
         abstract class BooleanSubscriptionListener implements AttributeSubscriptionListener<Boolean> {
         }
-        ;
         Future<String> subscriptionId = proxy.subscribeToGuidanceActive(mock(BooleanSubscriptionListener.class),
                                                                         subscriptionQos);
 
@@ -646,7 +635,6 @@ public class ProxyTest {
                                                                      any(MessagingQos.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxySubscribeToAttributeWithSubscriptionId() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
@@ -661,7 +649,6 @@ public class ProxyTest {
 
         abstract class BooleanSubscriptionListener implements AttributeSubscriptionListener<Boolean> {
         }
-        ;
         String subscriptionId = UUID.randomUUID().toString();
         Future<String> subscriptionId2 = proxy.subscribeToGuidanceActive(subscriptionId,
                                                                          mock(BooleanSubscriptionListener.class),
@@ -679,7 +666,6 @@ public class ProxyTest {
         assertEquals(subscriptionId, subscriptionRequest.getValue().getSubscriptionId());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxyUnSubscribeFromBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);

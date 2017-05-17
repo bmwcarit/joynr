@@ -31,10 +31,11 @@ public:
         isLocalMessage(true)
     {
         // provision global capabilities directory
+        const bool isGloballyVisible = true;
         auto addressCapabilitiesDirectory = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
                         messagingSettings.getCapabilitiesDirectoryUrl() + messagingSettings.getCapabilitiesDirectoryChannelId() + "/",
                         messagingSettings.getCapabilitiesDirectoryChannelId());
-        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
+        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory, isGloballyVisible);
         messagingStubFactory->registerStubFactory(std::make_shared<HttpMessagingStubFactory>(mockMessageSender));
     }
 

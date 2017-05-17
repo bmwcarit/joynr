@@ -168,9 +168,10 @@ define(
                                             continue;
                                         }
                                         // Update routing table
+                                        var isGloballyVisible = (globalDiscoveryEntry.qos.scope === ProviderScope.GLOBAL);
                                         messageRouterPromises.push(messageRouter.addNextHop(
                                                 globalDiscoveryEntry.participantId,
-                                                globalAddress));
+                                                globalAddress, isGloballyVisible));
                                         capabilities.push(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(false, globalDiscoveryEntry));
                                     }
                                 }

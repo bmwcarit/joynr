@@ -88,7 +88,12 @@ define([
                             spyOn(provider, "checkImplementation").and.callThrough();
 
                             providerQos =
-                                    new ProviderQos([], 1, Date.now(), ProviderScope.GLOBAL, true);
+                                    new ProviderQos({
+                                        customParameters : [],
+                                        priority : Date.now(),
+                                        scope : ProviderScope.GLOBAL,
+                                        supportsOnChangeSubscriptions : true
+                                    });
 
                             provider.myAttribute = new ProviderAttributeNotifyReadWrite(provider, {
                                 dependencies : {
@@ -225,10 +230,12 @@ define([
                             }).catch(function() {
                                return null;
                             });
+                            var isGloballyVisible = (providerQos.scope === ProviderScope.GLOBAL);
                             expect(messageRouterSpy.addNextHop).toHaveBeenCalled();
                             expect(messageRouterSpy.addNextHop).toHaveBeenCalledWith(
                                     participantId,
-                                    libjoynrMessagingAddress);
+                                    libjoynrMessagingAddress,
+                                    isGloballyVisible);
                             done();
                         });
 
