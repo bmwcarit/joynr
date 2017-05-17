@@ -100,7 +100,7 @@ void MqttMessagingSkeleton::transmit(
 
         boost::optional<std::string> optionalReplyTo = message->getReplyTo();
 
-        if (!optionalReplyTo.is_initialized()) {
+        if (!optionalReplyTo) {
             JOYNR_LOG_ERROR(logger,
                             "message {} did not contain replyTo header, discarding",
                             message->getId());
