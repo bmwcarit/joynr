@@ -40,8 +40,6 @@
 namespace joynr
 {
 
-class Logger;
-
 namespace util
 {
 
@@ -86,11 +84,9 @@ void saveStringToFile(const std::string& fileName, const std::string& strToSave)
 std::string createUuid();
 
 /**
- * Log a serialized Joynr message
+ * truncate a serialized Joynr message for logging
  */
-void logSerializedMessage(Logger& logger,
-                          const std::string& explanation,
-                          const std::string& message);
+std::string truncateSerializedMessage(const std::string& message);
 
 template <typename T>
 std::set<T> vectorToSet(const std::vector<T>& v)

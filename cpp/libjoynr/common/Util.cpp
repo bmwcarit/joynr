@@ -146,19 +146,15 @@ void validatePartitions(const std::vector<std::string>& partitions, bool allowWi
     }
 }
 
-void logSerializedMessage(Logger& logger,
-                          const std::string& explanation,
-                          const std::string& message)
+std::string truncateSerializedMessage(const std::string& message)
 {
-    if (message.size() > 2048) {
-        JOYNR_LOG_DEBUG(logger,
-                        "{} {}<**truncated, length {}",
-                        explanation,
-                        message.substr(0, 2048),
-                        message.length());
-    } else {
-        JOYNR_LOG_DEBUG(logger, "{} {}, length {}", explanation, message, message.length());
+    constexpr std::size_t maxSize = 2048;
+    const std::size_t messageSize = message.size();
+    if (messageSize > maxSize) {
+        return message.substr(0, maxSize) + std::string("<**truncated, length=") +
+               std::to_string(messageSize);
     }
+    return message;
 }
 
 std::string toDateString(const std::chrono::system_clock::time_point& timePoint)

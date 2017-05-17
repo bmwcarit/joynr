@@ -143,8 +143,9 @@ void LongPollingMessageReceiver::run()
             // 200 does nott refect the state of the message body! It could be empty.
             if (longPollingResult.getStatusCode() == 200 ||
                 longPollingResult.getStatusCode() == 503) {
-                util::logSerializedMessage(
-                        logger, "long polling successful; contents: ", longPollingResult.getBody());
+                JOYNR_LOG_TRACE(logger,
+                                "long polling successful; contents: {}",
+                                util::truncateSerializedMessage(longPollingResult.getBody()));
                 processReceivedInput(longPollingResult.getBody());
                 // Atmosphere currently cannot return 204 when a long poll times out, so this code
                 // is currently never executed (2.2.2012)

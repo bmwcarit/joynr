@@ -158,8 +158,7 @@ HttpResult HttpSender::buildRequestAndSend(const std::string& data,
                     ->postContent(data)
                     ->build());
     JOYNR_LOG_TRACE(logger, "builtRequest");
-
-    util::logSerializedMessage(logger, "Sending Message: ", data);
+    JOYNR_LOG_TRACE(logger, "Sending Message: {}", util::truncateSerializedMessage(data));
 
     return sendMessageRequest->execute();
 }
