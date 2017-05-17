@@ -683,7 +683,8 @@ define(
                                             if (address !== undefined) {
                                                 return messageRouter.addNextHop(
                                                     opArgs.participantId,
-                                                    address);
+                                                    address,
+                                                    opArgs.isGloballyVisible);
                                             }
                                             return Promise.reject(new Error("RoutingProvider.addNextHop failed, because address " +
                                                     "could not be found in the operation arguments " + JSON.stringify(opArgs)));

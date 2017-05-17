@@ -8,6 +8,10 @@
 ## Other changes
 * **[Java]** HTTP communication is not supported at the moment
 
+### Backward compatibility
+This version of joynr is NOT compatible with previous versions due to internal changes:
+* **[cluster-controller]** cluster-controller expects libjoynr to signal globally visible providers
+
 # joynr 0.25.2
 
 ## API relevant changes

@@ -332,14 +332,16 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             clusterControllerSettings.getMulticastReceiverDirectoryPersistenceFilename());
 
     // provision global capabilities directory
+    bool isGloballyVisible = true;
     if (boost::starts_with(capabilitiesDirectoryChannelId, "{")) {
         try {
             using system::RoutingTypes::MqttAddress;
             auto globalCapabilitiesDirectoryAddress = std::make_shared<MqttAddress>();
             joynr::serializer::deserializeFromJson(
                     *globalCapabilitiesDirectoryAddress, capabilitiesDirectoryChannelId);
-            ccMessageRouter->addProvisionedNextHop(
-                    capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
+            ccMessageRouter->addProvisionedNextHop(capabilitiesDirectoryParticipantId,
+                                                   std::move(globalCapabilitiesDirectoryAddress),
+                                                   isGloballyVisible);
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger,
                             "could not deserialize MqttAddress from {} - error: {}",
@@ -352,8 +354,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                         messagingSettings.getCapabilitiesDirectoryUrl() +
                                 capabilitiesDirectoryChannelId + "/",
                         capabilitiesDirectoryChannelId);
-        ccMessageRouter->addProvisionedNextHop(
-                capabilitiesDirectoryParticipantId, globalCapabilitiesDirectoryAddress);
+        ccMessageRouter->addProvisionedNextHop(capabilitiesDirectoryParticipantId,
+                                               std::move(globalCapabilitiesDirectoryAddress),
+                                               isGloballyVisible);
     }
 
     // setup CC WebSocket interface
@@ -681,9 +684,11 @@ void JoynrClusterControllerRuntime::enableAccessController(
                         ex.what());
     }
 
+    bool isGloballyVisible = true;
     ccMessageRouter->addProvisionedNextHop(
             messagingSettings.getGlobalDomainAccessControlParticipantId(),
-            globalDomainAccessControlAddress);
+            std::move(globalDomainAccessControlAddress),
+            isGloballyVisible);
 
     // create GlobalDomainAccessController proxy
     std::unique_ptr<ProxyBuilder<infrastructure::GlobalDomainAccessControllerProxy>>

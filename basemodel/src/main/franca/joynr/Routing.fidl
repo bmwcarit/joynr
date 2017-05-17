@@ -140,6 +140,10 @@ interface Routing {
 					the corresponding participant ID
 			**>
 			RoutingTypes.ChannelAddress channelAddress
+			<** @description: true, participant is globally visible
+					  false, otherwise
+			**>
+			Boolean isGloballyVisible
 		}
 	}
 
@@ -158,6 +162,10 @@ interface Routing {
 					the corresponding participant ID
 			**>
 			RoutingTypes.MqttAddress mqttAddress
+			<** @description: true, participant is globally visible
+					  false, otherwise
+			**>
+			Boolean isGloballyVisible
 		}
 	}
 
@@ -176,6 +184,10 @@ interface Routing {
 					the corresponding participant ID
 			**>
 			RoutingTypes.CommonApiDbusAddress commonApiDbusAddress
+			<** @description: true, participant is globally visible
+					  false, otherwise
+			**>
+			Boolean isGloballyVisible
 		}
 	}
 
@@ -194,6 +206,10 @@ interface Routing {
 					the corresponding participant ID
 			**>
 			RoutingTypes.BrowserAddress browserAddress
+			<** @description: true, participant is globally visible
+					  false, otherwise
+			**>
+			Boolean isGloballyVisible
 		}
 	}
 
@@ -212,6 +228,10 @@ interface Routing {
 					the corresponding participant ID
 			**>
 			RoutingTypes.WebSocketAddress webSocketAddress
+			<** @description: true, participant is globally visible
+					  false, otherwise
+			**>
+			Boolean isGloballyVisible
 		}
 	}
 
@@ -230,6 +250,10 @@ interface Routing {
 					the corresponding participant ID
 			**>
 			RoutingTypes.WebSocketClientAddress webSocketClientAddress
+			<** @description: true, participant is globally visible
+					  false, otherwise
+			**>
+			Boolean isGloballyVisible
 		}
 	}
 

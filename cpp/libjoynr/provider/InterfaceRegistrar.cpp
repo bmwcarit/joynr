@@ -60,8 +60,12 @@ std::shared_ptr<IRequestInterpreter> InterfaceRegistrar::getRequestInterpreter(
 {
     std::lock_guard<std::mutex> lock(requestInterpretersMutex);
 
-    assert(requestInterpreters.find(interfaceName) != requestInterpreters.end());
-    return requestInterpreters[interfaceName];
+    std::shared_ptr<IRequestInterpreter> requestInterpreter;
+    auto it = requestInterpreters.find(interfaceName);
+    if (it != requestInterpreters.cend()) {
+        requestInterpreter = it->second;
+    }
+    return requestInterpreter;
 }
 
 void InterfaceRegistrar::reset()

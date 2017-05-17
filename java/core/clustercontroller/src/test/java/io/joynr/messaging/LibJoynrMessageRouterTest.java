@@ -116,13 +116,19 @@ public class LibJoynrMessageRouterTest {
     public void addsNextHopAfterQueryingParent() throws Exception {
         messageRouter.route(message);
         Thread.sleep(100);
-        Mockito.verify(routingTable).put(Mockito.eq(unknownParticipantId), Mockito.eq(parentAddress));
+        final boolean isGloballyVisible = true;
+        Mockito.verify(routingTable).put(Mockito.eq(unknownParticipantId),
+                                         Mockito.eq(parentAddress),
+                                         Mockito.eq(isGloballyVisible));
     }
 
     @Test
     public void passesNextHopToParent() {
-        messageRouter.addNextHop(unknownParticipantId, nextHopAddress);
-        Mockito.verify(messageRouterParent).addNextHop(Mockito.eq(unknownParticipantId), Mockito.eq(incomingAddress));
+        final boolean isGloballyVisible = true;
+        messageRouter.addNextHop(unknownParticipantId, nextHopAddress, isGloballyVisible);
+        Mockito.verify(messageRouterParent).addNextHop(Mockito.eq(unknownParticipantId),
+                                                       Mockito.eq(incomingAddress),
+                                                       Mockito.eq(isGloballyVisible));
     }
 
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {

@@ -76,9 +76,9 @@ AbstractMessageRouter::~AbstractMessageRouter()
     messageScheduler.shutdown();
 }
 
-bool AbstractMessageRouter::routingTableSaveFilterFunc(
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress)
+bool AbstractMessageRouter::routingTableSaveFilterFunc(std::shared_ptr<RoutingEntry> routingEntry)
 {
+    const auto destAddress = routingEntry->address;
     const joynr::InProcessMessagingAddress* inprocessAddress =
             dynamic_cast<const joynr::InProcessMessagingAddress*>(destAddress.get());
     return inprocessAddress == nullptr;
@@ -86,9 +86,12 @@ bool AbstractMessageRouter::routingTableSaveFilterFunc(
 
 void AbstractMessageRouter::addProvisionedNextHop(
         std::string participantId,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+        bool isGloballyVisible)
 {
-    addToRoutingTable(participantId, address);
+    assert(address);
+    const auto routingEntry = std::make_shared<RoutingEntry>(std::move(address), isGloballyVisible);
+    addToRoutingTable(participantId, std::move(routingEntry));
 }
 
 std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
@@ -97,8 +100,9 @@ AbstractMessageRouter::lookupAddresses(const std::unordered_set<std::string>& pa
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
     for (const auto& participantId : participantIds) {
-        destAddress = routingTable.lookup(participantId);
-        if (destAddress) {
+        const auto routingEntry = routingTable.lookup(participantId);
+        if (routingEntry) {
+            destAddress = routingEntry->address;
             addresses.insert(destAddress);
         }
     }
@@ -118,7 +122,8 @@ AbstractMessageRouter::getDestinationAddresses(const ImmutableMessage& message)
         addresses = lookupAddresses(multicastReceivers);
 
         // add global transport address if message is NOT received from global
-        if (!message.isReceivedFromGlobal() && addressCalculator) {
+        // AND provider is globally visible
+        if (!message.isReceivedFromGlobal() && addressCalculator && publishToGlobal(message)) {
             std::shared_ptr<const joynr::system::RoutingTypes::Address> globalTransport =
                     addressCalculator->compute(message);
             if (globalTransport) {
@@ -126,10 +131,11 @@ AbstractMessageRouter::getDestinationAddresses(const ImmutableMessage& message)
             }
         }
     } else {
-        const std::string& destinationPartId = message.getRecipient();
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress =
-                routingTable.lookup(destinationPartId);
-        if (destAddress) {
+        const std::string destinationPartId = message.getRecipient();
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
+        const auto routingEntry = routingTable.lookup(destinationPartId);
+        if (routingEntry) {
+            destAddress = routingEntry->address;
             addresses.insert(destAddress);
         }
     }
@@ -256,13 +262,12 @@ void AbstractMessageRouter::saveRoutingTable()
     }
 }
 
-void AbstractMessageRouter::addToRoutingTable(
-        std::string participantId,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+void AbstractMessageRouter::addToRoutingTable(std::string participantId,
+                                              std::shared_ptr<RoutingEntry> routingEntry)
 {
     {
         WriteLocker lock(routingTableLock);
-        routingTable.add(participantId, address);
+        routingTable.add(participantId, std::move(routingEntry));
     }
     saveRoutingTable();
 }

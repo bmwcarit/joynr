@@ -24,9 +24,18 @@ import joynr.system.RoutingTypes.Address;
 public interface RoutingTable {
     public Address get(String participantId);
 
-    public Address put(String participantId, Address address);
+    public Address put(String participantId, Address address, boolean isGloballyVisible);
 
     public boolean containsKey(String participantId);
+
+    /**
+     * Query the routing table for the status of isGloballyVisible parameter
+     * @param participantId
+     * @return true if participantId is globally visible,
+     *         false if participantId is not globally visible
+     * @throws JoynrRuntimeException if no entry exists for the given participantId
+     */
+    public boolean getIsGloballyVisible(String participantId);
 
     public void remove(String participantId);
 

@@ -26,6 +26,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -121,9 +122,21 @@ public class AddressManager {
 
     private void handleMulticastMessage(ImmutableMessage message, Set<Address> result) {
         if (!message.isReceivedFromGlobal() && multicastAddressCalculator != null) {
-            Address calculatedAddress = multicastAddressCalculator.calculate(message);
-            if (calculatedAddress != null) {
-                result.add(calculatedAddress);
+            String participantId = message.getSender();
+            // default: if no routing entry found, do not publish globally
+            boolean isGloballyVisible = false;
+            try {
+                isGloballyVisible = routingTable.getIsGloballyVisible(participantId);
+            } catch (JoynrRuntimeException e) {
+                // This should never happen
+                logger.error("No routing entry found for Mulicast Provider {}. "
+                        + "The message will not be published globally.", participantId);
+            }
+            if (isGloballyVisible) {
+                Address calculatedAddress = multicastAddressCalculator.calculate(message);
+                if (calculatedAddress != null) {
+                    result.add(calculatedAddress);
+                }
             }
         }
         Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getRecipient());

@@ -68,11 +68,12 @@ class RoutingProxy;
   */
 class JOYNR_EXPORT AbstractMessageRouter : public joynr::IMessageRouter
 {
+
 public:
     virtual ~AbstractMessageRouter();
-
     void addProvisionedNextHop(std::string participantId,
-                               std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+                               std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                               bool isGloballyVisible);
 
     void saveRoutingTable();
     void loadRoutingTable(std::string fileName);
@@ -81,6 +82,31 @@ public:
     friend class ConsumerPermissionCallback;
 
 protected:
+    struct RoutingEntry
+    {
+        RoutingEntry() : address(nullptr), isGloballyVisible(true)
+        {
+        }
+
+        explicit RoutingEntry(std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                              bool isGloballyVisible)
+                : address(std::move(address)), isGloballyVisible(isGloballyVisible)
+        {
+        }
+
+        RoutingEntry(RoutingEntry&&) = default;
+        RoutingEntry& operator=(RoutingEntry&&) = default;
+
+        template <typename Archive>
+        void serialize(Archive& archive)
+        {
+            archive(MUESLI_NVP(address), MUESLI_NVP(isGloballyVisible));
+        }
+
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address;
+        bool isGloballyVisible;
+    };
+
     // Instantiation of this class only possible through its child classes.
     AbstractMessageRouter(
             std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
@@ -89,6 +115,7 @@ protected:
             int maxThreads = 1,
             std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
+    virtual bool publishToGlobal(const ImmutableMessage& message) = 0;
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
     getDestinationAddresses(const ImmutableMessage& message);
 
@@ -98,8 +125,7 @@ protected:
     void sendMessages(const std::string& destinationPartId,
                       std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
-    void addToRoutingTable(std::string participantId,
-                           std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+    void addToRoutingTable(std::string participantId, std::shared_ptr<RoutingEntry> routingEntry);
 
     void scheduleMessage(std::shared_ptr<ImmutableMessage> message,
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
@@ -109,7 +135,7 @@ protected:
     void activateMessageCleanerTimer();
     void onMessageCleanerTimerExpired(const boost::system::error_code& errorCode);
 
-    using RoutingTable = Directory<std::string, const joynr::system::RoutingTypes::Address>;
+    using RoutingTable = Directory<std::string, RoutingEntry>;
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
@@ -126,8 +152,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessageRouter);
     ADD_LOGGER(AbstractMessageRouter);
 
-    bool routingTableSaveFilterFunc(
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress);
+    bool routingTableSaveFilterFunc(std::shared_ptr<RoutingEntry> routingEntry);
 };
 
 /**

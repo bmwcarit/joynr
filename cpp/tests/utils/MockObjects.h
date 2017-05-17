@@ -113,9 +113,10 @@
 #include "tests/PrettyPrint.h"
 #include "tests/utils/LibJoynrMockObjects.h"
 
+#include "joynr/ImmutableMessage.h"
+
 namespace joynr
 {
-class ImmutableMessage;
 class RequestCaller;
 class SubscriptionReply;
 class BroadcastSubscriptionRequest;
@@ -333,6 +334,7 @@ class MockMessageRouter : public joynr::AbstractMessageRouter {
 public:
     void invokeAddNextHopOnSuccessFct(const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         if (onSuccess) {
@@ -355,7 +357,7 @@ public:
     {
         EXPECT_CALL(
                 *this,
-                addNextHop(_,_,_,_)
+                addNextHop(_,_,_,_,_)
         )
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeAddNextHopOnSuccessFct));
         EXPECT_CALL(
@@ -367,6 +369,8 @@ public:
 
     MOCK_METHOD2(route, void(std::shared_ptr<joynr::ImmutableMessage> message, std::uint32_t tryCount));
 
+    MOCK_METHOD1(publishToGlobal, bool(const joynr::ImmutableMessage& message));
+
     MOCK_METHOD6(registerMulticastReceiver, void(const std::string& multicastId,
                                                  const std::string& subscriberParticipantId,
                                                  const std::string& providerParticipantId,
@@ -374,9 +378,10 @@ public:
                                                  std::function<void()> onSuccess,
                                                  std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError));
 
-    MOCK_METHOD4(addNextHop, void(
+    MOCK_METHOD5(addNextHop, void(
             const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
+            bool isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 
@@ -730,6 +735,14 @@ public:
                 "domain",
                 joynr::MessagingQos())
     { }
+
+    MOCK_METHOD5(addNextHopAsync, std::shared_ptr<joynr::Future<void>>(
+            const std::string& participantId,
+            const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
+            const bool& isGloballyVisible,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError));
 
     MOCK_METHOD3(resolveNextHopAsync,
                  std::shared_ptr<joynr::Future<bool>>(

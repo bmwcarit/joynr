@@ -21,9 +21,10 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
     "global/Promise",
     "joynr/util/UtilInternal",
     "joynr/types/DiscoveryEntry",
+    "joynr/types/ProviderScope",
     "joynr/capabilities/ParticipantIdStorage",
     "joynr/types/Version"
-], function(Promise, Util, DiscoveryEntry, ParticipantIdStorage, Version) {
+], function(Promise, Util, DiscoveryEntry, ProviderScope, ParticipantIdStorage, Version) {
     var ONE_DAY_MS = 24 * 60 * 60 * 1000;
     /**
      * The Capabilities Registrar
@@ -138,8 +139,12 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                     requestReplyManager.addRequestCaller(participantId, provider);
 
                     // register routing address at routingTable
+                    var isGloballyVisible = (providerQos.scope === ProviderScope.GLOBAL);
                     var messageRouterPromise =
-                            messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
+                            messageRouter.addNextHop(
+                                    participantId,
+                                    libjoynrMessagingAddress,
+                                    isGloballyVisible);
 
                     // if provider has at least one attribute, add it as publication provider
                     publicationManager.addPublicationProvider(participantId, provider);

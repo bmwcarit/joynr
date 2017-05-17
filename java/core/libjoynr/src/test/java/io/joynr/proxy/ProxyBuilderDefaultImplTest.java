@@ -58,9 +58,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
-import joynr.system.RoutingTypes.Address;
 import joynr.types.Version;
 
 /**
@@ -88,12 +86,6 @@ public class ProxyBuilderDefaultImplTest {
     @Mock
     private ProxyInvocationHandler proxyInvocationHandler;
 
-    @Mock
-    private MessageRouter messageRouter;
-
-    @Mock
-    private Address address;
-
     @Captor
     private ArgumentCaptor<ArbitrationCallback> arbitrationCallbackCaptor;
 
@@ -110,9 +102,7 @@ public class ProxyBuilderDefaultImplTest {
                                                              domains,
                                                              TestInterface.class,
                                                              proxyInvocationHandlerFactory,
-                                                             messageRouter,
-                                                             MAX_MESSAGE_TTL,
-                                                             address);
+                                                             MAX_MESSAGE_TTL);
         Field arbitratorField = ProxyBuilderDefaultImpl.class.getDeclaredField("arbitrator");
         arbitratorField.setAccessible(true);
         arbitratorField.set(subject, arbitrator);

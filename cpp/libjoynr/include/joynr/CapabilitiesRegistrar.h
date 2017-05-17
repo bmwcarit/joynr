@@ -101,8 +101,9 @@ public:
                                            lastSeenDateMs,
                                            defaultExpiryDateMs,
                                            defaultPublicKeyId);
-
+        bool isGloballyVisible = entry.getQos().getScope() == types::ProviderScope::GLOBAL;
         auto onSuccessWrapper = [
+            isGloballyVisible,
             messageRouter = util::as_weak_ptr(messageRouter),
             participantId,
             dispatcherAddress = dispatcherAddress,
@@ -112,8 +113,11 @@ public:
         {
             // add next hop to dispatcher
             if (auto ptr = messageRouter.lock()) {
-                ptr->addNextHop(
-                        participantId, dispatcherAddress, std::move(onSuccess), std::move(onError));
+                ptr->addNextHop(participantId,
+                                dispatcherAddress,
+                                isGloballyVisible,
+                                std::move(onSuccess),
+                                std::move(onError));
             }
         };
 

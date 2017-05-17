@@ -52,6 +52,7 @@ public:
     virtual void addNextHop(
             const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+            bool isGloballyVisible,
             std::function<void()> onSuccess = nullptr,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                     onError = nullptr) = 0;

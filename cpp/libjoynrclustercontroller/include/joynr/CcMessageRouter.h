@@ -98,6 +98,7 @@ public:
 
     void addNextHop(const std::string& participantId,
                     const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+                    bool isGloballyVisible,
                     std::function<void()> onSuccess = nullptr,
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;
@@ -110,36 +111,42 @@ public:
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::ChannelAddress& channelAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::MqttAddress& mqttAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::BrowserAddress& browserAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::WebSocketAddress& webSocketAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
@@ -181,6 +188,7 @@ public:
     /*
      * Public methods specific to CcMessageRouter
      */
+    bool publishToGlobal(const ImmutableMessage& message) final;
     void setAccessController(std::shared_ptr<IAccessController> accessController);
     void saveMulticastReceiverDirectory() const;
     void loadMulticastReceiverDirectory(std::string filename);

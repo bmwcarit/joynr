@@ -57,10 +57,20 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
         void register();
     }
 
+    private static class ParticipantIdAndIsGloballyVisibleHolder {
+        final String participantId;
+        final boolean isGloballyVisible;
+
+        public ParticipantIdAndIsGloballyVisibleHolder(String participantId, boolean isGloballyVisible) {
+            this.participantId = participantId;
+            this.isGloballyVisible = isGloballyVisible;
+        }
+    }
+
     private Address parentRouterMessagingAddress;
     private RoutingProxy parentRouter;
     private Address incomingAddress;
-    private Set<String> deferredParentHopsParticipantIds = new HashSet<>();
+    private Set<ParticipantIdAndIsGloballyVisibleHolder> deferredParentHopsParticipantIds = new HashSet<>();
     private Map<String, DeferrableRegistration> deferredMulticastRegistrations = new HashMap<>();
 
     @Inject
@@ -98,7 +108,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
         if (result.isEmpty() && parentRouter != null) {
             Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
             if (parentHasNextHop) {
-                super.addNextHop(toParticipantId, parentRouterMessagingAddress);
+                super.addNextHop(toParticipantId, parentRouterMessagingAddress, true); // TODO: use appropriate boolean value in subsequent patch
                 result.add(parentRouterMessagingAddress);
             }
         }
@@ -109,27 +119,28 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     }
 
     @Override
-    public void addNextHop(final String participantId, final Address address) {
-        super.addNextHop(participantId, address);
+    public void addNextHop(final String participantId, final Address address, final boolean isGloballyVisible) {
+        super.addNextHop(participantId, address, isGloballyVisible);
         if (parentRouter != null) {
-            addNextHopToParent(participantId);
+            addNextHopToParent(participantId, isGloballyVisible);
         } else {
-            deferredParentHopsParticipantIds.add(participantId);
+            deferredParentHopsParticipantIds.add(new ParticipantIdAndIsGloballyVisibleHolder(participantId,
+                                                                                             isGloballyVisible));
         }
     }
 
-    private void addNextHopToParent(String participantId) {
+    private void addNextHopToParent(String participantId, boolean isGloballyVisible) {
         logger.trace("Adding next hop with participant id " + participantId + " to parent router");
         if (incomingAddress instanceof ChannelAddress) {
-            parentRouter.addNextHop(participantId, (ChannelAddress) incomingAddress);
+            parentRouter.addNextHop(participantId, (ChannelAddress) incomingAddress, isGloballyVisible);
         } else if (incomingAddress instanceof CommonApiDbusAddress) {
-            parentRouter.addNextHop(participantId, (CommonApiDbusAddress) incomingAddress);
+            parentRouter.addNextHop(participantId, (CommonApiDbusAddress) incomingAddress, isGloballyVisible);
         } else if (incomingAddress instanceof BrowserAddress) {
-            parentRouter.addNextHop(participantId, (BrowserAddress) incomingAddress);
+            parentRouter.addNextHop(participantId, (BrowserAddress) incomingAddress, isGloballyVisible);
         } else if (incomingAddress instanceof WebSocketAddress) {
-            parentRouter.addNextHop(participantId, (WebSocketAddress) incomingAddress);
+            parentRouter.addNextHop(participantId, (WebSocketAddress) incomingAddress, isGloballyVisible);
         } else if (incomingAddress instanceof WebSocketClientAddress) {
-            parentRouter.addNextHop(participantId, (WebSocketClientAddress) incomingAddress);
+            parentRouter.addNextHop(participantId, (WebSocketClientAddress) incomingAddress, isGloballyVisible);
         } else {
             throw new ProviderRuntimeException("Failed to add next hop to parent: unknown address type"
                     + incomingAddress.getClass().getSimpleName());
@@ -174,10 +185,12 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
         this.parentRouter = parentRouter;
         this.parentRouterMessagingAddress = parentRouterMessagingAddress;
 
-        super.addNextHop(parentRoutingProviderParticipantId, parentRouterMessagingAddress);
-        addNextHopToParent(routingProxyParticipantId);
-        for (String participantIds : deferredParentHopsParticipantIds) {
-            addNextHopToParent(participantIds);
+        // because the routing provider is local, therefore isGloballyVisible is false
+        final boolean isGloballyVisible = false;
+        super.addNextHop(parentRoutingProviderParticipantId, parentRouterMessagingAddress, isGloballyVisible);
+        addNextHopToParent(routingProxyParticipantId, isGloballyVisible);
+        for (ParticipantIdAndIsGloballyVisibleHolder participantIds : deferredParentHopsParticipantIds) {
+            addNextHopToParent(participantIds.participantId, participantIds.isGloballyVisible);
         }
         synchronized (deferredMulticastRegistrations) {
             for (DeferrableRegistration registerWithParent : deferredMulticastRegistrations.values()) {

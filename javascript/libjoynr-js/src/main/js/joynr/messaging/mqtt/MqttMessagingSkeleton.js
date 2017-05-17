@@ -45,6 +45,8 @@ define("joynr/messaging/mqtt/MqttMessagingSkeleton", [
                 Typing.checkProperty(settings.address, "MqttAddress", "settings.address");
 
                 var multicastSubscriptionCount = {};
+                // because the message is received via global transport, isGloballyVisible must be true
+                var isGloballyVisible = true;
 
                 settings.client.onmessage =
                         function(topic, message) {
@@ -53,9 +55,12 @@ define("joynr/messaging/mqtt/MqttMessagingSkeleton", [
                             }
                             var replyToMqttAddress = message.replyChannelId;
                             if (!Util.checkNullUndefined(replyToMqttAddress)) {
-                                settings.messageRouter
-                                        .addNextHop(message.from, Typing.augmentTypes(JSON
-                                                .parse(replyToMqttAddress), typeRegistry));
+                                settings.messageRouter.addNextHop(
+                                        message.from,
+                                        Typing.augmentTypes(
+                                                JSON.parse(replyToMqttAddress),
+                                                typeRegistry),
+                                        isGloballyVisible);
                             }
                             settings.messageRouter.route(message);
                         };

@@ -149,7 +149,8 @@ public class CcMessageRouterTest {
                 JoynrMessageFactory messageFactory = new JoynrMessageFactory(objectMapper,
                                                                              new HashSet<JoynrMessageProcessor>());
 
-                routingTable.put(toParticipantId, channelAddress);
+                final boolean isGloballyVisible = true; // toParticipantId is globally visible
+                routingTable.put(toParticipantId, channelAddress, isGloballyVisible);
 
                 Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
 

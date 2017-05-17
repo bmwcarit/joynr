@@ -91,6 +91,7 @@ public:
 
     void addNextHop(const std::string& participantId,
                     const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+                    bool isGloballyVisible,
                     std::function<void()> onSuccess = nullptr,
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;
@@ -122,6 +123,7 @@ public:
      * Method specific to LibJoynrMessageRouter
      */
     void setParentRouter(std::unique_ptr<joynr::system::RoutingProxy> parentRouter);
+    bool publishToGlobal(const ImmutableMessage& message) final;
 
     /*
      * Method specific to LibJoynrMessageRouter,
@@ -138,6 +140,7 @@ private:
 
     bool isParentMessageRouterSet();
     void addNextHopToParent(std::string participantId,
+                            bool isGloballyVisible,
                             std::function<void(void)> callbackFct = nullptr,
                             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                                     onError = nullptr);
@@ -149,6 +152,10 @@ private:
     mutable std::mutex parentResolveMutex;
 
     void removeRunningParentResolvers(const std::string& destinationPartId);
+
+    std::mutex parentClusterControllerReplyToAddressMutex;
+    std::string parentClusterControllerReplyToAddress;
+    const bool DEFAULT_IS_GLOBALLY_VISIBLE;
 };
 
 } // namespace joynr

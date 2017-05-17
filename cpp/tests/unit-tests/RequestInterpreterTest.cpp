@@ -253,10 +253,10 @@ TEST_F(RequestInterpreterTest, execute_callsNonExistingMethod) {
 }
 
 
-TEST(RequestInterpreterDeathTest, get_assertsUnknownInterface) {
+TEST_F(RequestInterpreterTest, getUnknownInterfaceReturnsNullptr) {
     InterfaceRegistrar& registrar = InterfaceRegistrar::instance();
 
-    ASSERT_DEATH(registrar.getRequestInterpreter("unknown interface"), "Assertion.*");
+    ASSERT_EQ(nullptr, registrar.getRequestInterpreter("unknown interface"));
 }
 
 

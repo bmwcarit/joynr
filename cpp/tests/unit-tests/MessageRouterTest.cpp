@@ -113,7 +113,8 @@ TYPED_TEST(MessageRouterTest, doNotAddMessageToQueue){
 
     // add destination address -> message should be routed
     auto httpAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(brokerUri, testHttp);
-    this->messageRouter->addNextHop(testHttp, httpAddress);
+    const bool isGloballyVisible = true;
+    this->messageRouter->addNextHop(testHttp, httpAddress, isGloballyVisible);
     // the message now has a known destination and should be directly routed
     this->mutableMessage.setRecipient(testHttp);
     std::shared_ptr<ImmutableMessage> immutableMessage2 = this->mutableMessage.getImmutableMessage();
@@ -127,7 +128,7 @@ TYPED_TEST(MessageRouterTest, doNotAddMessageToQueue){
 
     // add destination address -> message should be routed
     auto mqttAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, testMqtt);
-    this->messageRouter->addNextHop(testMqtt, mqttAddress);
+    this->messageRouter->addNextHop(testMqtt, mqttAddress, isGloballyVisible);
     // the message now has a known destination and should be directly routed
     this->mutableMessage.setRecipient(testMqtt);
     std::shared_ptr<ImmutableMessage> immutableMessage3 = this->mutableMessage.getImmutableMessage();
@@ -155,7 +156,8 @@ TYPED_TEST(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
 
     // add destination address -> message should be routed
     auto httpAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(brokerUri, testHttp);
-    this->messageRouter->addNextHop(testHttp, httpAddress);
+    const bool isGloballyVisible = true;
+    this->messageRouter->addNextHop(testHttp, httpAddress, isGloballyVisible);
     EXPECT_EQ(this->messageQueue->getQueueLength(), 0);
 
     this->mutableMessage.setRecipient(testMqtt);
@@ -164,7 +166,7 @@ TYPED_TEST(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded){
     EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
 
     auto mqttAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, testMqtt);
-    this->messageRouter->addNextHop(testMqtt, mqttAddress);
+    this->messageRouter->addNextHop(testMqtt, mqttAddress, isGloballyVisible);
     EXPECT_EQ(this->messageQueue->getQueueLength(), 0);
 }
 
@@ -182,8 +184,9 @@ TYPED_TEST(MessageRouterTest, routeMessageToHttpAddress) {
     const std::string destinationChannelId = "TEST_routeMessageToHttpAddress_channelId";
     const std::string messageEndPointUrl = "TEST_messageEndPointUrl";
     auto address = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(messageEndPointUrl, destinationChannelId);
+    const bool isGloballyVisible = true;
 
-    this->messageRouter->addNextHop(destinationParticipantId, address);
+    this->messageRouter->addNextHop(destinationParticipantId, address, isGloballyVisible);
     this->mutableMessage.setRecipient(destinationParticipantId);
 
     EXPECT_CALL(*(this->messagingStubFactory),
@@ -198,8 +201,9 @@ TYPED_TEST(MessageRouterTest, routeMessageToMqttAddress) {
     const std::string destinationChannelId = "TEST_routeMessageToMqttAddress_channelId";
     const std::string brokerUri = "brokerUri";
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, destinationChannelId);
+    const bool isGloballyVisible = true;
 
-    this->messageRouter->addNextHop(destinationParticipantId, address);
+    this->messageRouter->addNextHop(destinationParticipantId, address, isGloballyVisible);
     this->mutableMessage.setRecipient(destinationParticipantId);
 
     EXPECT_CALL(*(this->messagingStubFactory),
@@ -218,7 +222,8 @@ TYPED_TEST(MessageRouterTest, restoreRoutingTable) {
     this->messageRouter->loadRoutingTable(routingTablePersistenceFilename);
 
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
-    this->messageRouter->addProvisionedNextHop(participantId, address); // Saves routingTable to the persistence file.
+    const bool isGloballyVisible = true;
+    this->messageRouter->addProvisionedNextHop(participantId, address, isGloballyVisible); // Saves routingTable to the persistence file.
 
     // create a new MessageRouter
     this->messageRouter = this->createMessageRouter();

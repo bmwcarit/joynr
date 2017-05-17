@@ -131,16 +131,16 @@ void LocalCapabilitiesDirectory::cleanCaches()
 
 void LocalCapabilitiesDirectory::add(const types::DiscoveryEntry& discoveryEntry)
 {
-    bool isGlobal = discoveryEntry.getQos().getScope() == types::ProviderScope::GLOBAL;
+    const bool isGloballyVisible = isGlobal(discoveryEntry);
 
     // register locally
-    this->insertInCache(discoveryEntry, true, isGlobal);
+    this->insertInCache(discoveryEntry, true, isGloballyVisible);
 
     // Inform observers
     informObserversOnAdd(discoveryEntry);
 
     // register globally
-    if (isGlobal) {
+    if (isGloballyVisible) {
         types::GlobalDiscoveryEntry globalDiscoveryEntry(discoveryEntry.getProviderVersion(),
                                                          discoveryEntry.getDomain(),
                                                          discoveryEntry.getInterfaceName(),
@@ -558,6 +558,7 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
         std::size_t foundTypeNameKey = serializedAddress.find("\"_typeName\"");
         std::size_t foundTypeNameValue =
                 serializedAddress.find("\"joynr.system.RoutingTypes.MqttAddress\"");
+        const bool isGloballyVisible = isGlobal(currentEntry);
         if (boost::starts_with(serializedAddress, "{") && foundTypeNameKey != std::string::npos &&
             foundTypeNameValue != std::string::npos && foundTypeNameKey < foundTypeNameValue) {
             try {
@@ -565,7 +566,8 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
                 MqttAddress joynrAddress;
                 joynr::serializer::deserializeFromJson(joynrAddress, serializedAddress);
                 auto addressPtr = std::make_shared<MqttAddress>(joynrAddress);
-                messageRouter.addNextHop(currentEntry.getParticipantId(), addressPtr);
+                messageRouter.addNextHop(
+                        currentEntry.getParticipantId(), addressPtr, isGloballyVisible);
             } catch (const std::invalid_argument& e) {
                 JOYNR_LOG_FATAL(logger,
                                 "could not deserialize MqttAddress from {} - error: {}",
@@ -580,7 +582,8 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
                 joynr::serializer::deserializeFromJson(channelAddress, serializedAddress);
                 auto channelAddressPtr = std::make_shared<const ChannelAddress>(channelAddress);
 
-                messageRouter.addNextHop(currentEntry.getParticipantId(), channelAddressPtr);
+                messageRouter.addNextHop(
+                        currentEntry.getParticipantId(), channelAddressPtr, isGloballyVisible);
             } catch (const std::invalid_argument& e) {
                 JOYNR_LOG_FATAL(logger,
                                 "could not deserialize ChannelAddress from {} - error: {}",

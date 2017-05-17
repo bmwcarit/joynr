@@ -20,7 +20,6 @@ package io.joynr.proxy;
  */
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.routing.MessageRouter;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -28,29 +27,21 @@ import javax.inject.Inject;
 import com.google.common.collect.Sets;
 import com.google.inject.name.Named;
 
-import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.DiscoveryAsync;
-import joynr.system.RoutingTypes.Address;
 
 public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
 
     private final DiscoveryAsync localDiscoveryAggregator;
     private final ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
-    private final MessageRouter messageRouter;
-    private final Address libjoynrMessagingAddress;
     private final long maxMessagingTtl;
 
     @Inject
     public ProxyBuilderFactoryImpl(DiscoveryAsync localDiscoveryAggregator,
                                    ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
-                                   MessageRouter messageRouter,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS) long maxMessagingTtl,
-                                   @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address libjoynrMessagingAddress) {
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS) long maxMessagingTtl) {
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
-        this.messageRouter = messageRouter;
         this.maxMessagingTtl = maxMessagingTtl;
-        this.libjoynrMessagingAddress = libjoynrMessagingAddress;
     }
 
     @Override
@@ -64,8 +55,6 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
                                              domains,
                                              interfaceClass,
                                              proxyInvocationHandlerFactory,
-                                             messageRouter,
-                                             maxMessagingTtl,
-                                             libjoynrMessagingAddress);
+                                             maxMessagingTtl);
     }
 }

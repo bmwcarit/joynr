@@ -111,8 +111,11 @@ void MqttMessagingSkeleton::transmit(
             using system::RoutingTypes::MqttAddress;
             MqttAddress address;
             joynr::serializer::deserializeFromJson(address, replyTo);
-            messageRouter.addNextHop(
-                    message->getSender(), std::make_shared<const MqttAddress>(address));
+            // because the message is received via global transport, isGloballyVisible must be true
+            const bool isGloballyVisible = true;
+            messageRouter.addNextHop(message->getSender(),
+                                     std::make_shared<const MqttAddress>(address),
+                                     isGloballyVisible);
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger,
                             "could not deserialize MqttAddress from {} - error: {}",

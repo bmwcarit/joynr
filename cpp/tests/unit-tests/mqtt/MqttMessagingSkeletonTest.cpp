@@ -143,7 +143,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest) {
             Pointee(A<joynr::system::RoutingTypes::Address>()),
             pointerToMqttAddressWithChannelId(replyAddressSerialized)
         ),
-        _,_)
+       _,_,_)
     ).Times(1);
     std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
     EXPECT_CALL(mockMessageRouter, route(immutableMessage,_)).Times(1);
@@ -163,7 +163,7 @@ void MqttMessagingSkeletonTest::transmitCallsAddNextHop()
             Pointee(A<joynr::system::RoutingTypes::Address>()),
             pointerToMqttAddressWithChannelId(replyAddressSerialized)
         ),
-        _,_)
+        Eq(true),_,_)
     ).Times(1);
     auto onFailure = [](const exceptions::JoynrRuntimeException& e) {
         FAIL() << "onFailure called";
