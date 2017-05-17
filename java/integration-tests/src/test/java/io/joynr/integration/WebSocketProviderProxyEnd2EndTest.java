@@ -30,8 +30,8 @@ import com.google.inject.Module;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 import io.joynr.integration.util.DummyJoynrApplication;
-import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
 import io.joynr.messaging.websocket.WebSocketEndpointFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
@@ -46,10 +46,8 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.tests.testProxy;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("HTTP does not support binary messages (SMRF)")
 public class WebSocketProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
     private static final long CONST_DEFAULT_TEST_TIMEOUT = 10000;
@@ -84,14 +82,13 @@ public class WebSocketProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2
         ccConfig.putAll(baseTestConfig);
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
         injectorCC = new JoynrInjectorFactory(ccConfig, Modules.override(new CCWebSocketRuntimeModule())
-                                                               .with(new AtmosphereMessagingModule(),
-                                                                     new AbstractModule() {
-                                                                         @Override
-                                                                         protected void configure() {
-                                                                             bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
-                                                                                                .toInstance(Boolean.TRUE);
-                                                                         }
-                                                                     })).getInjector();
+                                                               .with(new MqttPahoModule(), new AbstractModule() {
+                                                                   @Override
+                                                                   protected void configure() {
+                                                                       bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
+                                                                                          .toInstance(Boolean.TRUE);
+                                                                   }
+                                                               })).getInjector();
         return injectorCC.getInstance(JoynrRuntime.class);
     }
 
