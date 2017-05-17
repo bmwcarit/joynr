@@ -189,6 +189,7 @@ public:
     /*
      * Public methods specific to CcMessageRouter
      */
+    bool publishToGlobal(const JoynrMessage& message) final;
     void setAccessController(std::shared_ptr<IAccessController> accessController);
     void saveMulticastReceiverDirectory() const;
     void loadMulticastReceiverDirectory(std::string filename);

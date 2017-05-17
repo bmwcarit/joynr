@@ -121,7 +121,8 @@ AbstractMessageRouter::getDestinationAddresses(const JoynrMessage& message)
         addresses = lookupAddresses(multicastReceivers);
 
         // add global transport address if message is NOT received from global
-        if (!message.isReceivedFromGlobal() && addressCalculator) {
+        // AND provider is globally visible
+        if (!message.isReceivedFromGlobal() && addressCalculator && publishToGlobal(message)) {
             std::shared_ptr<const joynr::system::RoutingTypes::Address> globalTransport =
                     addressCalculator->compute(message);
             if (globalTransport) {

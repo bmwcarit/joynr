@@ -323,6 +323,16 @@ void CcMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
     }
 }
 
+bool CcMessageRouter::publishToGlobal(const JoynrMessage& message)
+{
+    const std::string& participantId = message.getHeaderFrom();
+    const auto routingEntry = routingTable.lookup(participantId);
+    if (routingEntry && routingEntry->isGloballyVisible) {
+        return true;
+    }
+    return false;
+}
+
 // inherited from joynr::IMessageRouter and joynr::system::RoutingProvider
 void CcMessageRouter::removeNextHop(
         const std::string& participantId,

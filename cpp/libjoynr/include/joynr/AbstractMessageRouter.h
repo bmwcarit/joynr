@@ -115,6 +115,7 @@ protected:
             int maxThreads = 1,
             std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
+    virtual bool publishToGlobal(const JoynrMessage& message) = 0;
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
     getDestinationAddresses(const JoynrMessage& message);
 

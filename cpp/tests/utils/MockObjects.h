@@ -373,6 +373,8 @@ public:
 
     MOCK_METHOD2(route, void(joynr::JoynrMessage& message, std::uint32_t tryCount));
 
+    MOCK_METHOD1(publishToGlobal, bool(const joynr::JoynrMessage& message));
+
     MOCK_METHOD6(registerMulticastReceiver, void(const std::string& multicastId,
                                                  const std::string& subscriberParticipantId,
                                                  const std::string& providerParticipantId,

@@ -125,6 +125,7 @@ public:
      * Method specific to LibJoynrMessageRouter
      */
     void setParentRouter(std::unique_ptr<joynr::system::RoutingProxy> parentRouter);
+    bool publishToGlobal(const JoynrMessage& message) final;
 
     /*
      * Method specific to LibJoynrMessageRouter,

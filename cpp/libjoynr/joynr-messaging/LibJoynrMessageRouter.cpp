@@ -214,6 +214,14 @@ void LibJoynrMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
     }
 }
 
+bool LibJoynrMessageRouter::publishToGlobal(const JoynrMessage& message)
+{
+    std::ignore = message;
+
+    // LibJoynr always has to publish multicast messages to its cluster controller
+    return true;
+}
+
 bool LibJoynrMessageRouter::isParentMessageRouterSet()
 {
     if (!parentRouter) {
