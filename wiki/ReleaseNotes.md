@@ -5,6 +5,8 @@
   a byte array instead of a string.
 * **[Java]** JoynrMessageProcessor uses the new SMRF message types: MutableMessage for outgoing messages
   and ImmutableMessage for incoming messages.
+## Other changes
+* **[Java]** HTTP communication is not supported at the moment
 
 # joynr 0.25.2
 
