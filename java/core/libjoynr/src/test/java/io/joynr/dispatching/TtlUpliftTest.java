@@ -500,7 +500,7 @@ public class TtlUpliftTest {
 
     @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
-    public void testAttributeSubscriptionWitTtlUplift() throws Exception {
+    public void testAttributeSubscriptionWithTtlUplift() throws Exception {
         long validityMs = 300;
         long publicationTtlMs = 1000;
 
@@ -524,7 +524,7 @@ public class TtlUpliftTest {
 
     @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
-    public void testAttributeSubscriptionWitTtlUpliftWithNoExpiryDate() throws Exception {
+    public void testAttributeSubscriptionWithTtlUpliftWithNoExpiryDate() throws Exception {
         long validityMs = 300;
         long publicationTtlMs = 1000;
 
@@ -548,7 +548,7 @@ public class TtlUpliftTest {
 
     @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
-    public void testAttributeSubscriptionWitTtlUpliftWithLargeExpiryDate() throws Exception {
+    public void testAttributeSubscriptionWithTtlUpliftWithLargeExpiryDate() throws Exception {
         long validityMs = 300;
         long publicationTtlMs = 1000;
 
@@ -656,7 +656,7 @@ public class TtlUpliftTest {
 
     @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
-    public void testBroadcastSubscriptionWitTtlUplift() throws Exception {
+    public void testBroadcastSubscriptionWithTtlUplift() throws Exception {
         long validityMs = 300;
         long publicationTtlMs = 1000;
 
@@ -680,7 +680,7 @@ public class TtlUpliftTest {
 
     @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
-    public void testBroadcastSubscriptionWitTtlUpliftWithNoExpiryDate() throws Exception {
+    public void testBroadcastSubscriptionWithTtlUpliftWithNoExpiryDate() throws Exception {
         long validityMs = 300;
         long publicationTtlMs = 1000;
 
@@ -704,7 +704,7 @@ public class TtlUpliftTest {
 
     @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
-    public void testBroadcastSubscriptionWitTtlUpliftWithLargeExpiryDate() throws Exception {
+    public void testBroadcastSubscriptionWithTtlUpliftWithLargeExpiryDate() throws Exception {
         long validityMs = 300;
         long publicationTtlMs = 1000;
 
