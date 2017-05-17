@@ -292,7 +292,7 @@ private:
                                const std::string& toParticipantId,
                                const std::int64_t& expiryDateMs,
                                const std::string& subscriptionId,
-                               const std::shared_ptr<exceptions::SubscriptionException>& error);
+                               std::shared_ptr<exceptions::SubscriptionException> error);
     bool publicationExists(const std::string& subscriptionId) const;
     void createPublishRunnable(const std::string& subscriptionId);
     void saveAttributeSubscriptionRequestsMap();

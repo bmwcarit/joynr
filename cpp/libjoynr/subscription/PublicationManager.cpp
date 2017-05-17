@@ -196,11 +196,11 @@ void PublicationManager::sendSubscriptionReply(
         const std::string& toParticipantId,
         const std::int64_t& expiryDateMs,
         const std::string& subscriptionId,
-        const std::shared_ptr<exceptions::SubscriptionException>& error)
+        std::shared_ptr<exceptions::SubscriptionException> error)
 {
     SubscriptionReply subscriptionReply;
     subscriptionReply.setSubscriptionId(subscriptionId);
-    subscriptionReply.setError(error);
+    subscriptionReply.setError(std::move(error));
     sendSubscriptionReply(
             publicationSender, fromParticipantId, toParticipantId, expiryDateMs, subscriptionReply);
 }
