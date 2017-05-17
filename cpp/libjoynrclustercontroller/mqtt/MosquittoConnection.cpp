@@ -351,15 +351,15 @@ void MosquittoConnection::on_subscribe(int mid, int qos_count, const int* grante
 
 void MosquittoConnection::on_message(const mosquitto_message* message)
 {
-    std::uint8_t* data = static_cast<std::uint8_t*>(message->payload);
-    smrf::ByteVector rawMessage(data, data + message->payloadlen);
-
-    if (onMessageReceived) {
-        onMessageReceived(std::move(rawMessage));
-    } else {
+    if (!onMessageReceived) {
         JOYNR_LOG_ERROR(
                 logger, "Discarding received message, since onMessageReceived callback is empty.");
+        return;
     }
+
+    std::uint8_t* data = static_cast<std::uint8_t*>(message->payload);
+    smrf::ByteVector rawMessage(data, data + message->payloadlen);
+    onMessageReceived(std::move(rawMessage));
 }
 
 void MosquittoConnection::on_publish(int mid)
