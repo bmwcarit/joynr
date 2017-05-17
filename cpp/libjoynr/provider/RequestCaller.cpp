@@ -17,7 +17,6 @@
  * #L%
  */
 #include "joynr/RequestCaller.h"
-#include "iostream"
 
 namespace joynr
 {
@@ -26,7 +25,11 @@ RequestCaller::RequestCaller(const std::string& interfaceName) : interfaceName(i
 {
 }
 
-std::string RequestCaller::getInterfaceName()
+RequestCaller::RequestCaller(std::string&& interfaceName) : interfaceName(std::move(interfaceName))
+{
+}
+
+const std::string& RequestCaller::getInterfaceName() const
 {
     return interfaceName;
 }

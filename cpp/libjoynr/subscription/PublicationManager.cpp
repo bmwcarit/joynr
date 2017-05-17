@@ -221,7 +221,7 @@ void PublicationManager::add(const std::string& proxyParticipantId,
 
 void PublicationManager::addSubscriptionCleanupIfNecessary(std::shared_ptr<Publication> publication,
                                                            std::shared_ptr<SubscriptionQos> qos,
-                                                           std::string& subscriptionId)
+                                                           const std::string& subscriptionId)
 {
     if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE()) {
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -247,7 +247,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         std::shared_ptr<RequestCaller> requestCaller,
         IPublicationSender* publicationSender)
 {
-    std::string subscriptionId = requestInfo->getSubscriptionId();
+    const std::string& subscriptionId = requestInfo->getSubscriptionId();
     auto publication = std::make_shared<Publication>(publicationSender, requestCaller);
 
     if (publicationExists(subscriptionId)) {
@@ -399,7 +399,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         std::shared_ptr<RequestCaller> requestCaller,
         IPublicationSender* publicationSender)
 {
-    std::string subscriptionId = requestInfo->getSubscriptionId();
+    const std::string& subscriptionId = requestInfo->getSubscriptionId();
 
     auto publication = std::make_shared<Publication>(publicationSender, requestCaller);
 

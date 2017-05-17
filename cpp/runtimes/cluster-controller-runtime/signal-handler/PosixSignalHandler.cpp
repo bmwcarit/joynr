@@ -32,7 +32,7 @@ std::weak_ptr<IClusterControllerSignalHandler> PosixSignalHandler::clusterContro
 void PosixSignalHandler::setHandleAndRegisterForSignals(
         std::weak_ptr<IClusterControllerSignalHandler> clusterControllerRuntime)
 {
-    clusterControllerPtr = clusterControllerRuntime;
+    clusterControllerPtr = std::move(clusterControllerRuntime);
 
     std::signal(SIGTERM, handleSignal);
     std::signal(SIGUSR1, handleSignal);

@@ -137,7 +137,8 @@ void Dispatcher::handleRequestReceived(const ImmutableMessage& message)
                 receiverId);
         return;
     }
-    std::string interfaceName = caller->getInterfaceName();
+
+    const std::string& interfaceName = caller->getInterfaceName();
 
     // Get the request interpreter that has been registered with this interface name
     std::shared_ptr<IRequestInterpreter> requestInterpreter =
@@ -215,7 +216,8 @@ void Dispatcher::handleOneWayRequestReceived(const ImmutableMessage& message)
                 receiverId);
         return;
     }
-    std::string interfaceName = caller->getInterfaceName();
+
+    const std::string& interfaceName = caller->getInterfaceName();
 
     // Get the request interpreter that has been registered with this interface name
     std::shared_ptr<IRequestInterpreter> requestInterpreter =

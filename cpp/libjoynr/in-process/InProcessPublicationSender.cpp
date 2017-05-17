@@ -53,7 +53,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
       * just call the InProcessDispatcher!
       */
 
-    const std::string subscriptionId = subscriptionPublication.getSubscriptionId();
+    const std::string& subscriptionId = subscriptionPublication.getSubscriptionId();
     JOYNR_LOG_DEBUG(logger, "Sending publication. id={}", subscriptionId);
     assert(subscriptionManager != nullptr);
     subscriptionManager->touchSubscriptionState(subscriptionId);

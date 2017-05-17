@@ -131,7 +131,7 @@ AbstractMessageRouter::getDestinationAddresses(const ImmutableMessage& message)
             }
         }
     } else {
-        const std::string destinationPartId = message.getRecipient();
+        const std::string& destinationPartId = message.getRecipient();
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
         const auto routingEntry = routingTable.lookup(destinationPartId);
         if (routingEntry) {

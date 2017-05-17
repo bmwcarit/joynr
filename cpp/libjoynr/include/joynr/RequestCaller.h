@@ -35,9 +35,11 @@ class JOYNR_EXPORT RequestCaller
 {
 public:
     explicit RequestCaller(const std::string& interfaceName);
+    explicit RequestCaller(std::string&& interfaceName);
+
     virtual ~RequestCaller() = default;
 
-    std::string getInterfaceName();
+    const std::string& getInterfaceName() const;
 
     // Get and set the attribute listeners listening on the provider
     virtual void registerAttributeListener(const std::string& attributeName,

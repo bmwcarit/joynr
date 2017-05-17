@@ -32,7 +32,7 @@ const std::string& IMockProviderInterface::INTERFACE_NAME()
     return INTERFACE_NAME;
 }
 
-std::string MockProvider::getInterfaceName() const
+const std::string& MockProvider::getInterfaceName() const
 {
     return INTERFACE_NAME();
 }

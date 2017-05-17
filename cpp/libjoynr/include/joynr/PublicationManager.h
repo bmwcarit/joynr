@@ -346,7 +346,7 @@ private:
 
     void addSubscriptionCleanupIfNecessary(std::shared_ptr<Publication> publication,
                                            std::shared_ptr<SubscriptionQos> qos,
-                                           std::string& subscriptionId);
+                                           const std::string& subscriptionId);
 
     void handleAttributeSubscriptionRequest(
             std::shared_ptr<SubscriptionRequestInformation> requestInfo,

@@ -666,7 +666,7 @@ public:
     MOCK_CONST_METHOD0(getProviderQos, joynr::types::ProviderQos());
     MOCK_CONST_METHOD0(getParticipantId, std::string());
     ~MockProvider() override = default;
-    std::string getInterfaceName() const override;
+    const std::string& getInterfaceName() const override;
 };
 
 namespace joynr

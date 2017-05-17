@@ -81,7 +81,7 @@ public:
 	 * @brief Get the interface name
 	 * @return The name of the interface
 	 */
-	std::string getInterfaceName() const override;
+	const std::string& getInterfaceName() const override;
 «IF !francaIntf.attributes.isNullOrEmpty || !francaIntf.broadcasts.isNullOrEmpty»
 
     «FOR broadcast: francaIntf.broadcasts»
