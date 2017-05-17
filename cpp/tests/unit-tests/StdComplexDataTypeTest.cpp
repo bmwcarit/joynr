@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-
-#include "PrettyPrint.h"
 #include <string>
 #include <unordered_set>
 
+#include <gtest/gtest.h>
+
+#include "joynr/ByteBuffer.h"
 #include "joynr/types/TestTypes/Word.h"
 #include "joynr/types/TestTypes/Vowel.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
@@ -32,6 +32,8 @@
 #include "joynr/tests/testTypes/ComplexTestType.h"
 #include "joynr/tests/StructInsideInterfaceWithoutVersion.h"
 #include "joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion.h"
+
+#include "tests/PrettyPrint.h"
 
 using namespace joynr::types;
 
@@ -126,7 +128,7 @@ protected:
     float tFloat;
     std::string tString;
     bool tBoolean;
-    std::vector<std::uint8_t> tByteBuffer;
+    joynr::ByteBuffer tByteBuffer;
     std::vector<std::uint8_t>  tUInt8Array;
     TestTypes::TEnum::Enum tEnum;
     std::vector<joynr::types::TestTypes::TEnum::Enum>  tEnumArray;

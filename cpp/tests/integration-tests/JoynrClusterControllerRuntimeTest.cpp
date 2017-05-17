@@ -16,15 +16,15 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/Settings.h"
@@ -37,7 +37,9 @@
 #include "joynr/tests/testProxy.h"
 #include "joynr/Semaphore.h"
 #include "joynr/serializer/Serializer.h"
-#include "JoynrTest.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;

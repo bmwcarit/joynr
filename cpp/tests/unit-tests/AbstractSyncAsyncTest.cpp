@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-
 #include <string>
 
 #include <gtest/gtest.h>
@@ -31,11 +30,12 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/IReplyCaller.h"
-#include "tests/utils/MockObjects.h"
-#include "utils/MockCallback.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/serializer/Serializer.h"
+
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/MockCallback.h"
 
 using ::testing::A;
 using ::testing::_;

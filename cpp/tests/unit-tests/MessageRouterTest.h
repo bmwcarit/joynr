@@ -24,7 +24,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
+#include "tests/JoynrTest.h"
 
 #include "joynr/CcMessageRouter.h"
 #include "joynr/ClusterControllerSettings.h"

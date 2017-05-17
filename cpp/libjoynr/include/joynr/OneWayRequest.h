@@ -41,9 +41,11 @@ public:
 
     const std::string& getMethodName() const;
     void setMethodName(const std::string& methodName);
+    void setMethodName(std::string&& methodName);
 
-    std::vector<std::string> getParamDatatypes() const;
-    void setParamDatatypes(std::vector<std::string> paramDatatypes);
+    const std::vector<std::string>& getParamDatatypes() const;
+    void setParamDatatypes(const std::vector<std::string>& paramDatatypes);
+    void setParamDatatypes(std::vector<std::string>&& paramDatatypes);
 
     template <typename... Ts>
     void setParams(Ts&&... values)

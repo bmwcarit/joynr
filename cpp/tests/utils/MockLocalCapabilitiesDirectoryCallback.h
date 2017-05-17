@@ -20,6 +20,7 @@
 #define MOCKCAPABILITIESRESULTCALLBACK_H_
 
 #include <vector>
+
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/Semaphore.h"
 

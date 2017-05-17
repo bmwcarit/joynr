@@ -25,6 +25,7 @@
 	<groupId>io.joynr.java</groupId>
 	<artifactId>jeeintegration</artifactId>
 	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
 
 	<parent>
 		<groupId>io.joynr</groupId>

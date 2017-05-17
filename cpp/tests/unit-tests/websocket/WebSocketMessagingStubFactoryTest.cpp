@@ -16,9 +16,9 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-
 #include <memory>
+
+#include <gtest/gtest.h>
 
 #include "joynr/IMessagingStub.h"
 #include "joynr/MessagingStubFactory.h"
@@ -32,7 +32,7 @@
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 
-#include "utils/MockObjects.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 

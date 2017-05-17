@@ -75,7 +75,9 @@ void «interfaceName»RequestInterpreter::execute(
 		std::shared_ptr<«interfaceName»RequestCaller> «requestCallerName» =
 				std::dynamic_pointer_cast<«interfaceName»RequestCaller>(requestCaller);
 
-		const std::vector<std::string>& paramTypes = request.getParamDatatypes();
+		«IF francaIntf.hasMethodWithArguments || francaIntf.hasWriteAttribute»
+			const std::vector<std::string>& paramTypes = request.getParamDatatypes();
+		«ENDIF»
 		const std::string& methodName = request.getMethodName();
 
 		// execute operation

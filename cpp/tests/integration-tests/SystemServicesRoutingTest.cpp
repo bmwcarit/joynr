@@ -23,12 +23,13 @@
 #include <gmock/gmock.h>
 
 #include "joynr/JoynrClusterControllerRuntime.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/serializer/Serializer.h"
-#include "JoynrTest.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 

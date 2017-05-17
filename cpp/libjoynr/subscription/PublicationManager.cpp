@@ -705,11 +705,11 @@ void PublicationManager::removeAttributePublication(const std::string& subscript
 {
     JOYNR_LOG_TRACE(logger, "removePublication: {}", subscriptionId);
 
-    std::shared_ptr<Publication> publication(publications.take(subscriptionId));
-    std::shared_ptr<SubscriptionRequestInformation> request(
-            subscriptionId2SubscriptionRequest.take(subscriptionId));
+    std::shared_ptr<Publication> publication = publications.take(subscriptionId);
+    std::shared_ptr<SubscriptionRequestInformation> request =
+            subscriptionId2SubscriptionRequest.take(subscriptionId);
 
-    if (publication != nullptr && request != nullptr) {
+    if (publication && request) {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Delete the onChange publication if needed
         removeOnChangePublication(subscriptionId, request, publication);
@@ -725,12 +725,12 @@ void PublicationManager::removeBroadcastPublication(const std::string& subscript
 {
     JOYNR_LOG_TRACE(logger, "removeBroadcast: {}", subscriptionId);
 
-    std::shared_ptr<Publication> publication(publications.take(subscriptionId));
+    std::shared_ptr<Publication> publication = publications.take(subscriptionId);
 
-    std::shared_ptr<BroadcastSubscriptionRequestInformation> request(
-            subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId));
+    std::shared_ptr<BroadcastSubscriptionRequestInformation> request =
+            subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId);
 
-    if (publication != nullptr && request != nullptr) {
+    if (publication && request) {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Remove listener
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
@@ -751,6 +751,8 @@ void PublicationManager::removeOnChangePublication(
         std::shared_ptr<SubscriptionRequestInformation> request,
         std::shared_ptr<Publication> publication)
 {
+    assert(request);
+    assert(publication);
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     JOYNR_LOG_TRACE(logger, "Removing onChange publication for id = {}", subscriptionId);
     // to silence unused-variable compiler warnings
@@ -769,6 +771,7 @@ void PublicationManager::removeOnChangePublication(
 // This function assumes a write lock is alrady held for the publication}
 void PublicationManager::removePublicationEndRunnable(std::shared_ptr<Publication> publication)
 {
+    assert(publication);
     if (publication->publicationEndRunnableHandle != DelayedScheduler::INVALID_RUNNABLE_HANDLE &&
         !isShuttingDown()) {
         JOYNR_LOG_TRACE(logger,
@@ -788,6 +791,7 @@ bool PublicationManager::isShuttingDown()
 std::int64_t PublicationManager::getPublicationTtlMs(
         std::shared_ptr<SubscriptionRequest> subscriptionRequest) const
 {
+    assert(subscriptionRequest);
     // Get publication ttl only if subscriptionQos is a UnicastSubscritpionQos
     auto qos = subscriptionRequest->getQos();
     if (auto unicastQos = std::dynamic_pointer_cast<UnicastSubscriptionQos>(qos)) {
@@ -804,6 +808,10 @@ void PublicationManager::sendPublicationError(
         std::shared_ptr<SubscriptionRequest> request,
         std::shared_ptr<exceptions::JoynrRuntimeException> exception)
 {
+    assert(publication);
+    assert(subscriptionInformation);
+    assert(request);
+    assert(exception);
     JOYNR_LOG_TRACE(logger, "sending subscription error");
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
@@ -819,6 +827,9 @@ void PublicationManager::sendSubscriptionPublication(
         std::shared_ptr<SubscriptionRequest> request,
         SubscriptionPublication&& subscriptionPublication)
 {
+    assert(publication);
+    assert(subscriptionInformation);
+    assert(request);
 
     MessagingQos mQos;
 
@@ -851,6 +862,10 @@ void PublicationManager::sendPublication(
         std::shared_ptr<SubscriptionRequest> request,
         BaseReply&& response)
 {
+    assert(publication);
+    assert(subscriptionInformation);
+    assert(request);
+
     JOYNR_LOG_TRACE(logger, "sending subscription reply");
     SubscriptionPublication subscriptionPublication(std::move(response));
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
@@ -863,15 +878,14 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
 {
     JOYNR_LOG_TRACE(logger, "pollSubscription {}", subscriptionId);
 
-    if (isShuttingDown() || !publicationExists(subscriptionId) ||
-        !subscriptionId2SubscriptionRequest.contains(subscriptionId)) {
+    if (isShuttingDown()) {
         return;
     }
 
     // Get the subscription details
-    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
-    std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2SubscriptionRequest.value(subscriptionId));
+    std::shared_ptr<Publication> publication = publications.value(subscriptionId);
+    std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest =
+            subscriptionId2SubscriptionRequest.value(subscriptionId);
 
     if (publication && subscriptionRequest) {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -1049,10 +1063,11 @@ void PublicationManager::PublicationEndRunnable::shutdown()
 
 void PublicationManager::PublicationEndRunnable::run()
 {
-    std::shared_ptr<Publication> publication(publicationManager.publications.value(subscriptionId));
+    std::shared_ptr<Publication> publication =
+            publicationManager.publications.value(subscriptionId);
     publicationManager.removePublication(subscriptionId);
 
-    if (publication != nullptr) {
+    if (publication) {
         std::lock_guard<std::recursive_mutex> lock((publication->mutex));
         publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
     }

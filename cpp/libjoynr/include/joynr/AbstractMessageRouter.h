@@ -34,10 +34,10 @@
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/ReadWriteLock.h"
 #include "joynr/Runnable.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
-#include "joynr/system/RoutingAbstractProvider.h"
 
 namespace boost
 {

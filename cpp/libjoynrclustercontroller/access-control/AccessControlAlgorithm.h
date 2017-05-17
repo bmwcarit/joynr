@@ -34,7 +34,9 @@ namespace infrastructure
 namespace DacTypes
 {
 class MasterAccessControlEntry;
+class MasterRegistrationControlEntry;
 class OwnerAccessControlEntry;
+class OwnerRegistrationControlEntry;
 } // namespace DacTypes
 } // namespace infrastructure
 
@@ -75,11 +77,12 @@ public:
      * @return Always Permission::YES
      */
     virtual infrastructure::DacTypes::Permission::Enum getProviderPermission(
-            const boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>&
+            const boost::optional<infrastructure::DacTypes::MasterRegistrationControlEntry>&
                     masterOptional,
-            const boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>&
+            const boost::optional<infrastructure::DacTypes::MasterRegistrationControlEntry>&
                     mediatorOptional,
-            const boost::optional<infrastructure::DacTypes::OwnerAccessControlEntry>& ownerOptional,
+            const boost::optional<infrastructure::DacTypes::OwnerRegistrationControlEntry>&
+                    ownerOptional,
             infrastructure::DacTypes::TrustLevel::Enum trustLevel);
 
 private:
@@ -92,6 +95,16 @@ private:
             const boost::optional<infrastructure::DacTypes::MasterAccessControlEntry>&
                     mediatorOptional,
             const boost::optional<infrastructure::DacTypes::OwnerAccessControlEntry>& ownerOptional,
+            infrastructure::DacTypes::TrustLevel::Enum trustLevel);
+
+    infrastructure::DacTypes::Permission::Enum getPermission(
+            PermissionType permissionType,
+            const boost::optional<infrastructure::DacTypes::MasterRegistrationControlEntry>&
+                    masterOptional,
+            const boost::optional<infrastructure::DacTypes::MasterRegistrationControlEntry>&
+                    mediatorOptional,
+            const boost::optional<infrastructure::DacTypes::OwnerRegistrationControlEntry>&
+                    ownerOptional,
             infrastructure::DacTypes::TrustLevel::Enum trustLevel);
 };
 

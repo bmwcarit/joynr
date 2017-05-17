@@ -16,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-
-#include "gtest/gtest.h"
-#include "joynr/Url.h"
-
 #include <vector>
+
+#include <gtest/gtest.h>
+
+#include "joynr/Url.h"
 
 using namespace joynr;
 

@@ -24,15 +24,17 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "tests/utils/MockObjects.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
-#include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/Future.h"
 #include "joynr/Util.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
-#include "utils/TestLibJoynrWebSocketRuntime.h"
+
+#include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using namespace ::testing;
 using namespace joynr;

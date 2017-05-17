@@ -414,17 +414,15 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
     JOYNR_LOG_DEBUG(logger, "attributeValueChanged for onChange subscription {}", subscriptionId);
 
     // See if the subscription is still valid
-    if (!publicationExists(subscriptionId)) {
+    std::shared_ptr<Publication> publication = publications.value(subscriptionId);
+    std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest =
+            subscriptionId2SubscriptionRequest.value(subscriptionId);
+    if (!publication || !subscriptionRequest) {
         JOYNR_LOG_ERROR(logger,
                         "attributeValueChanged called for non-existing subscription {}",
                         subscriptionId);
         return;
     }
-
-    std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2SubscriptionRequest.value(subscriptionId));
-
-    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -454,9 +452,8 @@ void PublicationManager::broadcastOccurred(const std::string& broadcastName,
                                            const Ts&... values)
 {
     MulticastPublication publication;
-    std::string multicastID =
-            util::createMulticastId(providerParticipantId, broadcastName, partitions);
-    publication.setMulticastId(multicastID);
+    publication.setMulticastId(
+            util::createMulticastId(providerParticipantId, broadcastName, partitions));
     publication.setResponse(values...);
     MessagingQos mQos;
     messageSender->sendMulticast(providerParticipantId, publication, mQos);
@@ -470,17 +467,16 @@ void PublicationManager::broadcastOccurred(const std::string& subscriptionId, co
                     subscriptionId,
                     sizeof...(Ts));
 
+    std::shared_ptr<Publication> publication = publications.value(subscriptionId);
+    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest =
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
     // See if the subscription is still valid
-    if (!publicationExists(subscriptionId)) {
+    if (!publication || !subscriptionRequest) {
         JOYNR_LOG_ERROR(logger,
                         "broadcastOccurred called for non-existing subscription {}",
                         subscriptionId);
         return;
     }
-
-    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
-    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -523,17 +519,17 @@ void PublicationManager::selectiveBroadcastOccurred(
                     subscriptionId,
                     sizeof...(Ts));
 
+    std::shared_ptr<Publication> publication = publications.value(subscriptionId);
+    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest =
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
+
     // See if the subscription is still valid
-    if (!publicationExists(subscriptionId)) {
+    if (!publication || !subscriptionRequest) {
         JOYNR_LOG_ERROR(logger,
                         "broadcastOccurred called for non-existing subscription {}",
                         subscriptionId);
         return;
     }
-
-    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
-    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -577,8 +573,10 @@ bool PublicationManager::processFilterChain(
 {
     bool success = true;
 
-    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
+    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest =
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
+
+    assert(subscriptionRequest);
 
     const boost::optional<BroadcastFilterParameters>& filterParameters =
             subscriptionRequest->getFilterParameters();

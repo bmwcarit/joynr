@@ -63,13 +63,13 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             TrustLevel::Enum trustLevel,
-            std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
+            std::shared_ptr<LocalDomainAccessController::IGetPermissionCallback> callback
     ) {
         std::ignore = userId;
         std::ignore = domain;
         std::ignore = interfaceName;
         std::ignore = trustLevel;
-        callback->consumerPermission(permission);
+        callback->permission(permission);
     }
 
     void operationNeeded(
@@ -77,7 +77,7 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             TrustLevel::Enum trustLevel,
-            std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
+            std::shared_ptr<LocalDomainAccessController::IGetPermissionCallback> callback
     ) {
         std::ignore = userId;
         std::ignore = domain;
@@ -152,6 +152,9 @@ public:
                 TEST_PUBLICKEYID,
                 false
         );
+    }
+
+    void prepareConsumerTest() {
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,
                 lookup(toParticipantId,
@@ -199,6 +202,7 @@ const std::string AccessControllerTest::TEST_PUBLICKEYID("publicKeyId");
 //----- Tests ------------------------------------------------------------------
 
 TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl) {
+    prepareConsumerTest();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
     EXPECT_CALL(
             localDomainAccessControllerMock,
@@ -217,6 +221,7 @@ TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl) {
 }
 
 TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
+    prepareConsumerTest();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
     EXPECT_CALL(
             localDomainAccessControllerMock,
@@ -249,6 +254,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
 }
 
 TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessage) {
+    prepareConsumerTest();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
     EXPECT_CALL(
             localDomainAccessControllerMock,
@@ -269,3 +275,28 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
     );
 }
 
+TEST_F(AccessControllerTest, hasProviderPermission) {
+    Permission::Enum permissionYes = Permission::YES;
+    DefaultValue<Permission::Enum>::Set(permissionYes);
+    EXPECT_CALL(
+            localDomainAccessControllerMock,
+            getProviderPermission(_, _, _, _)
+    )
+            .Times(1)
+            .WillOnce(Return(permissionYes));
+    bool retval = accessController.hasProviderPermission(DUMMY_USERID, TrustLevel::HIGH, TEST_DOMAIN, TEST_INTERFACE);
+    EXPECT_TRUE(retval);
+}
+
+TEST_F(AccessControllerTest, hasNoProviderPermission) {
+    Permission::Enum permissionNo = Permission::NO;
+    DefaultValue<Permission::Enum>::Set(permissionNo);
+    EXPECT_CALL(
+            localDomainAccessControllerMock,
+            getProviderPermission(_, _, _, _)
+    )
+            .Times(1)
+            .WillOnce(Return(permissionNo));
+    bool retval = accessController.hasProviderPermission(DUMMY_USERID, TrustLevel::HIGH, TEST_DOMAIN, TEST_INTERFACE);
+    EXPECT_FALSE(retval);
+}

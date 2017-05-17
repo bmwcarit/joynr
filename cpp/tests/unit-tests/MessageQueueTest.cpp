@@ -16,15 +16,14 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
-
-#include "joynr/PrivateCopyAssign.h"
-
-#include "joynr/MessageQueue.h"
-
 #include <chrono>
 #include <cstdint>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/MessageQueue.h"
 
 using namespace joynr;
 

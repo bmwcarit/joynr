@@ -16,10 +16,12 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-#include "joynr/DispatcherUtils.h"
 #include <chrono>
 #include <cstdint>
+
+#include <gtest/gtest.h>
+
+#include "joynr/DispatcherUtils.h"
 
 using namespace joynr;
 

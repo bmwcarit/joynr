@@ -19,18 +19,20 @@
 #ifndef LIBJOYNR_MOCKOBJECTS_H_
 #define LIBJOYNR_MOCKOBJECTS_H_
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <memory>
 #include <numeric>
 #include <string>
 #include <tuple>
 #include <vector>
-#include "PrettyPrint.h"
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/ISubscriptionListener.h"
+
+#include "tests/PrettyPrint.h"
 
 using ::testing::A;
 using ::testing::_;

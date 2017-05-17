@@ -47,11 +47,13 @@ public:
     virtual ~SubscriptionRequest() = default;
     bool operator==(const SubscriptionRequest& subscriptionRequest) const;
 
-    std::string getSubscriptionId() const;
+    const std::string& getSubscriptionId() const;
     void setSubscriptionId(const std::string& id);
+    void setSubscriptionId(std::string&& id);
 
-    std::string getSubscribeToName() const;
+    const std::string& getSubscribeToName() const;
     void setSubscribeToName(const std::string& subscribedToName);
+    void setSubscribeToName(std::string&& subscribedToName);
 
     std::string toString() const;
 

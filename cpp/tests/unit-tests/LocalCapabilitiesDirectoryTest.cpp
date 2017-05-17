@@ -25,17 +25,12 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
-
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "tests/utils/MockObjects.h"
-#include "tests/utils/MockCallback.h"
 #include "joynr/Logger.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
@@ -43,6 +38,11 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/PrivateCopyAssign.h"
+
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/MockCallback.h"
+#include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
+#include "tests/JoynrTest.h"
 
 using ::testing::Property;
 using ::testing::WhenDynamicCastTo;

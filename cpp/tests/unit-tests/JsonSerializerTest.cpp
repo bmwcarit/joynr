@@ -24,8 +24,6 @@
 #include <gtest/gtest.h>
 #include <boost/algorithm/string/predicate.hpp>
 
-#include <PrettyPrint.h>
-#include "JoynrTest.h"
 #include "joynr/Util.h"
 #include "joynr/types/TestTypes/TEnum.h"
 #include "joynr/types/TestTypes/TStruct.h"
@@ -51,9 +49,10 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/Directory.h"
-
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 
+#include "tests/PrettyPrint.h"
+#include "tests/JoynrTest.h"
 
 using namespace joynr;
 

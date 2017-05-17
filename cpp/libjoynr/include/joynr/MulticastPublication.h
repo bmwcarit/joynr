@@ -19,9 +19,6 @@
 #ifndef MULTICASTPUBLICATION_H
 #define MULTICASTPUBLICATION_H
 
-#include <memory>
-#include <vector>
-
 #include "joynr/BasePublication.h"
 #include "joynr/BaseReply.h"
 #include "joynr/JoynrExport.h"
@@ -43,8 +40,9 @@ public:
     bool operator==(const MulticastPublication& other) const;
     bool operator!=(const MulticastPublication& other) const;
 
-    std::string getMulticastId() const;
+    const std::string& getMulticastId() const;
     void setMulticastId(const std::string& multicastId);
+    void setMulticastId(std::string&& multicastId);
 
     template <typename Archive>
     void serialize(Archive& archive)

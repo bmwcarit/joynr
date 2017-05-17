@@ -44,7 +44,7 @@ INIT_LOGGER(AccessController);
 //--------- InternalConsumerPermissionCallbacks --------------------------------
 
 class AccessController::LdacConsumerPermissionCallback
-        : public LocalDomainAccessController::IGetConsumerPermissionCallback
+        : public LocalDomainAccessController::IGetPermissionCallback
 {
 
 public:
@@ -57,7 +57,7 @@ public:
             std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback);
 
     // Callbacks made from the LocalDomainAccessController
-    void consumerPermission(Permission::Enum permission) override;
+    void permission(Permission::Enum permission) override;
     void operationNeeded() override;
 
 private:
@@ -87,8 +87,7 @@ AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback
 {
 }
 
-void AccessController::LdacConsumerPermissionCallback::consumerPermission(
-        Permission::Enum permission)
+void AccessController::LdacConsumerPermissionCallback::permission(Permission::Enum permission)
 {
     bool hasPermission = convertToBool(permission);
 
@@ -309,13 +308,10 @@ bool AccessController::hasProviderPermission(const std::string& userId,
                                              const std::string& domain,
                                              const std::string& interfaceName)
 {
-    std::ignore = userId;
-    std::ignore = trustLevel;
-    std::ignore = domain;
-    std::ignore = interfaceName;
-
-    assert(false && "Not yet implemented.");
-    return true;
+    return (localDomainAccessController.getProviderPermission(
+                    userId, domain, interfaceName, trustLevel) == Permission::Enum::YES)
+                   ? true
+                   : false;
 }
 
 } // namespace joynr

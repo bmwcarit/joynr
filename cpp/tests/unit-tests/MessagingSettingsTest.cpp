@@ -16,12 +16,15 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
 #include <cstdio>
-#include "PrettyPrint.h"
+
+#include <gtest/gtest.h>
+
 #include "joynr/MessagingSettings.h"
 #include "joynr/Settings.h"
 #include "joynr/BrokerUrl.h"
+
+#include "tests/PrettyPrint.h"
 
 using namespace joynr;
 

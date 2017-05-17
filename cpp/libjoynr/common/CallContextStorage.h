@@ -20,8 +20,6 @@
 #ifndef CALLCONTEXTSTORAGE_H
 #define CALLCONTEXTSTORAGE_H
 
-#include <string>
-
 #include "joynr/CallContext.h"
 
 namespace joynr
@@ -31,6 +29,7 @@ class CallContextStorage
 {
 public:
     static void set(const CallContext& callContext);
+    static void set(CallContext&& callContext);
     static const CallContext& get();
     static void invalidate();
 

@@ -43,6 +43,7 @@ public:
 
     const std::string& getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
+    void setSubscriptionId(std::string&& subscriptionId);
 
     template <typename Archive>
     void serialize(Archive& archive)

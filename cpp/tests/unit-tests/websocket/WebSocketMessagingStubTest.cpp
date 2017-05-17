@@ -27,8 +27,6 @@
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 
-#include "JoynrTest.h"
-
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
 #include "joynr/JoynrMessage.h"
@@ -38,10 +36,12 @@
 #include "joynr/Settings.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/WebSocketSettings.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
-#include "joynr/WebSocketSettings.h"
+
+#include "tests/JoynrTest.h"
 
 using namespace ::testing;
 

@@ -24,7 +24,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
 
 #include "joynr/IMessageSender.h"
 #include "joynr/InterfaceRegistrar.h"
@@ -36,6 +35,7 @@
 
 #include "joynr/tests/testRequestInterpreter.h"
 
+#include "tests/JoynrTest.h"
 #include "tests/utils/MockObjects.h"
 
 using ::testing::A;

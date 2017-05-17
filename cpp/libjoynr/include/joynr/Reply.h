@@ -45,6 +45,7 @@ public:
 
     const std::string& getRequestReplyId() const;
     void setRequestReplyId(const std::string& requestReplyId);
+    void setRequestReplyId(std::string&& requestReplyId);
 
     template <typename Archive>
     void serialize(Archive& archive)

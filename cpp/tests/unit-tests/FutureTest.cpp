@@ -16,11 +16,14 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <memory>
-#include "JoynrTest.h"
+
 #include "joynr/Future.h"
+
+#include "tests/JoynrTest.h"
 #include "tests/utils/MockObjects.h"
 
 using ::testing::Property;

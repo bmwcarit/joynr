@@ -84,6 +84,7 @@ std::unordered_set<std::string> MulticastReceiverDirectory::getReceivers(
 
 std::vector<std::string> MulticastReceiverDirectory::getMulticastIds() const
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex);
     std::vector<std::string> multicastIds;
 
     for (const auto& multicastReceiver : multicastReceivers) {
@@ -104,7 +105,7 @@ bool MulticastReceiverDirectory::contains(const std::string& multicastId,
                                           const std::string& receiverId)
 {
     std::lock_guard<std::recursive_mutex> lock(mutex);
-    auto receivers = getReceivers(multicastId);
+    const auto& receivers = getReceivers(multicastId);
     return receivers.find(receiverId) != receivers.cend();
 }
 

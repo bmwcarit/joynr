@@ -16,17 +16,17 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
+#include <cstdint>
+#include <cassert>
+#include <chrono>
+
+#include <gtest/gtest.h>
 
 #include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/SingleThreadedIOService.h"
 
-#include "utils/MockObjects.h"
-#include "utils/TestRunnable.h"
-
-#include <cstdint>
-#include <cassert>
-#include <chrono>
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/TestRunnable.h"
 
 using namespace ::testing;
 using namespace joynr;

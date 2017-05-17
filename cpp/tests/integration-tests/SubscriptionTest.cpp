@@ -31,8 +31,6 @@
 #include "joynr/SubscriptionStop.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
-#include "tests/utils/MockObjects.h"
-#include "utils/MockCallback.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/tests/testTypes/TestEnum.h"
@@ -41,7 +39,9 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/PrivateCopyAssign.h"
 
-#include "JoynrTest.h"
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/MockCallback.h"
 
 using namespace ::testing;
 using namespace joynr;

@@ -17,9 +17,12 @@
  * #L%
  */
 #include <memory>
-#include "joynr/PrivateCopyAssign.h"
+#include <string>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrMessage.h"
 #include "joynr/MessageSender.h"
 #include "joynr/JoynrMessageFactory.h"
@@ -30,15 +33,14 @@
 #include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include <string>
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/Future.h"
 
-#include "JoynrTest.h"
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;

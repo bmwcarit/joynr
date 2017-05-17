@@ -1,5 +1,5 @@
 {
-   "masterTable":[
+   "masterAccessTable":[
       {
          "_typeName":"joynr.infrastructure.DacTypes.MasterAccessControlEntry",
          "uid":"testUser",
@@ -18,16 +18,16 @@
          "operation":"*",
          "defaultConsumerPermission":"NO",
          "possibleConsumerPermissions":[
-	    "YES",
+            "YES",
             "NO",
             "ASK"
          ]
       }
    ],
-   "mediatorTable":[
+   "mediatorAccessTable":[
 
    ],
-   "ownerTable":[
+   "ownerAccessTable":[
       {
          "_typeName":"joynr.infrastructure.DacTypes.OwnerAccessControlEntry",
          "uid":"testUser",
@@ -41,5 +41,43 @@
    ],
    "domainRoleTable":[
 
+   ],
+   "masterRegistrationTable":[
+      {
+         "_typeName":"joynr.infrastructure.DacTypes.MasterRegistrationControlEntry",
+         "uid":"testUser",
+         "domain":"testDomain",
+         "interfaceName":"this/is/a/test/interface",
+         "defaultRequiredTrustLevel":"LOW",
+         "possibleRequiredTrustLevels":[
+            "LOW",
+            "MID"
+         ],
+         "defaultRequiredControlEntryChangeTrustLevel":"LOW",
+         "possibleRequiredControlEntryChangeTrustLevels":[
+            "LOW",
+            "MID"
+         ],
+         "defaultProviderPermission":"NO",
+         "possibleProviderPermissions":[
+            "YES",
+            "NO",
+            "ASK"
+         ]
+      }
+   ],
+   "mediatorRegistrationTable":[
+
+   ],
+   "ownerRegistrationTable":[
+      {
+         "_typeName":"joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry",
+         "uid":"testUser",
+         "domain":"testDomain",
+         "interfaceName":"this/is/a/test/interface",
+         "requiredTrustLevel":"LOW",
+         "requiredAceChangeTrustLevel":"LOW",
+         "providerPermission":"NO"
+      }
    ]
 }

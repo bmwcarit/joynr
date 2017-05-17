@@ -16,18 +16,19 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <memory>
 
 #include "joynr/ReplyInterpreter.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
+
 #include "tests/utils/MockObjects.h"
-#include "utils/MockCallback.h"
+#include "tests/utils/MockCallback.h"
 
 using ::testing::A;
 using ::testing::_;

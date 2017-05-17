@@ -20,7 +20,6 @@
 #define MULTICASTRECEIVERDIRECTORY_H
 
 #include <mutex>
-#include <regex>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -95,7 +94,7 @@ private:
     std::unordered_map<MulticastMatcher, std::unordered_set<std::string>, MulticastMatcherHash>
             multicastReceivers;
 
-    std::recursive_mutex mutex;
+    mutable std::recursive_mutex mutex;
 };
 
 } // namespace joynr
