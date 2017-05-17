@@ -51,7 +51,6 @@ import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -137,6 +136,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     private static final String FIRE_AND_FORGET_STRING_PARAMETER = "test";
     private static final ComplexTestType FIRE_AND_FORGET_COMPLEX_PARAMETER = new ComplexTestType();
 
+    protected List<JoynrRuntime> createdRuntimes = new ArrayList<JoynrRuntime>();
+
     long timeTookToRegisterProvider;
 
     @Rule
@@ -203,6 +204,10 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
                                      getSubscriptionPublisherFactoryModule(),
                                      new StaticDomainAccessControlProvisioningModule());
 
+        if (providerRuntime != null) {
+            createdRuntimes.add(providerRuntime);
+        }
+
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."
                 + UUID.randomUUID().toString());
@@ -211,6 +216,10 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         joynrConfigConsumer.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
         consumerRuntime = getRuntime(joynrConfigConsumer, getSubscriptionPublisherFactoryModule());
+
+        if (consumerRuntime != null) {
+            createdRuntimes.add(consumerRuntime);
+        }
 
         provider = new TestProvider();
         ProviderQos testProviderQos = new ProviderQos();
@@ -235,7 +244,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @After
     public void tearDown() throws InterruptedException {
-
         if (providerRuntime != null) {
             providerRuntime.unregisterProvider(domain, provider);
             providerRuntime.unregisterProvider(domainAsync, provider);
@@ -246,6 +254,10 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }
         if (consumerRuntime != null) {
             consumerRuntime.shutdown(true);
+        }
+
+        for (JoynrRuntime createdRuntime : createdRuntimes) {
+            createdRuntime.shutdown(true);
         }
     }
 

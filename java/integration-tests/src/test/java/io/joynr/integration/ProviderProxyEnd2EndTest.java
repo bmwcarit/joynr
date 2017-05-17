@@ -19,8 +19,6 @@ package io.joynr.integration;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import com.google.inject.Module;
@@ -36,7 +34,6 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import org.eclipse.jetty.server.Server;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -46,8 +43,6 @@ public class ProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
     private static Server jettyServer;
     private static Properties originalProperties;
-
-    protected List<DummyJoynrApplication> dummyApplications = new ArrayList<>();
 
     @BeforeClass
     public static void startServer() throws Exception {
@@ -74,19 +69,7 @@ public class ProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
         Module modulesWithRuntime = Modules.override(modules).with(runtimeModule);
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
-
-        dummyApplications.add(application);
         return application.getRuntime();
-    }
-
-    @Override
-    @After
-    public void tearDown() throws InterruptedException {
-        super.tearDown();
-        for (DummyJoynrApplication application : dummyApplications) {
-            application.shutdown();
-        }
-        dummyApplications.clear();
     }
 
     // Remove once we have support multicast for http / long polling

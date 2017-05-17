@@ -98,6 +98,7 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
     protected JoynrRuntime getRuntime(final Properties joynrConfig, final Module... modules) {
         if (ccJoynrRuntime == null) {
             ccJoynrRuntime = createClusterController(webSocketConfig);
+            createdRuntimes.add(ccJoynrRuntime);
         }
         joynrConfig.putAll(webSocketConfig);
         joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
@@ -113,7 +114,6 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
                                                         }));
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
-        dummyApplications.add(application);
         return application.getRuntime();
     }
 
