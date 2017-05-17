@@ -45,7 +45,7 @@ import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProxy;
 import org.junit.Test;
 
-public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
+public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
     private Properties mqttConfig;
     private static int mqttBrokerPort = 1883;

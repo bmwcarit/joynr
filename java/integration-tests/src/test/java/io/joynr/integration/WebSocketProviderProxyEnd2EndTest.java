@@ -50,7 +50,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 @Ignore("HTTP does not support binary messages (SMRF)")
-public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
+public class WebSocketProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
     private static final long CONST_DEFAULT_TEST_TIMEOUT = 10000;
     private JoynrRuntime ccJoynrRuntime;
