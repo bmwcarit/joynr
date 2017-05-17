@@ -90,10 +90,10 @@ public:
      * @brief Callback which indicates the operation has finished and has failed.
      * @param error The JoynrException describing the failure
      */
-    void onError(const std::shared_ptr<exceptions::JoynrException>& error)
+    void onError(std::shared_ptr<exceptions::JoynrException> error)
     {
         JOYNR_LOG_TRACE(logger, "onError has been invoked");
-        this->error = error;
+        this->error = std::move(error);
         status = StatusCodeEnum::ERROR;
         resultReceived.notify();
     }
