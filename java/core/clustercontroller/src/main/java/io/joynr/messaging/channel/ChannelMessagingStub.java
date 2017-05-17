@@ -23,12 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.http.HttpMessageSender;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.ChannelAddress;
 
-public class ChannelMessagingStub implements IMessaging {
+public class ChannelMessagingStub implements IMessagingStub {
     private static final Logger LOG = LoggerFactory.getLogger(ChannelMessagingStub.class);
 
     private ChannelAddress address;
@@ -42,12 +42,6 @@ public class ChannelMessagingStub implements IMessaging {
     @Override
     public void transmit(ImmutableMessage message, FailureAction failureAction) {
         LOG.debug(">>> OUTGOING >>> {}", message.toLogMessage());
-        transmit(message.getSerializedMessage(), failureAction);
-    }
-
-    @Override
-    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
-        LOG.debug(">>> OUTGOING >>> {}", serializedMessage);
-        httpMessageSender.sendMessage(address, serializedMessage, failureAction);
+        httpMessageSender.sendMessage(address, message.getSerializedMessage(), failureAction);
     }
 }

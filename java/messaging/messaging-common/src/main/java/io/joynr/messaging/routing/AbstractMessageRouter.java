@@ -38,9 +38,9 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
@@ -177,7 +177,7 @@ abstract public class AbstractMessageRouter implements MessageRouter {
                         for (Address address : addresses) {
                             logger.trace(">>>>> SEND  {}", message.toLogMessage());
 
-                            IMessaging messagingStub = messagingStubFactory.create(address);
+                            IMessagingStub messagingStub = messagingStubFactory.create(address);
                             messagingStub.transmit(message, createFailureAction(message, retriesCount));
                         }
                     } catch (Exception error) {

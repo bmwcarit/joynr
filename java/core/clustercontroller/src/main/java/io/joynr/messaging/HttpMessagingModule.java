@@ -45,9 +45,9 @@ public class HttpMessagingModule extends AbstractModule {
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
         bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
 
-        MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
+        MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
         messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
+        }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>>() {
         }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
         messagingStubFactory.addBinding(ChannelAddress.class).to(ChannelMessagingStubFactory.class);
     }

@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingQosEffort;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -32,14 +32,13 @@ import joynr.system.RoutingTypes.MqttAddress;
 /**
  * Messaging stub used to send messages to a MQTT Broker
  */
-public class MqttMessagingStub implements IMessaging {
+public class MqttMessagingStub implements IMessagingStub {
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingStub.class);
 
     public static final int DEFAULT_QOS_LEVEL = 1;
     public static final int BEST_EFFORT_QOS_LEVEL = 0;
 
     private static final String PRIORITY_LOW = "/low/";
-    private static final String RAW = PRIORITY_LOW + "raw";
     private MqttAddress address;
     private JoynrMqttClient mqttClient;
 
@@ -67,17 +66,4 @@ public class MqttMessagingStub implements IMessaging {
             failureAction.execute(error);
         }
     }
-
-    @Override
-    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
-        LOG.debug(">>> OUTGOING >>> {}", serializedMessage);
-        // Unable to access participantId, so publishing to RAW topic
-        String topic = address.getTopic() + RAW;
-        try {
-            mqttClient.publishMessage(topic, serializedMessage);
-        } catch (Exception error) {
-            failureAction.execute(error);
-        }
-    }
-
 }

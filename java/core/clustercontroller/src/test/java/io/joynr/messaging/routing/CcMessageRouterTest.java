@@ -57,8 +57,8 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingSkeletonFactory;
@@ -96,7 +96,7 @@ public class CcMessageRouterTest {
     @Mock
     private ChannelMessagingStubFactory messagingStubFactoryMock;
     @Mock
-    private IMessaging messagingStubMock;
+    private IMessagingStub messagingStubMock;
     @Mock
     private ChannelMessagingSkeleton messagingSkeletonMock;
 
@@ -127,10 +127,13 @@ public class CcMessageRouterTest {
 
                 bind(AccessController.class).toInstance(Mockito.mock(AccessController.class));
 
-                MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
-                messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-                }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
-                }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
+                MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
+                messagingStubFactory = MapBinder.newMapBinder(binder(),
+                                                              new TypeLiteral<Class<? extends Address>>() {
+                                                              },
+                                                              new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>>() {
+                                                              },
+                                                              Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
                 messagingStubFactory.addBinding(ChannelAddress.class).toInstance(messagingStubFactoryMock);
 
                 MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;

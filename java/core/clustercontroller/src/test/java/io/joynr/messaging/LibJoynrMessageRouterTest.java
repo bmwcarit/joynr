@@ -53,7 +53,7 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 public class LibJoynrMessageRouterTest {
 
     @Mock
-    IMessaging messagingStub;
+    IMessagingStub messagingStub;
     @Mock
     private RoutingTable routingTable;
     @Mock

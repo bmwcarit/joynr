@@ -24,15 +24,13 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
-
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingStub;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 
-public class WebSocketMessagingStub implements IMessaging {
+public class WebSocketMessagingStub implements IMessagingStub {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketMessagingStub.class);
 
     private JoynrWebSocketEndpoint webSocketEndpoint;
@@ -56,11 +54,5 @@ public class WebSocketMessagingStub implements IMessaging {
         byte[] serializedMessage = message.getSerializedMessage();
 
         webSocketEndpoint.writeBytes(toAddress, serializedMessage, timeout, TimeUnit.MILLISECONDS, failureAction);
-    }
-
-    @Override
-    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
-        logger.debug(">>> OUTGOING >>> {}", new String(serializedMessage, Charsets.UTF_8));
-        webSocketEndpoint.writeBytes(toAddress, serializedMessage, 30, TimeUnit.SECONDS, failureAction);
     }
 }

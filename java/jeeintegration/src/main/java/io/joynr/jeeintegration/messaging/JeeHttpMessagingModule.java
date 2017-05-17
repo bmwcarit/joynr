@@ -35,8 +35,8 @@ import com.google.inject.name.Names;
 import io.joynr.accesscontrol.AccessControlClientModule;
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
@@ -61,10 +61,10 @@ import joynr.system.RoutingTypes.ChannelAddress;
 public class JeeHttpMessagingModule extends AbstractModule {
 
     private MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
-    private MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
+    private MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
 
     public JeeHttpMessagingModule(MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory,
-                                  MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory) {
+                                  MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory) {
         this.messagingSkeletonFactory = messagingSkeletonFactory;
         this.messagingStubFactory = messagingStubFactory;
     }
