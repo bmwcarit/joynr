@@ -37,8 +37,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 
-@Ignore
-public class ProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
+@Ignore("HTTP does not support binary messages (SMRF)")
+public class HTTPProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
     private static Server jettyServer;
     private static Properties originalProperties;
