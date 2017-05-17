@@ -139,7 +139,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMess
 
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
     factory->registerOnMessagingStubClosedCallback([messagingStubFactory](
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress) {
         messagingStubFactory->remove(destinationAddress);
     });
     messagingStubFactory->registerStubFactory(std::move(factory));

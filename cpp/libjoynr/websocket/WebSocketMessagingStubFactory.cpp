@@ -140,7 +140,7 @@ void WebSocketMessagingStubFactory::onMessagingStubClosed(
 }
 
 void WebSocketMessagingStubFactory::registerOnMessagingStubClosedCallback(
-        std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+        std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address>
                                    destinationAddress)> onMessagingStubClosedCallback)
 {
     this->onMessagingStubClosedCallback = std::move(onMessagingStubClosedCallback);

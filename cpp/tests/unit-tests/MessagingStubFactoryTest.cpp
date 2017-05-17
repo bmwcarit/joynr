@@ -32,7 +32,7 @@ struct MockMiddlewareMessagingStubFactory : public joynr::IMiddlewareMessagingSt
     MOCK_METHOD1(create, std::shared_ptr<joynr::IMessagingStub>(const joynr::system::RoutingTypes::Address& destAddress));
     MOCK_METHOD1(canCreate, bool(const joynr::system::RoutingTypes::Address& destAddress));
     MOCK_METHOD1(registerOnMessagingStubClosedCallback,
-                 void(std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)> onMessagingStubClosedCallback));
+                 void(std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)> onMessagingStubClosedCallback));
 };
 
 class MessagingStubFactoryTest : public Test {

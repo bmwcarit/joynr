@@ -95,8 +95,8 @@ void LibJoynrRuntime::init(
     // create messaging stub factory
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
     middlewareMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
-        messagingStubFactory->remove(destinationAddress);
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress) {
+        messagingStubFactory->remove(std::move(destinationAddress));
     });
     messagingStubFactory->registerStubFactory(middlewareMessagingStubFactory);
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());

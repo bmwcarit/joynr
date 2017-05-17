@@ -45,7 +45,7 @@ std::shared_ptr<IMessagingStub> HttpMessagingStubFactory::create(
 }
 
 void HttpMessagingStubFactory::registerOnMessagingStubClosedCallback(
-        std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+        std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address>
                                    destinationAddress)> onMessagingStubClosedCallback)
 {
     std::ignore = onMessagingStubClosedCallback;

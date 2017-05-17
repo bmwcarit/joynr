@@ -36,8 +36,8 @@ public:
     std::shared_ptr<IMessagingStub> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
-    void registerOnMessagingStubClosedCallback(std::function<void(
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)>
+    void registerOnMessagingStubClosedCallback(std::function<
+            void(std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
                                                        onMessagingStubClosedCallback) override;
 
 private:
