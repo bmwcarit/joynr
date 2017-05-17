@@ -41,9 +41,9 @@ std::chrono::milliseconds HttpSender::MIN_ATTEMPT_TTL()
     return std::chrono::seconds(2);
 }
 
-const std::int64_t& HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL()
+std::int64_t HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL()
 {
-    static std::int64_t value = 3;
+    static const std::int64_t value = 3;
     return value;
 }
 

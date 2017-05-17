@@ -24,9 +24,9 @@
 namespace joynr
 {
 
-const std::int64_t& SubscriptionQos::NO_EXPIRY_DATE()
+std::int64_t SubscriptionQos::NO_EXPIRY_DATE()
 {
-    static std::int64_t noExpiryDate = 0;
+    static const std::int64_t noExpiryDate = 0;
     return noExpiryDate;
 }
 
@@ -34,7 +34,7 @@ SubscriptionQos::SubscriptionQos() : expiryDateMs(NO_EXPIRY_DATE())
 {
 }
 
-SubscriptionQos::SubscriptionQos(const int64_t validityMs) : expiryDateMs(NO_EXPIRY_DATE())
+SubscriptionQos::SubscriptionQos(std::int64_t validityMs) : expiryDateMs(NO_EXPIRY_DATE())
 {
     setValidityMs(validityMs);
 }
@@ -44,7 +44,7 @@ std::int64_t SubscriptionQos::getExpiryDateMs() const
     return expiryDateMs;
 }
 
-void SubscriptionQos::setExpiryDateMs(const std::int64_t& expiryDateMs)
+void SubscriptionQos::setExpiryDateMs(std::int64_t expiryDateMs)
 {
     this->expiryDateMs = expiryDateMs;
 }
@@ -54,7 +54,7 @@ void SubscriptionQos::clearExpiryDate()
     this->expiryDateMs = NO_EXPIRY_DATE();
 }
 
-void SubscriptionQos::setValidityMs(const std::int64_t& validityMs)
+void SubscriptionQos::setValidityMs(std::int64_t validityMs)
 {
     if (validityMs == -1) {
         setExpiryDateMs(SubscriptionQos::NO_EXPIRY_DATE());

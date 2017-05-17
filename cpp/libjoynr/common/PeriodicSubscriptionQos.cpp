@@ -23,38 +23,38 @@ namespace joynr
 
 INIT_LOGGER(PeriodicSubscriptionQos);
 
-const std::int64_t& PeriodicSubscriptionQos::MIN_PERIOD_MS()
+std::int64_t PeriodicSubscriptionQos::MIN_PERIOD_MS()
 {
-    static std::int64_t minPeriod = 50;
+    static const std::int64_t minPeriod = 50;
     return minPeriod;
 }
 
-const std::int64_t& PeriodicSubscriptionQos::MAX_PERIOD_MS()
+std::int64_t PeriodicSubscriptionQos::MAX_PERIOD_MS()
 {
-    static std::int64_t maxPeriod = 2592000000UL;
+    static const std::int64_t maxPeriod = 2592000000UL;
     return maxPeriod;
 }
 
-const std::int64_t& PeriodicSubscriptionQos::DEFAULT_PERIOD_MS()
+std::int64_t PeriodicSubscriptionQos::DEFAULT_PERIOD_MS()
 {
-    static std::int64_t maxPeriod = 60000UL;
+    static const std::int64_t maxPeriod = 60000UL;
     return maxPeriod;
 }
 
-const std::int64_t& PeriodicSubscriptionQos::MAX_ALERT_AFTER_INTERVAL_MS()
+std::int64_t PeriodicSubscriptionQos::MAX_ALERT_AFTER_INTERVAL_MS()
 {
-    static std::int64_t maxAlertAfterInterval = 2592000000UL;
+    static const std::int64_t maxAlertAfterInterval = 2592000000UL;
     return maxAlertAfterInterval;
 }
 
-const std::int64_t& PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL_MS()
+std::int64_t PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL_MS()
 {
     return NO_ALERT_AFTER_INTERVAL();
 }
 
-const std::int64_t& PeriodicSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
+std::int64_t PeriodicSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
 {
-    static std::int64_t noAlertAfterInterval = 0;
+    static const std::int64_t noAlertAfterInterval = 0;
     return noAlertAfterInterval;
 }
 
@@ -65,10 +65,10 @@ PeriodicSubscriptionQos::PeriodicSubscriptionQos()
 {
 }
 
-PeriodicSubscriptionQos::PeriodicSubscriptionQos(const std::int64_t validityMs,
-                                                 const std::int64_t publicationTtlMs,
-                                                 const std::int64_t periodMs,
-                                                 const std::int64_t alertAfterInterval)
+PeriodicSubscriptionQos::PeriodicSubscriptionQos(std::int64_t validityMs,
+                                                 std::int64_t publicationTtlMs,
+                                                 std::int64_t periodMs,
+                                                 std::int64_t alertAfterInterval)
         : UnicastSubscriptionQos(validityMs, publicationTtlMs),
           periodMs(DEFAULT_PERIOD_MS()),
           alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
@@ -84,7 +84,7 @@ PeriodicSubscriptionQos::PeriodicSubscriptionQos(const PeriodicSubscriptionQos& 
 {
 }
 
-void PeriodicSubscriptionQos::setPeriodMs(const std::int64_t& periodMs)
+void PeriodicSubscriptionQos::setPeriodMs(std::int64_t periodMs)
 {
     if (periodMs > MAX_PERIOD_MS()) {
         JOYNR_LOG_WARN(logger,
@@ -122,7 +122,7 @@ std::int64_t PeriodicSubscriptionQos::getPeriodMs() const
     return this->periodMs;
 }
 
-void PeriodicSubscriptionQos::setAlertAfterIntervalMs(const std::int64_t& alertAfterIntervalMs)
+void PeriodicSubscriptionQos::setAlertAfterIntervalMs(std::int64_t alertAfterIntervalMs)
 {
     if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS()) {
         JOYNR_LOG_WARN(logger,

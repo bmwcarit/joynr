@@ -45,7 +45,7 @@ public:
      * @param cacheMaxAgeMs The maximum age in milliseconds a cached entry will be considered for
      * discovery
      */
-    explicit DiscoveryQos(const std::int64_t& cacheMaxAgeMs);
+    explicit DiscoveryQos(std::int64_t cacheMaxAgeMs);
 
     /** @brief Destructor */
     virtual ~DiscoveryQos() = default;
@@ -76,13 +76,13 @@ public:
      * @brief Gets the default timeout value
      * @return the default timeout value in milliseconds
      */
-    static std::int64_t& DEFAULT_DISCOVERYTIMEOUT_MS();
+    static std::int64_t DEFAULT_DISCOVERYTIMEOUT_MS();
 
     /**
      * @brief Gets the value signalling that no timeout has been selected
      * @return the value signalling that no timeout has been selected
      */
-    static std::int64_t& NO_TIMEOUT();
+    static std::int64_t NO_TIMEOUT();
 
     /**
      * @brief Gets the default arbitration strategy value
@@ -94,13 +94,13 @@ public:
      * @brief Gets the default maximum cache age value in milliseconds
      * @return the default maximum cache age value in milliseconds
      */
-    static std::int64_t& DEFAULT_CACHEMAXAGE_MS();
+    static std::int64_t DEFAULT_CACHEMAXAGE_MS();
 
     /**
      * @brief Gets the value signalling that no cache is to be used
      * @return the value signalling that no cache is to be used
      */
-    static std::int64_t& DO_NOT_USE_CACHE();
+    static std::int64_t DO_NOT_USE_CACHE();
 
     /**
      * @brief Gets the default discovery scope value
@@ -112,7 +112,7 @@ public:
      * @brief Gets the default retry interval value
      * @return the default retry interval value
      */
-    static std::int64_t& DEFAULT_RETRYINTERVAL_MS();
+    static std::int64_t DEFAULT_RETRYINTERVAL_MS();
 
     /**
      * @brief Sets the arbitration strategy for the discovery process
@@ -223,7 +223,7 @@ public:
      *       local capabilities directory a lookup in the global capabilitiesDirectory will
      *       take place.
      */
-    void setCacheMaxAgeMs(const std::int64_t& cacheMaxAgeMs);
+    void setCacheMaxAgeMs(std::int64_t cacheMaxAgeMs);
 
     /**
      * @brief Find out whether arbitration will only consider providers that support onChange

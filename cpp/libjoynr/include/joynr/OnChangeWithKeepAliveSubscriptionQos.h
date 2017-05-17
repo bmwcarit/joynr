@@ -78,11 +78,11 @@ public:
      * @see OnChangeWithKeepAliveSubscriptionQos#setMaxIntervalMs
      * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterIntervalMs
      */
-    OnChangeWithKeepAliveSubscriptionQos(const std::int64_t validityMs,
-                                         const std::int64_t publicationTtlMs,
-                                         const std::int64_t minIntervalMs,
-                                         const std::int64_t maxIntervalMs,
-                                         const std::int64_t alertAfterIntervalMs);
+    OnChangeWithKeepAliveSubscriptionQos(std::int64_t validityMs,
+                                         std::int64_t publicationTtlMs,
+                                         std::int64_t minIntervalMs,
+                                         std::int64_t maxIntervalMs,
+                                         std::int64_t alertAfterIntervalMs);
 
     /**
      * @brief Sets minimum interval in milliseconds
@@ -95,7 +95,7 @@ public:
      * @see OnChangeSubscriptionQos#setMinIntervalMs
      * @see OnChangeWithKeepAliveSubscriptionQos#setMaxIntervalMs
      */
-    void setMinIntervalMs(const std::int64_t& minIntervalMs) override;
+    void setMinIntervalMs(std::int64_t minIntervalMs) override;
 
     /**
      * @brief Gets the maximum interval in milliseconds
@@ -131,7 +131,7 @@ public:
      * @param maxIntervalMs
      *            The publisher will send a notification at least every maxInterval_ms.
      */
-    virtual void setMaxIntervalMs(const std::int64_t& maxIntervalMs);
+    virtual void setMaxIntervalMs(std::int64_t maxIntervalMs);
 
     /**
      * @brief Gets the alertAfter interval in milliseconds
@@ -163,7 +163,7 @@ public:
      * @param alertAfterInterval Time span in milliseconds after which a
      * publicationMissed will be called if no publications were received.
      */
-    virtual void setAlertAfterIntervalMs(const std::int64_t& alertAfterIntervalMs);
+    virtual void setAlertAfterIntervalMs(std::int64_t alertAfterIntervalMs);
 
     /**
      * @brief Resets alert after interval
@@ -186,34 +186,34 @@ public:
     /** @brief
      * Returns the minimum value for the maximum interval in milliseconds: 50
      */
-    static const std::int64_t& MIN_MAX_INTERVAL_MS();
+    static std::int64_t MIN_MAX_INTERVAL_MS();
 
     /** @brief
      * Returns the maximum value for the maximum interval in milliseconds:
      * 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_MAX_INTERVAL_MS();
+    static std::int64_t MAX_MAX_INTERVAL_MS();
 
     /** @brief
      * Returns the maximum value for the maximum interval in milliseconds:
      * 60 000 (1 minute)
      */
-    static const std::int64_t& DEFAULT_MAX_INTERVAL_MS();
+    static std::int64_t DEFAULT_MAX_INTERVAL_MS();
 
     /**
      * @brief Returns the maximum value for the alertAfter interval in
      * milliseconds: 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_ALERT_AFTER_INTERVAL_MS();
+    static std::int64_t MAX_ALERT_AFTER_INTERVAL_MS();
 
     /**
      * @brief Returns the default value for the alertAfter interval in
      * milliseconds: 0 (NO_ALERT_AFTER_INTERVAL)
      */
-    static const std::int64_t& DEFAULT_ALERT_AFTER_INTERVAL_MS();
+    static std::int64_t DEFAULT_ALERT_AFTER_INTERVAL_MS();
 
     /** @brief Returns the value for no alertAfter interval in milliseconds: 0 */
-    static const std::int64_t& NO_ALERT_AFTER_INTERVAL();
+    static std::int64_t NO_ALERT_AFTER_INTERVAL();
 
     template <typename Archive>
     void serialize(Archive& archive)

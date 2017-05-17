@@ -205,11 +205,11 @@ private:
     {
     public:
         MissedPublicationRunnable(const JoynrTimePoint& expiryDate,
-                                  const std::int64_t& expectedIntervalMSecs,
+                                  std::int64_t expectedIntervalMSecs,
                                   const std::string& subscriptionId,
                                   std::shared_ptr<Subscription> subscription,
                                   SubscriptionManager& subscriptionManager,
-                                  const std::int64_t& alertAfterInterval);
+                                  std::int64_t alertAfterInterval);
 
         void shutdown() override;
 
@@ -222,7 +222,7 @@ private:
 
     private:
         DISALLOW_COPY_AND_ASSIGN(MissedPublicationRunnable);
-        std::int64_t timeSinceLastExpectedPublication(const std::int64_t& timeSinceLastPublication);
+        std::int64_t timeSinceLastExpectedPublication(std::int64_t timeSinceLastPublication);
         std::int64_t expectedIntervalMSecs;
         std::shared_ptr<Subscription> subscription;
         const std::string subscriptionId;

@@ -70,9 +70,9 @@ public:
      * @see UnicastSubscriptionQos#publicationTtlMs
      * @see OnChangeSubscriptionQos#setMinIntervalMs
      */
-    OnChangeSubscriptionQos(const std::int64_t validityMs,
-                            const std::int64_t publicationTtlMs,
-                            const std::int64_t minIntervalMs);
+    OnChangeSubscriptionQos(std::int64_t validityMs,
+                            std::int64_t publicationTtlMs,
+                            std::int64_t minIntervalMs);
 
     /**
      * @brief Gets the minimum interval in milliseconds
@@ -105,7 +105,7 @@ public:
      *
      * @param minIntervalMs Minimum interval in milliseconds
      */
-    virtual void setMinIntervalMs(const std::int64_t& minIntervalMs);
+    virtual void setMinIntervalMs(std::int64_t minIntervalMs);
 
     /** @brief Assignment operator */
     OnChangeSubscriptionQos& operator=(const OnChangeSubscriptionQos& other);
@@ -117,19 +117,19 @@ public:
      * @brief Returns the default value for the minimum interval setting in
      * milliseconds: 1000
      */
-    static const std::int64_t& DEFAULT_MIN_INTERVAL_MS();
+    static std::int64_t DEFAULT_MIN_INTERVAL_MS();
 
     /**
      * @brief Returns the minimum value for the minimum interval setting in
      * milliseconds: 50
      */
-    static const std::int64_t& MIN_MIN_INTERVAL_MS();
+    static std::int64_t MIN_MIN_INTERVAL_MS();
 
     /**
      * @brief Returns the maximum value for the minimum interval setting in
      * milliseconds: 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_MIN_INTERVAL_MS();
+    static int64_t MAX_MIN_INTERVAL_MS();
 
     template <typename Archive>
     void serialize(Archive& archive)

@@ -163,7 +163,7 @@ bool isSubscriptionExpired(const std::shared_ptr<SubscriptionQos> qos, int offse
 void PublicationManager::sendSubscriptionReply(IPublicationSender* publicationSender,
                                                const std::string& fromParticipantId,
                                                const std::string& toParticipantId,
-                                               const std::int64_t& expiryDateMs,
+                                               std::int64_t expiryDateMs,
                                                const SubscriptionReply& subscriptionReply)
 {
     MessagingQos messagingQos;
@@ -181,7 +181,7 @@ void PublicationManager::sendSubscriptionReply(IPublicationSender* publicationSe
 void PublicationManager::sendSubscriptionReply(IPublicationSender* publicationSender,
                                                const std::string& fromParticipantId,
                                                const std::string& toParticipantId,
-                                               const std::int64_t& expiryDateMs,
+                                               std::int64_t expiryDateMs,
                                                const std::string& subscriptionId)
 {
     SubscriptionReply subscriptionReply;
@@ -194,7 +194,7 @@ void PublicationManager::sendSubscriptionReply(
         IPublicationSender* publicationSender,
         const std::string& fromParticipantId,
         const std::string& toParticipantId,
-        const std::int64_t& expiryDateMs,
+        std::int64_t expiryDateMs,
         const std::string& subscriptionId,
         std::shared_ptr<exceptions::SubscriptionException> error)
 {

@@ -280,17 +280,17 @@ private:
     void sendSubscriptionReply(IPublicationSender* publicationSender,
                                const std::string& fromParticipantId,
                                const std::string& toParticipantId,
-                               const std::int64_t& expiryDateMs,
+                               std::int64_t expiryDateMs,
                                const SubscriptionReply& subscriptionReply);
     void sendSubscriptionReply(IPublicationSender* publicationSender,
                                const std::string& fromParticipantId,
                                const std::string& toParticipantId,
-                               const std::int64_t& expiryDateMs,
+                               std::int64_t expiryDateMs,
                                const std::string& subscriptionId);
     void sendSubscriptionReply(IPublicationSender* publicationSender,
                                const std::string& fromParticipantId,
                                const std::string& toParticipantId,
-                               const std::int64_t& expiryDateMs,
+                               std::int64_t expiryDateMs,
                                const std::string& subscriptionId,
                                std::shared_ptr<exceptions::SubscriptionException> error);
     bool publicationExists(const std::string& subscriptionId) const;

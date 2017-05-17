@@ -50,7 +50,7 @@ public:
      *
      * @param validityMs Time span in milliseconds during which publications will be sent
      */
-    explicit MulticastSubscriptionQos(const std::int64_t validityMs);
+    explicit MulticastSubscriptionQos(std::int64_t validityMs);
 
     /**
      * @brief Copy constructor

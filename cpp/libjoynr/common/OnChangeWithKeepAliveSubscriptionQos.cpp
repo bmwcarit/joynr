@@ -23,36 +23,36 @@ namespace joynr
 
 INIT_LOGGER(OnChangeWithKeepAliveSubscriptionQos);
 
-const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS()
+std::int64_t OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS()
 {
     static std::int64_t minMaxInterval = 50UL;
     return minMaxInterval;
 }
 
-const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::MAX_MAX_INTERVAL_MS()
+std::int64_t OnChangeWithKeepAliveSubscriptionQos::MAX_MAX_INTERVAL_MS()
 {
     static std::int64_t maxMaxInterval = 2592000000UL;
     return maxMaxInterval;
 }
 
-const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::DEFAULT_MAX_INTERVAL_MS()
+std::int64_t OnChangeWithKeepAliveSubscriptionQos::DEFAULT_MAX_INTERVAL_MS()
 {
     static std::int64_t defaultMaxInterval = 60000UL;
     return defaultMaxInterval;
 }
 
-const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::MAX_ALERT_AFTER_INTERVAL_MS()
+std::int64_t OnChangeWithKeepAliveSubscriptionQos::MAX_ALERT_AFTER_INTERVAL_MS()
 {
     static std::int64_t maxAlertAfterInterval = 2592000000UL;
     return maxAlertAfterInterval;
 }
 
-const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL_MS()
+std::int64_t OnChangeWithKeepAliveSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL_MS()
 {
     return NO_ALERT_AFTER_INTERVAL();
 }
 
-const std::int64_t& OnChangeWithKeepAliveSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
+std::int64_t OnChangeWithKeepAliveSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
 {
     static std::int64_t noAlertAfterInterval = 0;
     return noAlertAfterInterval;
@@ -66,11 +66,11 @@ OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos()
 }
 
 OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
-        const std::int64_t validityMs,
-        const std::int64_t publicationTtlMs,
-        const std::int64_t minIntervalMs,
-        const std::int64_t maxIntervalMs,
-        const std::int64_t alertAfterInterval)
+        std::int64_t validityMs,
+        std::int64_t publicationTtlMs,
+        std::int64_t minIntervalMs,
+        std::int64_t maxIntervalMs,
+        std::int64_t alertAfterInterval)
         : OnChangeSubscriptionQos(validityMs, publicationTtlMs, minIntervalMs),
           maxIntervalMs(DEFAULT_MAX_INTERVAL_MS()),
           alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
@@ -87,7 +87,7 @@ OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
 {
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setMaxIntervalMs(const std::int64_t& maxIntervalMs)
+void OnChangeWithKeepAliveSubscriptionQos::setMaxIntervalMs(std::int64_t maxIntervalMs)
 {
     if (maxIntervalMs < MIN_MAX_INTERVAL_MS()) {
         JOYNR_LOG_WARN(logger,
@@ -137,7 +137,7 @@ std::int64_t OnChangeWithKeepAliveSubscriptionQos::getMaxIntervalMs() const
     return this->maxIntervalMs;
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setMinIntervalMs(const std::int64_t& minIntervalMs)
+void OnChangeWithKeepAliveSubscriptionQos::setMinIntervalMs(std::int64_t minIntervalMs)
 {
     OnChangeSubscriptionQos::setMinIntervalMs(minIntervalMs);
     // corrects the maxinterval if minIntervalMs changes
@@ -145,7 +145,7 @@ void OnChangeWithKeepAliveSubscriptionQos::setMinIntervalMs(const std::int64_t& 
 }
 
 void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterIntervalMs(
-        const std::int64_t& alertAfterIntervalMs)
+        std::int64_t alertAfterIntervalMs)
 {
     if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS()) {
         JOYNR_LOG_WARN(logger,

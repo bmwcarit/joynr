@@ -55,7 +55,7 @@ public:
      *
      * @see SubscriptionQos#setValidityMs
      */
-    explicit SubscriptionQos(const std::int64_t validityMs);
+    explicit SubscriptionQos(std::int64_t validityMs);
 
     /** Destructor */
     virtual ~SubscriptionQos() = default;
@@ -93,7 +93,7 @@ public:
      *
      * @see SubscriptionQos#setValidityMs
      */
-    virtual void setExpiryDateMs(const std::int64_t& expiryDateMs);
+    virtual void setExpiryDateMs(std::int64_t expiryDateMs);
 
     /**
      * @brief Sets the validity of the subscription in milliseconds.
@@ -108,7 +108,7 @@ public:
      *
      * @see SubscriptionQos#setExpiryDateMs
      */
-    virtual void setValidityMs(const std::int64_t& validityMs);
+    virtual void setValidityMs(std::int64_t validityMs);
 
     /** @brief Assignment operator */
     SubscriptionQos& operator=(const SubscriptionQos& subscriptionQos);
@@ -117,7 +117,7 @@ public:
     bool operator==(const SubscriptionQos& subscriptionQos) const;
 
     /** @brief Returns the value for no expiry date in milliseconds: 0 */
-    static const std::int64_t& NO_EXPIRY_DATE();
+    static std::int64_t NO_EXPIRY_DATE();
 
     template <typename Archive>
     void serialize(Archive& archive)

@@ -41,7 +41,7 @@ class HttpSender : public ITransportMessageSender
 {
 public:
     static std::chrono::milliseconds MIN_ATTEMPT_TTL();
-    static const std::int64_t& FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
+    static std::int64_t FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL();
 
     HttpSender(const BrokerUrl& brokerUrl,
                std::chrono::milliseconds maxAttemptTtl,

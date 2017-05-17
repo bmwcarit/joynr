@@ -45,11 +45,11 @@ public:
     virtual void remove(std::vector<std::string> capabilitiesInformationList) = 0;
     virtual std::vector<types::GlobalDiscoveryEntry> lookup(const std::vector<std::string>& domains,
                                                             const std::string& interfaceName,
-                                                            const std::int64_t messagingTtl) = 0;
+                                                            std::int64_t messagingTtl) = 0;
     virtual void lookup(
             const std::vector<std::string>& domains,
             const std::string& interfaceName,
-            const std::int64_t messagingTtl,
+            std::int64_t messagingTtl,
             std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)>
                     onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)>

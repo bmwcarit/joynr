@@ -48,7 +48,7 @@ public:
      * @param publicationTtlMs The publication TTL in ms.
      * @param validityMs Time span in milliseconds during which publications will be sent
      */
-    UnicastSubscriptionQos(const std::int64_t validityMs, const std::int64_t publicationTtlMs);
+    UnicastSubscriptionQos(std::int64_t validityMs, std::int64_t publicationTtlMs);
 
     /**
      * @brief Copy constructor
@@ -92,7 +92,7 @@ public:
      *
      * @see SubscriptionQos#setExpiryDateMs
      */
-    virtual void setPublicationTtlMs(const std::int64_t& publicationTtlMs);
+    virtual void setPublicationTtlMs(std::int64_t publicationTtlMs);
 
     /** @brief Assignment operator */
     UnicastSubscriptionQos& operator=(const UnicastSubscriptionQos& subscriptionQos);
@@ -104,19 +104,19 @@ public:
      * @brief Returns the default publication time to live value in milliseconds:
      * 10 000 (10 secs)
      */
-    static const std::int64_t& DEFAULT_PUBLICATION_TTL_MS();
+    static std::int64_t DEFAULT_PUBLICATION_TTL_MS();
 
     /**
      * @brief Returns the minimum publication time to live value in milliseconds:
      * 100
      */
-    static const std::int64_t& MIN_PUBLICATION_TTL_MS();
+    static std::int64_t MIN_PUBLICATION_TTL_MS();
 
     /**
      * @brief Returns the maximum publication time to live value in milliseconds:
      * 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_PUBLICATION_TTL_MS();
+    static std::int64_t MAX_PUBLICATION_TTL_MS();
 
     template <typename Archive>
     void serialize(Archive& archive)
