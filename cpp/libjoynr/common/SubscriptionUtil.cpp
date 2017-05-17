@@ -30,7 +30,7 @@
 namespace joynr
 {
 
-bool SubscriptionUtil::isOnChangeSubscription(const std::shared_ptr<SubscriptionQos>& qos)
+bool SubscriptionUtil::isOnChangeSubscription(std::shared_ptr<SubscriptionQos> qos)
 {
     static const std::type_info& onChangeSubscriptionQosTypeId = typeid(OnChangeSubscriptionQos);
     static const std::type_info& onChangeWithKeepAliveSubscriptionQosTypeId =
@@ -42,7 +42,7 @@ bool SubscriptionUtil::isOnChangeSubscription(const std::shared_ptr<Subscription
            qosTypeId == onChangeWithKeepAliveSubscriptionQosTypeId;
 }
 
-std::int64_t SubscriptionUtil::getAlertInterval(const std::shared_ptr<SubscriptionQos>& qos)
+std::int64_t SubscriptionUtil::getAlertInterval(std::shared_ptr<SubscriptionQos> qos)
 {
     if (auto typedQos = std::dynamic_pointer_cast<OnChangeWithKeepAliveSubscriptionQos>(qos)) {
         return typedQos->getAlertAfterIntervalMs();
@@ -52,7 +52,7 @@ std::int64_t SubscriptionUtil::getAlertInterval(const std::shared_ptr<Subscripti
     return -1;
 }
 
-std::int64_t SubscriptionUtil::getMinInterval(const std::shared_ptr<SubscriptionQos>& qos)
+std::int64_t SubscriptionUtil::getMinInterval(std::shared_ptr<SubscriptionQos> qos)
 {
     if (auto typedQos = std::dynamic_pointer_cast<OnChangeSubscriptionQos>(qos)) {
         return typedQos->getMinIntervalMs();
@@ -60,8 +60,7 @@ std::int64_t SubscriptionUtil::getMinInterval(const std::shared_ptr<Subscription
     return -1;
 }
 
-std::int64_t SubscriptionUtil::getPeriodicPublicationInterval(
-        const std::shared_ptr<SubscriptionQos>& qos)
+std::int64_t SubscriptionUtil::getPeriodicPublicationInterval(std::shared_ptr<SubscriptionQos> qos)
 {
     if (auto typedQos = std::dynamic_pointer_cast<OnChangeWithKeepAliveSubscriptionQos>(qos)) {
         return typedQos->getMaxIntervalMs();
