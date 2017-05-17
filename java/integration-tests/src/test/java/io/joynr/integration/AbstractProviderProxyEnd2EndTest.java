@@ -87,6 +87,7 @@ import joynr.types.ProviderQos;
 import joynr.types.TestTypes.TStringKeyMap;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -137,6 +138,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     private static final ComplexTestType FIRE_AND_FORGET_COMPLEX_PARAMETER = new ComplexTestType();
 
     protected List<JoynrRuntime> createdRuntimes = new ArrayList<JoynrRuntime>();
+    protected static Properties baseTestConfig;
 
     long timeTookToRegisterProvider;
 
@@ -172,6 +174,14 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     // Overridden by test environment implementations
     protected abstract JoynrRuntime getRuntime(Properties joynrConfig, Module... modules);
+
+    @BeforeClass
+    public static void setupBaseConfig() {
+        baseTestConfig = new Properties();
+        baseTestConfig.put(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
+        baseTestConfig.put(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
+        baseTestConfig.put(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
+    }
 
     @Before
     public void baseSetup() throws Exception {

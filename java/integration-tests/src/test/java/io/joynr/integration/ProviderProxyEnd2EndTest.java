@@ -28,7 +28,6 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.integration.util.ServersUtil;
 import io.joynr.messaging.AtmosphereMessagingModule;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -48,10 +47,7 @@ public class ProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
     public static void startServer() throws Exception {
         originalProperties = System.getProperties();
         System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION, "true");
-        // keep delays and timeout low for tests
-        System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
-        System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
-        System.setProperty(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
+        System.setProperties(baseTestConfig);
 
         provisionDiscoveryDirectoryAccessControlEntries();
         jettyServer = ServersUtil.startServers();

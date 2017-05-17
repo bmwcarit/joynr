@@ -62,6 +62,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "replyto/");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
         joynrConfig.putAll(mqttConfig);
+        joynrConfig.putAll(baseTestConfig);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(modules);
         Module modulesWithRuntime = Modules.override(runtimeModule).with(new AtmosphereMessagingModule(),
                                                                          new MqttPahoModule(),

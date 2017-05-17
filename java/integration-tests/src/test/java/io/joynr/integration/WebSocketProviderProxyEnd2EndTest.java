@@ -81,6 +81,7 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
     private JoynrRuntime createClusterController(Properties webSocketConfig) {
         Properties ccConfig = new Properties();
         ccConfig.putAll(webSocketConfig);
+        ccConfig.putAll(baseTestConfig);
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
         injectorCC = new JoynrInjectorFactory(ccConfig, Modules.override(new CCWebSocketRuntimeModule())
                                                                .with(new AtmosphereMessagingModule(),
@@ -101,6 +102,7 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
             createdRuntimes.add(ccJoynrRuntime);
         }
         joynrConfig.putAll(webSocketConfig);
+        joynrConfig.putAll(baseTestConfig);
         joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
         Module modulesWithRuntime = Modules.override(modules)
                                            .with(Modules.override(new LibjoynrWebSocketRuntimeModule())
