@@ -19,13 +19,13 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
-import io.joynr.messaging.IRawMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 
 public interface JoynrMqttClient {
 
     public void start();
 
-    public void setMessageListener(IRawMessaging rawMessaging);
+    public void setMessageListener(IMessagingSkeleton rawMessaging);
 
     public void shutdown();
 

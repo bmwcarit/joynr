@@ -56,8 +56,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
         this.messageProcessors = messageProcessors;
     }
 
-    @Override
-    public void transmit(ImmutableMessage message, FailureAction failureAction) {
+    private void forwardMessage(ImmutableMessage message, FailureAction failureAction) {
         if (messageProcessors != null) {
             for (JoynrMessageProcessor processor : messageProcessors) {
                 message = processor.processIncoming(message);
@@ -106,7 +105,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
 
             @Override
             public void messageArrived(final ImmutableMessage message) {
-                transmit(message, new FailureAction() {
+                forwardMessage(message, new FailureAction() {
                     @Override
                     public void execute(Throwable error) {
                         logger.error("error processing incoming message: {} error: {}",

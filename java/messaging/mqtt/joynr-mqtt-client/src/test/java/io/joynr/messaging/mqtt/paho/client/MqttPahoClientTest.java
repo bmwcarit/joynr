@@ -42,7 +42,7 @@ import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
@@ -63,7 +63,7 @@ public class MqttPahoClientTest {
     private MqttClientFactory mqttClientFactory;
     private MqttAddress ownTopic;
     @Mock
-    private IMessaging mockReceiver;
+    private IMessagingSkeleton mockReceiver;
     @Mock
     private MessageRouter mockMessageRouter;
     private JoynrMqttClient client;

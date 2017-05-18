@@ -25,7 +25,6 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
-import joynr.ImmutableMessage;
 
 /**
  * Because the messaging stub will refuse to send a message via MQTT unless a messaging skeleton has been registered
@@ -40,10 +39,6 @@ public class NoOpMessagingSkeleton implements IMessagingSkeleton {
     @Inject
     public NoOpMessagingSkeleton(MqttClientFactory mqttClientFactory) {
         this.mqttClientFactory = mqttClientFactory;
-    }
-
-    @Override
-    public void transmit(ImmutableMessage message, FailureAction failureAction) {
     }
 
     @Override

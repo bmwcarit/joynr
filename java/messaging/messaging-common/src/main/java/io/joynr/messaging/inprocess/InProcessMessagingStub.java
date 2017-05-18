@@ -41,6 +41,7 @@ public class InProcessMessagingStub implements IMessagingStub {
     @Override
     public void transmit(ImmutableMessage message, FailureAction failureAction) {
         LOG.trace(">>> OUTGOING >>> {}", message.toLogMessage());
+
         skeleton.transmit(message, failureAction);
     }
 }

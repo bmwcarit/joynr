@@ -125,8 +125,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
         return topic;
     }
 
-    @Override
-    public void transmit(ImmutableMessage message, FailureAction failureAction) {
+    private void forwardMessage(ImmutableMessage message, FailureAction failureAction) {
         LOG.debug("<<< INCOMING <<< {}", message.toLogMessage());
         try {
             if (message.getType().equals(Message.VALUE_MESSAGE_TYPE_MULTICAST)) {
@@ -162,7 +161,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
                 }
             }
 
-            transmit(message, failureAction);
+            forwardMessage(message, failureAction);
         } catch (UnsuppportedVersionException | EncodingException e) {
             LOG.error("Message: \"{}\", could not be serialized, exception: {}", serializedMessage, e.getMessage());
             failureAction.execute(e);

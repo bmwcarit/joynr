@@ -46,7 +46,7 @@ import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -63,7 +63,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     private long websocketIdleTimeout;
     Future<Session> sessionFuture;
     private WebSocketAddress serverAddress;
-    private IMessaging messageListener;
+    private IMessagingSkeleton messageListener;
     private ObjectMapper objectMapper;
     private WebSocketClientAddress ownAddress;
 
@@ -144,7 +144,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     }
 
     @Override
-    public void setMessageListener(IMessaging messaging) {
+    public void setMessageListener(IMessagingSkeleton messaging) {
         this.messageListener = messaging;
     }
 

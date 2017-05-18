@@ -28,11 +28,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.HashSet;
-
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertArrayEquals;
+
+import java.util.HashSet;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
@@ -146,15 +146,14 @@ public class MqttMessagingSkeletonTest {
                                             preprocessor,
                                             new HashSet<JoynrMessageProcessor>());
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        MqttAddress address = new MqttAddress("testBrokerUri", "testTopic");
+        ImmutableMessage message = createTestMessage();
 
-        ImmutableMessage message = Mockito.mock(ImmutableMessage.class);
-        when(message.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
-        when(message.getReplyTo()).thenReturn(objectMapper.writeValueAsString(address));
+        subject.transmit(message.getSerializedMessage(), failIfCalledAction);
 
-        subject.transmit(message, failIfCalledAction);
-        verify(messageRouter).route(message);
+        ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
+        verify(messageRouter).route(captor.capture());
+
+        assertArrayEquals(message.getSerializedMessage(), captor.getValue().getSerializedMessage());
     }
 
     @Test
@@ -170,20 +169,30 @@ public class MqttMessagingSkeletonTest {
                                             new NoOpRawMessagingPreprocessor(),
                                             Sets.newHashSet(processorMock));
 
-        byte[] payload = new byte[]{ 0, 1, 2 };
-        MutableMessage message = new MutableMessage();
-        message.setSender("someSender");
-        message.setRecipient("someRecipient");
-        message.setTtlAbsolute(true);
-        message.setTtlMs(100000);
-        message.setPayload(payload);
-        message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        ImmutableMessage message = createTestMessage();
 
-        subject.transmit(message.getImmutableMessage().getSerializedMessage(), failIfCalledAction);
+        subject.transmit(message.getSerializedMessage(), failIfCalledAction);
 
         ArgumentCaptor<ImmutableMessage> argCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
         verify(processorMock).processIncoming(argCaptor.capture());
 
-        Assert.assertArrayEquals(payload, argCaptor.getValue().getUnencryptedBody());
+        Assert.assertArrayEquals(message.getSerializedMessage(), argCaptor.getValue().getSerializedMessage());
+    }
+
+    private ImmutableMessage createTestMessage() throws Exception {
+        MutableMessage message = new MutableMessage();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        MqttAddress address = new MqttAddress("testBrokerUri", "testTopic");
+
+        message.setSender("someSender");
+        message.setRecipient("someRecipient");
+        message.setTtlAbsolute(true);
+        message.setTtlMs(100000);
+        message.setPayload(new byte[]{ 0, 1, 2 });
+        message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        message.setReplyTo(objectMapper.writeValueAsString(address));
+
+        return message.getImmutableMessage();
     }
 }

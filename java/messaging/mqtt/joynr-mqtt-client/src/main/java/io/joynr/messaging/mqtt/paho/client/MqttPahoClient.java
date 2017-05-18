@@ -40,7 +40,7 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IRawMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
@@ -49,7 +49,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClient.class);
     private MqttClient mqttClient;
-    private IRawMessaging messagingSkeleton;
+    private IMessagingSkeleton messagingSkeleton;
     private int reconnectSleepMs;
     private int keepAliveTimerSec;
     private int connectionTimeoutSec;
@@ -324,7 +324,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void setMessageListener(IRawMessaging messaging) {
+    public void setMessageListener(IMessagingSkeleton messaging) {
         this.messagingSkeleton = messaging;
 
     }

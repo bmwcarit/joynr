@@ -32,8 +32,6 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.smrf.EncodingException;
-import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -91,22 +89,11 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMes
     }
 
     @Override
-    public void transmit(ImmutableMessage message, FailureAction failureAction) {
-        LOG.debug("<<< INCOMING <<< {}", message.toLogMessage());
-        try {
-            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType()) && this.isMainTransport()) {
-                message.setReceivedFromGlobal(true);
-            }
-            messageRouter.route(message);
-        } catch (Exception exception) {
-            failureAction.execute(exception);
-        }
-    }
-
-    @Override
     public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         try {
             ImmutableMessage message = new ImmutableMessage(serializedMessage);
+
+            LOG.debug("<<< INCOMING <<< {}", message.toLogMessage());
 
             if (messageProcessors != null) {
                 for (JoynrMessageProcessor processor : messageProcessors) {
@@ -114,8 +101,11 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMes
                 }
             }
 
-            transmit(message, failureAction);
-        } catch (EncodingException | UnsuppportedVersionException error) {
+            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType()) && this.isMainTransport()) {
+                message.setReceivedFromGlobal(true);
+            }
+            messageRouter.route(message);
+        } catch (Exception error) {
             failureAction.execute(error);
         }
     }
