@@ -7,7 +7,14 @@
   and ImmutableMessage for incoming messages.
 
 ## Other changes
-* **[Java]** HTTP communication is not supported at the moment
+* **[Java,C++,JS]** HTTP communication is not supported at the moment
+* **[JS]** Browser based environments, e.g. radio-js, are not supported at the moment
+* **[JS]** Direct MQTT based communication is not supported at the moment.
+  Please use the WebSocketLibjoynrRuntime to connect to external cluster controller handling
+  the MQTT connection to the backend.
+* **[Java]** Global Discovery and Global Domain Access Controller via Jetty using HTTP based
+  communication are no longer supported, please use the JEE implementations based
+  on MQTT communication instead
 
 ### Backward compatibility
 This version of joynr is NOT compatible with previous versions due to internal changes:
