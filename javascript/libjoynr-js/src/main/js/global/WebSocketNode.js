@@ -45,48 +45,68 @@ define([
         return data;
     };
 
-    ws.marshalJoynrMessage =
-            function(joynrMessage) {
-                var smrfMsg = {};
-                var headerKey;
-                smrfMsg.sender = joynrMessage.header.from;
-                smrfMsg.recipient = joynrMessage.header.to;
-                smrfMsg.ttlMs = joynrMessage.header.expiryDate;
-                smrfMsg.isTtlAbsolute = true;
-                smrfMsg.isCompressed = joynrMessage.compress;
-                smrfMsg.body = new Buffer(joynrMessage.payload);
-                smrfMsg.encryptionCert = null;
-                smrfMsg.signingCert = null;
-                smrfMsg.signingKey = null;
-                smrfMsg.headers = {};
-                smrfMsg.headers.type = joynrMessage.type;
-                smrfMsg.headers.id = joynrMessage.header.msgId;
-                if (joynrMessage.header.replyChannelId) {
-                    smrfMsg.headers.replyTo = joynrMessage.header.replyChannelId;
+    var skipJoynrHeaderKeys = {
+        "contentType" : true,
+        "creator" : true,
+        "effort" : true,
+        "from" : true,
+        "msgId" : true,
+        "replyChannelId" : true,
+        "to" : true,
+        "expiryDate" : true
+    };
+
+    ws.marshalJoynrMessage = function(joynrMessage) {
+        var smrfMsg = {};
+        var headerKey;
+        smrfMsg.sender = joynrMessage.header.from;
+        smrfMsg.recipient = joynrMessage.header.to;
+        smrfMsg.ttlMs = joynrMessage.header.expiryDate;
+        smrfMsg.isTtlAbsolute = true;
+        smrfMsg.isCompressed = joynrMessage.compress;
+        smrfMsg.body = new Buffer(joynrMessage.payload);
+        smrfMsg.encryptionCert = null;
+        smrfMsg.signingCert = null;
+        smrfMsg.signingKey = null;
+        smrfMsg.headers = {};
+        smrfMsg.headers.t = joynrMessage.type;
+        smrfMsg.headers.id = joynrMessage.header.msgId;
+        if (joynrMessage.header.replyChannelId) {
+            smrfMsg.headers.re = joynrMessage.header.replyChannelId;
+        }
+        if (joynrMessage.header.effort) {
+            smrfMsg.headers.ef = joynrMessage.header.effort;
+        }
+        for (headerKey in joynrMessage.header) {
+            if (joynrMessage.header.hasOwnProperty(headerKey)) {
+                if (!skipJoynrHeaderKeys[headerKey]) {
+                    smrfMsg.headers[headerKey] = joynrMessage.header[headerKey];
                 }
-                // no special handling required for 'creator' and 'effort'
-                // since there names are identical in header fields of JoynrMessage
-                // and smrfMessage
-                for (headerKey in joynrMessage.header) {
-                    if (joynrMessage.header.hasOwnProperty(headerKey)) {
-                        if (headerKey !== "contentType"
-                            && headerKey !== "from"
-                            && headerKey !== "msgId"
-                            && headerKey !== "replyChannelId"
-                            && headerKey !== "to"
-                            && headerKey !== "expiryDate") {
-                            smrfMsg.headers[headerKey] = joynrMessage.header[headerKey];
-                        }
-                    }
-                }
-                var serializedMsg;
-                try {
-                    serializedMsg = smrf.serialize(smrfMsg);
-                } catch (e) {
-                    throw new Error("ws.marshalJoynrMessage: got exception " + e);
-                }
-                return serializedMsg;
-            };
+            }
+        }
+        var serializedMsg;
+        try {
+            serializedMsg = smrf.serialize(smrfMsg);
+        } catch (e) {
+            throw new Error("ws.marshalJoynrMessage: got exception " + e);
+        }
+        return serializedMsg;
+    };
+
+    var skipSmrfHeaderKeys = {
+        // headers already converted manually
+        't' : true,
+        'id' : true,
+        're' : true,
+        'ef' : true,
+        // reserved headers, prevent overwriting
+        'from' : true,
+        'to' : true,
+        'msgId' : true,
+        'replyChannelId' : true,
+        'expiryDate' : true,
+        'effort' : true
+    };
 
     ws.unmarshalJoynrMessage = function(event, callback) {
         if (typeof event.data === "object") {
@@ -102,10 +122,10 @@ define([
             convertedMsg.header.from = smrfMsg.sender;
             convertedMsg.header.to = smrfMsg.recipient;
             convertedMsg.header.msgId = smrfMsg.headers.id;
-            if (smrfMsg.headers.replyTo) {
-                convertedMsg.header.replyChannelId = smrfMsg.headers.replyTo;
+            if (smrfMsg.headers.re) {
+                convertedMsg.header.replyChannelId = smrfMsg.headers.re;
             }
-            convertedMsg.type = smrfMsg.headers.type;
+            convertedMsg.type = smrfMsg.headers.t;
             // ignore for now:
             //   smrfMsg.headers.isCompressed
             //   smrfMsg.headers.encryptionCert
@@ -116,11 +136,11 @@ define([
             } else {
                 convertedMsg.header.expiryDate = smrfMsg.ttlMs + Date.now();
             }
-            convertedMsg.header.effort = smrfMsg.effort;
+            convertedMsg.header.effort = smrfMsg.headers.ef;
             convertedMsg.payload = smrfMsg.body.toString();
             for (headerKey in smrfMsg.headers) {
                 if (smrfMsg.headers.hasOwnProperty(headerKey)) {
-                    if (headerKey !== 'type' && headerKey !== 'id' && headerKey !== 'replyTo') {
+                    if (!skipSmrfHeaderKeys[headerKey]) {
                         convertedMsg.header[headerKey] = smrfMsg.headers[headerKey];
                     }
                 }
