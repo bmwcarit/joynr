@@ -1,6 +1,10 @@
 # joynr 0.26.0
 
 ## API relevant changes
+* **[JavaScript]** It is now possible to register a provider with a preconfigured
+  participantId. The application is responsible to ensure that the participantId is
+  unique, globally or locally depending on the provider's scope. See the JSDoc for more
+  information.
 * **[Java, JEE]** RawMessagingPreprocessor now accepts a byte array as an input parameter and returns
   a byte array instead of a string.
 * **[Java]** JoynrMessageProcessor uses the new SMRF message types: MutableMessage for outgoing messages

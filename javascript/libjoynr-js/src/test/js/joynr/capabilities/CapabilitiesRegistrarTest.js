@@ -166,6 +166,8 @@ define([
                             expect(capabilitiesRegistrar.registerProvider).toBeDefined();
                             expect(typeof capabilitiesRegistrar.registerProvider === "function")
                                     .toBeTruthy();
+                            expect(typeof capabilitiesRegistrar.register === "function")
+                            .toBeTruthy();
                             done();
                         });
 
@@ -251,6 +253,42 @@ define([
                             expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
                             expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(
                                     participantId,
+                                    provider);
+                            done();
+                        });
+
+                        it("handles calls to function register", function(done) {
+                            capabilitiesRegistrar.register({
+                                domain: "domain",
+                                provider: provider,
+                                providerQos : providerQos
+                            }).then(function() {
+                               return null;
+                            }).catch(function() {
+                               return null;
+                            });
+                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
+                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(
+                                    participantId,
+                                    provider);
+                            done();
+                        });
+
+                        it("uses passed-in participantId", function(done) {
+                            var myParticipantId = "myParticipantId";
+                            capabilitiesRegistrar.register({
+                                domain: "domain",
+                                provider: provider,
+                                providerQos : providerQos,
+                                participantId : myParticipantId
+                            }).then(function() {
+                               return null;
+                            }).catch(function() {
+                               return null;
+                            });
+                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
+                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(
+                                    myParticipantId,
                                     provider);
                             done();
                         });
