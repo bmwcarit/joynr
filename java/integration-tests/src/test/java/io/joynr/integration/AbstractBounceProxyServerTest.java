@@ -32,7 +32,6 @@ import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.serialize.JoynrEnumSerializer;
 import io.joynr.messaging.serialize.JoynrListSerializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
-import io.joynr.messaging.serialize.NumberSerializer;
 import io.joynr.messaging.util.Utilities;
 
 import java.util.ArrayList;
@@ -298,7 +297,6 @@ public abstract class AbstractBounceProxyServerTest {
                                                                       .getDefaultTyper(SimpleType.construct(Object.class));
 
         SimpleModule module = new SimpleModule("NonTypedModule", new Version(1, 0, 0, "", "", ""));
-        module.addSerializer(Number.class, new NumberSerializer());
         module.addSerializer(new JoynrEnumSerializer());
         module.addSerializer(new JoynrListSerializer());
 

@@ -15,11 +15,13 @@
 * **[Java]** Global Discovery and Global Domain Access Controller via Jetty using HTTP based
   communication are no longer supported, please use the JEE implementations based
   on MQTT communication instead
+* **[Java]** Updated to use of Jackson 2.8.8 in order to improve compatibility with Payara.
 
-### Backward compatibility
+## Backward compatibility
 This version of joynr is NOT compatible with previous versions due to internal changes:
 * **[cluster-controller]** cluster-controller expects libjoynr to signal globally visible providers
 * **[messaging layer]** Switched to SMRF messaging format.
+
 
 # joynr 0.25.2
 
