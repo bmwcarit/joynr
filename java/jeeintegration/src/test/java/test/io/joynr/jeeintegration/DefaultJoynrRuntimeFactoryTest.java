@@ -47,7 +47,7 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
-import io.joynr.dispatching.JoynrMessageFactory;
+import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -139,8 +139,8 @@ public class DefaultJoynrRuntimeFactoryTest {
     public void testJoynrMessageProcessorUsed() throws Exception {
         createFixture();
         Injector injector = fixture.getInjector();
-        JoynrMessageFactory joynrMessageFactory = injector.getInstance(JoynrMessageFactory.class);
-        MutableMessage request = joynrMessageFactory.createRequest("from",
+        MutableMessageFactory messageFactory = injector.getInstance(MutableMessageFactory.class);
+        MutableMessage request = messageFactory.createRequest("from",
                                                                  "to",
                                                                  new Request("name", new Object[0], new Class[0]),
                                                                  new MessagingQos());

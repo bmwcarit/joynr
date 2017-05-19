@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
 public class DispatcherImpl implements Dispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(DispatcherImpl.class);
-    private final JoynrMessageFactory joynrMessageFactory;
+    private final MutableMessageFactory messageFactory;
     private RequestReplyManager requestReplyManager;
     private SubscriptionManager subscriptionManager;
     private PublicationManager publicationManager;
@@ -76,14 +76,14 @@ public class DispatcherImpl implements Dispatcher {
                           PublicationManager publicationManager,
                           MessageRouter messageRouter,
                           MessageSender messageSender,
-                          JoynrMessageFactory joynrMessageFactory,
+                          MutableMessageFactory messageFactory,
                           ObjectMapper objectMapper) {
         this.requestReplyManager = requestReplyManager;
         this.subscriptionManager = subscriptionManager;
         this.publicationManager = publicationManager;
         this.messageRouter = messageRouter;
         this.messageSender = messageSender;
-        this.joynrMessageFactory = joynrMessageFactory;
+        this.messageFactory = messageFactory;
         this.objectMapper = objectMapper;
     }
 
@@ -95,10 +95,10 @@ public class DispatcherImpl implements Dispatcher {
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos messagingQos) {
         for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
-            MutableMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
-                                                                                   toDiscoveryEntry.getParticipantId(),
-                                                                                   subscriptionRequest,
-                                                                                   messagingQos);
+            MutableMessage message = messageFactory.createSubscriptionRequest(fromParticipantId,
+                                                                              toDiscoveryEntry.getParticipantId(),
+                                                                              subscriptionRequest,
+                                                                              messagingQos);
             message.setLocalMessage(toDiscoveryEntry.getIsLocal());
 
             if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
@@ -115,10 +115,10 @@ public class DispatcherImpl implements Dispatcher {
                                      SubscriptionStop subscriptionStop,
                                      MessagingQos messagingQos) {
         for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
-            MutableMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
-                                                                                toDiscoveryEntry.getParticipantId(),
-                                                                                subscriptionStop,
-                                                                                messagingQos);
+            MutableMessage message = messageFactory.createSubscriptionStop(fromParticipantId,
+                                                                           toDiscoveryEntry.getParticipantId(),
+                                                                           subscriptionStop,
+                                                                           messagingQos);
             message.setLocalMessage(toDiscoveryEntry.getIsLocal());
             messageSender.sendMessage(message);
         }
@@ -132,10 +132,10 @@ public class DispatcherImpl implements Dispatcher {
                                             MessagingQos messagingQos) {
 
         for (String toParticipantId : toParticipantIds) {
-            MutableMessage message = joynrMessageFactory.createPublication(fromParticipantId,
-                                                                           toParticipantId,
-                                                                           publication,
-                                                                           messagingQos);
+            MutableMessage message = messageFactory.createPublication(fromParticipantId,
+                                                                      toParticipantId,
+                                                                      publication,
+                                                                      messagingQos);
             messageSender.sendMessage(message);
         }
     }
@@ -147,10 +147,7 @@ public class DispatcherImpl implements Dispatcher {
                           Map<String, String> customHeaders) throws IOException {
         MessagingQos messagingQos = new MessagingQos(expiryDateMs);
         messagingQos.getCustomMessageHeaders().putAll(customHeaders);
-        MutableMessage message = joynrMessageFactory.createReply(fromParticipantId,
-                                                                 toParticipantId,
-                                                                 reply,
-                                                                 messagingQos);
+        MutableMessage message = messageFactory.createReply(fromParticipantId, toParticipantId, reply, messagingQos);
         messageSender.sendMessage(message);
     }
 
@@ -160,10 +157,10 @@ public class DispatcherImpl implements Dispatcher {
                                       SubscriptionReply subscriptionReply,
                                       MessagingQos messagingQos) {
 
-        MutableMessage message = joynrMessageFactory.createSubscriptionReply(fromParticipantId,
-                                                                             toParticipantId,
-                                                                             subscriptionReply,
-                                                                             messagingQos);
+        MutableMessage message = messageFactory.createSubscriptionReply(fromParticipantId,
+                                                                        toParticipantId,
+                                                                        subscriptionReply,
+                                                                        messagingQos);
         messageSender.sendMessage(message);
     }
 
@@ -400,9 +397,7 @@ public class DispatcherImpl implements Dispatcher {
     public void sendMulticast(String fromParticipantId,
                               MulticastPublication multicastPublication,
                               MessagingQos messagingQos) {
-        MutableMessage message = joynrMessageFactory.createMulticast(fromParticipantId,
-                                                                     multicastPublication,
-                                                                     messagingQos);
+        MutableMessage message = messageFactory.createMulticast(fromParticipantId, multicastPublication, messagingQos);
         messageSender.sendMessage(message);
     }
 }

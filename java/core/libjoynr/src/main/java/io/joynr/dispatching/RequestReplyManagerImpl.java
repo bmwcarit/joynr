@@ -72,19 +72,19 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     private RequestInterpreter requestInterpreter;
     private MessageRouter messageRouter;
     private MessageSender messageSender;
-    private JoynrMessageFactory joynrMessageFactory;
+    private MutableMessageFactory messageFactory;
 
     private ScheduledExecutorService cleanupScheduler;
 
     @Inject
-    public RequestReplyManagerImpl(JoynrMessageFactory joynrMessageFactory,
+    public RequestReplyManagerImpl(MutableMessageFactory messageFactory,
                                    ReplyCallerDirectory replyCallerDirectory,
                                    ProviderDirectory providerDirectory,
                                    MessageRouter messageRouter,
                                    MessageSender messageSender,
                                    RequestInterpreter requestInterpreter,
                                    @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
-        this.joynrMessageFactory = joynrMessageFactory;
+        this.messageFactory = messageFactory;
         this.replyCallerDirectory = replyCallerDirectory;
         this.providerDirectory = providerDirectory;
         this.messageRouter = messageRouter;
@@ -109,10 +109,10 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
         logger.trace("SEND USING RequestReplySenderImpl with Id: " + System.identityHashCode(this));
 
-        MutableMessage message = joynrMessageFactory.createRequest(fromParticipantId,
-                                                                   toDiscoveryEntry.getParticipantId(),
-                                                                   request,
-                                                                   messagingQos);
+        MutableMessage message = messageFactory.createRequest(fromParticipantId,
+                                                              toDiscoveryEntry.getParticipantId(),
+                                                              request,
+                                                              messagingQos);
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
         messageSender.sendMessage(message);
     }
@@ -178,10 +178,10 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                                   OneWayRequest oneWayRequest,
                                   MessagingQos messagingQos) {
         for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
-            MutableMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
-                                                                             toDiscoveryEntry.getParticipantId(),
-                                                                             oneWayRequest,
-                                                                             messagingQos);
+            MutableMessage message = messageFactory.createOneWayRequest(fromParticipantId,
+                                                                        toDiscoveryEntry.getParticipantId(),
+                                                                        oneWayRequest,
+                                                                        messagingQos);
             messageSender.sendMessage(message);
         }
     }

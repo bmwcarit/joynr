@@ -52,7 +52,7 @@ import com.google.inject.util.Modules;
 
 import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatching.JoynrMessageFactory;
+import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -149,8 +149,8 @@ public class CcMessageRouterTest {
                 });
 
                 ObjectMapper objectMapper = new ObjectMapper();
-                JoynrMessageFactory messageFactory = new JoynrMessageFactory(objectMapper,
-                                                                             new HashSet<JoynrMessageProcessor>());
+                MutableMessageFactory messageFactory = new MutableMessageFactory(objectMapper,
+                                                                                 new HashSet<JoynrMessageProcessor>());
 
                 final boolean isGloballyVisible = true; // toParticipantId is globally visible
                 routingTable.put(toParticipantId, channelAddress, isGloballyVisible);

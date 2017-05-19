@@ -109,8 +109,8 @@ public class TtlUpliftTest {
     private ExpiryDate expiryDate;
     private MessagingQos messagingQos;
 
-    private JoynrMessageFactory joynrMessageFactory;
-    private JoynrMessageFactory joynrMessageFactoryWithTtlUplift;
+    private MutableMessageFactory messageFactory;
+    private MutableMessageFactory messageFactoryWithTtlUplift;
 
     private ScheduledExecutorService cleanupScheduler;
     private ScheduledExecutorService cleanupSchedulerSpy;
@@ -180,7 +180,7 @@ public class TtlUpliftTest {
                                       });
         Injector injector = Guice.createInjector(defaultModule);
 
-        joynrMessageFactory = injector.getInstance(JoynrMessageFactory.class);
+        messageFactory = injector.getInstance(MutableMessageFactory.class);
 
         Module ttlUpliftModule = Modules.override(defaultModule).with(new AbstractModule() {
             @Override
@@ -190,7 +190,7 @@ public class TtlUpliftTest {
             }
         });
         Injector injectorWithTtlUplift = Guice.createInjector(ttlUpliftModule);
-        joynrMessageFactoryWithTtlUplift = injectorWithTtlUplift.getInstance(JoynrMessageFactory.class);
+        messageFactoryWithTtlUplift = injectorWithTtlUplift.getInstance(MutableMessageFactory.class);
 
         requestCaller = new RequestCallerFactory().create(provider);
         when(providerContainer.getProviderProxy()).thenReturn(requestCaller.getProxy());
@@ -222,146 +222,134 @@ public class TtlUpliftTest {
     @Test
     public void testDefaultTtlUpliftMs() {
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
-        MutableMessage message = joynrMessageFactory.createRequest(fromParticipantId,
-                                                                   toParticipantId,
-                                                                   request,
-                                                                   messagingQos);
+        MutableMessage message = messageFactory.createRequest(fromParticipantId, toParticipantId, request, messagingQos);
 
         long expiryDateValue = expiryDate.getValue();
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
     @Test
     public void testTtlUpliftMs_Request() {
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
-        MutableMessage message = joynrMessageFactoryWithTtlUplift.createRequest(fromParticipantId,
-                                                                                toParticipantId,
-                                                                                request,
-                                                                                messagingQos);
+        MutableMessage message = messageFactoryWithTtlUplift.createRequest(fromParticipantId,
+                                                                           toParticipantId,
+                                                                           request,
+                                                                           messagingQos);
 
         long expiryDateValue = expiryDate.getValue() + TTL_UPLIFT_MS;
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
     @Test
     public void testTtlUpliftMs_Reply_noUplift() {
         Reply reply = new Reply();
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
-        MutableMessage message = joynrMessageFactoryWithTtlUplift.createReply(fromParticipantId,
-                                                                              toParticipantId,
-                                                                              reply,
-                                                                              messagingQos);
+        MutableMessage message = messageFactoryWithTtlUplift.createReply(fromParticipantId,
+                                                                         toParticipantId,
+                                                                         reply,
+                                                                         messagingQos);
 
         long expiryDateValue = expiryDate.getValue();
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
     @Test
     public void testTtlUpliftMs_OneWayRequest() {
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
-        MutableMessage message = joynrMessageFactoryWithTtlUplift.createOneWayRequest(fromParticipantId,
-                                                                                      toParticipantId,
-                                                                                      request,
-                                                                                      messagingQos);
+        MutableMessage message = messageFactoryWithTtlUplift.createOneWayRequest(fromParticipantId,
+                                                                                 toParticipantId,
+                                                                                 request,
+                                                                                 messagingQos);
 
         long expiryDateValue = expiryDate.getValue() + TTL_UPLIFT_MS;
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
     @Test
     public void testTtlUpliftMs_SubscriptionReply() {
         SubscriptionReply subscriptionReply = new SubscriptionReply();
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
-        MutableMessage message = joynrMessageFactoryWithTtlUplift.createSubscriptionReply(fromParticipantId,
-                                                                                          toParticipantId,
-                                                                                          subscriptionReply,
-                                                                                          messagingQos);
+        MutableMessage message = messageFactoryWithTtlUplift.createSubscriptionReply(fromParticipantId,
+                                                                                     toParticipantId,
+                                                                                     subscriptionReply,
+                                                                                     messagingQos);
 
         long expiryDateValue = expiryDate.getValue() + TTL_UPLIFT_MS;
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
     @Test
     public void testTtlUpliftMs_SubscriptionRequest() {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest();
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
-        MutableMessage message = joynrMessageFactoryWithTtlUplift.createSubscriptionRequest(fromParticipantId,
-                                                                                            toParticipantId,
-                                                                                            subscriptionRequest,
-                                                                                            messagingQos);
+        MutableMessage message = messageFactoryWithTtlUplift.createSubscriptionRequest(fromParticipantId,
+                                                                                       toParticipantId,
+                                                                                       subscriptionRequest,
+                                                                                       messagingQos);
 
         long expiryDateValue = expiryDate.getValue() + TTL_UPLIFT_MS;
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
     @Test
     public void testTtlUpliftMs_Publication() {
         SubscriptionPublication subscriptionPublication = new SubscriptionPublication();
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
-        MutableMessage message = joynrMessageFactoryWithTtlUplift.createPublication(fromParticipantId,
-                                                                                    toParticipantId,
-                                                                                    subscriptionPublication,
-                                                                                    messagingQos);
+        MutableMessage message = messageFactoryWithTtlUplift.createPublication(fromParticipantId,
+                                                                               toParticipantId,
+                                                                               subscriptionPublication,
+                                                                               messagingQos);
 
         long expiryDateValue = expiryDate.getValue() + TTL_UPLIFT_MS;
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
     @Test
     public void testTtlUpliftMs_SubscriptionStop() {
         SubscriptionStop subscriptionStop = new SubscriptionStop();
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
-        MutableMessage message = joynrMessageFactoryWithTtlUplift.createSubscriptionStop(fromParticipantId,
-                                                                                         toParticipantId,
-                                                                                         subscriptionStop,
-                                                                                         messagingQos);
+        MutableMessage message = messageFactoryWithTtlUplift.createSubscriptionStop(fromParticipantId,
+                                                                                    toParticipantId,
+                                                                                    subscriptionStop,
+                                                                                    messagingQos);
 
         long expiryDateValue = expiryDate.getValue() + TTL_UPLIFT_MS;
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
     @Test
     public void testTtlUpliftMs_Multicast() {
         MulticastPublication multicastPublication = new MulticastPublication();
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
-        MutableMessage message = joynrMessageFactoryWithTtlUplift.createMulticast(fromParticipantId,
-                                                                                  multicastPublication,
-                                                                                  messagingQos);
+        MutableMessage message = messageFactoryWithTtlUplift.createMulticast(fromParticipantId,
+                                                                             multicastPublication,
+                                                                             messagingQos);
 
         long expiryDateValue = expiryDate.getValue() + TTL_UPLIFT_MS;
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
     @Test
     public void testTtlUpliftMsWithLargeTtl() {
         MessagingQos messagingQos = new MessagingQos(LARGE_EXPIRY_DATE_MS);
-        MutableMessage message = joynrMessageFactoryWithTtlUplift.createRequest(fromParticipantId,
-                                                                                toParticipantId,
-                                                                                request,
-                                                                                messagingQos);
+        MutableMessage message = messageFactoryWithTtlUplift.createRequest(fromParticipantId,
+                                                                           toParticipantId,
+                                                                           request,
+                                                                           messagingQos);
         long expiryDateValue = LARGE_EXPIRY_DATE_MS;
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
 
         messagingQos = new MessagingQos(LARGE_EXPIRY_DATE_MS - TTL_UPLIFT_MS);
-        message = joynrMessageFactoryWithTtlUplift.createRequest(fromParticipantId,
-                                                                 toParticipantId,
-                                                                 request,
-                                                                 messagingQos);
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        message = messageFactoryWithTtlUplift.createRequest(fromParticipantId, toParticipantId, request, messagingQos);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
 
         messagingQos = new MessagingQos(LARGE_EXPIRY_DATE_MS - TTL_UPLIFT_MS - System.currentTimeMillis());
-        message = joynrMessageFactoryWithTtlUplift.createRequest(fromParticipantId,
-                                                                 toParticipantId,
-                                                                 request,
-                                                                 messagingQos);
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        message = messageFactoryWithTtlUplift.createRequest(fromParticipantId, toParticipantId, request, messagingQos);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
 
         messagingQos = new MessagingQos(LARGE_EXPIRY_DATE_MS - TTL_UPLIFT_MS - System.currentTimeMillis() + 1);
-        message = joynrMessageFactoryWithTtlUplift.createRequest(fromParticipantId,
-                                                                 toParticipantId,
-                                                                 request,
-                                                                 messagingQos);
-        JoynrMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
+        message = messageFactoryWithTtlUplift.createRequest(fromParticipantId, toParticipantId, request, messagingQos);
+        MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
     private static class MessagingQosMatcher extends ArgumentMatcher<MessagingQos> {

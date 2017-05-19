@@ -93,7 +93,7 @@ public class DispatcherImplTest {
 
     private Dispatcher fixture;
     private ProviderDirectory requestCallerDirectory;
-    private JoynrMessageFactory joynrMessageFactory;
+    private MutableMessageFactory messageFactory;
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException {
@@ -131,7 +131,7 @@ public class DispatcherImplTest {
             }
         });
         requestCallerDirectory = injector.getInstance(ProviderDirectory.class);
-        joynrMessageFactory = injector.getInstance(JoynrMessageFactory.class);
+        messageFactory = injector.getInstance(MutableMessageFactory.class);
     }
 
     @Test
@@ -177,10 +177,10 @@ public class DispatcherImplTest {
         OneWayRequest request = new OneWayRequest("method", new Object[0], new Class<?>[0]);
         String toParticipantId = "toParticipantId";
         MessagingQos messagingQos = new MessagingQos(1000L);
-        MutableMessage joynrMessage = joynrMessageFactory.createOneWayRequest("fromParticipantId",
-                                                                              toParticipantId,
-                                                                              request,
-                                                                              messagingQos);
+        MutableMessage joynrMessage = messageFactory.createOneWayRequest("fromParticipantId",
+                                                                         toParticipantId,
+                                                                         request,
+                                                                         messagingQos);
 
         fixture.messageArrived(joynrMessage.getImmutableMessage());
 
@@ -190,7 +190,7 @@ public class DispatcherImplTest {
 
     @Test
     public void testSendMulticastMessage() {
-        JoynrMessageFactory joynrMessageFactoryMock = mock(JoynrMessageFactory.class);
+        MutableMessageFactory messageFactoryMock = mock(MutableMessageFactory.class);
         ObjectMapper objectMapperMock = mock(ObjectMapper.class);
 
         fixture = new DispatcherImpl(requestReplyManagerMock,
@@ -198,7 +198,7 @@ public class DispatcherImplTest {
                                      publicationManagerMock,
                                      messageRouterMock,
                                      messageSenderMock,
-                                     joynrMessageFactoryMock,
+                                     messageFactoryMock,
                                      objectMapperMock);
 
         String fromParticipantId = "fromParticipantId";
@@ -207,9 +207,7 @@ public class DispatcherImplTest {
 
         fixture.sendMulticast(fromParticipantId, multicastPublication, messagingQos);
 
-        verify(joynrMessageFactoryMock).createMulticast(eq(fromParticipantId),
-                                                        eq(multicastPublication),
-                                                        eq(messagingQos));
+        verify(messageFactoryMock).createMulticast(eq(fromParticipantId), eq(multicastPublication), eq(messagingQos));
         verify(messageSenderMock).sendMessage(Mockito.<MutableMessage> any());
     }
 
@@ -221,12 +219,12 @@ public class DispatcherImplTest {
                                                                                             "subscriptionId",
                                                                                             "multicastName",
                                                                                             new OnChangeSubscriptionQos());
-        MutableMessage joynrMessage = joynrMessageFactory.createSubscriptionRequest(from,
-                                                                                    to,
-                                                                                    subscriptionRequest,
-                                                                                    new MessagingQos(1000L));
+        MutableMessage joynrMessage = messageFactory.createSubscriptionRequest(from,
+                                                                               to,
+                                                                               subscriptionRequest,
+                                                                               new MessagingQos(1000L));
 
-        JoynrMessageFactory joynrMessageFactoryMock = mock(JoynrMessageFactory.class);
+        MutableMessageFactory messageFactoryMock = mock(MutableMessageFactory.class);
         ObjectMapper objectMapperMock = mock(ObjectMapper.class);
         when(objectMapperMock.readValue(anyString(), eq(SubscriptionRequest.class))).thenReturn(subscriptionRequest);
 
@@ -235,7 +233,7 @@ public class DispatcherImplTest {
                                      publicationManagerMock,
                                      messageRouterMock,
                                      messageSenderMock,
-                                     joynrMessageFactoryMock,
+                                     messageFactoryMock,
                                      objectMapperMock);
 
         fixture.messageArrived(joynrMessage.getImmutableMessage());

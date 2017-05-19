@@ -28,7 +28,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 
-import io.joynr.dispatching.JoynrMessageFactory;
+import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingQos;
@@ -73,7 +73,7 @@ public class WebSocketTest {
     private WebSocketMessagingSkeleton ccWebSocketMessagingSkeleton;
     private WebSocketAddress serverAddress;
 
-    private JoynrMessageFactory joynrMessageFactory;
+    private MutableMessageFactory messageFactory;
     @Mock
     private WebSocketClientMessagingStubFactory webSocketMessagingStubFactory;
     private WebSocketMessagingSkeleton libWebSocketMessagingSkeleton;
@@ -96,7 +96,7 @@ public class WebSocketTest {
                 return null;
             }
         }).when(messageRouterMock).route(Mockito.any(ImmutableMessage.class));
-        joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper(), new HashSet<JoynrMessageProcessor>());
+        messageFactory = new MutableMessageFactory(new ObjectMapper(), new HashSet<JoynrMessageProcessor>());
     }
 
     private void configure(int maxMessageSize,
@@ -181,8 +181,8 @@ public class WebSocketTest {
     private void sendMessage() throws Throwable {
         OneWayRequest request = new OneWayRequest("method", new Object[0], new Class<?>[0]);
         MessagingQos messagingQos = new MessagingQos(100000);
-        ImmutableMessage msg = joynrMessageFactory.createOneWayRequest("fromID", "toID", request, messagingQos)
-                                                  .getImmutableMessage();
+        ImmutableMessage msg = messageFactory.createOneWayRequest("fromID", "toID", request, messagingQos)
+                                             .getImmutableMessage();
 
         webSocketMessagingStub.transmit(msg, new FailureAction() {
             @Override
