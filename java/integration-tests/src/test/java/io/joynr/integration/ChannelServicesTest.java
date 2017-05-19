@@ -22,7 +22,8 @@ package io.joynr.integration;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
+import static org.junit.Assert.assertEquals;
+
 import io.joynr.integration.setup.BounceProxyServerSetup;
 import io.joynr.integration.setup.SingleBounceProxy;
 import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
@@ -37,16 +38,19 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
 import com.jayway.restassured.response.Response;
 
+@Ignore("HTTP not supported at the moment")
 @RunWith(MultipleBounceProxySetupsTestRunner.class)
 @BounceProxyServerSetups(value = { SingleBounceProxy.class })
 public class ChannelServicesTest {
@@ -107,8 +111,8 @@ public class ChannelServicesTest {
         String channelId = UUID.randomUUID().toString();
         bpMock.createChannel(channelId);
         // generate a random payload
-        String payload1 = "payload-" + UUID.randomUUID().toString();
-        String payload2 = "payload-" + UUID.randomUUID().toString();
+        byte[] payload1 = ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
+        byte[] payload2 = ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
         long messageRelativeTtlMs = 1000000L;
         bpMock.postMessage(channelId, messageRelativeTtlMs, payload1);
         bpMock.postMessage(channelId, messageRelativeTtlMs, payload2);
@@ -122,13 +126,13 @@ public class ChannelServicesTest {
         // make sure we did not wait the timeout
         assertThat(timeTotal, lessThan(longpollTimeout_ms));
 
-        List<JoynrMessage> messagesFromResponse = bpMock.getJoynrMessagesFromResponse(response);
+        List<ImmutableMessage> messagesFromResponse = bpMock.getJoynrMessagesFromResponse(response);
 
-        JoynrMessage receivedPayload1 = messagesFromResponse.get(0);
-        JoynrMessage receivedPayload2 = messagesFromResponse.get(1);
+        ImmutableMessage receivedPayload1 = messagesFromResponse.get(0);
+        ImmutableMessage receivedPayload2 = messagesFromResponse.get(1);
 
-        assertThat("payload1: ", receivedPayload1.getPayload(), equalToIgnoringCase(payload1));
-        assertThat("payload2: ", receivedPayload2.getPayload(), equalToIgnoringCase(payload2));
+        assertEquals(receivedPayload1.getUnencryptedBody(), payload1);
+        assertEquals(receivedPayload2.getUnencryptedBody(), payload2);
     }
 
     @Test
@@ -145,8 +149,8 @@ public class ChannelServicesTest {
         longPoll.get(100L, TimeUnit.MILLISECONDS);
 
         // generate a random payload
-        String payload1 = "payload-" + UUID.randomUUID().toString();
-        String payload2 = "payload-" + UUID.randomUUID().toString();
+        byte[] payload1 = ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
+        byte[] payload2 = ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
         long messageRelativeTtlMs = 1000000L;
         // expect the messages not to be postable since the channel does not exist (get 400 back from server)
         bpMock.postMessage(channelId, messageRelativeTtlMs, payload1, 400);
@@ -166,13 +170,13 @@ public class ChannelServicesTest {
         // make sure we did not wait the timeout
         assertThat(timeTotal, lessThan(longpollTimeout_ms));
 
-        List<JoynrMessage> messagesFromResponse = bpMock.getJoynrMessagesFromResponse(response);
+        List<ImmutableMessage> messagesFromResponse = bpMock.getJoynrMessagesFromResponse(response);
 
-        JoynrMessage receivedPayload1 = messagesFromResponse.get(0);
-        JoynrMessage receivedPayload2 = messagesFromResponse.get(1);
+        ImmutableMessage receivedPayload1 = messagesFromResponse.get(0);
+        ImmutableMessage receivedPayload2 = messagesFromResponse.get(1);
 
-        assertThat("payload1: ", receivedPayload1.getPayload(), equalToIgnoringCase(payload1));
-        assertThat("payload2: ", receivedPayload2.getPayload(), equalToIgnoringCase(payload2));
+        assertEquals(receivedPayload1.getUnencryptedBody(), payload1);
+        assertEquals(receivedPayload2.getUnencryptedBody(), payload2);
     }
 
     @Test

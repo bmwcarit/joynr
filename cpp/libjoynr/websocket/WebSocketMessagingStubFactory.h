@@ -32,7 +32,7 @@ namespace joynr
 {
 
 class IWebSocketSendInterface;
-class IMessaging;
+class IMessagingStub;
 
 namespace system
 {
@@ -47,7 +47,7 @@ class WebSocketMessagingStubFactory : public IMiddlewareMessagingStubFactory
 
 public:
     WebSocketMessagingStubFactory();
-    std::shared_ptr<IMessaging> create(
+    std::shared_ptr<IMessagingStub> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
     void addClient(const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress,
@@ -61,11 +61,11 @@ public:
                                                        onMessagingStubClosedCallback) override;
 
 private:
-    std::unordered_map<joynr::system::RoutingTypes::WebSocketAddress, std::shared_ptr<IMessaging>>
-            serverStubMap;
+    std::unordered_map<joynr::system::RoutingTypes::WebSocketAddress,
+                       std::shared_ptr<IMessagingStub>> serverStubMap;
     std::mutex serverStubMapMutex;
     std::unordered_map<joynr::system::RoutingTypes::WebSocketClientAddress,
-                       std::shared_ptr<IMessaging>> clientStubMap;
+                       std::shared_ptr<IMessagingStub>> clientStubMap;
     std::mutex clientStubMapMutex;
     std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
                                destinationAddress)> onMessagingStubClosedCallback;

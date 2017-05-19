@@ -96,8 +96,7 @@ request.setParams(
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»JoynrMessagingConnector.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/ReplyCaller.h"
-#include "joynr/JoynrMessageSender.h"
-#include "joynr/ISubscriptionManager.h"
+#include "joynr/IMessageSender.h"
 #include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/MulticastSubscriptionCallback.h"
 #include "joynr/Util.h"
@@ -106,7 +105,8 @@ request.setParams(
 #include <cstdint>
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/Request.h"
+#include "joynr/OneWayRequest.h"
 «IF !francaIntf.attributes.empty»
 	#include "joynr/SubscriptionRequest.h"
 «ENDIF»
@@ -143,18 +143,14 @@ request.setParams(
 «getNamespaceStarter(francaIntf)»
 «val className = interfaceName + "JoynrMessagingConnector"»
 «className»::«className»(
-		std::shared_ptr<joynr::IJoynrMessageSender> joynrMessageSender,
+		std::shared_ptr<joynr::IMessageSender> messageSender,
 		std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager,
 		const std::string& domain,
 		const std::string& proxyParticipantId,
 		const joynr::MessagingQos &qosSettings,
 		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
-	: joynr::AbstractJoynrMessagingConnector(joynrMessageSender, subscriptionManager, domain, INTERFACE_NAME(), proxyParticipantId, qosSettings, providerDiscoveryEntry)
+	: joynr::AbstractJoynrMessagingConnector(messageSender, subscriptionManager, domain, INTERFACE_NAME(), proxyParticipantId, qosSettings, providerDiscoveryEntry)
 {
-}
-
-bool «className»::usesClusterController() const{
-	return joynr::AbstractJoynrMessagingConnector::usesClusterController();
 }
 
 «FOR attribute: getAttributes(francaIntf)»
@@ -338,7 +334,7 @@ bool «className»::usesClusterController() const{
 					joynr::serializer::serializeToJson(*subscriptionQos),
 					proxyParticipantId,
 					providerParticipantId);
-			joynrMessageSender->sendSubscriptionRequest(
+			messageSender->sendSubscriptionRequest(
 						proxyParticipantId,
 						providerParticipantId,
 						clonedMessagingQos,
@@ -353,7 +349,7 @@ bool «className»::usesClusterController() const{
 			subscriptionStop.setSubscriptionId(subscriptionId);
 
 			subscriptionManager->unregisterSubscription(subscriptionId);
-			joynrMessageSender->sendSubscriptionStop(
+			messageSender->sendSubscriptionStop(
 						proxyParticipantId,
 						providerParticipantId,
 						qosSettings,
@@ -508,7 +504,7 @@ bool «className»::usesClusterController() const{
 							subscriptionListener,
 							subscriptionQos,
 							subscriptionRequest);
-			joynrMessageSender->sendBroadcastSubscriptionRequest(
+			messageSender->sendBroadcastSubscriptionRequest(
 						proxyParticipantId,
 						providerParticipantId,
 						clonedMessagingQos,
@@ -519,12 +515,12 @@ bool «className»::usesClusterController() const{
 			auto subscriptionCallback = std::make_shared<joynr::MulticastSubscriptionCallback<«returnTypes»>
 			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager.get());
 			std::function<void()> onSuccess =
-					[joynrMessageSender = joynr::util::as_weak_ptr(joynrMessageSender),
+					[messageSender = joynr::util::as_weak_ptr(messageSender),
 					proxyParticipantId = proxyParticipantId,
 					providerParticipantId = providerParticipantId,
 					clonedMessagingQos, subscriptionRequest,
 					isLocalMessage = providerDiscoveryEntry.getIsLocal()] () {
-						if (auto ptr = joynrMessageSender.lock())
+						if (auto ptr = messageSender.lock())
 						{
 							ptr->sendMulticastSubscriptionRequest(
 										proxyParticipantId,
@@ -583,7 +579,7 @@ bool «className»::usesClusterController() const{
 		subscriptionStop.setSubscriptionId(subscriptionId);
 
 		subscriptionManager->unregisterSubscription(subscriptionId);
-		joynrMessageSender->sendSubscriptionStop(
+		messageSender->sendSubscriptionStop(
 					proxyParticipantId,
 					providerParticipantId,
 					qosSettings,

@@ -32,15 +32,16 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.joynr.exceptions.JoynrSerializationException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
-import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
-import joynr.JoynrMessage;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
@@ -52,7 +53,6 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
     private MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
-    private JoynrMessageSerializer messageSerializer;
     private MqttClientFactory mqttClientFactory;
     private MqttAddress ownAddress;
     private ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount = Maps.newConcurrentMap();
@@ -64,7 +64,6 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
-                                 MqttMessageSerializerFactory messageSerializerFactory,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
                                  Set<JoynrMessageProcessor> messageProcessors) {
@@ -74,7 +73,6 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
-        messageSerializer = messageSerializerFactory.create(ownAddress);
     }
 
     @Override
@@ -128,33 +126,34 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
         LOG.debug("<<< INCOMING <<< {}", message.toLogMessage());
         try {
-            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            if (message.getType().equals(Message.VALUE_MESSAGE_TYPE_MULTICAST)) {
                 message.setReceivedFromGlobal(true);
             }
-            String replyToMqttAddress = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
+            String replyToMqttAddress = message.getReplyTo();
             // because the message is received via global transport, isGloballyVisible must be true
             final boolean isGloballyVisible = true;
             if (replyToMqttAddress != null && !replyToMqttAddress.isEmpty()) {
-                messageRouter.addNextHop(message.getFrom(),
+                messageRouter.addNextHop(message.getSender(),
                                          RoutingTypesUtil.fromAddressString(replyToMqttAddress),
                                          isGloballyVisible);
             }
             messageRouter.route(message);
         } catch (Exception e) {
-            LOG.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader(), e);
+            LOG.error("Error processing incoming message. Message will be dropped: {} ", e);
             failureAction.execute(e);
         }
     }
 
     @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         try {
             HashMap<String, Serializable> context = new HashMap<String, Serializable>();
-            JoynrMessage message = messageSerializer.deserialize(rawMessagingPreprocessor.process(serializedMessage,
-                                                                                                  context));
+            byte[] processedMessage = rawMessagingPreprocessor.process(serializedMessage, context);
+
+            ImmutableMessage message = new ImmutableMessage(processedMessage);
             message.setContext(context);
 
             if (messageProcessors != null) {
@@ -164,7 +163,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
             }
 
             transmit(message, failureAction);
-        } catch (JoynrSerializationException e) {
+        } catch (UnsuppportedVersionException | EncodingException e) {
             LOG.error("Message: \"{}\", could not be serialized, exception: {}", serializedMessage, e.getMessage());
         }
     }

@@ -19,8 +19,8 @@ package io.joynr.accesscontrol;
  * #L%
  */
 
-import joynr.JoynrMessage;
 import joynr.infrastructure.DacTypes.TrustLevel;
+import joynr.ImmutableMessage;
 
 /**
  * Checks incoming messages permissions
@@ -32,7 +32,7 @@ public interface AccessController {
      * @param message The message to check
      * @return true if the message has permission, false otherwise
      */
-    void hasConsumerPermission(final JoynrMessage message, final HasConsumerPermissionCallback callback);
+    void hasConsumerPermission(final ImmutableMessage message, final HasConsumerPermissionCallback callback);
 
     /**
      * Does the provider with given userId and given trust level, has permission to expose given domain interface?

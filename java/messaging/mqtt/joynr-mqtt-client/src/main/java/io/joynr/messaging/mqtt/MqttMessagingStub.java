@@ -24,9 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.JoynrMessageSerializer;
 import io.joynr.messaging.MessagingQosEffort;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -42,36 +42,34 @@ public class MqttMessagingStub implements IMessaging {
     private static final String RAW = PRIORITY_LOW + "raw";
     private MqttAddress address;
     private JoynrMqttClient mqttClient;
-    private JoynrMessageSerializer messageSerializer;
 
-    public MqttMessagingStub(MqttAddress address, JoynrMqttClient mqttClient, JoynrMessageSerializer messageSerializer) {
+    public MqttMessagingStub(MqttAddress address, JoynrMqttClient mqttClient) {
         this.address = address;
         this.mqttClient = mqttClient;
-        this.messageSerializer = messageSerializer;
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
         LOG.debug(">>> OUTGOING >>> {}", message.toLogMessage());
         String topic = address.getTopic();
-        if (!JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-            topic += PRIORITY_LOW + message.getTo();
+        if (!Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            topic += PRIORITY_LOW + message.getRecipient();
         }
-        String serializedMessage = messageSerializer.serialize(message);
+
         int qosLevel = DEFAULT_QOS_LEVEL;
-        String effortHeaderValue = message.getHeaderValue(JoynrMessage.HEADER_NAME_EFFORT);
+        String effortHeaderValue = message.getEffort();
         if (effortHeaderValue != null && String.valueOf(MessagingQosEffort.BEST_EFFORT).equals(effortHeaderValue)) {
             qosLevel = BEST_EFFORT_QOS_LEVEL;
         }
         try {
-            mqttClient.publishMessage(topic, serializedMessage, qosLevel);
+            mqttClient.publishMessage(topic, message.getSerializedMessage(), qosLevel);
         } catch (Exception error) {
             failureAction.execute(error);
         }
     }
 
     @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         LOG.debug(">>> OUTGOING >>> {}", serializedMessage);
         // Unable to access participantId, so publishing to RAW topic
         String topic = address.getTopic() + RAW;

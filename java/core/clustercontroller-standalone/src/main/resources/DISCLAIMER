@@ -7,6 +7,7 @@ The software listed below included in some products is licensed under the "Apach
 - com.fasterxml.jackson.core:jackson-databind:2.8.8
   Notice file: WEB-INF/lib/jackson-databind-2.8.8.jar:META-INF/NOTICE
   License file: WEB-INF/lib/jackson-databind-2.8.8.jar:META-INF/LICENSE
+- com.github.davidmoten:flatbuffers-java:1.6.0.3
 - com.google.guava:guava:11.0.2
 - com.google.inject.extensions:guice-assistedinject:3.0
   Notice file: WEB-INF/lib/guice-assistedinject-3.0.jar:META-INF/NOTICE

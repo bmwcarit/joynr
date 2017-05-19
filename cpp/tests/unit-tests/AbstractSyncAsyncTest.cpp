@@ -116,7 +116,7 @@ public:
         mockDispatcher(),
         mockMessagingStub(),
         callBack(),
-        mockJoynrMessageSender(),
+        mockMessageSender(),
         proxyParticipantId(),
         providerParticipantId(),
         asyncTestFixture(nullptr),
@@ -127,7 +127,7 @@ public:
         qosSettings = MessagingQos(456000);
         proxyParticipantId = "participantId";
         providerParticipantId = "providerParticipantId";
-        mockJoynrMessageSender = std::make_shared<MockJoynrMessageSender>();
+        mockMessageSender = std::make_shared<MockMessageSender>();
         // asyncGpsFixture must be created after derived objects have run Setup()
     }
 
@@ -158,7 +158,7 @@ public:
     )>& setExpectedExceptionForSendRequestCall(const exceptions::JoynrException& error) {
         this->error.reset(error.clone());
         return EXPECT_CALL(
-                *mockJoynrMessageSender,
+                *mockMessageSender,
                 sendRequest(
                         _, // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID
@@ -204,7 +204,7 @@ public:
         tests::Itest* testFixture = createFixture();
 
         EXPECT_CALL(
-                    *mockJoynrMessageSender,
+                    *mockMessageSender,
                     sendRequest(
                         _, //Eq(proxyParticipantId), // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID
@@ -687,7 +687,7 @@ public:
     }
 
     void testSubscribeToAttribute() {
-        //EXPECT_CALL(*mockJoynrMessageSender,
+        //EXPECT_CALL(*mockMessageSender,
         //            sendSubscriptionRequest(_,_,_,_)).Times(1);
 
         std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
@@ -705,9 +705,9 @@ protected:
     CallBackActions callBackActions;
     MessagingQos qosSettings;
     MockDispatcher mockDispatcher;
-    MockMessaging mockMessagingStub;
+    MockMessagingStub mockMessagingStub;
     std::shared_ptr<IReplyCaller> callBack;
-    std::shared_ptr<MockJoynrMessageSender> mockJoynrMessageSender;
+    std::shared_ptr<MockMessageSender> mockMessageSender;
     std::string proxyParticipantId;
     std::string providerParticipantId;
     tests::Itest* asyncTestFixture;

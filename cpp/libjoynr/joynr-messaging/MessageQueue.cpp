@@ -21,6 +21,7 @@
 #include <chrono>
 
 #include "joynr/DispatcherUtils.h"
+#include "joynr/ImmutableMessage.h"
 
 namespace joynr
 {
@@ -35,19 +36,20 @@ std::size_t MessageQueue::getQueueLength() const
     return queue.size();
 }
 
-std::size_t MessageQueue::queueMessage(const JoynrMessage& message)
+std::size_t MessageQueue::queueMessage(std::shared_ptr<ImmutableMessage> message)
 {
-    JoynrTimePoint absTtl = message.getHeaderExpiryDate();
-    auto item = std::make_unique<MessageQueueItem>(message, absTtl);
+    JoynrTimePoint absTtl = message->getExpiryDate();
+    std::string recipient = message->getRecipient();
+    auto item = std::make_unique<MessageQueueItem>(std::move(message), absTtl);
 
     std::lock_guard<std::mutex> lock(queueMutex);
-    queue.insert(std::make_pair(message.getHeaderTo(), std::move(item)));
+    queue.insert(std::make_pair(std::move(recipient), std::move(item)));
 
     return queue.size();
 }
 
 std::unique_ptr<MessageQueueItem> MessageQueue::getNextMessageForParticipant(
-        const std::string destinationPartId)
+        const std::string& destinationPartId)
 {
     std::lock_guard<std::mutex> lock(queueMutex);
     auto queueElement = queue.find(destinationPartId);

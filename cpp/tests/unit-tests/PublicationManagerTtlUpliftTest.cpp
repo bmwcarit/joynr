@@ -25,7 +25,7 @@
 #include <gmock/gmock.h>
 
 
-#include "joynr/IJoynrMessageSender.h"
+#include "joynr/IMessageSender.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/Logger.h"
@@ -67,7 +67,7 @@ class PublicationManagerTtlUpliftTest : public testing::Test {
 public:
     PublicationManagerTtlUpliftTest() :
         singleThreadedIOService(),
-        messageSender(new MockJoynrMessageSender()),
+        messageSender(new MockMessageSender()),
         proxyId("ProxyId"),
         providerId("ProviderId"),
         ttlUpliftMs(300),
@@ -123,7 +123,7 @@ protected:
                                        std::int64_t expectedPublicationTtlMs,
                                        std::function<void()> triggerPublication);
     SingleThreadedIOService singleThreadedIOService;
-    IJoynrMessageSender* messageSender;
+    IMessageSender* messageSender;
 
     std::string proxyId;
     std::string providerId;
@@ -491,7 +491,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWi
                                                            expectedPublicationTtlMs, triggerPublication);
 }
 
-TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWithLargeExpiryDate) {
+TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testAttributeSubscriptionWithTtlUpliftWithLargeExpiryDate) {
 
     auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender, ttlUpliftMs);
 
@@ -530,7 +530,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWi
                                                            expectedPublicationTtlMs, triggerPublication);
 }
 
-TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWithLargeExpiryDate) {
+TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testBroadcastSubscriptionWithTtlUpliftWithLargeExpiryDate) {
 
     auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender, ttlUpliftMs);
 

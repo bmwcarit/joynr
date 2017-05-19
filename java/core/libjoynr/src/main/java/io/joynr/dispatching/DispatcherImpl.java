@@ -29,6 +29,7 @@ import javax.inject.Singleton;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import com.google.inject.Inject;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
@@ -36,10 +37,14 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.ProviderCallback;
-import joynr.JoynrMessage;
+import io.joynr.smrf.EncodingException;
+import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.MulticastPublication;
 import joynr.MulticastSubscriptionRequest;
+import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -60,6 +65,7 @@ public class DispatcherImpl implements Dispatcher {
     private SubscriptionManager subscriptionManager;
     private PublicationManager publicationManager;
     private final MessageRouter messageRouter;
+    private final MessageSender messageSender;
     private ObjectMapper objectMapper;
 
     @Inject
@@ -69,12 +75,14 @@ public class DispatcherImpl implements Dispatcher {
                           SubscriptionManager subscriptionManager,
                           PublicationManager publicationManager,
                           MessageRouter messageRouter,
+                          MessageSender messageSender,
                           JoynrMessageFactory joynrMessageFactory,
                           ObjectMapper objectMapper) {
         this.requestReplyManager = requestReplyManager;
         this.subscriptionManager = subscriptionManager;
         this.publicationManager = publicationManager;
         this.messageRouter = messageRouter;
+        this.messageSender = messageSender;
         this.joynrMessageFactory = joynrMessageFactory;
         this.objectMapper = objectMapper;
     }
@@ -87,17 +95,17 @@ public class DispatcherImpl implements Dispatcher {
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos messagingQos) {
         for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
-            JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
-                                                                                 toDiscoveryEntry.getParticipantId(),
-                                                                                 subscriptionRequest,
-                                                                                 messagingQos);
+            MutableMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
+                                                                                   toDiscoveryEntry.getParticipantId(),
+                                                                                   subscriptionRequest,
+                                                                                   messagingQos);
             message.setLocalMessage(toDiscoveryEntry.getIsLocal());
 
             if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
                 String multicastId = ((MulticastSubscriptionRequest) subscriptionRequest).getMulticastId();
                 messageRouter.addMulticastReceiver(multicastId, fromParticipantId, toDiscoveryEntry.getParticipantId());
             }
-            messageRouter.route(message);
+            messageSender.sendMessage(message);
         }
     }
 
@@ -107,12 +115,12 @@ public class DispatcherImpl implements Dispatcher {
                                      SubscriptionStop subscriptionStop,
                                      MessagingQos messagingQos) {
         for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
-            JoynrMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
-                                                                              toDiscoveryEntry.getParticipantId(),
-                                                                              subscriptionStop,
-                                                                              messagingQos);
+            MutableMessage message = joynrMessageFactory.createSubscriptionStop(fromParticipantId,
+                                                                                toDiscoveryEntry.getParticipantId(),
+                                                                                subscriptionStop,
+                                                                                messagingQos);
             message.setLocalMessage(toDiscoveryEntry.getIsLocal());
-            messageRouter.route(message);
+            messageSender.sendMessage(message);
         }
 
     }
@@ -124,11 +132,11 @@ public class DispatcherImpl implements Dispatcher {
                                             MessagingQos messagingQos) {
 
         for (String toParticipantId : toParticipantIds) {
-            JoynrMessage message = joynrMessageFactory.createPublication(fromParticipantId,
-                                                                         toParticipantId,
-                                                                         publication,
-                                                                         messagingQos);
-            messageRouter.route(message);
+            MutableMessage message = joynrMessageFactory.createPublication(fromParticipantId,
+                                                                           toParticipantId,
+                                                                           publication,
+                                                                           messagingQos);
+            messageSender.sendMessage(message);
         }
     }
 
@@ -139,8 +147,11 @@ public class DispatcherImpl implements Dispatcher {
                           Map<String, String> customHeaders) throws IOException {
         MessagingQos messagingQos = new MessagingQos(expiryDateMs);
         messagingQos.getCustomMessageHeaders().putAll(customHeaders);
-        JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId, toParticipantId, reply, messagingQos);
-        messageRouter.route(message);
+        MutableMessage message = joynrMessageFactory.createReply(fromParticipantId,
+                                                                 toParticipantId,
+                                                                 reply,
+                                                                 messagingQos);
+        messageSender.sendMessage(message);
     }
 
     @Override
@@ -149,74 +160,86 @@ public class DispatcherImpl implements Dispatcher {
                                       SubscriptionReply subscriptionReply,
                                       MessagingQos messagingQos) {
 
-        JoynrMessage message = joynrMessageFactory.createSubscriptionReply(fromParticipantId,
-                                                                           toParticipantId,
-                                                                           subscriptionReply,
-                                                                           messagingQos);
-        messageRouter.route(message);
+        MutableMessage message = joynrMessageFactory.createSubscriptionReply(fromParticipantId,
+                                                                             toParticipantId,
+                                                                             subscriptionReply,
+                                                                             messagingQos);
+        messageSender.sendMessage(message);
     }
 
     @Override
-    public void messageArrived(final JoynrMessage message) {
+    public void messageArrived(final ImmutableMessage message) {
         if (message == null) {
             logger.error("received message was null");
             return;
         }
-        final long expiryDate = message.getExpiryDate();
+
+        if (!message.isTtlAbsolute()) {
+            logger.error("received message with relative ttl (not supported)");
+            return;
+        }
+
+        final long expiryDate = message.getTtlMs();
         final Map<String, String> customHeaders = message.getCustomHeaders();
         if (DispatcherUtils.isExpired(expiryDate)) {
             logger.debug("TTL expired, discarding message : {}", message.toLogMessage());
             return;
         }
 
+        String payload;
+
+        try {
+            payload = new String(message.getUnencryptedBody(), Charsets.UTF_8);
+        } catch (EncodingException e) {
+            logger.error("Error reading SMRF message. msgId: {}. from: {} to: {}. Reason: {}. Discarding joynr message.",
+                         new Object[]{ message.getSender(), message.getRecipient(), message.getId(), e.getMessage() });
+            return;
+        }
+
         String type = message.getType();
         try {
-            if (JoynrMessage.MESSAGE_TYPE_REPLY.equals(type)) {
-                Reply reply = objectMapper.readValue(message.getPayload(), Reply.class);
-                logger.trace("Parsed reply from message payload :" + message.getPayload());
+            if (Message.VALUE_MESSAGE_TYPE_REPLY.equals(type)) {
+                Reply reply = objectMapper.readValue(payload, Reply.class);
+                logger.trace("Parsed reply from message payload :" + payload);
                 handle(reply);
-            } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(type)) {
-                SubscriptionReply subscriptionReply = objectMapper.readValue(message.getPayload(),
-                                                                             SubscriptionReply.class);
-                logger.trace("Parsed subscription reply from message payload :" + message.getPayload());
+            } else if (Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(type)) {
+                SubscriptionReply subscriptionReply = objectMapper.readValue(payload, SubscriptionReply.class);
+                logger.trace("Parsed subscription reply from message payload :" + payload);
                 handle(subscriptionReply);
-            } else if (JoynrMessage.MESSAGE_TYPE_REQUEST.equals(type)) {
-                final Request request = objectMapper.readValue(message.getPayload(), Request.class);
+            } else if (Message.VALUE_MESSAGE_TYPE_REQUEST.equals(type)) {
+                final Request request = objectMapper.readValue(payload, Request.class);
                 request.setCreatorUserId(message.getCreatorUserId());
                 request.setContext(message.getContext());
-                logger.trace("Parsed request from message payload :" + message.getPayload());
-                handle(request, message.getFrom(), message.getTo(), expiryDate, customHeaders);
-            } else if (JoynrMessage.MESSAGE_TYPE_ONE_WAY.equals(type)) {
-                OneWayRequest oneWayRequest = objectMapper.readValue(message.getPayload(), OneWayRequest.class);
+                logger.trace("Parsed request from message payload :" + payload);
+                handle(request, message.getSender(), message.getRecipient(), expiryDate, customHeaders);
+            } else if (Message.VALUE_MESSAGE_TYPE_ONE_WAY.equals(type)) {
+                OneWayRequest oneWayRequest = objectMapper.readValue(payload, OneWayRequest.class);
                 oneWayRequest.setCreatorUserId(message.getCreatorUserId());
                 oneWayRequest.setContext(message.getContext());
-                logger.trace("Parsed one way request from message payload :" + message.getPayload());
-                handle(oneWayRequest, message.getTo(), expiryDate);
-            } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
-                    || JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)
-                    || JoynrMessage.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST.equals(type)) {
-                SubscriptionRequest subscriptionRequest = objectMapper.readValue(message.getPayload(),
-                                                                                 SubscriptionRequest.class);
-                logger.trace("Parsed subscription request from message payload :" + message.getPayload());
-                handle(subscriptionRequest, message.getFrom(), message.getTo());
-            } else if (JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
-                SubscriptionStop subscriptionStop = objectMapper.readValue(message.getPayload(), SubscriptionStop.class);
-                logger.trace("Parsed subscription stop from message payload :" + message.getPayload());
+                logger.trace("Parsed one way request from message payload :" + payload);
+                handle(oneWayRequest, message.getRecipient(), expiryDate);
+            } else if (Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
+                    || Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)
+                    || Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST.equals(type)) {
+                SubscriptionRequest subscriptionRequest = objectMapper.readValue(payload, SubscriptionRequest.class);
+                logger.trace("Parsed subscription request from message payload :" + payload);
+                handle(subscriptionRequest, message.getSender(), message.getRecipient());
+            } else if (Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
+                SubscriptionStop subscriptionStop = objectMapper.readValue(payload, SubscriptionStop.class);
+                logger.trace("Parsed subscription stop from message payload :" + payload);
                 handle(subscriptionStop);
-            } else if (JoynrMessage.MESSAGE_TYPE_PUBLICATION.equals(type)) {
-                SubscriptionPublication publication = objectMapper.readValue(message.getPayload(),
-                                                                             SubscriptionPublication.class);
-                logger.trace("Parsed publication from message payload :" + message.getPayload());
+            } else if (Message.VALUE_MESSAGE_TYPE_PUBLICATION.equals(type)) {
+                SubscriptionPublication publication = objectMapper.readValue(payload, SubscriptionPublication.class);
+                logger.trace("Parsed publication from message payload :" + payload);
                 handle(publication);
-            } else if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(type)) {
-                MulticastPublication multicastPublication = objectMapper.readValue(message.getPayload(),
-                                                                                   MulticastPublication.class);
-                logger.trace("Parsed multicast publication from message payload: {}", message.getPayload());
+            } else if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(type)) {
+                MulticastPublication multicastPublication = objectMapper.readValue(payload, MulticastPublication.class);
+                logger.trace("Parsed multicast publication from message payload: {}", payload);
                 handle(multicastPublication);
             }
         } catch (IOException e) {
             logger.error("Error parsing payload. msgId: {}. from: {} to: {}. Reason: {}. Discarding joynr message.",
-                         new String[]{ message.getFrom(), message.getFrom(), message.getId(), e.getMessage() });
+                         new String[]{ message.getSender(), message.getRecipient(), message.getId(), e.getMessage() });
             return;
         }
     }
@@ -285,21 +308,30 @@ public class DispatcherImpl implements Dispatcher {
     }
 
     @Override
-    public void error(JoynrMessage message, Throwable error) {
+    public void error(ImmutableMessage message, Throwable error) {
         if (message == null) {
             logger.error("error: ", error);
             return;
         }
 
         String type = message.getType();
+        String payload;
+
         try {
-            if (type.equals(JoynrMessage.MESSAGE_TYPE_REQUEST)) {
-                Request request = objectMapper.readValue(message.getPayload(), Request.class);
+            payload = new String(message.getUnencryptedBody(), Charsets.UTF_8);
+        } catch (EncodingException e) {
+            logger.error("Error extracting payload for message {}. Reason: {}",
+                         new Object[]{ message.getId(), e.getMessage() });
+            return;
+        }
+
+        try {
+            if (type.equals(Message.VALUE_MESSAGE_TYPE_REQUEST)) {
+                Request request = objectMapper.readValue(payload, Request.class);
                 requestReplyManager.handleError(request, error);
             }
         } catch (IOException e) {
-            logger.error("Error extracting payload for message " + message.getId() + ", raw payload: "
-                                 + message.getPayload(),
+            logger.error("Error extracting payload for message " + message.getId() + ", raw payload: " + payload,
                          e.getMessage());
         }
     }
@@ -368,9 +400,9 @@ public class DispatcherImpl implements Dispatcher {
     public void sendMulticast(String fromParticipantId,
                               MulticastPublication multicastPublication,
                               MessagingQos messagingQos) {
-        JoynrMessage message = joynrMessageFactory.createMulticast(fromParticipantId,
-                                                                   multicastPublication,
-                                                                   messagingQos);
-        messageRouter.route(message);
+        MutableMessage message = joynrMessageFactory.createMulticast(fromParticipantId,
+                                                                     multicastPublication,
+                                                                     messagingQos);
+        messageSender.sendMessage(message);
     }
 }

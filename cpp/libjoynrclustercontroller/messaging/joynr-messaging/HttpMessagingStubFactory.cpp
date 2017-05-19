@@ -19,13 +19,14 @@
 #include "HttpMessagingStubFactory.h"
 
 #include "HttpMessagingStub.h"
-#include "joynr/IMessageSender.h"
+#include "joynr/ITransportMessageSender.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
 {
 
-HttpMessagingStubFactory::HttpMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender)
+HttpMessagingStubFactory::HttpMessagingStubFactory(
+        std::shared_ptr<ITransportMessageSender> messageSender)
         : messageSender(messageSender)
 {
 }
@@ -35,7 +36,7 @@ bool HttpMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::Addr
     return dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destAddress);
 }
 
-std::shared_ptr<IMessaging> HttpMessagingStubFactory::create(
+std::shared_ptr<IMessagingStub> HttpMessagingStubFactory::create(
         const joynr::system::RoutingTypes::Address& destAddress)
 {
     const system::RoutingTypes::ChannelAddress* channelAddress =

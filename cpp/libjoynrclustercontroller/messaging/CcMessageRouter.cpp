@@ -22,13 +22,13 @@
 #include <cassert>
 #include <functional>
 
-#include "joynr/IMessaging.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStubFactory.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/InProcessMessagingAddress.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/Message.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/Util.h"
@@ -59,13 +59,13 @@ class ConsumerPermissionCallback : public IAccessController::IHasConsumerPermiss
 public:
     ConsumerPermissionCallback(
             CcMessageRouter& owningMessageRouter,
-            const JoynrMessage& message,
+            std::shared_ptr<ImmutableMessage> message,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> destination);
 
     void hasConsumerPermission(bool hasPermission) override;
 
     CcMessageRouter& owningMessageRouter;
-    JoynrMessage message;
+    std::shared_ptr<ImmutableMessage> message;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destination;
 
 private:
@@ -255,56 +255,44 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void CcMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
+void CcMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount)
 {
     assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now());
-    if (now > message.getHeaderExpiryDate()) {
+    if (now > message->getExpiryDate()) {
         std::string errorMessage("Received expired message. Dropping the message (ID: " +
-                                 message.getHeaderMessageId() + ").");
+                                 message->getId() + ").");
         JOYNR_LOG_WARN(logger, errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
     // Validate the message if possible
-    if (securityManager != nullptr && !securityManager->validate(message)) {
-        std::string errorMessage("messageId " + message.getHeaderMessageId() +
-                                 " failed validation");
+    if (securityManager != nullptr && !securityManager->validate(*message)) {
+        std::string errorMessage("messageId " + message->getId() + " failed validation");
         JOYNR_LOG_ERROR(logger, errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
-    if (message.getHeaderReplyAddress().empty() && !message.isLocalMessage() &&
-        (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
-         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
-         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
-         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
-        message.setHeaderReplyAddress(globalClusterControllerAddress);
-    }
-
-    JOYNR_LOG_TRACE(logger,
-                    "Route message with Id {} and payload {}",
-                    message.getHeaderMessageId(),
-                    message.getPayload());
+    JOYNR_LOG_TRACE(logger, "Route message with Id {}", message->getId());
     // search for the destination addresses
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
-            getDestinationAddresses(message);
+            getDestinationAddresses(*message);
     // if destination address is not known
     if (destAddresses.empty()) {
-        if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
+        if (message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
             // Do not queue multicast messages for future multicast receivers.
             return;
         }
 
         // save the message for later delivery
-        queueMessage(message);
         JOYNR_LOG_WARN(logger,
                        "No routing information found for destination participant ID \"{}\" "
                        "so far. Waiting for participant registration. "
                        "Queueing message (ID : {})",
-                       message.getHeaderTo(),
-                       message.getHeaderMessageId());
+                       message->getRecipient(),
+                       message->getId());
+        queueMessage(std::move(message));
         return;
     }
 
@@ -323,9 +311,9 @@ void CcMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
     }
 }
 
-bool CcMessageRouter::publishToGlobal(const JoynrMessage& message)
+bool CcMessageRouter::publishToGlobal(const ImmutableMessage& message)
 {
-    const std::string& participantId = message.getHeaderFrom();
+    const std::string& participantId = message.getSender();
     const auto routingEntry = routingTable.lookup(participantId);
     if (routingEntry && routingEntry->isGloballyVisible) {
         return true;
@@ -589,12 +577,12 @@ void CcMessageRouter::removeMulticastReceiver(
     }
 }
 
-void CcMessageRouter::queueMessage(const JoynrMessage& message)
+void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 {
-    JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+    JOYNR_LOG_TRACE(logger, "message queued: {}", message->toLogMessage());
     messageNotificationProvider->fireMessageQueuedForDelivery(
-            message.getHeaderTo(), message.getType());
-    messageQueue->queueMessage(message);
+            message->getRecipient(), message->getType());
+    messageQueue->queueMessage(std::move(message));
 }
 
 /**
@@ -605,7 +593,7 @@ INIT_LOGGER(ConsumerPermissionCallback);
 
 ConsumerPermissionCallback::ConsumerPermissionCallback(
         CcMessageRouter& owningMessageRouter,
-        const JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destination)
         : owningMessageRouter(owningMessageRouter), message(message), destination(destination)
 {
@@ -619,7 +607,7 @@ void ConsumerPermissionCallback::hasConsumerPermission(bool hasPermission)
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Message with Id {} could not be sent. Error: {}",
-                            message.getHeaderMessageId(),
+                            message->getId(),
                             e.getMessage());
         }
     }

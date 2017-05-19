@@ -28,7 +28,8 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,10 +96,10 @@ public class AddressManager {
      * @return the address to send the message to. Will not be null, because if an address can't be determined an exception is thrown.
      * @throws JoynrMessageNotSentException if no address can be determined / found for the given message.
      */
-    public Set<Address> getAddresses(JoynrMessage message) {
+    public Set<Address> getAddresses(ImmutableMessage message) {
         Set<Address> result = new HashSet<>();
-        String toParticipantId = message.getTo();
-        if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+        String toParticipantId = message.getRecipient();
+        if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
             handleMulticastMessage(message, result);
         } else if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
             Address address = routingTable.get(toParticipantId);
@@ -108,7 +109,7 @@ public class AddressManager {
         }
         logger.trace("Found the following addresses for {}: {}", new Object[]{ message, result });
         if (result.size() == 0) {
-            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                 throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
                         + message);
             } else {
@@ -119,9 +120,9 @@ public class AddressManager {
         return result;
     }
 
-    private void handleMulticastMessage(JoynrMessage message, Set<Address> result) {
+    private void handleMulticastMessage(ImmutableMessage message, Set<Address> result) {
         if (!message.isReceivedFromGlobal() && multicastAddressCalculator != null) {
-            String participantId = message.getFrom();
+            String participantId = message.getSender();
             // default: if no routing entry found, do not publish globally
             boolean isGloballyVisible = false;
             try {
@@ -138,7 +139,7 @@ public class AddressManager {
                 }
             }
         }
-        Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getTo());
+        Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getRecipient());
         for (String receiverParticipantId : receivers) {
             Address address = routingTable.get(receiverParticipantId);
             if (address != null) {

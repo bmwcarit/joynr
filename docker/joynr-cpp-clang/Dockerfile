@@ -13,7 +13,7 @@ RUN curl -L  http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60
     && rm boost.tar.gz \
     && cd /opt/boost \
     && ./bootstrap.sh --with-toolset=clang --prefix=/usr/local \
-    && ./b2 variant=release --without-wave --without-python --without-mpi --without-iostreams --without-graph_parallel -j"$(nproc)" install \
+    && ./b2 variant=release -s NO_BZIP2=1 --without-wave --without-python --without-mpi --without-graph_parallel -j"$(nproc)" install \
     && rm -rf /opt/boost
 
 ###################################################
@@ -64,3 +64,18 @@ RUN cd /opt \
     && cd /opt/ \
     && rm -rf googletest
 
+###################################################
+# install smrf
+###################################################
+
+RUN export SMRF_VERSION=0.1.4 \
+    && cd /opt \
+    && git clone https://github.com/bmwcarit/smrf.git \
+    && cd smrf \
+    && git checkout $SMRF_VERSION \
+    && mkdir build \
+    && cd build \
+    && cmake -DBUILD_TESTS=Off .. \
+    && make install -j"$(nproc)" \
+    && cd /opt \
+    && rm -rf smrf

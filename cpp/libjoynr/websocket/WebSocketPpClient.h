@@ -121,7 +121,7 @@ public:
      * @param onMessageReceived Callback method with message as parameter
      * @note All received messages will be forwarded to this receive callback.
      */
-    void registerReceiveCallback(std::function<void(const std::string&)> onMessageReceived) final
+    void registerReceiveCallback(std::function<void(smrf::ByteVector&&)> onMessageReceived) final
     {
         receiver.registerReceiveCallback(onMessageReceived);
     }
@@ -156,7 +156,7 @@ public:
         return state == State::Connected;
     }
 
-    void send(const std::string& msg,
+    void send(const smrf::ByteArrayView& msg,
               const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) final
     {
         sender->send(msg, onFailure);

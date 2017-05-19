@@ -22,7 +22,7 @@ package io.joynr.messaging.mqtt;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -39,10 +39,10 @@ public class MqttMulticastAddressCalculator implements MulticastAddressCalculato
     }
 
     @Override
-    public Address calculate(JoynrMessage message) {
+    public Address calculate(ImmutableMessage message) {
         Address result = null;
         if (globalAddress != null) {
-            String topic = mqttTopicPrefixProvider.getMulticastTopicPrefix() + message.getTo();
+            String topic = mqttTopicPrefixProvider.getMulticastTopicPrefix() + message.getRecipient();
             result = new MqttAddress(globalAddress.getBrokerUri(), topic);
         }
         return result;

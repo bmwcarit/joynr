@@ -44,8 +44,8 @@ public:
     {
         auto mockInProcessConnectorFactoryPtr = std::make_unique<MockInProcessConnectorFactory>();
         mockInProcessConnectorFactory = mockInProcessConnectorFactoryPtr.get();
-        auto mockJoynrMessageSender = std::make_shared<MockJoynrMessageSender>();
-        auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(std::move(mockJoynrMessageSender), nullptr);
+        auto mockMessageSender = std::make_shared<MockMessageSender>();
+        auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(std::move(mockMessageSender), nullptr);
         connectorFactory = new ConnectorFactory(std::move(mockInProcessConnectorFactoryPtr), std::move(joynrMessagingConnectorFactory));
     }
 

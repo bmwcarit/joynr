@@ -27,6 +27,8 @@ import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.util.Utilities;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,7 +41,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -53,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
@@ -225,43 +228,29 @@ public class LongPollChannel {
             return;
         }
 
-        // the response body could contain multiple json objects
-        List<String> listOfJsonStrings = Utilities.splitJson(responseBody);
-        logger.info("LongPollingChannel CHANNEL: {} messages received: {}", listOfJsonStrings.size());
+        // the response body could contain multiple SMRF messages
+        List<ImmutableMessage> listOfMessages;
+        try {
+            listOfMessages = Utilities.splitSMRF(responseBody.getBytes(Charsets.UTF_8));
+        } catch (EncodingException | UnsuppportedVersionException e) {
+            logger.error("Failed to split and deserialize SMRF messages: {}", e.getMessage());
+            return;
+        }
 
-        // Tries to parse each message as a JoynrMessage or MessageWrapper
-        for (String json : listOfJsonStrings) {
-            try {
-                final JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class); // jsonConverter.fromJson(json,
-                // MessageWrapper.class);
-                if (message != null) {
-                    messageReceiverExecutor.execute(new Runnable() {
+        logger.info("LongPollingChannel CHANNEL: {} messages received: {}", listOfMessages.size());
 
-                        @Override
-                        public void run() {
-                            logger.info("ARRIVED {} messageId: {} type: {} from: {} to: {} header: {}",
-                                        new String[]{ httpget.getURI().toString(), message.getId(), message.getType(),
-                                                message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                                                message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                                                message.getHeader().toString() });
-                            logger.debug("\r\n<<<<<<<<<<<<<<<<<\r\n:{}", message.toLogMessage());
-                            messageArrivedListener.messageArrived(message);
-                        }
-                    });
+        for (final ImmutableMessage message : listOfMessages) {
+            messageReceiverExecutor.execute(new Runnable() {
 
-                } else {
-                    logger.warn("LongPollingChannel CHANNEL: {} message was null", id);
-                    messageArrivedListener.error(null,
-                                                 new JoynrCommunicationException("LongPollingChannel CHANNEL: {} message was null"));
+                @Override
+                public void run() {
+                    logger.info("ARRIVED {} messageId: {} type: {} from: {} to: {} header: {}", new Object[]{
+                            httpget.getURI().toString(), message.getId(), message.getType(), message.getSender(),
+                            message.getRecipient(), message.getHeaders().toString() });
+                    logger.debug("\r\n<<<<<<<<<<<<<<<<<\r\n:{}", message.toLogMessage());
+                    messageArrivedListener.messageArrived(message);
                 }
-                continue;
-            } catch (Exception e) {
-                logger.error("error parsing JSON", e);
-            }
-
-            logger.error("CHANNEL: {} Error converting the JSON into a Message object, message could not be passed to dispatcher. \n"
-                                 + "Response body was: " + json,
-                         id);
+            });
         }
     }
 

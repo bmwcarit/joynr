@@ -24,7 +24,7 @@ import io.joynr.messaging.MessageArrivedListener;
 
 import java.util.List;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import com.google.common.collect.Lists;
 
@@ -47,7 +47,7 @@ public class TestMessageListener extends WaitTillCondition implements MessageArr
     }
 
     @Override
-    public void messageArrived(JoynrMessage message) {
+    public void messageArrived(ImmutableMessage message) {
         receivedPayloads.add(message);
         releaseSemaphorePermit();
     }
@@ -57,7 +57,7 @@ public class TestMessageListener extends WaitTillCondition implements MessageArr
     }
 
     @Override
-    public void error(JoynrMessage message, Throwable error) {
+    public void error(ImmutableMessage message, Throwable error) {
         releaseErrorSemaphorePermit();
         thrownErrors.add(error);
     }

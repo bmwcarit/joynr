@@ -61,6 +61,7 @@ define([ "joynr/messaging/JoynrMessage"
             expect(joynrMessage._typeName).toEqual("joynr.JoynrMessage");
             /*jslint newcap: false, nomen: false */
             expect(joynrMessage.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            expect(joynrMessage.compress).toEqual(false);
             done();
         });
 
@@ -150,6 +151,16 @@ define([ "joynr/messaging/JoynrMessage"
             expect(joynrMessage.isLocalMessage).toBe(false);
             joynrMessage.setIsLocalMessage(true);
             expect(joynrMessage.isLocalMessage).toBe(true);
+        });
+
+        it("allows to change compress", function() {
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                payload : "hello"
+            });
+            expect(joynrMessage.compress).toBe(false);
+            joynrMessage.setCompress(true);
+            expect(joynrMessage.compress).toBe(true);
         });
 
         it("has comfort functions for setting values", function() {

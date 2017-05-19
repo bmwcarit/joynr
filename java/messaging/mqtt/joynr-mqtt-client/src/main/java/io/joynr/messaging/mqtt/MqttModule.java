@@ -34,8 +34,6 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
-import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
-import io.joynr.messaging.serialize.MessageSerializerFactory;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
@@ -90,12 +88,6 @@ public class MqttModule extends AbstractModule {
         }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
         }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
         messagingStubFactory.addBinding(MqttAddress.class).to(MqttMessagingStubFactory.class);
-
-        MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
-        messageSerializerFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<AbstractMiddlewareMessageSerializerFactory<? extends Address>>() {
-        }, Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
-        messageSerializerFactory.addBinding(MqttAddress.class).to(MqttMessageSerializerFactory.class);
 
         MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
         messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {

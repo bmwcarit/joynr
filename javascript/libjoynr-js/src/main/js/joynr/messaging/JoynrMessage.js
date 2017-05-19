@@ -59,72 +59,70 @@ define(
              * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY
              */
-            JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY = "oneWay";
+            JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY = "o";
             /**
              * @static
              * @readonly
              * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
              */
-            JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST = "request";
+            JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST = "rq";
             /**
              * @static
              * @readonly
              * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_REPLY
              */
-            JoynrMessage.JOYNRMESSAGE_TYPE_REPLY = "reply";
+            JoynrMessage.JOYNRMESSAGE_TYPE_REPLY = "rp";
             /**
              * @static
              * @readonly
              * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
              */
-            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST = "subscriptionRequest";
+            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST = "arq";
             /**
              * @static
              * @readonly
              * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST
              */
-            JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST =
-                    "multicastSubscriptionRequest";
+            JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST = "mrq";
             /**
              * @static
              * @readonly
              * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST
              */
-            JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST =
-                    "broadcastSubscriptionRequest";
+            JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST = "brq";
             /**
              * @static
              * @readonly
              * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY
              */
-            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY = "subscriptionReply";
+            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY = "srp";
             /**
              * @static
              * @readonly
              * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
              */
-            JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION = "subscriptionPublication";
+            JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION = "p";
             /**
              * @static
              * @readonly
              * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
              */
-            JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST = "multicast";
+            JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST = "m";
             /**
              * @static
              * @readonly
              * @type String
              * @name JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP
              */
-            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP = "subscriptionStop";
+            JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP = "sst";
             /**
              * @static
              * @readonly
@@ -338,6 +336,17 @@ define(
                 writable : false,
                 value : function(isLocalMessage) {
                     this.isLocalMessage = isLocalMessage;
+                }
+            });
+
+            JoynrMessage.prototype.compress = false;
+
+            Object.defineProperty(JoynrMessage.prototype, "setCompress", {
+                enumerable : false,
+                configurable : false,
+                writable : false,
+                value : function(compress) {
+                    this.compress = compress;
                 }
             });
 

@@ -20,7 +20,7 @@
 
 #include <gtest/gtest.h>
 
-#include "joynr/IMessaging.h"
+#include "joynr/IMessagingStub.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
@@ -112,7 +112,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromWebS
     factory.addClient(webSocketClientAddress, websocket->getSender());
 
     EXPECT_TRUE(factory.canCreate(webSocketClientAddress));
-    std::shared_ptr<IMessaging> messagingStub(factory.create(webSocketClientAddress));
+    std::shared_ptr<IMessagingStub> messagingStub(factory.create(webSocketClientAddress));
     EXPECT_TRUE(messagingStub.get() != nullptr);
 
     EXPECT_CALL(*websocket, dtorCalled());

@@ -35,8 +35,8 @@
 #include "joynr/Dispatcher.h"
 #include "joynr/HttpMulticastAddressCalculator.h"
 #include "joynr/IDispatcher.h"
-#include "joynr/IMessageReceiver.h"
-#include "joynr/IMessageSender.h"
+#include "joynr/ITransportMessageReceiver.h"
+#include "joynr/ITransportMessageSender.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/InProcessAddress.h"
@@ -44,10 +44,10 @@
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/InProcessPublicationSender.h"
-#include "joynr/JoynrMessageSender.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/LocalDiscoveryAggregator.h"
+#include "joynr/MessageSender.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
@@ -75,7 +75,7 @@
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttProtocol.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
+#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
@@ -109,16 +109,15 @@ static const std::string ACC_ENTRIES_FILE = "CCAccessControl.entries";
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::unique_ptr<Settings> settings,
-        std::shared_ptr<IMessageReceiver> httpMessageReceiver,
-        std::shared_ptr<IMessageSender> httpMessageSender,
-        std::shared_ptr<IMessageReceiver> mqttMessageReceiver,
-        std::shared_ptr<IMessageSender> mqttMessageSender)
+        std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver,
+        std::shared_ptr<ITransportMessageSender> httpMessageSender,
+        std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver,
+        std::shared_ptr<ITransportMessageSender> mqttMessageSender)
         : JoynrRuntime(*settings),
           joynrDispatcher(nullptr),
           inProcessDispatcher(nullptr),
           subscriptionManager(nullptr),
-          joynrMessagingSendSkeleton(nullptr),
-          joynrMessageSender(nullptr),
+          messageSender(nullptr),
           localCapabilitiesDirectory(nullptr),
           libJoynrMessagingSkeleton(nullptr),
           httpMessageReceiver(httpMessageReceiver),
@@ -373,16 +372,16 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     /* LibJoynr */
     assert(ccMessageRouter);
-    joynrMessageSender = std::make_shared<JoynrMessageSender>(
-            ccMessageRouter, messagingSettings.getTtlUpliftMs());
-    joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
-    joynrMessageSender->registerDispatcher(joynrDispatcher);
+    messageSender =
+            std::make_shared<MessageSender>(ccMessageRouter, messagingSettings.getTtlUpliftMs());
+    joynrDispatcher = new Dispatcher(messageSender, singleThreadIOService->getIOService());
+    messageSender->registerDispatcher(joynrDispatcher);
+    messageSender->setReplyToAddress(globalClusterControllerAddress);
 
     /* CC */
     // TODO: libjoynrmessagingskeleton now uses the Dispatcher, should it use the
     // InprocessDispatcher?
-    libJoynrMessagingSkeleton =
-            std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
+    libJoynrMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
     // EndpointAddress to messagingStub is transmitted when a provider is registered
     // messagingStubFactory->registerInProcessMessagingSkeleton(libJoynrMessagingSkeleton);
 
@@ -393,8 +392,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     if (doHttpMessaging) {
         if (!httpMessageReceiverSupplied) {
             httpMessagingSkeleton = std::make_shared<HttpMessagingSkeleton>(*ccMessageRouter);
-            httpMessageReceiver->registerReceiveCallback([&](const std::string& msg) {
-                httpMessagingSkeleton->onTextMessageReceived(msg);
+            httpMessageReceiver->registerReceiveCallback([&](smrf::ByteVector&& msg) {
+                httpMessagingSkeleton->onMessageReceived(std::move(msg));
             });
         }
 
@@ -425,8 +424,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                     std::static_pointer_cast<MqttReceiver>(mqttMessageReceiver),
                     clusterControllerSettings.getMqttMulticastTopicPrefix(),
                     messagingSettings.getTtlUpliftMs());
-            mqttMessageReceiver->registerReceiveCallback([&](const std::string& msg) {
-                mqttMessagingSkeleton->onTextMessageReceived(msg);
+            mqttMessageReceiver->registerReceiveCallback([&](smrf::ByteVector&& msg) {
+                mqttMessagingSkeleton->onMessageReceived(std::move(msg));
             });
             multicastMessagingSkeletonDirectory
                     ->registerSkeleton<system::RoutingTypes::MqttAddress>(mqttMessagingSkeleton);
@@ -460,7 +459,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       *
       */
     publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
-                                                joynrMessageSender.get(),
+                                                messageSender.get(),
                                                 messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings.getSubscriptionRequestPersistenceFilename());
@@ -478,8 +477,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             publicationManager,
             inProcessPublicationSender,
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
-    auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(
-            joynrMessageSender, subscriptionManager);
+    auto joynrMessagingConnectorFactory =
+            std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));

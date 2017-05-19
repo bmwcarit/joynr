@@ -30,6 +30,7 @@ This project has dependencies to:
   Commons Lang under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
+  flatbuffers-java under Apache License V2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
@@ -44,6 +45,8 @@ This project has dependencies to:
   io.joynr.java.messaging:service-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
+  io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
+  io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
   Jackson module: JAXB-annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0

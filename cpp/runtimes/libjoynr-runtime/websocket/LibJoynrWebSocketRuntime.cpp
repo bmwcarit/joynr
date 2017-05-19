@@ -125,7 +125,8 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
                         "Sending websocket initialization message failed. Error: {}",
                         e.getMessage());
     };
-    websocket->send(initializationMsg, onFailure);
+    smrf::ByteVector rawMessage(initializationMsg.begin(), initializationMsg.end());
+    websocket->send(smrf::ByteArrayView(rawMessage), onFailure);
 }
 
 void LibJoynrWebSocketRuntime::createWebsocketClient()
@@ -169,8 +170,8 @@ void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
 {
     auto wsLibJoynrMessagingSkeleton =
             std::make_shared<WebSocketLibJoynrMessagingSkeleton>(util::as_weak_ptr(messageRouter));
-    websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](const std::string& msg) {
-        wsLibJoynrMessagingSkeleton->onMessageReceived(msg);
+    websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](smrf::ByteVector&& msg) {
+        wsLibJoynrMessagingSkeleton->onMessageReceived(std::move(msg));
     });
 }
 

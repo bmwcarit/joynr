@@ -14,6 +14,7 @@ The software listed below included in some products is licensed under the "Apach
 - com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.8.8
   Notice file: WEB-INF/lib/jackson-module-jaxb-annotations-2.8.8.jar:META-INF/NOTICE
   License file: WEB-INF/lib/jackson-module-jaxb-annotations-2.8.8.jar:META-INF/LICENSE
+- com.github.davidmoten:flatbuffers-java:1.6.0.3
 - com.google.code.gson:gson:2.1
 - com.google.guava:guava:11.0.2
 - com.google.inject.extensions:guice-assistedinject:3.0

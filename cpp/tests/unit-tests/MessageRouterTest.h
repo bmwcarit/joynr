@@ -41,6 +41,9 @@
 #include "joynr/MqttMulticastAddressCalculator.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/WebSocketMulticastAddressCalculator.h"
+#include "joynr/Message.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/ImmutableMessage.h"
 
 using namespace joynr;
 
@@ -54,7 +57,7 @@ public:
         messageQueue(nullptr),
         messagingStubFactory(nullptr),
         messageRouter(nullptr),
-        joynrMessage(),
+        mutableMessage(),
         multicastMessagingSkeletonDirectory(std::make_shared<MulticastMessagingSkeletonDirectory>()),
         brokerURL("mqtt://globalTransport.example.com"),
         mqttTopic(""),
@@ -73,8 +76,8 @@ public:
         messageRouter = createMessageRouter();
 
         JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-        joynrMessage.setHeaderExpiryDate(now + std::chrono::milliseconds(100));
-        joynrMessage.setType(JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY);
+        mutableMessage.setExpiryDate(now + std::chrono::milliseconds(100));
+        mutableMessage.setType(Message::VALUE_MESSAGE_TYPE_ONE_WAY());
     }
 
     ~MessageRouterTest() override {
@@ -131,7 +134,7 @@ protected:
 
     std::unique_ptr<T> messageRouter;
 
-    JoynrMessage joynrMessage;
+    MutableMessage mutableMessage;
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
     std::string brokerURL;
     std::string mqttTopic;
@@ -142,12 +145,13 @@ protected:
 
     void routeMessageToAddress(){
         joynr::Semaphore semaphore(0);
+        std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
         auto mockMessagingStub = std::make_shared<MockMessagingStub>();
         ON_CALL(*messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
-        ON_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
+        ON_CALL(*mockMessagingStub, transmit(immutableMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
                 .WillByDefault(ReleaseSemaphore(&semaphore));
-        EXPECT_CALL(*mockMessagingStub, transmit(joynrMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
-        messageRouter->route(joynrMessage);
+        EXPECT_CALL(*mockMessagingStub, transmit(immutableMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
+        messageRouter->route(immutableMessage);
         EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
     }
 };

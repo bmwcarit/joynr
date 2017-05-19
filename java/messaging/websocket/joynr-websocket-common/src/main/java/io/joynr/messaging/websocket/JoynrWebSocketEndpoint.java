@@ -37,7 +37,7 @@ public interface JoynrWebSocketEndpoint {
 
     public void shutdown();
 
-    public void writeText(Address to, String message, long timeout, TimeUnit unit, FailureAction failureAction);
+    public void writeBytes(Address to, byte[] message, long timeout, TimeUnit unit, FailureAction failureAction);
 
     public void reconnect();
 }

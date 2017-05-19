@@ -22,9 +22,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageFactory.h"
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/MutableMessageFactory.h"
+#include "joynr/MessageSender.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
@@ -70,7 +71,7 @@ public:
         proxyParticipantId("proxyParticipantId"),
         requestReplyId("requestReplyId"),
         messageFactory(),
-        messageSender(std::make_shared<JoynrMessageSender>(mockMessageRouter)),
+        messageSender(std::make_shared<MessageSender>(mockMessageRouter)),
         dispatcher(messageSender, singleThreadedIOService.getIOService()),
         subscriptionManager(nullptr),
         provider(new MockTestProvider),
@@ -107,8 +108,8 @@ protected:
     std::string proxyParticipantId;
     std::string requestReplyId;
 
-    JoynrMessageFactory messageFactory;
-    std::shared_ptr<JoynrMessageSender> messageSender;
+    MutableMessageFactory messageFactory;
+    std::shared_ptr<MessageSender> messageSender;
     Dispatcher dispatcher;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::shared_ptr<MockTestProvider> provider;
@@ -149,7 +150,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
-    JoynrMessage msg = messageFactory.createSubscriptionRequest(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionRequest(
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
@@ -157,7 +158,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
                 isLocalMessage);
 
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     // Wait for a call to be made to the mockRequestCaller
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
@@ -208,13 +209,13 @@ TEST_F(SubscriptionTest, receive_publication ) {
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider
-    JoynrMessage msg = messageFactory.createSubscriptionPublication(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
                 providerParticipantId,
                 proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(publicationSemaphore.waitFor(std::chrono::seconds(1)));
@@ -264,13 +265,13 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider
-    JoynrMessage msg = messageFactory.createSubscriptionPublication(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
                 providerParticipantId,
                 proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
@@ -311,7 +312,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
-    JoynrMessage msg = messageFactory.createSubscriptionRequest(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionRequest(
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
@@ -319,7 +320,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
                 isLocalMessage);
     // first received message with subscription request
 
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(15)));
     //Try to acquire a semaphore for up to 15 seconds. Acquireing the semaphore will only work, if the mockRequestCaller has been called
@@ -327,6 +328,8 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
 }
 
 TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
+
+    using ImmutableMessagePtr = std::shared_ptr<ImmutableMessage>;
 
     std::string subscriptionId = "SubscriptionID";
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
@@ -356,9 +359,10 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     /* ensure the serialization succeeds and the first publication and the subscriptionReply are sent to the proxy */
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
-                         A<JoynrMessage>(),
-                         Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
-                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId))),
+                         A<ImmutableMessagePtr>(),
+                         MessageHasSender(providerParticipantId),
+                         MessageHasRecipient(proxyParticipantId)
+                        ),
                      _
                      )).Times(2);
 
@@ -379,12 +383,12 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
     Mock::VerifyAndClear(mockMessageRouter.get());
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
-                         A<JoynrMessage>(),
-                         Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
-                         Property(&JoynrMessage::getHeaderTo, Eq(proxyParticipantId))),
+                         A<ImmutableMessagePtr>(),
+                         MessageHasSender(providerParticipantId),
+                         MessageHasRecipient(proxyParticipantId)
+                        ),
                      _
                      ));
-
 
     provider->listOfStringsChanged(listOfStrings);
 }
@@ -419,14 +423,14 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
-    JoynrMessage msg = messageFactory.createSubscriptionRequest(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionRequest(
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
                 subscriptionRequest,
                 isLocalMessage);
     // first received message with subscription request
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
     // wait for two requests from the subscription
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
@@ -467,14 +471,14 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
-    JoynrMessage msg = messageFactory.createSubscriptionRequest(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionRequest(
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
                 subscriptionRequest,
                 isLocalMessage);
     // first received message with subscription request
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     // wait for two requests from the subscription
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
@@ -483,12 +487,12 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
     SubscriptionStop subscriptionStop;
     subscriptionStop.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     // receive a subscription stop message
-    msg = messageFactory.createSubscriptionStop(
+    mutableMessage = messageFactory.createSubscriptionStop(
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
                 subscriptionStop);
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
 }

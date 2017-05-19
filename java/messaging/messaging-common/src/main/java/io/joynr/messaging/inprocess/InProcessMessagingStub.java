@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 public class InProcessMessagingStub implements IMessaging {
     private static final Logger LOG = LoggerFactory.getLogger(InProcessMessagingStub.class);
@@ -39,15 +39,14 @@ public class InProcessMessagingStub implements IMessaging {
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
         LOG.trace(">>> OUTGOING >>> {}", message.toLogMessage());
         skeleton.transmit(message, failureAction);
     }
 
     @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         LOG.trace(">>> OUTGOING >>> {}", serializedMessage);
         throw new IllegalStateException("InProcess messaging should not send serialized messages");
     }
-
 }

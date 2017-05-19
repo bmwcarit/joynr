@@ -49,10 +49,8 @@ namespace exceptions
 class JoynrRuntimeException;
 } // namespace exceptions
 
-class IMessaging;
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
-class JoynrMessage;
 
 namespace system
 {
@@ -89,7 +87,7 @@ public:
     /*
      * Implement methods from IMessageRouter
      */
-    void route(JoynrMessage& message, std::uint32_t tryCount = 0) final;
+    void route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) final;
 
     void addNextHop(const std::string& participantId,
                     const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
@@ -125,7 +123,7 @@ public:
      * Method specific to LibJoynrMessageRouter
      */
     void setParentRouter(std::unique_ptr<joynr::system::RoutingProxy> parentRouter);
-    bool publishToGlobal(const JoynrMessage& message) final;
+    bool publishToGlobal(const ImmutableMessage& message) final;
 
     /*
      * Method specific to LibJoynrMessageRouter,
@@ -133,10 +131,6 @@ public:
      * SubscriptionManager -> LibJoynrMessageRouter -> RoutingProxy -> SubscriptionManager
      */
     void shutdown();
-
-    void queryReplyToAddress(
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
     friend class MessageRunnable;
 

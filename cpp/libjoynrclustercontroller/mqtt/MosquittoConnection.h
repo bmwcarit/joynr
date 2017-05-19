@@ -26,6 +26,7 @@
 #include <unordered_set>
 
 #include <mosquittopp.h>
+#include <smrf/ByteVector.h>
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
@@ -68,7 +69,7 @@ public:
     void subscribeToTopic(const std::string& topic);
     void unsubscribeFromTopic(const std::string& topic);
     void registerChannelId(const std::string& channelId);
-    void registerReceiveCallback(std::function<void(const std::string&)> onTextMessageReceived);
+    void registerReceiveCallback(std::function<void(smrf::ByteVector&&)> onMessageReceived);
     bool isSubscribedToChannelTopic() const;
 
 private:
@@ -104,7 +105,7 @@ private:
     std::atomic<bool> isChannelIdRegistered;
     std::atomic<bool> subscribedToChannelTopic;
 
-    std::function<void(const std::string&)> onTextMessageReceived;
+    std::function<void(smrf::ByteVector&&)> onMessageReceived;
 
     std::thread thread;
 

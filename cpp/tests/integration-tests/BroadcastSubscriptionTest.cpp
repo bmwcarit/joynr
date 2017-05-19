@@ -23,9 +23,10 @@
 #include <gmock/gmock.h>
 
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageSender.h"
-#include "joynr/JoynrMessageFactory.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/MessageSender.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
@@ -61,7 +62,7 @@ public:
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         messageFactory(),
-        messageSender(std::make_shared<JoynrMessageSender>(mockMessageRouter)),
+        messageSender(std::make_shared<MessageSender>(mockMessageRouter)),
         dispatcher(messageSender, singleThreadIOService.getIOService()),
         subscriptionManager(nullptr)
     {
@@ -90,8 +91,8 @@ protected:
     std::string providerParticipantId;
     std::string proxyParticipantId;
 
-    JoynrMessageFactory messageFactory;
-    std::shared_ptr<JoynrMessageSender> messageSender;
+    MutableMessageFactory messageFactory;
+    std::shared_ptr<MessageSender> messageSender;
     Dispatcher dispatcher;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
 private:
@@ -136,13 +137,13 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider
-    JoynrMessage msg = messageFactory.createSubscriptionPublication(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
                 providerParticipantId,
                 proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
@@ -187,13 +188,13 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider
-    JoynrMessage msg = messageFactory.createSubscriptionPublication(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
                 providerParticipantId,
                 proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));

@@ -22,7 +22,7 @@ package io.joynr.messaging;
 import io.joynr.context.JoynrMessageScoped;
 
 /**
- * A container object for the {@link joynr.JoynrMessage#getCreatorUserId() message creator ID} scoped to the
+ * A container object for the {@link joynr.ImmutableMessage#getCreatorUserId() message creator ID} scoped to the
  * {@link JoynrMessageScoped processing of a joynr message}.
  */
 @JoynrMessageScoped

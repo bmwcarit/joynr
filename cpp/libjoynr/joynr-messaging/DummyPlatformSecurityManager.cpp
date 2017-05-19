@@ -21,8 +21,6 @@
 #include <cassert>
 #include <tuple>
 
-#include "joynr/JoynrMessage.h"
-
 namespace joynr
 {
 
@@ -33,14 +31,13 @@ std::string DummyPlatformSecurityManager::getCurrentProcessUserId() const
     return std::string("USER");
 }
 
-JoynrMessage DummyPlatformSecurityManager::sign(JoynrMessage message)
+void DummyPlatformSecurityManager::sign(MutableMessage& message)
 {
     std::ignore = message;
     assert(false && "Not implemented yet");
-    return JoynrMessage();
 }
 
-bool DummyPlatformSecurityManager::validate(const JoynrMessage& message) const
+bool DummyPlatformSecurityManager::validate(const ImmutableMessage& message) const
 {
     std::ignore = message;
     return true;

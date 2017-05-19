@@ -20,5 +20,5 @@ package io.joynr.messaging;
  */
 
 public interface IRawMessaging {
-    public void transmit(String serializedMessage, FailureAction failureAction);
+    public void transmit(byte[] serializedMessage, FailureAction failureAction);
 }

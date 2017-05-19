@@ -28,7 +28,8 @@ import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
@@ -56,7 +57,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
         if (messageProcessors != null) {
             for (JoynrMessageProcessor processor : messageProcessors) {
                 message = processor.processIncoming(message);
@@ -64,23 +65,21 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
         }
 
         logger.debug("<<< INCOMING <<< {}", message.toLogMessage());
-        final String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
+        final String replyToChannelId = message.getReplyTo();
         try {
-            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                 message.setReceivedFromGlobal(true);
             }
-            addRequestorToMessageRouter(message.getFrom(), replyToChannelId);
+            addRequestorToMessageRouter(message.getSender(), replyToChannelId);
             messageRouter.route(message);
         } catch (Exception exception) {
-            logger.error("Error processing incoming message. Message will be dropped: {} ",
-                         message.getHeader(),
-                         exception);
+            logger.error("Error processing incoming message. Message will be dropped: {} ", exception);
             failureAction.execute(exception);
         }
     }
 
     @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         // TODO Auto-generated method stub
 
     }
@@ -106,7 +105,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
         messageReceiver.start(new MessageArrivedListener() {
 
             @Override
-            public void messageArrived(final JoynrMessage message) {
+            public void messageArrived(final ImmutableMessage message) {
                 transmit(message, new FailureAction() {
                     @Override
                     public void execute(Throwable error) {
@@ -118,7 +117,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
             }
 
             @Override
-            public void error(JoynrMessage message, Throwable error) {
+            public void error(ImmutableMessage message, Throwable error) {
                 logger.error("error receiving incoming message: {} error: {}", message.getId(), error.getMessage());
             }
         },

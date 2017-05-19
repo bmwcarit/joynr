@@ -26,7 +26,8 @@
 namespace joynr
 {
 
-class JoynrMessage;
+class MutableMessage;
+class ImmutableMessage;
 
 class JOYNR_EXPORT IPlatformSecurityManager
 {
@@ -39,16 +40,15 @@ public:
     virtual std::string getCurrentProcessUserId() const = 0;
 
     /**
-     * @param message
-     * @return signed JoynrMessage
+     * @param message MutableMessage
      */
-    virtual JoynrMessage sign(JoynrMessage message) = 0;
+    virtual void sign(MutableMessage& message) = 0;
 
     /**
      * @param message
      * @return if message is valid returns true
      */
-    virtual bool validate(const JoynrMessage& message) const = 0;
+    virtual bool validate(const ImmutableMessage& message) const = 0;
 
     /**
      * @param message

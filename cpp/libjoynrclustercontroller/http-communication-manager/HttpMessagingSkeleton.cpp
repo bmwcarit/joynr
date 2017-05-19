@@ -16,10 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include "HttpMessagingSkeleton.h"
+#include "libjoynrclustercontroller/http-communication-manager/HttpMessagingSkeleton.h"
+
+#include <smrf/exceptions.h>
 
 #include "joynr/IMessageRouter.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/Message.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
@@ -35,27 +38,36 @@ HttpMessagingSkeleton::HttpMessagingSkeleton(IMessageRouter& messageRouter)
 }
 
 void HttpMessagingSkeleton::transmit(
-        JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
-        message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
-        message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        // TODO ca: check if replyTo header info is available?
+    const std::string& messageType = message->getType();
+    if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST()) {
+
+        boost::optional<std::string> optionalReplyTo = message->getReplyTo();
+        if (!optionalReplyTo) {
+            JOYNR_LOG_ERROR(logger,
+                            "message {} did not contain replyTo header, discarding",
+                            message->getId());
+            return;
+        }
+        const std::string& replyTo = *optionalReplyTo;
         try {
             using system::RoutingTypes::ChannelAddress;
 
             ChannelAddress channelAddress;
-            joynr::serializer::deserializeFromJson(channelAddress, message.getHeaderReplyAddress());
+            joynr::serializer::deserializeFromJson(channelAddress, replyTo);
 
             auto address = std::make_shared<const ChannelAddress>(channelAddress);
             // because the message is received via global transport, isGloballyVisible must be true
             const bool isGloballyVisible = true;
-            messageRouter.addNextHop(message.getHeaderFrom(), address, isGloballyVisible);
+            messageRouter.addNextHop(message->getSender(), address, isGloballyVisible);
         } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_FATAL(logger,
+            JOYNR_LOG_ERROR(logger,
                             "could not deserialize ChannelAddress from {} - error: {}",
-                            message.getHeaderReplyAddress(),
+                            replyTo,
                             e.what());
             // do not try to route the message if address is not valid
             return;
@@ -63,45 +75,46 @@ void HttpMessagingSkeleton::transmit(
     }
 
     try {
-        messageRouter.route(message);
+        messageRouter.route(std::move(message));
     } catch (exceptions::JoynrRuntimeException& e) {
         onFailure(e);
     }
 }
 
-void HttpMessagingSkeleton::onTextMessageReceived(const std::string& message)
+void HttpMessagingSkeleton::onMessageReceived(smrf::ByteVector&& message)
 {
-    try {
-        JoynrMessage msg;
-        joynr::serializer::deserializeFromJson(msg, message);
-        if (msg.getType().empty()) {
-            JOYNR_LOG_ERROR(logger, "received empty message - dropping Messages");
-            return;
-        }
-        if (msg.getPayload().empty()) {
-            JOYNR_LOG_ERROR(logger, "joynr message payload is empty: {}", message);
-            return;
-        }
-        if (!msg.containsHeaderExpiryDate()) {
-            JOYNR_LOG_ERROR(logger,
-                            "received message [msgId=[{}] without decay time - dropping message",
-                            msg.getHeaderMessageId());
-            return;
-        }
-        JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", msg.toLogMessage());
+    // `message` potentially contains multipe SMRF messages
+    // hence we need to split this stream into single messages in order to
+    // route them separately
+    const std::size_t inputSize = message.size();
+    std::size_t remainingSize = inputSize;
+    const smrf::Byte* end = message.data() + inputSize;
+    while (remainingSize > 0) {
+        const std::size_t offset = inputSize - remainingSize;
+        const smrf::Byte* start = message.data() + offset;
+        smrf::ByteVector splittedMessage(start, end);
+        try {
+            auto immutableMessage = std::make_shared<ImmutableMessage>(std::move(splittedMessage));
+            remainingSize -= immutableMessage->getMessageSize();
 
-        auto onFailure = [msg](const exceptions::JoynrRuntimeException& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "Incoming Message with ID {} could not be sent! reason: {}",
-                            msg.getHeaderMessageId(),
-                            e.getMessage());
-        };
-        transmit(msg, onFailure);
-    } catch (const std::invalid_argument& e) {
-        JOYNR_LOG_ERROR(logger,
-                        "Unable to deserialize message. Raw message: {} - error: {}",
-                        message,
-                        e.what());
+            JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+
+            auto onFailure = [messageId = immutableMessage->getId()](
+                    const exceptions::JoynrRuntimeException& e)
+            {
+                JOYNR_LOG_ERROR(logger,
+                                "Incoming Message with ID {} could not be sent! reason: {}",
+                                messageId,
+                                e.getMessage());
+            };
+            transmit(std::move(immutableMessage), onFailure);
+        } catch (const smrf::EncodingException& e) {
+            JOYNR_LOG_ERROR(logger, "Unable to deserialize message - error: {}", e.what());
+            return;
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_ERROR(logger, "deserialized message is not valid - error: {}", e.what());
+            return;
+        }
     }
 }
 

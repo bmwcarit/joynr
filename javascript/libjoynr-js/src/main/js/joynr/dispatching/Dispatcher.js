@@ -171,6 +171,9 @@ define(
                     if (effort !== MessagingQosEffort.NORMAL) {
                         joynrMessage.effort = effort.value;
                     }
+                    if (settings.messagingQos.compress === true) {
+                        joynrMessage.setCompress(true);
+                    }
 
                     joynrMessage.setIsLocalMessage(settings.toDiscoveryEntry.isLocal);
                     // send message

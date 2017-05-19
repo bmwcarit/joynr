@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -48,9 +49,11 @@ import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
 import io.joynr.pubsub.SubscriptionQos;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.MulticastPublication;
 import joynr.MulticastSubscriptionRequest;
+import joynr.MutableMessage;
 import joynr.PeriodicSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
@@ -66,7 +69,7 @@ public class JoynrMessageFactoryTest {
     private static final long TTL = 1000;
     private static final long MAX_ALLOWED_EXPIRY_DATE_DIFF_MS = 500;
     private static final long NO_TTL_UPLIFT = 0;
-    JoynrMessageFactory joynrMessageFactory;
+    private JoynrMessageFactory joynrMessageFactory;
     private String fromParticipantId;
     private String toParticipantId;
     private Request request;
@@ -99,15 +102,15 @@ public class JoynrMessageFactoryTest {
                                                          joynrMessageProcessorMultibinder.addBinding()
                                                                                          .toInstance(new JoynrMessageProcessor() {
                                                                                              @Override
-                                                                                             public JoynrMessage processOutgoing(JoynrMessage joynrMessage) {
-                                                                                                 joynrMessage.getHeader()
+                                                                                             public MutableMessage processOutgoing(MutableMessage joynrMessage) {
+                                                                                                 joynrMessage.getCustomHeaders()
                                                                                                              .put("test",
                                                                                                                   "test");
                                                                                                  return joynrMessage;
                                                                                              }
 
                                                                                              @Override
-                                                                                             public JoynrMessage processIncoming(JoynrMessage joynrMessage) {
+                                                                                             public ImmutableMessage processIncoming(ImmutableMessage joynrMessage) {
                                                                                                  return joynrMessage;
                                                                                              }
                                                                                          });
@@ -135,156 +138,153 @@ public class JoynrMessageFactoryTest {
         joynrMessageFactory = injector.getInstance(JoynrMessageFactory.class);
     }
 
-    public static void assertExpiryDateEquals(long expectedValue, JoynrMessage message) {
-        String headerExpiryString = message.getHeaderValue(JoynrMessage.HEADER_NAME_EXPIRY_DATE);
-        long headerExpiryValue = Long.parseLong(headerExpiryString);
-        long diff = Math.abs(expectedValue - headerExpiryValue);
-        assertTrue("ExpiryDate=" + headerExpiryString + " differs " + diff + "ms (more than "
-                           + MAX_ALLOWED_EXPIRY_DATE_DIFF_MS + "ms) from the expected value=" + expectedValue,
-                   (diff <= MAX_ALLOWED_EXPIRY_DATE_DIFF_MS));
+    public static void assertExpiryDateEquals(long expectedValue, MutableMessage message) {
+        long diff = Math.abs(expectedValue - message.getTtlMs());
+
+        assertTrue(message.isTtlAbsolute());
+        assertTrue("ExpiryDate=" + message.getTtlMs() + " differs " + diff + "ms (more than "
+                           + MAX_ALLOWED_EXPIRY_DATE_DIFF_MS + "ms) from expected value=" + expectedValue,
+                   diff <= MAX_ALLOWED_EXPIRY_DATE_DIFF_MS);
     }
 
     @Test
     public void createRequest() {
-        JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
-                                                                 toParticipantId,
-                                                                 request,
-                                                                 messagingQos);
-        assertEquals(JoynrMessage.MESSAGE_TYPE_REQUEST, message.getType());
+        MutableMessage message = joynrMessageFactory.createRequest(fromParticipantId,
+                                                                   toParticipantId,
+                                                                   request,
+                                                                   messagingQos);
+        assertEquals(Message.VALUE_MESSAGE_TYPE_REQUEST, message.getType());
 
-        assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
-        assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
+        assertEquals(fromParticipantId, message.getSender());
+        assertEquals(toParticipantId, message.getRecipient());
 
         assertExpiryDateEquals(expiryDate.getValue(), message);
         assertTrue(message.getPayload() != null);
-        assertNotNull(message.getCreatorUserId());
     }
 
     @Test
     public void createRequestWithCustomEffort() {
         MessagingQos customMessagingQos = new MessagingQos();
         customMessagingQos.setEffort(MessagingQosEffort.BEST_EFFORT);
-        JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
-                                                                 toParticipantId,
-                                                                 request,
-                                                                 customMessagingQos);
+        MutableMessage message = joynrMessageFactory.createRequest(fromParticipantId,
+                                                                   toParticipantId,
+                                                                   request,
+                                                                   customMessagingQos);
         expiryDate = DispatcherUtils.convertTtlToExpirationDate(customMessagingQos.getRoundTripTtl_ms());
         assertExpiryDateEquals(expiryDate.getValue(), message);
-        assertEquals(String.valueOf(MessagingQosEffort.BEST_EFFORT),
-                     message.getHeaderValue(JoynrMessage.HEADER_NAME_EFFORT));
+        assertEquals(String.valueOf(MessagingQosEffort.BEST_EFFORT), message.getEffort());
     }
 
     @Test
-    public void createRequestWithCustomHeaders() {
+    public void createRequestWithCustomHeaders() throws Exception {
         final Map<String, String> myCustomHeaders = new HashMap<>();
         final String headerName = "header";
         final String headerValue = "value";
         myCustomHeaders.put(headerName, headerValue);
         messagingQos.getCustomMessageHeaders().putAll(myCustomHeaders);
-        JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
-                                                                 toParticipantId,
-                                                                 request,
-                                                                 messagingQos);
-        assertEquals(JoynrMessage.MESSAGE_TYPE_REQUEST, message.getType());
+        MutableMessage message = joynrMessageFactory.createRequest(fromParticipantId,
+                                                                   toParticipantId,
+                                                                   request,
+                                                                   messagingQos);
+        assertEquals(Message.VALUE_MESSAGE_TYPE_REQUEST, message.getType());
         assertExpiryDateEquals(expiryDate.getValue(), message);
 
-        final String expectedCustomHeaderName = JoynrMessage.MESSAGE_CUSTOM_HEADER_PREFIX + headerName;
-        assertTrue(message.getHeader().containsKey(expectedCustomHeaderName));
+        final String expectedCustomHeaderName = Message.CUSTOM_HEADER_PREFIX + headerName;
+        assertTrue(message.getImmutableMessage().getHeaders().containsKey(expectedCustomHeaderName));
+
+        Map<String, String> customHeaders = message.getCustomHeaders();
+        assertTrue(customHeaders.size() == 3);
+        assertTrue(customHeaders.containsKey(headerName));
+    }
+
+    @Test
+    public void testCreateOneWayRequest() {
+        MutableMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
+                                                                         toParticipantId,
+                                                                         request,
+                                                                         messagingQos);
+        assertNotNull(message);
+        assertEquals(Message.VALUE_MESSAGE_TYPE_ONE_WAY, message.getType());
+        assertEquals(fromParticipantId, message.getSender());
+        assertEquals(toParticipantId, message.getRecipient());
+        assertExpiryDateEquals(expiryDate.getValue(), message);
+        assertNotNull(message.getPayload());
+    }
+
+    @Test
+    public void testCreateOneWayRequestWithCustomHeader() throws Exception {
+        final Map<String, String> myCustomHeaders = new HashMap<>();
+        final String headerName = "header";
+        final String headerValue = "value";
+        myCustomHeaders.put(headerName, headerValue);
+        messagingQos.getCustomMessageHeaders().putAll(myCustomHeaders);
+        MutableMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
+                                                                         toParticipantId,
+                                                                         request,
+                                                                         messagingQos);
+        assertNotNull(message);
+        assertEquals(Message.VALUE_MESSAGE_TYPE_ONE_WAY, message.getType());
+        assertExpiryDateEquals(expiryDate.getValue(), message);
+
+        final String expectedCustomHeaderName = Message.CUSTOM_HEADER_PREFIX + headerName;
+        assertTrue(message.getImmutableMessage().getHeaders().containsKey(expectedCustomHeaderName));
+
         Map<String, String> customHeaders = message.getCustomHeaders();
         assertTrue(customHeaders.size() == 2);
         assertTrue(customHeaders.containsKey(headerName));
     }
 
     @Test
-    public void testCreateOneWayRequest() {
-        JoynrMessage joynrMessage = joynrMessageFactory.createOneWayRequest(fromParticipantId,
-                                                                            toParticipantId,
-                                                                            request,
-                                                                            messagingQos);
-        assertNotNull(joynrMessage);
-        assertEquals(JoynrMessage.MESSAGE_TYPE_ONE_WAY, joynrMessage.getType());
-        assertEquals(fromParticipantId, joynrMessage.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
-        assertEquals(toParticipantId, joynrMessage.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
-        assertExpiryDateEquals(expiryDate.getValue(), joynrMessage);
-        assertNotNull(joynrMessage.getPayload());
-        assertNotNull(joynrMessage.getCreatorUserId());
-    }
-
-    @Test
-    public void testCreateOneWayRequestWithCustomHeader() {
-        final Map<String, String> myCustomHeaders = new HashMap<>();
-        final String headerName = "header";
-        final String headerValue = "value";
-        myCustomHeaders.put(headerName, headerValue);
-        messagingQos.getCustomMessageHeaders().putAll(myCustomHeaders);
-        JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
-                                                                       toParticipantId,
-                                                                       request,
-                                                                       messagingQos);
-        assertNotNull(message);
-        assertEquals(JoynrMessage.MESSAGE_TYPE_ONE_WAY, message.getType());
-        assertExpiryDateEquals(expiryDate.getValue(), message);
-        final String expectedCustomHeaderName = JoynrMessage.MESSAGE_CUSTOM_HEADER_PREFIX + headerName;
-        assertTrue(message.getHeader().containsKey(expectedCustomHeaderName));
-        Map<String, String> customHeaders = message.getCustomHeaders();
-        assertTrue(customHeaders.size() == 1);
-        assertTrue(customHeaders.containsKey(headerName));
-
-    }
-
-    @Test
     public void createReply() {
-        JoynrMessage message = joynrMessageFactory.createReply(fromParticipantId, toParticipantId, reply, messagingQos);
+        MutableMessage message = joynrMessageFactory.createReply(fromParticipantId,
+                                                                 toParticipantId,
+                                                                 reply,
+                                                                 messagingQos);
 
-        assertEquals(JoynrMessage.MESSAGE_TYPE_REPLY, message.getType());
-        assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
-        assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
-        assertEquals(JoynrMessage.CONTENT_TYPE_APPLICATION_JSON,
-                     message.getHeaderValue(JoynrMessage.HEADER_NAME_CONTENT_TYPE));
+        assertEquals(Message.VALUE_MESSAGE_TYPE_REPLY, message.getType());
+        assertEquals(fromParticipantId, message.getSender());
+        assertEquals(toParticipantId, message.getRecipient());
         assertExpiryDateEquals(expiryDate.getValue(), message);
 
         assertTrue(message.getPayload() != null);
-        assertNotNull(message.getCreatorUserId());
     }
 
     @Test
     public void createSubscriptionRequest() {
-        JoynrMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
-                                                                             toParticipantId,
-                                                                             subscriptionRequest,
-                                                                             messagingQos);
-        assertEquals(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST, message.getType());
-        assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
-        assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
+        MutableMessage message = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
+                                                                               toParticipantId,
+                                                                               subscriptionRequest,
+                                                                               messagingQos);
+        assertEquals(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST, message.getType());
+        assertEquals(fromParticipantId, message.getSender());
+        assertEquals(toParticipantId, message.getRecipient());
         assertExpiryDateEquals(expiryDate.getValue(), message);
 
         assertTrue(message.getPayload() != null);
-        assertNotNull(message.getCreatorUserId());
     }
 
     @Test
     public void createPublication() {
-        JoynrMessage message = joynrMessageFactory.createPublication(fromParticipantId,
-                                                                     toParticipantId,
-                                                                     publication,
-                                                                     messagingQos);
-        assertEquals(JoynrMessage.MESSAGE_TYPE_PUBLICATION, message.getType());
-        assertEquals(fromParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID));
-        assertEquals(toParticipantId, message.getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID));
+        MutableMessage message = joynrMessageFactory.createPublication(fromParticipantId,
+                                                                       toParticipantId,
+                                                                       publication,
+                                                                       messagingQos);
+        assertEquals(Message.VALUE_MESSAGE_TYPE_PUBLICATION, message.getType());
+        assertEquals(fromParticipantId, message.getSender());
+        assertEquals(toParticipantId, message.getRecipient());
         assertExpiryDateEquals(expiryDate.getValue(), message);
 
         assertTrue(message.getPayload() != null);
-        assertNotNull(message.getCreatorUserId());
     }
 
     @Test
     public void testMessageProcessorUsed() {
-        JoynrMessage joynrMessage = joynrMessageFactory.createRequest("from",
-                                                                      "to",
-                                                                      new Request("name", new Object[0], new Class[0]),
-                                                                      new MessagingQos());
-        assertNotNull(joynrMessage.getHeader().get("test"));
-        assertEquals("test", joynrMessage.getHeader().get("test"));
+        MutableMessage message = joynrMessageFactory.createRequest("from",
+                                                                   "to",
+                                                                   new Request("name", new Object[0], new Class[0]),
+                                                                   new MessagingQos());
+        assertNotNull(message.getCustomHeaders().get("test"));
+        assertEquals("test", message.getCustomHeaders().get("test"));
     }
 
     @Test
@@ -292,16 +292,16 @@ public class JoynrMessageFactoryTest {
         String multicastId = "multicastId";
         MulticastPublication multicastPublication = new MulticastPublication(Collections.emptyList(), multicastId);
 
-        JoynrMessage joynrMessage = joynrMessageFactory.createMulticast(fromParticipantId,
-                                                                        multicastPublication,
-                                                                        messagingQos);
+        MutableMessage joynrMessage = joynrMessageFactory.createMulticast(fromParticipantId,
+                                                                          multicastPublication,
+                                                                          messagingQos);
 
         assertNotNull(joynrMessage);
         assertExpiryDateEquals(expiryDate.getValue(), joynrMessage);
-        assertEquals(fromParticipantId, joynrMessage.getFrom());
-        assertEquals(multicastId, joynrMessage.getTo());
-        assertEquals(JoynrMessage.MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
-        assertTrue(joynrMessage.getPayload().contains(MulticastPublication.class.getName()));
+        assertEquals(fromParticipantId, joynrMessage.getSender());
+        assertEquals(multicastId, joynrMessage.getRecipient());
+        assertEquals(Message.VALUE_MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
+        assertTrue(new String(joynrMessage.getPayload(), Charsets.UTF_8).contains(MulticastPublication.class.getName()));
     }
 
     @Test
@@ -316,14 +316,27 @@ public class JoynrMessageFactoryTest {
                                                                                                      multicastName,
                                                                                                      subscriptionQos);
 
-        JoynrMessage result = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
-                                                                            toParticipantId,
-                                                                            multicastSubscriptionRequest,
-                                                                            messagingQos);
+        MutableMessage result = joynrMessageFactory.createSubscriptionRequest(fromParticipantId,
+                                                                              toParticipantId,
+                                                                              multicastSubscriptionRequest,
+                                                                              messagingQos);
 
         assertNotNull(result);
-        assertEquals(JoynrMessage.MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, result.getType());
+        assertEquals(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, result.getType());
         assertExpiryDateEquals(expiryDate.getValue(), result);
     }
 
+    @Test
+    public void testCompressedFlagIsSet() {
+        MutableMessage message;
+        MessagingQos messagingQos = new MessagingQos();
+
+        messagingQos.setCompress(true);
+        message = joynrMessageFactory.createRequest("from", "to", request, messagingQos);
+        assertEquals(true, message.getCompressed());
+
+        messagingQos.setCompress(false);
+        message = joynrMessageFactory.createRequest("from", "to", request, messagingQos);
+        assertEquals(false, message.getCompressed());
+    }
 }

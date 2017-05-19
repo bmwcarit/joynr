@@ -22,7 +22,7 @@
 #include <memory>
 #include <string>
 
-#include "joynr/IMessaging.h"
+#include "joynr/IMessagingStub.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -30,24 +30,23 @@
 namespace joynr
 {
 
-class IMessageSender;
-class JoynrMessage;
+class ITransportMessageSender;
 /**
   * Is used by the ClusterController to contact another (remote) ClusterController
   */
-class MqttMessagingStub : public IMessaging
+class MqttMessagingStub : public IMessagingStub
 {
 public:
-    explicit MqttMessagingStub(std::shared_ptr<IMessageSender> messageSender,
+    explicit MqttMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                const system::RoutingTypes::MqttAddress& destinationAddress);
     ~MqttMessagingStub() override = default;
-    void transmit(JoynrMessage& message,
+    void transmit(std::shared_ptr<ImmutableMessage> message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingStub);
-    std::shared_ptr<IMessageSender> messageSender;
+    std::shared_ptr<ITransportMessageSender> messageSender;
     const system::RoutingTypes::MqttAddress destinationAddress;
     ADD_LOGGER(MqttMessagingStub);
 };

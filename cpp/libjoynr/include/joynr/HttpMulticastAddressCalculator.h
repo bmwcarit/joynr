@@ -36,8 +36,6 @@ class Address;
 } // namespace RoutingTypes
 } // namespace system
 
-class JoynrMessage;
-
 class HttpMulticastAddressCalculator : public IMulticastAddressCalculator
 {
 public:
@@ -45,7 +43,7 @@ public:
             std::shared_ptr<const system::RoutingTypes::ChannelAddress> globalAddress);
 
     std::shared_ptr<const system::RoutingTypes::Address> compute(
-            const JoynrMessage& message) override;
+            const ImmutableMessage& message) override;
 
 private:
     std::shared_ptr<const system::RoutingTypes::ChannelAddress> globalAddress;

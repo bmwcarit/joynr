@@ -19,8 +19,9 @@
 #ifndef IPUBLICATIONSENDER_H
 #define IPUBLICATIONSENDER_H
 
+#include <string>
+
 #include "joynr/JoynrExport.h"
-#include "string"
 
 namespace joynr
 {

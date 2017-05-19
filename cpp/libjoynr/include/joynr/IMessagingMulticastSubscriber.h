@@ -21,16 +21,15 @@
 
 #include <string>
 
-#include "joynr/IMessaging.h"
 #include "joynr/JoynrExport.h"
 
 namespace joynr
 {
 
-class JOYNR_EXPORT IMessagingMulticastSubscriber : public IMessaging
+class JOYNR_EXPORT IMessagingMulticastSubscriber
 {
 public:
-    ~IMessagingMulticastSubscriber() override = default;
+    virtual ~IMessagingMulticastSubscriber() = default;
     virtual void registerMulticastSubscription(const std::string& multicastId) = 0;
     virtual void unregisterMulticastSubscription(const std::string& multicastId) = 0;
 };

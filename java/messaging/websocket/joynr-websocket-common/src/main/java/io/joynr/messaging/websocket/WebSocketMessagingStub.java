@@ -24,44 +24,43 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessaging;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 
 public class WebSocketMessagingStub implements IMessaging {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketMessagingStub.class);
 
-    protected ObjectMapper objectMapper;
     private JoynrWebSocketEndpoint webSocketEndpoint;
 
     private Address toAddress;
 
-    public WebSocketMessagingStub(Address toAddress, JoynrWebSocketEndpoint webSocketEndpoint, ObjectMapper objectMapper) {
+    public WebSocketMessagingStub(Address toAddress, JoynrWebSocketEndpoint webSocketEndpoint) {
         this.toAddress = toAddress;
         this.webSocketEndpoint = webSocketEndpoint;
-        this.objectMapper = objectMapper;
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
         logger.debug(">>> OUTGOING >>> {}", message.toLogMessage());
-        long timeout = message.getExpiryDate() - System.currentTimeMillis();
-        String serializedMessage;
-        try {
-            serializedMessage = objectMapper.writeValueAsString(message);
-            webSocketEndpoint.writeText(toAddress, serializedMessage, timeout, TimeUnit.MILLISECONDS, failureAction);
-        } catch (JsonProcessingException error) {
-            failureAction.execute(error);
+
+        if (!message.isTtlAbsolute()) {
+            throw new JoynrRuntimeException("Relative TTL not supported");
         }
+
+        long timeout = message.getTtlMs() - System.currentTimeMillis();
+        byte[] serializedMessage = message.getSerializedMessage();
+
+        webSocketEndpoint.writeBytes(toAddress, serializedMessage, timeout, TimeUnit.MILLISECONDS, failureAction);
     }
 
     @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
-        logger.debug(">>> OUTGOING >>> {}", serializedMessage);
-        webSocketEndpoint.writeText(toAddress, serializedMessage, 30, TimeUnit.SECONDS, failureAction);
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
+        logger.debug(">>> OUTGOING >>> {}", new String(serializedMessage, Charsets.UTF_8));
+        webSocketEndpoint.writeBytes(toAddress, serializedMessage, 30, TimeUnit.SECONDS, failureAction);
     }
 }

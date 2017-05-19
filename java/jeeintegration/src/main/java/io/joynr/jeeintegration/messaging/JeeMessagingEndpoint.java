@@ -19,15 +19,15 @@ package io.joynr.jeeintegration.messaging;
  * #L%
  */
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import com.google.inject.Injector;
 
 import io.joynr.communications.exceptions.JoynrHttpException;
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
-import joynr.JoynrMessage;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +51,7 @@ import java.net.URI;
 
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED;
 import static java.lang.String.format;
 
 /**
@@ -66,14 +67,12 @@ public class JeeMessagingEndpoint {
     private static final Logger LOG = LoggerFactory.getLogger(JeeMessagingEndpoint.class);
 
     private Injector injector;
-    private ObjectMapper objectMapper;
 
     private ServletMessageReceiver messageReceiver;
 
     @Inject
     public JeeMessagingEndpoint(JoynrIntegrationBean jeeIntegrationBean) {
         injector = jeeIntegrationBean.getJoynrInjector();
-        objectMapper = injector.getInstance(ObjectMapper.class);
         messageReceiver = injector.getInstance(ServletMessageReceiver.class);
     }
 
@@ -84,13 +83,13 @@ public class JeeMessagingEndpoint {
     }
 
     /**
-     * Receives a message for the given channel ID, parses the plain-text content as JSON, and forwards to
-     * {@link #postMessage(String, String, UriInfo)}.
+     * Receives a message for the given channel ID, parses the binary content as SMRF, and forwards to
+     * {@link #postMessage(String, byte[], UriInfo)}.
      *
      * @param ccid
      *            the channel id.
-     * @param messageString
-     *            the message to be send.
+     * @param serializedMessage
+     *            a serialized SMRF message to be send.
      * @param uriInfo
      *            the URI Information for the request being processed.
      * @return Response the endpoint where the status of the message can be queried.
@@ -102,54 +101,61 @@ public class JeeMessagingEndpoint {
      *             in case JSON could not be mapped.
      */
     @POST
-    @Consumes({ MediaType.TEXT_PLAIN })
+    @Consumes({ MediaType.APPLICATION_OCTET_STREAM })
     @Path("/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}/messageWithoutContentType")
     public Response postMessageWithoutContentType(@PathParam("ccid") String ccid,
-                                                  String messageString,
-                                                  @Context UriInfo uriInfo) throws IOException, JsonParseException,
-                                                                           JsonMappingException {
-        return postMessage(ccid, messageString, uriInfo);
+                                                  byte[] serializedMessage,
+                                                  @Context UriInfo uriInfo) throws IOException {
+        return postMessage(ccid, serializedMessage, uriInfo);
     }
 
     /**
-     * Receives a JSON encoded {@link JoynrMessage} which it then routes to the {@link #messageReceiver message
+     * Receives a binary encoded {@link ImmutableMessage} which it then routes to the {@link #messageReceiver message
      * receiver} in the joynr runtime.
      *
      * @param channelId
      *            channel id of the receiver.
-     * @param messageString
-     *            the content being sent.
+     * @param serializedMessage
+     *            a serialized SMRF message being sent.
      * @param uriInfo
      *            the URI Information for the request being processed.
      * @return a location for querying the message status.
      */
     @POST
     @Path("/{channelId: [A-Z,a-z,0-9,_,\\-,\\.]+}/message")
-    @Produces({ MediaType.APPLICATION_JSON })
-    public Response postMessage(@PathParam("channelId") String channelId, String messageString, @Context UriInfo uriInfo) {
+    @Produces({ MediaType.APPLICATION_OCTET_STREAM })
+    public Response postMessage(@PathParam("channelId") String channelId, byte[] serializedMessage, @Context UriInfo uriInfo) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Incoming message:\n" + messageString);
+            LOG.debug("Incoming message:\n" + new String(serializedMessage, Charsets.UTF_8));
         }
         try {
-            JoynrMessage message = objectMapper.readValue(messageString, JoynrMessage.class);
+            ImmutableMessage message;
+
+            try {
+                message = new ImmutableMessage(serializedMessage);
+            } catch (EncodingException | UnsuppportedVersionException exception) {
+                LOG.error("Failed to deserialize message for channelId {}: {}", channelId, exception.getMessage());
+                throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED);
+            }
+
             if (LOG.isDebugEnabled()) {
-                LOG.debug("POST to channel: {} message: {}", channelId, message);
+                LOG.debug("POST to channel: {} message: {}", channelId, message.toLogMessage());
             }
 
             if (channelId == null) {
-                LOG.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set", message);
+                LOG.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set", message.toLogMessage());
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
             }
 
-            if (message.getExpiryDate() == 0) {
-                LOG.error("POST message to channel: {} message: {} dropped because: TTL not set", channelId, message);
+            if (message.getTtlMs() == 0) {
+                LOG.error("POST message to channel: {} message: {} dropped because: TTL not set", channelId, message.toLogMessage());
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATENOTSET);
             }
 
             if (messageReceiver == null) {
                 LOG.error("POST message to channel: {} message: {} no receiver for the given channel",
                           channelId,
-                          message);
+                          message.toLogMessage());
                 return Response.noContent().build();
             }
 

@@ -19,15 +19,16 @@
 #ifndef CLUSTERCONTROLLERDIRECTORIES_H
 #define CLUSTERCONTROLLERDIRECTORIES_H
 
-#include "joynr/Directory.h"
 #include <string>
+
+#include "joynr/Directory.h"
 
 namespace joynr
 {
 
-class IMessaging;
+class IMessagingStub;
 
-typedef Directory<std::string, IMessaging> MessageStubDirectory;
+typedef Directory<std::string, IMessagingStub> MessageStubDirectory;
 
 } // namespace joynr
 #endif // CLUSTERCONTROLLERDIRECTORIES_H

@@ -54,7 +54,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private MqttAddress ownAddress;
     private MqttAddress replyToAddress;
     private MessageRouter messageRouter;
-    private MqttMessageSerializerFactory messageSerializerFactory;
     private String channelId;
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private RawMessagingPreprocessor rawMessagingPreprocessor;
@@ -67,7 +66,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          MessageRouter messageRouter,
                                          MqttClientFactory mqttClientFactory,
-                                         MqttMessageSerializerFactory messageSerializerFactory,
                                          @Named(CHANNELID) String channelId,
                                          MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                          RawMessagingPreprocessor rawMessagingPreprocessor,
@@ -79,7 +77,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
-        this.messageSerializerFactory = messageSerializerFactory;
         this.channelId = channelId;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}", new Object[]{
@@ -93,7 +90,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                 replyToAddress,
                                                                 messageRouter,
                                                                 mqttClientFactory,
-                                                                messageSerializerFactory,
                                                                 channelId,
                                                                 mqttTopicPrefixProvider,
                                                                 rawMessagingPreprocessor,
@@ -102,7 +98,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         return new MqttMessagingSkeleton(ownAddress,
                                          messageRouter,
                                          mqttClientFactory,
-                                         messageSerializerFactory,
                                          mqttTopicPrefixProvider,
                                          rawMessagingPreprocessor,
                                          messageProcessors);

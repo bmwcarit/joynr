@@ -513,6 +513,7 @@
 										<include>global/LocalStorageNode.js</include>
 										<include>global/Mqtt.js</include>
 										<include>global/Promise.js</include>
+										<include>global/SmrfNode.js</include>
 										<include>global/WebSocketNode.js</include>
 										<include>global/XMLHttpRequestNode.js</include>
 										<include>lib/atmosphereNode.js</include>
@@ -819,6 +820,7 @@
 						</executions>
 					</plugin>
 					<!-- jetty only needs to run in case of test execution -->
+					<!--
 					<plugin>
 						<groupId>org.eclipse.jetty</groupId>
 						<artifactId>jetty-maven-plugin</artifactId>
@@ -843,6 +845,7 @@
 							</execution>
 						</executions>
 					</plugin>
+					-->
 
 					<!-- run the tests -->
 					<!-- do the "npm install" to get karma and dependencies -->
@@ -951,6 +954,7 @@
 									<configFile>${basedir}/src/test/karma/karma.integration.conf.js</configFile>
 								</configuration>
 							</execution>
+							<!-- Disabled since there is no SMRF support inside browser required by end2end tests
 							<execution>
 								<phase>integration-test</phase>
 								<id>karma-system-integration-tests</id>
@@ -971,6 +975,7 @@
 									<configFile>${basedir}/src/test/karma/karma.intertab.integration.conf.js</configFile>
 								</configuration>
 							</execution>
+							-->
 						</executions>
 						<configuration>
 							<karmaExecutable>${project.build.directory}/node-classes/node_modules/.bin/karma</karmaExecutable>

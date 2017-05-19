@@ -19,20 +19,20 @@ package io.joynr.messaging.routing;
  * #L%
  */
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 
 public interface MulticastAddressCalculator {
 
     /**
      * Call this method to calculate a multicast address for the given message.
-     * The message must be of type {@link JoynrMessage#MESSAGE_TYPE_MULTICAST}.
+     * The message must be of type {@link ImmutableMessage#VALUE_MESSAGE_TYPE_MULTICAST}.
      *
      * @param message the message for which to calculate the address.
      *
      * @return the address calculated, or null if this wasn't possible.
      */
-    Address calculate(JoynrMessage message);
+    Address calculate(ImmutableMessage message);
 
     /**
      * Used to determine if the address calculator supports providing multicast addresses for a given transport.

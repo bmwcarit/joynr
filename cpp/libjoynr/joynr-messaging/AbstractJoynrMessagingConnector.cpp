@@ -18,7 +18,7 @@
  */
 #include "joynr/AbstractJoynrMessagingConnector.h"
 
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/IMessageSender.h"
 
 namespace joynr
 {
@@ -26,14 +26,14 @@ namespace joynr
 INIT_LOGGER(AbstractJoynrMessagingConnector);
 
 AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
-        std::shared_ptr<IJoynrMessageSender> joynrMessageSender,
+        std::shared_ptr<IMessageSender> messageSender,
         std::shared_ptr<ISubscriptionManager> subscriptionManager,
         const std::string& domain,
         const std::string& interfaceName,
         const std::string& proxyParticipantId,
         const MessagingQos& qosSettings,
         const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
-        : joynrMessageSender(joynrMessageSender),
+        : messageSender(messageSender),
           subscriptionManager(subscriptionManager),
           domain(domain),
           interfaceName(interfaceName),
@@ -42,11 +42,6 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
           qosSettings(qosSettings),
           providerDiscoveryEntry(providerDiscoveryEntry)
 {
-}
-
-bool AbstractJoynrMessagingConnector::usesClusterController() const
-{
-    return true;
 }
 
 void AbstractJoynrMessagingConnector::operationRequest(std::shared_ptr<IReplyCaller> replyCaller,
@@ -63,20 +58,20 @@ void AbstractJoynrMessagingConnector::operationOneWayRequest(const OneWayRequest
 void AbstractJoynrMessagingConnector::sendRequest(const Request& request,
                                                   std::shared_ptr<IReplyCaller> replyCaller)
 {
-    joynrMessageSender->sendRequest(proxyParticipantId,
-                                    providerParticipantId,
-                                    qosSettings,
-                                    request,
-                                    replyCaller,
-                                    providerDiscoveryEntry.getIsLocal());
+    messageSender->sendRequest(proxyParticipantId,
+                               providerParticipantId,
+                               qosSettings,
+                               request,
+                               replyCaller,
+                               providerDiscoveryEntry.getIsLocal());
 }
 
 void AbstractJoynrMessagingConnector::sendOneWayRequest(const OneWayRequest& request)
 {
-    joynrMessageSender->sendOneWayRequest(proxyParticipantId,
-                                          providerParticipantId,
-                                          qosSettings,
-                                          request,
-                                          providerDiscoveryEntry.getIsLocal());
+    messageSender->sendOneWayRequest(proxyParticipantId,
+                                     providerParticipantId,
+                                     qosSettings,
+                                     request,
+                                     providerDiscoveryEntry.getIsLocal());
 }
 } // namespace joynr

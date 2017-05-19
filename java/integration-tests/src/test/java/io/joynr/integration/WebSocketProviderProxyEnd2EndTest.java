@@ -46,12 +46,11 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.tests.testProxy;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-/**
- *
- */
-public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
+@Ignore("HTTP does not support binary messages (SMRF)")
+public class WebSocketProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
     private static final long CONST_DEFAULT_TEST_TIMEOUT = 10000;
     private JoynrRuntime ccJoynrRuntime;
@@ -82,6 +81,7 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
     private JoynrRuntime createClusterController(Properties webSocketConfig) {
         Properties ccConfig = new Properties();
         ccConfig.putAll(webSocketConfig);
+        ccConfig.putAll(baseTestConfig);
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
         injectorCC = new JoynrInjectorFactory(ccConfig, Modules.override(new CCWebSocketRuntimeModule())
                                                                .with(new AtmosphereMessagingModule(),
@@ -99,8 +99,10 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
     protected JoynrRuntime getRuntime(final Properties joynrConfig, final Module... modules) {
         if (ccJoynrRuntime == null) {
             ccJoynrRuntime = createClusterController(webSocketConfig);
+            createdRuntimes.add(ccJoynrRuntime);
         }
         joynrConfig.putAll(webSocketConfig);
+        joynrConfig.putAll(baseTestConfig);
         joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
         Module modulesWithRuntime = Modules.override(modules)
                                            .with(Modules.override(new LibjoynrWebSocketRuntimeModule())
@@ -114,7 +116,6 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
                                                         }));
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
-        dummyApplications.add(application);
         return application.getRuntime();
     }
 

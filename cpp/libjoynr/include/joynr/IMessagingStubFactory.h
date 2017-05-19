@@ -32,13 +32,13 @@ namespace RoutingTypes
 class Address;
 } // namespace RoutingTypes
 } // namespace system
-class IMessaging;
+class IMessagingStub;
 
 class IMessagingStubFactory
 {
 public:
     virtual ~IMessagingStubFactory() = default;
-    virtual std::shared_ptr<IMessaging> create(const std::shared_ptr<
+    virtual std::shared_ptr<IMessagingStub> create(const std::shared_ptr<
             const joynr::system::RoutingTypes::Address>& destinationAddress) = 0;
     virtual void remove(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
                                 destinationAddress) = 0;

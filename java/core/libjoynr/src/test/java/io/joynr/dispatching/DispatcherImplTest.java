@@ -28,7 +28,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -57,12 +56,13 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
-import joynr.JoynrMessage;
 import joynr.MulticastPublication;
 import joynr.MulticastSubscriptionRequest;
+import joynr.MutableMessage;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OneWayRequest;
 import joynr.Request;
@@ -86,6 +86,8 @@ public class DispatcherImplTest {
     private PublicationManager publicationManagerMock;
     @Mock
     private MessageRouter messageRouterMock;
+    @Mock
+    private MessageSender messageSenderMock;
     @Spy
     private MessageReceiverMock messageReceiverMock = new MessageReceiverMock();
 
@@ -103,6 +105,7 @@ public class DispatcherImplTest {
                 bind(RequestReplyManager.class).toInstance(requestReplyManagerMock);
                 bind(SubscriptionManager.class).toInstance(subscriptionManagerMock);
                 bind(PublicationManager.class).toInstance(publicationManagerMock);
+                bind(MessageSender.class).toInstance(messageSenderMock);
                 bind(MessageRouter.class).toInstance(messageRouterMock);
                 bind(MessageReceiver.class).toInstance(messageReceiverMock);
                 Multibinder.newSetBinder(binder(), new TypeLiteral<JoynrMessageProcessor>() {
@@ -167,23 +170,22 @@ public class DispatcherImplTest {
         // should not throw a timeout exception
         future.get(1000, TimeUnit.MILLISECONDS);
         verify(messageReceiverMock).start(eq(fixture), any(ReceiverStatusListener.class));
-
     }
 
     @Test
-    public void testHandleOneWayRequest() throws IOException {
+    public void testHandleOneWayRequest() throws Exception {
         OneWayRequest request = new OneWayRequest("method", new Object[0], new Class<?>[0]);
         String toParticipantId = "toParticipantId";
         MessagingQos messagingQos = new MessagingQos(1000L);
-        JoynrMessage joynrMessage = joynrMessageFactory.createOneWayRequest("fromParticipantId",
-                                                                            toParticipantId,
-                                                                            request,
-                                                                            messagingQos);
+        MutableMessage joynrMessage = joynrMessageFactory.createOneWayRequest("fromParticipantId",
+                                                                              toParticipantId,
+                                                                              request,
+                                                                              messagingQos);
 
-        fixture.messageArrived(joynrMessage);
+        fixture.messageArrived(joynrMessage.getImmutableMessage());
 
-        verify(requestReplyManagerMock).handleOneWayRequest(toParticipantId, request, joynrMessage.getExpiryDate());
-        verify(messageRouterMock, never()).route((JoynrMessage) any());
+        verify(requestReplyManagerMock).handleOneWayRequest(toParticipantId, request, joynrMessage.getTtlMs());
+        verify(messageSenderMock, never()).sendMessage(any(MutableMessage.class));
     }
 
     @Test
@@ -195,6 +197,7 @@ public class DispatcherImplTest {
                                      subscriptionManagerMock,
                                      publicationManagerMock,
                                      messageRouterMock,
+                                     messageSenderMock,
                                      joynrMessageFactoryMock,
                                      objectMapperMock);
 
@@ -207,7 +210,7 @@ public class DispatcherImplTest {
         verify(joynrMessageFactoryMock).createMulticast(eq(fromParticipantId),
                                                         eq(multicastPublication),
                                                         eq(messagingQos));
-        verify(messageRouterMock).route(Mockito.<JoynrMessage> any());
+        verify(messageSenderMock).sendMessage(Mockito.<MutableMessage> any());
     }
 
     @Test
@@ -218,10 +221,10 @@ public class DispatcherImplTest {
                                                                                             "subscriptionId",
                                                                                             "multicastName",
                                                                                             new OnChangeSubscriptionQos());
-        JoynrMessage joynrMessage = joynrMessageFactory.createSubscriptionRequest(from,
-                                                                                  to,
-                                                                                  subscriptionRequest,
-                                                                                  new MessagingQos(1000L));
+        MutableMessage joynrMessage = joynrMessageFactory.createSubscriptionRequest(from,
+                                                                                    to,
+                                                                                    subscriptionRequest,
+                                                                                    new MessagingQos(1000L));
 
         JoynrMessageFactory joynrMessageFactoryMock = mock(JoynrMessageFactory.class);
         ObjectMapper objectMapperMock = mock(ObjectMapper.class);
@@ -231,10 +234,11 @@ public class DispatcherImplTest {
                                      subscriptionManagerMock,
                                      publicationManagerMock,
                                      messageRouterMock,
+                                     messageSenderMock,
                                      joynrMessageFactoryMock,
                                      objectMapperMock);
 
-        fixture.messageArrived(joynrMessage);
+        fixture.messageArrived(joynrMessage.getImmutableMessage());
 
         verify(publicationManagerMock).addSubscriptionRequest(eq(from), eq(to), eq(subscriptionRequest));
     }

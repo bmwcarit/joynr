@@ -79,9 +79,9 @@ bool MqttReceiver::isConnected()
 }
 
 void MqttReceiver::registerReceiveCallback(
-        std::function<void(const std::string&)> onTextMessageReceived)
+        std::function<void(smrf::ByteVector&&)> onMessageReceived)
 {
-    mosquittoConnection->registerReceiveCallback(onTextMessageReceived);
+    mosquittoConnection->registerReceiveCallback(std::move(onMessageReceived));
 }
 
 void MqttReceiver::subscribeToTopic(const std::string& topic)

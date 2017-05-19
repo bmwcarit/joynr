@@ -19,7 +19,6 @@ package io.joynr.messaging.websocket;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -32,23 +31,20 @@ import joynr.system.RoutingTypes.WebSocketClientAddress;
 public class WebSocketClientMessagingStubFactory extends
         AbstractMiddlewareMessagingStubFactory<WebSocketMessagingStub, WebSocketClientAddress> {
 
-    private ObjectMapper objectMapper;
     private WebSocketEndpointFactory webSocketEndpointFactory;
     private WebSocketAddress serverAddress;
 
     @Inject
     public WebSocketClientMessagingStubFactory(@Named(WebsocketModule.WEBSOCKET_SERVER_ADDRESS) WebSocketAddress serverAddress,
-                                               WebSocketEndpointFactory webSocketEndpointFactory,
-                                               ObjectMapper objectMapper) {
+                                               WebSocketEndpointFactory webSocketEndpointFactory) {
         this.serverAddress = serverAddress;
         this.webSocketEndpointFactory = webSocketEndpointFactory;
-        this.objectMapper = objectMapper;
     }
 
     @Override
     protected WebSocketMessagingStub createInternal(WebSocketClientAddress address) {
         JoynrWebSocketEndpoint webSocketServer = webSocketEndpointFactory.create(serverAddress);
-        return new WebSocketMessagingStub(address, webSocketServer, objectMapper);
+        return new WebSocketMessagingStub(address, webSocketServer);
     }
 
     @Override

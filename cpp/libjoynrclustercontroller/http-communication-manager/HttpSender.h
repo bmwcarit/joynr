@@ -25,7 +25,7 @@
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/DispatcherUtils.h"
-#include "joynr/IMessageSender.h"
+#include "joynr/ITransportMessageSender.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Runnable.h"
@@ -34,11 +34,10 @@
 namespace joynr
 {
 
-class JoynrMessage;
 class MessagingSettings;
 class HttpResult;
 
-class HttpSender : public IMessageSender
+class HttpSender : public ITransportMessageSender
 {
 public:
     static std::chrono::milliseconds MIN_ATTEMPT_TTL();
@@ -52,11 +51,11 @@ public:
     * @brief Sends the message to the given channel.
     */
     void sendMessage(const joynr::system::RoutingTypes::Address& destinationAddress,
-                     const JoynrMessage& message,
+                     std::shared_ptr<ImmutableMessage> message,
                      const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
-    void registerReceiver(std::shared_ptr<IMessageReceiver> receiver) override;
+    void registerReceiver(std::shared_ptr<ITransportMessageReceiver> receiver) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);

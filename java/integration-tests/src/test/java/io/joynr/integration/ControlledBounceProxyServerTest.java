@@ -21,8 +21,8 @@ package io.joynr.integration;
 
 import static com.jayway.restassured.RestAssured.given;
 import static io.joynr.integration.matchers.ChannelServiceResponseMatchers.isChannelUrlwithJsessionId;
-import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.containsMessage;
 import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.isMessageUrlwithJsessionId;
+import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.containsPayload;
 import static io.joynr.integration.util.BounceProxyTestConstants.HEADER_BOUNCEPROXY_ID;
 import static io.joynr.integration.util.BounceProxyTestConstants.HEADER_LOCATION;
 import static io.joynr.integration.util.BounceProxyTestConstants.HEADER_MSG_ID;
@@ -44,12 +44,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
@@ -102,7 +103,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         // open long polling channel
         /* @formatter:off */
         Response responseOpenChannel = given().when()
-                                              .contentType(ContentType.JSON)
+                                              .contentType(ContentType.BINARY)
                                               .header(X_ATMOSPHERE_TRACKING_ID, trackingId)
                                               .get(SESSIONID_APPENDIX + sessionId);
         /* @formatter:on */
@@ -143,11 +144,12 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         RestAssured.baseURI = Utilities.getUrlWithoutSessionId(channelUrl, SESSIONID_NAME);
 
         // post messages to long polling channel before opening channel
-        String serializedMessage = bpMock.createSerializedJoynrMessage(100000l, "message-123", "message-123");
+        byte[] expectedPayload = "message-123".getBytes(Charsets.UTF_8);
+        byte[] serializedMessage = bpMock.createImmutableMessage(100000l, expectedPayload).getSerializedMessage();
 
         /* @formatter:off */
         Response responsePostMessage = given().when()
-                                              .contentType(ContentType.JSON)
+                                              .contentType(ContentType.BINARY)
                                               .body(serializedMessage)
                                               .post("message" + SESSIONID_APPENDIX + sessionId);
         /* @formatter:on */
@@ -159,20 +161,15 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         // open long polling channel
         /* @formatter:off */
         Response responseOpenChannel = given().when()
-                                              .contentType(ContentType.JSON)
+                                              .contentType(ContentType.BINARY)
                                               .header("X-Atmosphere-tracking-id", trackingId)
                                               .get(SESSIONID_APPENDIX + sessionId);
         /* @formatter:on */
         assertEquals(200 /* OK */, responseOpenChannel.getStatusCode());
 
-        // body doesn't actually contain proper json, but each message
-        // serialized as json attached. We have to split them first.
-        List<JoynrMessage> messages = bpMock.getJoynrMessagesFromResponse(responseOpenChannel);
+        List<ImmutableMessage> messages = bpMock.getJoynrMessagesFromResponse(responseOpenChannel);
         assertEquals(1, messages.size());
-
-        // we cut the brackets of some of the messages when we split the
-        // messages
-        assertThat(messages, containsMessage("message-123"));
+        assertEquals(expectedPayload, messages.get(0).getUnencryptedBody());
     }
 
     @Test(timeout = 30000)
@@ -202,13 +199,14 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         // post messages to long polling channel before opening channel
         String msgIds[] = { "message-123", "message-456", "message-789" };
         for (String msgId : msgIds) {
-            String serializedMessage = bpMock.createSerializedJoynrMessage(100000l, msgId, msgId);
+            byte[] serializedMessage = bpMock.createImmutableMessage(100000l, msgId.getBytes(Charsets.UTF_8))
+                                             .getSerializedMessage();
 
             /* @formatter:off */
             Response responsePostMessage = given().when()
                                                   .log()
                                                   .all()
-                                                  .contentType(ContentType.JSON)
+                                                  .contentType(ContentType.BINARY)
                                                   .body(serializedMessage)
                                                   .post("message/" + SESSIONID_APPENDIX + sessionId);
             /* @formatter:on */
@@ -221,7 +219,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         // open long polling channel
         /* @formatter:off */
         Response responseOpenChannel = given().when()
-                                              .contentType(ContentType.JSON)
+                                              .contentType(ContentType.BINARY)
                                               .header(X_ATMOSPHERE_TRACKING_ID, trackingId)
                                               .get(SESSIONID_APPENDIX + sessionId);
         /* @formatter:on */
@@ -229,12 +227,12 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
         // body doesn't actually contain proper json, but each message
         // serialized as json attached. We have to split them first.
-        List<JoynrMessage> messages = bpMock.getJoynrMessagesFromResponse(responseOpenChannel);
+        List<ImmutableMessage> messages = bpMock.getJoynrMessagesFromResponse(responseOpenChannel);
         assertEquals(3, messages.size());
 
-        assertThat(messages, containsMessage("message-123"));
-        assertThat(messages, containsMessage("message-456"));
-        assertThat(messages, containsMessage("message-789"));
+        assertThat(messages, containsPayload("message-123"));
+        assertThat(messages, containsPayload("message-456"));
+        assertThat(messages, containsPayload("message-789"));
     }
 
     @Test
@@ -269,7 +267,7 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
 
                 /* @formatter:off */
                 return given().when()
-                              .contentType(ContentType.JSON)
+                              .contentType(ContentType.BINARY)
                               .header(X_ATMOSPHERE_TRACKING_ID, trackingId)
                               .get("");
                 /* @formatter:on */
@@ -279,11 +277,12 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         // post messages to long polling channel after opening channel
         String msgIds[] = { "message-123", "message-456", "message-789" };
         for (String msgId : msgIds) {
-            String serializedMessage = bpMock.createSerializedJoynrMessage(100000l, msgId, msgId);
+            byte[] serializedMessage = bpMock.createImmutableMessage(100000l, msgId.getBytes(Charsets.UTF_8))
+                                             .getSerializedMessage();
 
             /* @formatter:off */
             Response responsePostMessage = given().when()
-                                                  .contentType(ContentType.JSON)
+                                                  .contentType(ContentType.BINARY)
                                                   .body(serializedMessage)
                                                   .post("message/" + SESSIONID_APPENDIX + sessionId);
             /* @formatter:on */
@@ -296,12 +295,9 @@ public class ControlledBounceProxyServerTest extends AbstractBounceProxyServerTe
         Response responseOpenChannel = (Response) longPollingChannelFuture.get(10, TimeUnit.SECONDS);
         assertEquals(200 /* OK */, responseOpenChannel.getStatusCode());
 
-        List<JoynrMessage> messages = bpMock.getJoynrMessagesFromResponse(responseOpenChannel);
+        List<ImmutableMessage> messages = bpMock.getJoynrMessagesFromResponse(responseOpenChannel);
         assertEquals(1, messages.size());
-
-        // we cut the brackets of some of the messages when we split the
-        // messages
-        assertThat(messages, containsMessage("message-123"));
+        assertThat(messages, containsPayload("message-123"));
     }
 
     @Test

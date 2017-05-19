@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
-import javax.annotation.CheckForNull;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -36,7 +34,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.SystemServicesSettings;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
@@ -74,7 +72,6 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     private Address incomingAddress;
     private Set<ParticipantIdAndIsGloballyVisibleHolder> deferredParentHopsParticipantIds = new HashSet<>();
     private Map<String, DeferrableRegistration> deferredMulticastRegistrations = new HashMap<>();
-    private String replyToAddress;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -95,17 +92,10 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
               addressManager,
               multicastReceiverRegistry);
         this.incomingAddress = incomingAddress;
-        this.replyToAddress = null;
     }
 
     @Override
-    @CheckForNull
-    protected String getReplyToAddress() {
-        return replyToAddress;
-    }
-
-    @Override
-    protected Set<Address> getAddresses(JoynrMessage message) {
+    protected Set<Address> getAddresses(ImmutableMessage message) {
         Set<Address> result;
         JoynrRuntimeException noAddressException = null;
         try {
@@ -114,7 +104,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
             noAddressException = e;
             result = new HashSet<>();
         }
-        String toParticipantId = message.getTo();
+        String toParticipantId = message.getRecipient();
         if (result.isEmpty() && parentRouter != null) {
             Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
             if (parentHasNextHop) {
@@ -208,8 +198,6 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
             }
         }
         deferredParentHopsParticipantIds.clear();
-
-        replyToAddress = parentRouter.getReplyToAddress();
     }
 
     /**

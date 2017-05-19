@@ -22,15 +22,12 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-#include "joynr/JoynrMessage.h"
 #include "joynr/StatusCode.h"
 #include "joynr/types/DiscoveryEntry.h"
 
 //void initPretty(void);
 
 namespace joynr {
-
-void PrintTo(const JoynrMessage& value, ::std::ostream* os);
 
 // NOTE: Choosing the right PrintTo method is done by template magic by
 //       the compiler. Therefore, the point in time when the PrintTo method

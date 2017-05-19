@@ -22,7 +22,7 @@
 #include <memory>
 #include <string>
 
-#include "joynr/IMessageReceiver.h"
+#include "joynr/ITransportMessageReceiver.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingSettings.h"
@@ -40,10 +40,10 @@ class LongPollingMessageReceiver;
   * @class HttpReceiver
   * @brief Implements HTTP communication to the bounce proxy (backend)
   *
-  * Implements the IMessageReceiver interface using the httpnetworking
+  * Implements the ITransportMessageReceiver interface using the httpnetworking
   * subproject that uses libcurl.
   */
-class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public IMessageReceiver
+class JOYNRCLUSTERCONTROLLER_EXPORT HttpReceiver : public ITransportMessageReceiver
 {
 
 public:
@@ -79,7 +79,7 @@ public:
     void stopReceiveQueue() override;
 
     void registerReceiveCallback(
-            std::function<void(const std::string&)> onTextMessageReceived) override;
+            std::function<void(smrf::ByteVector&&)> onMessageReceived) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpReceiver);
@@ -102,7 +102,7 @@ private:
     std::unique_ptr<LongPollingMessageReceiver> messageReceiver;
 
     /*! On text message received callback */
-    std::function<void(const std::string&)> onTextMessageReceived;
+    std::function<void(smrf::ByteVector&&)> onMessageReceived;
 
     friend class ::CapabilitiesClientTest;
 

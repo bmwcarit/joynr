@@ -52,6 +52,10 @@ public class ExpiryDate {
         } catch (ArithmeticException exception) {
             expiryDate = Long.MAX_VALUE;
         }
+        // do not exceed Javascript max safe integer (2^53-1)
+        if (expiryDate > 9007199254740991L) {
+            expiryDate = 9007199254740991L;
+        }
         return new ExpiryDate(relativeTtl, expiryDate, creationTime);
     }
 

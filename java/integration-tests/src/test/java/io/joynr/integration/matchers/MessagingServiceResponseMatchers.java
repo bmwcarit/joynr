@@ -20,42 +20,44 @@ package io.joynr.integration.matchers;
  */
 
 import io.joynr.messaging.util.Utilities;
+import io.joynr.smrf.EncodingException;
 
+import java.util.Arrays;
 import java.util.List;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
+import com.google.common.base.Charsets;
+
 public class MessagingServiceResponseMatchers {
 
-    public static Matcher<List<JoynrMessage>> containsMessage(final String msgId) {
-
-        return new BaseMatcher<List<JoynrMessage>>() {
-
+    public static Matcher<List<ImmutableMessage>> containsPayload(final String payload) {
+        return new BaseMatcher<List<ImmutableMessage>>() {
             @Override
             public boolean matches(Object item) {
-
                 @SuppressWarnings("unchecked")
-                List<JoynrMessage> messages = (List<JoynrMessage>) item;
+                List<ImmutableMessage> messages = (List<ImmutableMessage>) item;
+                byte[] binaryPayload = payload.getBytes(Charsets.UTF_8);
 
-                for (JoynrMessage message : messages) {
-                    String msgIdInJson = message.getId();
-
-                    if (msgIdInJson != null && msgIdInJson.equals(msgId)) {
-                        return true;
+                for (ImmutableMessage message : messages) {
+                    try {
+                        if (Arrays.equals(message.getUnencryptedBody(), binaryPayload)) {
+                            return true;
+                        }
+                    } catch (EncodingException e) {
+                        e.printStackTrace();
+                        return false;
                     }
-                    ;
                 }
-
                 return false;
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("contains message ID '" + msgId + "'");
+            public void describeTo(Description arg0) {
             }
 
         };

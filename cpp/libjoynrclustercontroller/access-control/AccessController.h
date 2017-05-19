@@ -47,7 +47,7 @@ public:
 
     //---IAccessController interface -------------------------------------------
 
-    void hasConsumerPermission(const JoynrMessage& message,
+    void hasConsumerPermission(std::shared_ptr<ImmutableMessage> message,
                                std::shared_ptr<IHasConsumerPermissionCallback> callback) override;
 
     bool hasProviderPermission(const std::string& userId,
@@ -62,7 +62,7 @@ private:
     class ProviderRegistrationObserver;
 
     DISALLOW_COPY_AND_ASSIGN(AccessController);
-    bool needsPermissionCheck(const JoynrMessage& message);
+    bool needsPermissionCheck(const ImmutableMessage& message);
 
     LocalCapabilitiesDirectory& localCapabilitiesDirectory;
     LocalDomainAccessController& localDomainAccessController;

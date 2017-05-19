@@ -45,7 +45,7 @@ import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProxy;
 import org.junit.Test;
 
-public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
+public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
     private Properties mqttConfig;
     private static int mqttBrokerPort = 1883;
@@ -62,6 +62,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "replyto/");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
         joynrConfig.putAll(mqttConfig);
+        joynrConfig.putAll(baseTestConfig);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(modules);
         Module modulesWithRuntime = Modules.override(runtimeModule).with(new AtmosphereMessagingModule(),
                                                                          new MqttPahoModule(),
@@ -72,7 +73,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
                                                                                  bind(RawMessagingPreprocessor.class).toInstance(new RawMessagingPreprocessor() {
 
                                                                                      @Override
-                                                                                     public String process(String rawMessage,
+                                                                                     public byte[] process(byte[] rawMessage,
                                                                                                            Map<String, Serializable> context) {
                                                                                          return rawMessage;
                                                                                      }

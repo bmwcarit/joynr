@@ -23,6 +23,8 @@
 
 #include <websocketpp/error.hpp>
 
+#include <smrf/ByteVector.h>
+
 #include "joynr/Logger.h"
 
 namespace joynr
@@ -42,7 +44,7 @@ public:
 
     ~WebSocketPpReceiver() = default;
 
-    void registerReceiveCallback(std::function<void(const std::string&)> callback)
+    void registerReceiveCallback(std::function<void(smrf::ByteVector&&)> callback)
     {
         onMessageReceivedCallback = std::move(callback);
     }
@@ -56,7 +58,10 @@ public:
             JOYNR_LOG_TRACE(
                     logger, "incoming binary message of size {}", message->get_payload().size());
             if (onMessageReceivedCallback) {
-                onMessageReceivedCallback(message->get_payload());
+                // TODO can this copy be avoided?
+                const std::string& messageStr = message->get_payload();
+                smrf::ByteVector rawMessage(messageStr.begin(), messageStr.end());
+                onMessageReceivedCallback(std::move(rawMessage));
             }
         } else {
             JOYNR_LOG_ERROR(logger, "received unsupported message type {}, dropping message", mode);
@@ -64,7 +69,7 @@ public:
     }
 
 private:
-    std::function<void(const std::string&)> onMessageReceivedCallback;
+    std::function<void(smrf::ByteVector&&)> onMessageReceivedCallback;
 
     ADD_LOGGER(WebSocketPpReceiver);
 };

@@ -29,7 +29,7 @@ class InProcessMessagingStubFactory : public IMiddlewareMessagingStubFactory
 
 public:
     InProcessMessagingStubFactory();
-    std::shared_ptr<IMessaging> create(
+    std::shared_ptr<IMessagingStub> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
     void registerOnMessagingStubClosedCallback(std::function<void(

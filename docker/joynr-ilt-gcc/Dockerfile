@@ -118,6 +118,37 @@ RUN chmod -R a+rw /opt \
     && chown -R 1000 /usr/local
 
 ###################################################
+# install flatbuffers
+###################################################
+
+RUN export FLATBUFFERS_VERSION=v1.6.0 \
+        && cd /tmp \
+        && git clone https://github.com/google/flatbuffers.git \
+        && cd flatbuffers \
+        && git checkout $FLATBUFFERS_VERSION \
+        && mkdir build \
+        && cd build \
+        && cmake .. -DFLATBUFFERS_BUILD_TESTS=OFF \
+        && make install -j"$(nproc)" \
+        && rm -rf /tmp/flatbuffers
+
+###################################################
+# install smrf
+###################################################
+
+RUN export SMRF_VERSION=0.1.4 \
+    && cd /opt \
+    && git clone https://github.com/bmwcarit/smrf.git \
+    && cd smrf \
+    && git checkout $SMRF_VERSION \
+    && mkdir build \
+    && cd build \
+    && cmake -DBUILD_TESTS=Off .. \
+    && make install -j"$(nproc)" \
+    && cd /opt \
+    && rm -rf smrf
+
+###################################################
 # Copy build scripts
 ###################################################
 COPY scripts /data/scripts
@@ -129,3 +160,5 @@ RUN mkdir -p /home/joynr/
 RUN echo "source /data/scripts/bashrc.sh" >> /home/joynr/.bashrc
 RUN mkdir /home/joynr/build
 RUN date -R > /data/timestamp
+RUN chmod -R a+rwx /usr/local
+RUN echo "/usr/local/lib64" > /etc/ld.so.conf.d/usr-local-lib64.conf && ldconfig

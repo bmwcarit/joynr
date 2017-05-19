@@ -25,14 +25,16 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
+
 import io.joynr.messaging.RawMessagingPreprocessor;
 
 public class TestRawMessagingProcessor extends RawMessagingPreprocessor {
     private static final Logger logger = LoggerFactory.getLogger(RawMessagingPreprocessor.class);
 
     @Override
-    public String process(String rawMessage, Map<String, Serializable> context) {
-        logger.info("raw message received: " + rawMessage);
+    public byte[] process(byte[] rawMessage, Map<String, Serializable> context) {
+        logger.info("raw message received: " + new String(rawMessage, Charsets.UTF_8));
         return rawMessage;
     }
 }

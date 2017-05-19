@@ -45,9 +45,10 @@ import io.joynr.exceptions.JoynrRequestInterruptedException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
-import joynr.JoynrMessage;
+import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -70,6 +71,7 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     private ProviderDirectory providerDirectory;
     private RequestInterpreter requestInterpreter;
     private MessageRouter messageRouter;
+    private MessageSender messageSender;
     private JoynrMessageFactory joynrMessageFactory;
 
     private ScheduledExecutorService cleanupScheduler;
@@ -79,12 +81,14 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                                    ReplyCallerDirectory replyCallerDirectory,
                                    ProviderDirectory providerDirectory,
                                    MessageRouter messageRouter,
+                                   MessageSender messageSender,
                                    RequestInterpreter requestInterpreter,
                                    @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
         this.joynrMessageFactory = joynrMessageFactory;
         this.replyCallerDirectory = replyCallerDirectory;
         this.providerDirectory = providerDirectory;
         this.messageRouter = messageRouter;
+        this.messageSender = messageSender;
         this.requestInterpreter = requestInterpreter;
         this.cleanupScheduler = cleanupScheduler;
         providerDirectory.addListener(this);
@@ -105,12 +109,12 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
 
         logger.trace("SEND USING RequestReplySenderImpl with Id: " + System.identityHashCode(this));
 
-        JoynrMessage message = joynrMessageFactory.createRequest(fromParticipantId,
-                                                                 toDiscoveryEntry.getParticipantId(),
-                                                                 request,
-                                                                 messagingQos);
+        MutableMessage message = joynrMessageFactory.createRequest(fromParticipantId,
+                                                                   toDiscoveryEntry.getParticipantId(),
+                                                                   request,
+                                                                   messagingQos);
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
-        messageRouter.route(message);
+        messageSender.sendMessage(message);
     }
 
     @Override
@@ -174,11 +178,11 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                                   OneWayRequest oneWayRequest,
                                   MessagingQos messagingQos) {
         for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
-            JoynrMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
-                                                                           toDiscoveryEntry.getParticipantId(),
-                                                                           oneWayRequest,
-                                                                           messagingQos);
-            messageRouter.route(message);
+            MutableMessage message = joynrMessageFactory.createOneWayRequest(fromParticipantId,
+                                                                             toDiscoveryEntry.getParticipantId(),
+                                                                             oneWayRequest,
+                                                                             messagingQos);
+            messageSender.sendMessage(message);
         }
     }
 

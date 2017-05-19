@@ -81,14 +81,15 @@ TEST_F(LibJoynrMessageRouterTest, routeMulticastMessageFromLocalProvider_multica
     EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*localTransport)))).Times(1);
     EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*inProcessSubscriberAddress)))).Times(1);
 
-    joynrMessage.setType(joynr::JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST);
-    joynrMessage.setHeaderFrom(providerParticipantId);
-    joynrMessage.setHeaderTo(multicastId);
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
+    mutableMessage.setSender(providerParticipantId);
+    mutableMessage.setRecipient(multicastId);
 
+    std::shared_ptr<joynr::ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
     // The message should be propagated to parentMessageRouter
-    joynrMessage.setReceivedFromGlobal(false);
+    immutableMessage->setReceivedFromGlobal(false);
 
-    messageRouter->route(joynrMessage);
+    messageRouter->route(immutableMessage);
 }
 
 TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouterIfProviderAddressNotAvailable) {

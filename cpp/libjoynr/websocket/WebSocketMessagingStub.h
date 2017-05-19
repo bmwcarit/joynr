@@ -22,7 +22,7 @@
 #include <functional>
 #include <memory>
 
-#include "joynr/IMessaging.h"
+#include "joynr/IMessagingStub.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
@@ -39,7 +39,7 @@ class JoynrRuntimeException;
    * @class WebSocketMessagingStub
    * @brief Represents an outgoing WebSocket connection
    */
-class WebSocketMessagingStub : public IMessaging
+class WebSocketMessagingStub : public IMessagingStub
 {
 public:
     /**
@@ -54,7 +54,7 @@ public:
      */
     ~WebSocketMessagingStub() final = default;
     void transmit(
-            JoynrMessage& message,
+            std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) final;
 
 private:

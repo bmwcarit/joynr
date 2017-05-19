@@ -25,7 +25,7 @@ import java.net.URLEncoder;
 import com.google.inject.Inject;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.routing.TransportReadyListener;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import org.slf4j.Logger;
@@ -52,14 +52,14 @@ public class LongPollingHttpMulticastAddressCalculator implements MulticastAddre
     }
 
     @Override
-    public Address calculate(JoynrMessage message) {
+    public Address calculate(ImmutableMessage message) {
         if (true) {
             throw new UnsupportedOperationException("Multicasts are not yet supported for HTTP long polling.");
         }
         ChannelAddress multicastAddress = null;
         if (globalAddress != null) {
             try {
-                String multicastChannelId = URLEncoder.encode(message.getFrom() + "/" + message.getTo(), UTF_8);
+                String multicastChannelId = URLEncoder.encode(message.getSender() + "/" + message.getRecipient(), UTF_8);
                 multicastAddress = new ChannelAddress(globalAddress.getMessagingEndpointUrl(), multicastChannelId);
             } catch (UnsupportedEncodingException e) {
                 logger.error("Unable to encode multicast channel from message {}", message, e);

@@ -156,6 +156,13 @@ option(
 )
 message(STATUS "option JOYNR_ENABLE_STDOUT_LOGGING=" ${JOYNR_ENABLE_STDOUT_LOGGING})
 
+option(
+    USE_PLATFORM_SMRF
+    "Resolve dependency to SMRF from the system?"
+    ON
+)
+message(STATUS "option USE_PLATFORM_SMRF=" ${USE_PLATFORM_SMRF})
+
 # should we use DBUS to communicate between libjoynr and cluster-controller
 option(
     USE_DBUS_COMMONAPI_COMMUNICATION
@@ -207,10 +214,10 @@ include(AddClangFormat)
 # Following dependencies must be installed by the user beforehand because they either
 # use a shared object or are included through joynr header files into the user's code.
 set (CHECK_DLT (JOYNR_ENABLE_DLT_LOGGING AND USE_PLATFORM_DLT OR NOT JOYNR_ENABLE_DLT_LOGGING))
-if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND USE_PLATFORM_MOSQUITTO))
+if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND USE_PLATFORM_MOSQUITTO AND USE_PLATFORM_SMRF))
     set(codeMsg "message(FATAL_ERROR \"Install target is not available as long as external platform")
     set(codeMsg "${codeMsg} dependencies are used. For more information see USE_PLATFORM_SPDLOG,")
-    set(codeMsg "${codeMsg} USE_PLATFORM_DLT and USE_PLATFORM_MOSQUITTO.\")")
+    set(codeMsg "${codeMsg} USE_PLATFORM_DLT, USE_PLATFORM_MOSQUITTO and USE_PLATFORM_SMRF.\")")
     install(CODE "${codeMsg}")
 endif()
 
@@ -712,6 +719,37 @@ get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_
 
 message(STATUS "variable muesli_INCLUDE_DIRECTORIES= ${muesli_INCLUDE_DIRECTORIES}")
 
+if (USE_PLATFORM_SMRF)
+    find_package(smrf 0.1.4 REQUIRED CONFIG)
+else(USE_PLATFORM_SMRF)
+    message(STATUS "############ Download: smrf ############")
+
+    get_property(EP_PREFIX DIRECTORY PROPERTY EP_PREFIX)
+    set(SMRF_LIBRARY_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}smrf${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    set(SMRF_LIBRARIES "${EP_PREFIX}/src/smrf-build/bin/${SMRF_LIBRARY_NAME}")
+
+    AddExternalProject(
+        smrf
+        GIT_REPOSITORY https://github.com/bmwcarit/smrf
+        GIT_TAG 0.1.4
+        TIMEOUT 10
+        # Disable configure step
+        #CONFIGURE_COMMAND ""
+        CMAKE_ARGS "-DENABLE_CLANG_FORMATTER=${ENABLE_CLANG_FORMATTER}"
+        # Disable build step
+        BUILD_BYPRODUCTS ${SMRF_LIBRARIES}
+    )
+
+    ExternalProject_Get_Property(smrf SOURCE_DIR)
+    set(SMRF_INCLUDE_DIRS "${SOURCE_DIR}/cpp/libsmrf/include")
+
+    # The directory does not exist when the import targets are checked. As a workaround
+    # we need to create it here. Otherwise the initial cmake call will fail.
+    file(MAKE_DIRECTORY ${EP_PREFIX}/src/smrf-build/src/lib)
+    file(MAKE_DIRECTORY ${EP_PREFIX}/src/smrf/cpp/libsmrf/include)
+endif(USE_PLATFORM_SMRF)
+include(CheckSMRFImportTargets)
+
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     add_subdirectory(common-api)
@@ -720,8 +758,9 @@ endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 add_subdirectory(libjoynr)
 add_subdirectory(libjoynrclustercontroller)
 add_subdirectory(runtimes)
+
 if(${BUILD_CLUSTER_CONTROLLER})
-add_subdirectory(cluster-controller)
+    add_subdirectory(cluster-controller)
 endif(${BUILD_CLUSTER_CONTROLLER})
 
 if(${BUILD_TESTS})
@@ -871,6 +910,7 @@ file(
         "CMake/CheckOpenSSLImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
         "CMake/CheckDltImportTargets.cmake"
+        "CMake/CheckSMRFImportTargets.cmake"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
 # ... for the install tree
@@ -921,6 +961,7 @@ install(
         "CMake/CheckOpenSSLImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
         "CMake/CheckDltImportTargets.cmake"
+        "CMake/CheckSMRFImportTargets.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}"
 )
 

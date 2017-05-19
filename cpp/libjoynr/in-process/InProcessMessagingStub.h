@@ -21,22 +21,21 @@
 
 #include <memory>
 
-#include "joynr/IMessaging.h"
+#include "joynr/IMessagingStub.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
 
-class JoynrMessage;
 class InProcessMessagingSkeleton;
 
-class JOYNR_EXPORT InProcessMessagingStub : public IMessaging
+class JOYNR_EXPORT InProcessMessagingStub : public IMessagingStub
 {
 public:
     explicit InProcessMessagingStub(std::shared_ptr<InProcessMessagingSkeleton> skeleton);
     ~InProcessMessagingStub() override = default;
-    void transmit(JoynrMessage& message,
+    void transmit(std::shared_ptr<ImmutableMessage> message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 

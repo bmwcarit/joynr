@@ -28,7 +28,7 @@
 namespace joynr
 {
 class IAccessController;
-class JoynrMessage;
+class ImmutableMessage;
 
 namespace system
 {
@@ -47,7 +47,7 @@ class JoynrRuntimeException;
 class JOYNR_EXPORT IMessageRouter
 {
 public:
-    virtual void route(JoynrMessage& message, std::uint32_t tryCount = 0) = 0;
+    virtual void route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) = 0;
 
     virtual void addNextHop(
             const std::string& participantId,
@@ -76,7 +76,7 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) = 0;
 
-    virtual void queueMessage(const JoynrMessage& message) = 0;
+    virtual void queueMessage(std::shared_ptr<ImmutableMessage> message) = 0;
 };
 
 } // namespace joynr

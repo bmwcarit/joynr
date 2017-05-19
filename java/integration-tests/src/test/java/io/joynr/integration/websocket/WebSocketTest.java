@@ -20,6 +20,7 @@ package io.joynr.integration.websocket;
  */
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -39,7 +40,7 @@ import io.joynr.messaging.websocket.WebSocketMessagingStub;
 import io.joynr.messaging.websocket.jetty.client.WebSocketJettyClientFactory;
 import io.joynr.messaging.websocket.server.WebSocketJettyServerFactory;
 import io.joynr.servlet.ServletUtil;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.OneWayRequest;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
@@ -49,6 +50,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -61,6 +63,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.argThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -92,7 +95,7 @@ public class WebSocketTest {
                 logger.debug("message arrived: " + invocationOnMock.getArguments().toString());
                 return null;
             }
-        }).when(messageRouterMock).route(Mockito.any(JoynrMessage.class));
+        }).when(messageRouterMock).route(Mockito.any(ImmutableMessage.class));
         joynrMessageFactory = new JoynrMessageFactory(new ObjectMapper(), new HashSet<JoynrMessageProcessor>());
     }
 
@@ -106,7 +109,6 @@ public class WebSocketTest {
         ccWebSocketMessagingSkeleton = new WebSocketMessagingSkeleton(serverAddress,
                                                                       webSocketJettyServerFactory,
                                                                       messageRouterMock,
-                                                                      objectMapper,
                                                                       new WebSocketMessagingSkeleton.MainTransportFlagBearer(),
                                                                       messageProcessor);
 
@@ -117,12 +119,10 @@ public class WebSocketTest {
                                                                       websocketIdleTimeout,
                                                                       objectMapper);
         webSocketMessagingStub = new WebSocketMessagingStub(serverAddress,
-                                                            webSocketJettyClientFactory.create(serverAddress),
-                                                            new ObjectMapper());
+                                                            webSocketJettyClientFactory.create(serverAddress));
         libWebSocketMessagingSkeleton = new WebSocketMessagingSkeleton(serverAddress,
                                                                        webSocketJettyClientFactory,
                                                                        messageRouterMock,
-                                                                       new ObjectMapper(),
                                                                        new WebSocketMessagingSkeleton.MainTransportFlagBearer(),
                                                                        messageProcessor);
         ccWebSocketMessagingSkeleton.init();
@@ -165,7 +165,7 @@ public class WebSocketTest {
     @Test
     public void testJoynrMessageProcessorIsCalled() throws Throwable {
         JoynrMessageProcessor processorMock = mock(JoynrMessageProcessor.class);
-        when(processorMock.processIncoming(any(JoynrMessage.class))).then(returnsFirstArg());
+        when(processorMock.processIncoming(any(ImmutableMessage.class))).then(returnsFirstArg());
 
         int millis = 1000;
         int maxMessageSize = 100000;
@@ -175,21 +175,39 @@ public class WebSocketTest {
         sendMessage();
         Thread.sleep(millis);
 
-        verify(processorMock).processIncoming(any(JoynrMessage.class));
+        verify(processorMock).processIncoming(any(ImmutableMessage.class));
     }
 
     private void sendMessage() throws Throwable {
         OneWayRequest request = new OneWayRequest("method", new Object[0], new Class<?>[0]);
         MessagingQos messagingQos = new MessagingQos(100000);
-        JoynrMessage msg = joynrMessageFactory.createOneWayRequest("fromID", "toID", request, messagingQos);
+        ImmutableMessage msg = joynrMessageFactory.createOneWayRequest("fromID", "toID", request, messagingQos)
+                                                  .getImmutableMessage();
 
         webSocketMessagingStub.transmit(msg, new FailureAction() {
-
             @Override
             public void execute(Throwable error) {
                 Assert.fail(error.getMessage());
             }
         });
-        Mockito.verify(messageRouterMock, Mockito.timeout(1000)).route(msg);
+        Mockito.verify(messageRouterMock, Mockito.timeout(1000))
+               .route(argThat(new SerializedDataOfImmutableMessageMatcher(msg)));
+    }
+
+    static class SerializedDataOfImmutableMessageMatcher extends ArgumentMatcher<ImmutableMessage> {
+        private final byte[] expectedSerializedData;
+
+        public SerializedDataOfImmutableMessageMatcher(ImmutableMessage message) {
+            this.expectedSerializedData = message.getSerializedMessage();
+        }
+
+        @Override
+        public boolean matches(Object argument) {
+            if (!(argument instanceof ImmutableMessage)) {
+                return false;
+            }
+            return Arrays.equals(expectedSerializedData, ((ImmutableMessage) argument).getSerializedMessage());
+        }
+
     }
 }

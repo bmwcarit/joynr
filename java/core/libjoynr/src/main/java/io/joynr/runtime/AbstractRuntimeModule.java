@@ -73,7 +73,6 @@ import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
-import io.joynr.messaging.inprocess.InProcessMessageSerializerFactory;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.InMemoryMulticastReceiverRegistry;
@@ -83,8 +82,6 @@ import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
-import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
-import io.joynr.messaging.serialize.MessageSerializerFactory;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
@@ -96,7 +93,6 @@ import joynr.system.RoutingTypes.Address;
 abstract class AbstractRuntimeModule extends AbstractModule {
 
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
-    MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
     MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
     @SuppressWarnings("URF_UNREAD_FIELD")
     Multibinder<MulticastAddressCalculator> multicastAddressCalculators;
@@ -118,11 +114,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
         }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
         messagingStubFactory.addBinding(InProcessAddress.class).to(InProcessMessagingStubFactory.class);
-
-        messageSerializerFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<AbstractMiddlewareMessageSerializerFactory<? extends Address>>() {
-        }, Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
-        messageSerializerFactory.addBinding(InProcessAddress.class).to(InProcessMessageSerializerFactory.class);
 
         messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
         }, new TypeLiteral<IMessagingSkeleton>() {

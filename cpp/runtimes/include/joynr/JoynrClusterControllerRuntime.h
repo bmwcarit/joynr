@@ -48,8 +48,8 @@ namespace joynr
 
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
-class IMessageReceiver;
-class IMessageSender;
+class ITransportMessageReceiver;
+class ITransportMessageSender;
 class SubscriptionManager;
 class ConnectorFactory;
 class InProcessConnectorFactory;
@@ -62,8 +62,8 @@ class MqttMessagingSkeleton;
 class MulticastMessagingSkeletonDirectory;
 class IPlatformSecurityManager;
 class Settings;
-class JoynrMessageSender;
-class IMessaging;
+class IMessageSender;
+class IWebsocketCcMessagingSkeleton;
 class CcMessageRouter;
 class WebSocketMessagingStubFactory;
 class MosquittoConnection;
@@ -79,11 +79,12 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
           public IClusterControllerSignalHandler
 {
 public:
-    JoynrClusterControllerRuntime(std::unique_ptr<Settings> settings,
-                                  std::shared_ptr<IMessageReceiver> httpMessageReceiver = nullptr,
-                                  std::shared_ptr<IMessageSender> httpMessageSender = nullptr,
-                                  std::shared_ptr<IMessageReceiver> mqttMessageReceiver = nullptr,
-                                  std::shared_ptr<IMessageSender> mqttMessageSender = nullptr);
+    JoynrClusterControllerRuntime(
+            std::unique_ptr<Settings> settings,
+            std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver = nullptr,
+            std::shared_ptr<ITransportMessageSender> httpMessageSender = nullptr,
+            std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver = nullptr,
+            std::shared_ptr<ITransportMessageSender> mqttMessageSender = nullptr);
 
     static std::unique_ptr<JoynrClusterControllerRuntime> create(std::size_t argc, char* argv[]);
 
@@ -128,20 +129,19 @@ protected:
     IDispatcher* inProcessDispatcher;
 
     std::shared_ptr<SubscriptionManager> subscriptionManager;
-    IMessaging* joynrMessagingSendSkeleton;
-    std::shared_ptr<JoynrMessageSender> joynrMessageSender;
+    std::shared_ptr<IMessageSender> messageSender;
 
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
 
     std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
 
-    std::shared_ptr<IMessageReceiver> httpMessageReceiver;
-    std::shared_ptr<IMessageSender> httpMessageSender;
+    std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver;
+    std::shared_ptr<ITransportMessageSender> httpMessageSender;
     std::shared_ptr<HttpMessagingSkeleton> httpMessagingSkeleton;
 
     std::shared_ptr<MosquittoConnection> mosquittoConnection;
-    std::shared_ptr<IMessageReceiver> mqttMessageReceiver;
-    std::shared_ptr<IMessageSender> mqttMessageSender;
+    std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver;
+    std::shared_ptr<ITransportMessageSender> mqttMessageSender;
     std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
 
     std::vector<IDispatcher*> dispatcherList;
@@ -157,8 +157,8 @@ protected:
     DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
-    std::shared_ptr<IMessaging> wsCcMessagingSkeleton;
-    std::shared_ptr<IMessaging> wsTLSCcMessagingSkeleton;
+    std::shared_ptr<IWebsocketCcMessagingSkeleton> wsCcMessagingSkeleton;
+    std::shared_ptr<IWebsocketCcMessagingSkeleton> wsTLSCcMessagingSkeleton;
     bool httpMessagingIsRunning;
     bool mqttMessagingIsRunning;
     bool doMqttMessaging;

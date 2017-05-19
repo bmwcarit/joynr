@@ -16,10 +16,10 @@
  * limitations under the License.
  * #L%
  */
-#include "MqttMessagingStub.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStub.h"
 
-#include "joynr/IMessageSender.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/ITransportMessageSender.h"
 #include "joynr/MessagingQos.h"
 
 namespace joynr
@@ -27,18 +27,18 @@ namespace joynr
 
 INIT_LOGGER(MqttMessagingStub);
 
-MqttMessagingStub::MqttMessagingStub(std::shared_ptr<IMessageSender> messageSender,
+MqttMessagingStub::MqttMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                      const system::RoutingTypes::MqttAddress& destinationAddress)
         : messageSender(messageSender), destinationAddress(destinationAddress)
 {
 }
 
 void MqttMessagingStub::transmit(
-        JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> {}", message.toLogMessage());
-    messageSender->sendMessage(destinationAddress, message, onFailure);
+    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> {}", message->toLogMessage());
+    messageSender->sendMessage(destinationAddress, std::move(message), onFailure);
 }
 
 } // namespace joynr

@@ -24,6 +24,8 @@
 #include <mutex>
 #include <string>
 
+#include <smrf/ByteVector.h>
+
 #include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -56,7 +58,7 @@ public:
                                const std::string& receiverId,
                                const LongPollingMessageReceiverSettings& settings,
                                std::shared_ptr<Semaphore> channelCreatedSemaphore,
-                               std::function<void(const std::string&)> onTextMessageReceived);
+                               std::function<void(smrf::ByteVector&&)> onMessageReceived);
 
     ~LongPollingMessageReceiver();
 
@@ -66,7 +68,6 @@ public:
     bool isInterrupted();
 
     void processReceivedInput(const std::string& receivedInput);
-    void processReceivedJsonObjects(const std::string& jsonObject);
 
 private:
     void checkServerTime();
@@ -85,8 +86,8 @@ private:
     // Ownership shared between this and HttpReceiver
     std::shared_ptr<Semaphore> channelCreatedSemaphore;
 
-    /*! On text message received callback */
-    std::function<void(const std::string&)> onTextMessageReceived;
+    /*! On message received callback */
+    std::function<void(smrf::ByteVector&&)> onMessageReceived;
     std::unique_ptr<HttpRequest> currentRequest;
 };
 

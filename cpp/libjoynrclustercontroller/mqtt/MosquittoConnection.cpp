@@ -44,7 +44,7 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
           isRunning(false),
           isChannelIdRegistered(false),
           subscribedToChannelTopic(false),
-          onTextMessageReceived(),
+          onMessageReceived(),
           thread()
 {
     JOYNR_LOG_DEBUG(logger, "Try to connect to tcp://{}:{}", host, port);
@@ -326,9 +326,9 @@ void MosquittoConnection::registerChannelId(const std::string& channelId)
 }
 
 void MosquittoConnection::registerReceiveCallback(
-        std::function<void(const std::string&)> onTextMessageReceived)
+        std::function<void(smrf::ByteVector&&)> onMessageReceived)
 {
-    this->onTextMessageReceived = onTextMessageReceived;
+    this->onMessageReceived = onMessageReceived;
 }
 
 bool MosquittoConnection::isSubscribedToChannelTopic() const
@@ -351,17 +351,15 @@ void MosquittoConnection::on_subscribe(int mid, int qos_count, const int* grante
 
 void MosquittoConnection::on_message(const mosquitto_message* message)
 {
-    std::string jsonObject(static_cast<char*>(message->payload), message->payloadlen);
-
-    JOYNR_LOG_DEBUG(logger, "Received raw message: {}", jsonObject);
-
-    if (onTextMessageReceived) {
-        onTextMessageReceived(jsonObject);
-    } else {
+    if (!onMessageReceived) {
         JOYNR_LOG_ERROR(
-                logger,
-                "Discarding received message, since onTextMessageReceived callback is empty.");
+                logger, "Discarding received message, since onMessageReceived callback is empty.");
+        return;
     }
+
+    std::uint8_t* data = static_cast<std::uint8_t*>(message->payload);
+    smrf::ByteVector rawMessage(data, data + message->payloadlen);
+    onMessageReceived(std::move(rawMessage));
 }
 
 void MosquittoConnection::on_publish(int mid)

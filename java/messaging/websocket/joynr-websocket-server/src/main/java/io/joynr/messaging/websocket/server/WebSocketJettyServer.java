@@ -80,9 +80,8 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
     }
 
     @Override
-    public void messageArrived(String message) {
+    public void messageArrived(byte[] message) {
         messageListener.transmit(message, new FailureAction() {
-
             @Override
             public void execute(Throwable error) {
                 logger.error("Unable to process message: {}", error.getMessage());
@@ -164,11 +163,11 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
     }
 
     @Override
-    public synchronized void writeText(Address toAddress,
-                                       String message,
-                                       long timeout,
-                                       TimeUnit unit,
-                                       final FailureAction failureAction) {
+    public synchronized void writeBytes(Address toAddress,
+                                        byte[] message,
+                                        long timeout,
+                                        TimeUnit unit,
+                                        final FailureAction failureAction) {
         if (!(toAddress instanceof WebSocketClientAddress)) {
             throw new JoynrIllegalStateException("Web Socket Server can only send to WebSocketClientAddresses");
         }
@@ -181,7 +180,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                     + toClientAddress.getId());
         }
         try {
-            session.getRemote().sendBytes(ByteBuffer.wrap(message.getBytes(CHARSET)), new WriteCallback() {
+            session.getRemote().sendBytes(ByteBuffer.wrap(message), new WriteCallback() {
                 @Override
                 public void writeSuccess() {
                     // Nothing to do
@@ -233,7 +232,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                     logger.error("Error parsing WebSocketClientAddress: ", e);
                 }
             } else {
-                messageArrivedListener.messageArrived(serializedMessage);
+                messageArrivedListener.messageArrived(payload);
             }
         }
 

@@ -109,10 +109,6 @@ INIT_LOGGER(«className»);
 {
 }
 
-bool «className»::usesClusterController() const{
-	return false;
-}
-
 «FOR attribute : getAttributes(francaIntf)»
 	«val returnType = attribute.typeName»
 	«val attributeName = attribute.joynrName»
