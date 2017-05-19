@@ -16,6 +16,8 @@
 * **[JS]** Direct MQTT based communication is not supported at the moment.
   Please use the WebSocketLibjoynrRuntime to connect to external cluster controller handling
   the MQTT connection to the backend.
+* **[JS]** Introduced mandatory dependency to the 'wscpp' module (https://github.com/bmwcarit/wscpp)
+  for the node environment.
 * **[Java]** Global Discovery and Global Domain Access Controller via Jetty using HTTP based
   communication are no longer supported, please use the JEE implementations based
   on MQTT communication instead
