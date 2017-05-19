@@ -161,3 +161,4 @@ RUN echo "source /data/scripts/bashrc.sh" >> /home/joynr/.bashrc
 RUN mkdir /home/joynr/build
 RUN date -R > /data/timestamp
 RUN chmod -R a+rwx /usr/local
+RUN echo "/usr/local/lib64" > /etc/ld.so.conf.d/usr-local-lib64.conf && ldconfig
