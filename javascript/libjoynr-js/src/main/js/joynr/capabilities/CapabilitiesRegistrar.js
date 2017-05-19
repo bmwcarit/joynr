@@ -171,7 +171,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                     }
 
                     // retrieve participantId if not passed in
-                    if ( participantId === undefined || participantId === null ) {
+                    if (participantId === undefined || participantId === null) {
                         participantId = participantIdStorage.getParticipantId(domain, provider);
                     }
 
