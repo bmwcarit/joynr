@@ -104,7 +104,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     // This timeout must be shared by all integration test environments and
     // cannot be too short.
-    protected static final int CONST_DEFAULT_TEST_TIMEOUT = 8000;
+    protected static final int CONST_DEFAULT_TEST_TIMEOUT = 30000;
 
     public static final Semaphore FIRE_AND_FORGET_SEMAPHORE = new Semaphore(1);
     public static final Semaphore FIRE_AND_FORGET_WITH_ENUM_WITH_VALUES_PARAM_SEMAPHORE = new Semaphore(0);
