@@ -735,7 +735,8 @@ else(USE_PLATFORM_SMRF)
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
-        CMAKE_ARGS "-DENABLE_CLANG_FORMATTER=${ENABLE_CLANG_FORMATTER}"
+        CMAKE_ARGS "-DENABLE_CLANG_FORMATTER=${ENABLE_CLANG_FORMATTER};"
+                   "-DBUILD_TESTS=Off"
         # Disable build step
         BUILD_BYPRODUCTS ${SMRF_LIBRARIES}
     )
