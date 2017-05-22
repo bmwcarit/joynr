@@ -192,26 +192,6 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 
 «ENDFOR»
 
-void «interfaceName»RequestCaller::registerAttributeListener(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener)
-{
-	provider->registerAttributeListener(attributeName, attributeListener);
-}
-
-void «interfaceName»RequestCaller::unregisterAttributeListener(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener)
-{
-	provider->unregisterAttributeListener(attributeName, attributeListener);
-}
-
-void «interfaceName»RequestCaller::registerBroadcastListener(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener)
-{
-	provider->registerBroadcastListener(broadcastName, broadcastListener);
-}
-
-void «interfaceName»RequestCaller::unregisterBroadcastListener(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener)
-{
-	provider->unregisterBroadcastListener(broadcastName, broadcastListener);
-}
-
 joynr::types::Version «interfaceName»RequestCaller::getProviderVersion()
 {
 	return joynr::types::Version(provider->MAJOR_VERSION, provider->MINOR_VERSION);

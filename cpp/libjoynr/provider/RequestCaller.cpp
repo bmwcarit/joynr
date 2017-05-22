@@ -18,6 +18,8 @@
  */
 #include "joynr/RequestCaller.h"
 
+#include "joynr/IJoynrProvider.h"
+
 namespace joynr
 {
 
@@ -32,6 +34,30 @@ RequestCaller::RequestCaller(std::string&& interfaceName) : interfaceName(std::m
 const std::string& RequestCaller::getInterfaceName() const
 {
     return interfaceName;
+}
+
+void RequestCaller::registerAttributeListener(const std::string& attributeName,
+                                              SubscriptionAttributeListener* attributeListener)
+{
+    getProvider()->registerAttributeListener(attributeName, attributeListener);
+}
+
+void RequestCaller::unregisterAttributeListener(const std::string& attributeName,
+                                                SubscriptionAttributeListener* attributeListener)
+{
+    getProvider()->unregisterAttributeListener(attributeName, attributeListener);
+}
+
+void RequestCaller::registerBroadcastListener(const std::string& broadcastName,
+                                              UnicastBroadcastListener* broadcastListener)
+{
+    getProvider()->registerBroadcastListener(broadcastName, broadcastListener);
+}
+
+void RequestCaller::unregisterBroadcastListener(const std::string& broadcastName,
+                                                UnicastBroadcastListener* broadcastListener)
+{
+    getProvider()->unregisterBroadcastListener(broadcastName, broadcastListener);
 }
 
 } // namespace joynr

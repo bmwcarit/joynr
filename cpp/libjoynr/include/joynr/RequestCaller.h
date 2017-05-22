@@ -44,15 +44,15 @@ public:
 
     // Get and set the attribute listeners listening on the provider
     virtual void registerAttributeListener(const std::string& attributeName,
-                                           SubscriptionAttributeListener* attributeListener) = 0;
+                                           SubscriptionAttributeListener* attributeListener);
     virtual void unregisterAttributeListener(const std::string& attributeName,
-                                             SubscriptionAttributeListener* attributeListener) = 0;
+                                             SubscriptionAttributeListener* attributeListener);
 
     // Get and set the broadcast listeners listening on the provider
     virtual void registerBroadcastListener(const std::string& broadcastName,
-                                           UnicastBroadcastListener* broadcastListener) = 0;
+                                           UnicastBroadcastListener* broadcastListener);
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
-                                             UnicastBroadcastListener* broadcastListener) = 0;
+                                             UnicastBroadcastListener* broadcastListener);
 
     virtual types::Version getProviderVersion() = 0;
 
