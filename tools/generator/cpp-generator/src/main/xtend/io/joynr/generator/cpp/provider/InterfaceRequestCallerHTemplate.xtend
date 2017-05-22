@@ -192,6 +192,9 @@ public:
 	 */
 	joynr::types::Version getProviderVersion() override;
 
+protected:
+	std::shared_ptr<IJoynrProvider> getProvider() override;
+
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);
 	std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider;

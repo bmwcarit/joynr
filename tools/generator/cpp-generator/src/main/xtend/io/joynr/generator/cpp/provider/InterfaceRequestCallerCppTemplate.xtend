@@ -212,8 +212,14 @@ void «interfaceName»RequestCaller::unregisterBroadcastListener(const std::stri
 	provider->unregisterBroadcastListener(broadcastName, broadcastListener);
 }
 
-joynr::types::Version «interfaceName»RequestCaller::getProviderVersion() {
+joynr::types::Version «interfaceName»RequestCaller::getProviderVersion()
+{
 	return joynr::types::Version(provider->MAJOR_VERSION, provider->MINOR_VERSION);
+}
+
+std::shared_ptr<IJoynrProvider> «interfaceName»RequestCaller::getProvider()
+{
+	return provider;
 }
 
 «getNamespaceEnder(francaIntf)»

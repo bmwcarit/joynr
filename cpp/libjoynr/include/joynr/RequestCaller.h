@@ -30,6 +30,7 @@ namespace joynr
 
 class SubscriptionAttributeListener;
 class UnicastBroadcastListener;
+class IJoynrProvider;
 
 class JOYNR_EXPORT RequestCaller
 {
@@ -54,6 +55,9 @@ public:
                                              UnicastBroadcastListener* broadcastListener) = 0;
 
     virtual types::Version getProviderVersion() = 0;
+
+protected:
+    virtual std::shared_ptr<IJoynrProvider> getProvider() = 0;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RequestCaller);
