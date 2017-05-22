@@ -954,7 +954,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                     std::dynamic_pointer_cast<exceptions::JoynrRuntimeException>(exception);
             assert(runtimeError);
             sendPublicationError(
-                    publication, subscriptionRequest, subscriptionRequest, runtimeError);
+                    publication, subscriptionRequest, subscriptionRequest, std::move(runtimeError));
 
             // Reschedule the next poll
             if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
@@ -971,7 +971,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
 
         CallContextStorage::set(subscriptionRequest->getCallContext());
         requestInterpreter->execute(
-                requestCaller, dummyRequest, std::move(onSuccess), std::move(onError));
+                std::move(requestCaller), dummyRequest, std::move(onSuccess), std::move(onError));
         CallContextStorage::invalidate();
     }
 }
@@ -1032,7 +1032,7 @@ PublicationManager::Publication::Publication(IPublicationSender* publicationSend
                                              std::shared_ptr<RequestCaller> requestCaller)
         : timeOfLastPublication(0),
           sender(publicationSender),
-          requestCaller(requestCaller),
+          requestCaller(std::move(requestCaller)),
           attributeListener(nullptr),
           broadcastListener(nullptr),
           mutex(),

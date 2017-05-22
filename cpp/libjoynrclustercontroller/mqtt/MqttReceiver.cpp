@@ -37,7 +37,7 @@ MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnect
                            const std::string& unicastTopicPrefix)
         : channelIdForMqttTopic(channelIdForMqttTopic),
           globalClusterControllerAddress(),
-          mosquittoConnection(mosquittoConnection)
+          mosquittoConnection(std::move(mosquittoConnection))
 {
     std::string brokerUri =
             "tcp://" + settings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost() + ":" +
@@ -46,7 +46,7 @@ MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnect
     std::string unicastChannelIdForMqttTopic = unicastTopicPrefix + channelIdForMqttTopic;
     system::RoutingTypes::MqttAddress receiveMqttAddress(brokerUri, unicastChannelIdForMqttTopic);
     globalClusterControllerAddress = joynr::serializer::serializeToJson(receiveMqttAddress);
-    mosquittoConnection->registerChannelId(unicastChannelIdForMqttTopic);
+    this->mosquittoConnection->registerChannelId(unicastChannelIdForMqttTopic);
 }
 
 void MqttReceiver::updateSettings()

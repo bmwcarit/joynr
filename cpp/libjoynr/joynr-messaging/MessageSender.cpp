@@ -40,7 +40,7 @@ INIT_LOGGER(MessageSender);
 MessageSender::MessageSender(std::shared_ptr<IMessageRouter> messageRouter,
                              std::uint64_t ttlUpliftMs)
         : dispatcher(nullptr),
-          messageRouter(messageRouter),
+          messageRouter(std::move(messageRouter)),
           messageFactory(ttlUpliftMs),
           replyToAddress()
 {

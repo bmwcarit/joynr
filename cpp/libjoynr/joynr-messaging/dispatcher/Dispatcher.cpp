@@ -52,7 +52,7 @@ INIT_LOGGER(Dispatcher);
 Dispatcher::Dispatcher(std::shared_ptr<IMessageSender> messageSender,
                        boost::asio::io_service& ioService,
                        int maxThreads)
-        : messageSender(messageSender),
+        : messageSender(std::move(messageSender)),
           requestCallerDirectory("Dispatcher-RequestCallerDirectory", ioService),
           replyCallerDirectory("Dispatcher-ReplyCallerDirectory", ioService),
           publicationManager(nullptr),
@@ -81,7 +81,7 @@ void Dispatcher::addRequestCaller(const std::string& participantId,
     if (publicationManager != nullptr) {
         // publication manager queues received subscription requests, that are
         // received before the corresponding request caller is added
-        publicationManager->restore(participantId, requestCaller, messageSender.get());
+        publicationManager->restore(participantId, std::move(requestCaller), messageSender.get());
     } else {
         JOYNR_LOG_WARN(logger, "No publication manager available!");
     }
@@ -104,7 +104,7 @@ void Dispatcher::addReplyCaller(const std::string& requestReplyId,
 {
     JOYNR_LOG_TRACE(logger, "addReplyCaller id= {}", requestReplyId);
     // add the callback to the registry that is responsible for reply messages
-    replyCallerDirectory.add(requestReplyId, replyCaller, qosSettings.getTtl());
+    replyCallerDirectory.add(requestReplyId, std::move(replyCaller), qosSettings.getTtl());
 }
 
 void Dispatcher::removeReplyCaller(const std::string& requestReplyId)
@@ -199,7 +199,8 @@ void Dispatcher::handleRequestReceived(const ImmutableMessage& message)
                                  std::move(reply));
     };
     // execute request
-    requestInterpreter->execute(caller, request, std::move(onSuccess), std::move(onError));
+    requestInterpreter->execute(
+            std::move(caller), request, std::move(onSuccess), std::move(onError));
 }
 
 void Dispatcher::handleOneWayRequestReceived(const ImmutableMessage& message)
@@ -242,7 +243,7 @@ void Dispatcher::handleOneWayRequestReceived(const ImmutableMessage& message)
     }
 
     // execute request
-    requestInterpreter->execute(caller, request);
+    requestInterpreter->execute(std::move(caller), request);
 }
 
 void Dispatcher::handleReplyReceived(const ImmutableMessage& message)
@@ -310,7 +311,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const ImmutableMessage& messa
     } else {
         publicationManager->add(message.getSender(),
                                 message.getRecipient(),
-                                caller,
+                                std::move(caller),
                                 subscriptionRequest,
                                 messageSender.get());
     }
@@ -371,7 +372,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const ImmutableMessa
     } else {
         publicationManager->add(message.getSender(),
                                 message.getRecipient(),
-                                caller,
+                                std::move(caller),
                                 subscriptionRequest,
                                 messageSender.get());
     }
@@ -496,7 +497,7 @@ void Dispatcher::handlePublicationReceived(const ImmutableMessage& message)
 void Dispatcher::registerSubscriptionManager(
         std::shared_ptr<ISubscriptionManager> subscriptionManager)
 {
-    this->subscriptionManager = subscriptionManager;
+    this->subscriptionManager = std::move(subscriptionManager);
 }
 
 void Dispatcher::registerPublicationManager(PublicationManager* publicationManager)

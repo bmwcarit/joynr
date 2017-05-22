@@ -132,11 +132,9 @@ AbstractMessageRouter::getDestinationAddresses(const ImmutableMessage& message)
         }
     } else {
         const std::string& destinationPartId = message.getRecipient();
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
         const auto routingEntry = routingTable.lookup(destinationPartId);
         if (routingEntry) {
-            destAddress = routingEntry->address;
-            addresses.insert(destAddress);
+            addresses.insert(routingEntry->address);
         }
     }
     return addresses;
@@ -167,7 +165,7 @@ void AbstractMessageRouter::sendMessages(
             const std::uint32_t tryCount = 0;
             messageScheduler.schedule(
                     new MessageRunnable(
-                            item->getContent(), messagingStub, address, *this, tryCount),
+                            item->getContent(), std::move(messagingStub), address, *this, tryCount),
                     std::chrono::milliseconds(0));
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger,

@@ -448,8 +448,8 @@ request.setParams(
 			auto subscriptionRequest = std::make_shared<joynr::MulticastSubscriptionRequest>();
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					subscriptionListener,
-					subscriptionQos,
+					std::move(subscriptionListener),
+					std::move(subscriptionQos),
 					subscriptionRequest«
 					»«IF !broadcast.selective»«
 					»,
@@ -468,8 +468,8 @@ request.setParams(
 			subscriptionRequest->setSubscriptionId(subscriptionId);
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					subscriptionListener,
-					subscriptionQos,
+					std::move(subscriptionListener),
+					std::move(subscriptionQos),
 					subscriptionRequest«
 					»«IF !broadcast.selective»«
 					»,

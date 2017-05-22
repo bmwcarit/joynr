@@ -26,7 +26,7 @@ namespace joynr
 {
 
 InProcessMessagingStub::InProcessMessagingStub(std::shared_ptr<InProcessMessagingSkeleton> skeleton)
-        : skeleton(skeleton)
+        : skeleton(std::move(skeleton))
 {
 }
 

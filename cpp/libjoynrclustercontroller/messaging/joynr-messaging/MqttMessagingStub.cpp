@@ -29,7 +29,7 @@ INIT_LOGGER(MqttMessagingStub);
 
 MqttMessagingStub::MqttMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                      const system::RoutingTypes::MqttAddress& destinationAddress)
-        : messageSender(messageSender), destinationAddress(destinationAddress)
+        : messageSender(std::move(messageSender)), destinationAddress(destinationAddress)
 {
 }
 

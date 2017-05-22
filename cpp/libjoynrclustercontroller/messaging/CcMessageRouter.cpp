@@ -144,7 +144,7 @@ CcMessageRouter::~CcMessageRouter()
 void CcMessageRouter::setAccessController(std::shared_ptr<IAccessController> accessController)
 {
     assert(accessController);
-    this->accessController = accessController;
+    this->accessController = std::move(accessController);
 }
 
 void CcMessageRouter::saveMulticastReceiverDirectory() const

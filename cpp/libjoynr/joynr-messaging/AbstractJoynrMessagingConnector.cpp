@@ -47,7 +47,7 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
 void AbstractJoynrMessagingConnector::operationRequest(std::shared_ptr<IReplyCaller> replyCaller,
                                                        const Request& request)
 {
-    sendRequest(request, replyCaller);
+    sendRequest(request, std::move(replyCaller));
 }
 
 void AbstractJoynrMessagingConnector::operationOneWayRequest(const OneWayRequest& request)
