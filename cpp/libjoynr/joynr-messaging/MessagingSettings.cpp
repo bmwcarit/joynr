@@ -244,8 +244,8 @@ const std::string& MessagingSettings::SETTING_LONGPOLL_TIMEOUT_MS()
 
 std::int64_t MessagingSettings::DEFAULT_LONGPOLL_TIMEOUT_MS()
 {
-    static const std::int64_t value(10 * 60 * 1000); // 10 minutes
-    return value;
+    // 10 minutes
+    return (10 * 60 * 100);
 }
 
 const std::string& MessagingSettings::SETTING_HTTP_CONNECT_TIMEOUT_MS()
@@ -256,8 +256,8 @@ const std::string& MessagingSettings::SETTING_HTTP_CONNECT_TIMEOUT_MS()
 
 std::int64_t MessagingSettings::DEFAULT_HTTP_CONNECT_TIMEOUT_MS()
 {
-    static const std::int64_t value(1 * 60 * 1000); // 1 minute
-    return value;
+    // 1 minute
+    return (1 * 60 * 1000);
 }
 
 const std::string& MessagingSettings::SETTING_BROKER_TIMEOUT_MS()
@@ -268,8 +268,8 @@ const std::string& MessagingSettings::SETTING_BROKER_TIMEOUT_MS()
 
 std::int64_t MessagingSettings::DEFAULT_BROKER_TIMEOUT_MS()
 {
-    static const std::int64_t value(20 * 1000); // 20 seconds
-    return value;
+    // 20 seconds
+    return (20 * 1000);
 }
 
 const std::string& MessagingSettings::ACCESS_CONTROL_ENABLE()
@@ -309,8 +309,8 @@ const std::string& MessagingSettings::SETTING_DISCOVERY_MESSAGES_TTL_MS()
 
 std::int64_t MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS()
 {
-    static const std::int64_t value(40 * 1000); // 40 seconds
-    return value;
+    // 40 seconds
+    return (40 * 1000);
 }
 
 const std::string& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
@@ -321,20 +321,19 @@ const std::string& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
 
 std::int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
 {
-    static const std::int64_t value(10 * 60 * 1000); // 10 minutes
-    return value;
+    // 10 minutes
+    return (10 * 60 * 1000);
 }
 
 std::uint64_t MessagingSettings::DEFAULT_TTL_UPLIFT_MS()
 {
-    static const std::uint64_t value(0);
-    return value;
+    return 0;
 }
 
 std::uint64_t MessagingSettings::DEFAULT_MAXIMUM_TTL_MS()
 {
-    static const std::uint64_t value(30UL * 24UL * 60UL * 60UL * 1000UL); // 30 days
-    return value;
+    // 30 days
+    return (30UL * 24UL * 60UL * 60UL * 1000UL);
 }
 
 const std::string& MessagingSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()

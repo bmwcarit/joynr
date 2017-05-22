@@ -25,26 +25,22 @@ INIT_LOGGER(PeriodicSubscriptionQos);
 
 std::int64_t PeriodicSubscriptionQos::MIN_PERIOD_MS()
 {
-    static const std::int64_t minPeriod = 50;
-    return minPeriod;
+    return 50;
 }
 
 std::int64_t PeriodicSubscriptionQos::MAX_PERIOD_MS()
 {
-    static const std::int64_t maxPeriod = 2592000000UL;
-    return maxPeriod;
+    return 2592000000UL;
 }
 
 std::int64_t PeriodicSubscriptionQos::DEFAULT_PERIOD_MS()
 {
-    static const std::int64_t maxPeriod = 60000UL;
-    return maxPeriod;
+    return 60000UL;
 }
 
 std::int64_t PeriodicSubscriptionQos::MAX_ALERT_AFTER_INTERVAL_MS()
 {
-    static const std::int64_t maxAlertAfterInterval = 2592000000UL;
-    return maxAlertAfterInterval;
+    return 2592000000UL;
 }
 
 std::int64_t PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL_MS()
@@ -54,8 +50,7 @@ std::int64_t PeriodicSubscriptionQos::DEFAULT_ALERT_AFTER_INTERVAL_MS()
 
 std::int64_t PeriodicSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
 {
-    static const std::int64_t noAlertAfterInterval = 0;
-    return noAlertAfterInterval;
+    return 0;
 }
 
 PeriodicSubscriptionQos::PeriodicSubscriptionQos()

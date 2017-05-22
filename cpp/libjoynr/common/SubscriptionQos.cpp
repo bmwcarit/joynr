@@ -26,8 +26,7 @@ namespace joynr
 
 std::int64_t SubscriptionQos::NO_EXPIRY_DATE()
 {
-    static const std::int64_t noExpiryDate = 0;
-    return noExpiryDate;
+    return 0;
 }
 
 SubscriptionQos::SubscriptionQos() : expiryDateMs(NO_EXPIRY_DATE())

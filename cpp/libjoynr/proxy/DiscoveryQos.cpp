@@ -24,8 +24,7 @@ namespace joynr
 
 std::int64_t DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT_MS()
 {
-    static const std::int64_t default_timeout = 30000;
-    return default_timeout;
+    return 30000;
 }
 
 DiscoveryQos::ArbitrationStrategy& DiscoveryQos::DEFAULT_ARBITRATIONSTRATEGY()
@@ -37,8 +36,7 @@ DiscoveryQos::ArbitrationStrategy& DiscoveryQos::DEFAULT_ARBITRATIONSTRATEGY()
 
 std::int64_t DiscoveryQos::DO_NOT_USE_CACHE()
 {
-    static const std::int64_t do_not_use_cache = 0;
-    return do_not_use_cache;
+    return 0;
 }
 
 std::int64_t DiscoveryQos::DEFAULT_CACHEMAXAGE_MS()
@@ -55,8 +53,7 @@ joynr::types::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
 
 std::int64_t DiscoveryQos::DEFAULT_RETRYINTERVAL_MS()
 {
-    static const std::int64_t default_retryInterval = 1000;
-    return default_retryInterval;
+    return 1000;
 }
 
 DiscoveryQos::DiscoveryQos()

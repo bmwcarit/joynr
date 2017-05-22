@@ -24,20 +24,17 @@ namespace joynr
 
 std::int64_t UnicastSubscriptionQos::DEFAULT_PUBLICATION_TTL_MS()
 {
-    static const std::int64_t defaultPublicationTtl = 10000;
-    return defaultPublicationTtl;
+    return 10000;
 }
 
 std::int64_t UnicastSubscriptionQos::MIN_PUBLICATION_TTL_MS()
 {
-    static const std::int64_t minPublicationTtl = 100;
-    return minPublicationTtl;
+    return 100;
 }
 
 std::int64_t UnicastSubscriptionQos::MAX_PUBLICATION_TTL_MS()
 {
-    static const std::int64_t maxPublicationTtl = 2592000000UL;
-    return maxPublicationTtl;
+    return 2592000000UL;
 }
 
 UnicastSubscriptionQos::UnicastSubscriptionQos()
