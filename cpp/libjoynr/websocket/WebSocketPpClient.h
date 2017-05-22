@@ -288,9 +288,9 @@ private:
             JOYNR_LOG_INFO(logger, "connection closed");
         } else {
             ConnectionPtr con = endpoint.get_con_from_hdl(hdl);
-            JOYNR_LOG_ERROR(logger,
-                            "websocket connection failed - error: {}. Trying to reconnect...",
-                            con->get_ec().message());
+            JOYNR_LOG_WARN(logger,
+                           "websocket connection failed - error: {}. Trying to reconnect...",
+                           con->get_ec().message());
             delayedReconnect();
         }
     }
