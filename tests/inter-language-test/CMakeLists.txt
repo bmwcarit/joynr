@@ -23,7 +23,7 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.26.0 REQUIRED)
+find_package(Joynr 0.25.3 REQUIRED)
 
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")

@@ -17,7 +17,7 @@ include(GNUInstallDirs)
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.26.0 REQUIRED)
+find_package(Joynr 0.25.3 REQUIRED)
 
 if(NOT DEFINED JOYNR_SERVER_HOST)
     set(JOYNR_SERVER_HOST "localhost")
