@@ -45,17 +45,17 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
 }
 
 void AbstractJoynrMessagingConnector::operationRequest(std::shared_ptr<IReplyCaller> replyCaller,
-                                                       const Request& request)
+                                                       Request&& request)
 {
     messageSender->sendRequest(proxyParticipantId,
                                providerParticipantId,
                                qosSettings,
                                request,
-                               replyCaller,
+                               std::move(replyCaller),
                                providerDiscoveryEntry.getIsLocal());
 }
 
-void AbstractJoynrMessagingConnector::operationOneWayRequest(const OneWayRequest& request)
+void AbstractJoynrMessagingConnector::operationOneWayRequest(OneWayRequest&& request)
 {
     messageSender->sendOneWayRequest(proxyParticipantId,
                                      providerParticipantId,

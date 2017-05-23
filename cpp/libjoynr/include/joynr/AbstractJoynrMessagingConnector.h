@@ -57,8 +57,8 @@ public:
      * @param replyCaller
      * @param request
      */
-    void operationRequest(std::shared_ptr<IReplyCaller> replyCaller, const Request& request);
-    void operationOneWayRequest(const OneWayRequest& request);
+    void operationRequest(std::shared_ptr<IReplyCaller> replyCaller, Request&& request);
+    void operationOneWayRequest(OneWayRequest&& request);
 
 protected:
     std::shared_ptr<IMessageSender> messageSender;

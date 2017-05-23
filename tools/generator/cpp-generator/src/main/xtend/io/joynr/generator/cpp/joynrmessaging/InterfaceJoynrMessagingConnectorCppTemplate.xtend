@@ -216,7 +216,7 @@ request.setParams(
 						proxyParticipantId,
 						providerParticipantId);
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-				operationRequest(replyCaller, request);
+				operationRequest(std::move(replyCaller), std::move(request));
 			} catch (const std::invalid_argument& exception) {
 				throw joynr::exceptions::MethodInvocationException(exception.what());
 			}
@@ -280,7 +280,7 @@ request.setParams(
 						proxyParticipantId,
 						providerParticipantId);
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-				operationRequest(replyCaller, request);
+				operationRequest(std::move(replyCaller), std::move(request));
 			} catch (const std::invalid_argument& exception) {
 				throw joynr::exceptions::MethodInvocationException(exception.what());
 			}
@@ -421,7 +421,7 @@ request.setParams(
 				«logMethodCall(method)»
 
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-				operationRequest(replyCaller, request);
+				operationRequest(std::move(replyCaller), std::move(request));
 			} catch (const std::invalid_argument& exception) {
 				throw joynr::exceptions::MethodInvocationException(exception.what());
 			}
@@ -432,7 +432,7 @@ request.setParams(
 			{
 				«produceParameterSetters(method)»
 
-				operationOneWayRequest(request);
+				operationOneWayRequest(std::move(request));
 			}
 	«ENDIF»
 «ENDFOR»
