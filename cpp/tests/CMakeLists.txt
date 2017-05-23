@@ -48,6 +48,7 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "MqttJoynrClusterControllerRuntimeTest.settings"
         "HttpMessagingSettingsTest.settings"
         "MqttMessagingSettingsTest.settings"
+        "MessagingSettingsDiscoveryEntryExpiryIntervalMs.settings"
         "libjoynrSystemIntegration1.settings"
         "libjoynrSystemIntegration2.settings"
         "ca.crt"

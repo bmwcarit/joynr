@@ -1,3 +1,10 @@
+# joynr 0.25.3
+
+## API relevant changes
+
+## Other changes
+* **[C++]** setting "discovery-entry-expiry-interval-ms" can now store values up to 2^63-1
+
 # joynr 0.25.2
 
 ## API relevant changes

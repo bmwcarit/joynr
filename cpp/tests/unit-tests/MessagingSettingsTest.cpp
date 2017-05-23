@@ -16,8 +16,11 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
 #include <cstdio>
+#include <limits>
+
+#include <gtest/gtest.h>
+
 #include "PrettyPrint.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Settings.h"
@@ -144,4 +147,15 @@ TEST_F(MessagingSettingsTest, mqttOnly) {
     checkBrokerSettings(messagingSettings, expectedBrokerUrl);
 
     checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
+}
+
+TEST_F(MessagingSettingsTest, discoveryEntryExpiryIntervalMsStores64BitValue)
+{
+    const std::string fileName = "test-resources/MessagingSettingsDiscoveryEntryExpiryIntervalMs.settings";
+    Settings testSettings(fileName);
+    EXPECT_TRUE(testSettings.isLoaded());
+    MessagingSettings messagingSettings(testSettings);
+
+    constexpr std::int64_t int64Max = std::numeric_limits<std::int64_t>::max();
+    EXPECT_EQ(int64Max, messagingSettings.getDiscoveryEntryExpiryIntervalMs());
 }
