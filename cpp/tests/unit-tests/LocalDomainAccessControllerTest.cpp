@@ -112,10 +112,10 @@ public:
 
         auto mockGdacProxy = std::make_unique<MockGlobalDomainAccessControllerProxy>();
         mockGdacProxyMock = mockGdacProxy.get();
-        localDomainAccessController->init(std::move(mockGdacProxy));
+        localDomainAccessController->setGlobalDomainAccessControllerProxy(std::move(mockGdacProxy));
 
         mockGdrcProxy = std::make_shared<MockGlobalDomainRoleControllerProxy>();
-        localDomainAccessController->init(mockGdrcProxy);
+        localDomainAccessController->setGlobalDomainRoleControllerProxy(mockGdrcProxy);
 
         userDre = DomainRoleEntry(TEST_USER, DOMAINS, Role::OWNER);
         masterAce = MasterAccessControlEntry(
@@ -534,7 +534,7 @@ TEST(LocalDomainAccessControllerPersistedTest, persistedAcesAreUsed) {
     auto localDomainAccessController =
             std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
 
-    localDomainAccessController->init(std::move(mockGdacProxyPtr));
+    localDomainAccessController->setGlobalDomainAccessControllerProxy(std::move(mockGdacProxyPtr));
 
     // Set default return value for Google mock
     std::string defaultString;
@@ -844,7 +844,7 @@ TEST(LocalDomainAccessControllerPersistedTest, persistedRcesAreUsed) {
     auto localDomainAccessController =
             std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
 
-    localDomainAccessController->init(std::move(mockGdacProxyPtr));
+    localDomainAccessController->setGlobalDomainAccessControllerProxy(std::move(mockGdacProxyPtr));
 
     // Set default return value for Google mock
     std::string defaultString;

@@ -78,26 +78,29 @@ public:
     explicit LocalDomainAccessController(
             std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore);
     virtual ~LocalDomainAccessController() = default;
-    /**
-     * The init method has to be called first, only afterwards LocalDomainAccessController may be
-     * used.
-     */
-    void init(std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy>
-                      globalDomainAccessControllerProxy);
 
     /**
-     * The init method has to be called first, only afterwards LocalDomainAccessController may be
-     * used.
+     * Sets the global access controller proxy. If ACEs/RCEs shall be retrieved from the backend
+     * this method must be called before the LocalDomainAccessController is used for the first time.
      */
-    void init(std::shared_ptr<infrastructure::GlobalDomainAccessControlListEditorProxy>
-                      globalDomainAccessControlListEditorProxy);
+    void setGlobalDomainAccessControllerProxy(std::unique_ptr<
+            infrastructure::GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy);
 
     /**
-     * The init method has to be called first, only afterwards LocalDomainAccessController may be
-     * used.
+     * Sets the global domain access control list editor proxy. If ACEs/RCEs shall be modified this
+     * method
+     * muts be called before the LocalDomainAccessController is used for the first time.
      */
-    void init(std::shared_ptr<infrastructure::GlobalDomainRoleControllerProxy>
-                      globalDomainRoleControllerProxy);
+    void setGlobalDomainAccessControlListEditorProxy(
+            std::shared_ptr<infrastructure::GlobalDomainAccessControlListEditorProxy>
+                    globalDomainAccessControlListEditorProxy);
+
+    /**
+     * Sets the global domain role controller proxy. If ACEs/RCEs shall be modified this method
+     * muts be called before the LocalDomainAccessController is used for the first time.
+     */
+    void setGlobalDomainRoleControllerProxy(std::shared_ptr<
+            infrastructure::GlobalDomainRoleControllerProxy> globalDomainRoleControllerProxy);
 
     /**
      * Check if user uid has role role for domain.

@@ -704,7 +704,8 @@ void JoynrClusterControllerRuntime::enableAccessController(
     auto proxyGlobalDomainAccessController =
             globalDomainAccessControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
 
-    localDomainAccessController->init(std::move(proxyGlobalDomainAccessController));
+    localDomainAccessController->setGlobalDomainAccessControllerProxy(
+            std::move(proxyGlobalDomainAccessController));
 
     auto accessController = std::make_shared<joynr::AccessController>(
             *localCapabilitiesDirectory, *localDomainAccessController);

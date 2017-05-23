@@ -244,7 +244,7 @@ LocalDomainAccessController::LocalDomainAccessController(
 {
 }
 
-void LocalDomainAccessController::init(
+void LocalDomainAccessController::setGlobalDomainAccessControllerProxy(
         std::unique_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
 {
     this->globalDomainAccessControllerProxy = std::move(globalDomainAccessControllerProxy);
@@ -265,14 +265,14 @@ void LocalDomainAccessController::init(
     }
 }
 
-void LocalDomainAccessController::init(std::shared_ptr<GlobalDomainAccessControlListEditorProxy>
-                                               globalDomainAccessControlListEditorProxy)
+void LocalDomainAccessController::setGlobalDomainAccessControlListEditorProxy(std::shared_ptr<
+        GlobalDomainAccessControlListEditorProxy> globalDomainAccessControlListEditorProxy)
 {
     this->globalDomainAccessControlListEditorProxy =
             std::move(globalDomainAccessControlListEditorProxy);
 }
 
-void LocalDomainAccessController::init(
+void LocalDomainAccessController::setGlobalDomainRoleControllerProxy(
         std::shared_ptr<GlobalDomainRoleControllerProxy> globalDomainRoleControllerProxy)
 {
     this->globalDomainRoleControllerProxy = std::move(globalDomainRoleControllerProxy);
