@@ -119,15 +119,29 @@ inline auto getInputArchive(const std::string& id, InputStream& stream)
     return getArchive<InputArchiveVariant, muesli::RegisteredInputArchives>(id, stream);
 }
 
-template <typename T>
-void deserializeFromJson(T& value, std::string str)
+namespace detail
 {
-    using InputStream = muesli::StringIStream;
+template <typename T, typename InputStream>
+void deserializeFromJson(T& value, InputStream& stream)
+{
     using InputArchive = muesli::JsonInputArchive<InputStream>;
-
-    InputStream stream(std::move(str));
     auto iarchive = std::make_shared<InputArchive>(stream);
     (*iarchive)(value);
+}
+} // namespace detail
+
+template <typename T>
+void deserializeFromJson(T& value, const std::string& str)
+{
+    muesli::StringIStream stream(str);
+    detail::deserializeFromJson(value, stream);
+}
+
+template <typename T>
+void deserializeFromJson(T& value, std::string&& str)
+{
+    muesli::StringIStream stream(std::move(str));
+    detail::deserializeFromJson(value, stream);
 }
 
 template <typename T>
@@ -135,14 +149,8 @@ void deserializeFromJson(T& value, const smrf::ByteArrayView& byteArrayView)
 {
     // TODO we need to be able to directly parse from a smrf::ByteVector
     // without having to copy to a string
-
     std::string str(byteArrayView.data(), byteArrayView.data() + byteArrayView.size());
-    using InputStream = muesli::StringIStream;
-    using InputArchive = muesli::JsonInputArchive<InputStream>;
-
-    InputStream stream(std::move(str));
-    auto iarchive = std::make_shared<InputArchive>(stream);
-    (*iarchive)(value);
+    deserializeFromJson(value, std::move(str));
 }
 
 template <typename T>
