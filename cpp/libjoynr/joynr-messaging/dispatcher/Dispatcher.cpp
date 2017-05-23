@@ -165,12 +165,12 @@ void Dispatcher::handleRequestReceived(const ImmutableMessage& message)
     JoynrTimePoint requestExpiryDate = message.getExpiryDate();
 
     auto onSuccess =
-            [requestReplyId, requestExpiryDate, this, senderId, receiverId](Reply&& reply) {
-        reply.setRequestReplyId(requestReplyId);
-        // send reply back to the original sender (ie. sender and receiver ids are reversed
-        // on purpose)
+            [requestReplyId, requestExpiryDate, this, senderId, receiverId](Reply&& reply) mutable {
         JOYNR_LOG_TRACE(
                 logger, "Got reply from RequestInterpreter for requestReplyId {}", requestReplyId);
+        reply.setRequestReplyId(std::move(requestReplyId));
+        // send reply back to the original sender (ie. sender and receiver ids are reversed
+        // on purpose)
         JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
                 std::chrono::system_clock::now());
         std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(requestExpiryDate -
@@ -182,13 +182,13 @@ void Dispatcher::handleRequestReceived(const ImmutableMessage& message)
     };
 
     auto onError = [requestReplyId, requestExpiryDate, this, senderId, receiverId](
-            const std::shared_ptr<exceptions::JoynrException>& exception) {
-        Reply reply;
-        reply.setRequestReplyId(requestReplyId);
-        reply.setError(exception);
+            const std::shared_ptr<exceptions::JoynrException>& exception) mutable {
         JOYNR_LOG_WARN(logger,
                        "Got error reply from RequestInterpreter for requestReplyId {}",
                        requestReplyId);
+        Reply reply;
+        reply.setRequestReplyId(std::move(requestReplyId));
+        reply.setError(exception);
         JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
                 std::chrono::system_clock::now());
         std::int64_t ttl = std::chrono::duration_cast<std::chrono::milliseconds>(requestExpiryDate -

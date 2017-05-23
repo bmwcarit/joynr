@@ -172,21 +172,21 @@ private:
                     mode);
             return;
         }
-        std::string textMessage = message->get_payload();
-        if (isInitializationMessage(textMessage)) {
+        const std::string& initMessage = message->get_payload();
+        if (isInitializationMessage(initMessage)) {
             JOYNR_LOG_DEBUG(logger,
                             "received initialization message from websocket client: {}",
-                            message->get_payload());
+                            initMessage);
             // register client with messaging stub factory
             joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
             try {
-                joynr::serializer::deserializeFromJson(clientAddress, textMessage);
+                joynr::serializer::deserializeFromJson(clientAddress, initMessage);
             } catch (const std::invalid_argument& e) {
                 JOYNR_LOG_FATAL(
                         logger,
                         "client address must be valid, otherwise libjoynr and CC are deployed "
                         "in different versions - raw: {} - error: {}",
-                        textMessage,
+                        initMessage,
                         e.what());
                 return;
             }
@@ -194,7 +194,7 @@ private:
             auto sender = std::make_shared<WebSocketPpSender<Server>>(endpoint);
             sender->setConnectionHandle(hdl);
 
-            messagingStubFactory->addClient(clientAddress, sender);
+            messagingStubFactory->addClient(clientAddress, std::move(sender));
 
             typename Server::connection_ptr connection = endpoint.get_con_from_hdl(hdl);
             connection->set_message_handler(
@@ -204,11 +204,11 @@ private:
                               std::placeholders::_2));
             {
                 std::unique_lock<std::mutex> lock(clientsMutex);
-                clients[hdl] = clientAddress;
+                clients[hdl] = std::move(clientAddress);
             }
         } else {
             JOYNR_LOG_ERROR(
-                    logger, "received an initial message with wrong format: \"{}\"", textMessage);
+                    logger, "received an initial message with wrong format: \"{}\"", initMessage);
         }
     }
 

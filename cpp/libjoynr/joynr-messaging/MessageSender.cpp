@@ -65,9 +65,9 @@ void MessageSender::sendRequest(const std::string& senderParticipantId,
 {
     assert(dispatcher != nullptr);
 
-    dispatcher->addReplyCaller(request.getRequestReplyId(), callback, qos);
     MutableMessage message = messageFactory.createRequest(
             senderParticipantId, receiverParticipantId, qos, request, isLocalMessage);
+    dispatcher->addReplyCaller(request.getRequestReplyId(), std::move(callback), qos);
 
     if (!message.isLocalMessage()) {
         message.setReplyTo(replyToAddress);
