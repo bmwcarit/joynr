@@ -447,12 +447,12 @@ void MessagingSettings::setDeleteChannelRetryInterval(const int& retryInterval)
     settings.set(SETTING_DELETE_CHANNEL_RETRY_INTERVAL(), retryInterval);
 }
 
-int MessagingSettings::getDiscoveryEntryExpiryIntervalMs() const
+std::int64_t MessagingSettings::getDiscoveryEntryExpiryIntervalMs() const
 {
-    return settings.get<int>(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS());
+    return settings.get<std::int64_t>(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS());
 }
 
-void MessagingSettings::setDiscoveryEntryExpiryIntervalMs(int expiryIntervalMs)
+void MessagingSettings::setDiscoveryEntryExpiryIntervalMs(std::int64_t expiryIntervalMs)
 {
     settings.set(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS(), expiryIntervalMs);
 }

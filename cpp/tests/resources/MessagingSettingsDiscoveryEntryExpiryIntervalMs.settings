@@ -1,0 +1,3 @@
+[messaging]
+# 2^63-1
+discovery-entry-expiry-interval-ms=9223372036854775807

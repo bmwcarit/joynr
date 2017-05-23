@@ -26,6 +26,12 @@ This version of joynr is NOT compatible with previous versions due to internal c
 * **[cluster-controller]** cluster-controller expects libjoynr to signal globally visible providers
 * **[messaging layer]** Switched to SMRF messaging format.
 
+# joynr 0.25.3
+
+## API relevant changes
+
+## Other changes
+* **[C++]** setting "discovery-entry-expiry-interval-ms" can now store values up to 2^63-1
 
 # joynr 0.25.2
 
