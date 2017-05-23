@@ -138,8 +138,8 @@ public:
     void setCreateChannelRetryInterval(const int& retryInterval);
     int getDeleteChannelRetryInterval() const;
     void setDeleteChannelRetryInterval(const int& retryInterval);
-    int getDiscoveryEntryExpiryIntervalMs() const;
-    void setDiscoveryEntryExpiryIntervalMs(int expiryIntervalMs);
+    std::int64_t getDiscoveryEntryExpiryIntervalMs() const;
+    void setDiscoveryEntryExpiryIntervalMs(std::int64_t expiryIntervalMs);
     int getPurgeExpiredDiscoveryEntriesIntervalMs() const;
     void setPurgeExpiredDiscoveryEntriesIntervalMs(int purgeExpiredEntriesIntervalMs);
     int getSendMsgRetryInterval() const;
