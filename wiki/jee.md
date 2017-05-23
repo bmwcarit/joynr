@@ -516,14 +516,14 @@ Here's an example of a message processor:
 ```
 @Stateless
 public class MyMessageProcessor implements JoynrMessageProcessor {
-    public JoynrMessage processOutgoing(JoynrMessage joynrMessage) {
+    public MutableMessage processOutgoing(MutableMessage joynrMessage) {
         Map<String, String> myCustomHeaders = new HashMap<>();
         myCustomHeaders.put("my-correlation-id", UUID.randomUuid().toString());
         joynrMessage.setCustomHeaders(myCustomHeaders);
         return joynrMessage;
     }
 
-    public JoynrMessage processIncoming(JoynrMessage joynrMessage) {
+    public ImmutableMessage processIncoming(ImmutableMessage joynrMessage) {
         return joynrMessage;
     }
 }
