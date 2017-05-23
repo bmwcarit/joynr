@@ -53,6 +53,10 @@ void ClusterControllerSettings::checkSettings()
     if (!settings.contains(SETTING_MQTT_UNICAST_TOPIC_PREFIX())) {
         setMqttMulticastTopicPrefix(DEFAULT_MQTT_UNICAST_TOPIC_PREFIX());
     }
+
+    if (!settings.contains(SETTING_USE_ONLY_LDAS())) {
+        setUseOnlyLDAS(DEFAULT_USE_ONLY_LDAS());
+    }
 }
 
 const std::string& ClusterControllerSettings::
@@ -72,6 +76,12 @@ const std::string& ClusterControllerSettings::SETTING_WS_TLS_PORT()
 const std::string& ClusterControllerSettings::SETTING_WS_PORT()
 {
     static const std::string value("cluster-controller/ws-port");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_USE_ONLY_LDAS()
+{
+    static const std::string value("access-control/use-ldas-only");
     return value;
 }
 
@@ -134,6 +144,11 @@ const std::string& ClusterControllerSettings::
 {
     static const std::string value("MulticastReceiverDirectory.persist");
     return value;
+}
+
+bool ClusterControllerSettings::DEFAULT_USE_ONLY_LDAS()
+{
+    return true;
 }
 
 const std::string& ClusterControllerSettings::DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME()
@@ -279,6 +294,16 @@ void ClusterControllerSettings::setLocalDomainAccessStorePersistenceFilename(
     settings.set(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME(), filename);
 }
 
+bool ClusterControllerSettings::getUseOnlyLDAS() const
+{
+    return settings.get<bool>(SETTING_USE_ONLY_LDAS());
+}
+
+void ClusterControllerSettings::setUseOnlyLDAS(bool useOnlyLDAS)
+{
+    settings.set(SETTING_USE_ONLY_LDAS(), useOnlyLDAS);
+}
+
 void ClusterControllerSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger,
@@ -344,6 +369,8 @@ void ClusterControllerSettings::printSettings() const
                     "SETTING: {}  = {}",
                     SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME(),
                     getLocalDomainAccessStorePersistenceFilename());
+
+    JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_USE_ONLY_LDAS(), getUseOnlyLDAS());
 }
 
 } // namespace joynr

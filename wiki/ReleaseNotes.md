@@ -1,3 +1,10 @@
+# joynr 0.27.0
+
+## Other changes
+* **[C++]** The cluster controller can be configured in such a way that access control checks are performed
+  only with locally provisioned or cached data. The configuration is done by using the
+  `access-control/use-ldas-only` property in the cluster controller settings.
+
 # joynr 0.26.0
 
 ## API relevant changes
