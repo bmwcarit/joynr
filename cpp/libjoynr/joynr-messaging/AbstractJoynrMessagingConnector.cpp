@@ -47,17 +47,6 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
 void AbstractJoynrMessagingConnector::operationRequest(std::shared_ptr<IReplyCaller> replyCaller,
                                                        const Request& request)
 {
-    sendRequest(request, std::move(replyCaller));
-}
-
-void AbstractJoynrMessagingConnector::operationOneWayRequest(const OneWayRequest& request)
-{
-    sendOneWayRequest(request);
-}
-
-void AbstractJoynrMessagingConnector::sendRequest(const Request& request,
-                                                  std::shared_ptr<IReplyCaller> replyCaller)
-{
     messageSender->sendRequest(proxyParticipantId,
                                providerParticipantId,
                                qosSettings,
@@ -66,7 +55,7 @@ void AbstractJoynrMessagingConnector::sendRequest(const Request& request,
                                providerDiscoveryEntry.getIsLocal());
 }
 
-void AbstractJoynrMessagingConnector::sendOneWayRequest(const OneWayRequest& request)
+void AbstractJoynrMessagingConnector::operationOneWayRequest(const OneWayRequest& request)
 {
     messageSender->sendOneWayRequest(proxyParticipantId,
                                      providerParticipantId,
@@ -74,4 +63,5 @@ void AbstractJoynrMessagingConnector::sendOneWayRequest(const OneWayRequest& req
                                      request,
                                      providerDiscoveryEntry.getIsLocal());
 }
+
 } // namespace joynr

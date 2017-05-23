@@ -73,9 +73,6 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrMessagingConnector);
-
-    void sendRequest(const Request& request, std::shared_ptr<IReplyCaller> replyCaller);
-    void sendOneWayRequest(const OneWayRequest& request);
 };
 
 } // namespace joynr
