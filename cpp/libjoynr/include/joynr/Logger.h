@@ -19,17 +19,19 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
-#include <boost/type_index.hpp>
+
 #include <boost/algorithm/string/erase.hpp>
+#include <boost/type_index.hpp>
 #include <spdlog/spdlog.h>
+
 #ifdef JOYNR_ENABLE_STDOUT_LOGGING
 #include <spdlog/sinks/stdout_sinks.h>
 #endif // JOYNR_ENABLE_STDOUT_LOGGING
 #ifdef JOYNR_ENABLE_DLT_LOGGING
-#include <joynr/DltSink.h>
+#include "joynr/DltSink.h"
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
 namespace joynr
@@ -92,7 +94,7 @@ enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
         if (JOYNR_LOG_LEVEL <= logLevel) {                                                         \
             logger.spdlog->method(__VA_ARGS__);                                                    \
         }                                                                                          \
-    } while (0)
+    } while (false)
 
 #define JOYNR_LOG_TRACE(logger, ...)                                                               \
     JOYNR_CONDITIONAL_SPDLOG(joynr::LogLevel::Trace, trace, logger, __VA_ARGS__)
@@ -152,7 +154,7 @@ struct LogLevelInitializer
 
 struct Logger
 {
-    Logger(const std::string& prefix) : spdlog()
+    explicit Logger(const std::string& prefix) : spdlog()
     {
         static LogLevelInitializer logLevelInitializer;
         std::vector<spdlog::sink_ptr> sinks;

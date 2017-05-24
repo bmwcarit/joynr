@@ -23,6 +23,11 @@ import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.Address;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.ProviderScope;
+
+import java.util.Set;
+
 import javax.annotation.CheckForNull;
 import javax.inject.Named;
 import io.joynr.runtime.SystemServicesSettings;
@@ -59,7 +64,18 @@ public class ConnectorFactory {
     public ConnectorInvocationHandler create(final String fromParticipantId,
                                              final ArbitrationResult arbitrationResult,
                                              final MessagingQos qosSettings) {
-        messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress);
+        // iterate through  arbitrationResult.getDiscoveryEntries()
+        // check if there is at least one Globally visible
+        // set isGloballyVisible = true. otherwise = false
+        boolean isGloballyVisible = false;
+        Set<DiscoveryEntryWithMetaInfo> entries = arbitrationResult.getDiscoveryEntries();
+        for (DiscoveryEntryWithMetaInfo entry : entries) {
+            if (entry.getQos().getScope() == ProviderScope.GLOBAL) {
+                isGloballyVisible = true;
+                break;
+            }
+        }
+        messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress, isGloballyVisible);
         return joynrMessagingConnectorFactory.create(fromParticipantId,
                                                      arbitrationResult.getDiscoveryEntries(),
                                                      qosSettings);

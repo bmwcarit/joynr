@@ -21,6 +21,8 @@ package io.joynr.bounceproxy.service;
 
 import io.joynr.bounceproxy.attachments.AttachmentStorage;
 import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,9 +43,9 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import com.google.inject.Inject;
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -53,7 +55,6 @@ public class AttachmentSenderService {
     private static final Logger log = LoggerFactory.getLogger(AttachmentSenderService.class);
 
     private final AttachmentStorage attachmentStorage;
-    private final ObjectMapper objectMapper;
     private final LongPollingMessagingDelegate longPollingDelegate;
 
     @Context
@@ -63,11 +64,8 @@ public class AttachmentSenderService {
     HttpServletRequest request;
 
     @Inject
-    public AttachmentSenderService(AttachmentStorage attachmentStorage,
-                                   ObjectMapper objectMapper,
-                                   LongPollingMessagingDelegate longPollingDelegate) {
+    public AttachmentSenderService(AttachmentStorage attachmentStorage, LongPollingMessagingDelegate longPollingDelegate) {
         this.attachmentStorage = attachmentStorage;
-        this.objectMapper = objectMapper;
         this.longPollingDelegate = longPollingDelegate;
     }
 
@@ -79,8 +77,9 @@ public class AttachmentSenderService {
                                               @FormDataParam("attachment") InputStream attachment) {
 
         try {
-            JoynrMessage message = objectMapper.readValue(serializedMessage, JoynrMessage.class);
-            log.debug("Message with attachment received! Expiry Date : " + message.getExpiryDate());
+            byte[] serializedMessageBytes = serializedMessage.getBytes(Charsets.UTF_8);
+            ImmutableMessage message = new ImmutableMessage(serializedMessageBytes);
+            log.debug("Message with attachment received! Expiry Date : " + message.getTtlMs());
             int bytesRead = 0;
             int bytesToRead = 1024;
             byte[] input = new byte[bytesToRead];
@@ -103,7 +102,7 @@ public class AttachmentSenderService {
                 // the location that can be queried to get the message
                 // status
                 // TODO REST URL for message status?
-                String path = longPollingDelegate.postMessage(ccid, message);
+                String path = longPollingDelegate.postMessage(ccid, serializedMessageBytes);
 
                 URI location = ui.getBaseUriBuilder().path(path).build();
                 // return the message status location to the sender.
@@ -117,7 +116,7 @@ public class AttachmentSenderService {
                 throw new WebApplicationException(e);
             }
 
-        } catch (IOException e) {
+        } catch (IOException | EncodingException | UnsuppportedVersionException e) {
             log.error("POST message for cluster controller: error: {}", e.getMessage(), e);
             return Response.serverError().build();
         }

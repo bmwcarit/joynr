@@ -32,7 +32,7 @@ public:
     /**
      * Create an broadcast listener
      */
-    AbstractBroadcastListener(PublicationManager& publicationManager)
+    explicit AbstractBroadcastListener(PublicationManager& publicationManager)
             : publicationManager(publicationManager)
     {
     }

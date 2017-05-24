@@ -19,14 +19,14 @@
 #ifndef DISPATCHER_H
 #define DISPATCHER_H
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrExport.h"
 #include "joynr/IDispatcher.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/ThreadPool.h"
 
 namespace boost
@@ -40,21 +40,17 @@ class io_service;
 namespace joynr
 {
 
+class ImmutableMessage;
 class IReplyCaller;
 class MessagingQos;
 class RequestCaller;
-class JoynrMessage;
-class JoynrMessageSender;
-class CallContext;
+class IMessageSender;
 
 class JOYNR_EXPORT Dispatcher : public IDispatcher
 {
 
 public:
-    // ownership of messageSender is not passed to dispatcher, so dispatcher is not responsible for
-    // deleting it.
-    // Todo: should be changed to a std::shared_ptr or reference.
-    Dispatcher(std::shared_ptr<JoynrMessageSender> messageSender,
+    Dispatcher(std::shared_ptr<IMessageSender> messageSender,
                boost::asio::io_service& ioService,
                int maxThreads = 1);
 
@@ -71,7 +67,7 @@ public:
 
     void removeRequestCaller(const std::string& participantId) override;
 
-    void receive(const JoynrMessage& message) override;
+    void receive(std::shared_ptr<ImmutableMessage> message) override;
 
     void registerSubscriptionManager(
             std::shared_ptr<ISubscriptionManager> subscriptionManager) override;
@@ -79,20 +75,20 @@ public:
     void registerPublicationManager(PublicationManager* publicationManager) override;
 
 private:
-    void handleRequestReceived(const JoynrMessage& message);
-    void handleOneWayRequestReceived(const JoynrMessage& message);
-    void handleReplyReceived(const JoynrMessage& message);
-    void handleMulticastReceived(const JoynrMessage& message);
-    void handlePublicationReceived(const JoynrMessage& message);
-    void handleSubscriptionRequestReceived(const JoynrMessage& message);
-    void handleBroadcastSubscriptionRequestReceived(const JoynrMessage& message);
-    void handleSubscriptionStopReceived(const JoynrMessage& message);
-    void handleSubscriptionReplyReceived(const JoynrMessage& message);
-    void handleMulticastSubscriptionRequestReceived(const JoynrMessage& message);
+    void handleRequestReceived(const ImmutableMessage& message);
+    void handleOneWayRequestReceived(const ImmutableMessage& message);
+    void handleReplyReceived(const ImmutableMessage& message);
+    void handleMulticastReceived(const ImmutableMessage& message);
+    void handlePublicationReceived(const ImmutableMessage& message);
+    void handleSubscriptionRequestReceived(const ImmutableMessage& message);
+    void handleBroadcastSubscriptionRequestReceived(const ImmutableMessage& message);
+    void handleSubscriptionStopReceived(const ImmutableMessage& message);
+    void handleSubscriptionReplyReceived(const ImmutableMessage& message);
+    void handleMulticastSubscriptionRequestReceived(const ImmutableMessage& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Dispatcher);
-    std::shared_ptr<JoynrMessageSender> messageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     RequestCallerDirectory requestCallerDirectory;
     ReplyCallerDirectory replyCallerDirectory;
     PublicationManager* publicationManager;

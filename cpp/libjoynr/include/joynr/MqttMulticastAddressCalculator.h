@@ -26,6 +26,7 @@
 
 namespace joynr
 {
+
 namespace system
 {
 namespace RoutingTypes
@@ -37,12 +38,6 @@ class Address;
 } // RoutingTypes
 } // system
 
-class JoynrMessage;
-}
-
-namespace joynr
-{
-
 class MqttMulticastAddressCalculator : public IMulticastAddressCalculator
 {
 public:
@@ -51,7 +46,7 @@ public:
             const std::string& mqttMulticastTopicPrefix);
 
     std::shared_ptr<const system::RoutingTypes::Address> compute(
-            const JoynrMessage& message) override;
+            const ImmutableMessage& message) override;
 
 private:
     std::shared_ptr<const system::RoutingTypes::MqttAddress> globalAddress;

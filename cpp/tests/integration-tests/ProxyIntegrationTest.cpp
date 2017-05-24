@@ -27,7 +27,6 @@
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/vehicle/GpsProxy.h"
 
 #include "tests/utils/MockObjects.h"
@@ -45,8 +44,8 @@ public:
     {
         auto mockInProcessConnectorFactoryPtr = std::make_unique<MockInProcessConnectorFactory>();
         mockInProcessConnectorFactory = mockInProcessConnectorFactoryPtr.get();
-        auto mockJoynrMessageSender = std::make_shared<MockJoynrMessageSender>();
-        auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(std::move(mockJoynrMessageSender), nullptr);
+        auto mockMessageSender = std::make_shared<MockMessageSender>();
+        auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(std::move(mockMessageSender), nullptr);
         connectorFactory = new ConnectorFactory(std::move(mockInProcessConnectorFactoryPtr), std::move(joynrMessagingConnectorFactory));
     }
 
@@ -68,9 +67,8 @@ TEST_F(ProxyIntegrationTest, proxyInitialisation)
 {
     const std::string domain = "cppProxyIntegrationTestDomain";
     MessagingQos messagingQos;
-    auto endPointAddress = std::make_shared<system::RoutingTypes::ChannelAddress>("http://endpoint:8080/bounceproxy", "endPointAddress");
 
     EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-    auto proxy =  std::make_unique<vehicle::GpsProxy>(endPointAddress, connectorFactory, domain, messagingQos);
+    auto proxy =  std::make_unique<vehicle::GpsProxy>(connectorFactory, domain, messagingQos);
     ASSERT_TRUE(proxy != nullptr);
 }

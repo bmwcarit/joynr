@@ -16,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-
 #include <memory>
 
-#include "joynr/IMessaging.h"
+#include <gtest/gtest.h>
+
+#include "joynr/IMessagingStub.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
@@ -32,7 +32,7 @@
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 
-#include "utils/MockObjects.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 
@@ -112,7 +112,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromWebS
     factory.addClient(webSocketClientAddress, websocket->getSender());
 
     EXPECT_TRUE(factory.canCreate(webSocketClientAddress));
-    std::shared_ptr<IMessaging> messagingStub(factory.create(webSocketClientAddress));
+    std::shared_ptr<IMessagingStub> messagingStub(factory.create(webSocketClientAddress));
     EXPECT_TRUE(messagingStub.get() != nullptr);
 
     EXPECT_CALL(*websocket, dtorCalled());
@@ -139,7 +139,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMess
 
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
     factory->registerOnMessagingStubClosedCallback([messagingStubFactory](
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress) {
         messagingStubFactory->remove(destinationAddress);
     });
     messagingStubFactory->registerStubFactory(std::move(factory));
@@ -174,30 +174,6 @@ TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
     EXPECT_CALL(*std::dynamic_pointer_cast<MockWebSocketClient>(websocket), dtorCalled());
     factory.removeClient(webSocketClientAddress);
     EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == nullptr);
-}
-
-TEST_F(WebSocketMessagingStubFactoryTest, convertWebSocketAddressToUrl) {
-    joynr::system::RoutingTypes::WebSocketAddress wsAddress(
-                joynr::system::RoutingTypes::WebSocketProtocol::WS,
-                "localhost",
-                42,
-                "/some/path/"
-    );
-    Url expectedWsUrl("ws://localhost:42/some/path/");
-
-    Url wsUrl(WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(wsAddress));
-    EXPECT_EQ(expectedWsUrl, wsUrl);
-
-    joynr::system::RoutingTypes::WebSocketAddress wssAddress(
-                joynr::system::RoutingTypes::WebSocketProtocol::WSS,
-                "localhost",
-                42,
-                "/some/path"
-    );
-    Url expectedWssUrl("wss://localhost:42/some/path");
-
-    Url wssUrl(WebSocketMessagingStubFactory::convertWebSocketAddressToUrl(wssAddress));
-    EXPECT_EQ(expectedWssUrl, wssUrl);
 }
 
 } // namespace joynr

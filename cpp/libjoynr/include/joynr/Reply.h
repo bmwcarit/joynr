@@ -33,10 +33,7 @@ class JOYNR_EXPORT Reply : public BaseReply
 {
 public:
     Reply();
-    virtual ~Reply() = default;
-
-    Reply(Reply&) = default;
-    Reply& operator=(Reply&) = default;
+    ~Reply() override = default;
 
     Reply(Reply&&) = default;
     Reply& operator=(Reply&&) = default;
@@ -48,6 +45,7 @@ public:
 
     const std::string& getRequestReplyId() const;
     void setRequestReplyId(const std::string& requestReplyId);
+    void setRequestReplyId(std::string&& requestReplyId);
 
     template <typename Archive>
     void serialize(Archive& archive)

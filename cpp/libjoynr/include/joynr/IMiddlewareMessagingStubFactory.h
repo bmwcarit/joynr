@@ -21,7 +21,6 @@
 
 #include <functional>
 #include <memory>
-#include <functional>
 
 namespace joynr
 {
@@ -34,17 +33,17 @@ namespace RoutingTypes
 class Address;
 } // namespace RoutingTypes
 } // namespace system
-class IMessaging;
+class IMessagingStub;
 
 class IMiddlewareMessagingStubFactory
 {
 public:
     virtual ~IMiddlewareMessagingStubFactory() = default;
-    virtual std::shared_ptr<IMessaging> create(
+    virtual std::shared_ptr<IMessagingStub> create(
             const joynr::system::RoutingTypes::Address& destAddress) = 0;
     virtual bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) = 0;
-    virtual void registerOnMessagingStubClosedCallback(std::function<void(
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)>
+    virtual void registerOnMessagingStubClosedCallback(std::function<
+            void(std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
                                                                onMessagingStubDisconnected) = 0;
 };
 

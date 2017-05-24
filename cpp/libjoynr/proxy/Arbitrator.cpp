@@ -19,18 +19,18 @@
 #include "joynr/Arbitrator.h"
 
 #include <cassert>
-#include <vector>
 #include <chrono>
+#include <vector>
 
 #include <boost/algorithm/string/join.hpp>
 
+#include "joynr/Future.h"
+#include "joynr/Logger.h"
+#include "joynr/Semaphore.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/NoCompatibleProviderFoundException.h"
-#include "joynr/Logger.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/types/DiscoveryScope.h"
-#include "joynr/Semaphore.h"
-#include "joynr/Future.h"
 
 namespace joynr
 {
@@ -166,7 +166,7 @@ void Arbitrator::attemptArbitration()
         receiveCapabilitiesLookupResults(result);
     } catch (const exceptions::JoynrException& e) {
         std::string errorMsg = "Unable to lookup provider (domain: " +
-                               (domains.size() > 0 ? domains.at(0) : std::string("EMPTY")) +
+                               (domains.empty() ? std::string("EMPTY") : domains.at(0)) +
                                ", interface: " + interfaceName + ") from discovery. Error: " +
                                e.getMessage();
         JOYNR_LOG_ERROR(logger, errorMsg);
@@ -180,9 +180,9 @@ void Arbitrator::receiveCapabilitiesLookupResults(
     discoveredIncompatibleVersions.clear();
 
     // Check for empty results
-    if (discoveryEntries.size() == 0) {
+    if (discoveryEntries.empty()) {
         arbitrationError.setMessage("No entries found for domain: " +
-                                    (domains.size() > 0 ? domains.at(0) : std::string("EMPTY")) +
+                                    (domains.empty() ? std::string("EMPTY") : domains.at(0)) +
                                     ", interface: " + interfaceName);
         return;
     }
@@ -191,8 +191,8 @@ void Arbitrator::receiveCapabilitiesLookupResults(
     joynr::types::Version providerVersion;
     std::size_t providersWithoutSupportOnChange = 0;
     std::size_t providersWithIncompatibleVersion = 0;
-    for (const joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
-        types::ProviderQos providerQos = discoveryEntry.getQos();
+    for (const joynr::types::DiscoveryEntryWithMetaInfo& discoveryEntry : discoveryEntries) {
+        const types::ProviderQos& providerQos = discoveryEntry.getQos();
         JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
         providerVersion = discoveryEntry.getProviderVersion();
 

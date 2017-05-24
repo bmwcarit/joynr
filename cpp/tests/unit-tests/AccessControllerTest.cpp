@@ -22,6 +22,9 @@
 
 #include <gtest/gtest.h>
 
+#include "joynr/MutableMessageFactory.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/Request.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "tests/utils/MockObjects.h"
@@ -63,13 +66,13 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             TrustLevel::Enum trustLevel,
-            std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
+            std::shared_ptr<LocalDomainAccessController::IGetPermissionCallback> callback
     ) {
         std::ignore = userId;
         std::ignore = domain;
         std::ignore = interfaceName;
         std::ignore = trustLevel;
-        callback->consumerPermission(permission);
+        callback->permission(permission);
     }
 
     void operationNeeded(
@@ -77,7 +80,7 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             TrustLevel::Enum trustLevel,
-            std::shared_ptr<LocalDomainAccessController::IGetConsumerPermissionCallback> callback
+            std::shared_ptr<LocalDomainAccessController::IGetPermissionCallback> callback
     ) {
         std::ignore = userId;
         std::ignore = domain;
@@ -117,15 +120,21 @@ public:
         onSuccess(discoveryEntry);
     }
 
+    std::shared_ptr<ImmutableMessage> getImmutableMessage()
+    {
+        std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+        immutableMessage->setCreator(DUMMY_USERID);
+        return immutableMessage;
+    }
+
     void SetUp(){
         messagingQos = MessagingQos(5000);
         const bool isLocalMessage = true;
-        message = messageFactory.createRequest(fromParticipantId,
+        mutableMessage = messageFactory.createRequest(fromParticipantId,
                                      toParticipantId,
                                      messagingQos,
                                      initOutgoingRequest(TEST_OPERATION, {}),
                                      isLocalMessage);
-        message.setHeaderCreatorUserId(DUMMY_USERID);
 
         ON_CALL(
                 messagingSettingsMock,
@@ -152,6 +161,9 @@ public:
                 TEST_PUBLICKEYID,
                 false
         );
+    }
+
+    void prepareConsumerTest() {
         EXPECT_CALL(
                 localCapabilitiesDirectoryMock,
                 lookup(toParticipantId,
@@ -170,8 +182,8 @@ protected:
     MockMessagingSettings messagingSettingsMock;
     MockLocalCapabilitiesDirectory localCapabilitiesDirectoryMock;
     AccessController accessController;
-    JoynrMessageFactory messageFactory;
-    JoynrMessage message;
+    MutableMessageFactory messageFactory;
+    MutableMessage mutableMessage;
     MessagingQos messagingQos;
     DiscoveryEntryWithMetaInfo discoveryEntry;
     static const std::string fromParticipantId;
@@ -199,6 +211,7 @@ const std::string AccessControllerTest::TEST_PUBLICKEYID("publicKeyId");
 //----- Tests ------------------------------------------------------------------
 
 TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl) {
+    prepareConsumerTest();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
     EXPECT_CALL(
             localDomainAccessControllerMock,
@@ -211,12 +224,13 @@ TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl) {
             .Times(1);
 
     accessController.hasConsumerPermission(
-            message,
+            getImmutableMessage(),
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(accessControllerCallback)
     );
 }
 
 TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
+    prepareConsumerTest();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
     EXPECT_CALL(
             localDomainAccessControllerMock,
@@ -243,12 +257,13 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
             .Times(1);
 
     accessController.hasConsumerPermission(
-            message,
+            getImmutableMessage(),
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(accessControllerCallback)
     );
 }
 
 TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessage) {
+    prepareConsumerTest();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
     EXPECT_CALL(
             localDomainAccessControllerMock,
@@ -261,11 +276,36 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
             .Times(1);
 
     std::string payload("invalid serialization of Request object");
-    message.setPayload(payload);
+    mutableMessage.setPayload(payload);
 
     accessController.hasConsumerPermission(
-            message,
+            getImmutableMessage(),
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(accessControllerCallback)
     );
 }
 
+TEST_F(AccessControllerTest, hasProviderPermission) {
+    Permission::Enum permissionYes = Permission::YES;
+    DefaultValue<Permission::Enum>::Set(permissionYes);
+    EXPECT_CALL(
+            localDomainAccessControllerMock,
+            getProviderPermission(_, _, _, _)
+    )
+            .Times(1)
+            .WillOnce(Return(permissionYes));
+    bool retval = accessController.hasProviderPermission(DUMMY_USERID, TrustLevel::HIGH, TEST_DOMAIN, TEST_INTERFACE);
+    EXPECT_TRUE(retval);
+}
+
+TEST_F(AccessControllerTest, hasNoProviderPermission) {
+    Permission::Enum permissionNo = Permission::NO;
+    DefaultValue<Permission::Enum>::Set(permissionNo);
+    EXPECT_CALL(
+            localDomainAccessControllerMock,
+            getProviderPermission(_, _, _, _)
+    )
+            .Times(1)
+            .WillOnce(Return(permissionNo));
+    bool retval = accessController.hasProviderPermission(DUMMY_USERID, TrustLevel::HIGH, TEST_DOMAIN, TEST_INTERFACE);
+    EXPECT_FALSE(retval);
+}

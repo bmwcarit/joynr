@@ -23,10 +23,12 @@
 #include <stdexcept>
 #include <string>
 
-#include <boost/mpl/transform.hpp>
 #include <boost/mpl/identity.hpp>
+#include <boost/mpl/transform.hpp>
 #include <boost/variant.hpp>
 
+// order of includes is relevant due to muesli's registration mechanism
+// clang-format off
 #include <muesli/archives/json/JsonInputArchive.h>
 #include <muesli/archives/json/JsonOutputArchive.h>
 #include <muesli/streams/StringIStream.h>
@@ -34,6 +36,9 @@
 #include <muesli/ArchiveRegistry.h>
 #include <muesli/TypeRegistry.h>
 #include <muesli/Registry.h>
+// clang-format on
+
+#include <smrf/ByteArrayView.h>
 
 #include "joynr/Util.h"
 #include "joynr/serializer/JsonDeserializable.h"
@@ -60,7 +65,8 @@ template <typename Variant>
 class ArchiveVariantWrapper
 {
 public:
-    ArchiveVariantWrapper(Variant&& archiveVariant) : archiveVariant(std::move(archiveVariant))
+    explicit ArchiveVariantWrapper(Variant&& archiveVariant)
+            : archiveVariant(std::move(archiveVariant))
     {
     }
 
@@ -113,15 +119,38 @@ inline auto getInputArchive(const std::string& id, InputStream& stream)
     return getArchive<InputArchiveVariant, muesli::RegisteredInputArchives>(id, stream);
 }
 
-template <typename T>
-void deserializeFromJson(T& value, std::string str)
+namespace detail
 {
-    using InputStream = muesli::StringIStream;
+template <typename T, typename InputStream>
+void deserializeFromJson(T& value, InputStream& stream)
+{
     using InputArchive = muesli::JsonInputArchive<InputStream>;
-
-    InputStream stream(std::move(str));
     auto iarchive = std::make_shared<InputArchive>(stream);
     (*iarchive)(value);
+}
+} // namespace detail
+
+template <typename T>
+void deserializeFromJson(T& value, const std::string& str)
+{
+    muesli::StringIStream stream(str);
+    detail::deserializeFromJson(value, stream);
+}
+
+template <typename T>
+void deserializeFromJson(T& value, std::string&& str)
+{
+    muesli::StringIStream stream(std::move(str));
+    detail::deserializeFromJson(value, stream);
+}
+
+template <typename T>
+void deserializeFromJson(T& value, const smrf::ByteArrayView& byteArrayView)
+{
+    // TODO we need to be able to directly parse from a smrf::ByteVector
+    // without having to copy to a string
+    std::string str(byteArrayView.data(), byteArrayView.data() + byteArrayView.size());
+    deserializeFromJson(value, std::move(str));
 }
 
 template <typename T>

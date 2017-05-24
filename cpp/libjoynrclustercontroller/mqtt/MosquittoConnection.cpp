@@ -19,8 +19,8 @@
 
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
-#include "joynr/MessagingSettings.h"
 #include "joynr/ClusterControllerSettings.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
@@ -44,7 +44,7 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
           isRunning(false),
           isChannelIdRegistered(false),
           subscribedToChannelTopic(false),
-          onTextMessageReceived(),
+          onMessageReceived(),
           thread()
 {
     JOYNR_LOG_DEBUG(logger, "Try to connect to tcp://{}:{}", host, port);
@@ -75,12 +75,14 @@ MosquittoConnection::~MosquittoConnection()
 
 void MosquittoConnection::on_disconnect(int rc)
 {
-
     if (rc == 0) {
         JOYNR_LOG_DEBUG(logger, "Disconnected from tcp://{}:{}", host, port);
     } else {
-        JOYNR_LOG_ERROR(
-                logger, "Unexpectedly disconnected from tcp://{}:{}, error: {}", host, port, rc);
+        JOYNR_LOG_ERROR(logger,
+                        "Unexpectedly disconnected from tcp://{}:{}, error: {}",
+                        host,
+                        port,
+                        mosqpp::strerror(rc));
     }
 }
 
@@ -103,7 +105,7 @@ void MosquittoConnection::on_error()
     JOYNR_LOG_WARN(logger, "Mosquitto Error");
 }
 
-uint16_t MosquittoConnection::getMqttQos() const
+std::uint16_t MosquittoConnection::getMqttQos() const
 {
     return mqttQos;
 }
@@ -324,9 +326,9 @@ void MosquittoConnection::registerChannelId(const std::string& channelId)
 }
 
 void MosquittoConnection::registerReceiveCallback(
-        std::function<void(const std::string&)> onTextMessageReceived)
+        std::function<void(smrf::ByteVector&&)> onMessageReceived)
 {
-    this->onTextMessageReceived = onTextMessageReceived;
+    this->onMessageReceived = onMessageReceived;
 }
 
 bool MosquittoConnection::isSubscribedToChannelTopic() const
@@ -349,17 +351,15 @@ void MosquittoConnection::on_subscribe(int mid, int qos_count, const int* grante
 
 void MosquittoConnection::on_message(const mosquitto_message* message)
 {
-    std::string jsonObject(static_cast<char*>(message->payload), message->payloadlen);
-
-    JOYNR_LOG_DEBUG(logger, "Received raw message: {}", jsonObject);
-
-    if (onTextMessageReceived) {
-        onTextMessageReceived(jsonObject);
-    } else {
+    if (!onMessageReceived) {
         JOYNR_LOG_ERROR(
-                logger,
-                "Discarding received message, since onTextMessageReceived callback is empty.");
+                logger, "Discarding received message, since onMessageReceived callback is empty.");
+        return;
     }
+
+    std::uint8_t* data = static_cast<std::uint8_t*>(message->payload);
+    smrf::ByteVector rawMessage(data, data + message->payloadlen);
+    onMessageReceived(std::move(rawMessage));
 }
 
 void MosquittoConnection::on_publish(int mid)

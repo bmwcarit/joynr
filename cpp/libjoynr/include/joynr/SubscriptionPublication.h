@@ -36,17 +36,15 @@ public:
 
     explicit SubscriptionPublication(BaseReply&& reply);
 
-    SubscriptionPublication(const SubscriptionPublication&) = default;
-    SubscriptionPublication& operator=(const SubscriptionPublication&) = default;
-
     SubscriptionPublication(SubscriptionPublication&&) = default;
     SubscriptionPublication& operator=(SubscriptionPublication&&) = default;
 
     bool operator==(const SubscriptionPublication& other) const;
     bool operator!=(const SubscriptionPublication& other) const;
 
-    std::string getSubscriptionId() const;
+    const std::string& getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
+    void setSubscriptionId(std::string&& subscriptionId);
 
     template <typename Archive>
     void serialize(Archive& archive)

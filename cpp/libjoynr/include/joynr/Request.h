@@ -20,12 +20,11 @@
 #define REQUEST_H
 
 #include <string>
-#include <vector>
 
 #include "joynr/JoynrExport.h"
 #include "joynr/OneWayRequest.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -41,7 +40,9 @@ public:
     bool operator==(const Request& other) const;
 
     const std::string& getRequestReplyId() const;
-    void setRequestReplyId(std::string requestReplyId);
+
+    void setRequestReplyId(std::string&& requestReplyId);
+    void setRequestReplyId(const std::string& requestReplyId);
 
     template <typename Archive>
     void serialize(Archive& archive)

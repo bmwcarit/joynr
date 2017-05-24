@@ -18,12 +18,12 @@
  */
 #include <gtest/gtest.h>
 
-#include "PrettyPrint.h"
-
 #include "joynr/types/TestTypes/TStringKeyMap.h"
 #include "joynr/tests/MapInsideInterface.h"
 #include "joynr/tests/MapInsideInterfaceWithoutVersion.h"
 #include "joynr/types/TestTypesWithoutVersion/MapInsideTypeCollectionWithoutVersion.h"
+
+#include "tests/PrettyPrint.h"
 
 class StdMapTypeTest : public testing::Test {
 public:

@@ -20,6 +20,7 @@
 #define DELAYEDRUNNABLE_H
 
 #include <functional>
+
 #include "joynr/Runnable.h"
 #include "joynr/SteadyTimer.h"
 

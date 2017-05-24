@@ -19,13 +19,14 @@
 #include "HttpMessagingStubFactory.h"
 
 #include "HttpMessagingStub.h"
+#include "joynr/ITransportMessageSender.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/IMessageSender.h"
 
 namespace joynr
 {
 
-HttpMessagingStubFactory::HttpMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender)
+HttpMessagingStubFactory::HttpMessagingStubFactory(
+        std::shared_ptr<ITransportMessageSender> messageSender)
         : messageSender(messageSender)
 {
 }
@@ -35,7 +36,7 @@ bool HttpMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::Addr
     return dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destAddress);
 }
 
-std::shared_ptr<IMessaging> HttpMessagingStubFactory::create(
+std::shared_ptr<IMessagingStub> HttpMessagingStubFactory::create(
         const joynr::system::RoutingTypes::Address& destAddress)
 {
     const system::RoutingTypes::ChannelAddress* channelAddress =
@@ -44,7 +45,7 @@ std::shared_ptr<IMessaging> HttpMessagingStubFactory::create(
 }
 
 void HttpMessagingStubFactory::registerOnMessagingStubClosedCallback(
-        std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+        std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address>
                                    destinationAddress)> onMessagingStubClosedCallback)
 {
     std::ignore = onMessagingStubClosedCallback;

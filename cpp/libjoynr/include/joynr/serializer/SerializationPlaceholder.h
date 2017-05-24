@@ -19,18 +19,18 @@
 #ifndef SERIALIZATIONPLACEHOLDER_H
 #define SERIALIZATIONPLACEHOLDER_H
 
-#include <type_traits>
 #include <memory>
+#include <type_traits>
 
 #include <boost/optional.hpp>
+#include <boost/type_index.hpp>
 #include <boost/variant.hpp>
 #include <boost/variant/apply_visitor.hpp>
-#include <boost/type_index.hpp>
 
-#include "joynr/serializer/Serializer.h"
-#include "joynr/serializer/Serializable.h"
-#include "joynr/serializer/SerializerTraits.h"
 #include "joynr/Util.h"
+#include "joynr/serializer/Serializable.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/serializer/SerializerTraits.h"
 
 namespace joynr
 {

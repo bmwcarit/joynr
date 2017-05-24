@@ -23,7 +23,6 @@ import static com.jayway.restassured.RestAssured.given;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledFuture;
@@ -36,12 +35,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.HttpClientConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
@@ -50,9 +46,12 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
 import io.joynr.common.ExpiryDate;
-import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.util.Utilities;
-import joynr.JoynrMessage;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
+import joynr.Message;
+import joynr.MutableMessage;
 
 /**
  * Contains methods that can be used by different test classes that test
@@ -65,21 +64,16 @@ import joynr.JoynrMessage;
 public class BounceProxyCommunicationMock {
 
     private final String receiverId;
-    private ObjectMapper objectMapper;
 
     private final ScheduledThreadPoolExecutor scheduler;
 
     public BounceProxyCommunicationMock(String bounceProxyUrl, String receiverId) {
         this(bounceProxyUrl, receiverId, null);
-
-        Injector injector = Guice.createInjector(new JsonMessageSerializerModule());
-        this.objectMapper = injector.getInstance(ObjectMapper.class);
     }
 
     public BounceProxyCommunicationMock(String bounceProxyUrl, String receiverId, ObjectMapper objectMapper) {
         RestAssured.baseURI = bounceProxyUrl;
         this.receiverId = receiverId;
-        this.objectMapper = objectMapper;
 
         this.scheduler = new ScheduledThreadPoolExecutor(2);
     }
@@ -102,7 +96,7 @@ public class BounceProxyCommunicationMock {
      * @return
      */
     public RequestSpecification onrequest(int timeout_ms) {
-        return given().contentType(ContentType.JSON)
+        return given().contentType(ContentType.BINARY)
                       .log()
                       .everything()
                       .config(RestAssuredConfig.config().httpClient(HttpClientConfig.httpClientConfig()
@@ -143,12 +137,13 @@ public class BounceProxyCommunicationMock {
      */
     public ScheduledFuture<Response> postMessageInOwnThread(final String myChannelId,
                                                             final long relativeTtlMs,
-                                                            final String postPayload) throws JsonGenerationException,
-                                                                                     JsonMappingException, IOException {
+                                                            final byte[] postPayload) throws EncodingException,
+                                                                                     UnsuppportedVersionException,
+                                                                                     IOException {
         ScheduledFuture<Response> scheduledFuture = scheduler.schedule(new Callable<Response>() {
 
             @Override
-            public Response call() throws JsonGenerationException, JsonMappingException, IOException {
+            public Response call() throws IOException, EncodingException, UnsuppportedVersionException {
 
                 return postMessage(myChannelId, relativeTtlMs, postPayload);
             }
@@ -164,9 +159,12 @@ public class BounceProxyCommunicationMock {
      * @param postPayload
      * @return
      * @throws JsonProcessingException
+     * @throws UnsuppportedVersionException
+     * @throws EncodingException
      */
-    public Response postMessage(final String myChannelId, final long relativeTtlMs, final String postPayload)
-                                                                                                             throws JsonProcessingException {
+    public Response postMessage(final String myChannelId, final long relativeTtlMs, final byte[] postPayload)
+                                                                                                             throws EncodingException,
+                                                                                                             UnsuppportedVersionException {
 
         return postMessage(myChannelId, relativeTtlMs, postPayload, 201);
     }
@@ -180,13 +178,15 @@ public class BounceProxyCommunicationMock {
      * @param expectedStatusCode
      * @return
      * @throws JsonProcessingException
+     * @throws UnsuppportedVersionException
+     * @throws EncodingException
      */
     public Response postMessage(final String myChannelId,
                                 final long relativeTtlMs,
-                                final String postPayload,
-                                int expectedStatusCode) throws JsonProcessingException {
+                                final byte[] postPayload,
+                                int expectedStatusCode) throws EncodingException, UnsuppportedVersionException {
 
-        String serializedMessage = createSerializedJoynrMessage(relativeTtlMs, postPayload);
+        byte[] serializedMessage = createImmutableMessage(relativeTtlMs, postPayload).getSerializedMessage();
         /* @formatter:off */
         Response response = onrequest().with()
                                        .body(serializedMessage)
@@ -257,19 +257,6 @@ public class BounceProxyCommunicationMock {
     }
 
     /**
-     * Creates a serialized joynr message from a payload and a relative ttl.
-     *
-     * @param relativeTtlMs
-     * @param postPayload
-     * @return
-     * @throws JsonProcessingException
-     */
-    public String createSerializedJoynrMessage(final long relativeTtlMs, final String postPayload)
-                                                                                                  throws JsonProcessingException {
-        return createSerializedJoynrMessage(relativeTtlMs, postPayload, null);
-    }
-
-    /**
      * Creates a serialized joynr message from a payload, a message ID and a
      * relative ttl.
      *
@@ -279,18 +266,19 @@ public class BounceProxyCommunicationMock {
      * @return
      * @throws JsonProcessingException
      */
-    public String createSerializedJoynrMessage(final long relativeTtlMs, final String postPayload, final String msgId)
-                                                                                                                      throws JsonProcessingException {
-        JoynrMessage message = new JoynrMessage();
-        if (msgId != null) {
-            message.setHeaderValue(JoynrMessage.HEADER_NAME_MESSAGE_ID, msgId);
-        }
-        message.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
-        message.setExpirationDate(ExpiryDate.fromRelativeTtl(relativeTtlMs));
-        message.setPayload(postPayload);
+    public ImmutableMessage createImmutableMessage(final long relativeTtlMs, final byte[] postPayload)
+                                                                                                      throws EncodingException,
+                                                                                                      UnsuppportedVersionException {
+        MutableMessage message = new MutableMessage();
 
-        String serializedMessage = objectMapper.writeValueAsString(message);
-        return serializedMessage;
+        message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        message.setTtlAbsolute(true);
+        message.setTtlMs(ExpiryDate.fromRelativeTtl(relativeTtlMs).getValue());
+        message.setPayload(postPayload);
+        message.setSender("testSender");
+        message.setRecipient("testRecipient");
+
+        return message.getImmutableMessage();
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "_typeName")
@@ -461,23 +449,13 @@ public class BounceProxyCommunicationMock {
         public boolean isExpired() {
             return getExpiryDate() < System.currentTimeMillis();
         }
-
     }
 
-    public List<JoynrMessage> getJoynrMessagesFromResponse(Response longPoll) throws JsonParseException,
-                                                                             JsonMappingException, IOException {
-
-        String combinedJsonString = longPoll.getBody().asString();
-
-        List<String> splittedJsonString = Utilities.splitJson(combinedJsonString);
-        List<JoynrMessage> messages = new LinkedList<JoynrMessage>();
-
-        for (String jsonString : splittedJsonString) {
-            JoynrMessage message = objectMapper.readValue(jsonString, JoynrMessage.class);
-            messages.add(message);
-        }
-
-        return messages;
+    public List<ImmutableMessage> getJoynrMessagesFromResponse(Response longPoll) throws IOException,
+                                                                                 EncodingException,
+                                                                                 UnsuppportedVersionException {
+        byte[] combinedSMRFMessages = longPoll.getBody().asByteArray();
+        return Utilities.splitSMRF(combinedSMRFMessages);
     }
 
     public String getReceiverId() {

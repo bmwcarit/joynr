@@ -19,13 +19,13 @@
 #ifndef THREADPOOL_H
 #define THREADPOOL_H
 
-#include <cstdint>
-#include <vector>
-#include <set>
-#include <thread>
-#include <string>
-#include <mutex>
 #include <atomic>
+#include <cstdint>
+#include <mutex>
+#include <set>
+#include <string>
+#include <thread>
+#include <vector>
 
 #include "joynr/BlockingQueue.h"
 #include "joynr/JoynrExport.h"

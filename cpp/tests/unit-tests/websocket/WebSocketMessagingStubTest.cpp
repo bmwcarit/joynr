@@ -24,24 +24,26 @@
 #include <thread>
 #include <vector>
 
+#include <smrf/ByteVector.h>
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 
-#include "JoynrTest.h"
-
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/MutableMessage.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/Settings.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/WebSocketSettings.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
-#include "joynr/WebSocketSettings.h"
+
+#include "tests/JoynrTest.h"
 
 using namespace ::testing;
 
@@ -69,7 +71,7 @@ public:
         return port;
     }
 
-    void registerMessageReceivedCallback(std::function<void(const std::string&)> callback)
+    void registerMessageReceivedCallback(std::function<void(smrf::ByteVector&&)> callback)
     {
         messageReceivedCallback = std::move(callback);
     }
@@ -100,13 +102,15 @@ private:
         JOYNR_LOG_DEBUG(logger, "received message of size {}", msg->get_payload().size());
         if(messageReceivedCallback)
         {
-            messageReceivedCallback(msg->get_payload());
+            const std::string& messageStr = msg->get_payload();
+            smrf::ByteVector rawMessage(messageStr.begin(), messageStr.end());
+            messageReceivedCallback(std::move(rawMessage));
         }
     }
     Server endpoint;
     std::uint32_t port;
     std::thread thread;
-    std::function<void(const std::string&)> messageReceivedCallback;
+    std::function<void(smrf::ByteVector&&)> messageReceivedCallback;
     ADD_LOGGER(WebSocketServer);
 };
 
@@ -165,27 +169,28 @@ TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
     JOYNR_LOG_TRACE(logger, "transmit message");
 
     joynr::Semaphore sem(0);
-    std::string receivedMessage;
+    smrf::ByteVector receivedMessage;
 
-    auto callback = [&sem, &receivedMessage](const std::string& msg){
-        receivedMessage = msg;
+    auto callback = [&sem, &receivedMessage](smrf::ByteVector&& msg){
+        receivedMessage = std::move(msg);
         sem.notify();
     };
     server.registerMessageReceivedCallback(callback);
 
     // send message using messaging stub
     joynr::WebSocketMessagingStub messagingStub(webSocket->getSender());
-    joynr::JoynrMessage joynrMsg;
+    joynr::MutableMessage mutableMessage;
 
     const std::size_t payloadSize = GetParam();
     std::string payload(payloadSize, 'x');
-    joynrMsg.setPayload(payload);
-    std::string expectedMessage = joynr::serializer::serializeToJson(joynrMsg);
+    mutableMessage.setPayload(payload);
+    std::shared_ptr<joynr::ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+    smrf::ByteVector expectedMessage = immutableMessage->getSerializedMessage();
 
     auto onFailure = [](const joynr::exceptions::JoynrRuntimeException& e) {
             FAIL() << "Unexpected call of onFailure function, exception: " + e.getMessage();
     };
-    messagingStub.transmit(joynrMsg, onFailure);
+    messagingStub.transmit(immutableMessage, onFailure);
 
     // wait until message is received
     sem.wait();

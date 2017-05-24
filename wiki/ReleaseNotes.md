@@ -1,3 +1,33 @@
+# joynr 0.26.0
+
+## API relevant changes
+* **[JavaScript]** It is now possible to register a provider with a preconfigured
+  participantId. The application is responsible to ensure that the participantId is
+  unique, globally or locally depending on the provider's scope. See the JSDoc for more
+  information.
+* **[Java, JEE]** RawMessagingPreprocessor now accepts a byte array as an input parameter and returns
+  a byte array instead of a string.
+* **[Java]** JoynrMessageProcessor uses the new SMRF message types: MutableMessage for outgoing messages
+  and ImmutableMessage for incoming messages.
+
+## Other changes
+* **[Java,C++,JS]** HTTP communication is not supported at the moment
+* **[JS]** Browser based environments, e.g. radio-js, are not supported at the moment
+* **[JS]** Direct MQTT based communication is not supported at the moment.
+  Please use the WebSocketLibjoynrRuntime to connect to external cluster controller handling
+  the MQTT connection to the backend.
+* **[JS]** Introduced mandatory dependency to the 'wscpp' module (https://github.com/bmwcarit/wscpp)
+  for the node environment.
+* **[Java]** Global Discovery and Global Domain Access Controller via Jetty using HTTP based
+  communication are no longer supported, please use the JEE implementations based
+  on MQTT communication instead
+* **[Java]** Updated to use of Jackson 2.8.8 in order to improve compatibility with Payara.
+
+## Backward compatibility
+This version of joynr is NOT compatible with previous versions due to internal changes:
+* **[cluster-controller]** cluster-controller expects libjoynr to signal globally visible providers
+* **[messaging layer]** Switched to SMRF messaging format.
+
 # joynr 0.25.3
 
 ## API relevant changes
@@ -11,7 +41,7 @@
 
 ## Other changes
 * **[C++]** libCommon has been moved to libJoynr. This fixes issues with static linking with libjoynr.
-* **[JEE]** Shutdown MQTT client when undeploying WebApp. 
+* **[JEE]** Shutdown MQTT client when undeploying WebApp.
 
 # joynr 0.25.1
 

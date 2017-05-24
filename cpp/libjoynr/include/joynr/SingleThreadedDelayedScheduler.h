@@ -19,16 +19,16 @@
 #ifndef SINGLETHREADEDDELAYEDSCHEDULER_H
 #define SINGLETHREADEDDELAYEDSCHEDULER_H
 
-#include <chrono>
 #include <atomic>
+#include <chrono>
 #include <mutex>
 
 #include "joynr/BlockingQueue.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/Thread.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Thread.h"
 
 namespace boost
 {

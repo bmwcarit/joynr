@@ -41,6 +41,11 @@ void Reply::setRequestReplyId(const std::string& requestReplyId)
     this->requestReplyId = requestReplyId;
 }
 
+void Reply::setRequestReplyId(std::string&& requestReplyId)
+{
+    this->requestReplyId = std::move(requestReplyId);
+}
+
 std::shared_ptr<exceptions::JoynrException> Reply::getError() const
 {
     return error;

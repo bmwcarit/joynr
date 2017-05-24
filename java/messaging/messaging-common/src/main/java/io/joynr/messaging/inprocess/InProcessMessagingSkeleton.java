@@ -18,11 +18,12 @@ package io.joynr.messaging.inprocess;
  * limitations under the License.
  * #L%
  */
+import io.joynr.messaging.FailureAction;
 
 import io.joynr.messaging.IMessagingSkeleton;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 public interface InProcessMessagingSkeleton extends IMessagingSkeleton {
 
-    void transmit(JoynrMessage message);
+    void transmit(ImmutableMessage message, FailureAction failureAction);
 }

@@ -20,6 +20,8 @@ package io.joynr.bounceproxy.service;
  */
 
 import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -36,12 +38,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
 @Path("/channels/{ccid: [A-Z,a-z,0-9,_,\\-,\\.]+}/messageWithoutContentType")
@@ -67,30 +68,34 @@ public class MessagingWithoutContentTypeService {
     HttpServletResponse response;
 
     private final LongPollingMessagingDelegate longPollingDelegate;
-    private final ObjectMapper objectMapper;
 
     @Inject
-    public MessagingWithoutContentTypeService(LongPollingMessagingDelegate longPollingDelegate,
-                                              ObjectMapper objectMapper) {
+    public MessagingWithoutContentTypeService(LongPollingMessagingDelegate longPollingDelegate) {
         this.longPollingDelegate = longPollingDelegate;
-        this.objectMapper = objectMapper;
     }
 
     /**
      * Send a message to the given cluster controller like the above method
      * postMessage
      * @param ccid the channel id
-     * @param messageString the message to be sent
+     * @param serializedMessage a serialized SMRF message to be sent
      * @return response builder object with the URL that can be queried to get the message
      * @throws IOException on I/O error
      * @throws JsonParseException on parsing problems due to non-well formed content
      * @throws JsonMappingException on fatal problems with mapping of content
      */
     @POST
-    @Consumes({ MediaType.TEXT_PLAIN })
-    public Response postMessageWithoutContentType(@PathParam("ccid") String ccid, String messageString)
-                                                                                                       throws IOException {
-        JoynrMessage message = objectMapper.readValue(messageString, JoynrMessage.class);
+    @Consumes({ MediaType.APPLICATION_OCTET_STREAM })
+    public Response postMessageWithoutContentType(@PathParam("ccid") String ccid, byte[] serializedMessage)
+                                                                                                           throws IOException {
+        ImmutableMessage message;
+
+        try {
+            message = new ImmutableMessage(serializedMessage);
+        } catch (EncodingException | UnsuppportedVersionException e) {
+            log.error("Failed to deserialize SMRF message: {}", e.getMessage());
+            throw new WebApplicationException(e);
+        }
 
         try {
             String msgId = message.getId();
@@ -102,7 +107,7 @@ public class MessagingWithoutContentTypeService {
             // the location that can be queried to get the message
             // status
             // TODO REST URL for message status?
-            String path = longPollingDelegate.postMessage(ccid, message);
+            String path = longPollingDelegate.postMessage(ccid, serializedMessage);
 
             URI location = ui.getBaseUriBuilder().path(path).build();
             // return the message status location to the sender.

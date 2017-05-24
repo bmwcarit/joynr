@@ -16,13 +16,14 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-
-#include "joynr/ThreadPool.h"
-#include "utils/MockObjects.h"
-
 #include <cstdint>
 #include <cassert>
+
+#include <gtest/gtest.h>
+
+#include "joynr/ThreadPool.h"
+
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;

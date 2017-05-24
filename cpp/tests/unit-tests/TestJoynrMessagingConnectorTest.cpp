@@ -16,21 +16,21 @@
  * limitations under the License.
  * #L%
  */
+#include "tests/unit-tests/AbstractSyncAsyncTest.cpp"
 
 #include <string>
 
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
-
-#include "AbstractSyncAsyncTest.cpp"
 #include "joynr/tests/testJoynrMessagingConnector.h"
 #include "joynr/IReplyCaller.h"
-#include "utils/MockObjects.h"
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+
+#include "tests/utils/MockObjects.h"
+#include "tests/JoynrTest.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -81,7 +81,7 @@ public:
             bool isLocalMessage
     )>& setExpectationsForSendRequestCall(std::string methodName) override {
         return EXPECT_CALL(
-                    *mockJoynrMessageSender,
+                    *mockMessageSender,
                     sendRequest(
                         Eq(proxyParticipantId), // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID
@@ -106,7 +106,7 @@ public:
         discoveryEntry.setIsLocal(false);
 
         return new tests::testJoynrMessagingConnector(
-                    mockJoynrMessageSender,
+                    mockMessageSender,
                     mockSubscriptionManager,
                     "myDomain",
                     proxyParticipantId,

@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>core</artifactId>
-		<version>0.25.3</version>
+		<version>0.26.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -52,6 +52,11 @@
 		<dependency>
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.smrf.java</groupId>
+			<artifactId>smrf</artifactId>
+			<version>0.1.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.inject.extensions</groupId>
@@ -90,11 +95,11 @@
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
 			<scope>test</scope>
-		</dependency>		
+		</dependency>
 		<!-- This dependency is needed to ensure the correct build order.
 			Some artifacts is needed by the maven-dependency-plugin, which
 			copies them to the currrent build directory.
-		-->	
+		-->
 		<dependency>
 			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 			<artifactId>single-bounceproxy</artifactId>
@@ -189,7 +194,7 @@
 			</testResource>
 		</testResources>
 
-		<!-- specify plugin versions and configuration here to apply to all submodules 
+		<!-- specify plugin versions and configuration here to apply to all submodules
 			that use the specified plugin -->
 		<pluginManagement>
 			<plugins>

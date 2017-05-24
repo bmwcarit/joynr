@@ -22,18 +22,16 @@
 #include <chrono>
 #include <limits>
 
-#include "joynr/Util.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/MessagingStubFactory.h"
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/MessageSender.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
+#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessPublicationSender.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
 #include "libjoynrclustercontroller/include/joynr/CcMessageRouter.h"
 
@@ -42,11 +40,6 @@ namespace joynr
 
 ShortCircuitRuntime::ShortCircuitRuntime()
 {
-    std::string libjoynrMessagingId = "libjoynr.messaging.participantid_short-circuit-uuid";
-    auto libjoynrMessagingAddress =
-            std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>(
-                    libjoynrMessagingId);
-
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
 
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
@@ -65,16 +58,15 @@ ShortCircuitRuntime::ShortCircuitRuntime()
                                                       std::move(addressCalculator),
                                                       globalClusterControllerAddress);
 
-    joynrMessageSender = std::make_shared<JoynrMessageSender>(messageRouter);
-    joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadedIOService.getIOService());
-    joynrMessageSender->registerDispatcher(joynrDispatcher);
+    messageSender = std::make_shared<MessageSender>(messageRouter);
+    joynrDispatcher = new Dispatcher(messageSender, singleThreadedIOService.getIOService());
+    messageSender->registerDispatcher(joynrDispatcher);
 
-    dispatcherMessagingSkeleton =
-            std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
+    dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager = new PublicationManager(
-            singleThreadedIOService.getIOService(), joynrMessageSender.get());
+    publicationManager =
+            new PublicationManager(singleThreadedIOService.getIOService(), messageSender.get());
     subscriptionManager = std::make_shared<SubscriptionManager>(
             singleThreadedIOService.getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadedIOService.getIOService());
@@ -85,12 +77,11 @@ ShortCircuitRuntime::ShortCircuitRuntime()
             publicationManager,
             inProcessPublicationSender.get(),
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
-    auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(
-            joynrMessageSender, subscriptionManager);
+    auto joynrMessagingConnectorFactory =
+            std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
-    proxyFactory =
-            std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
+    proxyFactory = std::make_unique<ProxyFactory>(std::move(connectorFactory));
 
     std::string persistenceFilename = "dummy.txt";
     participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
@@ -110,7 +101,8 @@ ShortCircuitRuntime::ShortCircuitRuntime()
                                                     dispatcherAddress,
                                                     messageRouter,
                                                     std::numeric_limits<std::int64_t>::max(),
-                                                    *publicationManager);
+                                                    *publicationManager,
+                                                    globalClusterControllerAddress);
 
     maximumTtlMs = std::chrono::milliseconds(std::chrono::hours(24) * 30).count();
 }

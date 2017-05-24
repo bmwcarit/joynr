@@ -54,7 +54,7 @@ public:
     /**
      * @return The detail message string of the exception.
      */
-    virtual const std::string getMessage() const noexcept;
+    virtual std::string getMessage() const noexcept;
     /**
      * return The typeName of the exception used for serialization and logging.
      */
@@ -370,10 +370,10 @@ public:
     ApplicationExceptionError() : name()
     {
     }
-    ApplicationExceptionError(const std::string& name) : name(name)
+    explicit ApplicationExceptionError(const std::string& name) : name(name)
     {
     }
-    ApplicationExceptionError(std::string&& name) : name(std::move(name))
+    explicit ApplicationExceptionError(std::string&& name) : name(std::move(name))
     {
     }
     // shall be polymorphic AND abstract
@@ -392,9 +392,7 @@ private:
     std::string name;
 };
 
-inline ApplicationExceptionError::~ApplicationExceptionError()
-{
-}
+inline ApplicationExceptionError::~ApplicationExceptionError() = default;
 
 /**
  * @brief Joynr exception used to return error enums defined in the corresponding

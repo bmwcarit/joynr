@@ -27,6 +27,11 @@ void CallContext::setPrincipal(const std::string& principal)
     this->principal = principal;
 }
 
+void CallContext::setPrincipal(std::string&& principal)
+{
+    this->principal = std::move(principal);
+}
+
 const std::string& CallContext::getPrincipal() const
 {
     return principal;
@@ -46,4 +51,5 @@ bool CallContext::operator!=(const CallContext& other) const
 {
     return !(*this == other);
 }
-}
+
+} // namespace joynr

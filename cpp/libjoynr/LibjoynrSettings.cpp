@@ -18,8 +18,8 @@
  */
 #include "joynr/LibjoynrSettings.h"
 
-#include "joynr/Settings.h"
 #include "joynr/Logger.h"
+#include "joynr/Settings.h"
 
 namespace joynr
 {

@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.google.common.base.Charsets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -41,7 +42,7 @@ import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
@@ -62,7 +63,7 @@ public class MqttPahoClientTest {
     private MqttClientFactory mqttClientFactory;
     private MqttAddress ownTopic;
     @Mock
-    private IMessaging mockReceiver;
+    private IMessagingSkeleton mockReceiver;
     @Mock
     private MessageRouter mockMessageRouter;
     private JoynrMqttClient client;
@@ -128,7 +129,8 @@ public class MqttPahoClientTest {
     @Test
     public void mqttClientTest() throws Exception {
         client.setMessageListener(mockReceiver);
-        String serializedMessage = "test";
+        String message = "test";
+        byte[] serializedMessage = message.getBytes(Charsets.UTF_8);
         client.publishMessage(ownTopic.getTopic(), serializedMessage);
         verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
         client.shutdown();

@@ -44,7 +44,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class HttpMessageSender implements IMessageSender {
+public class HttpMessageSender {
     private static final Logger logger = LoggerFactory.getLogger(HttpMessageSender.class);
     private static final int DELAY_RECEIVER_NOT_STARTED_MS = 100;
     private static final String RECEIVER_NOT_STARTED_REASON = "cannot send until receiver is started";
@@ -84,8 +84,7 @@ public class HttpMessageSender implements IMessageSender {
         this.urlResolver = urlResolver;
     }
 
-    @Override
-    public void sendMessage(ChannelAddress address, String serializedMessage, FailureAction failureAction) {
+    public void sendMessage(ChannelAddress address, byte[] serializedMessage, FailureAction failureAction) {
         // check if messageReceiver is ready to receive replies otherwise delay request by at least 100 ms
         if (!messageReceiver.isReady()) {
             long delay_ms = DELAY_RECEIVER_NOT_STARTED_MS;
@@ -105,7 +104,7 @@ public class HttpMessageSender implements IMessageSender {
             HttpPost httpPost = httpRequestFactory.createHttpPost(URI.create(sendUrl));
             httpPost.addHeader(new BasicHeader(httpConstants.getHEADER_CONTENT_TYPE(),
                                                httpConstants.getAPPLICATION_JSON() + ";charset=UTF-8"));
-            httpPost.setEntity(new StringEntity(serializedMessage, "UTF-8"));
+            httpPost.setEntity(new ByteArrayEntity(serializedMessage));
 
             // Clone the default config
             Builder requestConfigBuilder = RequestConfig.copy(defaultRequestConfig);

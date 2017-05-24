@@ -21,23 +21,23 @@
 
 #include <cassert>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
-#include <functional>
 
-#include "joynr/IMessageRouter.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/ProxyFactory.h"
-#include "joynr/DiscoveryQos.h"
-#include "joynr/IRequestCallerDirectory.h"
 #include "joynr/Arbitrator.h"
 #include "joynr/ArbitratorFactory.h"
+#include "joynr/DiscoveryQos.h"
+#include "joynr/Future.h"
+#include "joynr/IMessageRouter.h"
+#include "joynr/IProxyBuilder.h"
+#include "joynr/IRequestCallerDirectory.h"
+#include "joynr/Logger.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ProxyFactory.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/Future.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/IProxyBuilder.h"
-#include "joynr/Logger.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
@@ -200,7 +200,9 @@ void ProxyBuilder<T>::buildAsync(
         std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos));
         proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
 
-        messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);
+        bool isGloballyVisible = !discoverEntry.getIsLocal();
+        messageRouter->addNextHop(
+                proxy->getProxyParticipantId(), dispatcherAddress, isGloballyVisible);
 
         onSuccess(std::move(proxy));
     };

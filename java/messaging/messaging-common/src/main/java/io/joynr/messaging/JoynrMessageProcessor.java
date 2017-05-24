@@ -19,7 +19,8 @@ package io.joynr.messaging;
  * #L%
  */
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.MutableMessage;
 
 /**
  * Implementations of this interface are used by the {@link JoynrMessageFactory} in order
@@ -36,7 +37,7 @@ public interface JoynrMessageProcessor {
      * @param joynrMessage the message to process.
      * @return the message which should be used.
      */
-    JoynrMessage processOutgoing(JoynrMessage joynrMessage);
+    MutableMessage processOutgoing(MutableMessage joynrMessage);
 
     /**
      * This method is passed in a joynr message which was received by the messaging layer. It can then
@@ -46,5 +47,5 @@ public interface JoynrMessageProcessor {
      * @param joynrMessage the message to process.
      * @return the message which should be used.
      */
-    JoynrMessage processIncoming(JoynrMessage joynrMessage);
+    ImmutableMessage processIncoming(ImmutableMessage joynrMessage);
 }

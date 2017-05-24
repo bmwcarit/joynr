@@ -21,16 +21,16 @@
 
 #include <cstdint>
 #include <list>
-#include <mutex>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <unordered_map>
 #include <vector>
 
+#include "HttpNetworking.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "HttpNetworking.h"
 
 namespace joynr
 {

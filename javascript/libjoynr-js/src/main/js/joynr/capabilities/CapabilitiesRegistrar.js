@@ -21,9 +21,10 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
     "global/Promise",
     "joynr/util/UtilInternal",
     "joynr/types/DiscoveryEntry",
+    "joynr/types/ProviderScope",
     "joynr/capabilities/ParticipantIdStorage",
     "joynr/types/Version"
-], function(Promise, Util, DiscoveryEntry, ParticipantIdStorage, Version) {
+], function(Promise, Util, DiscoveryEntry, ProviderScope, ParticipantIdStorage, Version) {
     var ONE_DAY_MS = 24 * 60 * 60 * 1000;
     /**
      * The Capabilities Registrar
@@ -91,6 +92,45 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          * @function
          * @name CapabilitiesRegistrar#registerProvider
          *
+         * @param {Object} settings the arguments object for this function call
+         * @param {String}
+         *            settings.domain
+         * @param {Object}
+         *            settings.provider
+         * @param {String}
+         *            settings.provider.interfaceName
+         * @param {ProviderQos}
+         *            settings.providerQos the Quality of Service parameters for provider registration
+         * @param {Number}
+         *            [settings.expiryDateMs] date in millis since epoch after which the discovery entry can be purged from all directories.
+         *            Default value is one day.
+         * @param {Object}
+         *            [settings.loggingContext] optional logging context will be appended to logging messages created in the name of this proxy
+         * @param {String}
+         *            [settings.participantId] optional. If not set, a globally unique UUID participantId will be generated, and persisted to
+         *            localStorage. If set, the participantId must be unique in the context of the provider's scope, as set in the ProviderQos;
+         *            The application setting the participantId is responsible for guaranteeing uniqueness.
+         *
+         * @returns {Object} an A+ promise
+         */
+        this.register =
+                function register(settings) {
+                    return this.registerProvider(
+                            settings.domain,
+                            settings.provider,
+                            settings.providerQos,
+                            settings.expiryDateMs,
+                            settings.loggingContext,
+                            settings.participantId);
+                };
+
+        /**
+         * Registers a provider so that it is publicly available
+         *
+         * @deprecated Use register instead
+         * @function
+         * @name CapabilitiesRegistrar#registerProvider
+         *
          * @param {String}
          *            domain
          * @param {Object}
@@ -104,6 +144,8 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          *            Default value is one day.
          * @param {Object}
          *            [loggingContext] optional logging context will be appended to logging messages created in the name of this proxy
+         * @param {String}
+         *            [participantId] optional. If not set, a globally unique UUID participantId will be generated, and persisted to localStorage.
          *
          * @returns {Object} an A+ promise
          */
@@ -113,7 +155,8 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                         provider,
                         providerQos,
                         expiryDateMs,
-                        loggingContext) {
+                        loggingContext,
+                        participantId) {
                     checkIfReady();
 
                     var missingImplementations = provider.checkImplementation();
@@ -127,8 +170,10 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                             + missingImplementations.toString());
                     }
 
-                    // retrieve participantId
-                    var participantId = participantIdStorage.getParticipantId(domain, provider);
+                    // retrieve participantId if not passed in
+                    if (participantId === undefined || participantId === null) {
+                        participantId = participantIdStorage.getParticipantId(domain, provider);
+                    }
 
                     if (loggingContext !== undefined) {
                         loggingManager.setLoggingContext(participantId, loggingContext);
@@ -138,8 +183,12 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                     requestReplyManager.addRequestCaller(participantId, provider);
 
                     // register routing address at routingTable
+                    var isGloballyVisible = (providerQos.scope === ProviderScope.GLOBAL);
                     var messageRouterPromise =
-                            messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
+                            messageRouter.addNextHop(
+                                    participantId,
+                                    libjoynrMessagingAddress,
+                                    isGloballyVisible);
 
                     // if provider has at least one attribute, add it as publication provider
                     publicationManager.addPublicationProvider(participantId, provider);

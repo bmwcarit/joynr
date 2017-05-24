@@ -23,44 +23,21 @@
 #include <memory>
 #include <string>
 
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
-#include <boost/regex.hpp>
-
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Settings.h"
 #include "joynr/tests/testProxy.h"
-
 #include "joynr/JoynrClusterControllerRuntime.h"
 
+#include "tests/JoynrTest.h"
 #include "tests/utils/LibJoynrMockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;
 
-void removeFileInCurrentDirectory(const std::string& filePattern) {
-    boost::filesystem::path currentDir(".");
-    boost::regex pattern(filePattern);
-    boost::filesystem::directory_iterator dirBegin(currentDir), dirEnd;
-
-    BOOST_FOREACH(const boost::filesystem::path& file, std::make_pair(dirBegin, dirEnd))
-    {
-        if(boost::filesystem::is_regular_file(file))
-        {
-            std::string fileName = file.filename().string();
-            boost::smatch result;
-            if(boost::regex_match(fileName, result, pattern)){
-                boost::filesystem::remove(file);
-            }
-        }
-    }
-}
-
-class End2EndAccessControlTest : public TestWithParam<std::tuple<std::string>> {
+class End2EndAccessControlTest : public testing::Test {
 public:
     End2EndAccessControlTest() :
         runtimeAcON(nullptr),
@@ -75,13 +52,9 @@ public:
     {
     }
 
-    void init(std::string pathToACCentriesFile) {
+    void init(std::string fileWithACCentries) {
         // copy access entry file to bin folder for the test so that runtimes will find and load the file
-        {
-            std::ofstream dst(AC_ENTRIES_FILE.c_str());
-            std::ifstream src(pathToACCentriesFile);
-            dst << src.rdbuf();
-        }
+        joynr::test::util::copyTestResourceToCurrentDirectory(fileWithACCentries, AC_ENTRIES_FILE);
 
         auto settings1 = std::make_unique<Settings>("test-resources/MessagingWithAccessControlEnabled.settings");
         auto settings2 = std::make_unique<Settings>("test-resources/MessagingWithAccessControlDisabled.settings");
@@ -116,9 +89,9 @@ public:
         runtimeAcOFF.reset();
 
         // Delete test specific files
-        removeFileInCurrentDirectory(".*\\.settings");
-        removeFileInCurrentDirectory(".*\\.persist");
-        std::remove(AC_ENTRIES_FILE.c_str());
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.entries");
     }
 
 protected:
@@ -138,7 +111,7 @@ protected:
 
 TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesNotHavePermission) {
 
-    init("test-resources/AccessControlYesPermission.entries");
+    init("AccessControlYesPermission.entries");
 
     // If AccessControl is active, the proxy cannot call methodWithNoInputParameters (see AC_ENTRIES_FILE file)
     EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_,_))
@@ -153,7 +126,7 @@ TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesNotHavePermission) {
 
 TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesHavePermission) {
 
-    init("test-resources/AccessControlNoPermission.entries");
+    init("AccessControlNoPermission.entries");
 
     EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_,_))
             .Times(1)

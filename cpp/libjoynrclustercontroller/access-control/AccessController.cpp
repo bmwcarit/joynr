@@ -22,15 +22,16 @@
 #include <tuple>
 
 #include "LocalDomainAccessController.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
-#include "joynr/JoynrMessage.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/Message.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
-#include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/MulticastSubscriptionRequest.h"
-#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/types/DiscoveryEntry.h"
 
 namespace joynr
 {
@@ -44,25 +45,25 @@ INIT_LOGGER(AccessController);
 //--------- InternalConsumerPermissionCallbacks --------------------------------
 
 class AccessController::LdacConsumerPermissionCallback
-        : public LocalDomainAccessController::IGetConsumerPermissionCallback
+        : public LocalDomainAccessController::IGetPermissionCallback
 {
 
 public:
     LdacConsumerPermissionCallback(
             AccessController& owningAccessController,
-            const JoynrMessage& message,
+            std::shared_ptr<ImmutableMessage> message,
             const std::string& domain,
             const std::string& interfaceName,
             TrustLevel::Enum trustlevel,
             std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback);
 
     // Callbacks made from the LocalDomainAccessController
-    void consumerPermission(Permission::Enum permission) override;
+    void permission(Permission::Enum permission) override;
     void operationNeeded() override;
 
 private:
     AccessController& owningAccessController;
-    JoynrMessage message;
+    std::shared_ptr<ImmutableMessage> message;
     std::string domain;
     std::string interfaceName;
     TrustLevel::Enum trustlevel;
@@ -73,13 +74,13 @@ private:
 
 AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback(
         AccessController& parent,
-        const JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         const std::string& domain,
         const std::string& interfaceName,
         TrustLevel::Enum trustlevel,
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
         : owningAccessController(parent),
-          message(message),
+          message(std::move(message)),
           domain(domain),
           interfaceName(interfaceName),
           trustlevel(trustlevel),
@@ -87,15 +88,14 @@ AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback
 {
 }
 
-void AccessController::LdacConsumerPermissionCallback::consumerPermission(
-        Permission::Enum permission)
+void AccessController::LdacConsumerPermissionCallback::permission(Permission::Enum permission)
 {
     bool hasPermission = convertToBool(permission);
 
     if (!hasPermission) {
         JOYNR_LOG_ERROR(owningAccessController.logger,
                         "Message {} to domain {}, interface {} failed ACL check",
-                        message.getHeaderMessageId(),
+                        message->getId(),
                         domain,
                         interfaceName);
     }
@@ -104,38 +104,41 @@ void AccessController::LdacConsumerPermissionCallback::consumerPermission(
 
 void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 {
+    // we only support operation-level ACL for unencrypted messages
+
+    assert(!message->isEncrypted());
     std::string operation;
-    const std::string messageType = message.getType();
-    if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY) {
+    const std::string& messageType = message->getType();
+    if (messageType == Message::VALUE_MESSAGE_TYPE_ONE_WAY()) {
         try {
             OneWayRequest request;
-            joynr::serializer::deserializeFromJson(request, message.getPayload());
+            joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
             operation = request.getMethodName();
         } catch (const std::exception& e) {
             JOYNR_LOG_ERROR(logger, "could not deserialize OneWayRequest - error {}", e.what());
         }
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST()) {
         try {
             Request request;
-            joynr::serializer::deserializeFromJson(request, message.getPayload());
+            joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
             operation = request.getMethodName();
         } catch (const std::exception& e) {
             JOYNR_LOG_ERROR(logger, "could not deserialize Request - error {}", e.what());
         }
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST()) {
         try {
             SubscriptionRequest request;
-            joynr::serializer::deserializeFromJson(request, message.getPayload());
+            joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
             operation = request.getSubscribeToName();
 
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_ERROR(
                     logger, "could not deserialize SubscriptionRequest - error {}", e.what());
         }
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST()) {
         try {
             BroadcastSubscriptionRequest request;
-            joynr::serializer::deserializeFromJson(request, message.getPayload());
+            joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
             operation = request.getSubscribeToName();
 
         } catch (const std::invalid_argument& e) {
@@ -143,10 +146,10 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
                             "could not deserialize BroadcastSubscriptionRequest - error {}",
                             e.what());
         }
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST()) {
         try {
             MulticastSubscriptionRequest request;
-            joynr::serializer::deserializeFromJson(request, message.getPayload());
+            joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
             operation = request.getSubscribeToName();
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_ERROR(logger,
@@ -164,14 +167,14 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     // Get the permission for given operation
     Permission::Enum permission =
             owningAccessController.localDomainAccessController.getConsumerPermission(
-                    message.getHeaderCreatorUserId(), domain, interfaceName, operation, trustlevel);
+                    message->getCreator(), domain, interfaceName, operation, trustlevel);
 
     bool hasPermission = convertToBool(permission);
 
     if (!hasPermission) {
         JOYNR_LOG_ERROR(owningAccessController.logger,
                         "Message {} to domain {}, interface/operation {}/{} failed ACL check",
-                        message.getHeaderMessageId(),
+                        message->getId(),
                         domain,
                         interfaceName,
                         operation);
@@ -242,17 +245,17 @@ void AccessController::addParticipantToWhitelist(const std::string& participantI
     whitelistParticipantIds.push_back(participantId);
 }
 
-bool AccessController::needsPermissionCheck(const JoynrMessage& message)
+bool AccessController::needsPermissionCheck(const ImmutableMessage& message)
 {
-    if (util::vectorContains(whitelistParticipantIds, message.getHeaderTo())) {
+    if (util::vectorContains(whitelistParticipantIds, message.getRecipient())) {
         return false;
     }
 
-    std::string messageType = message.getType();
-    if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST ||
-        messageType == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION ||
-        messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY ||
-        messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
+    const std::string& messageType = message.getType();
+    if (messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_PUBLICATION() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_REPLY() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY()) {
         // reply messages don't need permission check
         // they are filtered by request reply ID or subscritpion ID
         return false;
@@ -263,18 +266,18 @@ bool AccessController::needsPermissionCheck(const JoynrMessage& message)
 }
 
 void AccessController::hasConsumerPermission(
-        const JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
 {
-    if (!needsPermissionCheck(message)) {
+    if (!needsPermissionCheck(*message)) {
         callback->hasConsumerPermission(true);
         return;
     }
 
     // Get the domain and interface of the message destination
-    std::string participantId = message.getHeaderTo();
     std::function<void(const types::DiscoveryEntry&)> lookupSuccessCallback =
-            [this, message, callback, participantId](const types::DiscoveryEntry& discoveryEntry) {
+            [message, this, callback](const types::DiscoveryEntry& discoveryEntry) {
+        const std::string& participantId = message->getRecipient();
         if (discoveryEntry.getParticipantId() != participantId) {
             JOYNR_LOG_ERROR(
                     logger, "Failed to get capabilities for participantId {}", participantId);
@@ -291,7 +294,7 @@ void AccessController::hasConsumerPermission(
 
         // Try to determine permission without expensive message deserialization
         // For now TrustLevel::HIGH is assumed.
-        std::string msgCreatorUid = message.getHeaderCreatorUserId();
+        const std::string& msgCreatorUid = message->getCreator();
         localDomainAccessController.getConsumerPermission(
                 msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
     };
@@ -301,7 +304,8 @@ void AccessController::hasConsumerPermission(
         std::ignore = exception;
         callback->hasConsumerPermission(false);
     };
-    localCapabilitiesDirectory.lookup(participantId, lookupSuccessCallback, lookupErrorCallback);
+    localCapabilitiesDirectory.lookup(
+            message->getRecipient(), lookupSuccessCallback, lookupErrorCallback);
 }
 
 bool AccessController::hasProviderPermission(const std::string& userId,
@@ -309,13 +313,10 @@ bool AccessController::hasProviderPermission(const std::string& userId,
                                              const std::string& domain,
                                              const std::string& interfaceName)
 {
-    std::ignore = userId;
-    std::ignore = trustLevel;
-    std::ignore = domain;
-    std::ignore = interfaceName;
-
-    assert(false && "Not yet implemented.");
-    return true;
+    return (localDomainAccessController.getProviderPermission(
+                    userId, domain, interfaceName, trustLevel) == Permission::Enum::YES)
+                   ? true
+                   : false;
 }
 
 } // namespace joynr

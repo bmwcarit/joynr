@@ -36,9 +36,14 @@ const std::string& Request::getRequestReplyId() const
     return requestReplyId;
 }
 
-void Request::setRequestReplyId(std::string requestReplyId)
+void Request::setRequestReplyId(std::string&& requestReplyId)
 {
     this->requestReplyId = std::move(requestReplyId);
+}
+
+void Request::setRequestReplyId(const std::string& requestReplyId)
+{
+    this->requestReplyId = requestReplyId;
 }
 
 } // namespace joynr

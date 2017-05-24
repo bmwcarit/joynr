@@ -72,7 +72,7 @@ CONSUMER_DOMAIN_PREFIXES=$CONSUMER_DOMAIN_PREFIXES$DOMAIN_PREFIX
 echo "start cluster controller + providers with domain prefix $DOMAIN_PREFIX"
 (
 	cd ${CPP_HOME}/bin
-	./cluster-controller ${DATA_DIR}/onboard-cc-messaging.settings & CLUSTER_CONTROLLER_PID=$!
+	/usr/bin/cluster-controller ${DATA_DIR}/onboard-cc-messaging.settings & CLUSTER_CONTROLLER_PID=$!
 	./jsit-provider-ws $DOMAIN_PREFIX.cpp runForever & CPP_PROVIDER_PID=$!
 
 	cd ${NODE_APP_HOME}

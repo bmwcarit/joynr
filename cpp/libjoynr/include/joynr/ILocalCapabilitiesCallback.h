@@ -21,8 +21,8 @@
 
 #include <vector>
 
-#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {

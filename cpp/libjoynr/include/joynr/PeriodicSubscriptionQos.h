@@ -21,8 +21,8 @@
 
 #include <cstdint>
 
-#include "joynr/UnicastSubscriptionQos.h"
 #include "joynr/Logger.h"
+#include "joynr/UnicastSubscriptionQos.h"
 
 namespace joynr
 {
@@ -65,10 +65,10 @@ public:
      * @see PeriodicSubscriptionQos#setPeriodMs
      * @see PeriodicSubscriptionQos#setAlertAfterIntervalMs
      */
-    PeriodicSubscriptionQos(const std::int64_t validityMs,
-                            const std::int64_t publicationTtlMs,
-                            const std::int64_t periodMs,
-                            const std::int64_t alertAfterIntervalMs);
+    PeriodicSubscriptionQos(std::int64_t validityMs,
+                            std::int64_t publicationTtlMs,
+                            std::int64_t periodMs,
+                            std::int64_t alertAfterIntervalMs);
 
     /**
      * @brief Gets the period in milliseconds
@@ -98,7 +98,7 @@ public:
      * @param period
      *            The publisher will send a notification every period ms.
      */
-    virtual void setPeriodMs(const std::int64_t& periodMs);
+    virtual void setPeriodMs(std::int64_t periodMs);
 
     /**
      * @brief Gets the alertAfter interval in milliseconds
@@ -130,7 +130,7 @@ public:
      * @param alertAfterInterval Time span in milliseconds after which a publicationMissed
      * will be called if no publications were received.
      */
-    virtual void setAlertAfterIntervalMs(const std::int64_t& alertAfterIntervalMs);
+    virtual void setAlertAfterIntervalMs(std::int64_t alertAfterIntervalMs);
 
     /**
      * @brief Resets alert after interval
@@ -150,34 +150,34 @@ public:
     bool operator==(const PeriodicSubscriptionQos& other) const;
 
     /** @brief Returns the minimum value for the period in milliseconds: 50 */
-    static const std::int64_t& MIN_PERIOD_MS();
+    static std::int64_t MIN_PERIOD_MS();
 
     /**
      * @brief Returns the maximum value for the period in milliseconds:
      * 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_PERIOD_MS();
+    static std::int64_t MAX_PERIOD_MS();
 
     /**
      * @brief Returns the default value for the period in milliseconds:
      * 60 000 (1 min)
      */
-    static const std::int64_t& DEFAULT_PERIOD_MS();
+    static std::int64_t DEFAULT_PERIOD_MS();
 
     /**
      * @brief Returns the maximum value for the alertAfter interval in
      * milliseconds: 2 592 000 000 (30 days)
      */
-    static const std::int64_t& MAX_ALERT_AFTER_INTERVAL_MS();
+    static std::int64_t MAX_ALERT_AFTER_INTERVAL_MS();
 
     /**
      * @brief Returns the default value for the alertAfter interval in
      * milliseconds: 0 (NO_ALERT_AFTER_INTERVAL)
      */
-    static const std::int64_t& DEFAULT_ALERT_AFTER_INTERVAL_MS();
+    static std::int64_t DEFAULT_ALERT_AFTER_INTERVAL_MS();
 
     /** @brief Returns the value for no alertAfter interval in milliseconds: 0 */
-    static const std::int64_t& NO_ALERT_AFTER_INTERVAL();
+    static std::int64_t NO_ALERT_AFTER_INTERVAL();
 
     template <typename Archive>
     void serialize(Archive& archive)

@@ -28,12 +28,11 @@ import io.joynr.capabilities.CapabilityListener;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.runtime.SystemServicesSettings;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import joynr.JoynrMessage;
-import joynr.Request;
+import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 
@@ -43,7 +42,6 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -52,20 +50,17 @@ public class AccessControllerImpl implements AccessController {
 
     private final LocalCapabilitiesDirectory localCapabilitiesDirectory;
     private final LocalDomainAccessController localDomainAccessController;
-    private final ObjectMapper objectMapper;
 
     private Set<String> whitelistedParticipantIds = new HashSet<String>();
 
     @Inject
     AccessControllerImpl(LocalCapabilitiesDirectory localCapabilitiesDirectory,
                          LocalDomainAccessController localDomainAccessController,
-                         ObjectMapper objectMapper,
                          CapabilitiesProvisioning capabilitiesProvisioning,
                          @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
                          @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId) {
         this.localCapabilitiesDirectory = localCapabilitiesDirectory;
         this.localDomainAccessController = localDomainAccessController;
-        this.objectMapper = objectMapper;
 
         defineAndRegisterCapabilityListener();
         whitelistProvisionedEntries(capabilitiesProvisioning);
@@ -95,17 +90,17 @@ public class AccessControllerImpl implements AccessController {
         }
     }
 
-    private boolean needsPermissionCheck(final JoynrMessage message) {
-        if (whitelistedParticipantIds.contains(message.getTo())) {
+    private boolean needsPermissionCheck(final ImmutableMessage message) {
+        if (whitelistedParticipantIds.contains(message.getRecipient())) {
             return false;
         }
 
         String messageType = message.getType();
 
-        if (messageType.equals(JoynrMessage.MESSAGE_TYPE_REPLY)
-                || messageType.equals(JoynrMessage.MESSAGE_TYPE_PUBLICATION)
-                || messageType.equals(JoynrMessage.MESSAGE_TYPE_MULTICAST)
-                || messageType.equals(JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REPLY)) {
+        if (messageType.equals(Message.VALUE_MESSAGE_TYPE_REPLY)
+                || messageType.equals(Message.VALUE_MESSAGE_TYPE_PUBLICATION)
+                || messageType.equals(Message.VALUE_MESSAGE_TYPE_MULTICAST)
+                || messageType.equals(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)) {
             return false;
         }
 
@@ -113,7 +108,7 @@ public class AccessControllerImpl implements AccessController {
     }
 
     @Override
-    public void hasConsumerPermission(final JoynrMessage message,
+    public void hasConsumerPermission(final ImmutableMessage message,
                                       final HasConsumerPermissionCallback hasConsumerPermissionCallback) {
         if (!needsPermissionCheck(message)) {
             hasConsumerPermissionCallback.hasConsumerPermission(true);
@@ -126,55 +121,24 @@ public class AccessControllerImpl implements AccessController {
             @Override
             public void processCapabilityReceived(DiscoveryEntryWithMetaInfo discoveryEntry) {
                 if (discoveryEntry == null) {
-                    logger.error("Failed to get capability for participant id {} for acl check", message.getTo());
+                    logger.error("Failed to get capability for participant id {} for acl check", message.getRecipient());
                     hasConsumerPermissionCallback.hasConsumerPermission(false);
                     return;
                 }
 
                 final String domain = discoveryEntry.getDomain();
                 final String interfaceName = discoveryEntry.getInterfaceName();
-                final String msgCreatorUid = message.getHeaderValue(JoynrMessage.HEADER_NAME_CREATOR_USER_ID);
+                final String msgCreatorUid = message.getCreatorUserId();
 
                 GetConsumerPermissionCallback consumerPermissionCallback = new GetConsumerPermissionCallback() {
                     @Override
                     public void getConsumerPermission(Permission permission) {
-                        // if permission still not defined, have to deserialize message and try again
-                        if (permission == null) {
-                            try {
-                                // Deserialize the request from message and take operation value
-                                Request request = objectMapper.readValue(message.getPayload(), Request.class);
-                                String operation = request.getMethodName();
-
-                                // Get the permission for the requested operation
-                                permission = localDomainAccessController.getConsumerPermission(msgCreatorUid,
-                                                                                               domain,
-                                                                                               interfaceName,
-                                                                                               operation,
-                                                                                               TrustLevel.HIGH);
-                            } catch (IOException e) {
-                                logger.error("Cannot deserialize message", e);
-                                permission = Permission.NO;
-                            }
+                        boolean permissionIsYes = false;
+                        if (permission == Permission.YES) {
+                            permissionIsYes = true;
                         }
 
-                        boolean hasPermissionResult = false;
-
-                        switch (permission) {
-                        case ASK:
-                            assert false : "Permission.ASK user dialog not yet implemnted.";
-                            hasPermissionResult = false;
-                            break;
-                        case YES:
-                            hasPermissionResult = true;
-                            break;
-                        default:
-                            logger.warn("Message {} to domain {}, interface {} failed AccessControl check",
-                                        new Object[]{ message.getId(), domain, interfaceName });
-                            hasPermissionResult = false;
-                            break;
-                        }
-
-                        hasConsumerPermissionCallback.hasConsumerPermission(hasPermissionResult);
+                        hasConsumerPermissionCallback.hasConsumerPermission(permissionIsYes);
                     }
 
                     @Override
@@ -195,7 +159,7 @@ public class AccessControllerImpl implements AccessController {
 
             @Override
             public void onError(Throwable e) {
-                logger.error("Failed to get capability for participant id {} for acl check", message.getTo());
+                logger.error("Failed to get capability for participant id {} for acl check", message.getRecipient());
                 hasConsumerPermissionCallback.hasConsumerPermission(false);
             }
         });
@@ -208,7 +172,7 @@ public class AccessControllerImpl implements AccessController {
     }
 
     // Get the capability entry for the given message
-    private void getCapabilityEntry(JoynrMessage message, CapabilityCallback callback) {
+    private void getCapabilityEntry(ImmutableMessage message, CapabilityCallback callback) {
 
         long cacheMaxAge = Long.MAX_VALUE;
         DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryQos.NO_MAX_AGE,
@@ -216,7 +180,7 @@ public class AccessControllerImpl implements AccessController {
                                                      cacheMaxAge,
                                                      DiscoveryScope.LOCAL_THEN_GLOBAL);
 
-        String participantId = message.getTo();
+        String participantId = message.getRecipient();
         localCapabilitiesDirectory.lookup(participantId, discoveryQos, callback);
     }
 }

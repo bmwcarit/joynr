@@ -44,6 +44,7 @@ import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.ProviderScope;
 
 @Singleton
 public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
@@ -85,6 +86,9 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
      */
     @Override
     public Future<Void> registerProvider(final String domain, Object provider, ProviderQos providerQos) {
+        if (providerQos == null) {
+            throw new JoynrRuntimeException("providerQos == null. It must not be null");
+        }
         ProviderContainer providerContainer = providerContainerFactory.create(provider);
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              providerContainer.getInterfaceName());
@@ -97,8 +101,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                            System.currentTimeMillis(),
                                                            System.currentTimeMillis() + defaultExpiryTimeMs,
                                                            defaultPublicKeyId);
-
-        messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
+        final boolean isGloballyVisible = (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
+        messageRouter.addNextHop(participantId, libjoynrMessagingAddress, isGloballyVisible);
         providerDirectory.add(participantId, providerContainer);
 
         Callback<Void> callback = new Callback<Void>() {

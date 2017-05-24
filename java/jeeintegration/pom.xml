@@ -25,11 +25,12 @@
 	<groupId>io.joynr.java</groupId>
 	<artifactId>jeeintegration</artifactId>
 	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
 
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>0.25.3</version>
+		<version>0.26.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -149,6 +150,11 @@
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>clustercontroller-inprocess-runtime</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.smrf.java</groupId>
+			<artifactId>smrf</artifactId>
+			<version>0.1.4</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>

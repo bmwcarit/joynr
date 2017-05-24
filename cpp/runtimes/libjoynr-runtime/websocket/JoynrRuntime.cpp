@@ -16,10 +16,12 @@
  * limitations under the License.
  * #L%
  */
+
 #include "joynr/JoynrRuntime.h"
+
+#include "joynr/Future.h"
 #include "joynr/Settings.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
-#include "joynr/Future.h"
 
 namespace joynr
 {

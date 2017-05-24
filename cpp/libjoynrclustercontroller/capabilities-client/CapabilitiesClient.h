@@ -19,8 +19,8 @@
 #ifndef CAPABILITIESCLIENT_H
 #define CAPABILITIESCLIENT_H
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "joynr/JoynrClusterControllerExport.h"
@@ -29,11 +29,9 @@
 #include "joynr/ProxyBuilder.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
-#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
-#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
-#include "joynr/Logger.h"
 
 /*
 *   Client for the global capabilities directory. Registration and lookup
@@ -81,14 +79,14 @@ public:
       */
     std::vector<types::GlobalDiscoveryEntry> lookup(const std::vector<std::string>& domains,
                                                     const std::string& interfaceName,
-                                                    const std::int64_t messagingTtl) override;
+                                                    std::int64_t messagingTtl) override;
 
     /*
       Asynchronous lookup of capabilities for domain and interface.
       */
     void lookup(const std::vector<std::string>& domains,
                 const std::string& interfaceName,
-                const std::int64_t messagingTtl,
+                std::int64_t messagingTtl,
                 std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
                         onSuccess,
                 std::function<void(const exceptions::JoynrRuntimeException& error)> onError =

@@ -29,6 +29,11 @@ void CallContextStorage::set(const CallContext& callContext)
     CallContextStorage::callContext = callContext;
 }
 
+void CallContextStorage::set(CallContext&& callContext)
+{
+    CallContextStorage::callContext = std::move(callContext);
+}
+
 const CallContext& CallContextStorage::get()
 {
     return callContext;
@@ -38,4 +43,5 @@ void CallContextStorage::invalidate()
 {
     callContext.invalidate();
 }
-}
+
+} // namespace joynr

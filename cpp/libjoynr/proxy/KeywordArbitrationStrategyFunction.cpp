@@ -16,15 +16,16 @@
  * limitations under the License.
  * #L%
  */
-#include <stdexcept>
 
 #include "joynr/KeywordArbitrationStrategyFunction.h"
-#include "joynr/types/DiscoveryEntry.h"
+
+#include <stdexcept>
+
 #include "joynr/DiscoveryQos.h"
-#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/CustomParameter.h"
-#include "joynr/exceptions/JoynrException.h"
+#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
@@ -48,7 +49,7 @@ types::DiscoveryEntryWithMetaInfo KeywordArbitrationStrategyFunction::select(
         throw exceptions::DiscoveryException(errorMsg);
     }
     for (const auto& discoveryEntry : discoveryEntries) {
-        types::ProviderQos providerQos = discoveryEntry.getQos();
+        const types::ProviderQos& providerQos = discoveryEntry.getQos();
         JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
 
         // Search the providerQos.getCustomParameters() for the keyword field

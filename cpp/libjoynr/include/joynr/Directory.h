@@ -21,21 +21,21 @@
 
 #include <algorithm>
 #include <functional>
-#include <string>
-#include <mutex>
-#include <unordered_map>
 #include <memory>
+#include <mutex>
+#include <string>
+#include <unordered_map>
 
 #include <boost/system/error_code.hpp>
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/SingleThreadedDelayedScheduler.h"
-#include "joynr/Runnable.h"
+#include "joynr/IReplyCaller.h"
 #include "joynr/ITimeoutListener.h"
 #include "joynr/Logger.h"
-#include "joynr/IReplyCaller.h"
-#include "joynr/serializer/Serializer.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Runnable.h"
+#include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/SteadyTimer.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace boost
 {

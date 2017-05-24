@@ -18,21 +18,22 @@
  */
 #include "joynr/OnChangeSubscriptionQos.h"
 
-using namespace joynr;
+namespace joynr
+{
 
-const std::int64_t& OnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL_MS()
+std::int64_t OnChangeSubscriptionQos::DEFAULT_MIN_INTERVAL_MS()
 {
     static std::int64_t defaultMinInterval = 1000;
     return defaultMinInterval;
 }
 
-const std::int64_t& OnChangeSubscriptionQos::MIN_MIN_INTERVAL_MS()
+std::int64_t OnChangeSubscriptionQos::MIN_MIN_INTERVAL_MS()
 {
     static std::int64_t minMinInterval = 0;
     return minMinInterval;
 }
 
-const std::int64_t& OnChangeSubscriptionQos::MAX_MIN_INTERVAL_MS()
+std::int64_t OnChangeSubscriptionQos::MAX_MIN_INTERVAL_MS()
 {
     static std::int64_t maxMinInterval = 2592000000UL;
     return maxMinInterval;
@@ -42,9 +43,9 @@ OnChangeSubscriptionQos::OnChangeSubscriptionQos() : minIntervalMs(MIN_MIN_INTER
 {
 }
 
-OnChangeSubscriptionQos::OnChangeSubscriptionQos(const std::int64_t validityMs,
-                                                 const std::int64_t publicationTtlMs,
-                                                 const std::int64_t minIntervalMs)
+OnChangeSubscriptionQos::OnChangeSubscriptionQos(std::int64_t validityMs,
+                                                 std::int64_t publicationTtlMs,
+                                                 std::int64_t minIntervalMs)
         : UnicastSubscriptionQos(validityMs, publicationTtlMs),
           minIntervalMs(DEFAULT_MIN_INTERVAL_MS())
 {
@@ -62,7 +63,7 @@ std::int64_t OnChangeSubscriptionQos::getMinIntervalMs() const
     return minIntervalMs;
 }
 
-void OnChangeSubscriptionQos::setMinIntervalMs(const std::int64_t& minInterval)
+void OnChangeSubscriptionQos::setMinIntervalMs(std::int64_t minIntervalMs)
 {
     if (minIntervalMs < MIN_MIN_INTERVAL_MS()) {
         this->minIntervalMs = MIN_MIN_INTERVAL_MS();
@@ -73,7 +74,7 @@ void OnChangeSubscriptionQos::setMinIntervalMs(const std::int64_t& minInterval)
         return;
     }
 
-    this->minIntervalMs = minInterval;
+    this->minIntervalMs = minIntervalMs;
 }
 
 OnChangeSubscriptionQos& OnChangeSubscriptionQos::operator=(const OnChangeSubscriptionQos& other)
@@ -90,3 +91,5 @@ bool OnChangeSubscriptionQos::operator==(const OnChangeSubscriptionQos& other) c
            publicationTtlMs == other.getPublicationTtlMs() &&
            minIntervalMs == other.getMinIntervalMs();
 }
+
+} // namespace joynr

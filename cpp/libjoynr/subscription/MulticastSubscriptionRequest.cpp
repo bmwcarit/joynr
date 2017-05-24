@@ -50,7 +50,7 @@ void MulticastSubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qos)
     this->qos = std::make_shared<MulticastSubscriptionQos>(*onChangeQos);
 }
 
-std::string MulticastSubscriptionRequest::getMulticastId() const
+const std::string& MulticastSubscriptionRequest::getMulticastId() const
 {
     return multicastId;
 }
@@ -58,6 +58,11 @@ std::string MulticastSubscriptionRequest::getMulticastId() const
 void MulticastSubscriptionRequest::setMulticastId(const std::string& id)
 {
     multicastId = id;
+}
+
+void MulticastSubscriptionRequest::setMulticastId(std::string&& id)
+{
+    multicastId = std::move(id);
 }
 
 } // namespace joynr

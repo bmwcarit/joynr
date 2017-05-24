@@ -22,34 +22,30 @@
 #include <cassert>
 #include <functional>
 
-#include <boost/asio/io_service.hpp>
-
-#include "joynr/access-control/IAccessController.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/IMessaging.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStubFactory.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/IMulticastAddressCalculator.h"
-#include "joynr/InProcessMessagingAddress.h"
 #include "joynr/IPlatformSecurityManager.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/InProcessMessagingAddress.h"
+#include "joynr/Message.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/MulticastReceiverDirectory.h"
-#include "joynr/ThreadPoolDelayedScheduler.h"
-#include "joynr/SteadyTimer.h"
+#include "joynr/Util.h"
+#include "joynr/access-control/IAccessController.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/MessageNotificationAbstractProvider.h"
 #include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilter.h"
 #include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -63,13 +59,13 @@ class ConsumerPermissionCallback : public IAccessController::IHasConsumerPermiss
 public:
     ConsumerPermissionCallback(
             CcMessageRouter& owningMessageRouter,
-            const JoynrMessage& message,
+            std::shared_ptr<ImmutableMessage> message,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> destination);
 
     void hasConsumerPermission(bool hasPermission) override;
 
     CcMessageRouter& owningMessageRouter;
-    JoynrMessage message;
+    std::shared_ptr<ImmutableMessage> message;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destination;
 
 private:
@@ -148,7 +144,7 @@ CcMessageRouter::~CcMessageRouter()
 void CcMessageRouter::setAccessController(std::shared_ptr<IAccessController> accessController)
 {
     assert(accessController);
-    this->accessController = accessController;
+    this->accessController = std::move(accessController);
 }
 
 void CcMessageRouter::saveMulticastReceiverDirectory() const
@@ -230,10 +226,8 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
             continue;
         }
 
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress =
-                routingTable.lookup(providerParticipantId);
-
-        if (!providerAddress) {
+        const auto routingEntry = routingTable.lookup(providerParticipantId);
+        if (!routingEntry) {
             JOYNR_LOG_WARN(logger,
                            "Persisted multicast receivers: No provider address found for "
                            "multicast ID {}",
@@ -241,6 +235,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
             continue;
         }
 
+        const auto providerAddress = routingEntry->address;
         std::shared_ptr<IMessagingMulticastSubscriber> multicastSubscriber =
                 multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
 
@@ -260,56 +255,44 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void CcMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
+void CcMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount)
 {
     assert(messagingStubFactory != nullptr);
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now());
-    if (now > message.getHeaderExpiryDate()) {
+    if (now > message->getExpiryDate()) {
         std::string errorMessage("Received expired message. Dropping the message (ID: " +
-                                 message.getHeaderMessageId() + ").");
+                                 message->getId() + ").");
         JOYNR_LOG_WARN(logger, errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
     // Validate the message if possible
-    if (securityManager != nullptr && !securityManager->validate(message)) {
-        std::string errorMessage("messageId " + message.getHeaderMessageId() +
-                                 " failed validation");
+    if (securityManager != nullptr && !securityManager->validate(*message)) {
+        std::string errorMessage("messageId " + message->getId() + " failed validation");
         JOYNR_LOG_ERROR(logger, errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
-    if (message.getHeaderReplyAddress().empty() && !message.isLocalMessage() &&
-        (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST ||
-         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
-         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
-         message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
-        message.setHeaderReplyAddress(globalClusterControllerAddress);
-    }
-
-    JOYNR_LOG_TRACE(logger,
-                    "Route message with Id {} and payload {}",
-                    message.getHeaderMessageId(),
-                    message.getPayload());
+    JOYNR_LOG_TRACE(logger, "Route message with Id {}", message->getId());
     // search for the destination addresses
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
-            getDestinationAddresses(message);
+            getDestinationAddresses(*message);
     // if destination address is not known
     if (destAddresses.empty()) {
-        if (message.getType() == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
+        if (message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
             // Do not queue multicast messages for future multicast receivers.
             return;
         }
 
         // save the message for later delivery
-        queueMessage(message);
         JOYNR_LOG_WARN(logger,
                        "No routing information found for destination participant ID \"{}\" "
                        "so far. Waiting for participant registration. "
                        "Queueing message (ID : {})",
-                       message.getHeaderTo(),
-                       message.getHeaderMessageId());
+                       message->getRecipient(),
+                       message->getId());
+        queueMessage(std::move(message));
         return;
     }
 
@@ -326,6 +309,16 @@ void CcMessageRouter::route(JoynrMessage& message, std::uint32_t tryCount)
         // If this point is reached, the message can be sent without delay
         scheduleMessage(message, destAddress, tryCount);
     }
+}
+
+bool CcMessageRouter::publishToGlobal(const ImmutableMessage& message)
+{
+    const std::string& participantId = message.getSender();
+    const auto routingEntry = routingTable.lookup(participantId);
+    if (routingEntry && routingEntry->isGloballyVisible) {
+        return true;
+    }
+    return false;
 }
 
 // inherited from joynr::IMessageRouter and joynr::system::RoutingProvider
@@ -350,11 +343,15 @@ void CcMessageRouter::removeNextHop(
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+        bool isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    addToRoutingTable(participantId, address);
+    assert(address);
+    const auto routingEntry =
+            std::make_shared<RoutingEntry>(RoutingEntry(std::move(address), isGloballyVisible));
+    addToRoutingTable(participantId, std::move(routingEntry));
     sendMessages(participantId, address);
     if (onSuccess) {
         onSuccess();
@@ -365,77 +362,83 @@ void CcMessageRouter::addNextHop(
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::ChannelAddress& channelAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address =
             std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(channelAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::MqttAddress& mqttAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(mqttAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address = std::make_shared<const joynr::system::RoutingTypes::CommonApiDbusAddress>(
             commonApiDbusAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::BrowserAddress& browserAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address =
             std::make_shared<const joynr::system::RoutingTypes::BrowserAddress>(browserAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::WebSocketAddress& webSocketAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address =
             std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(webSocketAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
+        const bool& isGloballyVisible,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     auto address = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
             webSocketClientAddress);
-    addNextHop(participantId, address, std::move(onSuccess));
+    addNextHop(participantId, address, isGloballyVisible, std::move(onSuccess));
 }
 
 void CcMessageRouter::resolveNextHop(
@@ -489,10 +492,11 @@ void CcMessageRouter::addMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    std::shared_ptr<RoutingEntry> routingEntry;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
         ReadLocker lock(routingTableLock);
-        providerAddress = routingTable.lookup(providerParticipantId);
+        routingEntry = routingTable.lookup(providerParticipantId);
     }
 
     std::function<void()> onSuccessWrapper =
@@ -516,13 +520,14 @@ void CcMessageRouter::addMulticastReceiver(
         onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
     };
 
-    if (!providerAddress) {
+    if (!routingEntry) {
         exceptions::ProviderRuntimeException exception(
                 "No routing entry for multicast provider (providerParticipantId=" +
                 providerParticipantId + ") found.");
         onErrorWrapper(exception);
         return;
     }
+    providerAddress = routingEntry->address;
 
     registerMulticastReceiver(multicastId,
                               subscriberParticipantId,
@@ -543,12 +548,13 @@ void CcMessageRouter::removeMulticastReceiver(
 
     saveMulticastReceiverDirectory();
 
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
+    std::shared_ptr<RoutingEntry> routingEntry;
     {
         ReadLocker lock(routingTableLock);
-        providerAddress = routingTable.lookup(providerParticipantId);
+        routingEntry = routingTable.lookup(providerParticipantId);
     }
-    if (!providerAddress) {
+
+    if (!routingEntry) {
         exceptions::ProviderRuntimeException exception(
                 "No routing entry for multicast provider (providerParticipantId=" +
                 providerParticipantId + ") found.");
@@ -556,6 +562,7 @@ void CcMessageRouter::removeMulticastReceiver(
         onError(exception);
         return;
     } else {
+        const auto providerAddress = routingEntry->address;
         std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
                 multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
         if (skeleton) {
@@ -570,12 +577,12 @@ void CcMessageRouter::removeMulticastReceiver(
     }
 }
 
-void CcMessageRouter::queueMessage(const JoynrMessage& message)
+void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 {
-    JOYNR_LOG_TRACE(logger, "message queued: {}", message.getPayload());
+    JOYNR_LOG_TRACE(logger, "message queued: {}", message->toLogMessage());
     messageNotificationProvider->fireMessageQueuedForDelivery(
-            message.getHeaderTo(), message.getType());
-    messageQueue->queueMessage(message);
+            message->getRecipient(), message->getType());
+    messageQueue->queueMessage(std::move(message));
 }
 
 /**
@@ -586,7 +593,7 @@ INIT_LOGGER(ConsumerPermissionCallback);
 
 ConsumerPermissionCallback::ConsumerPermissionCallback(
         CcMessageRouter& owningMessageRouter,
-        const JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destination)
         : owningMessageRouter(owningMessageRouter), message(message), destination(destination)
 {
@@ -600,7 +607,7 @@ void ConsumerPermissionCallback::hasConsumerPermission(bool hasPermission)
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Message with Id {} could not be sent. Error: {}",
-                            message.getHeaderMessageId(),
+                            message->getId(),
                             e.getMessage());
         }
     }

@@ -22,6 +22,7 @@ package io.joynr.messaging.websocket.jetty.client;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
@@ -45,7 +46,7 @@ import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -62,7 +63,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     private long websocketIdleTimeout;
     Future<Session> sessionFuture;
     private WebSocketAddress serverAddress;
-    private IMessaging messageListener;
+    private IMessagingSkeleton messageListener;
     private ObjectMapper objectMapper;
     private WebSocketClientAddress ownAddress;
 
@@ -143,7 +144,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     }
 
     @Override
-    public void setMessageListener(IMessaging messaging) {
+    public void setMessageListener(IMessagingSkeleton messaging) {
         this.messageListener = messaging;
     }
 
@@ -200,9 +201,8 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
 
     @Override
     public void onWebSocketBinary(byte[] payload, int offset, int len) {
-        String serializedMessage = new String(payload, offset, len, CHARSET);
-        logger.trace(this.getClass().getSimpleName() + ": Received TEXT message: " + serializedMessage);
-        messageListener.transmit(serializedMessage, new FailureAction() {
+        logger.trace(this.getClass().getSimpleName() + ": Received message: " + new String(payload, CHARSET));
+        messageListener.transmit(Arrays.copyOfRange(payload, offset, offset + len), new FailureAction() {
 
             @Override
             public void execute(Throwable error) {
@@ -212,11 +212,11 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     }
 
     @Override
-    public synchronized void writeText(Address to,
-                                       String message,
-                                       long timeout,
-                                       TimeUnit unit,
-                                       final FailureAction failureAction) {
+    public synchronized void writeBytes(Address to,
+                                        byte[] message,
+                                        long timeout,
+                                        TimeUnit unit,
+                                        final FailureAction failureAction) {
         if (messageListener == null) {
             throw new JoynrDelayMessageException(20, "WebSocket write failed: receiver has not been set yet");
         }
@@ -231,7 +231,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
 
         try {
             Session session = sessionFuture.get(timeout, unit);
-            session.getRemote().sendBytes(ByteBuffer.wrap(message.getBytes(CHARSET)), new WriteCallback() {
+            session.getRemote().sendBytes(ByteBuffer.wrap(message), new WriteCallback() {
 
                 @Override
                 public void writeSuccess() {

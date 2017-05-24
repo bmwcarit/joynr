@@ -33,7 +33,6 @@
 #include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionManager.h"
-#include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/Util.h"
 #include "tests/utils/MockObjects.h"

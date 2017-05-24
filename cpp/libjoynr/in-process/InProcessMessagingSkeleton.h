@@ -20,33 +20,34 @@
 #define INPROCESSMESSAGINGSKELETON_H
 
 #include <functional>
+#include <memory>
 
-#include "joynr/IMessaging.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
 
-class JoynrMessage;
+class IDispatcher;
+class ImmutableMessage;
 
 namespace exceptions
 {
 class JoynrRuntimeException;
 } // namespace exceptions
 
-/**
- * This is a common Interface for InProcessClusterControllerMessagingSkeleton and
- * InProcessLibJoynrMessagingSkeleton.
- */
-class JOYNR_EXPORT InProcessMessagingSkeleton : public IMessaging
+class JOYNR_EXPORT InProcessMessagingSkeleton
 {
 public:
-    ~InProcessMessagingSkeleton() override = default;
-    void transmit(JoynrMessage& message,
-                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-            override = 0;
+    explicit InProcessMessagingSkeleton(IDispatcher* dispatcher);
+    virtual ~InProcessMessagingSkeleton() = default;
+    virtual void transmit(
+            std::shared_ptr<ImmutableMessage> message,
+            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
 private:
+    DISALLOW_COPY_AND_ASSIGN(InProcessMessagingSkeleton);
+    IDispatcher* dispatcher;
 };
 
 } // namespace joynr

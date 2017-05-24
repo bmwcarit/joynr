@@ -19,8 +19,8 @@
 #ifndef MULTICASTBROADCASTLISTENER_H
 #define MULTICASTBROADCASTLISTENER_H
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "joynr/AbstractBroadcastListener.h"

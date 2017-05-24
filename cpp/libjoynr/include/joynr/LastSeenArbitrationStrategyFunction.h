@@ -44,7 +44,7 @@ class LastSeenArbitrationStrategyFunction : public ArbitrationStrategyFunction
 {
 
 public:
-    ~LastSeenArbitrationStrategyFunction() = default;
+    ~LastSeenArbitrationStrategyFunction() final = default;
     LastSeenArbitrationStrategyFunction() = default;
 
     types::DiscoveryEntryWithMetaInfo select(

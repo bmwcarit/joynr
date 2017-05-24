@@ -18,8 +18,8 @@
  */
 #include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
 
-#include <curl/curl.h>
 #include <boost/format.hpp>
+#include <curl/curl.h>
 
 namespace joynr
 {

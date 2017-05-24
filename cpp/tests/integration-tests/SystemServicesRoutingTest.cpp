@@ -23,12 +23,13 @@
 #include <gmock/gmock.h>
 
 #include "joynr/JoynrClusterControllerRuntime.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/serializer/Serializer.h"
-#include "JoynrTest.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 
@@ -40,9 +41,9 @@ public:
             routingDomain(),
             routingProviderParticipantId(),
             runtime(nullptr),
-            mockMessageReceiverHttp(std::make_shared<MockMessageReceiver>()),
-            mockMessageReceiverMqtt(std::make_shared<MockMessageReceiver>()),
-            mockMessageSender(std::make_shared<MockMessageSender>()),
+            mockMessageReceiverHttp(std::make_shared<MockTransportMessageReceiver>()),
+            mockMessageReceiverMqtt(std::make_shared<MockTransportMessageReceiver>()),
+            mockMessageSender(std::make_shared<MockTransportMessageSender>()),
             discoveryQos(),
             routingProxyBuilder(nullptr),
             routingProxy(nullptr)
@@ -68,9 +69,9 @@ public:
         std::string serializedChannelAddress = joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
         std::string serializedMqttAddress = joynr::serializer::serializeToJson(MqttAddress(mqttBrokerUrl, mqttTopic));
 
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
         //runtime can only be created, after MockMessageReceiver has been told to return
@@ -93,6 +94,7 @@ public:
 
     void SetUp(){
         participantId = util::createUuid();
+        isGloballyVisible = true;
         routingProxyBuilder = runtime->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
     }
 
@@ -110,14 +112,15 @@ protected:
     std::string routingDomain;
     std::string routingProviderParticipantId;
     std::unique_ptr<JoynrClusterControllerRuntime> runtime;
-    std::shared_ptr<IMessageReceiver> mockMessageReceiverHttp;
-    std::shared_ptr<IMessageReceiver> mockMessageReceiverMqtt;
-    std::shared_ptr<MockMessageSender> mockMessageSender;
+    std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
+    std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
+    std::shared_ptr<MockTransportMessageSender> mockMessageSender;
     DiscoveryQos discoveryQos;
     std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder;
     std::unique_ptr<joynr::system::RoutingProxy> routingProxy;
     std::string participantId;
-    
+    bool isGloballyVisible;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(SystemServicesRoutingTest);
 };
@@ -168,7 +171,7 @@ TEST_F(SystemServicesRoutingTest, addNextHopHttp)
     EXPECT_FALSE(isResolvable);
 
     try {
-        routingProxy->addNextHop(participantId, address);
+        routingProxy->addNextHop(participantId, address, isGloballyVisible);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "addNextHop was not successful";
     }
@@ -198,7 +201,7 @@ TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
     EXPECT_FALSE(isResolvable);
 
     try {
-        routingProxy->addNextHop(participantId, address);
+        routingProxy->addNextHop(participantId, address, isGloballyVisible);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "addNextHop was not successful";
     }
@@ -241,7 +244,7 @@ TEST_F(SystemServicesRoutingTest, addNextHopMqtt)
     EXPECT_FALSE(isResolvable);
 
     try {
-        routingProxy->addNextHop(participantId, address);
+        routingProxy->addNextHop(participantId, address, isGloballyVisible);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "addNextHop was not successful";
     }
@@ -271,7 +274,7 @@ TEST_F(SystemServicesRoutingTest, removeNextHopMqtt)
     EXPECT_FALSE(isResolvable);
 
     try {
-        routingProxy->addNextHop(participantId, address);
+        routingProxy->addNextHop(participantId, address, isGloballyVisible);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "addNextHop was not successful";
     }

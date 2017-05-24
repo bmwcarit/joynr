@@ -24,8 +24,6 @@
 #include <gtest/gtest.h>
 #include <boost/algorithm/string/predicate.hpp>
 
-#include <PrettyPrint.h>
-#include "JoynrTest.h"
 #include "joynr/Util.h"
 #include "joynr/types/TestTypes/TEnum.h"
 #include "joynr/types/TestTypes/TStruct.h"
@@ -51,9 +49,10 @@
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/Directory.h"
-
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 
+#include "tests/PrettyPrint.h"
+#include "tests/JoynrTest.h"
 
 using namespace joynr;
 
@@ -792,27 +791,67 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
     EXPECT_EQ(qos, desQos);
 }
 
+ struct RoutingEntry
+ {
+     RoutingEntry() : address(nullptr), isGloballyVisible(true)
+     {
+     }
+     explicit RoutingEntry(std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                           bool isGloballyVisible)
+             : address(std::move(address)), isGloballyVisible(isGloballyVisible)
+     {
+     }
+
+     template <typename Archive>
+     void serialize(Archive& archive)
+     {
+         archive(MUESLI_NVP(address), MUESLI_NVP(isGloballyVisible));
+     }
+
+     std::shared_ptr<const joynr::system::RoutingTypes::Address> address;
+     bool isGloballyVisible;
+ };
+
 TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
 {
-    using RoutingTable = Directory<std::string, const joynr::system::RoutingTypes::Address>;
-    SingleThreadedIOService singleThreadedIoService;    
+    using RoutingTable = Directory<std::string, RoutingEntry>;
+    SingleThreadedIOService singleThreadedIoService;
     RoutingTable routingTable("routingTable", singleThreadedIoService.getIOService());
-    routingTable.add("WebSocketAddress", std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>());
-    routingTable.add("ChannelAddress", std::make_shared<joynr::system::RoutingTypes::ChannelAddress>());
-    routingTable.add("MqttAddress", std::make_shared<joynr::system::RoutingTypes::MqttAddress>());
-    routingTable.add("BrowserAddress", std::make_shared<joynr::system::RoutingTypes::BrowserAddress>());
-    routingTable.add("CommonApiDbusAddress", std::make_shared<joynr::system::RoutingTypes::CommonApiDbusAddress>());
-    routingTable.add("WebSocketClientAddress", std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>());
+
+    bool isGloballyVisible = true;
+    auto ptrToRoutingWebSocketEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>(), !isGloballyVisible);
+    auto ptrToRoutingChannelAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::ChannelAddress>(), isGloballyVisible);
+    auto ptrToRoutingMqttAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::MqttAddress>(), isGloballyVisible);
+    auto ptrToRoutingBrowserAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::BrowserAddress>(), !isGloballyVisible);
+    auto ptrToRoutingCommonApiDbusAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::CommonApiDbusAddress>(), !isGloballyVisible);
+    auto ptrToRoutingWebSocketClientAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>(), !isGloballyVisible);
+
+    routingTable.add("WebSocketAddress", ptrToRoutingWebSocketEntry);
+    routingTable.add("ChannelAddress", ptrToRoutingChannelAddressEntry);
+    routingTable.add("MqttAddress", ptrToRoutingMqttAddressEntry);
+    routingTable.add("BrowserAddress", ptrToRoutingBrowserAddressEntry);
+    routingTable.add("CommonApiDbusAddress", ptrToRoutingCommonApiDbusAddressEntry);
+    routingTable.add("WebSocketClientAddress", ptrToRoutingWebSocketClientAddressEntry);
+
 
     const std::string serializedRoutingTable = joynr::serializer::serializeToJson(routingTable);
     JOYNR_LOG_TRACE(logger, serializedRoutingTable);
 
     RoutingTable deserializedRoutingTable("deserializedRoutingTable", singleThreadedIoService.getIOService());
     joynr::serializer::deserializeFromJson(deserializedRoutingTable, serializedRoutingTable);
-    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("WebSocketAddress")->toString(), "WebSocketAddress"));
-    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("ChannelAddress")->toString(), "ChannelAddress"));
-    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("MqttAddress")->toString(), "MqttAddress"));
-    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("BrowserAddress")->toString(), "BrowserAddress"));
-    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("CommonApiDbusAddress")->toString(), "CommonApiDbusAddress"));
-    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("WebSocketClientAddress")->toString(), "WebSocketClientAddress"));
+
+    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("WebSocketAddress")->address->toString(), "WebSocketAddress"));
+    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("ChannelAddress")->address->toString(), "ChannelAddress"));
+    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("MqttAddress")->address->toString(), "MqttAddress"));
+    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("BrowserAddress")->address->toString(), "BrowserAddress"));
+    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("CommonApiDbusAddress")->address->toString(), "CommonApiDbusAddress"));
+    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("WebSocketClientAddress")->address->toString(), "WebSocketClientAddress"));
+
+    EXPECT_FALSE(deserializedRoutingTable.lookup("WebSocketAddress")->isGloballyVisible);
+    EXPECT_TRUE(deserializedRoutingTable.lookup("ChannelAddress")->isGloballyVisible);
+    EXPECT_TRUE(deserializedRoutingTable.lookup("MqttAddress")->isGloballyVisible);
+    EXPECT_FALSE(deserializedRoutingTable.lookup("BrowserAddress")->isGloballyVisible);
+    EXPECT_FALSE(deserializedRoutingTable.lookup("CommonApiDbusAddress")->isGloballyVisible);
+    EXPECT_FALSE(deserializedRoutingTable.lookup("WebSocketClientAddress")->isGloballyVisible);
+
 }

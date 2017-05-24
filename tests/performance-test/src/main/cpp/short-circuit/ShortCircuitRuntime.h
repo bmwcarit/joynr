@@ -25,15 +25,16 @@
 
 #include "joynr/JoynrRuntime.h"
 #include "joynr/IMessageRouter.h"
-#include "joynr/JoynrMessageSender.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/CapabilityUtils.h"
+#include "joynr/IPlatformSecurityManager.h"
 
 namespace joynr
 {
 
+class IMessageSender;
 class InProcessMessagingSkeleton;
 class Settings;
 class SubscriptionManager;
@@ -182,7 +183,7 @@ private:
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<IMessageRouter> messageRouter;
     std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
-    std::shared_ptr<JoynrMessageSender> joynrMessageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
     std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;

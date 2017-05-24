@@ -25,13 +25,13 @@ import java.util.Map;
 
 import joynr.system.RoutingTypes.Address;
 
-abstract public class AbstractMiddlewareMessagingStubFactory<S extends IMessaging, A extends Address> {
+abstract public class AbstractMiddlewareMessagingStubFactory<S extends IMessagingStub, A extends Address> {
 
     private Map<A, S> stubMap = new HashMap<>();
 
     protected abstract S createInternal(A address);
 
-    public synchronized IMessaging create(A address) {
+    public synchronized IMessagingStub create(A address) {
         if (!stubMap.containsKey(address)) {
             stubMap.put(address, createInternal(address));
         }

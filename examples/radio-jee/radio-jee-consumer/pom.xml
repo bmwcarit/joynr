@@ -25,12 +25,14 @@
 	<parent>
 		<groupId>io.joynr.examples</groupId>
 		<artifactId>radio-jee</artifactId>
-		<version>0.25.3</version>
+		<version>0.26.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
+  <groupId>io.joynr.examples.radio-jee</groupId>
   <artifactId>radio-jee-consumer</artifactId>
   <packaging>war</packaging>
+  <name>${project.groupId}:${project.artifactId}</name>
 
   <build>
 

@@ -20,38 +20,39 @@
 #define IMESSAGEROUTER_H
 
 #include <cstdint>
-#include <memory>
 #include <functional>
+#include <memory>
 
 #include "joynr/JoynrExport.h"
 
 namespace joynr
 {
 class IAccessController;
-class JoynrMessage;
+class ImmutableMessage;
 
 namespace system
 {
 namespace RoutingTypes
 {
 class Address;
-} // RoutingTypes
+} // namespace RoutingTypes
 } // namespace system
 
 namespace exceptions
 {
 class ProviderRuntimeException;
 class JoynrRuntimeException;
-} // exceptions
+} // namespace exceptions
 
 class JOYNR_EXPORT IMessageRouter
 {
 public:
-    virtual void route(JoynrMessage& message, std::uint32_t tryCount = 0) = 0;
+    virtual void route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) = 0;
 
     virtual void addNextHop(
             const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+            bool isGloballyVisible,
             std::function<void()> onSuccess = nullptr,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                     onError = nullptr) = 0;
@@ -75,7 +76,7 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) = 0;
 
-    virtual void queueMessage(const JoynrMessage& message) = 0;
+    virtual void queueMessage(std::shared_ptr<ImmutableMessage> message) = 0;
 };
 
 } // namespace joynr

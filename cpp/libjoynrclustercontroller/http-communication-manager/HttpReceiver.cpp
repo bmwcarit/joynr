@@ -18,13 +18,13 @@
  */
 #include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
 
+#include "joynr/Future.h"
+#include "joynr/Util.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynrclustercontroller/http-communication-manager/LongPollingMessageReceiver.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
-#include "joynr/Future.h"
-#include "joynr/Util.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -40,7 +40,7 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings,
           globalClusterControllerAddress(),
           settings(settings),
           messageReceiver(nullptr),
-          onTextMessageReceived(nullptr)
+          onMessageReceived(nullptr)
 {
     JOYNR_LOG_DEBUG(logger, "Print settings... ");
     settings.printSettings();
@@ -90,8 +90,8 @@ HttpReceiver::~HttpReceiver()
 
 void HttpReceiver::startReceiveQueue()
 {
-    if (!onTextMessageReceived) {
-        JOYNR_LOG_FATAL(logger, "FAIL::receiveQueue started with no onTextMessageReceived.");
+    if (!onMessageReceived) {
+        JOYNR_LOG_FATAL(logger, "FAIL::receiveQueue started with no onMessageReceived.");
     }
 
     // Get the settings specific to long polling
@@ -107,7 +107,7 @@ void HttpReceiver::startReceiveQueue()
                                                                    receiverId,
                                                                    longPollSettings,
                                                                    channelCreatedSemaphore,
-                                                                   onTextMessageReceived);
+                                                                   onMessageReceived);
     messageReceiver->start();
 }
 
@@ -164,9 +164,9 @@ bool HttpReceiver::tryToDeleteChannel()
 }
 
 void HttpReceiver::registerReceiveCallback(
-        std::function<void(const std::string&)> onTextMessageReceived)
+        std::function<void(smrf::ByteVector&&)> onMessageReceived)
 {
-    this->onTextMessageReceived = onTextMessageReceived;
+    this->onMessageReceived = std::move(onMessageReceived);
 }
 
 } // namespace joynr

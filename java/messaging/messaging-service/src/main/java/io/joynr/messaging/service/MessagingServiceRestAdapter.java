@@ -21,10 +21,13 @@ package io.joynr.messaging.service;
  */
 
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
 import io.joynr.communications.exceptions.JoynrHttpException;
 import io.joynr.messaging.system.TimestampProvider;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
 
 import java.net.URI;
 
@@ -41,7 +44,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,12 +86,19 @@ public class MessagingServiceRestAdapter {
      * @param ccid
      *            channel id of the receiver.
      * @param message
-     *            the content being sent.
+     *            the content being sent (serialized SMRF message).
      * @return a location for querying the message status
      */
     @POST
-    @Produces({ MediaType.APPLICATION_JSON })
-    public Response postMessage(@PathParam("ccid") String ccid, JoynrMessage message) {
+    @Produces({ MediaType.APPLICATION_OCTET_STREAM })
+    public Response postMessage(@PathParam("ccid") String ccid, byte[] serializedMessage) {
+        ImmutableMessage message;
+
+        try {
+            message = new ImmutableMessage(serializedMessage);
+        } catch (EncodingException | UnsuppportedVersionException e) {
+            throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED);
+        }
 
         try {
             log.debug("POST message to channel: {} message: {}", ccid, message);
@@ -100,12 +110,12 @@ public class MessagingServiceRestAdapter {
             }
 
             // send the message to the receiver.
-            if (message.getExpiryDate() == 0) {
+            if (message.getTtlMs() == 0) {
                 log.error("POST message to channel: {} message: {} dropped because: TTL not set", ccid, message);
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATENOTSET);
             }
 
-            if (message.getExpiryDate() < timestampProvider.getCurrentTime()) {
+            if (message.getTtlMs() < timestampProvider.getCurrentTime()) {
                 log.warn("POST message {} to cluster controller: {} dropped because: TTL expired",
                          ccid,
                          message.getId());
@@ -136,7 +146,7 @@ public class MessagingServiceRestAdapter {
                 return Response.noContent().build();
             }
 
-            messagingService.passMessageToReceiver(ccid, message);
+            messagingService.passMessageToReceiver(ccid, serializedMessage);
 
             // the location that can be queried to get the message
             // status

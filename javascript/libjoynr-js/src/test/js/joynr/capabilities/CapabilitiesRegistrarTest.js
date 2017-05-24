@@ -88,7 +88,12 @@ define([
                             spyOn(provider, "checkImplementation").and.callThrough();
 
                             providerQos =
-                                    new ProviderQos([], 1, Date.now(), ProviderScope.GLOBAL, true);
+                                    new ProviderQos({
+                                        customParameters : [],
+                                        priority : Date.now(),
+                                        scope : ProviderScope.GLOBAL,
+                                        supportsOnChangeSubscriptions : true
+                                    });
 
                             provider.myAttribute = new ProviderAttributeNotifyReadWrite(provider, {
                                 dependencies : {
@@ -161,6 +166,8 @@ define([
                             expect(capabilitiesRegistrar.registerProvider).toBeDefined();
                             expect(typeof capabilitiesRegistrar.registerProvider === "function")
                                     .toBeTruthy();
+                            expect(typeof capabilitiesRegistrar.register === "function")
+                            .toBeTruthy();
                             done();
                         });
 
@@ -225,10 +232,12 @@ define([
                             }).catch(function() {
                                return null;
                             });
+                            var isGloballyVisible = (providerQos.scope === ProviderScope.GLOBAL);
                             expect(messageRouterSpy.addNextHop).toHaveBeenCalled();
                             expect(messageRouterSpy.addNextHop).toHaveBeenCalledWith(
                                     participantId,
-                                    libjoynrMessagingAddress);
+                                    libjoynrMessagingAddress,
+                                    isGloballyVisible);
                             done();
                         });
 
@@ -244,6 +253,42 @@ define([
                             expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
                             expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(
                                     participantId,
+                                    provider);
+                            done();
+                        });
+
+                        it("handles calls to function register", function(done) {
+                            capabilitiesRegistrar.register({
+                                domain: "domain",
+                                provider: provider,
+                                providerQos : providerQos
+                            }).then(function() {
+                               return null;
+                            }).catch(function() {
+                               return null;
+                            });
+                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
+                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(
+                                    participantId,
+                                    provider);
+                            done();
+                        });
+
+                        it("uses passed-in participantId", function(done) {
+                            var myParticipantId = "myParticipantId";
+                            capabilitiesRegistrar.register({
+                                domain: "domain",
+                                provider: provider,
+                                providerQos : providerQos,
+                                participantId : myParticipantId
+                            }).then(function() {
+                               return null;
+                            }).catch(function() {
+                               return null;
+                            });
+                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
+                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(
+                                    myParticipantId,
                                     provider);
                             done();
                         });

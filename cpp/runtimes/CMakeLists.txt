@@ -60,7 +60,6 @@ file(
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "*.h"
     "cluster-controller-runtime/*.h"
-    "cluster-controller-runtime/websocket/*.h"
     "cluster-controller-runtime/signal-handler/*.h"
 )
 
@@ -75,7 +74,6 @@ file(
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "JoynrRuntime.cpp"
     "cluster-controller-runtime/*.cpp"
-    "cluster-controller-runtime/websocket/*.cpp"
     "cluster-controller-runtime/signal-handler/*.cpp"
 )
 

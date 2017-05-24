@@ -23,23 +23,24 @@
 #include <vector>
 
 #include "joynr/Dispatcher.h"
-#include "joynr/InProcessDispatcher.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/IMulticastAddressCalculator.h"
-#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
-#include "joynr/PublicationManager.h"
-#include "joynr/SubscriptionManager.h"
-#include "joynr/InProcessPublicationSender.h"
-#include "joynr/JoynrMessageSender.h"
-#include "joynr/LibJoynrMessageRouter.h"
-#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
+#include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
+#include "joynr/InProcessPublicationSender.h"
+#include "joynr/MessageSender.h"
+#include "joynr/LibJoynrMessageRouter.h"
 #include "joynr/MessagingStubFactory.h"
-#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include "joynr/system/DiscoveryProxy.h"
-#include "joynr/system/RoutingProxy.h"
-#include "joynr/Util.h"
+#include "joynr/PublicationManager.h"
 #include "joynr/Settings.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/SubscriptionManager.h"
+#include "joynr/Util.h"
+#include "joynr/system/DiscoveryProxy.h"
+#include "joynr/system/RoutingProxy.h"
+#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
+#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
 namespace joynr
 {
@@ -48,8 +49,7 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
         : JoynrRuntime(*settings),
           subscriptionManager(nullptr),
           inProcessPublicationSender(nullptr),
-          joynrMessagingSendStub(nullptr),
-          joynrMessageSender(nullptr),
+          messageSender(nullptr),
           joynrDispatcher(nullptr),
           inProcessDispatcher(nullptr),
           settings(std::move(settings)),
@@ -95,12 +95,14 @@ void LibJoynrRuntime::init(
     // create messaging stub factory
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
     middlewareMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
-        messagingStubFactory->remove(destinationAddress);
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress) {
+        messagingStubFactory->remove(std::move(destinationAddress));
     });
     messagingStubFactory->registerStubFactory(middlewareMessagingStubFactory);
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
+    std::string routingProviderParticipantId =
+            systemServicesSettings.getCcRoutingProviderParticipantId();
     // create message router
     libJoynrMessageRouter =
             std::make_shared<LibJoynrMessageRouter>(libjoynrMessagingAddress,
@@ -110,20 +112,20 @@ void LibJoynrRuntime::init(
 
     libJoynrMessageRouter->loadRoutingTable(
             libjoynrSettings->getMessageRouterPersistenceFilename());
+    libJoynrMessageRouter->setParentAddress(routingProviderParticipantId, ccMessagingAddress);
     startLibJoynrMessagingSkeleton(libJoynrMessageRouter);
 
-    joynrMessageSender = std::make_shared<JoynrMessageSender>(
+    messageSender = std::make_shared<MessageSender>(
             libJoynrMessageRouter, messagingSettings.getTtlUpliftMs());
-    joynrDispatcher = new Dispatcher(joynrMessageSender, singleThreadIOService->getIOService());
-    joynrMessageSender->registerDispatcher(joynrDispatcher);
+    joynrDispatcher = new Dispatcher(messageSender, singleThreadIOService->getIOService());
+    messageSender->registerDispatcher(joynrDispatcher);
 
     // create the inprocess skeleton for the dispatcher
-    dispatcherMessagingSkeleton =
-            std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
+    dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
     publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
-                                                joynrMessageSender.get(),
+                                                messageSender.get(),
                                                 messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings->getSubscriptionRequestPersistenceFilename());
@@ -140,23 +142,18 @@ void LibJoynrRuntime::init(
             publicationManager,
             inProcessPublicationSender,
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
-    auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(
-            joynrMessageSender, subscriptionManager);
+    auto joynrMessagingConnectorFactory =
+            std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
 
     auto connectorFactory = std::make_unique<ConnectorFactory>(
             std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
-    proxyFactory =
-            std::make_unique<ProxyFactory>(libjoynrMessagingAddress, std::move(connectorFactory));
+    proxyFactory = std::make_unique<ProxyFactory>(std::move(connectorFactory));
 
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
     participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
 
     // initialize the dispatchers
-    std::vector<IDispatcher*> dispatcherList;
-    dispatcherList.push_back(inProcessDispatcher);
-    dispatcherList.push_back(joynrDispatcher);
-
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
@@ -165,8 +162,6 @@ void LibJoynrRuntime::init(
     requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
 
     std::string systemServicesDomain = systemServicesSettings.getDomain();
-    std::string routingProviderParticipantId =
-            systemServicesSettings.getCcRoutingProviderParticipantId();
 
     DiscoveryQos routingProviderDiscoveryQos;
     routingProviderDiscoveryQos.setCacheMaxAgeMs(1000);
@@ -178,11 +173,53 @@ void LibJoynrRuntime::init(
 
     std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
             createProxyBuilder<joynr::system::RoutingProxy>(systemServicesDomain);
-    auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(10000))
+
+    std::uint64_t routingProxyTtl = 10000;
+    auto routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(routingProxyTtl))
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
-    libJoynrMessageRouter->setParentRouter(
-            std::move(routingProxy), ccMessagingAddress, routingProviderParticipantId);
+
+    auto globalAddressFuture = routingProxy->getGlobalAddressAsync();
+    auto onSuccessWrapper = [
+        this,
+        onSuccess = std::move(onSuccess),
+        onError,
+        globalAddressFuture = std::move(globalAddressFuture),
+        routingProxyTtl
+    ](const std::string& replyAddress)
+    {
+        std::string globalAddress;
+        try {
+            globalAddressFuture->get(routingProxyTtl, globalAddress);
+        } catch (const exceptions::JoynrRuntimeException& error) {
+            exceptions::JoynrRuntimeException wrappedError(
+                    "Failed to retrieve global address from cluster controller: " +
+                    error.getMessage());
+            onError(wrappedError);
+            return;
+        }
+        messageSender->setReplyToAddress(replyAddress);
+
+        std::vector<IDispatcher*> dispatcherList;
+        dispatcherList.push_back(inProcessDispatcher);
+        dispatcherList.push_back(joynrDispatcher);
+
+        capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
+                dispatcherList,
+                *discoveryProxy,
+                participantIdStorage,
+                dispatcherAddress,
+                libJoynrMessageRouter,
+                messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
+                *publicationManager,
+                globalAddress);
+
+        onSuccess();
+    };
+
+    routingProxy->getReplyToAddressAsync(onSuccessWrapper, onError);
+
+    libJoynrMessageRouter->setParentRouter(std::move(routingProxy));
 
     // setup discovery
     std::string discoveryProviderParticipantId =
@@ -203,17 +240,6 @@ void LibJoynrRuntime::init(
                          ->build();
 
     discoveryProxy->setDiscoveryProxy(std::move(proxy));
-    capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
-            dispatcherList,
-            *discoveryProxy,
-            participantIdStorage,
-            dispatcherAddress,
-            libJoynrMessageRouter,
-            messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
-            *publicationManager);
-
-    libJoynrMessageRouter->queryGlobalClusterControllerAddress(
-            std::move(onSuccess), std::move(onError));
 }
 
 std::shared_ptr<IMessageRouter> LibJoynrRuntime::getMessageRouter()

@@ -57,7 +57,7 @@ echo "ADDITIONAL_CMAKE_ARGS is $ADDITIONAL_CMAKE_ARGS"
 log "CLEAN BUILD DIRECTORY"
 rm -rf ~/.cmake/packages
 rm -rf /data/build/joynr
-mkdir /data/build/joynr
+mkdir -p /data/build/joynr
 
 cd /data/build/joynr
 

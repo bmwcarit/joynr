@@ -19,18 +19,18 @@
 #ifndef IDISPATCHER_H
 #define IDISPATCHER_H
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace joynr
 {
 
+class ImmutableMessage;
 class ISubscriptionManager;
 class PublicationManager;
 class IReplyCaller;
 class MessagingQos;
 class RequestCaller;
-class JoynrMessage;
 
 class IDispatcher
 {
@@ -43,7 +43,7 @@ public:
     virtual void addRequestCaller(const std::string& participantId,
                                   std::shared_ptr<RequestCaller> requestCaller) = 0;
     virtual void removeRequestCaller(const std::string& participantId) = 0;
-    virtual void receive(const JoynrMessage& message) = 0;
+    virtual void receive(std::shared_ptr<ImmutableMessage> message) = 0;
 
     virtual void registerSubscriptionManager(
             std::shared_ptr<ISubscriptionManager> subscriptionManager) = 0;

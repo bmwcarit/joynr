@@ -21,19 +21,19 @@
 
 #include <cassert>
 #include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
-#include "joynr/IMessageRouter.h"
-#include "joynr/RequestCallerFactory.h"
-#include "joynr/ParticipantIdStorage.h"
-#include "joynr/IDispatcher.h"
-#include "joynr/MulticastBroadcastListener.h"
-#include "joynr/Logger.h"
 #include "joynr/Future.h"
+#include "joynr/IDispatcher.h"
+#include "joynr/IMessageRouter.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/Logger.h"
+#include "joynr/MulticastBroadcastListener.h"
+#include "joynr/ParticipantIdStorage.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/RequestCallerFactory.h"
 #include "joynr/Util.h"
 #include "joynr/system/IDiscovery.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -56,7 +56,8 @@ public:
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
             std::shared_ptr<IMessageRouter> messageRouter,
             std::int64_t defaultExpiryIntervalMs,
-            PublicationManager& publicationManager);
+            PublicationManager& publicationManager,
+            const std::string& globalAddress);
 
     template <class T>
     std::string addAsync(
@@ -100,8 +101,9 @@ public:
                                            lastSeenDateMs,
                                            defaultExpiryDateMs,
                                            defaultPublicKeyId);
-
+        bool isGloballyVisible = entry.getQos().getScope() == types::ProviderScope::GLOBAL;
         auto onSuccessWrapper = [
+            isGloballyVisible,
             messageRouter = util::as_weak_ptr(messageRouter),
             participantId,
             dispatcherAddress = dispatcherAddress,
@@ -111,8 +113,11 @@ public:
         {
             // add next hop to dispatcher
             if (auto ptr = messageRouter.lock()) {
-                ptr->addNextHop(
-                        participantId, dispatcherAddress, std::move(onSuccess), std::move(onError));
+                ptr->addNextHop(participantId,
+                                dispatcherAddress,
+                                isGloballyVisible,
+                                std::move(onSuccess),
+                                std::move(onError));
             }
         };
 
@@ -152,6 +157,7 @@ private:
     std::shared_ptr<IMessageRouter> messageRouter;
     std::int64_t defaultExpiryIntervalMs;
     PublicationManager& publicationManager;
+    const std::string globalAddress;
     ADD_LOGGER(CapabilitiesRegistrar);
 };
 

@@ -22,9 +22,11 @@ package io.joynr.messaging;
 /**
  *
  */
-public interface IMessagingSkeleton extends IMessaging {
+public interface IMessagingSkeleton {
 
     void init();
 
     void shutdown();
+
+    void transmit(byte[] serializedMessage, FailureAction failureAction);
 }

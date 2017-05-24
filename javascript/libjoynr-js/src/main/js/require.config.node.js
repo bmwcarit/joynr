@@ -34,6 +34,7 @@ var requirejsConfig = {
         "log4javascriptDependency" : "lib/log4javascriptNode",
         "global/WebSocket" : "global/WebSocketNode",
         "global/Mqtt" : "global/Mqtt",
+        "global/Smrf" : "global/SmrfNode",
         "joynr/Runtime" : "joynr/Runtime.websocket.libjoynr"
     }
 };

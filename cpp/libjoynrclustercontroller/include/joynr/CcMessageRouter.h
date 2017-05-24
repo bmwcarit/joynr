@@ -24,7 +24,6 @@
 #include "joynr/system/RoutingAbstractProvider.h"
 
 #include <memory>
-#include <mutex>
 #include <string>
 #include <unordered_set>
 
@@ -32,8 +31,8 @@
 #include "joynr/Logger.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MulticastReceiverDirectory.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/ObjectWithDecayTime.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Runnable.h"
 
 namespace boost
@@ -51,7 +50,6 @@ class IAccessController;
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
 class IPlatformSecurityManager;
-class JoynrMessage;
 class MulticastMessagingSkeletonDirectory;
 
 namespace system
@@ -63,7 +61,7 @@ class MessageNotificationProvider;
 class CcMessageNotificationProvider;
 
 /**
-  * MessageRouter specialization for cluster-controller. It receives incoming JoynrMessages
+  * MessageRouter specialization for cluster-controller. It receives incoming ImmutableMessages
   * on the ClusterController and forwards them either to a remote ClusterController or
   * to a LibJoynr on the machine.
   *
@@ -71,7 +69,7 @@ class CcMessageNotificationProvider;
   *     MessagingEndpointDirectory
   *  2 creates a <Middleware>MessagingStub by calling MessagingStubFactory.create(EndpointAddress
   *addr)
-  *  3 forwards the message using the <Middleware>MessagingStub.send(JoynrMessage msg)
+  *  3 forwards the message using the <Middleware>MessagingStub.transmit(ImmutableMessage msg)
   *
   *  In sending, a ThreadPool of default size 1 is used.
   */
@@ -96,15 +94,16 @@ public:
     /*
      * Implement methods from IMessageRouter
      */
-    void route(JoynrMessage& message, std::uint32_t tryCount = 0) final;
+    void route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) final;
 
     void addNextHop(const std::string& participantId,
                     const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+                    bool isGloballyVisible,
                     std::function<void()> onSuccess = nullptr,
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;
 
-    void queueMessage(const JoynrMessage& message) final;
+    void queueMessage(std::shared_ptr<ImmutableMessage> message) final;
 
     /*
      * Implement methods from RoutingAbstractProvider
@@ -112,36 +111,42 @@ public:
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::ChannelAddress& channelAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::MqttAddress& mqttAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::BrowserAddress& browserAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::WebSocketAddress& webSocketAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void addNextHop(
             const std::string& participantId,
             const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
+            const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
@@ -183,6 +188,7 @@ public:
     /*
      * Public methods specific to CcMessageRouter
      */
+    bool publishToGlobal(const ImmutableMessage& message) final;
     void setAccessController(std::shared_ptr<IAccessController> accessController);
     void saveMulticastReceiverDirectory() const;
     void loadMulticastReceiverDirectory(std::string filename);

@@ -21,11 +21,12 @@
  * Client for the global capabilities directory.
  */
 
-#include <string>
-#include <cstdint>
-#include <cassert>
-
 #include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
+
+#include <cassert>
+#include <cstdint>
+#include <string>
+
 #include "joynr/DispatcherUtils.h"
 #include "joynr/Future.h"
 #include "joynr/MessagingQos.h"
@@ -83,7 +84,7 @@ void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
 std::vector<types::GlobalDiscoveryEntry> CapabilitiesClient::lookup(
         const std::vector<std::string>& domains,
         const std::string& interfaceName,
-        const std::int64_t messagingTtl)
+        std::int64_t messagingTtl)
 {
     std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> proxy =
             getGlobalCapabilitiesDirectoryProxy(messagingTtl);
@@ -95,7 +96,7 @@ std::vector<types::GlobalDiscoveryEntry> CapabilitiesClient::lookup(
 void CapabilitiesClient::lookup(
         const std::vector<std::string>& domains,
         const std::string& interfaceName,
-        const std::int64_t messagingTtl,
+        std::int64_t messagingTtl,
         std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {

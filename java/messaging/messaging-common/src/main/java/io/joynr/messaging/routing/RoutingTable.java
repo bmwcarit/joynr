@@ -22,13 +22,22 @@ package io.joynr.messaging.routing;
 import joynr.system.RoutingTypes.Address;
 
 public interface RoutingTable {
-    public Address get(String participantId);
+    Address get(String participantId);
 
-    public Address put(String participantId, Address address);
+    Address put(String participantId, Address address, boolean isGloballyVisible);
 
-    public boolean containsKey(String participantId);
+    boolean containsKey(String participantId);
 
-    public void remove(String participantId);
+    /**
+     * Query the routing table for the status of isGloballyVisible parameter
+     * @param participantId
+     * @return true if participantId is globally visible,
+     *         false if participantId is not globally visible
+     * @throws JoynrRuntimeException if no entry exists for the given participantId
+     */
+    boolean getIsGloballyVisible(String participantId);
+
+    void remove(String participantId);
 
     /**
      * Apply the specified operation to all addresses currently held in the routing table.

@@ -53,7 +53,6 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
-                                                    MqttMessageSerializerFactory messageSerializerFactory,
                                                     @Named(MessagingPropertyKeys.CHANNELID) String channelId,
                                                     MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                                     RawMessagingPreprocessor rawMessagingPreprocessor,
@@ -61,7 +60,6 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
         super(ownAddress,
               messageRouter,
               mqttClientFactory,
-              messageSerializerFactory,
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
               messageProcessors);

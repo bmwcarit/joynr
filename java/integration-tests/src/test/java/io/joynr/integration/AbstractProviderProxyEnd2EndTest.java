@@ -51,7 +51,6 @@ import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -88,6 +87,7 @@ import joynr.types.ProviderQos;
 import joynr.types.TestTypes.TStringKeyMap;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -104,7 +104,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     // This timeout must be shared by all integration test environments and
     // cannot be too short.
-    protected static final int CONST_DEFAULT_TEST_TIMEOUT = 8000;
+    protected static final int CONST_DEFAULT_TEST_TIMEOUT = 30000;
 
     public static final Semaphore FIRE_AND_FORGET_SEMAPHORE = new Semaphore(1);
     public static final Semaphore FIRE_AND_FORGET_WITH_ENUM_WITH_VALUES_PARAM_SEMAPHORE = new Semaphore(0);
@@ -136,6 +136,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     private static final Integer FIRE_AND_FORGET_INT_PARAMETER = 1;
     private static final String FIRE_AND_FORGET_STRING_PARAMETER = "test";
     private static final ComplexTestType FIRE_AND_FORGET_COMPLEX_PARAMETER = new ComplexTestType();
+
+    protected List<JoynrRuntime> createdRuntimes = new ArrayList<JoynrRuntime>();
+    protected static Properties baseTestConfig;
 
     long timeTookToRegisterProvider;
 
@@ -172,6 +175,14 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     // Overridden by test environment implementations
     protected abstract JoynrRuntime getRuntime(Properties joynrConfig, Module... modules);
 
+    @BeforeClass
+    public static void setupBaseConfig() {
+        baseTestConfig = new Properties();
+        baseTestConfig.put(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
+        baseTestConfig.put(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
+        baseTestConfig.put(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
+    }
+
     @Before
     public void baseSetup() throws Exception {
 
@@ -203,6 +214,10 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
                                      getSubscriptionPublisherFactoryModule(),
                                      new StaticDomainAccessControlProvisioningModule());
 
+        if (providerRuntime != null) {
+            createdRuntimes.add(providerRuntime);
+        }
+
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain."
                 + UUID.randomUUID().toString());
@@ -211,6 +226,10 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         joynrConfigConsumer.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
         consumerRuntime = getRuntime(joynrConfigConsumer, getSubscriptionPublisherFactoryModule());
+
+        if (consumerRuntime != null) {
+            createdRuntimes.add(consumerRuntime);
+        }
 
         provider = new TestProvider();
         ProviderQos testProviderQos = new ProviderQos();
@@ -235,7 +254,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     @After
     public void tearDown() throws InterruptedException {
-
         if (providerRuntime != null) {
             providerRuntime.unregisterProvider(domain, provider);
             providerRuntime.unregisterProvider(domainAsync, provider);
@@ -246,6 +264,10 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }
         if (consumerRuntime != null) {
             consumerRuntime.shutdown(true);
+        }
+
+        for (JoynrRuntime createdRuntime : createdRuntimes) {
+            createdRuntime.shutdown(true);
         }
     }
 

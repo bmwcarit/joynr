@@ -20,28 +20,28 @@
 #ifndef LOCALDOMAINACCESSCONTROLLER_H
 #define LOCALDOMAINACCESSCONTROLLER_H
 
-#include <string>
-#include <memory>
-#include <vector>
-#include <cstdint>
-#include <mutex>
-#include <unordered_map>
 #include <chrono>
+#include <cstdint>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-#include "joynr/JoynrClusterControllerExport.h"
-#include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
-#include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
-#include "joynr/infrastructure/DacTypes/Permission.h"
-#include "joynr/infrastructure/DacTypes/TrustLevel.h"
-#include "joynr/infrastructure/DacTypes/Role.h"
-#include "joynr/ISubscriptionListener.h"
 #include "AccessControlAlgorithm.h"
 #include "LocalDomainAccessStore.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/Logger.h"
 #include "joynr/Future.h"
+#include "joynr/ISubscriptionListener.h"
+#include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
+#include "joynr/infrastructure/DacTypes/Permission.h"
+#include "joynr/infrastructure/DacTypes/Role.h"
+#include "joynr/infrastructure/DacTypes/TrustLevel.h"
 
 namespace joynr
 {
@@ -51,6 +51,7 @@ class GlobalDomainAccessControllerProxy;
 class GlobalDomainRoleControllerProxy;
 class GlobalDomainAccessControlListEditorProxy;
 } // namespace infrastructure
+class MulticastSubscriptionQos;
 
 /**
  * Object that controls access to providers
@@ -59,16 +60,16 @@ class JOYNRCLUSTERCONTROLLER_EXPORT LocalDomainAccessController
 {
 public:
     /**
-     * The LocalDomainAccessController gets consumer permissions asynchronously.
+     * The LocalDomainAccessController gets consumer / provider permissions asynchronously.
      * When using the LocalDomainAccessController the caller provides a callback object.
      */
-    class IGetConsumerPermissionCallback
+    class IGetPermissionCallback
     {
     public:
-        virtual ~IGetConsumerPermissionCallback() = default;
+        virtual ~IGetPermissionCallback() = default;
 
-        // Called with the result of a consumer permission request
-        virtual void consumerPermission(infrastructure::DacTypes::Permission::Enum permission) = 0;
+        // Called with the result of a consumer / provider permission request
+        virtual void permission(infrastructure::DacTypes::Permission::Enum permission) = 0;
 
         // Called when an operation is needed to get the consumer permission
         virtual void operationNeeded() = 0;
@@ -128,7 +129,7 @@ public:
                                        const std::string& domain,
                                        const std::string& interfaceName,
                                        infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                                       std::shared_ptr<IGetConsumerPermissionCallback> callback);
+                                       std::shared_ptr<IGetPermissionCallback> callback);
 
     /**
       * Get consumer permission to access an interface operation
@@ -291,6 +292,25 @@ public:
                                        const std::string& operation);
 
     /**
+      * Get provider permission to register for an interface
+      *
+      * @param userId        The user registering for the interface
+      * @param domain        The domain that is being registered for
+      * @param interfaceName The interface that is being accessed
+      * @param trustLevel    The trust level of the device accessing the interface
+      * @param callbacks     Object that will receive the result and then be deleted
+      *
+      * Use :
+      *    getProviderPermission(String, String, String, TrustLevel, callbacks)
+      * to gain exact Permission on interface registration.
+      */
+    virtual void getProviderPermission(const std::string& userId,
+                                       const std::string& domain,
+                                       const std::string& interfaceName,
+                                       infrastructure::DacTypes::TrustLevel::Enum trustLevel,
+                                       std::shared_ptr<IGetPermissionCallback> callback);
+
+    /**
      * Get provider permission to expose an interface
      *
      * @param uid        The userId of the provider exposing the interface
@@ -298,7 +318,7 @@ public:
      * @param interfaceName The interface that is being accessed
      * @param trustLevel    The trust level of the device accessing the interface
      */
-    infrastructure::DacTypes::Permission::Enum getProviderPermission(
+    virtual infrastructure::DacTypes::Permission::Enum getProviderPermission(
             const std::string& uid,
             const std::string& domain,
             const std::string& interfacename,
@@ -489,6 +509,43 @@ private:
 
     std::unordered_map<std::string, AceSubscription> aceSubscriptions;
 
+    struct RceSubscription
+    {
+        std::shared_ptr<Future<std::string>> masterRceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> mediatorRceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> ownerRceSubscriptionIdFuture;
+
+        const std::string getMasterRceSubscriptionId()
+        {
+            std::string masterRceSubscriptionId;
+            masterRceSubscriptionIdFuture->get(1000, masterRceSubscriptionId);
+            return masterRceSubscriptionId;
+        }
+
+        const std::string getMediatorRceSubscriptionId()
+        {
+            std::string mediatorRceSubscriptionId;
+            mediatorRceSubscriptionIdFuture->get(1000, mediatorRceSubscriptionId);
+            return mediatorRceSubscriptionId;
+        }
+
+        const std::string getOwnerRceSubscriptionId()
+        {
+            std::string ownerRceSubscriptionId;
+            ownerRceSubscriptionIdFuture->get(1000, ownerRceSubscriptionId);
+            return ownerRceSubscriptionId;
+        }
+
+        RceSubscription()
+                : masterRceSubscriptionIdFuture(),
+                  mediatorRceSubscriptionIdFuture(),
+                  ownerRceSubscriptionIdFuture()
+        {
+        }
+    };
+
+    std::unordered_map<std::string, RceSubscription> rceSubscriptions;
+
     std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy>
             globalDomainAccessControllerProxy;
     std::shared_ptr<infrastructure::GlobalDomainAccessControlListEditorProxy>
@@ -500,29 +557,48 @@ private:
     ADD_LOGGER(LocalDomainAccessController);
     static std::chrono::milliseconds broadcastSubscriptionValidity;
 
-    void initialiseLocalDomainAccessStore(const std::string& userId,
-                                          const std::string& domain,
-                                          const std::string& interfaceName);
+    // Initialize MasterACE, MediatorACE and OwnerACE for the given data/interface. This function is
+    // non-blocking.
+    void initializeLocalDomainAccessStoreAces(const std::string& domain,
+                                              const std::string& interfaceName);
 
-    void initialised(const std::string& domain,
+    // Initialize MasterRCE, MediatorRCE and OwnerRCE for the given data/interface. This function is
+    // non-blocking.
+    void initializeLocalDomainAccessStoreRces(const std::string& userId,
+                                              const std::string& domain,
+                                              const std::string& interfaceName);
+
+    // Initialize DRT for the given userId. This function is non-blocking.
+    void initializeDomainRoleTable(const std::string& userId);
+
+    void initialized(const std::string& domain,
                      const std::string& interfaceName,
+                     const bool handleAces,
+                     const bool handleRces,
                      bool restoringFromFile = false);
-    void abortInitialisation(const std::string& domain, const std::string& interfaceName);
+    void abortInitialization(const std::string& domain,
+                             const std::string& interfaceName,
+                             const bool handleAces,
+                             const bool handleRces);
 
     std::shared_ptr<Future<std::string>> subscribeForDreChange(const std::string& userId);
     AceSubscription subscribeForAceChange(const std::string& domain,
                                           const std::string& interfaceName);
+    RceSubscription subscribeForRceChange(const std::string& domain,
+                                          const std::string& interfaceName);
     std::string createCompoundKey(const std::string& domain, const std::string& interfaceName);
 
-    // Requests waiting to get consumer permission
-    struct ConsumerPermissionRequest
+    // Requests waiting to get consumer / provider permission
+    struct PermissionRequest
     {
         std::string userId;
         std::string domain;
         std::string interfaceName;
         infrastructure::DacTypes::TrustLevel::Enum trustLevel;
-        std::shared_ptr<IGetConsumerPermissionCallback> callbacks;
+        std::shared_ptr<IGetPermissionCallback> callbacks;
     };
+
+    using ConsumerPermissionRequest = PermissionRequest;
 
     std::unordered_map<std::string, std::vector<ConsumerPermissionRequest>>
             consumerPermissionRequests;
@@ -530,14 +606,26 @@ private:
     bool queueConsumerRequest(const std::string& key, const ConsumerPermissionRequest& request);
     void processConsumerRequests(const std::vector<ConsumerPermissionRequest>& requests);
 
-    // Mutex that protects all member variables involved in initialisation
+    // Requests waiting to get provider permission
+    using ProviderPermissionRequest = PermissionRequest;
+
+    std::unordered_map<std::string, std::vector<ProviderPermissionRequest>>
+            providerPermissionRequests;
+
+    bool queueProviderRequest(const std::string& key, const ProviderPermissionRequest& request);
+    void processProviderRequests(const std::vector<ProviderPermissionRequest>& requests);
+    std::vector<std::string> createPartitionsVector(const std::string& domain,
+                                                    const std::string& interfaceName);
+
+    // Mutex that protects all member variables involved in initialization
     // of data for a domain/interface
     // - aceSubscriptions
     // - consumerPermissionRequests
+    // - rceSubscriptions
     std::mutex initStateMutex;
 
-    // Class that keeps track of initialisation for a domain/interface
-    class Initialiser;
+    // Class that keeps track of initialization for a domain/interface
+    class Initializer;
 
     // Classes used to receive broadcasts
 
@@ -556,6 +644,20 @@ private:
     class OwnerAccessControlEntryChangedBroadcastListener;
     std::shared_ptr<OwnerAccessControlEntryChangedBroadcastListener>
             ownerAccessControlEntryChangedBroadcastListener;
+
+    class MasterRegistrationControlEntryChangedBroadcastListener;
+    std::shared_ptr<MasterRegistrationControlEntryChangedBroadcastListener>
+            masterRegistrationControlEntryChangedBroadcastListener;
+
+    class MediatorRegistrationControlEntryChangedBroadcastListener;
+    std::shared_ptr<MediatorRegistrationControlEntryChangedBroadcastListener>
+            mediatorRegistrationControlEntryChangedBroadcastListener;
+
+    class OwnerRegistrationControlEntryChangedBroadcastListener;
+    std::shared_ptr<OwnerRegistrationControlEntryChangedBroadcastListener>
+            ownerRegistrationControlEntryChangedBroadcastListener;
+
+    std::shared_ptr<joynr::MulticastSubscriptionQos> multicastSubscriptionQos;
 
     static std::string sanitizeForPartition(const std::string& value);
 };

@@ -63,8 +63,8 @@ import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingSettings;
@@ -73,7 +73,6 @@ import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
-import io.joynr.messaging.inprocess.InProcessMessageSerializerFactory;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.InMemoryMulticastReceiverRegistry;
@@ -83,8 +82,6 @@ import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.RoutingTableImpl;
-import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
-import io.joynr.messaging.serialize.MessageSerializerFactory;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
@@ -95,8 +92,7 @@ import joynr.system.RoutingTypes.Address;
 
 abstract class AbstractRuntimeModule extends AbstractModule {
 
-    MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
-    MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
+    MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
     MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
     @SuppressWarnings("URF_UNREAD_FIELD")
     Multibinder<MulticastAddressCalculator> multicastAddressCalculators;
@@ -115,14 +111,9 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         install(new JoynrMessageScopeModule());
 
         messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
+        }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>>() {
         }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
         messagingStubFactory.addBinding(InProcessAddress.class).to(InProcessMessagingStubFactory.class);
-
-        messageSerializerFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<AbstractMiddlewareMessageSerializerFactory<? extends Address>>() {
-        }, Names.named(MessageSerializerFactory.MIDDLEWARE_MESSAGE_SERIALIZER_FACTORIES));
-        messageSerializerFactory.addBinding(InProcessAddress.class).to(InProcessMessageSerializerFactory.class);
 
         messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
         }, new TypeLiteral<IMessagingSkeleton>() {
@@ -172,6 +163,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     }
 
     @Provides
+    @Singleton
     @Named(MessageRouter.SCHEDULEDTHREADPOOL)
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
         ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")

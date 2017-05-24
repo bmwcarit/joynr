@@ -26,8 +26,8 @@
 
 #include "joynr/SubscriptionRequest.h"
 
-#include "joynr/JoynrExport.h"
 #include "joynr/BroadcastFilterParameters.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/serializer/Serializer.h"
 

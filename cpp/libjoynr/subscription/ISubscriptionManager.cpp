@@ -18,9 +18,9 @@
  */
 #include "joynr/ISubscriptionManager.h"
 
+#include <chrono>
 #include <cstdint>
 #include <limits>
-#include <chrono>
 
 #include "joynr/SubscriptionQos.h"
 

@@ -21,11 +21,12 @@
 
 #include <chrono>
 #include <string>
+
 #include <CommonAPI/CommonAPI.h>
 
 #include "joynr/JoynrExport.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {

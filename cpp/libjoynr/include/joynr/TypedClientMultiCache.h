@@ -19,13 +19,13 @@
 #ifndef TYPEDCLIENTMULTICACHE_H
 #define TYPEDCLIENTMULTICACHE_H
 
-#include "joynr/CachedValue.h"
-#include "joynr/Cache.h"
-
-#include <vector>
-#include <mutex>
 #include <chrono>
 #include <cstdint>
+#include <mutex>
+#include <vector>
+
+#include "joynr/Cache.h"
+#include "joynr/CachedValue.h"
 #include "joynr/Util.h"
 
 namespace joynr

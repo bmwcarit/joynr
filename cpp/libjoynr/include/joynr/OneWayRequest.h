@@ -23,8 +23,8 @@
 #include <vector>
 
 #include "joynr/JoynrExport.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/serializer/SerializationPlaceholder.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -34,9 +34,6 @@ class JOYNR_EXPORT OneWayRequest
 public:
     OneWayRequest();
 
-    OneWayRequest(const OneWayRequest&) = default;
-    OneWayRequest& operator=(const OneWayRequest&) = default;
-
     OneWayRequest(OneWayRequest&&) = default;
     OneWayRequest& operator=(OneWayRequest&&) = default;
 
@@ -44,9 +41,11 @@ public:
 
     const std::string& getMethodName() const;
     void setMethodName(const std::string& methodName);
+    void setMethodName(std::string&& methodName);
 
-    std::vector<std::string> getParamDatatypes() const;
-    void setParamDatatypes(std::vector<std::string> paramDatatypes);
+    const std::vector<std::string>& getParamDatatypes() const;
+    void setParamDatatypes(const std::vector<std::string>& paramDatatypes);
+    void setParamDatatypes(std::vector<std::string>&& paramDatatypes);
 
     template <typename... Ts>
     void setParams(Ts&&... values)

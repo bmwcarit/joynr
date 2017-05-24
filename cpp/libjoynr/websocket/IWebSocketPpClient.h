@@ -21,8 +21,8 @@
 
 #include <functional>
 
-#include <websocketpp/config/asio_client.hpp>
-#include <websocketpp/client.hpp>
+#include <smrf/ByteArrayView.h>
+#include <smrf/ByteVector.h>
 
 namespace joynr
 {
@@ -31,14 +31,15 @@ class IWebSocketSendInterface;
 namespace exceptions
 {
 class JoynrRuntimeException;
-}
+} // namespace exceptions
+
 namespace system
 {
 namespace RoutingTypes
 {
 class WebSocketAddress;
-}
-}
+} // namespace RoutingTypes
+} // namespace system
 
 class IWebSocketPpClient
 {
@@ -49,7 +50,7 @@ public:
     virtual void registerReconnectCallback(std::function<void()> callback) = 0;
     virtual void registerDisconnectCallback(std::function<void()> onWebSocketDisconnected) = 0;
     virtual void registerReceiveCallback(
-            std::function<void(const std::string&)> onTextMessageReceived) = 0;
+            std::function<void(smrf::ByteVector&&)> onMessageReceived) = 0;
 
     virtual void connect(const system::RoutingTypes::WebSocketAddress& address) = 0;
     virtual void close() = 0;
@@ -57,7 +58,7 @@ public:
     virtual bool isConnected() const = 0;
 
     virtual void send(
-            const std::string& msg,
+            const smrf::ByteArrayView& msg,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
 
     virtual std::shared_ptr<IWebSocketSendInterface> getSender() const = 0;

@@ -1,6 +1,3 @@
-/**
- *
- */
 package test.io.joynr.jeeintegration;
 
 /*
@@ -35,6 +32,9 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.jeeintegration.JeeJoynrServiceLocator;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.messaging.MessagingQos;
@@ -98,14 +98,33 @@ public class JeeJoynrServiceLocatorTest {
         verify(myJoynrProxy).callMe("one");
     }
 
-    @Test(expected = ProviderRuntimeException.class)
-    public void testProxyUnwrapsProviderRuntimeException() {
+    private void forceJoynrProxyToThrowSpecifiedException(Exception exceptionToThrow){
         reset(myJoynrProxy);
-        when(myJoynrProxy.callMe(anyString())).thenThrow(new ProviderRuntimeException("test"));
+        when(myJoynrProxy.callMe(anyString())).thenThrow(exceptionToThrow);
 
         MyServiceSync proxy = subject.get(MyServiceSync.class, "local");
 
         proxy.callMe("one");
+    }
+
+    @Test(expected = ProviderRuntimeException.class)
+    public void testProxyUnwrapsProviderRuntimeException() {
+        forceJoynrProxyToThrowSpecifiedException(new ProviderRuntimeException("test"));
+    }
+
+    @Test(expected = JoynrCommunicationException.class)
+    public void testProxyUnwrapsJoynrCommunicationException() {
+        forceJoynrProxyToThrowSpecifiedException(new JoynrCommunicationException("test"));
+    }
+
+    @Test(expected = JoynrTimeoutException.class)
+    public void testProxyUnwrapsJoynrTimeoutException() {
+        forceJoynrProxyToThrowSpecifiedException(new JoynrTimeoutException(42));
+    }
+
+    @Test(expected = JoynrRuntimeException.class)
+    public void testProxyUnwrapsJoynrRuntimeException() {
+        forceJoynrProxyToThrowSpecifiedException(new JoynrRuntimeException("test"));
     }
 
     @Test(expected = ApplicationException.class)

@@ -32,10 +32,10 @@ class SubscriptionQos;
 class JOYNR_EXPORT SubscriptionUtil
 {
 public:
-    static bool isOnChangeSubscription(const std::shared_ptr<SubscriptionQos>& qos);
-    static std::int64_t getAlertInterval(const std::shared_ptr<SubscriptionQos>& qos);
-    static std::int64_t getMinInterval(const std::shared_ptr<SubscriptionQos>& qos);
-    static std::int64_t getPeriodicPublicationInterval(const std::shared_ptr<SubscriptionQos>& qos);
+    static bool isOnChangeSubscription(std::shared_ptr<SubscriptionQos> qos);
+    static std::int64_t getAlertInterval(std::shared_ptr<SubscriptionQos> qos);
+    static std::int64_t getMinInterval(std::shared_ptr<SubscriptionQos> qos);
+    static std::int64_t getPeriodicPublicationInterval(std::shared_ptr<SubscriptionQos> qos);
 };
 
 } // namespace joynr

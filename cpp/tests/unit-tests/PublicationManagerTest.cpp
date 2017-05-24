@@ -16,8 +16,6 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
@@ -25,9 +23,9 @@
 #include <string>
 #include <thread>
 
-#include "JoynrTest.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
-#include "tests/utils/MockObjects.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/SubscriptionPublication.h"
@@ -43,8 +41,11 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/Semaphore.h"
-#include "joynr/IJoynrMessageSender.h"
+#include "joynr/IMessageSender.h"
 #include "libjoynr/common/CallContextStorage.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -62,7 +63,7 @@ using namespace joynr;
 
 class PublicationManagerTest : public testing::Test {
 public:
-    PublicationManagerTest() : singleThreadedIOService(), messageSender(new MockJoynrMessageSender())
+    PublicationManagerTest() : singleThreadedIOService(), messageSender(new MockMessageSender())
     {
         singleThreadedIOService.start();
     }
@@ -85,7 +86,7 @@ protected:
     void sendSubscriptionReplyOnSuccessfulRegistration(SubscriptionRequest& subscriptionRequest);
     void sendSubscriptionExceptionOnExpiredRegistration(SubscriptionRequest& subscriptionRequest);
     SingleThreadedIOService singleThreadedIOService;
-    IJoynrMessageSender* messageSender;
+    IMessageSender* messageSender;
     joynr::CallContext savedCallContext;
     joynr::Semaphore getLocationCalledSemaphore;
     ADD_LOGGER(PublicationManagerTest);

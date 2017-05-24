@@ -19,8 +19,8 @@
 #include "joynr/MessagingQos.h"
 
 #include <exception>
-#include <sstream>
 #include <regex>
+#include <sstream>
 
 namespace joynr
 {

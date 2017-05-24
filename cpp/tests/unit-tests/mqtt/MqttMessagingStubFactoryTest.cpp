@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 
-#include "joynr/IMessaging.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
@@ -29,7 +28,7 @@
 #include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
 #include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStub.h"
 
-#include "utils/MockObjects.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 
@@ -60,14 +59,14 @@ protected:
 INIT_LOGGER(MqttMessagingStubFactoryTest);
 
 TEST_F(MqttMessagingStubFactoryTest, canCreateMqttAddressses) {
-    auto mockMessageSender = std::make_shared<MockMessageSender>();
+    auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
     MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_TRUE(factory.canCreate(mqttAddress));
 }
 
 TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses) {
-    auto mockMessageSender = std::make_shared<MockMessageSender>();
+    auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
     MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_FALSE(factory.canCreate(channelAddress));
@@ -78,7 +77,7 @@ TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses) {
 }
 
 TEST_F(MqttMessagingStubFactoryTest, createReturnsMessagingStub) {
-    auto mockMessageSender = std::make_shared<MockMessageSender>();
+    auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
     MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_TRUE(factory.create(mqttAddress).get() != nullptr);

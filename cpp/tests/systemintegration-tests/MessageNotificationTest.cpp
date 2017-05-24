@@ -20,8 +20,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
-
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
@@ -32,9 +30,10 @@
 #include "joynr/tests/testProxy.h"
 #include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/types/ProviderQos.h"
-
 #include "joynr/JoynrClusterControllerRuntime.h"
-#include "utils/TestLibJoynrWebSocketRuntime.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using namespace ::testing;
 using namespace joynr;

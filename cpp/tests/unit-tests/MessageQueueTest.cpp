@@ -16,15 +16,18 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
-
-#include "joynr/PrivateCopyAssign.h"
-
-#include "joynr/MessageQueue.h"
-
 #include <chrono>
 #include <cstdint>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include "joynr/ImmutableMessage.h"
+#include "joynr/MessageQueue.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/PrivateCopyAssign.h"
+
+#include "tests/JoynrTest.h"
 
 using namespace joynr;
 
@@ -51,59 +54,59 @@ TEST_F(MessageQueueTest, initialQueueIsEmpty) {
 }
 
 TEST_F(MessageQueueTest, addMultipleMessages) {
-    JoynrMessage msg1;
-    msg1.setHeaderExpiryDate(expiryDate);
-    EXPECT_EQ(messageQueue.queueMessage(msg1), 1);
-    JoynrMessage msg2;
-    msg2.setHeaderExpiryDate(expiryDate);
-    EXPECT_EQ(messageQueue.queueMessage(msg2), 2);
-    JoynrMessage msg3;
-    msg3.setHeaderExpiryDate(expiryDate);
-    EXPECT_EQ(messageQueue.queueMessage(msg3), 3);
-    JoynrMessage msg4;
-    msg4.setHeaderExpiryDate(expiryDate);
-    EXPECT_EQ(messageQueue.queueMessage(msg4), 4);
+    MutableMessage mutableMsg1;
+    mutableMsg1.setExpiryDate(expiryDate);
+    EXPECT_EQ(messageQueue.queueMessage(mutableMsg1.getImmutableMessage()), 1);
+    MutableMessage mutableMsg2;
+    mutableMsg2.setExpiryDate(expiryDate);
+    EXPECT_EQ(messageQueue.queueMessage(mutableMsg2.getImmutableMessage()), 2);
+    MutableMessage mutableMsg3;
+    mutableMsg3.setExpiryDate(expiryDate);
+    EXPECT_EQ(messageQueue.queueMessage(mutableMsg3.getImmutableMessage()), 3);
+    MutableMessage mutableMsg4;
+    mutableMsg4.setExpiryDate(expiryDate);
+    EXPECT_EQ(messageQueue.queueMessage(mutableMsg4.getImmutableMessage()), 4);
 }
 
 TEST_F(MessageQueueTest, queueDequeueMessages) {
     // add messages to the queue
-    JoynrMessage msg1;
-    msg1.setHeaderTo("TEST1");
-    msg1.setHeaderExpiryDate(expiryDate);
-    messageQueue.queueMessage(msg1);
+    MutableMessage mutableMsg1;
+    mutableMsg1.setRecipient("TEST1");
+    mutableMsg1.setExpiryDate(expiryDate);
+    messageQueue.queueMessage(mutableMsg1.getImmutableMessage());
 
-    JoynrMessage msg2;
-    msg2.setHeaderTo("TEST2");
-    msg2.setHeaderExpiryDate(expiryDate);
-    messageQueue.queueMessage(msg2);
+    MutableMessage mutableMsg2;
+    mutableMsg2.setRecipient("TEST2");
+    mutableMsg2.setExpiryDate(expiryDate);
+    messageQueue.queueMessage(mutableMsg2.getImmutableMessage());
     EXPECT_EQ(messageQueue.getQueueLength(), 2);
 
     // get messages from queue
     auto item = messageQueue.getNextMessageForParticipant("TEST1");
-    EXPECT_EQ(item->getContent(), msg1);
+    compareMutableImmutableMessage(mutableMsg1, item->getContent());
     EXPECT_EQ(messageQueue.getQueueLength(), 1);
 
     item = messageQueue.getNextMessageForParticipant("TEST2");
-    EXPECT_EQ(item->getContent(), msg2);
+    compareMutableImmutableMessage(mutableMsg2, item->getContent());
     EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 
 TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant) {
     // add messages to the queue
-    JoynrMessage msg;
-    msg.setHeaderTo("TEST");
-    msg.setHeaderExpiryDate(expiryDate);
-    messageQueue.queueMessage(msg);
-    messageQueue.queueMessage(msg);
+    MutableMessage mutableMessage;
+    mutableMessage.setRecipient("TEST");
+    mutableMessage.setExpiryDate(expiryDate);
+    messageQueue.queueMessage(mutableMessage.getImmutableMessage());
+    messageQueue.queueMessage(mutableMessage.getImmutableMessage());
     EXPECT_EQ(messageQueue.getQueueLength(), 2);
 
     // get messages from queue
     auto item = messageQueue.getNextMessageForParticipant("TEST");
-    EXPECT_EQ(item->getContent(), msg);
+    compareMutableImmutableMessage(mutableMessage, item->getContent());
     EXPECT_EQ(messageQueue.getQueueLength(), 1);
 
     item = messageQueue.getNextMessageForParticipant("TEST");
-    EXPECT_EQ(item->getContent(), msg);
+    compareMutableImmutableMessage(mutableMessage, item->getContent());
     EXPECT_EQ(messageQueue.getQueueLength(), 0);
 }
 

@@ -23,37 +23,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.JoynrMessageSerializer;
+import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.http.HttpMessageSender;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.ChannelAddress;
 
-public class ChannelMessagingStub implements IMessaging {
+public class ChannelMessagingStub implements IMessagingStub {
     private static final Logger LOG = LoggerFactory.getLogger(ChannelMessagingStub.class);
 
     private ChannelAddress address;
-    private JoynrMessageSerializer messageSerializer;
     private HttpMessageSender httpMessageSender;
 
-    public ChannelMessagingStub(ChannelAddress address,
-                                JoynrMessageSerializer messageSerializer,
-                                HttpMessageSender httpMessageSender) {
+    public ChannelMessagingStub(ChannelAddress address, HttpMessageSender httpMessageSender) {
         this.address = address;
-        this.messageSerializer = messageSerializer;
         this.httpMessageSender = httpMessageSender;
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
         LOG.debug(">>> OUTGOING >>> {}", message.toLogMessage());
-        String serializedMessage = messageSerializer.serialize(message);
-        transmit(serializedMessage, failureAction);
-    }
-
-    @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
-        LOG.debug(">>> OUTGOING >>> {}", serializedMessage);
-        httpMessageSender.sendMessage(address, serializedMessage, failureAction);
+        httpMessageSender.sendMessage(address, message.getSerializedMessage(), failureAction);
     }
 }

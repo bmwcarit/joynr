@@ -21,13 +21,12 @@
 
 #include <string>
 
-#include "joynr/IMessaging.h"
 #include "joynr/JoynrExport.h"
 
 namespace joynr
 {
 
-class JOYNR_EXPORT IMessagingMulticastSubscriber : public IMessaging
+class JOYNR_EXPORT IMessagingMulticastSubscriber
 {
 public:
     virtual ~IMessagingMulticastSubscriber() = default;

@@ -26,7 +26,7 @@ SubscriptionStop::SubscriptionStop() : subscriptionId()
 {
 }
 
-std::string SubscriptionStop::getSubscriptionId() const
+const std::string& SubscriptionStop::getSubscriptionId() const
 {
     return subscriptionId;
 }
@@ -34,6 +34,11 @@ std::string SubscriptionStop::getSubscriptionId() const
 void SubscriptionStop::setSubscriptionId(const std::string& subscriptionId)
 {
     this->subscriptionId = subscriptionId;
+}
+
+void SubscriptionStop::setSubscriptionId(std::string&& subscriptionId)
+{
+    this->subscriptionId = std::move(subscriptionId);
 }
 
 bool SubscriptionStop::operator==(const SubscriptionStop& other) const

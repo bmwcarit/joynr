@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 import joynr.system.RoutingTypes.Address;
 
 public interface JoynrWebSocketEndpoint {
@@ -33,11 +33,11 @@ public interface JoynrWebSocketEndpoint {
 
     public void start();
 
-    public void setMessageListener(IMessaging messaging);
+    public void setMessageListener(IMessagingSkeleton messaging);
 
     public void shutdown();
 
-    public void writeText(Address to, String message, long timeout, TimeUnit unit, FailureAction failureAction);
+    public void writeBytes(Address to, byte[] message, long timeout, TimeUnit unit, FailureAction failureAction);
 
     public void reconnect();
 }

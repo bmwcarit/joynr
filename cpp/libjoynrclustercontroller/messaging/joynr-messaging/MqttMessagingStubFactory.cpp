@@ -16,16 +16,19 @@
  * limitations under the License.
  * #L%
  */
-#include "MqttMessagingStub.h"
-#include "MqttMessagingStubFactory.h"
 
-#include "joynr/IMessageSender.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
+
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/ITransportMessageSender.h"
+
+#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStub.h"
 
 namespace joynr
 {
 
-MqttMessagingStubFactory::MqttMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender)
+MqttMessagingStubFactory::MqttMessagingStubFactory(
+        std::shared_ptr<ITransportMessageSender> messageSender)
         : messageSender(messageSender)
 {
 }
@@ -35,7 +38,7 @@ bool MqttMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::Addr
     return dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destAddress);
 }
 
-std::shared_ptr<IMessaging> MqttMessagingStubFactory::create(
+std::shared_ptr<IMessagingStub> MqttMessagingStubFactory::create(
         const joynr::system::RoutingTypes::Address& destAddress)
 {
     const system::RoutingTypes::MqttAddress* mqttAddress =
@@ -44,7 +47,7 @@ std::shared_ptr<IMessaging> MqttMessagingStubFactory::create(
 }
 
 void MqttMessagingStubFactory::registerOnMessagingStubClosedCallback(
-        std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+        std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address>
                                    destinationAddress)> onMessagingStubClosedCallback)
 {
     std::ignore = onMessagingStubClosedCallback;

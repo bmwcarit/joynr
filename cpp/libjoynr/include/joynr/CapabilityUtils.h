@@ -25,7 +25,7 @@ namespace types
 {
 class DiscoveryEntry;
 class DiscoveryEntryWithMetaInfo;
-}
+} // namespace types
 
 namespace util
 {

@@ -19,19 +19,19 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
-import io.joynr.messaging.IRawMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 
 public interface JoynrMqttClient {
 
     public void start();
 
-    public void setMessageListener(IRawMessaging rawMessaging);
+    public void setMessageListener(IMessagingSkeleton rawMessaging);
 
     public void shutdown();
 
-    public void publishMessage(String topic, String serializedMessage);
+    public void publishMessage(String topic, byte[] serializedMessage);
 
-    public void publishMessage(String topic, String serializedMessage, int qosLevel);
+    public void publishMessage(String topic, byte[] serializedMessage, int qosLevel);
 
     public void subscribe(String topic);
 

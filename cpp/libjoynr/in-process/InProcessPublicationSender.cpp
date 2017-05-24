@@ -22,9 +22,9 @@
 #include <tuple>
 
 #include "joynr/ISubscriptionCallback.h"
+#include "joynr/ISubscriptionManager.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
-#include "joynr/ISubscriptionManager.h"
 
 namespace joynr
 {
@@ -53,7 +53,7 @@ void InProcessPublicationSender::sendSubscriptionPublication(
       * just call the InProcessDispatcher!
       */
 
-    const std::string subscriptionId = subscriptionPublication.getSubscriptionId();
+    const std::string& subscriptionId = subscriptionPublication.getSubscriptionId();
     JOYNR_LOG_DEBUG(logger, "Sending publication. id={}", subscriptionId);
     assert(subscriptionManager != nullptr);
     subscriptionManager->touchSubscriptionState(subscriptionId);
@@ -81,7 +81,7 @@ void InProcessPublicationSender::sendSubscriptionReply(const std::string& sender
     std::ignore = receiverParticipantId;
     std::ignore = qos;
 
-    const std::string subscriptionId = subscriptionReply.getSubscriptionId();
+    const std::string& subscriptionId = subscriptionReply.getSubscriptionId();
     JOYNR_LOG_DEBUG(logger, "Sending publication. id={}", subscriptionId);
     assert(subscriptionManager != nullptr);
     std::shared_ptr<ISubscriptionCallback> callback =

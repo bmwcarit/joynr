@@ -17,12 +17,13 @@
  * #L%
  */
 
-#include "AccessControlAlgorithm.h"
-#include "AceValidator.h"
-#include "TrustLevelComparator.h"
-
+#include "libjoynrclustercontroller/access-control/AccessControlAlgorithm.h"
+#include "libjoynrclustercontroller/access-control/Validator.h"
+#include "libjoynrclustercontroller/access-control/TrustLevelComparator.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
 
 namespace joynr
 {
@@ -40,9 +41,9 @@ Permission::Enum AccessControlAlgorithm::getConsumerPermission(
 }
 
 Permission::Enum AccessControlAlgorithm::getProviderPermission(
-        const boost::optional<MasterAccessControlEntry>& masterOptional,
-        const boost::optional<MasterAccessControlEntry>& mediatorOptional,
-        const boost::optional<OwnerAccessControlEntry>& ownerOptional,
+        const boost::optional<MasterRegistrationControlEntry>& masterOptional,
+        const boost::optional<MasterRegistrationControlEntry>& mediatorOptional,
+        const boost::optional<OwnerRegistrationControlEntry>& ownerOptional,
         TrustLevel::Enum trustLevel)
 {
     return getPermission(
@@ -82,6 +83,46 @@ Permission::Enum AccessControlAlgorithm::getPermission(
                     trustLevel, masterOptional->getDefaultRequiredTrustLevel()) >= 0) {
             if (permissionType == PERMISSION_FOR_CONSUMER) {
                 permission = masterOptional->getDefaultConsumerPermission();
+            }
+        }
+    }
+
+    return permission;
+}
+
+Permission::Enum AccessControlAlgorithm::getPermission(
+        AccessControlAlgorithm::PermissionType permissionType,
+        const boost::optional<MasterRegistrationControlEntry>& masterOptional,
+        const boost::optional<MasterRegistrationControlEntry>& mediatorOptional,
+        const boost::optional<OwnerRegistrationControlEntry>& ownerOptional,
+        TrustLevel::Enum trustLevel)
+{
+    RceValidator validator(masterOptional, mediatorOptional, ownerOptional);
+    if (!validator.isValid()) {
+        return Permission::NO;
+    }
+
+    Permission::Enum permission = Permission::Enum::NO;
+
+    if (ownerOptional) {
+        if (TrustLevelComparator::compare(trustLevel, ownerOptional->getRequiredTrustLevel()) >=
+            0) {
+            if (permissionType == PERMISSION_FOR_PROVIDER) {
+                permission = ownerOptional->getProviderPermission();
+            }
+        }
+    } else if (mediatorOptional) {
+        if (TrustLevelComparator::compare(
+                    trustLevel, mediatorOptional->getDefaultRequiredTrustLevel()) >= 0) {
+            if (permissionType == PERMISSION_FOR_PROVIDER) {
+                permission = mediatorOptional->getDefaultProviderPermission();
+            }
+        }
+    } else if (masterOptional) {
+        if (TrustLevelComparator::compare(
+                    trustLevel, masterOptional->getDefaultRequiredTrustLevel()) >= 0) {
+            if (permissionType == PERMISSION_FOR_PROVIDER) {
+                permission = masterOptional->getDefaultProviderPermission();
             }
         }
     }

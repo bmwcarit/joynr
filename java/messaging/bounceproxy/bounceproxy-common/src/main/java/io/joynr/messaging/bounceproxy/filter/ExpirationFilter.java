@@ -1,5 +1,7 @@
 package io.joynr.messaging.bounceproxy.filter;
 
+import joynr.ImmutableMessage;
+
 /*
  * #%L
  * %%
@@ -18,8 +20,6 @@ package io.joynr.messaging.bounceproxy.filter;
  * limitations under the License.
  * #L%
  */
-
-import joynr.JoynrMessage;
 
 import org.atmosphere.cpr.BroadcastFilter;
 import org.atmosphere.cpr.BroadcastFilter.BroadcastAction.ACTION;
@@ -42,14 +42,16 @@ public class ExpirationFilter implements BroadcastFilter {
     public boolean inspect(Object message) {
         long expirationDate = 0;
 
-        if (message instanceof JoynrMessage) {
-            JoynrMessage joynrMessage = (JoynrMessage) message;
-            expirationDate = joynrMessage.getExpiryDate();
+        if (message instanceof ImmutableMessage) {
+            ImmutableMessage immutableMessage = (ImmutableMessage) message;
+
+            assert (immutableMessage.isTtlAbsolute());
+            expirationDate = immutableMessage.getTtlMs();
             if (expirationDate < System.currentTimeMillis()) {
-                log.warn("message expired: msgId: {}", joynrMessage.getId());
+                log.warn("message expired: msgId: {}", immutableMessage.getId());
                 return false;
             }
-            log.trace("message has not expired: msgId: {}", joynrMessage.getId());
+            log.trace("message has not expired: msgId: {}", immutableMessage.getId());
             return true;
         }
 

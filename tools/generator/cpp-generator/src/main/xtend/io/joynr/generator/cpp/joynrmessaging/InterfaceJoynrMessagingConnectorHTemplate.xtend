@@ -63,7 +63,7 @@ class InterfaceJoynrMessagingConnectorHTemplate extends InterfaceTemplate{
 
 namespace joynr {
 	class MessagingQos;
-	class IJoynrMessageSender;
+	class IMessageSender;
 	class ISubscriptionManager;
 	«IF !francaIntf.attributes.empty»
 		class SubscriptionRequest;
@@ -149,18 +149,12 @@ public:
 	 * @param qosSettings The quality of service settings
 	 */
 	«interfaceName»JoynrMessagingConnector(
-		std::shared_ptr<joynr::IJoynrMessageSender> messageSender,
+		std::shared_ptr<joynr::IMessageSender> messageSender,
 		std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager,
 		const std::string& domain,
 		const std::string& proxyParticipantId,
 		const joynr::MessagingQos &qosSettings,
 		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryInfo);
-
-	/**
-	 * @brief Checks whether cluster controller is used
-	 * @return true, if cluster controller is used
-	 */
-	bool usesClusterController() const override;
 
 	/** @brief Destructor */
 	~«interfaceName»JoynrMessagingConnector() override = default;

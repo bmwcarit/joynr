@@ -22,7 +22,7 @@
 namespace joynr
 {
 
-MulticastSubscriptionQos::MulticastSubscriptionQos(const std::int64_t validityMs)
+MulticastSubscriptionQos::MulticastSubscriptionQos(std::int64_t validityMs)
         : SubscriptionQos(validityMs)
 {
 }

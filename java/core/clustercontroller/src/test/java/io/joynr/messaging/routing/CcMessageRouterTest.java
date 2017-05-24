@@ -27,14 +27,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.junit.Assert;
 
+import java.util.HashSet;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
@@ -51,24 +52,28 @@ import com.google.inject.util.Modules;
 
 import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.ExpiryDate;
+import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingStub;
+import io.joynr.messaging.JoynrMessageProcessor;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
-import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.Message;
+import joynr.MutableMessage;
+import joynr.Request;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -91,14 +96,14 @@ public class CcMessageRouterTest {
     @Mock
     private ChannelMessagingStubFactory messagingStubFactoryMock;
     @Mock
-    private IMessaging messagingStubMock;
+    private IMessagingStub messagingStubMock;
     @Mock
     private ChannelMessagingSkeleton messagingSkeletonMock;
 
     private MessageRouter messageRouter;
-    private JoynrMessage joynrMessage;
-    private String expectedReplyToAddress;
+    private MutableMessage joynrMessage;
     protected String toParticipantId = "toParticipantId";
+    protected String fromParticipantId = "fromParticipantId";
 
     @Before
     public void setUp() throws Exception {
@@ -122,10 +127,13 @@ public class CcMessageRouterTest {
 
                 bind(AccessController.class).toInstance(Mockito.mock(AccessController.class));
 
-                MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
-                messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-                }, new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>>() {
-                }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
+                MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
+                messagingStubFactory = MapBinder.newMapBinder(binder(),
+                                                              new TypeLiteral<Class<? extends Address>>() {
+                                                              },
+                                                              new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>>() {
+                                                              },
+                                                              Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
                 messagingStubFactory.addBinding(ChannelAddress.class).toInstance(messagingStubFactoryMock);
 
                 MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
@@ -140,11 +148,20 @@ public class CcMessageRouterTest {
                 Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
                 });
 
-                routingTable.put(toParticipantId, channelAddress);
-                joynrMessage = new JoynrMessage();
-                joynrMessage.setTo(toParticipantId);
+                ObjectMapper objectMapper = new ObjectMapper();
+                MutableMessageFactory messageFactory = new MutableMessageFactory(objectMapper,
+                                                                                 new HashSet<JoynrMessageProcessor>());
+
+                final boolean isGloballyVisible = true; // toParticipantId is globally visible
+                routingTable.put(toParticipantId, channelAddress, isGloballyVisible);
+
+                Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
+
+                joynrMessage = messageFactory.createRequest(fromParticipantId,
+                                                            toParticipantId,
+                                                            request,
+                                                            new MessagingQos());
                 joynrMessage.setLocalMessage(true);
-                joynrMessage.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
             }
 
             @Provides
@@ -164,30 +181,31 @@ public class CcMessageRouterTest {
 
         Injector injector = Guice.createInjector(testModule);
         messageRouter = injector.getInstance(MessageRouter.class);
-        GlobalAddressProvider globalAddressProvider = injector.getInstance(GlobalAddressProvider.class);
-        expectedReplyToAddress = RoutingTypesUtil.toAddressString(globalAddressProvider.get());
-    }
-
-    @Test
-    public void testReplyToAddress() throws Exception {
-        Assert.assertEquals(expectedReplyToAddress, ((CcMessageRouter) messageRouter).getReplyToAddress());
     }
 
     @Test
     public void testScheduleMessageOk() throws Exception {
-        joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(100000000));
-        messageRouter.route(joynrMessage);
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
+        joynrMessage.setTtlAbsolute(true);
+
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        messageRouter.route(immutableMessage);
         Thread.sleep(1000);
         verify(messagingStubFactoryMock).create(eq(channelAddress));
-        verify(messagingStubMock).transmit(eq(joynrMessage), any(FailureAction.class));
+        verify(messagingStubMock).transmit(eq(immutableMessage), any(FailureAction.class));
     }
 
     @Test
     public void testScheduleExpiredMessageFails() throws Exception {
-        joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(1));
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1).getValue());
+        joynrMessage.setTtlAbsolute(true);
+
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
         Thread.sleep(5);
         try {
-            messageRouter.route(joynrMessage);
+            messageRouter.route(immutableMessage);
         } catch (JoynrMessageNotSentException e) {
             verify(messagingStubFactoryMock, never()).create(any(ChannelAddress.class));
             return;
@@ -197,22 +215,29 @@ public class CcMessageRouterTest {
 
     @Test
     public void testRetryForNoParticipantFound() throws Exception {
-        joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(1000));
-        joynrMessage.setTo("I don't exist");
-        messageRouter.route(joynrMessage);
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1000).getValue());
+        joynrMessage.setTtlAbsolute(true);
+        joynrMessage.setRecipient("I don't exist");
+
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        messageRouter.route(immutableMessage);
         Thread.sleep(100);
         verify(routingTable, atLeast(2)).containsKey("I don't exist");
-        verify(addressManager, atLeast(2)).getAddresses(joynrMessage);
+        verify(addressManager, atLeast(2)).getAddresses(immutableMessage);
     }
 
     @Test
     public void testNoRetryForMulticastWithoutAddress() throws Exception {
-        joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(1000));
-        joynrMessage.setType(JoynrMessage.MESSAGE_TYPE_MULTICAST);
-        joynrMessage.setTo("multicastId");
-        messageRouter.route(joynrMessage);
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1000).getValue());
+        joynrMessage.setType(Message.VALUE_MESSAGE_TYPE_MULTICAST);
+        joynrMessage.setRecipient("multicastId");
+
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        messageRouter.route(immutableMessage);
         Thread.sleep(100);
-        verify(addressManager).getAddresses(joynrMessage);
+        verify(addressManager).getAddresses(immutableMessage);
     }
 
 }

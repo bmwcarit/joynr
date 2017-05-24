@@ -19,8 +19,8 @@
 #ifndef CONCURRENTQUEUE_H
 #define CONCURRENTQUEUE_H
 
-#include <queue>
 #include <mutex>
+#include <queue>
 
 namespace joynr
 {

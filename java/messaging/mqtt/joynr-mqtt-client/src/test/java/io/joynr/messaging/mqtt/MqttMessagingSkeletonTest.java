@@ -21,30 +21,32 @@ package io.joynr.messaging.mqtt;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.util.HashSet;
-
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.serialize.JsonSerializer;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.Message;
+import joynr.MutableMessage;
 import joynr.system.RoutingTypes.MqttAddress;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.Assert;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -68,9 +70,6 @@ public class MqttMessagingSkeletonTest {
     private MqttClientFactory mqttClientFactory;
 
     @Mock
-    private MqttMessageSerializerFactory messageSerializerFactory;
-
-    @Mock
     private JoynrMqttClient mqttClient;
 
     @Mock
@@ -88,7 +87,6 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownAddress,
                                             messageRouter,
                                             mqttClientFactory,
-                                            messageSerializerFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>());
@@ -138,49 +136,63 @@ public class MqttMessagingSkeletonTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testRawMessagePreprocessorIsCalled() throws Exception {
+    public void testMessageRouterIsCalled() throws Exception {
         RawMessagingPreprocessor preprocessor = mock(RawMessagingPreprocessor.class);
-        ObjectMapper objectMapper = new ObjectMapper();
-        when(preprocessor.process(anyString(), anyMap())).then(returnsFirstArg());
-        when(messageSerializerFactory.create(Mockito.any(MqttAddress.class))).thenReturn(new JsonSerializer(objectMapper));
+        when(preprocessor.process(any(byte[].class), anyMap())).then(returnsFirstArg());
         subject = new MqttMessagingSkeleton(ownAddress,
                                             messageRouter,
                                             mqttClientFactory,
-                                            messageSerializerFactory,
                                             mqttTopicPrefixProvider,
                                             preprocessor,
                                             new HashSet<JoynrMessageProcessor>());
-        JoynrMessage message = new JoynrMessage();
-        message.setPayload("payload");
-        subject.transmit(objectMapper.writeValueAsString(message), failIfCalledAction);
-        verify(messageRouter).route(message);
+
+        ImmutableMessage message = createTestMessage();
+
+        subject.transmit(message.getSerializedMessage(), failIfCalledAction);
+
+        ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
+        verify(messageRouter).route(captor.capture());
+
+        assertArrayEquals(message.getSerializedMessage(), captor.getValue().getSerializedMessage());
     }
 
     @Test
     public void testJoynrMessageProcessorIsCalled() throws Exception {
-        JoynrMessage testMessage = new JoynrMessage();
-        testMessage.setPayload("testPayload");
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String serializedJoynrMessage = objectMapper.writeValueAsString(testMessage);
-
         JoynrMessageProcessor processorMock = mock(JoynrMessageProcessor.class);
 
-        when(processorMock.processIncoming(Mockito.any(JoynrMessage.class))).then(returnsFirstArg());
-        when(messageSerializerFactory.create(Mockito.any(MqttAddress.class))).thenReturn(new JsonSerializer(objectMapper));
+        when(processorMock.processIncoming(Mockito.any(ImmutableMessage.class))).then(returnsFirstArg());
 
         subject = new MqttMessagingSkeleton(ownAddress,
                                             messageRouter,
                                             mqttClientFactory,
-                                            messageSerializerFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             Sets.newHashSet(processorMock));
 
-        subject.transmit(serializedJoynrMessage, failIfCalledAction);
+        ImmutableMessage message = createTestMessage();
 
-        ArgumentCaptor<JoynrMessage> argCaptor = ArgumentCaptor.forClass(JoynrMessage.class);
+        subject.transmit(message.getSerializedMessage(), failIfCalledAction);
+
+        ArgumentCaptor<ImmutableMessage> argCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
         verify(processorMock).processIncoming(argCaptor.capture());
-        assertEquals(testMessage.getPayload(), argCaptor.getValue().getPayload());
+
+        Assert.assertArrayEquals(message.getSerializedMessage(), argCaptor.getValue().getSerializedMessage());
+    }
+
+    private ImmutableMessage createTestMessage() throws Exception {
+        MutableMessage message = new MutableMessage();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        MqttAddress address = new MqttAddress("testBrokerUri", "testTopic");
+
+        message.setSender("someSender");
+        message.setRecipient("someRecipient");
+        message.setTtlAbsolute(true);
+        message.setTtlMs(100000);
+        message.setPayload(new byte[]{ 0, 1, 2 });
+        message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        message.setReplyTo(objectMapper.writeValueAsString(address));
+
+        return message.getImmutableMessage();
     }
 }

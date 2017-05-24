@@ -19,19 +19,20 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "utils/MockObjects.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
+
+#include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 using namespace testing;
 
 struct MockMiddlewareMessagingStubFactory : public joynr::IMiddlewareMessagingStubFactory {
-    MOCK_METHOD1(create, std::shared_ptr<joynr::IMessaging>(const joynr::system::RoutingTypes::Address& destAddress));
+    MOCK_METHOD1(create, std::shared_ptr<joynr::IMessagingStub>(const joynr::system::RoutingTypes::Address& destAddress));
     MOCK_METHOD1(canCreate, bool(const joynr::system::RoutingTypes::Address& destAddress));
     MOCK_METHOD1(registerOnMessagingStubClosedCallback,
-                 void(std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)> onMessagingStubClosedCallback));
+                 void(std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)> onMessagingStubClosedCallback));
 };
 
 class MessagingStubFactoryTest : public Test {
@@ -68,18 +69,18 @@ TEST_F(MessagingStubFactoryTest, emptyAtBegin)
 
 TEST_F(MessagingStubFactoryTest, createReturnsStub)
 {
-    std::shared_ptr<IMessaging> returnedStub = messagingStubFactory.create(address);
+    std::shared_ptr<IMessagingStub> returnedStub = messagingStubFactory.create(address);
     EXPECT_EQ(expectedStub, returnedStub);
 }
 
 TEST_F(MessagingStubFactoryTest, repeatedCreateReturnsSameStub)
 {
     EXPECT_CALL(*mockMiddlewareMessagingStubFactory, create(_)).Times(1);
-    std::shared_ptr<IMessaging> stub1 = messagingStubFactory.create(address);
+    std::shared_ptr<IMessagingStub> stub1 = messagingStubFactory.create(address);
     ASSERT_TRUE(stub1 != nullptr);
-    std::shared_ptr<IMessaging> stub2 = messagingStubFactory.create(address);
+    std::shared_ptr<IMessagingStub> stub2 = messagingStubFactory.create(address);
     EXPECT_TRUE(stub1 == stub2);
-    std::shared_ptr<IMessaging> stub3 = messagingStubFactory.create(addressCopy);
+    std::shared_ptr<IMessagingStub> stub3 = messagingStubFactory.create(addressCopy);
     EXPECT_TRUE(stub1 == stub3);
 }
 
@@ -92,7 +93,7 @@ TEST_F(MessagingStubFactoryTest, containsFindsStub)
 
 TEST_F(MessagingStubFactoryTest, nullptrIsNotInsertedIntoCache)
 {
-    EXPECT_CALL(*(this->mockMiddlewareMessagingStubFactory), create(_)).WillOnce(Return(std::shared_ptr<IMessaging>()));
+    EXPECT_CALL(*(this->mockMiddlewareMessagingStubFactory), create(_)).WillOnce(Return(std::shared_ptr<IMessagingStub>()));
     messagingStubFactory.create(address);
     EXPECT_FALSE(messagingStubFactory.contains(address));
     EXPECT_FALSE(messagingStubFactory.contains(addressCopy));

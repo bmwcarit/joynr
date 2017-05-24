@@ -18,19 +18,20 @@
  */
 #include "libjoynrclustercontroller/http-communication-manager/HttpSender.h"
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 #include <chrono>
 
 #include <curl/curl.h>
 
-#include "joynr/JoynrMessage.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/Util.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
 #include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -40,10 +41,9 @@ std::chrono::milliseconds HttpSender::MIN_ATTEMPT_TTL()
     return std::chrono::seconds(2);
 }
 
-const std::int64_t& HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL()
+std::int64_t HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL()
 {
-    static std::int64_t value = 3;
-    return value;
+    return 3;
 }
 
 INIT_LOGGER(HttpSender);
@@ -63,26 +63,24 @@ HttpSender::~HttpSender()
 
 void HttpSender::sendMessage(
         const system::RoutingTypes::Address& destinationAddress,
-        const JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    if (dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destinationAddress) == nullptr) {
+    const auto* channelAddress =
+            dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destinationAddress);
+    if (channelAddress == nullptr) {
         JOYNR_LOG_DEBUG(logger, "Invalid destination address type provided");
         onFailure(exceptions::JoynrRuntimeException("Invalid destination address type provided"));
         return;
     }
 
-    auto channelAddress =
-            dynamic_cast<const system::RoutingTypes::ChannelAddress&>(destinationAddress);
-
     JOYNR_LOG_TRACE(logger, "sendMessage: ...");
-    std::string&& serializedMessage = joynr::serializer::serializeToJson(message);
 
     auto startTime = std::chrono::system_clock::now();
 
     std::chrono::milliseconds decayTimeMillis =
             std::chrono::duration_cast<std::chrono::milliseconds>(
-                    message.getHeaderExpiryDate().time_since_epoch());
+                    message->getExpiryDate().time_since_epoch());
     std::chrono::milliseconds nowMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch());
     std::chrono::milliseconds remainingTtl = decayTimeMillis - nowMillis;
@@ -96,12 +94,15 @@ void HttpSender::sendMessage(
 
     JOYNR_LOG_TRACE(logger,
                     "Sending message; url: {}, time left: {}",
-                    toUrl(channelAddress),
-                    DispatcherUtils::convertAbsoluteTimeToTtlString(message.getHeaderExpiryDate()));
+                    toUrl(*channelAddress),
+                    DispatcherUtils::convertAbsoluteTimeToTtlString(message->getExpiryDate()));
 
     JOYNR_LOG_TRACE(logger, "going to buildRequest");
+
+    // TODO transmit message->getSerializedMessage() instead
+    std::string serializedMessage = "FIX ME I AM EMPTY";
     HttpResult sendMessageResult = buildRequestAndSend(
-            serializedMessage, toUrl(channelAddress), std::chrono::milliseconds(curlTimeout));
+            serializedMessage, toUrl(*channelAddress), std::chrono::milliseconds(curlTimeout));
 
     // Delay the next request if an error occurs
     auto now = std::chrono::system_clock::now();
@@ -135,7 +136,7 @@ void HttpSender::sendMessage(
     } else {
         JOYNR_LOG_DEBUG(logger,
                         "sending message - success; url: {} status code: {} at ",
-                        toUrl(channelAddress),
+                        toUrl(*channelAddress),
                         sendMessageResult.getStatusCode(),
                         DispatcherUtils::nowInMilliseconds());
     }
@@ -156,8 +157,7 @@ HttpResult HttpSender::buildRequestAndSend(const std::string& data,
                     ->postContent(data)
                     ->build());
     JOYNR_LOG_TRACE(logger, "builtRequest");
-
-    util::logSerializedMessage(logger, "Sending Message: ", data);
+    JOYNR_LOG_TRACE(logger, "Sending Message: {}", util::truncateSerializedMessage(data));
 
     return sendMessageRequest->execute();
 }
@@ -178,7 +178,7 @@ std::string HttpSender::toUrl(const system::RoutingTypes::ChannelAddress& channe
     return result;
 }
 
-void HttpSender::registerReceiver(std::shared_ptr<IMessageReceiver> receiver)
+void HttpSender::registerReceiver(std::shared_ptr<ITransportMessageReceiver> receiver)
 {
     std::ignore = receiver;
 }

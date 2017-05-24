@@ -20,10 +20,10 @@
 
 #include <cassert>
 #include <tuple>
+
 #include <boost/asio/io_service.hpp>
 
 #include "joynr/MessagingQos.h"
-#include "joynr/JoynrMessage.h"
 
 namespace joynr
 {
@@ -68,7 +68,7 @@ void InProcessDispatcher::removeRequestCaller(const std::string& participantId)
     requestCallerDirectory.remove(participantId);
 }
 
-void InProcessDispatcher::receive(const JoynrMessage& message)
+void InProcessDispatcher::receive(std::shared_ptr<ImmutableMessage> message)
 {
     std::ignore = message;
     JOYNR_LOG_FATAL(logger, "Not implemented");

@@ -24,10 +24,8 @@
 
 #include <boost/asio/io_service.hpp>
 
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/exceptions/SubscriptionException.h"
-#include "joynr/ISubscriptionCallback.h"
 #include "joynr/IMessageRouter.h"
+#include "joynr/ISubscriptionCallback.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
@@ -36,6 +34,8 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/Util.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/SubscriptionException.h"
 
 namespace joynr
 {
@@ -448,11 +448,11 @@ INIT_LOGGER(SubscriptionManager::MissedPublicationRunnable);
 
 SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
         const JoynrTimePoint& expiryDate,
-        const std::int64_t& expectedIntervalMSecs,
+        std::int64_t expectedIntervalMSecs,
         const std::string& subscriptionId,
         std::shared_ptr<Subscription> subscription,
         SubscriptionManager& subscriptionManager,
-        const std::int64_t& alertAfterInterval)
+        std::int64_t alertAfterInterval)
         : Runnable(true),
           ObjectWithDecayTime(expiryDate),
           expectedIntervalMSecs(expectedIntervalMSecs),
@@ -507,7 +507,7 @@ void SubscriptionManager::MissedPublicationRunnable::run()
 }
 
 std::int64_t SubscriptionManager::MissedPublicationRunnable::timeSinceLastExpectedPublication(
-        const std::int64_t& timeSinceLastPublication)
+        std::int64_t timeSinceLastPublication)
 {
     return timeSinceLastPublication % expectedIntervalMSecs;
 }

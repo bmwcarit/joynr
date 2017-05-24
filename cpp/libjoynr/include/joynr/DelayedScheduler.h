@@ -19,11 +19,11 @@
 #ifndef DELAYEDSCHEDULER_H
 #define DELAYEDSCHEDULER_H
 
-#include <unordered_map>
-#include <thread>
-#include <mutex>
 #include <chrono>
 #include <functional>
+#include <mutex>
+#include <thread>
+#include <unordered_map>
 
 #include "joynr/DelayedRunnable.h"
 #include "joynr/JoynrExport.h"

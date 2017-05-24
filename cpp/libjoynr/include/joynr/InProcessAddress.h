@@ -22,8 +22,8 @@
 #include <memory>
 
 #include "joynr/JoynrExport.h"
-#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {

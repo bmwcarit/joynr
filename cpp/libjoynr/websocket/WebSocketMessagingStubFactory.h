@@ -23,15 +23,16 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "joynr/Url.h"
-#include "joynr/Logger.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
+#include "joynr/Logger.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 namespace joynr
 {
+
 class IWebSocketSendInterface;
+class IMessagingStub;
 
 namespace system
 {
@@ -46,30 +47,27 @@ class WebSocketMessagingStubFactory : public IMiddlewareMessagingStubFactory
 
 public:
     WebSocketMessagingStubFactory();
-    std::shared_ptr<IMessaging> create(
+    std::shared_ptr<IMessagingStub> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
     void addClient(const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress,
-                   const std::shared_ptr<IWebSocketSendInterface>& webSocket);
+                   std::shared_ptr<IWebSocketSendInterface> webSocket);
     void removeClient(const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress);
     void addServer(const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,
-                   const std::shared_ptr<IWebSocketSendInterface>& webSocket);
+                   std::shared_ptr<IWebSocketSendInterface> webSocket);
     void onMessagingStubClosed(const joynr::system::RoutingTypes::Address& address);
-    void registerOnMessagingStubClosedCallback(std::function<void(
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)>
+    void registerOnMessagingStubClosedCallback(std::function<
+            void(std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
                                                        onMessagingStubClosedCallback) override;
 
-    static Url convertWebSocketAddressToUrl(
-            const joynr::system::RoutingTypes::WebSocketAddress& address);
-
 private:
-    std::unordered_map<joynr::system::RoutingTypes::WebSocketAddress, std::shared_ptr<IMessaging>>
-            serverStubMap;
+    std::unordered_map<joynr::system::RoutingTypes::WebSocketAddress,
+                       std::shared_ptr<IMessagingStub>> serverStubMap;
     std::mutex serverStubMapMutex;
     std::unordered_map<joynr::system::RoutingTypes::WebSocketClientAddress,
-                       std::shared_ptr<IMessaging>> clientStubMap;
+                       std::shared_ptr<IMessagingStub>> clientStubMap;
     std::mutex clientStubMapMutex;
-    std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+    std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address>
                                destinationAddress)> onMessagingStubClosedCallback;
 
     ADD_LOGGER(WebSocketMessagingStubFactory);

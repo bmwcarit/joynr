@@ -15,6 +15,7 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.sender.LibJoynrMessageSender;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.system.RoutingProxy;
@@ -59,6 +60,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress,
                            LibJoynrMessageRouter messageRouter,
+                           LibJoynrMessageSender messageSender,
                            @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String parentRoutingProviderParticipantId) {
         super(objectMapper,
               proxyBuilderFactory,
@@ -79,6 +81,6 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                                       ccMessagingAddress,
                                       parentRoutingProviderParticipantId,
                                       proxyBuilder.getParticipantId());
-        messageRouter.addNextHop(discoveryProxyParticipantId, dispatcherAddress);
+        messageSender.setReplyToAddress(routingProxy.getGlobalAddress());
     }
 }

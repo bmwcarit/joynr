@@ -19,23 +19,23 @@
 
 #ifndef PROVIDERARBITRATOR_H
 #define PROVIDERARBITRATOR_H
+#include <atomic>
+#include <functional>
 #include <string>
+#include <thread>
 #include <unordered_set>
 #include <vector>
-#include <functional>
-#include <atomic>
-#include <thread>
 
 #include "joynr/ArbitrationStrategyFunction.h"
-#include "joynr/PrivateCopyAssign.h"
+#include "joynr/DiscoveryQos.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/DiscoveryQos.h"
-#include "joynr/types/DiscoveryQos.h"
-#include "joynr/types/Version.h"
-#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/Version.h"
 
 namespace joynr
 {

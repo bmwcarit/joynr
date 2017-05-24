@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
+#include <thread>
+
+#include <gtest/gtest.h>
 
 #include "joynr/Semaphore.h"
 #include "tests/utils/TimeUtils.h"
-
-#include <thread>
 
 using joynr::Semaphore;
 

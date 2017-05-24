@@ -20,31 +20,26 @@
 #ifndef LIBJOYNRRUNTIME_H
 #define LIBJOYNRRUNTIME_H
 
-#include <string>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <string>
 
-#include "joynr/PrivateCopyAssign.h"
-
-#include "joynr/JoynrRuntime.h"
-
-#include "joynr/LibjoynrSettings.h"
-#include "joynr/SystemServicesSettings.h"
-#include "joynr/ProxyBuilder.h"
-#include "joynr/IMessaging.h"
-#include "joynr/JoynrMessageSender.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/SubscriptionManager.h"
+#include "joynr/JoynrRuntime.h"
+#include "joynr/LibjoynrSettings.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ProxyBuilder.h"
 #include "joynr/Semaphore.h"
+#include "joynr/SubscriptionManager.h"
+#include "joynr/SystemServicesSettings.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
 
 class IMessageRouter;
-class IMessaging;
 class LibJoynrMessageRouter;
-class JoynrMessageSender;
+class IMessageSender;
 class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
 class IMulticastAddressCalculator;
@@ -62,8 +57,7 @@ protected:
 
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
-    std::shared_ptr<IMessaging> joynrMessagingSendStub;
-    std::shared_ptr<JoynrMessageSender> joynrMessageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
 

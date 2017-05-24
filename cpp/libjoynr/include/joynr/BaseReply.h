@@ -25,8 +25,8 @@
 #include <vector>
 
 #include "joynr/JoynrExport.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/serializer/SerializationPlaceholder.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {
@@ -36,9 +36,6 @@ class JOYNR_EXPORT BaseReply
 public:
     BaseReply();
     virtual ~BaseReply() = default;
-
-    BaseReply(const BaseReply&) = default;
-    BaseReply& operator=(const BaseReply&) = default;
 
     BaseReply(BaseReply&&) = default;
     BaseReply& operator=(BaseReply&&) = default;

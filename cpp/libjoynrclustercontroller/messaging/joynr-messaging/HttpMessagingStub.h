@@ -19,36 +19,35 @@
 #ifndef HTTPMESSAGINGSTUB_H
 #define HTTPMESSAGINGSTUB_H
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/IMessaging.h"
+#include "joynr/IMessagingStub.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
 {
 
-class IMessageSender;
-class JoynrMessage;
+class ITransportMessageSender;
 
 /**
   * Is used by the ClusterController to contact another (remote) ClusterController
   */
-class HttpMessagingStub : public IMessaging
+class HttpMessagingStub : public IMessagingStub
 {
 public:
-    explicit HttpMessagingStub(std::shared_ptr<IMessageSender> messageSender,
+    explicit HttpMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                const system::RoutingTypes::ChannelAddress& destinationAddress);
     ~HttpMessagingStub() override = default;
-    void transmit(JoynrMessage& message,
+    void transmit(std::shared_ptr<ImmutableMessage> message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingStub);
-    std::shared_ptr<IMessageSender> messageSender;
+    std::shared_ptr<ITransportMessageSender> messageSender;
     const system::RoutingTypes::ChannelAddress destinationAddress;
 
     ADD_LOGGER(HttpMessagingStub);

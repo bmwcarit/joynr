@@ -19,10 +19,12 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <cstdio>
-#include "PrettyPrint.h"
+
 #include "joynr/WebSocketSettings.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/Settings.h"
+
+#include "tests/PrettyPrint.h"
 
 using namespace joynr;
 

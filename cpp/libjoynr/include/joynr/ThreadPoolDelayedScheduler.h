@@ -19,8 +19,8 @@
 #ifndef THREADPOOLDELAYEDSCHEDULER_H
 #define THREADPOOLDELAYEDSCHEDULER_H
 
-#include <cstdint>
 #include <chrono>
+#include <cstdint>
 #include <string>
 
 #include "joynr/DelayedScheduler.h"

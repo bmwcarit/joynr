@@ -21,8 +21,8 @@
 
 #include "joynr/JoynrExport.h"
 
-#include <string>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 namespace joynr

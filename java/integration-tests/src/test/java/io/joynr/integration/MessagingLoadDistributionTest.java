@@ -19,7 +19,7 @@ package io.joynr.integration;
  * #L%
  */
 
-import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.containsMessage;
+import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.containsPayload;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -27,21 +27,21 @@ import io.joynr.integration.setup.BounceProxyServerSetup;
 import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
 import io.joynr.integration.util.BounceProxyCommunicationMock;
 import io.joynr.messaging.util.Utilities;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 
@@ -87,27 +87,27 @@ public class MessagingLoadDistributionTest {
         String channelUrl2 = responseCreateChannel2.getHeader("Location");
 
         // post messages to long polling channel before opening channel
-        String msgIds1[] = { "message-1_1", "message-1_2", "message-1_3" };
-        for (String msgId : msgIds1) {
-            postMessageToBounceProxy(bpMock1, channelUrl1, channelId1, 30000l, msgId);
+        String payloads1[] = { "message-1_1", "message-1_2", "message-1_3" };
+        for (String payload : payloads1) {
+            postMessageToBounceProxy(bpMock1, channelUrl1, channelId1, 30000l, payload.getBytes(Charsets.UTF_8));
         }
 
-        String msgIds2[] = { "message-2_1", "message-2_2", "message-2_3" };
-        for (String msgId : msgIds2) {
-            postMessageToBounceProxy(bpMock2, channelUrl2, channelId2, 30000l, msgId);
+        String payloads2[] = { "message-2_1", "message-2_2", "message-2_3" };
+        for (String payload : payloads2) {
+            postMessageToBounceProxy(bpMock2, channelUrl2, channelId2, 30000l, payload.getBytes(Charsets.UTF_8));
         }
 
         // open long polling channel
-        List<JoynrMessage> messages1 = getMessagesFromBounceProxy(bpMock1, channelUrl1, channelId1);
+        List<ImmutableMessage> messages1 = getMessagesFromBounceProxy(bpMock1, channelUrl1, channelId1);
 
         assertEquals(3, messages1.size());
         assertThat(messages1,
-                   allOf(containsMessage("message-1_1"), containsMessage("message-1_2"), containsMessage("message-1_3")));
+                   allOf(containsPayload("message-1_1"), containsPayload("message-1_2"), containsPayload("message-1_3")));
 
-        List<JoynrMessage> messages2 = getMessagesFromBounceProxy(bpMock2, channelUrl2, channelId2);
+        List<ImmutableMessage> messages2 = getMessagesFromBounceProxy(bpMock2, channelUrl2, channelId2);
         assertEquals(3, messages2.size());
         assertThat(messages2,
-                   allOf(containsMessage("message-2_1"), containsMessage("message-2_2"), containsMessage("message-2_3")));
+                   allOf(containsPayload("message-2_1"), containsPayload("message-2_2"), containsPayload("message-2_3")));
     }
 
     @Test
@@ -138,13 +138,13 @@ public class MessagingLoadDistributionTest {
                                           String channelUrl,
                                           String channelId,
                                           long relativeTtlMs,
-                                          String msgId) throws JsonProcessingException {
+                                          byte[] payload) throws Exception {
 
         String previousBaseUri = RestAssured.baseURI;
         RestAssured.baseURI = Utilities.getUrlWithoutSessionId(channelUrl, "jsessionid");
         String sessionId = Utilities.getSessionId(channelUrl, "jsessionid");
 
-        String serializedMessage = bpMock.createSerializedJoynrMessage(relativeTtlMs, msgId, msgId);
+        byte[] serializedMessage = bpMock.createImmutableMessage(relativeTtlMs, payload).getSerializedMessage();
         /* @formatter:off */
         bpMock.onrequest()
               .with()
@@ -157,10 +157,10 @@ public class MessagingLoadDistributionTest {
         RestAssured.baseURI = previousBaseUri;
     }
 
-    private List<JoynrMessage> getMessagesFromBounceProxy(BounceProxyCommunicationMock bpMock,
-                                                          String channelUrl,
-                                                          String channelId) throws JsonParseException,
-                                                                           JsonMappingException, IOException {
+    private List<ImmutableMessage> getMessagesFromBounceProxy(BounceProxyCommunicationMock bpMock,
+                                                              String channelUrl,
+                                                              String channelId) throws IOException, EncodingException,
+                                                                               UnsuppportedVersionException {
 
         String previousBaseUri = RestAssured.baseURI;
         RestAssured.baseURI = Utilities.getUrlWithoutSessionId(channelUrl, "jsessionid");
@@ -176,7 +176,7 @@ public class MessagingLoadDistributionTest {
                                   .get(";jsessionid=" + sessionId);
         /* @formatter:on */
 
-        List<JoynrMessage> messagesFromResponse = bpMock.getJoynrMessagesFromResponse(response);
+        List<ImmutableMessage> messagesFromResponse = bpMock.getJoynrMessagesFromResponse(response);
 
         RestAssured.baseURI = previousBaseUri;
 

@@ -17,14 +17,23 @@
  * #L%
  */
 
-#include "joynr/PrivateCopyAssign.h"
-#include "tests/utils/MockObjects.h"
+#include <chrono>
+#include <fstream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
 #include "joynr/Semaphore.h"
-#include <string>
+#include "joynr/PrivateCopyAssign.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -32,19 +41,19 @@ using namespace joynr::infrastructure;
 using namespace joynr::infrastructure::DacTypes;
 
 // Consumer permissions are obtained asynchronously
-class ConsumerPermissionCallback : public LocalDomainAccessController::IGetConsumerPermissionCallback
+class PermissionCallback : public LocalDomainAccessController::IGetPermissionCallback
 {
 public:
-    ConsumerPermissionCallback() :
+    PermissionCallback() :
         isValid(false),
-        permission(Permission::YES),
+        storedPermission(Permission::YES),
         sem(0)
     {}
 
-    ~ConsumerPermissionCallback() = default;
+    ~PermissionCallback() = default;
 
-    void consumerPermission(Permission::Enum permission) {
-        this->permission = permission;
+    void permission(Permission::Enum permission) {
+        this->storedPermission = permission;
         isValid = true;
         sem.notify();
     }
@@ -58,7 +67,7 @@ public:
     }
 
     Permission::Enum getPermission() const {
-        return permission;
+        return storedPermission;
     }
 
     // Returns true if the callback was made
@@ -68,12 +77,12 @@ public:
 
 private:
     bool isValid;
-    Permission::Enum permission;
+    Permission::Enum storedPermission;
     Semaphore sem;
 };
 
 // Test class
-class LocalDomainAccessControllerTest : public ::testing::Test {
+class LocalDomainAccessControllerTest : public testing::TestWithParam<bool> {
 public:
     LocalDomainAccessControllerTest() : localDomainAccessStorePtr(nullptr),
                                         localDomainAccessController(),
@@ -82,15 +91,29 @@ public:
     {
     }
 
+    ~LocalDomainAccessControllerTest() override {
+        // Delete test specific files
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
+    }
 
-    void SetUp(){
-        auto localDomainAccessStore = std::make_unique<LocalDomainAccessStore>();
+    void SetUp() override {
+        std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore;
+        if(GetParam()) {
+            // copy access entry file to bin folder for the test so that runtimes will find and load the file
+            joynr::test::util::copyTestResourceToCurrentDirectory("AccessStoreTest.persist");
+
+            localDomainAccessStore = std::make_unique<LocalDomainAccessStore>("AccessStoreTest.persist");
+        } else {
+            localDomainAccessStore = std::make_unique<LocalDomainAccessStore>();
+        }
         localDomainAccessStorePtr = localDomainAccessStore.get();
-        localDomainAccessController =
-                std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
+        localDomainAccessController = std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
+
         auto mockGdacProxy = std::make_unique<MockGlobalDomainAccessControllerProxy>();
         mockGdacProxyMock = mockGdacProxy.get();
         localDomainAccessController->init(std::move(mockGdacProxy));
+
         mockGdrcProxy = std::make_shared<MockGlobalDomainRoleControllerProxy>();
         localDomainAccessController->init(mockGdrcProxy);
 
@@ -116,7 +139,35 @@ public:
                 TEST_OPERATION1, // operation
                 Permission::YES  // consumer permission
         );
+        masterRce = MasterRegistrationControlEntry(
+                TEST_USER,       // uid
+                TEST_DOMAIN1,    // domain
+                TEST_INTERFACE1, // interface name
+                TrustLevel::LOW, // default required trust level
+                TRUST_LEVELS,    // possible required trust levels
+                TrustLevel::LOW, // default required control entry change trust level
+                TRUST_LEVELS,    // possible required control entry change trust levels
+                Permission::NO,  // default provider permission
+                PERMISSIONS      // possible provider permissions
+        );
+        ownerRce = OwnerRegistrationControlEntry(
+                TEST_USER,       // uid
+                TEST_DOMAIN1,    // domain
+                TEST_INTERFACE1, // interface name
+                TrustLevel::LOW, // required trust level
+                TrustLevel::LOW, // required ACE change trust level
+                Permission::YES  // provider permission
+        );
     }
+
+    static const std::string TEST_USER;
+    static const std::string TEST_DOMAIN1;
+    static const std::string TEST_INTERFACE1;
+    static const std::string TEST_OPERATION1;
+    static const std::vector<std::string> DOMAINS;
+    static const std::vector<Permission::Enum> PERMISSIONS;
+    static const std::vector<TrustLevel::Enum> TRUST_LEVELS;
+    static const std::string joynrDomain;
 
 protected:
     LocalDomainAccessStore* localDomainAccessStorePtr;
@@ -126,15 +177,9 @@ protected:
     std::shared_ptr<MockGlobalDomainRoleControllerProxy> mockGdrcProxy;
     OwnerAccessControlEntry ownerAce;
     MasterAccessControlEntry masterAce;
+    OwnerRegistrationControlEntry ownerRce;
+    MasterRegistrationControlEntry masterRce;
     DomainRoleEntry userDre;
-    static const std::string TEST_USER;
-    static const std::string TEST_DOMAIN1;
-    static const std::string TEST_INTERFACE1;
-    static const std::string TEST_OPERATION1;
-    static const std::vector<std::string> DOMAINS;
-    static const std::vector<Permission::Enum> PERMISSIONS;
-    static const std::vector<TrustLevel::Enum> TRUST_LEVELS;
-    static const std::string joynrDomain;
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDomainAccessControllerTest);
 };
@@ -157,7 +202,7 @@ const std::string LocalDomainAccessControllerTest::joynrDomain("LocalDomainAcces
 
 //----- Tests ------------------------------------------------------------------
 
-TEST_F(LocalDomainAccessControllerTest, testHasRole) {
+TEST_P(LocalDomainAccessControllerTest, testHasRole) {
     localDomainAccessStorePtr->updateDomainRole(userDre);
 
     std::string defaultString;
@@ -168,7 +213,7 @@ TEST_F(LocalDomainAccessControllerTest, testHasRole) {
                                                      Role::OWNER));
 }
 
-TEST_F(LocalDomainAccessControllerTest, consumerPermission) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermission) {
     localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
 
     std::string defaultString;
@@ -185,7 +230,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermission) {
     );
 }
 
-TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
     localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
 
     // Update the MasterACE so that it does not permit Permission::YES
@@ -210,7 +255,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionInvalidOwnerAce) {
     );
 }
 
-TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaster) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaster) {
     ownerAce.setRequiredTrustLevel(TrustLevel::MID);
     ownerAce.setConsumerPermission(Permission::ASK);
     localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
@@ -240,7 +285,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOwnerAceOverrulesMaste
     );
 }
 
-TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
     ownerAce.setOperation(access_control::WILDCARD);
     localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
 
@@ -258,12 +303,11 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionOperationWildcard) {
     );
 }
 
-TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(access_control::WILDCARD);
     std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
     masterAcesFromGlobalDac.push_back(masterAce);
-
     std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
     ownerAcesFromGlobalDac.push_back(ownerAce);
 
@@ -298,7 +342,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
-    auto getConsumerPermissionCallback = std::make_shared<ConsumerPermissionCallback>();
+    auto getConsumerPermissionCallback = std::make_shared<PermissionCallback>();
 
     localDomainAccessController->getConsumerPermission(
             LocalDomainAccessControllerTest::TEST_USER,
@@ -326,16 +370,13 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionAmbigious) {
     );
 }
 
-
-TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(access_control::WILDCARD);
     std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
     masterAcesFromGlobalDac.push_back(masterAce);
-
     std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
     ownerAcesFromGlobalDac.push_back(ownerAce);
-
 
     // Setup the mock GDAC proxy
     EXPECT_CALL(*mockGdrcProxy, getDomainRolesAsync(_,_,_))
@@ -368,7 +409,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
     DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
-    auto getConsumerPermissionCallback = std::make_shared<ConsumerPermissionCallback>();
+    auto getConsumerPermissionCallback = std::make_shared<PermissionCallback>();
 
     localDomainAccessController->getConsumerPermission(
             LocalDomainAccessControllerTest::TEST_USER,
@@ -383,17 +424,16 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionCommunicationFailure) 
     EXPECT_EQ(Permission::NO, getConsumerPermissionCallback->getPermission());
 }
 
-TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
+TEST_P(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(access_control::WILDCARD);
     std::vector<MasterAccessControlEntry> masterAcesFromGlobalDac;
     masterAcesFromGlobalDac.push_back(masterAce);
-
     ownerAce.setOperation(access_control::WILDCARD);
     std::vector<OwnerAccessControlEntry> ownerAcesFromGlobalDac;
     ownerAcesFromGlobalDac.push_back(ownerAce);
 
-    std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)> getMasterAcesOnSuccessFct;
+    std::function<void(const std::vector<MasterAccessControlEntry>& masterAces)> getMasterAcesOnSuccessFct = [](auto){};
 
     // Setup the mock GDAC proxy
     EXPECT_CALL(*mockGdrcProxy, getDomainRolesAsync(_,_,_))
@@ -421,12 +461,17 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
                     Return(std::shared_ptr<Future<std::vector<OwnerAccessControlEntry>>>()) // nullptr pointer
             ));
 
+    // Expect a call to subscribe for the not present Entry
+    EXPECT_CALL(*mockGdacProxyMock, subscribeToMasterAccessControlEntryChangedBroadcast(_,_,_)).    Times(1);
+    EXPECT_CALL(*mockGdacProxyMock, subscribeToMediatorAccessControlEntryChangedBroadcast(_,_,_)).  Times(1);
+    EXPECT_CALL(*mockGdacProxyMock, subscribeToOwnerAccessControlEntryChangedBroadcast(_,_,_)).     Times(1);
+
     // Set default return value for Google mock
     std::string defaultString;
     DefaultValue<std::string>::Set(defaultString);
 
     // Get the consumer permission (async)
-    auto getConsumerPermissionCallback1 = std::make_shared<ConsumerPermissionCallback>();
+    auto getConsumerPermissionCallback1 = std::make_shared<PermissionCallback>();
 
     localDomainAccessController->getConsumerPermission(
             LocalDomainAccessControllerTest::TEST_USER,
@@ -437,7 +482,7 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     );
 
     // Make another request for consumer permission
-    auto getConsumerPermissionCallback2 = std::make_shared<ConsumerPermissionCallback>();
+    auto getConsumerPermissionCallback2 = std::make_shared<PermissionCallback>();
 
     localDomainAccessController->getConsumerPermission(
                 LocalDomainAccessControllerTest::TEST_USER,
@@ -458,4 +503,360 @@ TEST_F(LocalDomainAccessControllerTest, consumerPermissionQueuedRequests) {
     EXPECT_EQ(Permission::YES, getConsumerPermissionCallback1->getPermission());
     EXPECT_EQ(Permission::YES, getConsumerPermissionCallback2->getPermission());
 
+}
+
+// true: with persist file
+// false: without
+INSTANTIATE_TEST_CASE_P(WithOrWithoutPersistFile,
+    LocalDomainAccessControllerTest,
+    Bool()
+);
+
+TEST(LocalDomainAccessControllerPersistedTest, persistedAcesAreUsed) {
+    auto mockGdacProxyPtr = std::make_unique<MockGlobalDomainAccessControllerProxy>();
+    auto mockGdacProxy = mockGdacProxyPtr.get();
+
+    // Do not contact GDAC (do not perform any get* operation) for persisted ACEs
+    EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_,_,_,_))    .Times(0);
+    EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_,_,_,_))  .Times(0);
+    EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_,_,_,_))     .Times(0);
+
+    // Expect only calls to subscribeTo methods
+    EXPECT_CALL(*mockGdacProxy, subscribeToMasterAccessControlEntryChangedBroadcast(_,_,_)).    Times(1);
+    EXPECT_CALL(*mockGdacProxy, subscribeToMediatorAccessControlEntryChangedBroadcast(_,_,_)).  Times(1);
+    EXPECT_CALL(*mockGdacProxy, subscribeToOwnerAccessControlEntryChangedBroadcast(_,_,_)).     Times(1);
+
+    // Copy access entry file to bin folder for the test so that runtimes will find and load the file
+    joynr::test::util::copyTestResourceToCurrentDirectory("AccessStoreTest.persist");
+
+    // Load persisted ACEs
+    auto localDomainAccessStore = std::make_unique<LocalDomainAccessStore>("AccessStoreTest.persist");
+    auto localDomainAccessController =
+            std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
+
+    localDomainAccessController->init(std::move(mockGdacProxyPtr));
+
+    // Set default return value for Google mock
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
+
+    EXPECT_EQ(
+            Permission::NO,
+            localDomainAccessController->getConsumerPermission(
+                    LocalDomainAccessControllerTest::TEST_USER,
+                    LocalDomainAccessControllerTest::TEST_DOMAIN1,
+                    LocalDomainAccessControllerTest::TEST_INTERFACE1,
+                    LocalDomainAccessControllerTest::TEST_OPERATION1,
+                    TrustLevel::HIGH
+            )
+    );
+}
+
+// Registration control entries
+
+TEST_P(LocalDomainAccessControllerTest, providerPermission) {
+    localDomainAccessStorePtr->updateOwnerRegistrationControlEntry(ownerRce);
+
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
+    EXPECT_EQ(
+            Permission::YES,
+            localDomainAccessController->getProviderPermission(
+                    LocalDomainAccessControllerTest::TEST_USER,
+                    LocalDomainAccessControllerTest::TEST_DOMAIN1,
+                    LocalDomainAccessControllerTest::TEST_INTERFACE1,
+                    TrustLevel::HIGH
+            )
+    );
+}
+
+TEST_P(LocalDomainAccessControllerTest, providerPermissionInvalidOwnerRce) {
+    localDomainAccessStorePtr->updateOwnerRegistrationControlEntry(ownerRce);
+
+    // Update the MasterACE so that it does not permit Permission::YES
+    std::vector<Permission::Enum> possiblePermissions = {
+            Permission::NO, Permission::ASK
+    };
+    masterRce.setDefaultProviderPermission(Permission::ASK);
+    masterRce.setPossibleProviderPermissions(possiblePermissions);
+    localDomainAccessStorePtr->updateMasterRegistrationControlEntry(masterRce);
+
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
+    EXPECT_EQ(
+            Permission::NO,
+            localDomainAccessController->getProviderPermission(
+                    LocalDomainAccessControllerTest::TEST_USER,
+                    LocalDomainAccessControllerTest::TEST_DOMAIN1,
+                    LocalDomainAccessControllerTest::TEST_INTERFACE1,
+                    TrustLevel::HIGH
+            )
+    );
+}
+
+TEST_P(LocalDomainAccessControllerTest, providerPermissionOwnerRceOverrulesMaster) {
+    ownerRce.setRequiredTrustLevel(TrustLevel::MID);
+    ownerRce.setProviderPermission(Permission::ASK);
+    localDomainAccessStorePtr->updateOwnerRegistrationControlEntry(ownerRce);
+    localDomainAccessStorePtr->updateMasterRegistrationControlEntry(masterRce);
+
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
+    EXPECT_EQ(
+            Permission::ASK,
+            localDomainAccessController->getProviderPermission(
+                    LocalDomainAccessControllerTest::TEST_USER,
+                    LocalDomainAccessControllerTest::TEST_DOMAIN1,
+                    LocalDomainAccessControllerTest::TEST_INTERFACE1,
+                    TrustLevel::HIGH
+            )
+    );
+    EXPECT_EQ(
+            Permission::NO,
+            localDomainAccessController->getProviderPermission(
+                    LocalDomainAccessControllerTest::TEST_USER,
+                    LocalDomainAccessControllerTest::TEST_DOMAIN1,
+                    LocalDomainAccessControllerTest::TEST_INTERFACE1,
+                    TrustLevel::LOW
+            )
+    );
+}
+
+TEST_P(LocalDomainAccessControllerTest, DISABLED_providerPermissionAmbigious) {
+    // Setup the master with a wildcard operation
+    masterAce.setOperation(access_control::WILDCARD);
+    std::vector<MasterRegistrationControlEntry> masterRcesFromGlobalDac;
+    masterRcesFromGlobalDac.push_back(masterRce);
+    std::vector<OwnerRegistrationControlEntry> ownerRcesFromGlobalDac;
+    ownerRcesFromGlobalDac.push_back(ownerRce);
+
+    // Setup the mock GDAC proxy
+    EXPECT_CALL(*mockGdrcProxy, getDomainRolesAsync(_,_,_))
+            .Times(1)
+            .WillOnce(DoAll(
+                    InvokeArgument<1>(std::vector<DomainRoleEntry>()),
+                    Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // nullptr pointer
+            ));
+    EXPECT_CALL(*mockGdacProxyMock, getMasterRegistrationControlEntriesAsync(_,_,_))
+            .Times(1)
+            .WillOnce(DoAll(
+                    InvokeArgument<1>(masterRcesFromGlobalDac),
+                    Return(std::shared_ptr<Future<std::vector<MasterRegistrationControlEntry>>>()) // nullptr pointer
+            ));
+    EXPECT_CALL(*mockGdacProxyMock, getMediatorRegistrationControlEntriesAsync(_,_,_))
+            .Times(1)
+            .WillOnce(DoAll(
+                    InvokeArgument<1>(std::vector<MasterRegistrationControlEntry>()),
+                    Return(std::shared_ptr<Future<std::vector<MasterRegistrationControlEntry>>>()) // nullptr pointer
+            ));
+    EXPECT_CALL(*mockGdacProxyMock, getOwnerRegistrationControlEntriesAsync(_,_,_))
+            .Times(1)
+            .WillOnce(DoAll(
+                    InvokeArgument<1>(ownerRcesFromGlobalDac),
+                    Return(std::shared_ptr<Future<std::vector<OwnerRegistrationControlEntry>>>()) // nullptr pointer
+            ));
+
+    // Set default return value for Google mock
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
+
+    // Get the provider permission (async)
+    auto getProviderPermissionCallback = std::make_shared<PermissionCallback>();
+
+    localDomainAccessController->getProviderPermission(
+            LocalDomainAccessControllerTest::TEST_USER,
+            LocalDomainAccessControllerTest::TEST_DOMAIN1,
+            LocalDomainAccessControllerTest::TEST_INTERFACE1,
+            TrustLevel::HIGH,
+            getProviderPermissionCallback
+    );
+
+    EXPECT_TRUE(getProviderPermissionCallback->expectCallback(1000));
+
+    // The operation is ambigious and interface level permission is not available
+    EXPECT_FALSE(getProviderPermissionCallback->isPermissionAvailable());
+
+    // Operation level permission should work
+    EXPECT_EQ(
+            Permission::YES,
+            localDomainAccessController->getProviderPermission(
+                    LocalDomainAccessControllerTest::TEST_USER,
+                    LocalDomainAccessControllerTest::TEST_DOMAIN1,
+                    LocalDomainAccessControllerTest::TEST_INTERFACE1,
+                    TrustLevel::HIGH
+            )
+    );
+}
+
+TEST_P(LocalDomainAccessControllerTest, providerPermissionCommunicationFailure) {
+    // Setup the master with a wildcard operation
+    masterAce.setOperation(access_control::WILDCARD);
+    std::vector<MasterRegistrationControlEntry> masterRcesFromGlobalDac;
+    masterRcesFromGlobalDac.push_back(masterRce);
+    std::vector<OwnerRegistrationControlEntry> ownerRcesFromGlobalDac;
+    ownerRcesFromGlobalDac.push_back(ownerRce);
+
+    // Setup the mock GDAC proxy
+    EXPECT_CALL(*mockGdrcProxy, getDomainRolesAsync(_,_,_))
+            .Times(1)
+            .WillOnce(DoAll(
+                    InvokeArgument<1>(std::vector<DomainRoleEntry>()),
+                    Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // nullptr pointer
+            ));
+    EXPECT_CALL(*mockGdacProxyMock, getMasterRegistrationControlEntriesAsync(_,_,_))
+            .Times(1)
+            .WillOnce(DoAll(
+                    InvokeArgument<1>(masterRcesFromGlobalDac),
+                    Return(std::shared_ptr<Future<std::vector<MasterRegistrationControlEntry>>>()) // nullptr pointer
+            ));
+    EXPECT_CALL(*mockGdacProxyMock, getMediatorRegistrationControlEntriesAsync(_,_,_))
+            .Times(1)
+            .WillOnce(DoAll(
+                    InvokeArgument<2>(exceptions::JoynrRuntimeException("simulated communication failure")),
+                    Return(std::shared_ptr<Future<std::vector<MasterRegistrationControlEntry>>>()) // nullptr pointer
+            ));
+    EXPECT_CALL(*mockGdacProxyMock, getOwnerRegistrationControlEntriesAsync(_,_,_))
+            .Times(1)
+            .WillOnce(DoAll(
+                    InvokeArgument<1>(ownerRcesFromGlobalDac),
+                    Return(std::shared_ptr<Future<std::vector<OwnerRegistrationControlEntry>>>()) // nullptr pointer
+            ));
+
+    // Set default return value for Google mock
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
+
+    // Get the provider permission (async)
+    auto getProviderPermissionCallback = std::make_shared<PermissionCallback>();
+
+    localDomainAccessController->getProviderPermission(
+            LocalDomainAccessControllerTest::TEST_USER,
+            LocalDomainAccessControllerTest::TEST_DOMAIN1,
+            LocalDomainAccessControllerTest::TEST_INTERFACE1,
+            TrustLevel::HIGH,
+            getProviderPermissionCallback
+    );
+
+    EXPECT_TRUE(getProviderPermissionCallback->expectCallback(1000));
+    EXPECT_TRUE(getProviderPermissionCallback->isPermissionAvailable());
+    EXPECT_EQ(Permission::NO, getProviderPermissionCallback->getPermission());
+}
+
+TEST_P(LocalDomainAccessControllerTest, providerPermissionQueuedRequests) {
+    // Setup the master with a wildcard operation
+    masterAce.setOperation(access_control::WILDCARD);
+    std::vector<MasterRegistrationControlEntry> masterRcesFromGlobalDac;
+    masterRcesFromGlobalDac.push_back(masterRce);
+    std::vector<OwnerRegistrationControlEntry> ownerRcesFromGlobalDac;
+    ownerRcesFromGlobalDac.push_back(ownerRce);
+
+    std::function<void(const std::vector<MasterRegistrationControlEntry>& masterRces)> getMasterRcesOnSuccessFct = [](auto){};
+
+    // Setup the mock GDAC proxy
+    EXPECT_CALL(*mockGdrcProxy, getDomainRolesAsync(_,_,_))
+            .Times(1)
+            .WillOnce(DoAll(
+                    InvokeArgument<1>(std::vector<DomainRoleEntry>()),
+                    Return(std::shared_ptr<Future<std::vector<DomainRoleEntry>>>()) // nullptr pointer
+            ));
+    EXPECT_CALL(*mockGdacProxyMock, getMasterRegistrationControlEntriesAsync(_,_,_))
+            .Times(1)
+            .WillOnce(DoAll(
+                    SaveArg<1>(&getMasterRcesOnSuccessFct),
+                    Return(std::shared_ptr<Future<std::vector<MasterRegistrationControlEntry>>>()) // nullptr pointer
+            ));
+    EXPECT_CALL(*mockGdacProxyMock, getMediatorRegistrationControlEntriesAsync(_,_,_))
+            .Times(1)
+            .WillOnce(DoAll(
+                    InvokeArgument<1>(std::vector<MasterRegistrationControlEntry>()),
+                    Return(std::shared_ptr<Future<std::vector<MasterRegistrationControlEntry>>>()) // nullptr pointer
+            ));
+    EXPECT_CALL(*mockGdacProxyMock, getOwnerRegistrationControlEntriesAsync(_,_,_))
+            .Times(1)
+            .WillOnce(DoAll(
+                    InvokeArgument<1>(ownerRcesFromGlobalDac),
+                    Return(std::shared_ptr<Future<std::vector<OwnerRegistrationControlEntry>>>()) // nullptr pointer
+            ));
+
+    // Expect a call to subscribe for the not present Entry
+    EXPECT_CALL(*mockGdacProxyMock, subscribeToMasterRegistrationControlEntryChangedBroadcast(_,_,_)).    Times(1);
+    EXPECT_CALL(*mockGdacProxyMock, subscribeToMediatorRegistrationControlEntryChangedBroadcast(_,_,_)).  Times(1);
+    EXPECT_CALL(*mockGdacProxyMock, subscribeToOwnerRegistrationControlEntryChangedBroadcast(_,_,_)).     Times(1);
+
+    // Set default return value for Google mock
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
+
+    // Get the provider permission (async)
+    auto getProviderPermissionCallback1 = std::make_shared<PermissionCallback>();
+
+    localDomainAccessController->getProviderPermission(
+            LocalDomainAccessControllerTest::TEST_USER,
+            LocalDomainAccessControllerTest::TEST_DOMAIN1,
+            LocalDomainAccessControllerTest::TEST_INTERFACE1,
+            TrustLevel::HIGH,
+            getProviderPermissionCallback1
+    );
+
+    // Make another request for provider permission
+    auto getProviderPermissionCallback2 = std::make_shared<PermissionCallback>();
+
+    localDomainAccessController->getProviderPermission(
+                LocalDomainAccessControllerTest::TEST_USER,
+                LocalDomainAccessControllerTest::TEST_DOMAIN1,
+                LocalDomainAccessControllerTest::TEST_INTERFACE1,
+                TrustLevel::HIGH,
+                getProviderPermissionCallback2
+    );
+
+    EXPECT_FALSE(getProviderPermissionCallback1->expectCallback(0));
+    EXPECT_FALSE(getProviderPermissionCallback2->expectCallback(0));
+
+    // Provide the missing response to the LocalDomainAccessController
+    getMasterRcesOnSuccessFct(masterRcesFromGlobalDac);
+
+    EXPECT_TRUE(getProviderPermissionCallback1->isPermissionAvailable());
+    EXPECT_TRUE(getProviderPermissionCallback2->isPermissionAvailable());
+    EXPECT_EQ(Permission::YES, getProviderPermissionCallback1->getPermission());
+    EXPECT_EQ(Permission::YES, getProviderPermissionCallback2->getPermission());
+
+}
+
+TEST(LocalDomainAccessControllerPersistedTest, persistedRcesAreUsed) {
+    auto mockGdacProxyPtr = std::make_unique<MockGlobalDomainAccessControllerProxy>();
+    auto mockGdacProxy = mockGdacProxyPtr.get();
+
+    // Do not contact GDAC (do not perform any get* operation) for persisted ACEs
+    EXPECT_CALL(*mockGdacProxy, getMasterRegistrationControlEntriesAsync(_,_,_))    .Times(0);
+    EXPECT_CALL(*mockGdacProxy, getMediatorRegistrationControlEntriesAsync(_,_,_))  .Times(0);
+    EXPECT_CALL(*mockGdacProxy, getOwnerRegistrationControlEntriesAsync(_,_,_))     .Times(0);
+
+    // Expect only calls to subscribeTo methods
+    EXPECT_CALL(*mockGdacProxy, subscribeToMasterRegistrationControlEntryChangedBroadcast(_,_,_)).    Times(1);
+    EXPECT_CALL(*mockGdacProxy, subscribeToMediatorRegistrationControlEntryChangedBroadcast(_,_,_)).  Times(1);
+    EXPECT_CALL(*mockGdacProxy, subscribeToOwnerRegistrationControlEntryChangedBroadcast(_,_,_)).     Times(1);
+
+    // Copy access entry file to bin folder for the test so that runtimes will find and load the file
+    joynr::test::util::copyTestResourceToCurrentDirectory("AccessStoreTest.persist");
+
+    // Load persisted ACEs
+    auto localDomainAccessStore = std::make_unique<LocalDomainAccessStore>("AccessStoreTest.persist");
+    auto localDomainAccessController =
+            std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
+
+    localDomainAccessController->init(std::move(mockGdacProxyPtr));
+
+    // Set default return value for Google mock
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
+
+    EXPECT_EQ(
+            Permission::NO,
+            localDomainAccessController->getProviderPermission(
+                    LocalDomainAccessControllerTest::TEST_USER,
+                    LocalDomainAccessControllerTest::TEST_DOMAIN1,
+                    LocalDomainAccessControllerTest::TEST_INTERFACE1,
+                    TrustLevel::HIGH
+            )
+    );
 }

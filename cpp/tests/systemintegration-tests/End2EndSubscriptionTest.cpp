@@ -16,13 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <memory>
 #include <string>
-#include "JoynrTest.h"
-#include "tests/utils/MockObjects.h"
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/types/ProviderQos.h"
@@ -31,6 +31,9 @@
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/exceptions/JoynrException.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;

@@ -16,22 +16,23 @@
  * limitations under the License.
  * #L%
  */
+
+#include "libjoynrclustercontroller/http-communication-manager/LongPollingMessageReceiver.h"
+
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <cstdlib>
-#include <algorithm>
 
 #include <boost/lexical_cast.hpp>
 
-#include "libjoynrclustercontroller/http-communication-manager/LongPollingMessageReceiver.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
-#include "joynr/Util.h"
 #include "joynr/DispatcherUtils.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
 #include "joynr/Future.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/JoynrMessage.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
+#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
 
 namespace joynr
 {
@@ -44,7 +45,7 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const std::string& receiverId,
         const LongPollingMessageReceiverSettings& settings,
         std::shared_ptr<Semaphore> channelCreatedSemaphore,
-        std::function<void(const std::string&)> onTextMessageReceived)
+        std::function<void(smrf::ByteVector&&)> onMessageReceived)
         : Thread("LongPollRecv"),
           brokerUrl(brokerUrl),
           channelId(channelId),
@@ -54,7 +55,7 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
           interruptedMutex(),
           interruptedWait(),
           channelCreatedSemaphore(channelCreatedSemaphore),
-          onTextMessageReceived(onTextMessageReceived),
+          onMessageReceived(std::move(onMessageReceived)),
           currentRequest()
 {
 }
@@ -142,8 +143,9 @@ void LongPollingMessageReceiver::run()
             // 200 does nott refect the state of the message body! It could be empty.
             if (longPollingResult.getStatusCode() == 200 ||
                 longPollingResult.getStatusCode() == 503) {
-                util::logSerializedMessage(
-                        logger, "long polling successful; contents: ", longPollingResult.getBody());
+                JOYNR_LOG_TRACE(logger,
+                                "long polling successful; contents: {}",
+                                util::truncateSerializedMessage(longPollingResult.getBody()));
                 processReceivedInput(longPollingResult.getBody());
                 // Atmosphere currently cannot return 204 when a long poll times out, so this code
                 // is currently never executed (2.2.2012)
@@ -167,20 +169,12 @@ void LongPollingMessageReceiver::run()
 
 void LongPollingMessageReceiver::processReceivedInput(const std::string& receivedInput)
 {
-    std::vector<std::string> jsonObjects = util::splitIntoJsonObjects(receivedInput);
-    for (std::size_t i = 0; i < jsonObjects.size(); i++) {
-        processReceivedJsonObjects(jsonObjects.at(i));
-    }
-}
-
-void LongPollingMessageReceiver::processReceivedJsonObjects(const std::string& jsonObject)
-{
-    if (onTextMessageReceived) {
-        onTextMessageReceived(jsonObject);
+    if (onMessageReceived) {
+        smrf::ByteVector rawMessage(receivedInput.begin(), receivedInput.end());
+        onMessageReceived(std::move(rawMessage));
     } else {
         JOYNR_LOG_ERROR(
-                logger,
-                "Discarding received message, since onTextMessageReceived callback is empty.");
+                logger, "Discarding received message, since onMessageReceived callback is empty.");
     }
 }
 

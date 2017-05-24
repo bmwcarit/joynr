@@ -27,7 +27,6 @@ public class JoynrMessageNotSentException extends JoynrRuntimeException {
 
     public JoynrMessageNotSentException(String errorMsg, Throwable cause) {
         super(errorMsg, cause);
-
     }
 
     private static final long serialVersionUID = -4092692826208168737L;

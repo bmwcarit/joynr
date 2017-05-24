@@ -18,16 +18,17 @@
  */
 #include <cassert>
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
-#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
+
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
-#include "libjoynr/websocket/WebSocketPpClientTLS.h"
-#include "libjoynr/websocket/WebSocketPpClientNonTLS.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/SingleThreadedIOService.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
+#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
+#include "libjoynr/websocket/WebSocketPpClientNonTLS.h"
+#include "libjoynr/websocket/WebSocketPpClientTLS.h"
 
 namespace joynr
 {
@@ -124,7 +125,8 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
                         "Sending websocket initialization message failed. Error: {}",
                         e.getMessage());
     };
-    websocket->send(initializationMsg, onFailure);
+    smrf::ByteVector rawMessage(initializationMsg.begin(), initializationMsg.end());
+    websocket->send(smrf::ByteArrayView(rawMessage), onFailure);
 }
 
 void LibJoynrWebSocketRuntime::createWebsocketClient()
@@ -168,8 +170,8 @@ void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
 {
     auto wsLibJoynrMessagingSkeleton =
             std::make_shared<WebSocketLibJoynrMessagingSkeleton>(util::as_weak_ptr(messageRouter));
-    websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](const std::string& msg) {
-        wsLibJoynrMessagingSkeleton->onMessageReceived(msg);
+    websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](smrf::ByteVector&& msg) {
+        wsLibJoynrMessagingSkeleton->onMessageReceived(std::move(msg));
     });
 }
 

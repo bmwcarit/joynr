@@ -21,10 +21,10 @@
 
 #include <string>
 
-#include "joynr/SubscriptionRequest.h"
-#include "joynr/SubscriptionInformation.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/CallContext.h"
+#include "joynr/SubscriptionInformation.h"
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {

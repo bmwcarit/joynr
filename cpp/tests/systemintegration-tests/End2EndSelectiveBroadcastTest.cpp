@@ -27,13 +27,14 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/tests/TestBroadcastWithFilteringBroadcastFilter.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Future.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;

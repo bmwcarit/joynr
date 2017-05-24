@@ -41,13 +41,22 @@ void OneWayRequest::setMethodName(const std::string& methodName)
     this->methodName = methodName;
 }
 
-std::vector<std::string> OneWayRequest::getParamDatatypes() const
+void OneWayRequest::setMethodName(std::string&& methodName)
+{
+    this->methodName = std::move(methodName);
+}
+
+const std::vector<std::string>& OneWayRequest::getParamDatatypes() const
 {
     return paramDatatypes;
 }
 
-// Set the parameter datatypes - called by the json deserializer
-void OneWayRequest::setParamDatatypes(std::vector<std::string> paramDatatypes)
+void OneWayRequest::setParamDatatypes(const std::vector<std::string>& paramDatatypes)
+{
+    this->paramDatatypes = paramDatatypes;
+}
+
+void OneWayRequest::setParamDatatypes(std::vector<std::string>&& paramDatatypes)
 {
     this->paramDatatypes = std::move(paramDatatypes);
 }

@@ -21,8 +21,8 @@
 
 #include <string>
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/types/Version.h"
 
 namespace joynr
@@ -30,28 +30,34 @@ namespace joynr
 
 class SubscriptionAttributeListener;
 class UnicastBroadcastListener;
+class IJoynrProvider;
 
 class JOYNR_EXPORT RequestCaller
 {
 public:
     explicit RequestCaller(const std::string& interfaceName);
+    explicit RequestCaller(std::string&& interfaceName);
+
     virtual ~RequestCaller() = default;
 
-    std::string getInterfaceName();
+    const std::string& getInterfaceName() const;
 
     // Get and set the attribute listeners listening on the provider
     virtual void registerAttributeListener(const std::string& attributeName,
-                                           SubscriptionAttributeListener* attributeListener) = 0;
+                                           SubscriptionAttributeListener* attributeListener);
     virtual void unregisterAttributeListener(const std::string& attributeName,
-                                             SubscriptionAttributeListener* attributeListener) = 0;
+                                             SubscriptionAttributeListener* attributeListener);
 
     // Get and set the broadcast listeners listening on the provider
     virtual void registerBroadcastListener(const std::string& broadcastName,
-                                           UnicastBroadcastListener* broadcastListener) = 0;
+                                           UnicastBroadcastListener* broadcastListener);
     virtual void unregisterBroadcastListener(const std::string& broadcastName,
-                                             UnicastBroadcastListener* broadcastListener) = 0;
+                                             UnicastBroadcastListener* broadcastListener);
 
     virtual types::Version getProviderVersion() = 0;
+
+protected:
+    virtual std::shared_ptr<IJoynrProvider> getProvider() = 0;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RequestCaller);

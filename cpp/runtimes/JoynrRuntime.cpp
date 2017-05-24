@@ -19,9 +19,9 @@
 #include "joynr/JoynrRuntime.h"
 
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/Util.h"
 #include "joynr/system/IRouting.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
-#include "joynr/Util.h"
 
 namespace joynr
 {

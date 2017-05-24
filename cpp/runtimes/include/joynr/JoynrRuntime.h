@@ -20,22 +20,22 @@
 #define JOYNRUNTIME_H
 
 #include <cassert>
-#include <string>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <string>
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/ProxyBuilder.h"
-#include "joynr/ParticipantIdStorage.h"
-#include "joynr/ProxyFactory.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/SystemServicesSettings.h"
-#include "joynr/system/DiscoveryProxy.h"
+#include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/LocalDiscoveryAggregator.h"
+#include "joynr/MessagingSettings.h"
+#include "joynr/ParticipantIdStorage.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ProxyBuilder.h"
+#include "joynr/ProxyFactory.h"
 #include "joynr/PublicationManager.h"
+#include "joynr/SystemServicesSettings.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/system/DiscoveryProxy.h"
 
 namespace joynr
 {

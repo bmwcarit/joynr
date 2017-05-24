@@ -34,11 +34,13 @@ import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+@Ignore("HTTP does not support binary messages (SMRF)")
 public class SubscriptionEnd2EndTest extends AbstractSubscriptionEnd2EndTest {
 
     private static Server jettyServer;

@@ -19,9 +19,10 @@
 #ifndef HASHUTIL_H
 #define HASHUTIL_H
 
+#include <functional>
 #include <map>
 #include <type_traits>
-#include <functional>
+
 #include "joynr/Util.h"
 
 namespace std
@@ -46,7 +47,7 @@ std::enable_if_t<joynr::util::IsDerivedFromTemplate<std::map, T>::value, std::si
 
 } // namespace boost
 
-#include "boost/functional/hash.hpp"
+#include <boost/functional/hash.hpp>
 
 namespace boost
 {

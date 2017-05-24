@@ -22,10 +22,9 @@
 namespace joynr
 {
 
-std::int64_t& DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT_MS()
+std::int64_t DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT_MS()
 {
-    static std::int64_t default_timeout = 30000;
-    return default_timeout;
+    return 30000;
 }
 
 DiscoveryQos::ArbitrationStrategy& DiscoveryQos::DEFAULT_ARBITRATIONSTRATEGY()
@@ -35,13 +34,12 @@ DiscoveryQos::ArbitrationStrategy& DiscoveryQos::DEFAULT_ARBITRATIONSTRATEGY()
     return default_strategy;
 }
 
-std::int64_t& DiscoveryQos::DO_NOT_USE_CACHE()
+std::int64_t DiscoveryQos::DO_NOT_USE_CACHE()
 {
-    static std::int64_t do_not_use_cache = 0;
-    return do_not_use_cache;
+    return 0;
 }
 
-std::int64_t& DiscoveryQos::DEFAULT_CACHEMAXAGE_MS()
+std::int64_t DiscoveryQos::DEFAULT_CACHEMAXAGE_MS()
 {
     return DO_NOT_USE_CACHE();
 }
@@ -53,10 +51,9 @@ joynr::types::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
     return default_scope;
 }
 
-std::int64_t& DiscoveryQos::DEFAULT_RETRYINTERVAL_MS()
+std::int64_t DiscoveryQos::DEFAULT_RETRYINTERVAL_MS()
 {
-    static std::int64_t default_retryInterval = 1000;
-    return default_retryInterval;
+    return 1000;
 }
 
 DiscoveryQos::DiscoveryQos()
@@ -70,7 +67,7 @@ DiscoveryQos::DiscoveryQos()
 {
 }
 
-DiscoveryQos::DiscoveryQos(const std::int64_t& cacheMaxAge)
+DiscoveryQos::DiscoveryQos(std::int64_t cacheMaxAge)
         : customParameters(),
           arbitrationStrategy(DEFAULT_ARBITRATIONSTRATEGY()),
           discoveryTimeoutMs(DEFAULT_DISCOVERYTIMEOUT_MS()),
@@ -125,7 +122,7 @@ std::int64_t DiscoveryQos::getCacheMaxAgeMs() const
     return cacheMaxAgeMs;
 }
 
-void DiscoveryQos::setCacheMaxAgeMs(const std::int64_t& cacheMaxAgeMs)
+void DiscoveryQos::setCacheMaxAgeMs(const std::int64_t cacheMaxAgeMs)
 {
     this->cacheMaxAgeMs = cacheMaxAgeMs;
 }

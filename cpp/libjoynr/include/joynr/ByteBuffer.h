@@ -25,7 +25,7 @@
 namespace joynr
 {
 
-using ByteBuffer = std::vector<std::uint8_t>;
+using ByteBuffer = std::vector<std::int8_t>;
 
 } // namespace joynr
 #endif // BYTEBUFFER_H

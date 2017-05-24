@@ -53,7 +53,7 @@ public class ConsumerInvocationParameters {
     }
 
     public enum BackendConfig {
-        MQTT
+        HTTP, MQTT
     }
 
     private static final String CMDLINE_OPTIONNAME_DOMAINNAME = "domain";

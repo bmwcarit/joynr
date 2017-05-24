@@ -18,30 +18,30 @@
  */
 #ifndef MQTTMESSAGINGSTUBFACTORY_H
 #define MQTTMESSAGINGSTUBFACTORY_H
+
 #include <memory>
-#include <string>
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 
 namespace joynr
 {
 
-class IMessageSender;
+class ITransportMessageSender;
 
 class MqttMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {
 
 public:
-    MqttMessagingStubFactory(std::shared_ptr<IMessageSender> messageSender);
-    std::shared_ptr<IMessaging> create(
+    MqttMessagingStubFactory(std::shared_ptr<ITransportMessageSender> messageSender);
+    std::shared_ptr<IMessagingStub> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
-    void registerOnMessagingStubClosedCallback(std::function<void(
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)>
+    void registerOnMessagingStubClosedCallback(std::function<
+            void(std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
                                                        onMessagingStubClosedCallback) override;
 
 private:
-    std::shared_ptr<IMessageSender> messageSender;
+    std::shared_ptr<ITransportMessageSender> messageSender;
 };
 
 } // namespace joynr

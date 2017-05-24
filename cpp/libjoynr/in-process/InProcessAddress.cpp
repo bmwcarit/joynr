@@ -22,7 +22,7 @@ namespace joynr
 {
 
 InProcessAddress::InProcessAddress(std::shared_ptr<RequestCaller> requestCaller)
-        : requestCaller(requestCaller)
+        : requestCaller(std::move(requestCaller))
 {
 }
 

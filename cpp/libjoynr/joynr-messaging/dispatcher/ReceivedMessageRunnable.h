@@ -18,17 +18,19 @@
  */
 #ifndef RECEIVEDMESSAGERUNNABLE_H
 #define RECEIVEDMESSAGERUNNABLE_H
-#include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/ObjectWithDecayTime.h"
-#include "joynr/JoynrMessage.h"
+#include <memory>
+
 #include "joynr/MessagingQos.h"
+#include "joynr/ObjectWithDecayTime.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Runnable.h"
 
 namespace joynr
 {
 
 class Dispatcher;
+class ImmutableMessage;
 
 /**
   * ReceivedMessageRunnable are used handle an incoming message via a ThreadPool.
@@ -38,14 +40,14 @@ class Dispatcher;
 class ReceivedMessageRunnable : public Runnable, public ObjectWithDecayTime
 {
 public:
-    ReceivedMessageRunnable(const JoynrMessage& message, Dispatcher& dispatcher);
+    ReceivedMessageRunnable(std::shared_ptr<ImmutableMessage> message, Dispatcher& dispatcher);
 
     void shutdown() override;
     void run() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ReceivedMessageRunnable);
-    JoynrMessage message;
+    std::shared_ptr<ImmutableMessage> message;
     Dispatcher& dispatcher;
     ADD_LOGGER(ReceivedMessageRunnable);
 };

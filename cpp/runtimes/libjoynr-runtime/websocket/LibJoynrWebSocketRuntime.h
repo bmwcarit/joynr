@@ -20,15 +20,15 @@
 #ifndef LIBJOYNRWEBSOCKETRUNTIME_H
 #define LIBJOYNRWEBSOCKETRUNTIME_H
 
-#include <memory>
 #include <functional>
+#include <memory>
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
-#include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Settings.h"
 #include "joynr/WebSocketSettings.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
 namespace joynr
 {

@@ -24,7 +24,7 @@ import java.io.Serializable;
 public class NoOpRawMessagingPreprocessor extends RawMessagingPreprocessor {
 
     @Override
-    public String process(String rawMessage, Map<String, Serializable> context) {
+    public byte[] process(byte[] rawMessage, Map<String, Serializable> context) {
         return rawMessage;
     }
 }

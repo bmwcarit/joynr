@@ -19,10 +19,10 @@
 #ifndef LIBJOYNRDIRECTORIES_H
 #define LIBJOYNRDIRECTORIES_H
 
-#include "joynr/RequestCaller.h"
-#include "joynr/IReplyCaller.h"
 #include "joynr/Directory.h"
+#include "joynr/IReplyCaller.h"
 #include "joynr/ISubscriptionCallback.h"
+#include "joynr/RequestCaller.h"
 #include <string>
 
 namespace joynr

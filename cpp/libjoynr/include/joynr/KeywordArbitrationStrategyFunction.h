@@ -23,8 +23,8 @@
 #include <vector>
 
 #include "joynr/ArbitrationStrategyFunction.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -44,7 +44,7 @@ class KeywordArbitrationStrategyFunction : public ArbitrationStrategyFunction
 {
 
 public:
-    ~KeywordArbitrationStrategyFunction() = default;
+    ~KeywordArbitrationStrategyFunction() final = default;
     KeywordArbitrationStrategyFunction() = default;
 
     types::DiscoveryEntryWithMetaInfo select(

@@ -69,7 +69,7 @@ class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 	joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(getInterfaceName());
 }
 
-std::string «interfaceName»AbstractProvider::getInterfaceName() const {
+const std::string& «interfaceName»AbstractProvider::getInterfaceName() const {
 	return I«interfaceName»Base::INTERFACE_NAME();
 }
 

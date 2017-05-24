@@ -16,17 +16,19 @@
  * limitations under the License.
  * #L%
  */
+#include <string>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <string>
 
 #include "joynr/AbstractJoynrProvider.h"
 #include "joynr/SubscriptionAttributeListener.h"
-#include "tests/utils/MockObjects.h"
+#include "joynr/SingleThreadedIOService.h"
+
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/TestWithoutVersionProvider.h"
-#include "joynr/SingleThreadedIOService.h"
+
+#include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 
@@ -36,8 +38,10 @@ public:
         types::ProviderQos ret;
         return ret;
     }
-    std::string getInterfaceName() const {
-        return "DummyProviderInterface";
+
+    const std::string& getInterfaceName() const override {
+        static const std::string interfaceName = "DummyProviderInterface";
+        return interfaceName;
     }
 
     template <typename T>

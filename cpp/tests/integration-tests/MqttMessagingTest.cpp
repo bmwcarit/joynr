@@ -34,8 +34,9 @@ public:
         std::string brokerPort = std::to_string(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
         brokerUri = "tcp://" + brokerHost + ":" + brokerPort;
         // provision global capabilities directory
-        auto addressCapabilitiesDirectory = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri,messagingSettings.getCapabilitiesDirectoryChannelId());
-        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
+        const bool isGloballyVisible = true;
+        const auto addressCapabilitiesDirectory = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri,messagingSettings.getCapabilitiesDirectoryChannelId());
+        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory, isGloballyVisible);
 
         messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(mockMessageSender));
     }
@@ -64,7 +65,7 @@ INIT_LOGGER(MqttMessagingTest);
 TEST_F(MqttMessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager)
 {
     // Test Outline: send message from JoynrMessageSender to ICommunicationManager
-    // - JoynrMessageSender.sendRequest (IJoynrMessageSender)
+    // - MessageSender.sendRequest (IMessageSender)
     //   -> adds reply caller to dispatcher (IDispatcher.addReplyCaller)
     // - InProcessMessagingStub.transmit (IMessaging)
     // - InProcessClusterControllerMessagingSkeleton.transmit (IMessaging)

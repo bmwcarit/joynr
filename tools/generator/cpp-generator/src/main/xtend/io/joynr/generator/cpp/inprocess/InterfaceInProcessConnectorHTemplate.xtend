@@ -134,12 +134,6 @@ public:
 				std::shared_ptr<joynr::InProcessAddress> address
 	);
 
-	/**
-	 * @brief Checks whether cluster controller is used
-	 * @return true, if cluster controller is used
-	 */
-	bool usesClusterController() const override;
-
 	«produceSyncGetterDeclarations(francaIntf, false)»
 	«produceSyncSetterDeclarations(francaIntf, false)»
 	«produceSyncMethodDeclarations(francaIntf, false)»

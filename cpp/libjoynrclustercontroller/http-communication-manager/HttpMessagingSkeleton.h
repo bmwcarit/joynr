@@ -21,28 +21,33 @@
 
 #include <string>
 
-#include "joynr/IMessaging.h"
-#include "joynr/PrivateCopyAssign.h"
+#include <smrf/ByteVector.h>
+
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
 
 class IMessageRouter;
-class JoynrMessage;
+class ImmutableMessage;
 
-class HttpMessagingSkeleton : public IMessaging
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
+
+class HttpMessagingSkeleton
 {
 public:
     explicit HttpMessagingSkeleton(IMessageRouter& messageRouter);
 
-    ~HttpMessagingSkeleton() override = default;
+    ~HttpMessagingSkeleton() = default;
 
-    void transmit(JoynrMessage& message,
-                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-            override;
+    void transmit(std::shared_ptr<joynr::ImmutableMessage> message,
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
-    void onTextMessageReceived(const std::string& message);
+    void onMessageReceived(smrf::ByteVector&& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingSkeleton);

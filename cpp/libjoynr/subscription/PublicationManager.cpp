@@ -20,36 +20,36 @@
 #include "joynr/PublicationManager.h"
 
 #include <cassert>
+#include <chrono>
 #include <cstdint>
 #include <fstream>
-#include <sstream>
-#include <chrono>
 #include <mutex>
+#include <sstream>
 
 #include <boost/asio/io_service.hpp>
 
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/IPublicationSender.h"
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/Runnable.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/IPublicationSender.h"
-#include "joynr/SubscriptionRequest.h"
-#include "joynr/MulticastSubscriptionRequest.h"
-#include "joynr/Util.h"
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/exceptions/JoynrExceptionUtil.h"
-#include "joynr/SubscriptionUtil.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/MulticastSubscriptionRequest.h"
+#include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/RequestCaller.h"
-#include "joynr/Reply.h"
+#include "joynr/Runnable.h"
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/SubscriptionUtil.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/UnicastSubscriptionQos.h"
-#include "joynr/serializer/Serializer.h"
+#include "joynr/Util.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/JoynrExceptionUtil.h"
 #include "joynr/exceptions/SubscriptionException.h"
-
+#include "joynr/serializer/Serializer.h"
 #include "libjoynr/common/CallContextStorage.h"
 
 namespace joynr
@@ -126,10 +126,10 @@ PublicationManager::~PublicationManager()
 }
 
 PublicationManager::PublicationManager(boost::asio::io_service& ioService,
-                                       IJoynrMessageSender* messageSender,
+                                       IMessageSender* messageSender,
                                        std::uint64_t ttlUplift,
                                        int maxThreads)
-        : joynrMessageSender(messageSender),
+        : messageSender(messageSender),
           publications(),
           subscriptionId2SubscriptionRequest(),
           subscriptionId2BroadcastSubscriptionRequest(),
@@ -163,7 +163,7 @@ bool isSubscriptionExpired(const std::shared_ptr<SubscriptionQos> qos, int offse
 void PublicationManager::sendSubscriptionReply(IPublicationSender* publicationSender,
                                                const std::string& fromParticipantId,
                                                const std::string& toParticipantId,
-                                               const std::int64_t& expiryDateMs,
+                                               std::int64_t expiryDateMs,
                                                const SubscriptionReply& subscriptionReply)
 {
     MessagingQos messagingQos;
@@ -181,7 +181,7 @@ void PublicationManager::sendSubscriptionReply(IPublicationSender* publicationSe
 void PublicationManager::sendSubscriptionReply(IPublicationSender* publicationSender,
                                                const std::string& fromParticipantId,
                                                const std::string& toParticipantId,
-                                               const std::int64_t& expiryDateMs,
+                                               std::int64_t expiryDateMs,
                                                const std::string& subscriptionId)
 {
     SubscriptionReply subscriptionReply;
@@ -194,13 +194,13 @@ void PublicationManager::sendSubscriptionReply(
         IPublicationSender* publicationSender,
         const std::string& fromParticipantId,
         const std::string& toParticipantId,
-        const std::int64_t& expiryDateMs,
+        std::int64_t expiryDateMs,
         const std::string& subscriptionId,
-        const std::shared_ptr<exceptions::SubscriptionException>& error)
+        std::shared_ptr<exceptions::SubscriptionException> error)
 {
     SubscriptionReply subscriptionReply;
     subscriptionReply.setSubscriptionId(subscriptionId);
-    subscriptionReply.setError(error);
+    subscriptionReply.setError(std::move(error));
     sendSubscriptionReply(
             publicationSender, fromParticipantId, toParticipantId, expiryDateMs, subscriptionReply);
 }
@@ -221,7 +221,7 @@ void PublicationManager::add(const std::string& proxyParticipantId,
 
 void PublicationManager::addSubscriptionCleanupIfNecessary(std::shared_ptr<Publication> publication,
                                                            std::shared_ptr<SubscriptionQos> qos,
-                                                           std::string& subscriptionId)
+                                                           const std::string& subscriptionId)
 {
     if (qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE()) {
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -247,7 +247,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         std::shared_ptr<RequestCaller> requestCaller,
         IPublicationSender* publicationSender)
 {
-    std::string subscriptionId = requestInfo->getSubscriptionId();
+    const std::string& subscriptionId = requestInfo->getSubscriptionId();
     auto publication = std::make_shared<Publication>(publicationSender, requestCaller);
 
     if (publicationExists(subscriptionId)) {
@@ -399,7 +399,7 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         std::shared_ptr<RequestCaller> requestCaller,
         IPublicationSender* publicationSender)
 {
-    std::string subscriptionId = requestInfo->getSubscriptionId();
+    const std::string& subscriptionId = requestInfo->getSubscriptionId();
 
     auto publication = std::make_shared<Publication>(publicationSender, requestCaller);
 
@@ -705,11 +705,11 @@ void PublicationManager::removeAttributePublication(const std::string& subscript
 {
     JOYNR_LOG_TRACE(logger, "removePublication: {}", subscriptionId);
 
-    std::shared_ptr<Publication> publication(publications.take(subscriptionId));
-    std::shared_ptr<SubscriptionRequestInformation> request(
-            subscriptionId2SubscriptionRequest.take(subscriptionId));
+    std::shared_ptr<Publication> publication = publications.take(subscriptionId);
+    std::shared_ptr<SubscriptionRequestInformation> request =
+            subscriptionId2SubscriptionRequest.take(subscriptionId);
 
-    if (publication != nullptr && request != nullptr) {
+    if (publication && request) {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Delete the onChange publication if needed
         removeOnChangePublication(subscriptionId, request, publication);
@@ -725,12 +725,12 @@ void PublicationManager::removeBroadcastPublication(const std::string& subscript
 {
     JOYNR_LOG_TRACE(logger, "removeBroadcast: {}", subscriptionId);
 
-    std::shared_ptr<Publication> publication(publications.take(subscriptionId));
+    std::shared_ptr<Publication> publication = publications.take(subscriptionId);
 
-    std::shared_ptr<BroadcastSubscriptionRequestInformation> request(
-            subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId));
+    std::shared_ptr<BroadcastSubscriptionRequestInformation> request =
+            subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId);
 
-    if (publication != nullptr && request != nullptr) {
+    if (publication && request) {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
         // Remove listener
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
@@ -751,6 +751,8 @@ void PublicationManager::removeOnChangePublication(
         std::shared_ptr<SubscriptionRequestInformation> request,
         std::shared_ptr<Publication> publication)
 {
+    assert(request);
+    assert(publication);
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
     JOYNR_LOG_TRACE(logger, "Removing onChange publication for id = {}", subscriptionId);
     // to silence unused-variable compiler warnings
@@ -769,6 +771,7 @@ void PublicationManager::removeOnChangePublication(
 // This function assumes a write lock is alrady held for the publication}
 void PublicationManager::removePublicationEndRunnable(std::shared_ptr<Publication> publication)
 {
+    assert(publication);
     if (publication->publicationEndRunnableHandle != DelayedScheduler::INVALID_RUNNABLE_HANDLE &&
         !isShuttingDown()) {
         JOYNR_LOG_TRACE(logger,
@@ -788,6 +791,7 @@ bool PublicationManager::isShuttingDown()
 std::int64_t PublicationManager::getPublicationTtlMs(
         std::shared_ptr<SubscriptionRequest> subscriptionRequest) const
 {
+    assert(subscriptionRequest);
     // Get publication ttl only if subscriptionQos is a UnicastSubscritpionQos
     auto qos = subscriptionRequest->getQos();
     if (auto unicastQos = std::dynamic_pointer_cast<UnicastSubscriptionQos>(qos)) {
@@ -804,6 +808,10 @@ void PublicationManager::sendPublicationError(
         std::shared_ptr<SubscriptionRequest> request,
         std::shared_ptr<exceptions::JoynrRuntimeException> exception)
 {
+    assert(publication);
+    assert(subscriptionInformation);
+    assert(request);
+    assert(exception);
     JOYNR_LOG_TRACE(logger, "sending subscription error");
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
@@ -819,6 +827,9 @@ void PublicationManager::sendSubscriptionPublication(
         std::shared_ptr<SubscriptionRequest> request,
         SubscriptionPublication&& subscriptionPublication)
 {
+    assert(publication);
+    assert(subscriptionInformation);
+    assert(request);
 
     MessagingQos mQos;
 
@@ -851,6 +862,10 @@ void PublicationManager::sendPublication(
         std::shared_ptr<SubscriptionRequest> request,
         BaseReply&& response)
 {
+    assert(publication);
+    assert(subscriptionInformation);
+    assert(request);
+
     JOYNR_LOG_TRACE(logger, "sending subscription reply");
     SubscriptionPublication subscriptionPublication(std::move(response));
     subscriptionPublication.setSubscriptionId(request->getSubscriptionId());
@@ -863,15 +878,14 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
 {
     JOYNR_LOG_TRACE(logger, "pollSubscription {}", subscriptionId);
 
-    if (isShuttingDown() || !publicationExists(subscriptionId) ||
-        !subscriptionId2SubscriptionRequest.contains(subscriptionId)) {
+    if (isShuttingDown()) {
         return;
     }
 
     // Get the subscription details
-    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
-    std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2SubscriptionRequest.value(subscriptionId));
+    std::shared_ptr<Publication> publication = publications.value(subscriptionId);
+    std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest =
+            subscriptionId2SubscriptionRequest.value(subscriptionId);
 
     if (publication && subscriptionRequest) {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -900,13 +914,22 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
             }
         }
 
+        std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
+        const std::string& interfaceName = requestCaller->getInterfaceName();
+        std::shared_ptr<IRequestInterpreter> requestInterpreter =
+                InterfaceRegistrar::instance().getRequestInterpreter(interfaceName);
+        if (!requestInterpreter) {
+            JOYNR_LOG_ERROR(
+                    logger,
+                    "requestInterpreter not found for interface {} while polling subscriptionId {}",
+                    interfaceName,
+                    subscriptionId);
+            return;
+        }
+
         // Get the value of the attribute
         std::string attributeGetter(
                 util::attributeGetterFromName(subscriptionRequest->getSubscribeToName()));
-        std::shared_ptr<RequestCaller> requestCaller(publication->requestCaller);
-        std::shared_ptr<IRequestInterpreter> requestInterpreter(
-                InterfaceRegistrar::instance().getRequestInterpreter(
-                        requestCaller->getInterfaceName()));
 
         std::function<void(Reply && )> onSuccess =
                 [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
@@ -931,7 +954,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                     std::dynamic_pointer_cast<exceptions::JoynrRuntimeException>(exception);
             assert(runtimeError);
             sendPublicationError(
-                    publication, subscriptionRequest, subscriptionRequest, runtimeError);
+                    publication, subscriptionRequest, subscriptionRequest, std::move(runtimeError));
 
             // Reschedule the next poll
             if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
@@ -948,7 +971,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
 
         CallContextStorage::set(subscriptionRequest->getCallContext());
         requestInterpreter->execute(
-                requestCaller, dummyRequest, std::move(onSuccess), std::move(onError));
+                std::move(requestCaller), dummyRequest, std::move(onSuccess), std::move(onError));
         CallContextStorage::invalidate();
     }
 }
@@ -1009,7 +1032,7 @@ PublicationManager::Publication::Publication(IPublicationSender* publicationSend
                                              std::shared_ptr<RequestCaller> requestCaller)
         : timeOfLastPublication(0),
           sender(publicationSender),
-          requestCaller(requestCaller),
+          requestCaller(std::move(requestCaller)),
           attributeListener(nullptr),
           broadcastListener(nullptr),
           mutex(),
@@ -1049,10 +1072,11 @@ void PublicationManager::PublicationEndRunnable::shutdown()
 
 void PublicationManager::PublicationEndRunnable::run()
 {
-    std::shared_ptr<Publication> publication(publicationManager.publications.value(subscriptionId));
+    std::shared_ptr<Publication> publication =
+            publicationManager.publications.value(subscriptionId);
     publicationManager.removePublication(subscriptionId);
 
-    if (publication != nullptr) {
+    if (publication) {
         std::lock_guard<std::recursive_mutex> lock((publication->mutex));
         publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
     }

@@ -21,17 +21,16 @@
 
 #include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/IMessageSender.h"
+#include "joynr/ITransportMessageSender.h"
 #include "joynr/Logger.h"
 
 namespace joynr
 {
 
-class JoynrMessage;
 class MessagingSettings;
 class MosquittoConnection;
 
-class MqttSender : public IMessageSender
+class MqttSender : public ITransportMessageSender
 {
 
 public:
@@ -43,17 +42,17 @@ public:
     * @brief Sends the message to the given channel.
     */
     void sendMessage(const system::RoutingTypes::Address& destinationAddress,
-                     const JoynrMessage& message,
+                     std::shared_ptr<ImmutableMessage> message,
                      const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
-    void registerReceiver(std::shared_ptr<IMessageReceiver> receiver) override;
+    void registerReceiver(std::shared_ptr<ITransportMessageReceiver> receiver) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttSender);
 
     std::shared_ptr<MosquittoConnection> mosquittoConnection;
-    std::shared_ptr<IMessageReceiver> receiver;
+    std::shared_ptr<ITransportMessageReceiver> receiver;
 
     ADD_LOGGER(MqttSender);
 };

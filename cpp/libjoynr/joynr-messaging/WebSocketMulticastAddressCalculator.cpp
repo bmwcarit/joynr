@@ -22,10 +22,9 @@
 #include <memory>
 #include <tuple>
 
-#include <joynr/JoynrMessage.h>
-#include <joynr/exceptions/JoynrException.h>
-#include <joynr/system/RoutingTypes/Address.h>
-#include <joynr/system/RoutingTypes/WebSocketAddress.h>
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 namespace joynr
 {
@@ -36,9 +35,9 @@ WebSocketMulticastAddressCalculator::WebSocketMulticastAddressCalculator(
 }
 
 std::shared_ptr<const system::RoutingTypes::Address> WebSocketMulticastAddressCalculator::compute(
-        const JoynrMessage& message)
+        const ImmutableMessage& message)
 {
     std::ignore = message;
     return clusterControllerAddress;
 }
-}
+} // namespace joynr

@@ -19,29 +19,26 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <cstddef>
 #include <algorithm>
 #include <chrono>
+#include <cstddef>
 #include <iterator>
+#include <memory>
 #include <set>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
-#include <memory>
 
-#include <boost/range/adaptor/map.hpp>
-#include <boost/range/algorithm/copy.hpp>
-
-#include <boost/mpl/vector.hpp>
 #include <boost/mpl/begin_end.hpp>
 #include <boost/mpl/deref.hpp>
 #include <boost/mpl/next_prior.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm/copy.hpp>
 
 namespace joynr
 {
-
-class Logger;
 
 namespace util
 {
@@ -65,12 +62,6 @@ std::string extractParticipantIdFromMulticastId(const std::string& multicastId);
 
 void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards = false);
 
-/**
-  * Splits a byte array representation of multiple JSON objects into
-  * a list of byte arrays, each containing a single JSON object.
-  */
-std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream);
-
 std::string attributeGetterFromName(const std::string& attributeName);
 
 /*
@@ -93,11 +84,9 @@ void saveStringToFile(const std::string& fileName, const std::string& strToSave)
 std::string createUuid();
 
 /**
- * Log a serialized Joynr message
+ * truncate a serialized Joynr message for logging
  */
-void logSerializedMessage(Logger& logger,
-                          const std::string& explanation,
-                          const std::string& message);
+std::string truncateSerializedMessage(const std::string& message);
 
 template <typename T>
 std::set<T> vectorToSet(const std::vector<T>& v)

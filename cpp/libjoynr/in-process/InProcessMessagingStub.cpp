@@ -16,26 +16,26 @@
  * limitations under the License.
  * #L%
  */
-#include "InProcessMessagingStub.h"
+#include "libjoynr/in-process/InProcessMessagingStub.h"
 
 #include <cassert>
 
-#include "InProcessMessagingSkeleton.h"
+#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 
 namespace joynr
 {
 
 InProcessMessagingStub::InProcessMessagingStub(std::shared_ptr<InProcessMessagingSkeleton> skeleton)
-        : skeleton(skeleton)
+        : skeleton(std::move(skeleton))
 {
 }
 
 void InProcessMessagingStub::transmit(
-        JoynrMessage& message,
+        std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     assert(skeleton != nullptr);
-    skeleton->transmit(message, onFailure);
+    skeleton->transmit(std::move(message), onFailure);
 }
 
 } // namespace joynr

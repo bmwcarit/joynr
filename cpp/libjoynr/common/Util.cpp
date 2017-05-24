@@ -18,16 +18,16 @@
  */
 #include "joynr/Util.h"
 
-#include <fstream>
-#include <regex>
 #include <cctype>
+#include <fstream>
 #include <iterator>
-#include <stdexcept>
+#include <regex>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
-#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 #include "joynr/Logger.h"
@@ -73,41 +73,6 @@ std::string loadStringFromFile(const std::string& fileName)
     inStream.read(&fileContents[0], fileContents.size());
     inStream.close();
     return fileContents;
-}
-
-std::vector<std::string> splitIntoJsonObjects(const std::string& jsonStream)
-{
-    // This code relies assumes jsonStream is a valid JSON string
-    std::vector<std::string> jsonObjects;
-    int parenthesisCount = 0;
-    int currentObjectStart = -1;
-    bool isInsideString = false;
-    /*A string starts with an unescaped " and ends with an unescaped "
-     * } or { within a string must be ignored.
-    */
-    for (std::size_t i = 0; i < jsonStream.size(); i++) {
-        if (jsonStream.at(i) == '"' && (i > 0) && jsonStream.at(i - 1) != '\\') {
-            // only switch insideString if " is not escaped
-            isInsideString = !isInsideString;
-        } else if (!isInsideString && jsonStream.at(i) == '{') {
-            parenthesisCount++;
-        } else if (!isInsideString && jsonStream.at(i) == '}') {
-            parenthesisCount--;
-        }
-
-        if (parenthesisCount == 1 && currentObjectStart < 0) {
-            // found start of object
-            currentObjectStart = i;
-        }
-        if (parenthesisCount == 0 && currentObjectStart >= 0) {
-            // found end of object
-            jsonObjects.push_back(
-                    jsonStream.substr(currentObjectStart, i - currentObjectStart + 1));
-
-            currentObjectStart = -1;
-        }
-    }
-    return jsonObjects;
 }
 
 std::string attributeGetterFromName(const std::string& attributeName)
@@ -181,19 +146,15 @@ void validatePartitions(const std::vector<std::string>& partitions, bool allowWi
     }
 }
 
-void logSerializedMessage(Logger& logger,
-                          const std::string& explanation,
-                          const std::string& message)
+std::string truncateSerializedMessage(const std::string& message)
 {
-    if (message.size() > 2048) {
-        JOYNR_LOG_DEBUG(logger,
-                        "{} {}<**truncated, length {}",
-                        explanation,
-                        message.substr(0, 2048),
-                        message.length());
-    } else {
-        JOYNR_LOG_DEBUG(logger, "{} {}, length {}", explanation, message, message.length());
+    constexpr std::size_t maxSize = 2048;
+    const std::size_t messageSize = message.size();
+    if (messageSize > maxSize) {
+        return message.substr(0, maxSize) + std::string("<**truncated, length=") +
+               std::to_string(messageSize);
     }
+    return message;
 }
 
 std::string toDateString(const std::chrono::system_clock::time_point& timePoint)

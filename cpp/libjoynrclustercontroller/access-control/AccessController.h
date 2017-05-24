@@ -20,14 +20,14 @@
 #ifndef ACCESSCONTROLLER_H
 #define ACCESSCONTROLLER_H
 
-#include "joynr/access-control/IAccessController.h"
-
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/infrastructure/DacTypes/TrustLevel.h"
-#include "joynr/Logger.h"
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
+
+#include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/access-control/IAccessController.h"
+#include "joynr/infrastructure/DacTypes/TrustLevel.h"
 
 namespace joynr
 {
@@ -47,7 +47,7 @@ public:
 
     //---IAccessController interface -------------------------------------------
 
-    void hasConsumerPermission(const JoynrMessage& message,
+    void hasConsumerPermission(std::shared_ptr<ImmutableMessage> message,
                                std::shared_ptr<IHasConsumerPermissionCallback> callback) override;
 
     bool hasProviderPermission(const std::string& userId,
@@ -62,7 +62,7 @@ private:
     class ProviderRegistrationObserver;
 
     DISALLOW_COPY_AND_ASSIGN(AccessController);
-    bool needsPermissionCheck(const JoynrMessage& message);
+    bool needsPermissionCheck(const ImmutableMessage& message);
 
     LocalCapabilitiesDirectory& localCapabilitiesDirectory;
     LocalDomainAccessController& localDomainAccessController;

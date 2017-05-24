@@ -17,8 +17,8 @@
  * #L%
  */
 #include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
-#include "joynr/Util.h"
 #include "joynr/Settings.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {

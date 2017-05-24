@@ -476,12 +476,12 @@ referenced libs.
     <dependency>
       <groupId>com.fasterxml.jackson.jaxrs</groupId>
       <artifactId>jackson-jaxrs-json-provider</artifactId>
-      <version>2.6.2</version>
+      <version>2.8.8</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-xml</artifactId>
-      <version>2.6.2</version>
+      <version>2.8.8</version>
     </dependency>
 
 Finally in case you're using JSON: Not setting a value to the @JsonProperty annotations
@@ -516,14 +516,14 @@ Here's an example of a message processor:
 ```
 @Stateless
 public class MyMessageProcessor implements JoynrMessageProcessor {
-    public JoynrMessage processOutgoing(JoynrMessage joynrMessage) {
+    public MutableMessage processOutgoing(MutableMessage joynrMessage) {
         Map<String, String> myCustomHeaders = new HashMap<>();
         myCustomHeaders.put("my-correlation-id", UUID.randomUuid().toString());
         joynrMessage.setCustomHeaders(myCustomHeaders);
         return joynrMessage;
     }
 
-    public JoynrMessage processIncoming(JoynrMessage joynrMessage) {
+    public ImmutableMessage processIncoming(ImmutableMessage joynrMessage) {
         return joynrMessage;
     }
 }

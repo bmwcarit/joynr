@@ -37,9 +37,6 @@ public:
 
     explicit BasePublication(BaseReply&& reply);
 
-    BasePublication(const BasePublication&) = default;
-    BasePublication& operator=(const BasePublication&) = default;
-
     BasePublication(BasePublication&&) = default;
     BasePublication& operator=(BasePublication&&) = default;
 

@@ -74,10 +74,9 @@ std::unordered_set<std::string> MulticastReceiverDirectory::getReceivers(
     std::lock_guard<std::recursive_mutex> lock(mutex);
 
     std::unordered_set<std::string> foundReceivers;
-    for (const std::pair<MulticastMatcher, std::unordered_set<std::string>>& pair :
-         multicastReceivers) {
-        if (pair.first.doesMatch(multicastId)) {
-            foundReceivers.insert(pair.second.cbegin(), pair.second.cend());
+    for (const auto& entry : multicastReceivers) {
+        if (entry.first.doesMatch(multicastId)) {
+            foundReceivers.insert(entry.second.cbegin(), entry.second.cend());
         }
     }
     return foundReceivers;
@@ -85,6 +84,7 @@ std::unordered_set<std::string> MulticastReceiverDirectory::getReceivers(
 
 std::vector<std::string> MulticastReceiverDirectory::getMulticastIds() const
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex);
     std::vector<std::string> multicastIds;
 
     for (const auto& multicastReceiver : multicastReceivers) {
@@ -105,7 +105,7 @@ bool MulticastReceiverDirectory::contains(const std::string& multicastId,
                                           const std::string& receiverId)
 {
     std::lock_guard<std::recursive_mutex> lock(mutex);
-    auto receivers = getReceivers(multicastId);
+    const auto& receivers = getReceivers(multicastId);
     return receivers.find(receiverId) != receivers.cend();
 }
 

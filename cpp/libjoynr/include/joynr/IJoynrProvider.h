@@ -19,8 +19,8 @@
 #ifndef IJOYNRPROVIDER_H
 #define IJOYNRPROVIDER_H
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace joynr
 {
@@ -86,7 +86,7 @@ public:
      * @brief Gets the interface name
      * @return the interface name
      */
-    virtual std::string getInterfaceName() const = 0;
+    virtual const std::string& getInterfaceName() const = 0;
 };
 
 } // namespace joynr

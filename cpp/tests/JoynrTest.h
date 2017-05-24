@@ -24,8 +24,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <joynr/exceptions/JoynrException.h>
-#include <joynr/exceptions/MethodInvocationException.h>
+#include "joynr/ImmutableMessage.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/MethodInvocationException.h"
 
 #define JOYNR_TEST_NO_THROW(statement, fail) \
     try { \
@@ -57,4 +59,67 @@ ACTION_P(ReleaseSemaphore, semaphore)
     semaphore->notify();
 }
 
+namespace joynr {
+namespace test {
+namespace util {
+
+    /**
+     * @brief Remove specified file from current working directory.
+     * @param filePattern: regex pattern to describe the set of files to remove.
+     */
+    void removeFileInCurrentDirectory(const std::string& filePattern);
+
+    /**
+     * @brief Copy the specified resource file from test-resources/ to current working directory.
+     * @param resourceFileName: resource file to copy
+     * @param newName: optional new name for the resource file (resourceFileName used otherwise)
+     */
+    void copyTestResourceToCurrentDirectory(const std::string& resourceFileName,
+                                            const std::string& newName = std::string());
+
+} // namespace util
+} // namespace test
+} // namespace joynr
+
+
+inline void compareMutableImmutableMessage(const joynr::MutableMessage& mutableMessage, const joynr::ImmutableMessage& immutableMessage)
+{
+    // serialize MutableMessage and compare result with ImmutableMessage
+    std::unique_ptr<joynr::ImmutableMessage> mutableMessageSerialized = mutableMessage.getImmutableMessage();
+    EXPECT_EQ(mutableMessageSerialized->getSerializedMessage(), immutableMessage.getSerializedMessage());
+}
+
+inline void compareMutableImmutableMessage(const joynr::MutableMessage& mutableMessage, std::shared_ptr<joynr::ImmutableMessage> immutableMessage)
+{
+    compareMutableImmutableMessage(mutableMessage, *immutableMessage);
+}
+
+MATCHER_P(ImmutableMessageHasPayload, payload, "") {
+    // we only support non-encrypted messages for now
+    assert(!arg->isEncrypted());
+    smrf::ByteArrayView bodyView = arg->getUnencryptedBody();
+    const std::string immutablePayload(bodyView.data(), bodyView.data() + bodyView.size());
+
+    return immutablePayload == payload;
+}
+
+// works for both Mutable and ImmutableMessages
+MATCHER_P(MessageHasType, type, "") {
+    return arg->getType() == type;
+}
+
+// works for both Mutable and ImmutableMessages
+MATCHER_P(MessageHasSender, sender, "") {
+    return arg->getSender() == sender;
+}
+
+// works for both Mutable and ImmutableMessages
+MATCHER_P(MessageHasRecipient, recipient, "") {
+    return arg->getRecipient() == recipient;
+}
+
+// works for both Mutable and ImmutableMessages
+MATCHER_P(MessageHasExpiryDate, expiryDate, "") {
+    return arg->getExpiryDate() == expiryDate;
+}
 #endif // JOYNRTEST_H_

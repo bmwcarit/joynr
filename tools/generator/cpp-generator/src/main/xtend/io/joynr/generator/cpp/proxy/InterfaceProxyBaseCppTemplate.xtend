@@ -49,13 +49,11 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 
 «getNamespaceStarter(francaIntf)»
 «className»::«className»(
-		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
 		const std::string &domain,
 		const joynr::MessagingQos &qosSettings
 ) :
 		joynr::ProxyBase(connectorFactory, domain, qosSettings),
-		messagingAddress(messagingAddress),
 		connector()
 {
 }

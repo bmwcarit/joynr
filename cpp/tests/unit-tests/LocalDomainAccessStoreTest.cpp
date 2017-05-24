@@ -301,16 +301,27 @@ TEST_F(LocalDomainAccessStoreTest, removeOwnerAce) {
 }
 
 TEST_F(LocalDomainAccessStoreTest, restoreFromPersistenceFile) {
+
+    const std::string masterACEinterfaceName = "this/is/a/test/interface";
+    expectedMasterAccessControlEntry.setInterfaceName(masterACEinterfaceName);
+
     {
         LocalDomainAccessStore localDomainAccessStore(ClusterControllerSettings::DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
         localDomainAccessStore.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
+        localDomainAccessStore.updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
     }
 
     {
         LocalDomainAccessStore localDomainAccessStore(ClusterControllerSettings::DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
         EXPECT_EQ(expectedOwnerAccessControlEntry, localDomainAccessStore.getOwnerAccessControlEntry(expectedOwnerAccessControlEntry.getUid(),
-                                                                                                        expectedOwnerAccessControlEntry.getDomain(),
-                                                                                                        expectedOwnerAccessControlEntry.getInterfaceName(),
-                                                                                                        expectedOwnerAccessControlEntry.getOperation()).get());
+                                                                                                     expectedOwnerAccessControlEntry.getDomain(),
+                                                                                                     expectedOwnerAccessControlEntry.getInterfaceName(),
+                                                                                                     expectedOwnerAccessControlEntry.getOperation()).get());
+
+        EXPECT_EQ(expectedMasterAccessControlEntry, localDomainAccessStore.getMasterAccessControlEntry(expectedMasterAccessControlEntry.getUid(),
+                                                                                                      expectedMasterAccessControlEntry.getDomain(),
+                                                                                                      expectedMasterAccessControlEntry.getInterfaceName(),
+                                                                                                      expectedMasterAccessControlEntry.getOperation()).get());
     }
 }
+

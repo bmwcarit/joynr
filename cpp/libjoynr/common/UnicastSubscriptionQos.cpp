@@ -22,22 +22,19 @@
 namespace joynr
 {
 
-const std::int64_t& UnicastSubscriptionQos::DEFAULT_PUBLICATION_TTL_MS()
+std::int64_t UnicastSubscriptionQos::DEFAULT_PUBLICATION_TTL_MS()
 {
-    static const std::int64_t defaultPublicationTtl = 10000;
-    return defaultPublicationTtl;
+    return 10000;
 }
 
-const std::int64_t& UnicastSubscriptionQos::MIN_PUBLICATION_TTL_MS()
+std::int64_t UnicastSubscriptionQos::MIN_PUBLICATION_TTL_MS()
 {
-    static const std::int64_t minPublicationTtl = 100;
-    return minPublicationTtl;
+    return 100;
 }
 
-const std::int64_t& UnicastSubscriptionQos::MAX_PUBLICATION_TTL_MS()
+std::int64_t UnicastSubscriptionQos::MAX_PUBLICATION_TTL_MS()
 {
-    static const std::int64_t maxPublicationTtl = 2592000000UL;
-    return maxPublicationTtl;
+    return 2592000000UL;
 }
 
 UnicastSubscriptionQos::UnicastSubscriptionQos()
@@ -50,8 +47,8 @@ UnicastSubscriptionQos::UnicastSubscriptionQos(const UnicastSubscriptionQos& oth
 {
 }
 
-UnicastSubscriptionQos::UnicastSubscriptionQos(const std::int64_t validityMs,
-                                               const std::int64_t publicationTtlMs)
+UnicastSubscriptionQos::UnicastSubscriptionQos(std::int64_t validityMs,
+                                               std::int64_t publicationTtlMs)
         : SubscriptionQos(validityMs), publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
 {
     setPublicationTtlMs(publicationTtlMs);
@@ -62,7 +59,7 @@ std::int64_t UnicastSubscriptionQos::getPublicationTtlMs() const
     return publicationTtlMs;
 }
 
-void UnicastSubscriptionQos::setPublicationTtlMs(const std::int64_t& publicationTtlMs)
+void UnicastSubscriptionQos::setPublicationTtlMs(std::int64_t publicationTtlMs)
 {
     this->publicationTtlMs = publicationTtlMs;
     if (this->publicationTtlMs > MAX_PUBLICATION_TTL_MS()) {

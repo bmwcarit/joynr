@@ -19,42 +19,37 @@
 #ifndef ABSTRACTJOYNRMESSAGINGCONNECTOR_H
 #define ABSTRACTJOYNRMESSAGINGCONNECTOR_H
 
-#include <cassert>
-#include <string>
 #include <memory>
-#include <boost/any.hpp>
+#include <string>
 
-#include "joynr/Reply.h"
-#include "joynr/Request.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/Logger.h"
-#include "joynr/DispatcherUtils.h"
-#include "joynr/IConnector.h"
-#include "joynr/IReplyCaller.h"
-#include "joynr/ReplyCaller.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/Logger.h"
+#include "joynr/MessagingQos.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
 
-class IJoynrMessageSender;
+class IMessageSender;
+class IReplyCaller;
 class ISubscriptionManager;
+class OneWayRequest;
+class Request;
 
-class JOYNR_EXPORT AbstractJoynrMessagingConnector : public IConnector
+class JOYNR_EXPORT AbstractJoynrMessagingConnector
 {
 public:
     AbstractJoynrMessagingConnector(
-            std::shared_ptr<IJoynrMessageSender> joynrMessageSender,
+            std::shared_ptr<IMessageSender> messageSender,
             std::shared_ptr<ISubscriptionManager> subscriptionManager,
             const std::string& domain,
             const std::string& interfaceName,
             const std::string& proxyParticipantId,
             const MessagingQos& qosSettings,
             const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry);
-    bool usesClusterController() const override;
-    ~AbstractJoynrMessagingConnector() override = default;
+
+    virtual ~AbstractJoynrMessagingConnector() = default;
 
     /**
      * @brief Makes a request and returns the received response via the callback.
@@ -62,11 +57,11 @@ public:
      * @param replyCaller
      * @param request
      */
-    void operationRequest(std::shared_ptr<IReplyCaller> replyCaller, const Request& request);
-    void operationOneWayRequest(const OneWayRequest& request);
+    void operationRequest(std::shared_ptr<IReplyCaller> replyCaller, Request&& request);
+    void operationOneWayRequest(OneWayRequest&& request);
 
 protected:
-    std::shared_ptr<IJoynrMessageSender> joynrMessageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     std::shared_ptr<ISubscriptionManager> subscriptionManager;
     std::string domain;
     std::string interfaceName;
@@ -78,10 +73,6 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrMessagingConnector);
-
-    // Request jsonRequest;
-    void sendRequest(const Request& request, std::shared_ptr<IReplyCaller> replyCaller);
-    void sendOneWayRequest(const OneWayRequest& request);
 };
 
 } // namespace joynr

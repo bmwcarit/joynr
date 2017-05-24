@@ -19,31 +19,37 @@
 #ifndef WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H
 #define WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H
 
-#include <string>
 #include <functional>
 #include <memory>
+#include <string>
 
-#include "joynr/PrivateCopyAssign.h"
+#include <smrf/ByteVector.h>
+
 #include "joynr/Logger.h"
-#include "joynr/IMessaging.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
 
 class IMessageRouter;
+class ImmutableMessage;
 
-class WebSocketLibJoynrMessagingSkeleton : public IMessaging
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
+
+class WebSocketLibJoynrMessagingSkeleton
 {
 public:
     explicit WebSocketLibJoynrMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter);
 
-    ~WebSocketLibJoynrMessagingSkeleton() override = default;
+    ~WebSocketLibJoynrMessagingSkeleton() = default;
 
-    void transmit(JoynrMessage& message,
-                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-            override;
+    void transmit(std::shared_ptr<ImmutableMessage> message,
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
-    void onMessageReceived(const std::string& message);
+    void onMessageReceived(smrf::ByteVector&& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketLibJoynrMessagingSkeleton);

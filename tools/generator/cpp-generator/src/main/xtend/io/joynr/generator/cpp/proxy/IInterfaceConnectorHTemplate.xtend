@@ -50,7 +50,6 @@ class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionCallback.h"
-#include "joynr/IConnector.h"
 #include <memory>
 
 namespace joynr {
@@ -79,7 +78,7 @@ public:
 	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, true)»
 };
 
-class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«interfaceName», public joynr::IConnector, virtual public I«interfaceName»Subscription{
+class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«interfaceName», virtual public I«interfaceName»Subscription{
 
 public:
 	~I«interfaceName»Connector() override = default;

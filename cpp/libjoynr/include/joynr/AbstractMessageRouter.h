@@ -17,8 +17,8 @@
  * #L%
  */
 
-#ifndef MESSAGEROUTER_H
-#define MESSAGEROUTER_H
+#ifndef ABSTRACTMESSAGEROUTER_H
+#define ABSTRACTMESSAGEROUTER_H
 
 #include <chrono>
 #include <memory>
@@ -28,13 +28,15 @@
 #include "joynr/Directory.h"
 #include "joynr/IMessageRouter.h"
 #include "joynr/JoynrExport.h"
-#include "joynr/JoynrMessage.h"
 #include "joynr/Logger.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ObjectWithDecayTime.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ReadWriteLock.h"
 #include "joynr/Runnable.h"
-#include "joynr/system/RoutingAbstractProvider.h"
+#include "joynr/SteadyTimer.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
 
 namespace boost
 {
@@ -51,17 +53,13 @@ class error_code;
 namespace joynr
 {
 
-class IAccessController;
-class IMessaging;
+class IMessagingStub;
 class IMessagingStubFactory;
+class ImmutableMessage;
 class IMulticastAddressCalculator;
-class JoynrMessage;
-class SteadyTimer;
-class ThreadPoolDelayedScheduler;
 
 namespace system
 {
-class Address;
 class RoutingProxy;
 } // namespace system
 
@@ -70,11 +68,12 @@ class RoutingProxy;
   */
 class JOYNR_EXPORT AbstractMessageRouter : public joynr::IMessageRouter
 {
+
 public:
     virtual ~AbstractMessageRouter();
-
     void addProvisionedNextHop(std::string participantId,
-                               std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+                               std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                               bool isGloballyVisible);
 
     void saveRoutingTable();
     void loadRoutingTable(std::string fileName);
@@ -83,6 +82,31 @@ public:
     friend class ConsumerPermissionCallback;
 
 protected:
+    struct RoutingEntry
+    {
+        RoutingEntry() : address(nullptr), isGloballyVisible(true)
+        {
+        }
+
+        explicit RoutingEntry(std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                              bool isGloballyVisible)
+                : address(std::move(address)), isGloballyVisible(isGloballyVisible)
+        {
+        }
+
+        RoutingEntry(RoutingEntry&&) = default;
+        RoutingEntry& operator=(RoutingEntry&&) = default;
+
+        template <typename Archive>
+        void serialize(Archive& archive)
+        {
+            archive(MUESLI_NVP(address), MUESLI_NVP(isGloballyVisible));
+        }
+
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address;
+        bool isGloballyVisible;
+    };
+
     // Instantiation of this class only possible through its child classes.
     AbstractMessageRouter(
             std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
@@ -91,8 +115,9 @@ protected:
             int maxThreads = 1,
             std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
 
+    virtual bool publishToGlobal(const ImmutableMessage& message) = 0;
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
-    getDestinationAddresses(const JoynrMessage& message);
+    getDestinationAddresses(const ImmutableMessage& message);
 
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
             const std::unordered_set<std::string>& participantIds);
@@ -100,10 +125,9 @@ protected:
     void sendMessages(const std::string& destinationPartId,
                       std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
-    void addToRoutingTable(std::string participantId,
-                           std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+    void addToRoutingTable(std::string participantId, std::shared_ptr<RoutingEntry> routingEntry);
 
-    void scheduleMessage(const JoynrMessage& message,
+    void scheduleMessage(std::shared_ptr<ImmutableMessage> message,
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
                          std::uint32_t tryCount = 0,
                          std::chrono::milliseconds delay = std::chrono::milliseconds(0));
@@ -111,7 +135,7 @@ protected:
     void activateMessageCleanerTimer();
     void onMessageCleanerTimerExpired(const boost::system::error_code& errorCode);
 
-    using RoutingTable = Directory<std::string, const joynr::system::RoutingTypes::Address>;
+    using RoutingTable = Directory<std::string, RoutingEntry>;
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
@@ -122,14 +146,13 @@ protected:
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
     SteadyTimer messageQueueCleanerTimer;
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
-    void queueMessage(const JoynrMessage& message);
+    void queueMessage(std::shared_ptr<ImmutableMessage> message) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessageRouter);
     ADD_LOGGER(AbstractMessageRouter);
 
-    bool routingTableSaveFilterFunc(
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress);
+    bool routingTableSaveFilterFunc(std::shared_ptr<RoutingEntry> routingEntry);
 };
 
 /**
@@ -138,8 +161,8 @@ private:
 class JOYNR_EXPORT MessageRunnable : public Runnable, public ObjectWithDecayTime
 {
 public:
-    MessageRunnable(const JoynrMessage& message,
-                    std::shared_ptr<IMessaging> messagingStub,
+    MessageRunnable(std::shared_ptr<ImmutableMessage> message,
+                    std::shared_ptr<IMessagingStub> messagingStub,
                     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
                     AbstractMessageRouter& messageRouter,
                     std::uint32_t tryCount);
@@ -147,8 +170,8 @@ public:
     void run() override;
 
 private:
-    JoynrMessage message;
-    std::shared_ptr<IMessaging> messagingStub;
+    std::shared_ptr<ImmutableMessage> message;
+    std::shared_ptr<IMessagingStub> messagingStub;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
     AbstractMessageRouter& messageRouter;
     std::uint32_t tryCount;
@@ -157,4 +180,4 @@ private:
 };
 
 } // namespace joynr
-#endif // MESSAGEROUTER_H
+#endif // ABSTRACTMESSAGEROUTER_H

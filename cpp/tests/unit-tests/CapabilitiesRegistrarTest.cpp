@@ -26,11 +26,12 @@
 #include "joynr/CapabilitiesRegistrar.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/types/Version.h"
-#include "joynr/IJoynrMessageSender.h"
+#include "joynr/IMessageSender.h"
 #include "joynr/SingleThreadedIOService.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;
+using ::testing::Mock;
 
 using namespace joynr;
 
@@ -48,8 +49,8 @@ public:
             singleThreadedIOService(),
             mockMessageRouter(new MockMessageRouter(singleThreadedIOService.getIOService())),
             expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION),
-            mockJoynrMessageSender(new MockJoynrMessageSender()),
-            pubManager(singleThreadedIOService.getIOService(), mockJoynrMessageSender)
+            mockMessageSender(new MockMessageSender()),
+            pubManager(singleThreadedIOService.getIOService(), mockMessageSender)
     {
         singleThreadedIOService.start();
     }
@@ -59,6 +60,7 @@ public:
         mockDispatcher = new MockDispatcher();
         dispatcherList.push_back(mockDispatcher);
 
+        const std::string globalAddress = "testGlobalAddressString";
         capabilitiesRegistrar = new CapabilitiesRegistrar(
                     dispatcherList,
                     mockDiscovery,
@@ -66,14 +68,15 @@ public:
                     dispatcherAddress,
                     mockMessageRouter,
                     std::numeric_limits<std::int64_t>::max(),
-                    pubManager
+                    pubManager,
+                    globalAddress
         );
     }
 
     void TearDown(){
         delete capabilitiesRegistrar;
         delete mockDispatcher;
-        delete mockJoynrMessageSender;
+        delete mockMessageSender;
     }
 
 protected:
@@ -89,7 +92,7 @@ protected:
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     const types::Version expectedProviderVersion;
-    IJoynrMessageSender* mockJoynrMessageSender;
+    IMessageSender* mockMessageSender;
     PublicationManager pubManager;
 };
 
@@ -136,6 +139,62 @@ TEST_F(CapabilitiesRegistrarTest, add){
     future.get();
 
     EXPECT_EQ(expectedParticipantId, participantId);
+}
+
+TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders){
+
+    types::ProviderQos testQos;
+    testQos.setScope(types::ProviderScope::GLOBAL);
+    EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
+                    domain,
+                    IMockProviderInterface::INTERFACE_NAME()
+    ))
+            .Times(2)
+            .WillRepeatedly(Return(expectedParticipantId));
+
+    auto mockFuture = std::make_shared<joynr::Future<void>>();
+    mockFuture->onSuccess();
+    EXPECT_CALL(
+                mockDiscovery,
+                addAsync(
+                    _,
+                    _,
+                    _
+                )
+    ).Times(2).WillRepeatedly(
+                DoAll(InvokeArgument<1>(),
+                      Return(mockFuture)
+                      )
+                );
+
+    ON_CALL(*mockMessageRouter, addNextHop(_,_,_,_,_)).WillByDefault(InvokeArgument<3>());
+    bool expectedIsGloballyVisible = true;
+    EXPECT_CALL(*mockMessageRouter, addNextHop(Eq(expectedParticipantId),Eq(dispatcherAddress),Eq(expectedIsGloballyVisible),_,_));
+
+    Future<void> future;
+    auto onSuccess = [&future]() { future.onSuccess(); };
+    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+    };
+
+    capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess, onError);
+    future.get();
+
+    Mock::VerifyAndClearExpectations(mockMessageRouter.get());
+
+    testQos.setScope(types::ProviderScope::LOCAL);
+
+    expectedIsGloballyVisible = false;
+    EXPECT_CALL(*mockMessageRouter, addNextHop(Eq(expectedParticipantId),Eq(dispatcherAddress),Eq(expectedIsGloballyVisible),_,_));
+
+    Future<void> future1;
+    auto onSuccess1 = [&future1]() { future1.onSuccess(); };
+    auto onError1 = [&future1](const exceptions::JoynrRuntimeException& exception) {
+        future1.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+    };
+
+    capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess1, onError1);
+    future1.get();
 }
 
 TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){

@@ -17,19 +17,19 @@
  * #L%
  */
 
-#include "gtest/gtest.h"
-
 #include <cstdint>
 #include <cassert>
 
-#include "JoynrTest.h"
+#include <gtest/gtest.h>
 
 #include "joynr/DelayedScheduler.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
 #include "joynr/SingleThreadedIOService.h"
+
+#include "tests/JoynrTest.h"
 #include "tests/utils/TimeUtils.h"
-#include "utils/MockObjects.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 

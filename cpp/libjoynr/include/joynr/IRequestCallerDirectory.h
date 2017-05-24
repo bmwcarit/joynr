@@ -19,8 +19,8 @@
 #ifndef IREQUESTCALLERDIRECTORY_H
 #define IREQUESTCALLERDIRECTORY_H
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace joynr
 {

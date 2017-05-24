@@ -111,16 +111,15 @@ class LocalDiscoveryTestTestProxy : public tests::testProxy
 public:
 
     LocalDiscoveryTestTestProxy(
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
         joynr::ConnectorFactory* connectorFactory,
         const std::string& domain,
         const joynr::MessagingQos& qosSettings) :
             joynr::ProxyBase(connectorFactory, domain, qosSettings),
-            testProxyBase(messagingAddress, connectorFactory, domain, qosSettings),
-            testFireAndForgetProxy(messagingAddress, connectorFactory, domain, qosSettings),
-            testSyncProxy(messagingAddress, connectorFactory, domain, qosSettings),
-            testAsyncProxy(messagingAddress, connectorFactory, domain, qosSettings),
-            testProxy(messagingAddress, connectorFactory, domain, qosSettings)
+            testProxyBase(connectorFactory, domain, qosSettings),
+            testFireAndForgetProxy(connectorFactory, domain, qosSettings),
+            testSyncProxy(connectorFactory, domain, qosSettings),
+            testAsyncProxy(connectorFactory, domain, qosSettings),
+            testProxy(connectorFactory, domain, qosSettings)
     {
 
     }

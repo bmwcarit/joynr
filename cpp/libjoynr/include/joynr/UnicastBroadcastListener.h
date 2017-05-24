@@ -19,8 +19,8 @@
 #ifndef UNICASTBROADCASTLISTENER_H
 #define UNICASTBROADCASTLISTENER_H
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "joynr/AbstractBroadcastListener.h"

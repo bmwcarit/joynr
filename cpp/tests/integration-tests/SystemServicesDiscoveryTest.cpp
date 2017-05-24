@@ -22,17 +22,17 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
-
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/Settings.h"
 #include "joynr/types/Version.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/serializer/Serializer.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 
@@ -43,9 +43,9 @@ public:
     std::string discoveryDomain;
     std::string discoveryProviderParticipantId;
     std::unique_ptr<JoynrClusterControllerRuntime> runtime;
-    std::shared_ptr<IMessageReceiver> mockMessageReceiverHttp;
-    std::shared_ptr<IMessageReceiver> mockMessageReceiverMqtt;
-    std::shared_ptr<IMessageSender> mockMessageSenderMqtt;
+    std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
+    std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
+    std::shared_ptr<ITransportMessageSender> mockMessageSenderMqtt;
     DiscoveryQos discoveryQos;
     std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder;
     std::unique_ptr<joynr::system::DiscoveryProxy> discoveryProxy;
@@ -59,9 +59,9 @@ public:
         discoveryDomain(),
         discoveryProviderParticipantId(),
         runtime(nullptr),
-        mockMessageReceiverHttp(std::make_shared<MockMessageReceiver>()),
-        mockMessageReceiverMqtt(std::make_shared<MockMessageReceiver>()),
-        mockMessageSenderMqtt(std::make_shared<MockMessageSender>()),
+        mockMessageReceiverHttp(std::make_shared<MockTransportMessageReceiver>()),
+        mockMessageReceiverMqtt(std::make_shared<MockTransportMessageReceiver>()),
+        mockMessageSenderMqtt(std::make_shared<MockTransportMessageSender>()),
         discoveryQos(),
         discoveryProxyBuilder(nullptr),
         discoveryProxy(nullptr),
@@ -90,9 +90,9 @@ public:
         std::string serializedChannelAddress = joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
         std::string serializedMqttAddress = joynr::serializer::serializeToJson(MqttAddress(mqttBrokerUrl, mqttTopic));
 
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
         //runtime can only be created, after MockCommunicationManager has been told to return

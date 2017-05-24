@@ -35,14 +35,11 @@ import com.google.inject.name.Names;
 import io.joynr.accesscontrol.AccessControlClientModule;
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.IMessaging;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.channel.ChannelMessageSerializerFactory;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
-import io.joynr.messaging.http.HttpMessageSender;
-import io.joynr.messaging.http.IMessageSender;
 import io.joynr.messaging.http.ServletHttpGlobalAddressFactory;
 import io.joynr.messaging.http.operation.ApacheHttpRequestFactory;
 import io.joynr.messaging.http.operation.HttpClientProvider;
@@ -50,7 +47,8 @@ import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.http.operation.HttpRequestFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.serialize.AbstractMiddlewareMessageSerializerFactory;
+import io.joynr.messaging.sender.CcMessageSender;
+import io.joynr.messaging.sender.MessageSender;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
@@ -63,22 +61,18 @@ import joynr.system.RoutingTypes.ChannelAddress;
 public class JeeHttpMessagingModule extends AbstractModule {
 
     private MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
-    private MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory;
-    private MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory;
+    private MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
 
     public JeeHttpMessagingModule(MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory,
-                                  MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> messagingStubFactory,
-                                  MapBinder<Class<? extends Address>, AbstractMiddlewareMessageSerializerFactory<? extends Address>> messageSerializerFactory) {
+                                  MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory) {
         this.messagingSkeletonFactory = messagingSkeletonFactory;
         this.messagingStubFactory = messagingStubFactory;
-        this.messageSerializerFactory = messageSerializerFactory;
     }
 
     @Override
     protected void configure() {
         messagingSkeletonFactory.addBinding(ChannelAddress.class).to(ChannelMessagingSkeleton.class);
         messagingStubFactory.addBinding(ChannelAddress.class).to(ChannelMessagingStubFactory.class);
-        messageSerializerFactory.addBinding(ChannelAddress.class).to(ChannelMessageSerializerFactory.class);
 
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
         globalAddresses = Multibinder.newSetBinder(binder(),
@@ -96,12 +90,11 @@ public class JeeHttpMessagingModule extends AbstractModule {
 
         bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class).in(Singleton.class);
         bind(CloseableHttpClient.class).toProvider(HttpClientProvider.class).in(Singleton.class);
-        bind(IMessageSender.class).to(HttpMessageSender.class);
         bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
 
-        bind(MessageRouter.class).to(io.joynr.jeeintegration.messaging.JeeMessageRouter.class).in(Singleton.class);
+        bind(MessageRouter.class).to(JeeMessageRouter.class).in(Singleton.class);
+        bind(MessageSender.class).to(CcMessageSender.class);
         bind(MessageReceiver.class).to(JeeServletMessageReceiver.class);
         bind(ServletMessageReceiver.class).to(JeeServletMessageReceiver.class);
     }
-
 }

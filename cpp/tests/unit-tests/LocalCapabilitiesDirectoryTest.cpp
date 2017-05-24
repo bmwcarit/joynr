@@ -25,17 +25,12 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
-
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "tests/utils/MockObjects.h"
-#include "tests/utils/MockCallback.h"
 #include "joynr/Logger.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
@@ -43,6 +38,11 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/PrivateCopyAssign.h"
+
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/MockCallback.h"
+#include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
+#include "tests/JoynrTest.h"
 
 using ::testing::Property;
 using ::testing::WhenDynamicCastTo;
@@ -86,7 +86,10 @@ public:
     ~LocalCapabilitiesDirectoryTest()
     {
         singleThreadedIOService.stop();
-        std::remove(settingsFileName.c_str());
+        localCapabilitiesDirectory.reset();
+
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
     }
 
     void SetUp()
@@ -1423,13 +1426,13 @@ void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(
             addNextHop(participantId,
                        AllOf(Pointee(A<const joynr::system::RoutingTypes::Address>()),
                              pointerToAddressWithSerializedAddress(addressType, serializedAddress)),
-                       _,_)).Times(1);
+                       _,_,_)).Times(1);
     EXPECT_CALL(mockMessageRouter,
                 addNextHop(participantId,
                            AnyOf(Not(Pointee(A<const joynr::system::RoutingTypes::Address>())),
                                  Not(pointerToAddressWithSerializedAddress(
                                          addressType, serializedAddress))),
-                           _,_)).Times(0);
+                           _,_,_)).Times(0);
 
     std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
     types::DiscoveryEntry capEntry;

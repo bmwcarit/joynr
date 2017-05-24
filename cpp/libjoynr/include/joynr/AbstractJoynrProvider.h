@@ -19,19 +19,19 @@
 #ifndef ABSTRACTJOYNRPROVIDER_H
 #define ABSTRACTJOYNRPROVIDER_H
 
-#include <string>
-#include <memory>
 #include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "joynr/IJoynrProvider.h"
-#include "joynr/types/ProviderQos.h"
+#include "joynr/JoynrExport.h"
+#include "joynr/MulticastBroadcastListener.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/ReadWriteLock.h"
 #include "joynr/SubscriptionAttributeListener.h"
 #include "joynr/UnicastBroadcastListener.h"
-#include "joynr/MulticastBroadcastListener.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrExport.h"
+#include "joynr/types/ProviderQos.h"
 
 namespace joynr
 {

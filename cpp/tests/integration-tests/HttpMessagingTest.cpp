@@ -31,10 +31,11 @@ public:
         isLocalMessage(true)
     {
         // provision global capabilities directory
+        const bool isGloballyVisible = true;
         auto addressCapabilitiesDirectory = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
                         messagingSettings.getCapabilitiesDirectoryUrl() + messagingSettings.getCapabilitiesDirectoryChannelId() + "/",
                         messagingSettings.getCapabilitiesDirectoryChannelId());
-        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory);
+        messageRouter->addProvisionedNextHop(messagingSettings.getCapabilitiesDirectoryParticipantId(), addressCapabilitiesDirectory, isGloballyVisible);
         messagingStubFactory->registerStubFactory(std::make_shared<HttpMessagingStubFactory>(mockMessageSender));
     }
 
@@ -52,7 +53,7 @@ INIT_LOGGER(HttpMessagingTest);
 TEST_F(HttpMessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager)
 {
     // Test Outline: send message from JoynrMessageSender to ICommunicationManager
-    // - JoynrMessageSender.sendRequest (IJoynrMessageSender)
+    // - MessageSender.sendRequest (IMessageSender)
     //   -> adds reply caller to dispatcher (IDispatcher.addReplyCaller)
     // - InProcessMessagingStub.transmit (IMessaging)
     // - InProcessClusterControllerMessagingSkeleton.transmit (IMessaging)
@@ -76,41 +77,6 @@ TEST_F(HttpMessagingTest, routeMsgToInProcessMessagingSkeleton)
 {
     routeMsgToInProcessMessagingSkeleton();
 }
-
-TEST_F(HttpMessagingTest, DISABLED_routeMsgToLipciMessagingSkeleton)
-{
-// NOTE: LipciMessaging doesn't exists (2012-05-08)
-//    std::shared_ptr<MockLipceMessagingSkeleton> messagingSkeleton(
-//                new MockLipciMessagingSkeleton());
-
-    JoynrMessage message = messageFactory.createRequest(
-                senderId,
-                receiverId,
-                qos,
-                request,
-                isLocalMessage);
-
-    // LipciMessagingSkeleton should receive the message
-// NOTE: LipciMessaging doesn't exists (2012-05-08)
-//    EXPECT_CALL(*messagingSkeleton, transmit(Eq(message),Eq(qos)))
-//            .Times(1);
-
-    // InProcessMessagingSkeleton should not receive the message
-    EXPECT_CALL(*inProcessMessagingSkeleton, transmit(Eq(message),_))
-            .Times(0);
-
-    // MessageSender should not receive the message
-    EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
-            .Times(0);
-
-// NOTE: LipciMessaging doesn't exists (2012-05-08)
-//    std::shared_ptr<LipciEndpointAddress> messagingSkeletonEndpointAddr =
-//            std::shared_ptr<LipciEndpointAddress>(new LipciEndpointAddress(messagingSkeleton));
-
-//    messageRouter->add(receiverId, messagingSkeletonEndpointAddr);
-    messageRouter->route(message);
-}
-
 
 TEST_F(HttpMessagingTest, routeMsgToHttpCommunicationMgr)
 {

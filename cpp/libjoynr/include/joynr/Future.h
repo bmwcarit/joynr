@@ -19,18 +19,18 @@
 #ifndef FUTURE_H
 #define FUTURE_H
 
-#include <tuple>
-#include <functional>
-#include <utility>
 #include <cstdint>
+#include <functional>
 #include <memory>
+#include <tuple>
+#include <utility>
 
 #include "joynr/Logger.h"
-#include "joynr/Util.h"
+#include "joynr/Semaphore.h"
 #include "joynr/StatusCode.h"
+#include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/JoynrExceptionUtil.h"
-#include "joynr/Semaphore.h"
 
 namespace joynr
 {
@@ -90,10 +90,10 @@ public:
      * @brief Callback which indicates the operation has finished and has failed.
      * @param error The JoynrException describing the failure
      */
-    void onError(const std::shared_ptr<exceptions::JoynrException>& error)
+    void onError(std::shared_ptr<exceptions::JoynrException> error)
     {
         JOYNR_LOG_TRACE(logger, "onError has been invoked");
-        this->error = error;
+        this->error = std::move(error);
         status = StatusCodeEnum::ERROR;
         resultReceived.notify();
     }

@@ -21,8 +21,8 @@
 #include <chrono>
 
 #include "joynr/MessagingSettings.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
@@ -37,7 +37,7 @@ MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnect
                            const std::string& unicastTopicPrefix)
         : channelIdForMqttTopic(channelIdForMqttTopic),
           globalClusterControllerAddress(),
-          mosquittoConnection(mosquittoConnection)
+          mosquittoConnection(std::move(mosquittoConnection))
 {
     std::string brokerUri =
             "tcp://" + settings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost() + ":" +
@@ -46,7 +46,7 @@ MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnect
     std::string unicastChannelIdForMqttTopic = unicastTopicPrefix + channelIdForMqttTopic;
     system::RoutingTypes::MqttAddress receiveMqttAddress(brokerUri, unicastChannelIdForMqttTopic);
     globalClusterControllerAddress = joynr::serializer::serializeToJson(receiveMqttAddress);
-    mosquittoConnection->registerChannelId(unicastChannelIdForMqttTopic);
+    this->mosquittoConnection->registerChannelId(unicastChannelIdForMqttTopic);
 }
 
 void MqttReceiver::updateSettings()
@@ -79,9 +79,9 @@ bool MqttReceiver::isConnected()
 }
 
 void MqttReceiver::registerReceiveCallback(
-        std::function<void(const std::string&)> onTextMessageReceived)
+        std::function<void(smrf::ByteVector&&)> onMessageReceived)
 {
-    mosquittoConnection->registerReceiveCallback(onTextMessageReceived);
+    mosquittoConnection->registerReceiveCallback(std::move(onMessageReceived));
 }
 
 void MqttReceiver::subscribeToTopic(const std::string& topic)
