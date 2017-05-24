@@ -561,7 +561,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
 #ifdef JOYNR_ENABLE_ACCESS_CONTROL
     // Do this after local capabilities directory and message router have been initialized.
-    enableAccessController(messagingSettings, provisionedDiscoveryEntries);
+    enableAccessController(provisionedDiscoveryEntries);
 #endif // JOYNR_ENABLE_ACCESS_CONTROL
 }
 
@@ -618,7 +618,6 @@ std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrClusterCont
 }
 
 void JoynrClusterControllerRuntime::enableAccessController(
-        MessagingSettings& messagingSettings,
         const std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo>& provisionedEntries)
 {
     if (!clusterControllerSettings.enableAccessController()) {
@@ -671,6 +670,26 @@ void JoynrClusterControllerRuntime::enableAccessController(
     localDomainAccessController = std::make_unique<joynr::LocalDomainAccessController>(
             std::move(localDomainAccessStore), clusterControllerSettings.getUseOnlyLDAS());
 
+    if (!clusterControllerSettings.getUseOnlyLDAS()) {
+        auto proxyGlobalDomainAccessController = createGlobalDomainAccessControllerProxy();
+        localDomainAccessController->setGlobalDomainAccessControllerProxy(
+                std::move(proxyGlobalDomainAccessController));
+    }
+
+    auto accessController = std::make_shared<joynr::AccessController>(
+            *localCapabilitiesDirectory, *localDomainAccessController);
+
+    // whitelist provisioned entries into access controller
+    for (const auto& entry : provisionedEntries) {
+        accessController->addParticipantToWhitelist(entry.second.getParticipantId());
+    }
+
+    ccMessageRouter->setAccessController(std::move(accessController));
+}
+
+std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterControllerRuntime::
+        createGlobalDomainAccessControllerProxy()
+{
     // Provision global domain access controller in MessageRouter
     auto globalDomainAccessControlAddress =
             std::make_shared<joynr::system::RoutingTypes::MqttAddress>();
@@ -702,21 +721,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
             "fixedParticipantId",
             clusterControllerSettings.getGlobalDomainAccessControlParticipantId());
 
-    auto proxyGlobalDomainAccessController =
-            globalDomainAccessControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
-
-    localDomainAccessController->setGlobalDomainAccessControllerProxy(
-            std::move(proxyGlobalDomainAccessController));
-
-    auto accessController = std::make_shared<joynr::AccessController>(
-            *localCapabilitiesDirectory, *localDomainAccessController);
-
-    // whitelist provisioned entries into access controller
-    for (const auto& entry : provisionedEntries) {
-        accessController->addParticipantToWhitelist(entry.second.getParticipantId());
-    }
-
-    ccMessageRouter->setAccessController(accessController);
+    return globalDomainAccessControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
 }
 
 void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
