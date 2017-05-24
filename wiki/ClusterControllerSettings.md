@@ -16,7 +16,7 @@ the GDAC.
 The GDAC will be used to keep the access permissions up to date.
 
 For a concrete example, have a look at the following settings file:
-[MessagingWithAccessControlEnabled.settings](../cpp/tests/resources/MessagingWithAccessControlEnabled.settings).
+[CCSettingsWithAccessControlEnabled.settings](../cpp/tests/resources/CCSettingsWithAccessControlEnabled.settings).
 
 Additionally, it is also possible to provision access control entries to the cluster-controller. You can try by copying the
 [CCAccessControlTest.entries](../cpp/tests/resources/CCAccessControlTest.entries) to the working

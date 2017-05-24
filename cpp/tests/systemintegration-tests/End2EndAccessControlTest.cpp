@@ -56,8 +56,8 @@ public:
         // copy access entry file to bin folder for the test so that runtimes will find and load the file
         joynr::test::util::copyTestResourceToCurrentDirectory(fileWithACCentries, AC_ENTRIES_FILE);
 
-        auto settings1 = std::make_unique<Settings>("test-resources/MessagingWithAccessControlEnabled.settings");
-        auto settings2 = std::make_unique<Settings>("test-resources/MessagingWithAccessControlDisabled.settings");
+        auto settings1 = std::make_unique<Settings>("test-resources/CCSettingsWithAccessControlEnabled.settings");
+        auto settings2 = std::make_unique<Settings>("test-resources/CCSettingsWithAccessControlDisabled.settings");
 
         runtimeAcON =  JoynrRuntime::createRuntime(std::move(settings1));
         runtimeAcOFF = JoynrRuntime::createRuntime(std::move(settings2));

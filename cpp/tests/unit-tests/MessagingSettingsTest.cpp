@@ -101,28 +101,6 @@ void checkDiscoveryDirectorySettings(
     EXPECT_EQ(expectedCapabilitiesDirectoryChannelId, capabilitiesDirectoryChannelId);
 }
 
-TEST_F(MessagingSettingsTest, accessControlIsEnabled) {
-    Settings testSettings("test-resources/MessagingWithAccessControlEnabled.settings");
-    ASSERT_TRUE(testSettings.isLoaded());
-
-    MessagingSettings messagingSettings(testSettings);
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::ACCESS_CONTROL_ENABLE()));
-
-    // In the loaded setting file the access control is set to false
-    EXPECT_TRUE(messagingSettings.enableAccessController());
-}
-
-TEST_F(MessagingSettingsTest, accessControlIsDisabled) {
-    Settings testSettings("test-resources/MessagingWithAccessControlDisabled.settings");
-    ASSERT_TRUE(testSettings.isLoaded());
-
-    MessagingSettings messagingSettings(testSettings);
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::ACCESS_CONTROL_ENABLE()));
-
-    // In the loaded setting file the access control is set to false
-    EXPECT_FALSE(messagingSettings.enableAccessController());
-}
-
 TEST_F(MessagingSettingsTest, httpOnly) {
     std::string expectedBrokerUrl("http://custom-bounceproxy-host:8080/bounceproxy/");
     std::string expectedCapabilitiesDirectoryChannelId("discoverydirectory_channelid");

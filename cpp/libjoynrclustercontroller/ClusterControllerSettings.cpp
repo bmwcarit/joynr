@@ -57,6 +57,28 @@ void ClusterControllerSettings::checkSettings()
     if (!settings.contains(SETTING_USE_ONLY_LDAS())) {
         setUseOnlyLDAS(DEFAULT_USE_ONLY_LDAS());
     }
+
+    if (!settings.contains(SETTING_ACCESS_CONTROL_ENABLE())) {
+        setEnableAccessController(DEFAULT_ENABLE_ACCESS_CONTROLLER());
+    } else if (enableAccessController()) {
+        assert(settings.contains(SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
+        assert(settings.contains(
+                SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()));
+
+        if (!settings.contains(SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS())) {
+            JOYNR_LOG_ERROR(logger,
+                            "Configuration error. Access controller is enabled but "
+                            "no {} was defined.",
+                            SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS());
+        }
+        if (!settings.contains(
+                    SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID())) {
+            JOYNR_LOG_ERROR(logger,
+                            "Configuration error. Access controller is enabled but "
+                            "no {} was defined.",
+                            SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID());
+        }
+    }
 }
 
 const std::string& ClusterControllerSettings::
@@ -82,6 +104,26 @@ const std::string& ClusterControllerSettings::SETTING_WS_PORT()
 const std::string& ClusterControllerSettings::SETTING_USE_ONLY_LDAS()
 {
     static const std::string value("access-control/use-ldas-only");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_ACCESS_CONTROL_ENABLE()
+{
+    static const std::string value("access-control/enable");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::
+        SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()
+{
+    static const std::string value("access-control/global-domain-access-controller-address");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::
+        SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()
+{
+    static const std::string value("access-control/global-domain-access-controller-participantid");
     return value;
 }
 
@@ -144,6 +186,11 @@ const std::string& ClusterControllerSettings::
 {
     static const std::string value("MulticastReceiverDirectory.persist");
     return value;
+}
+
+bool ClusterControllerSettings::DEFAULT_ENABLE_ACCESS_CONTROLLER()
+{
+    return false;
 }
 
 bool ClusterControllerSettings::DEFAULT_USE_ONLY_LDAS()
@@ -294,6 +341,28 @@ void ClusterControllerSettings::setLocalDomainAccessStorePersistenceFilename(
     settings.set(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME(), filename);
 }
 
+bool ClusterControllerSettings::enableAccessController() const
+{
+    return settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE());
+}
+
+void ClusterControllerSettings::setEnableAccessController(bool enable)
+{
+    settings.set(SETTING_ACCESS_CONTROL_ENABLE(), enable);
+}
+
+std::string ClusterControllerSettings::getGlobalDomainAccessControlAddress() const
+{
+    return settings.get<std::string>(
+            SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS());
+}
+
+std::string ClusterControllerSettings::getGlobalDomainAccessControlParticipantId() const
+{
+    return settings.get<std::string>(
+            SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID());
+}
+
 bool ClusterControllerSettings::getUseOnlyLDAS() const
 {
     return settings.get<bool>(SETTING_USE_ONLY_LDAS());
@@ -371,6 +440,24 @@ void ClusterControllerSettings::printSettings() const
                     getLocalDomainAccessStorePersistenceFilename());
 
     JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_USE_ONLY_LDAS(), getUseOnlyLDAS());
+
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {})",
+                    SETTING_ACCESS_CONTROL_ENABLE(),
+                    settings.get<std::string>(SETTING_ACCESS_CONTROL_ENABLE()));
+    if (settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE())) {
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = {})",
+                        SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS(),
+                        settings.get<std::string>(
+                                SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
+        JOYNR_LOG_DEBUG(
+                logger,
+                "SETTING: {}  = {})",
+                SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID(),
+                settings.get<std::string>(
+                        SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()));
+    }
 }
 
 } // namespace joynr

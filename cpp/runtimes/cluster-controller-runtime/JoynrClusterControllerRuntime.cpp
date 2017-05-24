@@ -601,18 +601,18 @@ std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrClusterCont
     types::Version gDACProviderVersion(
             infrastructure::IGlobalDomainAccessController::MAJOR_VERSION,
             infrastructure::IGlobalDomainAccessController::MINOR_VERSION);
-    provisionedDiscoveryEntries.insert(
-            std::make_pair(messagingSettings.getGlobalDomainAccessControlParticipantId(),
-                           types::DiscoveryEntryWithMetaInfo(
-                                   gDACProviderVersion,
-                                   messagingSettings.getDiscoveryDirectoriesDomain(),
-                                   infrastructure::IGlobalDomainAccessController::INTERFACE_NAME(),
-                                   messagingSettings.getGlobalDomainAccessControlParticipantId(),
-                                   capabilityProviderQos,
-                                   lastSeenDateMs,
-                                   expiryDateMs,
-                                   defaultPublicKeyId,
-                                   false)));
+    provisionedDiscoveryEntries.insert(std::make_pair(
+            clusterControllerSettings.getGlobalDomainAccessControlParticipantId(),
+            types::DiscoveryEntryWithMetaInfo(
+                    gDACProviderVersion,
+                    messagingSettings.getDiscoveryDirectoriesDomain(),
+                    infrastructure::IGlobalDomainAccessController::INTERFACE_NAME(),
+                    clusterControllerSettings.getGlobalDomainAccessControlParticipantId(),
+                    capabilityProviderQos,
+                    lastSeenDateMs,
+                    expiryDateMs,
+                    defaultPublicKeyId,
+                    false)));
 
     return provisionedDiscoveryEntries;
 }
@@ -621,7 +621,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
         MessagingSettings& messagingSettings,
         const std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo>& provisionedEntries)
 {
-    if (!messagingSettings.enableAccessController()) {
+    if (!clusterControllerSettings.enableAccessController()) {
         return;
     }
 
@@ -677,7 +677,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
     try {
         joynr::serializer::deserializeFromJson(
                 *globalDomainAccessControlAddress,
-                messagingSettings.getGlobalDomainAccessControlAddress());
+                clusterControllerSettings.getGlobalDomainAccessControlAddress());
     } catch (const std::invalid_argument& ex) {
         JOYNR_LOG_ERROR(logger,
                         "Cannot deserialize global domain access controller address. Reason: {}.",
@@ -686,7 +686,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
 
     bool isGloballyVisible = true;
     ccMessageRouter->addProvisionedNextHop(
-            messagingSettings.getGlobalDomainAccessControlParticipantId(),
+            clusterControllerSettings.getGlobalDomainAccessControlParticipantId(),
             std::move(globalDomainAccessControlAddress),
             isGloballyVisible);
 
@@ -699,7 +699,8 @@ void JoynrClusterControllerRuntime::enableAccessController(
     DiscoveryQos discoveryQos(10000);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryQos.addCustomParameter(
-            "fixedParticipantId", messagingSettings.getGlobalDomainAccessControlParticipantId());
+            "fixedParticipantId",
+            clusterControllerSettings.getGlobalDomainAccessControlParticipantId());
 
     auto proxyGlobalDomainAccessController =
             globalDomainAccessControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
