@@ -629,26 +629,26 @@ void JoynrClusterControllerRuntime::enableAccessController(
                     "AccessControl was enabled attempting to load entries from {}.",
                     ACC_ENTRIES_FILE);
 
-    if (!joynr::util::fileExists(ACC_ENTRIES_FILE)) {
-        JOYNR_LOG_ERROR(
-                logger, "Access control file with entries does not exists.", ACC_ENTRIES_FILE);
-        return;
-    }
-
     std::vector<std::shared_ptr<joynr::infrastructure::DacTypes::ControlEntry>>
             accessControlEntries;
-    try {
-        joynr::serializer::deserializeFromJson(
-                accessControlEntries, joynr::util::loadStringFromFile(ACC_ENTRIES_FILE));
-    } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger, ex.what());
-        return;
-    } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger,
-                        "Could not deserialize access control entries from {}: {}",
-                        ACC_ENTRIES_FILE,
-                        ex.what());
-        return;
+
+    if (joynr::util::fileExists(ACC_ENTRIES_FILE)) {
+        try {
+            joynr::serializer::deserializeFromJson(
+                    accessControlEntries, joynr::util::loadStringFromFile(ACC_ENTRIES_FILE));
+        } catch (const std::runtime_error& ex) {
+            JOYNR_LOG_ERROR(logger, ex.what());
+            accessControlEntries.clear();
+        } catch (const std::invalid_argument& ex) {
+            JOYNR_LOG_ERROR(logger,
+                            "Could not deserialize access control entries from {}: {}",
+                            ACC_ENTRIES_FILE,
+                            ex.what());
+            accessControlEntries.clear();
+        }
+    } else {
+        JOYNR_LOG_INFO(
+                logger, "Access control file with entries does not exists.", ACC_ENTRIES_FILE);
     }
 
     auto localDomainAccessStore = std::make_unique<joynr::LocalDomainAccessStore>(
