@@ -60,7 +60,7 @@ void ClusterControllerSettings::checkSettings()
 
     if (!settings.contains(SETTING_ACCESS_CONTROL_ENABLE())) {
         setEnableAccessController(DEFAULT_ENABLE_ACCESS_CONTROLLER());
-    } else if (enableAccessController()) {
+    } else if (enableAccessController() && !getUseOnlyLDAS()) {
         assert(settings.contains(SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
         assert(settings.contains(
                 SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()));
