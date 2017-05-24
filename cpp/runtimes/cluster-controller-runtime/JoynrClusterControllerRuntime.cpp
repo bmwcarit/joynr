@@ -668,8 +668,8 @@ void JoynrClusterControllerRuntime::enableAccessController(
         }
     }
 
-    localDomainAccessController =
-            std::make_unique<joynr::LocalDomainAccessController>(std::move(localDomainAccessStore));
+    localDomainAccessController = std::make_unique<joynr::LocalDomainAccessController>(
+            std::move(localDomainAccessStore), clusterControllerSettings.getUseOnlyLDAS());
 
     // Provision global domain access controller in MessageRouter
     auto globalDomainAccessControlAddress =

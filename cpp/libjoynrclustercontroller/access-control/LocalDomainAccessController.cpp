@@ -213,7 +213,8 @@ private:
 //--- LocalDomainAccessController ----------------------------------------------
 
 LocalDomainAccessController::LocalDomainAccessController(
-        std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore)
+        std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore,
+        bool useOnlyLocalDomainAccessStore)
         : accessControlAlgorithm(),
           dreSubscriptions(),
           aceSubscriptions(),
@@ -222,6 +223,7 @@ LocalDomainAccessController::LocalDomainAccessController(
           globalDomainAccessControlListEditorProxy(),
           globalDomainRoleControllerProxy(),
           localDomainAccessStore(std::move(localDomainAccessStore)),
+          useOnlyLocalDomainAccessStore(useOnlyLocalDomainAccessStore),
           consumerPermissionRequests(),
           initStateMutex(),
           domainRoleEntryChangedBroadcastListener(
@@ -311,36 +313,40 @@ void LocalDomainAccessController::getConsumerPermission(
 {
     JOYNR_LOG_TRACE(logger, "Entering getConsumerPermission with unknown operation");
 
-    // Is the ACL for this domain/interface available?
-    std::string compoundKey = createCompoundKey(domain, interfaceName);
-    bool needsInit = false;
-    {
-        std::lock_guard<std::mutex> lock(initStateMutex);
-        if (aceSubscriptions.count(compoundKey) == 0) {
-            // Queue the request
-            ConsumerPermissionRequest request = {
-                    userId, domain, interfaceName, trustLevel, callback};
+    // If we only use the local domain access store, we assume that all required ACEs
+    // were already provisioned. Otherwise we need to query them from the backend.
+    if (!useOnlyLocalDomainAccessStore) {
+        // Is the ACL for this domain/interface available?
+        std::string compoundKey = createCompoundKey(domain, interfaceName);
+        bool needsInit = false;
+        {
+            std::lock_guard<std::mutex> lock(initStateMutex);
+            if (aceSubscriptions.count(compoundKey) == 0) {
+                // Queue the request
+                ConsumerPermissionRequest request = {
+                        userId, domain, interfaceName, trustLevel, callback};
 
-            if (queueConsumerRequest(compoundKey, request)) {
-                // There are requests already queued - do nothing
-                return;
-            } else {
-                // There are no requests already queued - further
-                // initialisation is needed
-                needsInit = true;
+                if (queueConsumerRequest(compoundKey, request)) {
+                    // There are requests already queued - do nothing
+                    return;
+                } else {
+                    // There are no requests already queued - further
+                    // initialisation is needed
+                    needsInit = true;
+                }
             }
         }
-    }
 
-    // Do further initialisation outside of the mutex to prevent deadlocks
-    if (needsInit) {
-        // Get the data for this domain interface and do not wait for it
-        initializeLocalDomainAccessStoreAces(domain, interfaceName);
+        // Do further initialisation outside of the mutex to prevent deadlocks
+        if (needsInit) {
+            // Get the data for this domain interface and do not wait for it
+            initializeLocalDomainAccessStoreAces(domain, interfaceName);
 
-        // Init domain roles as well
-        initializeDomainRoleTable(userId);
+            // Init domain roles as well
+            initializeDomainRoleTable(userId);
 
-        return;
+            return;
+        }
     }
 
     // If this point is reached the data for the ACL check is available
@@ -517,36 +523,40 @@ void LocalDomainAccessController::getProviderPermission(
 {
     JOYNR_LOG_TRACE(logger, "Entering getProviderPermission with callback");
 
-    // Is the RCL for this domain/interface available?
-    std::string compoundKey = createCompoundKey(domain, interfaceName);
-    bool needsInit = false;
-    {
-        std::lock_guard<std::mutex> lock(initStateMutex);
-        if (rceSubscriptions.count(compoundKey) == 0) {
-            // Queue the request
-            ProviderPermissionRequest request = {
-                    userId, domain, interfaceName, trustLevel, callback};
+    // If we only use the local domain access store, we assume that all required RCEs
+    // were already provisioned. Otherwise we need to query them from the backend.
+    if (!useOnlyLocalDomainAccessStore) {
+        // Is the RCL for this domain/interface available?
+        std::string compoundKey = createCompoundKey(domain, interfaceName);
+        bool needsInit = false;
+        {
+            std::lock_guard<std::mutex> lock(initStateMutex);
+            if (rceSubscriptions.count(compoundKey) == 0) {
+                // Queue the request
+                ProviderPermissionRequest request = {
+                        userId, domain, interfaceName, trustLevel, callback};
 
-            if (queueProviderRequest(compoundKey, request)) {
-                // There are requests already queued - do nothing
-                return;
-            } else {
-                // There are no requests already queued - further
-                // initialisation is needed
-                needsInit = true;
+                if (queueProviderRequest(compoundKey, request)) {
+                    // There are requests already queued - do nothing
+                    return;
+                } else {
+                    // There are no requests already queued - further
+                    // initialisation is needed
+                    needsInit = true;
+                }
             }
         }
-    }
 
-    // Do further initialisation outside of the mutex to prevent deadlocks
-    if (needsInit) {
-        // Get the data for this domain interface and do not wait for it
-        initializeLocalDomainAccessStoreRces(userId, domain, interfaceName);
+        // Do further initialisation outside of the mutex to prevent deadlocks
+        if (needsInit) {
+            // Get the data for this domain interface and do not wait for it
+            initializeLocalDomainAccessStoreRces(userId, domain, interfaceName);
 
-        // Init domain roles as well
-        initializeDomainRoleTable(userId);
+            // Init domain roles as well
+            initializeDomainRoleTable(userId);
 
-        return;
+            return;
+        }
     }
 
     // If this point is reached the data for the RCL check is available
@@ -688,6 +698,10 @@ bool LocalDomainAccessController::removeOwnerRegistrationControlEntry(
 void LocalDomainAccessController::unregisterProvider(const std::string& domain,
                                                      const std::string& interfaceName)
 {
+    if (useOnlyLocalDomainAccessStore) {
+        return;
+    }
+
     std::string compoundKey = createCompoundKey(domain, interfaceName);
     AceSubscription aceSubscriptionIds;
     bool subscriptionsFound = false;
@@ -1001,9 +1015,11 @@ void LocalDomainAccessController::initialized(const std::string& domain,
         {
             std::lock_guard<std::mutex> lock(initStateMutex);
 
-            // Subscribe to ACL broadcasts about this domain/interface
-            aceSubscriptions.insert(
-                    std::make_pair(compoundKey, subscribeForAceChange(domain, interfaceName)));
+            if (!useOnlyLocalDomainAccessStore) {
+                // Subscribe to ACL broadcasts about this domain/interface
+                aceSubscriptions.insert(
+                        std::make_pair(compoundKey, subscribeForAceChange(domain, interfaceName)));
+            }
 
             if (!restoringFromFile) {
                 // Remove requests for processing
@@ -1024,9 +1040,11 @@ void LocalDomainAccessController::initialized(const std::string& domain,
         {
             std::lock_guard<std::mutex> lock(initStateMutex);
 
-            // Subscribe to RCL broadcasts about this domain/interface
-            rceSubscriptions.insert(
-                    std::make_pair(compoundKey, subscribeForRceChange(domain, interfaceName)));
+            if (!useOnlyLocalDomainAccessStore) {
+                // Subscribe to RCL broadcasts about this domain/interface
+                rceSubscriptions.insert(
+                        std::make_pair(compoundKey, subscribeForRceChange(domain, interfaceName)));
+            }
 
             if (!restoringFromFile) {
                 // Remove requests for processing

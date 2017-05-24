@@ -76,7 +76,8 @@ public:
     };
 
     explicit LocalDomainAccessController(
-            std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore);
+            std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore,
+            bool useOnlyLocalDomainAccessStore);
     virtual ~LocalDomainAccessController() = default;
 
     /**
@@ -556,6 +557,7 @@ private:
     std::shared_ptr<infrastructure::GlobalDomainRoleControllerProxy>
             globalDomainRoleControllerProxy;
     std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore;
+    bool useOnlyLocalDomainAccessStore;
 
     ADD_LOGGER(LocalDomainAccessController);
     static std::chrono::milliseconds broadcastSubscriptionValidity;

@@ -108,7 +108,8 @@ public:
             localDomainAccessStore = std::make_unique<LocalDomainAccessStore>();
         }
         localDomainAccessStorePtr = localDomainAccessStore.get();
-        localDomainAccessController = std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
+        const bool useLocalDomainAccessStoreOnly = false;
+        localDomainAccessController = std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore), useLocalDomainAccessStoreOnly);
 
         auto mockGdacProxy = std::make_unique<MockGlobalDomainAccessControllerProxy>();
         mockGdacProxyMock = mockGdacProxy.get();
@@ -530,9 +531,10 @@ TEST(LocalDomainAccessControllerPersistedTest, persistedAcesAreUsed) {
     joynr::test::util::copyTestResourceToCurrentDirectory("AccessStoreTest.persist");
 
     // Load persisted ACEs
+    const bool useLocalDomainAccessStoreOnly = false;
     auto localDomainAccessStore = std::make_unique<LocalDomainAccessStore>("AccessStoreTest.persist");
     auto localDomainAccessController =
-            std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
+            std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore), useLocalDomainAccessStoreOnly);
 
     localDomainAccessController->setGlobalDomainAccessControllerProxy(std::move(mockGdacProxyPtr));
 
@@ -742,6 +744,79 @@ TEST_P(LocalDomainAccessControllerTest, providerPermissionCommunicationFailure) 
     EXPECT_EQ(Permission::NO, getProviderPermissionCallback->getPermission());
 }
 
+TEST(LocalDomainAccessControllerTest, onlyLdasUsed) {
+    auto mockGdacProxy = std::make_unique<MockGlobalDomainAccessControllerProxy>();
+
+    // Expect zero interactions with the backend because only the LDAS shall be used
+    EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_, _, _, _)).Times(0);
+    EXPECT_CALL(*mockGdacProxy, getMediatorAccessControlEntriesAsync(_, _, _, _)).Times(0);
+    EXPECT_CALL(*mockGdacProxy, getOwnerAccessControlEntriesAsync(_, _, _, _)).Times(0);
+
+    EXPECT_CALL(*mockGdacProxy, subscribeToMasterAccessControlEntryChangedBroadcast(_, _, _)).Times(0);
+    EXPECT_CALL(*mockGdacProxy, subscribeToMediatorAccessControlEntryChangedBroadcast(_, _, _)).Times(0);
+    EXPECT_CALL(*mockGdacProxy, subscribeToOwnerAccessControlEntryChangedBroadcast(_, _, _)).Times(0);
+
+    EXPECT_CALL(*mockGdacProxy, getMasterRegistrationControlEntriesAsync(_, _, _)).Times(0);
+    EXPECT_CALL(*mockGdacProxy, getMediatorRegistrationControlEntriesAsync(_, _, _)).Times(0);
+    EXPECT_CALL(*mockGdacProxy, getOwnerRegistrationControlEntriesAsync(_, _, _)).Times(0);
+
+    EXPECT_CALL(*mockGdacProxy, subscribeToMasterRegistrationControlEntryChangedBroadcast(_, _, _)).Times(0);
+    EXPECT_CALL(*mockGdacProxy, subscribeToMediatorRegistrationControlEntryChangedBroadcast(_, _, _)).Times(0);
+    EXPECT_CALL(*mockGdacProxy, subscribeToOwnerRegistrationControlEntryChangedBroadcast(_, _, _)).Times(0);
+
+    const std::string user("user");
+    const std::string domain("domain");
+    const std::string interface("interface");
+
+    auto masterAce = MasterAccessControlEntry(
+            user, domain, interface,
+            TrustLevel::LOW, { TrustLevel::LOW },
+            TrustLevel::LOW, { TrustLevel::LOW },
+            std::string(access_control::WILDCARD),
+            Permission::YES,
+            { Permission::YES, Permission::NO }
+    );
+
+    auto masterRce = MasterRegistrationControlEntry(
+            user, domain, interface,
+            TrustLevel::LOW, { TrustLevel::LOW },
+            TrustLevel::LOW, { TrustLevel::LOW },
+            Permission::YES,
+            { Permission::YES, Permission::NO }
+    );
+
+    auto localDomainAccessStore = std::make_unique<LocalDomainAccessStore>();
+    localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
+    localDomainAccessStore->updateMasterRegistrationControlEntry(masterRce);
+
+    constexpr bool useLDASOnly = true;
+    auto localDomainAccessController =
+            std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore), useLDASOnly);
+    localDomainAccessController->setGlobalDomainAccessControllerProxy(std::move(mockGdacProxy));
+
+    auto getConsumerPermissionCallback = std::make_shared<PermissionCallback>();
+
+    localDomainAccessController->getConsumerPermission(user,
+                                                       domain,
+                                                       interface,
+                                                       TrustLevel::LOW,
+                                                       getConsumerPermissionCallback);
+
+    EXPECT_TRUE(getConsumerPermissionCallback->isPermissionAvailable());
+    EXPECT_EQ(Permission::YES, getConsumerPermissionCallback->getPermission());
+
+    auto getProviderPermissionCallback = std::make_shared<PermissionCallback>();
+
+    localDomainAccessController->getProviderPermission(user,
+                                                       domain,
+                                                       interface,
+                                                       TrustLevel::LOW,
+                                                       getProviderPermissionCallback);
+
+    EXPECT_TRUE(getProviderPermissionCallback->isPermissionAvailable());
+    EXPECT_EQ(Permission::YES, getProviderPermissionCallback->getPermission());
+}
+
 TEST_P(LocalDomainAccessControllerTest, providerPermissionQueuedRequests) {
     // Setup the master with a wildcard operation
     masterAce.setOperation(access_control::WILDCARD);
@@ -840,9 +915,11 @@ TEST(LocalDomainAccessControllerPersistedTest, persistedRcesAreUsed) {
     joynr::test::util::copyTestResourceToCurrentDirectory("AccessStoreTest.persist");
 
     // Load persisted ACEs
+    const bool useLocalDomainAccessStoreOnly = false;
     auto localDomainAccessStore = std::make_unique<LocalDomainAccessStore>("AccessStoreTest.persist");
     auto localDomainAccessController =
-            std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
+            std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore),
+                                                          useLocalDomainAccessStoreOnly);
 
     localDomainAccessController->setGlobalDomainAccessControllerProxy(std::move(mockGdacProxyPtr));
 
