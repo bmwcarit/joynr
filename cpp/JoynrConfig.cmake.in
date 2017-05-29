@@ -72,10 +72,6 @@ include(${JOYNR_CMAKE_DIR}/CheckBoostImportTargets.cmake)
 # Threads
 find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
 
-# SMRF
-find_package(smrf 0.1.4 REQUIRED CONFIG)
-include(${JOYNR_CMAKE_DIR}/CheckSMRFImportTargets.cmake)
-
 # Our library dependencies (contains definitions for IMPORTED targets)
 include(@JoynrConfig_TARGETS_FILE@)
 

@@ -869,6 +869,8 @@ set(JoynrConfig_RESOURCES_DIR "${JoynrConfig_INSTALL_BIN_DIR}/resources")
 
 get_target_property(JoynrConfig_MOSQUITTO_INCLUDE_DIRS mosquitto::mosquitto INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(JoynrConfig_MOSQUITTO_LIBRARIES mosquitto::mosquitto IMPORTED_LOCATION)
+get_target_property(JoynrConfig_SMRF_INCLUDE_DIRS smrf::smrf INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(JoynrConfig_SMRF_LIBRARIES smrf::smrf IMPORTED_LOCATION)
 
 set(JoynrConfig_RESOLVE_DEPENDENCIES)
 
@@ -891,6 +893,12 @@ endif(USE_PLATFORM_MOSQUITTO)
 if(USE_PLATFORM_SPDLOG)
     FillJoynrConfigDependencies("PlatformSpdlog")
 endif(USE_PLATFORM_SPDLOG)
+
+if(USE_PLATFORM_SMRF)
+    FillJoynrConfigDependencies("PlatformSmrf")
+else(USE_PLATFORM_SMRF)
+    FillJoynrConfigDependencies("ExternalProjectSmrf")
+endif(USE_PLATFORM_SMRF)
 
 if(JOYNR_ENABLE_DLT_LOGGING)
 if(USE_PLATFORM_DLT)
