@@ -147,7 +147,9 @@ abstract class AbstractRuntimeModule extends AbstractModule {
 
         install(new StaticCapabilitiesProvisioningModule());
 
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d")
+                                                                     .setDaemon(true)
+                                                                     .build();
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(cleanupExecutor);
@@ -167,6 +169,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     @Named(MessageRouter.SCHEDULEDTHREADPOOL)
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
         ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
+                                                                              .setDaemon(true)
                                                                               .build();
         ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends,
                                                                                 schedulerNamedThreadFactory);
