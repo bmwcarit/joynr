@@ -32,6 +32,8 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.messaging.routing.AddressManager;
+import io.joynr.messaging.routing.DelayableImmutableMessage;
+import io.joynr.messaging.routing.BoundedDelayQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
@@ -60,21 +62,25 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter
     public JeeMessageRouter(RoutingTable routingTable,
                             @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                             @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
+                            @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
                             MessagingStubFactory messagingStubFactory,
                             MessagingSkeletonFactory messagingSkeletonFactory,
                             AddressManager addressManager,
                             MulticastReceiverRegistry multicastReceiverRegistry,
                             AccessController accessController,
-                            @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl) {
+                            @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl,
+                            BoundedDelayQueue<DelayableImmutableMessage> messageQueue) {
         super(routingTable,
               scheduler,
               sendMsgRetryIntervalMs,
+              maxParallelSends,
               messagingStubFactory,
               messagingSkeletonFactory,
               addressManager,
               multicastReceiverRegistry,
               accessController,
-              enableAccessControl);
+              enableAccessControl,
+              messageQueue);
         if (LOG.isDebugEnabled()) {
             LOG.debug(format("Initialising with:%n\troutingTable: %s%n\tscheduler: %s%n\tsendMsgRetryIntervalMs: %d%n\tmessageStubFactory: %s",
                              routingTable,

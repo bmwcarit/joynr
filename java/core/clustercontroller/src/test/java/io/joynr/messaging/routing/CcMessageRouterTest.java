@@ -113,6 +113,7 @@ public class CcMessageRouterTest {
 
             private Long msgRetryIntervalMs = 10L;
             private int maximumParallelSends = 1;
+            private int maxMessagesInQueue = 10;
 
             @Override
             protected void configure() {
@@ -122,6 +123,10 @@ public class CcMessageRouterTest {
                 bind(MulticastReceiverRegistry.class).to(InMemoryMulticastReceiverRegistry.class).asEagerSingleton();
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
                                 .toInstance(msgRetryIntervalMs);
+                bind(Integer.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS))
+                                   .toInstance(maximumParallelSends);
+                bind(Integer.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGES_INQUEUE))
+                                   .toInstance(maxMessagesInQueue);
                 bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
                               .to(false);
 
@@ -215,7 +220,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testRetryForNoParticipantFound() throws Exception {
-        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1000).getValue());
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
         joynrMessage.setTtlAbsolute(true);
         joynrMessage.setRecipient("I don't exist");
 

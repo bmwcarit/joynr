@@ -10,6 +10,8 @@
 * **[C++]** The cluster controller can be configured in such a way that access control checks are performed
   only with locally provisioned or cached data. The configuration is done by using the
   `access-control/use-ldas-only` property in the cluster controller settings.
+* **[Java]** Introduced property joynr.messaging.maxmessagesinqueue to restrict number of messages being processed
+  at a time. See the [Java Configuration Reference](JavaSettings.md) for more details.
 
 # joynr 0.26.0
 

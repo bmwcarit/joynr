@@ -27,6 +27,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import io.joynr.messaging.routing.AddressManager;
+import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +41,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.joynr.common.ExpiryDate;
 
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
+import io.joynr.messaging.routing.BoundedDelayQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.ImmutableMessage;
@@ -75,14 +77,17 @@ public class LibJoynrMessageRouterTest {
     @Mock
     private ImmutableMessage message;
 
+    private BoundedDelayQueue<DelayableImmutableMessage> messageQueue = new BoundedDelayQueue<>(10);
     private LibJoynrMessageRouter messageRouter;
     private String unknownParticipantId = "unknownParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;
+    private int maxParallelSends = 10;
+
     private String globalAddress = "global-address";
 
     @Before
     public void setUp() {
-        when(message.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(10000).getValue());
+        when(message.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000000).getValue());
         when(message.isTtlAbsolute()).thenReturn(true);
         when(message.getRecipient()).thenReturn(unknownParticipantId);
         when(message.isLocalMessage()).thenReturn(false);
@@ -98,10 +103,12 @@ public class LibJoynrMessageRouterTest {
                                                   incomingAddress,
                                                   provideMessageSchedulerThreadPoolExecutor(),
                                                   sendMsgRetryIntervalMs,
+                                                  maxParallelSends,
                                                   messagingStubFactory,
                                                   messagingSkeletonFactory,
                                                   addressManager,
-                                                  multicastReceiverRegistry);
+                                                  multicastReceiverRegistry,
+                                                  messageQueue);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
     }
 
