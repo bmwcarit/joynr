@@ -84,10 +84,16 @@ public:
         if (error) {
             subscriptionManager->unregisterSubscription(subscriptionReply.getSubscriptionId());
             future->onError(error);
-            listener->onError(*error);
+
+            if (listener) {
+                listener->onError(*error);
+            }
         } else {
             future->onSuccess(subscriptionReply.getSubscriptionId());
-            listener->onSubscribed(subscriptionReply.getSubscriptionId());
+
+            if (listener) {
+                listener->onSubscribed(subscriptionReply.getSubscriptionId());
+            }
         }
     }
 
