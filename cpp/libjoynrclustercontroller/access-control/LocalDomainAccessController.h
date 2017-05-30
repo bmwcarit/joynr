@@ -76,7 +76,7 @@ public:
     };
 
     explicit LocalDomainAccessController(
-            std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore,
+            std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore,
             bool useOnlyLocalDomainAccessStore);
     virtual ~LocalDomainAccessController() = default;
 
@@ -556,7 +556,7 @@ private:
             globalDomainAccessControlListEditorProxy;
     std::shared_ptr<infrastructure::GlobalDomainRoleControllerProxy>
             globalDomainRoleControllerProxy;
-    std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore;
+    std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore;
     bool useOnlyLocalDomainAccessStore;
 
     ADD_LOGGER(LocalDomainAccessController);

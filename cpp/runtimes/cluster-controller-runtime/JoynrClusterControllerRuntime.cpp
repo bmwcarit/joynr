@@ -650,7 +650,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
                 logger, "Access control file with entries does not exists.", ACC_ENTRIES_FILE);
     }
 
-    auto localDomainAccessStore = std::make_unique<joynr::LocalDomainAccessStore>(
+    auto localDomainAccessStore = std::make_shared<joynr::LocalDomainAccessStore>(
             clusterControllerSettings.getLocalDomainAccessStorePersistenceFilename());
 
     // Use update methods to insert deserialized entries in access store

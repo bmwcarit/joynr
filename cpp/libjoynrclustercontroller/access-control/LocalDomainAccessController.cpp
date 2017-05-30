@@ -213,7 +213,7 @@ private:
 //--- LocalDomainAccessController ----------------------------------------------
 
 LocalDomainAccessController::LocalDomainAccessController(
-        std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore,
+        std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore,
         bool useOnlyLocalDomainAccessStore)
         : accessControlAlgorithm(),
           dreSubscriptions(),
