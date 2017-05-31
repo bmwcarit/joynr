@@ -58,6 +58,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     private Set<String> subscribedTopics = new HashSet<>();
 
+    private boolean shutdown = false;
+
     public MqttPahoClient(MqttClient mqttClient,
                           int reconnectSleepMS,
                           int keepAliveTimerSec,
@@ -74,7 +76,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void start() {
-        while (!mqttClient.isConnected()) {
+        while (!shutdown && !mqttClient.isConnected()) {
             try {
                 mqttClient.setCallback(this);
                 mqttClient.setTimeToWait(timeToWaitMs);
@@ -99,6 +101,10 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 case MqttException.REASON_CODE_SUBSCRIBE_FAILED:
                 case MqttException.REASON_CODE_UNEXPECTED_ERROR:
                 case MqttException.REASON_CODE_WRITE_TIMEOUT:
+                    if (shutdown) {
+                        return;
+                    }
+
                     try {
                         Thread.sleep(reconnectSleepMs);
                     } catch (InterruptedException e) {
@@ -181,6 +187,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void shutdown() {
+        shutdown = true;
         logger.info("Attempting shutdown of MQTT connection.");
         try {
             mqttClient.disconnectForcibly(10000, 10000);
