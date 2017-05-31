@@ -43,6 +43,7 @@ import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
@@ -164,6 +165,15 @@ abstract public class AbstractMessageRouter implements MessageRouter {
 
     private void registerGlobalRoutingEntryIfRequired(final ImmutableMessage message) {
         if (!message.isReceivedFromGlobal()) {
+            return;
+        }
+
+        String messageType = message.getType();
+
+        if (!messageType.equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
+                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
+                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)
+                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
             return;
         }
 
