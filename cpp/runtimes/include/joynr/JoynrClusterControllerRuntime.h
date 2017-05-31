@@ -72,6 +72,7 @@ class LocalDomainAccessController;
 namespace infrastructure
 {
 class ChannelUrlDirectoryProxy;
+class GlobalDomainAccessControllerProxy;
 } // namespace infrastructure
 
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
@@ -169,6 +170,8 @@ protected:
 
 private:
     void createWsCCMessagingSkeletons();
+    std::unique_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
+    createGlobalDomainAccessControllerProxy();
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
@@ -176,7 +179,6 @@ private:
     std::shared_ptr<CcMessageRouter> ccMessageRouter;
 
     void enableAccessController(
-            MessagingSettings& messagingSettings,
             const std::map<std::string, types::DiscoveryEntryWithMetaInfo>& provisionedEntries);
     friend class ::JoynrClusterControllerRuntimeTest;
 

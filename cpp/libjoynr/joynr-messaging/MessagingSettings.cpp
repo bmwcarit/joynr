@@ -272,29 +272,6 @@ std::int64_t MessagingSettings::DEFAULT_BROKER_TIMEOUT_MS()
     return (20 * 1000);
 }
 
-const std::string& MessagingSettings::ACCESS_CONTROL_ENABLE()
-{
-    static const std::string value("access-control/enable");
-    return value;
-}
-
-const std::string& MessagingSettings::ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()
-{
-    static const std::string value("access-control/global-domain-access-controller-address");
-    return value;
-}
-
-const std::string& MessagingSettings::ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()
-{
-    static const std::string value("access-control/global-domain-access-controller-participantid");
-    return value;
-}
-
-bool MessagingSettings::DEFAULT_ENABLE_ACCESS_CONTROLLER()
-{
-    return false;
-}
-
 const std::string& MessagingSettings::SETTING_MAXIMUM_TTL_MS()
 {
     static const std::string value("messaging/max-ttl-ms");
@@ -558,16 +535,6 @@ void MessagingSettings::setBrokerTimeout(std::int64_t timeout_ms)
     settings.set(SETTING_BROKER_TIMEOUT_MS(), timeout_ms);
 }
 
-bool MessagingSettings::enableAccessController() const
-{
-    return settings.get<bool>(ACCESS_CONTROL_ENABLE());
-}
-
-void MessagingSettings::setEnableAccessController(bool enable)
-{
-    settings.set(ACCESS_CONTROL_ENABLE(), enable);
-}
-
 std::uint64_t MessagingSettings::getMaximumTtlMs() const
 {
     return settings.get<std::uint64_t>(SETTING_MAXIMUM_TTL_MS());
@@ -617,17 +584,6 @@ std::chrono::milliseconds MessagingSettings::getCapabilitiesFreshnessUpdateInter
 bool MessagingSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
-}
-
-std::string MessagingSettings::getGlobalDomainAccessControlAddress() const
-{
-    return settings.get<std::string>(ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS());
-}
-
-std::string MessagingSettings::getGlobalDomainAccessControlParticipantId() const
-{
-    return settings.get<std::string>(
-            ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID());
 }
 
 // Checks messaging settings and sets defaults
@@ -697,26 +653,6 @@ void MessagingSettings::checkSettings()
     }
     if (!settings.contains(SETTING_TTL_UPLIFT_MS())) {
         settings.set(SETTING_TTL_UPLIFT_MS(), DEFAULT_TTL_UPLIFT_MS());
-    }
-
-    if (!settings.contains(ACCESS_CONTROL_ENABLE())) {
-        setEnableAccessController(DEFAULT_ENABLE_ACCESS_CONTROLLER());
-    } else if (enableAccessController()) {
-        assert(settings.contains(ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
-        assert(settings.contains(ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()));
-
-        if (!settings.contains(ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS())) {
-            JOYNR_LOG_ERROR(logger,
-                            "Configuration error. Access controller is enabled but "
-                            "no {} was defined.",
-                            ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS());
-        }
-        if (!settings.contains(ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID())) {
-            JOYNR_LOG_ERROR(logger,
-                            "Configuration error. Access controller is enabled but "
-                            "no {} was defined.",
-                            ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID());
-        }
     }
 }
 
@@ -792,22 +728,6 @@ void MessagingSettings::printSettings() const
                     "SETTING: {} = {})",
                     SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
                     getCapabilitiesFreshnessUpdateIntervalMs().count());
-    JOYNR_LOG_DEBUG(logger,
-                    "SETTING: {}  = {})",
-                    ACCESS_CONTROL_ENABLE(),
-                    settings.get<std::string>(ACCESS_CONTROL_ENABLE()));
-    if (settings.get<bool>(ACCESS_CONTROL_ENABLE())) {
-        JOYNR_LOG_DEBUG(logger,
-                        "SETTING: {}  = {})",
-                        ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS(),
-                        settings.get<std::string>(
-                                ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
-        JOYNR_LOG_DEBUG(logger,
-                        "SETTING: {}  = {})",
-                        ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID(),
-                        settings.get<std::string>(
-                                ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()));
-    }
 }
 
 } // namespace joynr

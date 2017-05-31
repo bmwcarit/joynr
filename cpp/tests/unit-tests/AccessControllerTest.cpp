@@ -98,7 +98,7 @@ class AccessControllerTest : public ::testing::Test {
 public:
     AccessControllerTest() :
         singleThreadedIOService(),
-        localDomainAccessControllerMock(std::make_unique<LocalDomainAccessStore>()),
+        localDomainAccessControllerMock(std::make_unique<LocalDomainAccessStore>(), false),
         accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
         settings(),
         messagingSettingsMock(settings),

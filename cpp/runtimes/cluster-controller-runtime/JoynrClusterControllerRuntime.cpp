@@ -561,7 +561,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
 #ifdef JOYNR_ENABLE_ACCESS_CONTROL
     // Do this after local capabilities directory and message router have been initialized.
-    enableAccessController(messagingSettings, provisionedDiscoveryEntries);
+    enableAccessController(provisionedDiscoveryEntries);
 #endif // JOYNR_ENABLE_ACCESS_CONTROL
 }
 
@@ -601,27 +601,26 @@ std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrClusterCont
     types::Version gDACProviderVersion(
             infrastructure::IGlobalDomainAccessController::MAJOR_VERSION,
             infrastructure::IGlobalDomainAccessController::MINOR_VERSION);
-    provisionedDiscoveryEntries.insert(
-            std::make_pair(messagingSettings.getGlobalDomainAccessControlParticipantId(),
-                           types::DiscoveryEntryWithMetaInfo(
-                                   gDACProviderVersion,
-                                   messagingSettings.getDiscoveryDirectoriesDomain(),
-                                   infrastructure::IGlobalDomainAccessController::INTERFACE_NAME(),
-                                   messagingSettings.getGlobalDomainAccessControlParticipantId(),
-                                   capabilityProviderQos,
-                                   lastSeenDateMs,
-                                   expiryDateMs,
-                                   defaultPublicKeyId,
-                                   false)));
+    provisionedDiscoveryEntries.insert(std::make_pair(
+            clusterControllerSettings.getGlobalDomainAccessControlParticipantId(),
+            types::DiscoveryEntryWithMetaInfo(
+                    gDACProviderVersion,
+                    messagingSettings.getDiscoveryDirectoriesDomain(),
+                    infrastructure::IGlobalDomainAccessController::INTERFACE_NAME(),
+                    clusterControllerSettings.getGlobalDomainAccessControlParticipantId(),
+                    capabilityProviderQos,
+                    lastSeenDateMs,
+                    expiryDateMs,
+                    defaultPublicKeyId,
+                    false)));
 
     return provisionedDiscoveryEntries;
 }
 
 void JoynrClusterControllerRuntime::enableAccessController(
-        MessagingSettings& messagingSettings,
         const std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo>& provisionedEntries)
 {
-    if (!messagingSettings.enableAccessController()) {
+    if (!clusterControllerSettings.enableAccessController()) {
         return;
     }
 
@@ -629,26 +628,26 @@ void JoynrClusterControllerRuntime::enableAccessController(
                     "AccessControl was enabled attempting to load entries from {}.",
                     ACC_ENTRIES_FILE);
 
-    if (!joynr::util::fileExists(ACC_ENTRIES_FILE)) {
-        JOYNR_LOG_ERROR(
-                logger, "Access control file with entries does not exists.", ACC_ENTRIES_FILE);
-        return;
-    }
-
     std::vector<std::shared_ptr<joynr::infrastructure::DacTypes::ControlEntry>>
             accessControlEntries;
-    try {
-        joynr::serializer::deserializeFromJson(
-                accessControlEntries, joynr::util::loadStringFromFile(ACC_ENTRIES_FILE));
-    } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger, ex.what());
-        return;
-    } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger,
-                        "Could not deserialize access control entries from {}: {}",
-                        ACC_ENTRIES_FILE,
-                        ex.what());
-        return;
+
+    if (joynr::util::fileExists(ACC_ENTRIES_FILE)) {
+        try {
+            joynr::serializer::deserializeFromJson(
+                    accessControlEntries, joynr::util::loadStringFromFile(ACC_ENTRIES_FILE));
+        } catch (const std::runtime_error& ex) {
+            JOYNR_LOG_ERROR(logger, ex.what());
+            accessControlEntries.clear();
+        } catch (const std::invalid_argument& ex) {
+            JOYNR_LOG_ERROR(logger,
+                            "Could not deserialize access control entries from {}: {}",
+                            ACC_ENTRIES_FILE,
+                            ex.what());
+            accessControlEntries.clear();
+        }
+    } else {
+        JOYNR_LOG_INFO(
+                logger, "Access control file with entries does not exists.", ACC_ENTRIES_FILE);
     }
 
     auto localDomainAccessStore = std::make_unique<joynr::LocalDomainAccessStore>(
@@ -668,16 +667,36 @@ void JoynrClusterControllerRuntime::enableAccessController(
         }
     }
 
-    localDomainAccessController =
-            std::make_unique<joynr::LocalDomainAccessController>(std::move(localDomainAccessStore));
+    localDomainAccessController = std::make_unique<joynr::LocalDomainAccessController>(
+            std::move(localDomainAccessStore), clusterControllerSettings.getUseOnlyLDAS());
 
+    if (!clusterControllerSettings.getUseOnlyLDAS()) {
+        auto proxyGlobalDomainAccessController = createGlobalDomainAccessControllerProxy();
+        localDomainAccessController->setGlobalDomainAccessControllerProxy(
+                std::move(proxyGlobalDomainAccessController));
+    }
+
+    auto accessController = std::make_shared<joynr::AccessController>(
+            *localCapabilitiesDirectory, *localDomainAccessController);
+
+    // whitelist provisioned entries into access controller
+    for (const auto& entry : provisionedEntries) {
+        accessController->addParticipantToWhitelist(entry.second.getParticipantId());
+    }
+
+    ccMessageRouter->setAccessController(std::move(accessController));
+}
+
+std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterControllerRuntime::
+        createGlobalDomainAccessControllerProxy()
+{
     // Provision global domain access controller in MessageRouter
     auto globalDomainAccessControlAddress =
             std::make_shared<joynr::system::RoutingTypes::MqttAddress>();
     try {
         joynr::serializer::deserializeFromJson(
                 *globalDomainAccessControlAddress,
-                messagingSettings.getGlobalDomainAccessControlAddress());
+                clusterControllerSettings.getGlobalDomainAccessControlAddress());
     } catch (const std::invalid_argument& ex) {
         JOYNR_LOG_ERROR(logger,
                         "Cannot deserialize global domain access controller address. Reason: {}.",
@@ -686,7 +705,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
 
     bool isGloballyVisible = true;
     ccMessageRouter->addProvisionedNextHop(
-            messagingSettings.getGlobalDomainAccessControlParticipantId(),
+            clusterControllerSettings.getGlobalDomainAccessControlParticipantId(),
             std::move(globalDomainAccessControlAddress),
             isGloballyVisible);
 
@@ -699,22 +718,10 @@ void JoynrClusterControllerRuntime::enableAccessController(
     DiscoveryQos discoveryQos(10000);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryQos.addCustomParameter(
-            "fixedParticipantId", messagingSettings.getGlobalDomainAccessControlParticipantId());
+            "fixedParticipantId",
+            clusterControllerSettings.getGlobalDomainAccessControlParticipantId());
 
-    auto proxyGlobalDomainAccessController =
-            globalDomainAccessControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
-
-    localDomainAccessController->init(std::move(proxyGlobalDomainAccessController));
-
-    auto accessController = std::make_shared<joynr::AccessController>(
-            *localCapabilitiesDirectory, *localDomainAccessController);
-
-    // whitelist provisioned entries into access controller
-    for (const auto& entry : provisionedEntries) {
-        accessController->addParticipantToWhitelist(entry.second.getParticipantId());
-    }
-
-    ccMessageRouter->setAccessController(accessController);
+    return globalDomainAccessControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
 }
 
 void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()

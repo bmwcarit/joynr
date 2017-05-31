@@ -68,10 +68,6 @@ public:
     static const std::string& SETTING_HTTP_CONNECT_TIMEOUT_MS();
     static const std::string& SETTING_BROKER_TIMEOUT_MS();
 
-    static const std::string& ACCESS_CONTROL_ENABLE();
-    static const std::string& ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS();
-    static const std::string& ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID();
-
     /**
      * @brief SETTING_MAXIMUM_TTL_MS The key used in settings to identifiy the maximum allowed value
      * of the time-to-live joynr message header.
@@ -112,8 +108,6 @@ public:
     static std::chrono::milliseconds DEFAULT_MQTT_CONNECTION_TIMEOUT_MS();
     static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
 
-    static bool DEFAULT_ENABLE_ACCESS_CONTROLLER();
-
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
     void setBrokerUrl(const BrokerUrl& brokerUrl);
@@ -123,9 +117,6 @@ public:
     std::string getCapabilitiesDirectoryUrl() const;
     std::string getCapabilitiesDirectoryChannelId() const;
     std::string getCapabilitiesDirectoryParticipantId() const;
-
-    std::string getGlobalDomainAccessControlAddress() const;
-    std::string getGlobalDomainAccessControlParticipantId() const;
 
     std::chrono::seconds getMqttKeepAliveTime() const;
     void setMqttKeepAliveTime(std::chrono::seconds mqttKeepAliveTime);
@@ -166,9 +157,6 @@ public:
     void setHttpConnectTimeout(std::int64_t timeout_ms);
     std::int64_t getBrokerTimeout() const;
     void setBrokerTimeout(std::int64_t timeout_ms);
-
-    bool enableAccessController() const;
-    void setEnableAccessController(bool enable);
 
     /**
      * @brief getMaximumTtlMs Get the maximum allowed time-to-live value in milliseconds for joynr

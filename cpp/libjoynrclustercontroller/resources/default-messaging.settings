@@ -55,7 +55,3 @@ persistence-file=joynr.settings
 long-poll-timeout=
 broker-timeout=
 max-send-ttl=
-
-[access-control]
-# Access control on messages is disabled by default. Set to true to enable.
-enable=false
