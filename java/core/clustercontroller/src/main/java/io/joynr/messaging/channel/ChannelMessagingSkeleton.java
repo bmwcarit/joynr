@@ -29,9 +29,6 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.ImmutableMessage;
-import joynr.Message;
-import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 import java.util.Set;
 
@@ -64,11 +61,8 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
         }
 
         logger.debug("<<< INCOMING <<< {}", message.toLogMessage());
-        final String replyToChannelId = message.getReplyTo();
         try {
             message.setReceivedFromGlobal(true);
-
-            addRequestorToMessageRouter(message.getSender(), replyToChannelId);
             messageRouter.route(message);
         } catch (Exception exception) {
             logger.error("Error processing incoming message. Message will be dropped: {} ", exception);
@@ -80,22 +74,6 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
     public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         // TODO Auto-generated method stub
 
-    }
-
-    private void addRequestorToMessageRouter(String requestorParticipantId, String replyToSerializedAddress) {
-        if (replyToSerializedAddress != null && !replyToSerializedAddress.isEmpty()) {
-            Address address;
-            address = RoutingTypesUtil.fromAddressString(replyToSerializedAddress);
-            // participants from ChannelMessagingSkeleton are always globally visible
-            final boolean isGloballyVisible = true;
-            messageRouter.addNextHop(requestorParticipantId, address, isGloballyVisible);
-        } else {
-            /*
-             * TODO make sure that all requests (ie not one-way) also have replyTo
-             * set, otherwise log an error.
-             * Caution: the replyToChannelId is not set in case of local communication
-             */
-        }
     }
 
     @Override

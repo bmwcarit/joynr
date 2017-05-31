@@ -44,6 +44,8 @@ import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,6 +145,7 @@ abstract public class AbstractMessageRouter implements MessageRouter {
     @Override
     public void route(final ImmutableMessage message) {
         checkExpiry(message);
+        registerGlobalRoutingEntryIfRequired(message);
         routeInternal(message, 0, 0);
     }
 
@@ -157,6 +160,21 @@ abstract public class AbstractMessageRouter implements MessageRouter {
 
     protected Set<Address> getAddresses(ImmutableMessage message) {
         return addressManager.getAddresses(message);
+    }
+
+    private void registerGlobalRoutingEntryIfRequired(final ImmutableMessage message) {
+        if (!message.isReceivedFromGlobal()) {
+            return;
+        }
+
+        String replyTo = message.getReplyTo();
+        if (replyTo != null && !replyTo.isEmpty()) {
+            Address address = RoutingTypesUtil.fromAddressString(replyTo);
+
+            // If the message was received from global, the sender is globally visible by definition.
+            final boolean isGloballyVisible = true;
+            routingTable.put(message.getSender(), address, isGloballyVisible);
+        }
     }
 
     private void routeInternal(final ImmutableMessage message, final long delayMs, final int retriesCount) {
