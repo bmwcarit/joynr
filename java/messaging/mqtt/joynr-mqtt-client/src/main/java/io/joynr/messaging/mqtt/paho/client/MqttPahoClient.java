@@ -75,7 +75,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void start() {
+    public synchronized void start() {
         while (!shutdown && !mqttClient.isConnected()) {
             try {
                 mqttClient.setCallback(this);
@@ -186,7 +186,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void shutdown() {
+    public synchronized void shutdown() {
         shutdown = true;
         logger.info("Attempting shutdown of MQTT connection.");
         try {
