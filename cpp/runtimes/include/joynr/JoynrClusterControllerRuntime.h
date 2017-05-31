@@ -46,6 +46,7 @@ class JoynrClusterControllerRuntimeTest;
 namespace joynr
 {
 
+class AccessControlListEditor;
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
 class ITransportMessageReceiver;
@@ -110,6 +111,7 @@ public:
     void registerRoutingProvider();
     void registerDiscoveryProvider();
     void registerMessageNotificationProvider();
+    void registerAccessControlListEditorProvider();
 
     /*
      * Inject predefined capabilities stored in a JSON file.
@@ -177,6 +179,7 @@ private:
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
 
     std::shared_ptr<CcMessageRouter> ccMessageRouter;
+    std::shared_ptr<AccessControlListEditor> aclEditor;
 
     void enableAccessController(
             const std::map<std::string, types::DiscoveryEntryWithMetaInfo>& provisionedEntries);
