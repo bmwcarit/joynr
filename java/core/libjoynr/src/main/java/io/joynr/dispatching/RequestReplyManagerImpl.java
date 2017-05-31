@@ -310,5 +310,6 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
         messageRouter.shutdown();
         providerDirectory.removeListener(this);
         replyCallerDirectory.shutdown();
+        cleanupScheduler.shutdownNow();
     }
 }
