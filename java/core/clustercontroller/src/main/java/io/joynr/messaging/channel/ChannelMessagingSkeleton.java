@@ -66,9 +66,8 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
         logger.debug("<<< INCOMING <<< {}", message.toLogMessage());
         final String replyToChannelId = message.getReplyTo();
         try {
-            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-                message.setReceivedFromGlobal(true);
-            }
+            message.setReceivedFromGlobal(true);
+
             addRequestorToMessageRouter(message.getSender(), replyToChannelId);
             messageRouter.route(message);
         } catch (Exception exception) {

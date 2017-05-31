@@ -128,9 +128,8 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     private void forwardMessage(ImmutableMessage message, FailureAction failureAction) {
         LOG.debug("<<< INCOMING <<< {}", message.toLogMessage());
         try {
-            if (message.getType().equals(Message.VALUE_MESSAGE_TYPE_MULTICAST)) {
-                message.setReceivedFromGlobal(true);
-            }
+            message.setReceivedFromGlobal(true);
+
             String replyToMqttAddress = message.getReplyTo();
             // because the message is received via global transport, isGloballyVisible must be true
             final boolean isGloballyVisible = true;
