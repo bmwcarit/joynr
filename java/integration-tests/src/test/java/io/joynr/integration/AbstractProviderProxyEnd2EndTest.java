@@ -441,6 +441,13 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }
 
         @Override
+        public Promise<MethodWithByteArrayDeferred> methodWithByteArray(Byte[] input) {
+            MethodWithByteArrayDeferred deferred = new MethodWithByteArrayDeferred();
+            deferred.resolve(input);
+            return new Promise<>(deferred);
+        }
+
+        @Override
         public void methodFireAndForgetWithoutParams() {
             AbstractProviderProxyEnd2EndTest.FIRE_AND_FORGET_WITHOUT_PARAMS_SEMAPHORE.release();
         }
