@@ -27,10 +27,9 @@
 define([
     "global/Smrf",
     "joynr/messaging/JoynrMessage",
-    "joynr/util/JSONSerializer",
     "joynr/exceptions/JoynrRuntimeException",
     "joynr/system/LoggerFactory"
-], function(smrf, JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
+], function(smrf, JoynrMessage, JoynrRuntimeException, LoggerFactory) {
     if (typeof Buffer !== "function") {
         throw new JoynrRuntimeException(
                 "Decoding of binary websocket messages not possible. Buffer not available.");
