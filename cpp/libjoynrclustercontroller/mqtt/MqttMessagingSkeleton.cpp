@@ -124,9 +124,9 @@ void MqttMessagingSkeleton::transmit(
             // do not try to route the message if address is not valid
             return;
         }
-    } else if (messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
-        message->setReceivedFromGlobal(true);
     }
+
+    message->setReceivedFromGlobal(true);
 
     try {
         messageRouter.route(std::move(message));

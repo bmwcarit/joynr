@@ -110,6 +110,7 @@ public:
 
 protected:
     void transmitCallsAddNextHop();
+    void transmitSetsIsReceivedFromGlobal();
     SingleThreadedIOService singleThreadedIOService;
     MockMessageRouter mockMessageRouter;
     MutableMessageFactory messageFactory;
@@ -227,15 +228,10 @@ TEST_F(MqttMessagingSkeletonTest, transmitCallsAddNextHopForMulticastSubscriptio
     transmitCallsAddNextHop();
 }
 
-TEST_F(MqttMessagingSkeletonTest, transmitSetsReceivedFromGlobal)
+void MqttMessagingSkeletonTest::transmitSetsIsReceivedFromGlobal()
 {
     MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix());
-    MulticastPublication publication;
-    mutableMessage = messageFactory.createMulticastPublication(
-            senderID,
-            qosSettings,
-            publication
-            );
+    mutableMessage.setReplyTo(replyAddressSerialized);
     std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
     EXPECT_FALSE(immutableMessage->isReceivedFromGlobal());
     auto onFailure = [](const exceptions::JoynrRuntimeException& e) {
@@ -243,6 +239,69 @@ TEST_F(MqttMessagingSkeletonTest, transmitSetsReceivedFromGlobal)
     };
     mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
     EXPECT_TRUE(immutableMessage->isReceivedFromGlobal());
+}
+
+TEST_F(MqttMessagingSkeletonTest, transmitSetsReceivedFromGlobalForMulticastPublications)
+{
+    MulticastPublication publication;
+    mutableMessage = messageFactory.createMulticastPublication(
+            senderID,
+            qosSettings,
+            publication
+            );
+    transmitSetsIsReceivedFromGlobal();
+}
+
+TEST_F(MqttMessagingSkeletonTest, transmitSetsReceivedFromGlobalForRequests)
+{
+    Request request;
+    mutableMessage = messageFactory.createRequest(
+            senderID,
+            receiverID,
+            qosSettings,
+            request,
+            isLocalMessage
+            );
+    transmitSetsIsReceivedFromGlobal();
+}
+
+TEST_F(MqttMessagingSkeletonTest, transmitSetsReceivedFromGlobalForSubscriptionRequests)
+{
+    SubscriptionRequest request;
+    mutableMessage = messageFactory.createSubscriptionRequest(
+            senderID,
+            receiverID,
+            qosSettings,
+            request,
+            isLocalMessage
+            );
+    transmitSetsIsReceivedFromGlobal();
+}
+
+TEST_F(MqttMessagingSkeletonTest, transmitSetsIsReceivedFromGlobalForBroadcastSubscriptionRequests)
+{
+    BroadcastSubscriptionRequest request;
+    mutableMessage = messageFactory.createBroadcastSubscriptionRequest(
+            senderID,
+            receiverID,
+            qosSettings,
+            request,
+            isLocalMessage
+            );
+    transmitSetsIsReceivedFromGlobal();
+}
+
+TEST_F(MqttMessagingSkeletonTest, transmitSetsIsReceivedFromGlobalForMulticastSubscriptionRequests)
+{
+    MulticastSubscriptionRequest request;
+    mutableMessage = messageFactory.createMulticastSubscriptionRequest(
+            senderID,
+            receiverID,
+            qosSettings,
+            request,
+            isLocalMessage
+            );
+    transmitSetsIsReceivedFromGlobal();
 }
 
 TEST_F(MqttMessagingSkeletonTest, onMessageReceivedTest) {

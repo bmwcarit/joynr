@@ -74,6 +74,8 @@ void HttpMessagingSkeleton::transmit(
         }
     }
 
+    message->setReceivedFromGlobal(true);
+
     try {
         messageRouter.route(std::move(message));
     } catch (exceptions::JoynrRuntimeException& e) {
