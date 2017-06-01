@@ -628,8 +628,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
                     "AccessControl was enabled attempting to load entries from {}.",
                     ACC_ENTRIES_FILE);
 
-    std::vector<std::shared_ptr<joynr::infrastructure::DacTypes::ControlEntry>>
-            accessControlEntries;
+    std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry> accessControlEntries;
 
     if (joynr::util::fileExists(ACC_ENTRIES_FILE)) {
         try {
@@ -654,17 +653,8 @@ void JoynrClusterControllerRuntime::enableAccessController(
             clusterControllerSettings.getLocalDomainAccessStorePersistenceFilename());
 
     // Use update methods to insert deserialized entries in access store
-    for (const std::shared_ptr<joynr::infrastructure::DacTypes::ControlEntry> entry :
-         accessControlEntries) {
-        if (auto masterEntry = std::dynamic_pointer_cast<
-                    joynr::infrastructure::DacTypes::MasterAccessControlEntry>(entry)) {
-            localDomainAccessStore->updateMasterAccessControlEntry(*masterEntry);
-        } else if (auto ownerEntry = std::dynamic_pointer_cast<
-                           joynr::infrastructure::DacTypes::OwnerAccessControlEntry>(entry)) {
-            localDomainAccessStore->updateOwnerAccessControlEntry(*ownerEntry);
-        } else {
-            JOYNR_LOG_ERROR(logger, "Access control contains unrecognized entry. Skipping...");
-        }
+    for (const auto& entry : accessControlEntries) {
+        localDomainAccessStore->updateMasterAccessControlEntry(entry);
     }
 
     localDomainAccessController = std::make_unique<joynr::LocalDomainAccessController>(
