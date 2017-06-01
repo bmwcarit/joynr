@@ -330,7 +330,7 @@ public:
     MOCK_METHOD1(contains, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
 };
 
-class MockMessageRouter : public joynr::AbstractMessageRouter {
+class MockMessageRouter : public joynr::IMessageRouter {
 public:
     void invokeAddNextHopOnSuccessFct(const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
@@ -349,12 +349,9 @@ public:
         }
     }
 
-    MockMessageRouter(boost::asio::io_service& ioService):
-        AbstractMessageRouter(std::make_shared<MockMessagingStubFactory>(),
-                      ioService,
-                      nullptr,
-                      0)
+    MockMessageRouter(boost::asio::io_service& ioService)
     {
+        std::ignore = ioService;
         EXPECT_CALL(
                 *this,
                 addNextHop(_,_,_,_,_)

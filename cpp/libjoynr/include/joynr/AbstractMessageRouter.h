@@ -78,6 +78,9 @@ public:
     void saveRoutingTable();
     void loadRoutingTable(std::string fileName);
 
+    void route(std::shared_ptr<ImmutableMessage> message,
+               std::uint32_t tryCount = 0) final override;
+
     friend class MessageRunnable;
     friend class ConsumerPermissionCallback;
 
@@ -119,6 +122,9 @@ protected:
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
     getDestinationAddresses(const ImmutableMessage& message);
 
+    virtual void routeInternal(std::shared_ptr<ImmutableMessage> message,
+                               std::uint32_t tryCount) = 0;
+
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
             const std::unordered_set<std::string>& participantIds);
 
@@ -151,6 +157,8 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessageRouter);
     ADD_LOGGER(AbstractMessageRouter);
+
+    void checkExpiryDate(const ImmutableMessage& message);
 
     bool routingTableSaveFilterFunc(std::shared_ptr<RoutingEntry> routingEntry);
 };

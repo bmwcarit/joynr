@@ -106,18 +106,9 @@ void LibJoynrMessageRouter::setParentRouter(std::unique_ptr<system::RoutingProxy
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void LibJoynrMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount)
+void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
+                                          std::uint32_t tryCount)
 {
-    assert(messagingStubFactory != nullptr);
-    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now());
-    if (now > message->getExpiryDate()) {
-        std::string errorMessage("Received expired message. Dropping the message (ID: " +
-                                 message->getId() + ").");
-        JOYNR_LOG_WARN(logger, errorMessage);
-        throw exceptions::JoynrMessageNotSentException(errorMessage);
-    }
-
     JOYNR_LOG_TRACE(logger, "Route message with Id {}", message->getId());
     // search for the destination addresses
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =

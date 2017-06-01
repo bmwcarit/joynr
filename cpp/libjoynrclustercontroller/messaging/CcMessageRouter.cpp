@@ -255,18 +255,9 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void CcMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount)
+void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
+                                    std::uint32_t tryCount)
 {
-    assert(messagingStubFactory != nullptr);
-    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now());
-    if (now > message->getExpiryDate()) {
-        std::string errorMessage("Received expired message. Dropping the message (ID: " +
-                                 message->getId() + ").");
-        JOYNR_LOG_WARN(logger, errorMessage);
-        throw exceptions::JoynrMessageNotSentException(errorMessage);
-    }
-
     // Validate the message if possible
     if (securityManager != nullptr && !securityManager->validate(*message)) {
         std::string errorMessage("messageId " + message->getId() + " failed validation");

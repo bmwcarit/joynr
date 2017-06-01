@@ -91,11 +91,12 @@ public:
 
     ~CcMessageRouter() override;
 
+    void routeInternal(std::shared_ptr<ImmutableMessage> message,
+                       std::uint32_t tryCount) final override;
+
     /*
      * Implement methods from IMessageRouter
      */
-    void route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) final;
-
     void addNextHop(const std::string& participantId,
                     const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
                     bool isGloballyVisible,

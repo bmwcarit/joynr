@@ -140,6 +140,26 @@ AbstractMessageRouter::getDestinationAddresses(const ImmutableMessage& message)
     return addresses;
 }
 
+void AbstractMessageRouter::checkExpiryDate(const ImmutableMessage& message)
+{
+    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now());
+    if (now > message.getExpiryDate()) {
+        std::string errorMessage("Received expired message. Dropping the message (ID: " +
+                                 message.getId() + ").");
+        JOYNR_LOG_WARN(logger, errorMessage);
+        throw exceptions::JoynrMessageNotSentException(errorMessage);
+    }
+}
+
+void AbstractMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount)
+{
+    assert(messagingStubFactory);
+    assert(message);
+    checkExpiryDate(*message);
+    routeInternal(std::move(message), tryCount);
+}
+
 void AbstractMessageRouter::sendMessages(
         const std::string& destinationPartId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
