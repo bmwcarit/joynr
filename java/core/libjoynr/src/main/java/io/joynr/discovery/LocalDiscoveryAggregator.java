@@ -138,7 +138,10 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
             };
             String[] missingDomainsArray = new String[missingDomains.size()];
             missingDomains.toArray(missingDomainsArray);
-            getDefaultDiscoveryProxy().lookup(newCallback, missingDomainsArray, interfaceName, discoveryQos);
+            getDiscoveryProxy(discoveryQos.getDiscoveryTimeout()).lookup(newCallback,
+                                                                         missingDomainsArray,
+                                                                         interfaceName,
+                                                                         discoveryQos);
         } else {
             resolveDiscoveryEntriesFutureWithEntries(discoveryEntryFuture, discoveryEntries, callback);
         }
@@ -174,5 +177,11 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         }
 
         return defaultDiscoveryProxy;
+    }
+
+    private DiscoveryProxy getDiscoveryProxy(long ttl) {
+        MessagingQos messagingQos = new MessagingQos(ttl);
+
+        return proxyBuilderFactory.get(systemServiceDomain, DiscoveryProxy.class).setMessagingQos(messagingQos).build();
     }
 }
