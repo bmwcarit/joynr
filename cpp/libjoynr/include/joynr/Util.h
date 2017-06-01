@@ -216,11 +216,13 @@ FloatingPoint getAbsFloatDistance(FloatingPoint x, FloatingPoint y)
     return std::abs(boost::math::float_distance(x, y));
 }
 
+static constexpr std::size_t MAX_ULPS = 4;
+
 template <typename T>
 std::enable_if_t<std::is_floating_point<T>::value, bool> compareValues(
         const T& x,
         const T& y,
-        const std::uint32_t maxUlps = 4)
+        const std::size_t maxUlps = MAX_ULPS)
 {
     return getAbsFloatDistance(x, y) <= maxUlps;
 }
@@ -229,7 +231,7 @@ template <typename T>
 std::enable_if_t<!std::is_floating_point<T>::value, bool> compareValues(
         const T& x,
         const T& y,
-        const std::uint32_t maxUlps = 4)
+        const std::size_t maxUlps = MAX_ULPS)
 {
     std::ignore = maxUlps;
     return x == y;

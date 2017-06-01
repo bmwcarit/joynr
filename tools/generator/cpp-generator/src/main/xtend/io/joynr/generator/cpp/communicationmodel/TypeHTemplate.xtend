@@ -250,7 +250,7 @@ protected:
 				«ENDIF»
 				return
 				«FOR member: getMembers(type) SEPARATOR '&&'»
-					this->«member.joynrName» == other.«member.joynrName»
+					joynr::util::compareValues(this->«member.joynrName», other.«member.joynrName»)
 				«ENDFOR»
 				&& «getExtendedType(type).joynrName»::equals(other);
 			«ELSE»
@@ -263,7 +263,7 @@ protected:
 			«IF getMembers(type).size > 0»
 				return
 				«FOR member: getMembers(type) SEPARATOR ' &&'»
-					this->«member.joynrName» == other.«member.joynrName»
+					joynr::util::compareValues(this->«member.joynrName», other.«member.joynrName»)
 				«ENDFOR»
 				;
 			«ELSE»
