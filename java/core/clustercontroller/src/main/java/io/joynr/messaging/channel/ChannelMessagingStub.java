@@ -41,7 +41,7 @@ public class ChannelMessagingStub implements IMessagingStub {
 
     @Override
     public void transmit(ImmutableMessage message, FailureAction failureAction) {
-        LOG.debug(">>> OUTGOING >>> {}", message.toLogMessage());
+        LOG.debug(">>> OUTGOING >>> {}", message);
         httpMessageSender.sendMessage(address, message.getSerializedMessage(), failureAction);
     }
 }

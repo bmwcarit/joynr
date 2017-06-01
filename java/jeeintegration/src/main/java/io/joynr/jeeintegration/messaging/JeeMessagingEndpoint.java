@@ -139,23 +139,23 @@ public class JeeMessagingEndpoint {
             }
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("POST to channel: {} message: {}", channelId, message.toLogMessage());
+                LOG.debug("POST to channel: {} message: {}", channelId, message);
             }
 
             if (channelId == null) {
-                LOG.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set", message.toLogMessage());
+                LOG.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set", message);
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
             }
 
             if (message.getTtlMs() == 0) {
-                LOG.error("POST message to channel: {} message: {} dropped because: TTL not set", channelId, message.toLogMessage());
+                LOG.error("POST message to channel: {} message: {} dropped because: TTL not set", channelId, message);
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATENOTSET);
             }
 
             if (messageReceiver == null) {
                 LOG.error("POST message to channel: {} message: {} no receiver for the given channel",
                           channelId,
-                          message.toLogMessage());
+                          message);
                 return Response.noContent().build();
             }
 

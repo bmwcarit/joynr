@@ -150,4 +150,9 @@ public class ImmutableMessage extends Message {
             return "";
         }
     }
+
+    @Override
+    public String toString() {
+        return toLogMessage();
+    }
 }

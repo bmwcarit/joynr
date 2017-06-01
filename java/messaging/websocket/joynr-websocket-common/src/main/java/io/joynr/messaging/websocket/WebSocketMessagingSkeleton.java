@@ -93,7 +93,7 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMes
         try {
             ImmutableMessage message = new ImmutableMessage(serializedMessage);
 
-            LOG.debug("<<< INCOMING <<< {}", message.toLogMessage());
+            LOG.debug("<<< INCOMING <<< {}", message);
 
             if (messageProcessors != null) {
                 for (JoynrMessageProcessor processor : messageProcessors) {

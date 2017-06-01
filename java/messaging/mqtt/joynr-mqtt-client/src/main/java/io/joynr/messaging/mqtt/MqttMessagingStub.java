@@ -49,7 +49,7 @@ public class MqttMessagingStub implements IMessagingStub {
 
     @Override
     public void transmit(ImmutableMessage message, FailureAction failureAction) {
-        LOG.debug(">>> OUTGOING >>> {}", message.toLogMessage());
+        LOG.debug(">>> OUTGOING >>> {}", message);
         String topic = address.getTopic();
         if (!Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
             topic += PRIORITY_LOW + message.getRecipient();

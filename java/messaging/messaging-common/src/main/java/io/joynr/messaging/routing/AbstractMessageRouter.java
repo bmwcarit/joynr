@@ -328,7 +328,7 @@ abstract public class AbstractMessageRouter implements MessageRouter {
                                 + message.getRecipient());
                     }
                     for (Address address : addresses) {
-                        logger.trace(">>>>> SEND  {} to address {}", message.toLogMessage(), address);
+                        logger.trace(">>>>> SEND  {} to address {}", message, address);
 
                         IMessagingStub messagingStub = messagingStubFactory.create(address);
                         messagingStub.transmit(message, createFailureAction(message, retriesCount));

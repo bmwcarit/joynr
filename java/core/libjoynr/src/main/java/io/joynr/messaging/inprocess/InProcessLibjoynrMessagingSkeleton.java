@@ -40,7 +40,7 @@ public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSke
 
     @Override
     public void transmit(ImmutableMessage message, FailureAction failureAction) {
-        LOG.trace("<<< INCOMING <<< {}", message.toLogMessage());
+        LOG.trace("<<< INCOMING <<< {}", message);
 
         try {
             dispatcher.messageArrived(message);

@@ -60,7 +60,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
             }
         }
 
-        logger.debug("<<< INCOMING <<< {}", message.toLogMessage());
+        logger.debug("<<< INCOMING <<< {}", message);
         try {
             message.setReceivedFromGlobal(true);
             messageRouter.route(message);
