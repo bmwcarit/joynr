@@ -83,7 +83,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     protected final ProviderDirectory requestCallerDirectory;
     protected final ReplyCallerDirectory replyCallerDirectory;
-    protected final String discoveryProxyParticipantId;
 
     private MessagingStubFactory messagingStubFactory;
     private MessagingSkeletonFactory messagingSkeletonFactory;
@@ -135,7 +134,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         }
 
         ProxyBuilder<DiscoveryProxy> discoveryProxyBuilder = getProxyBuilder(systemServicesDomain, DiscoveryProxy.class);
-        discoveryProxyParticipantId = discoveryProxyBuilder.getParticipantId();
         localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyBuilder.build());
 
         messagingSkeletonFactory.start();
