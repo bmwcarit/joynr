@@ -119,30 +119,42 @@ public:
 	«typeName»(«typeName»&&) = default;
 
 	/** @brief Destructor */
-	«IF !hasExtendsDeclaration(type)»
-	virtual ~«typeName»() = default;
+	«IF isPolymorphic(type)»
+		«IF !hasExtendsDeclaration(type)»
+		virtual ~«typeName»() = default;
+		«ELSE»
+		~«typeName»() override = default;
+		«ENDIF»
 	«ELSE»
-	~«typeName»() override = default;
+	~«typeName»() = default;
 	«ENDIF»
 
 	/**
 	 * @brief Stringifies the class
 	 * @return stringified class content
 	 */
-	«IF !hasExtendsDeclaration(type)»
-	virtual std::string toString() const;
+	«IF isPolymorphic(type)»
+		«IF !hasExtendsDeclaration(type)»
+		virtual std::string toString() const;
+		«ELSE»
+		std::string toString() const override;
+		«ENDIF»
 	«ELSE»
-	std::string toString() const override;
+	std::string toString() const;
 	«ENDIF»
 
 	/**
 	 * @brief Returns a hash code value for this object
 	 * @return a hash code value for this object.
 	 */
-	 «IF !hasExtendsDeclaration(type)»
-	 virtual std::size_t hashCode() const;
+	«IF isPolymorphic(type)»
+		«IF !hasExtendsDeclaration(type)»
+		virtual std::size_t hashCode() const;
+		«ELSE»
+		std::size_t hashCode() const override;
+		«ENDIF»
 	«ELSE»
-	 std::size_t hashCode() const override;
+	std::size_t hashCode() const;
 	«ENDIF»
 
 	/**
@@ -165,9 +177,11 @@ public:
 	 */
 	bool operator==(const «typeName»& other) const
 	{
+	«IF isPolymorphic(type)»
 	    if (typeid(*this) != typeid(other)) {
 	        return false;
 	    }
+	«ENDIF»
 	    return this->equals(other);
 	}
 
@@ -182,6 +196,7 @@ public:
 	}
 	«ENDIF»
 
+	«IF isPolymorphic(type)»
 	/**
 	 * @return a copy of this object
 	 */
@@ -190,6 +205,7 @@ public:
 	 «ELSE»
 	 std::unique_ptr<«getRootType(type).typeName»> clone() const override;
 	 «ENDIF»
+	«ENDIF»
 
 	// getters
 	«FOR member: getMembers(type)»
@@ -226,13 +242,15 @@ protected:
 	 * @return true if objects are equal, false otherwise
 	 */
 	«IF hasExtendsDeclaration(type)»
-		bool equals(const «getRootType(type).typeName»& other) const override
+		bool equals(const «IF isPolymorphic(type)»«getRootType(type).typeName»& otherBase«ELSE»«typeName»& other«ENDIF») const«IF isPolymorphic(type)» override«ENDIF»
 		{
 			«IF getMembers(type).size > 0»
-				const «typeName»& otherDerived = static_cast<const «typeName»&>(other);
+				«IF isPolymorphic(type)»
+				const «typeName»& other = static_cast<const «typeName»&>(otherBase);
+				«ENDIF»
 				return
 				«FOR member: getMembers(type) SEPARATOR '&&'»
-					this->«member.joynrName» == otherDerived.«member.joynrName»
+					this->«member.joynrName» == other.«member.joynrName»
 				«ENDFOR»
 				&& «getExtendedType(type).joynrName»::equals(other);
 			«ELSE»
@@ -240,7 +258,7 @@ protected:
 			«ENDIF»
 		}
 	«ELSE»
-		virtual bool equals(const «typeName»& other) const
+		«IF isPolymorphic(type)»virtual «ENDIF»bool equals(const «typeName»& other) const
 		{
 			«IF getMembers(type).size > 0»
 				return
@@ -317,7 +335,7 @@ struct hash<«type.typeName»> {
 } // namespace std
 
 «val typeNameString = type.typeName.replace("::", ".")»
-«IF type.hasExtendsDeclaration»
+«IF type.hasExtendsDeclaration && isPolymorphic(type)»
 MUESLI_REGISTER_POLYMORPHIC_TYPE(«type.typeName», «getExtendedType(type).typeName», "«typeNameString»")
 «ELSE»
 MUESLI_REGISTER_TYPE(«type.typeName», "«typeNameString»")

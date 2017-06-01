@@ -1,5 +1,8 @@
 # joynr 0.27.0
 
+## API relevant changes
+* **[C++]** virtual methods (such as `clone()`) are only generated for polymorphic datatypes
+
 ## Other changes
 * **[C++]** The cluster controller can be configured in such a way that access control checks are performed
   only with locally provisioned or cached data. The configuration is done by using the
