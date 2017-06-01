@@ -56,7 +56,6 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
-import joynr.system.DiscoveryProxy;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.ProviderQos;
 
@@ -133,8 +132,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
             ((InProcessAddress) discoveryProviderAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         }
 
-        ProxyBuilder<DiscoveryProxy> discoveryProxyBuilder = getProxyBuilder(systemServicesDomain, DiscoveryProxy.class);
-        localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyBuilder.build());
+        localDiscoveryAggregator.forceQueryOfDiscoveryProxy();
 
         messagingSkeletonFactory.start();
     }

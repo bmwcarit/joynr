@@ -33,10 +33,11 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
-
+import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
+import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.DiscoveryAsync;
 import joynr.system.DiscoveryProvider;
@@ -55,12 +56,15 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
     private static final long NO_EXPIRY = Long.MAX_VALUE;
     private HashMap<String, DiscoveryEntryWithMetaInfo> provisionedDiscoveryEntries = new HashMap<>();
-    private DiscoveryProxy discoveryProxy;
+    private DiscoveryProxy defaultDiscoveryProxy;
+    private ProxyBuilderFactory proxyBuilderFactory;
+    private String systemServiceDomain;
 
     @Inject
     public LocalDiscoveryAggregator(@Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                     @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
-                                    @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId) {
+                                    @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId,
+                                    ProxyBuilderFactory proxyBuilderFactory) {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
         String defaultPublicKeyId = "";
@@ -86,19 +90,14 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                                                        NO_EXPIRY,
                                                                        defaultPublicKeyId,
                                                                        true));
-    }
 
-    public void setDiscoveryProxy(DiscoveryProxy discoveryProxy) {
-        this.discoveryProxy = discoveryProxy;
+        this.proxyBuilderFactory = proxyBuilderFactory;
+        this.systemServiceDomain = systemServicesDomain;
     }
 
     @Override
     public Future<Void> add(Callback<Void> callback, DiscoveryEntry discoveryEntry) {
-        if (discoveryProxy == null) {
-            throw new JoynrRuntimeException("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                    + "local capabilitites directory.");
-        }
-        return discoveryProxy.add(callback, discoveryEntry);
+        return getDefaultDiscoveryProxy().add(callback, discoveryEntry);
     }
 
     @Override
@@ -120,10 +119,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         final Future<DiscoveryEntryWithMetaInfo[]> discoveryEntryFuture = new Future<>();
         if (!missingDomains.isEmpty()) {
             logger.trace("Did not find entries for the following domains: {}", missingDomains);
-            if (discoveryProxy == null) {
-                throw new JoynrRuntimeException("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                        + "local capabilitites directory.");
-            }
+
             Callback<DiscoveryEntryWithMetaInfo[]> newCallback = new Callback<DiscoveryEntryWithMetaInfo[]>() {
 
                 @Override
@@ -142,7 +138,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
             };
             String[] missingDomainsArray = new String[missingDomains.size()];
             missingDomains.toArray(missingDomainsArray);
-            discoveryProxy.lookup(newCallback, missingDomainsArray, interfaceName, discoveryQos);
+            getDefaultDiscoveryProxy().lookup(newCallback, missingDomainsArray, interfaceName, discoveryQos);
         } else {
             resolveDiscoveryEntriesFutureWithEntries(discoveryEntryFuture, discoveryEntries, callback);
         }
@@ -160,21 +156,23 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
     @Override
     public Future<DiscoveryEntryWithMetaInfo> lookup(Callback<DiscoveryEntryWithMetaInfo> callback, String participantId) {
-
-        if (discoveryProxy == null) {
-            throw new JoynrRuntimeException("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                    + "local capabilitites directory.");
-        }
-        return discoveryProxy.lookup(callback, participantId);
-
+        return getDefaultDiscoveryProxy().lookup(callback, participantId);
     }
 
     @Override
     public Future<Void> remove(Callback<Void> callback, String participantId) {
-        if (discoveryProxy == null) {
-            throw new JoynrRuntimeException("LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                    + "local capabilitites directory.");
+        return getDefaultDiscoveryProxy().remove(callback, participantId);
+    }
+
+    public void forceQueryOfDiscoveryProxy() {
+        getDefaultDiscoveryProxy();
+    }
+
+    private DiscoveryProxy getDefaultDiscoveryProxy() {
+        if (defaultDiscoveryProxy == null) {
+            defaultDiscoveryProxy = proxyBuilderFactory.get(systemServiceDomain, DiscoveryProxy.class).build();
         }
-        return discoveryProxy.remove(callback, participantId);
+
+        return defaultDiscoveryProxy;
     }
 }
