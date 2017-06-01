@@ -1433,8 +1433,8 @@
 						<configuration>
 							<rules>
 								<requireMavenVersion>
-									<version>[3.1,3.4)</version>
-									<message>Wrong Maven version. You must use Maven 3.1.x to 3.3.x to build joynr.</message>
+									<version>[3.1,)</version>
+									<message>Wrong Maven version. You must use Maven 3.1.x or newer to build joynr.</message>
 								</requireMavenVersion>
 								<requireJavaVersion>
 									<version>1.8.0</version>
