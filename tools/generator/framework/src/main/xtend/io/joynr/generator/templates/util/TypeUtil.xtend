@@ -503,6 +503,18 @@ class TypeUtil {
 		return (datatype.eContainer as FTypeCollection).joynrName;
 	}
 
+	/*
+	 * Returns true if the type is polymorphic
+	 */
+	def boolean isPolymorphic(FCompoundType datatype) {
+		if (datatype instanceof FStructType) {
+			if (hasExtendsDeclaration(datatype)) {
+				return getExtendedType(datatype).polymorphic
+			}
+			return (datatype as FStructType).polymorphic;
+		}
+		return false
+	}
 
 	/*
 	 * Returns true if the member is a 1 Dimensional list, returns false if not. (2D Lists are not supported)
