@@ -22,6 +22,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.MessageDeserializer;
 import io.joynr.smrf.MessageDeserializerImpl;
@@ -39,12 +43,14 @@ public class ImmutableMessage extends Message {
     private final MessageDeserializer messageDeserializer;
     private final byte[] serializedMessage;
     private transient Map<String, Serializable> context = new HashMap<String, Serializable>();
+    private ObjectMapper objectMapper = null;
 
     public ImmutableMessage(byte[] serializedMessage) throws EncodingException, UnsuppportedVersionException {
         this.serializedMessage = serializedMessage.clone();
         messageDeserializer = new MessageDeserializerImpl(this.serializedMessage);
     }
 
+    @JsonIgnore
     public byte[] getSerializedMessage() {
         return serializedMessage.clone();
     }
@@ -71,10 +77,6 @@ public class ImmutableMessage extends Message {
 
     public String getType() {
         return messageDeserializer.getHeader(Message.HEADER_MSG_TYPE);
-    }
-
-    public String toLogMessage() {
-        return "";
     }
 
     public String getEffort() {
@@ -132,7 +134,20 @@ public class ImmutableMessage extends Message {
         return messageDeserializer.isSigned();
     }
 
+    @JsonIgnore
     public int getMessageSize() {
         return messageDeserializer.getMessageSize();
+    }
+
+    public String toLogMessage() {
+        if (objectMapper == null) {
+            objectMapper = new ObjectMapper();
+        }
+
+        try {
+            return objectMapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            return "";
+        }
     }
 }
