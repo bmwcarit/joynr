@@ -169,7 +169,7 @@ public:
 	 */
 	«typeName»& operator=(«typeName»&&) = default;
 
-	«IF !hasExtendsDeclaration(type)»
+	«IF !hasExtendsDeclaration(type) || !isPolymorphic(type)»
 	/**
 	 * @brief "equal to" operator
 	 * @param other reference to the object to compare to
@@ -177,12 +177,7 @@ public:
 	 */
 	bool operator==(const «typeName»& other) const
 	{
-	«IF isPolymorphic(type)»
-	    if (typeid(*this) != typeid(other)) {
-	        return false;
-	    }
-	«ENDIF»
-	    return this->equals(other);
+	    return this->equals(other, joynr::util::MAX_ULPS);
 	}
 
 	/**
@@ -227,6 +222,21 @@ public:
 		inline void set«joynrName.toFirstUpper»(const «member.typeName»& «joynrName») { this->«joynrName» = «joynrName»; }
 	«ENDFOR»
 
+	/**
+	 * @brief equals method
+	 * @param other reference to the object to compare to
+	 * @param maxUlps maximum number of ULPs (Units in the Last Place) that are tolerated when comparing to floating point values
+	 * @return true if objects are equal, false otherwise
+	 */
+	«IF isPolymorphic(type) && !hasExtendsDeclaration(type)»virtual «ENDIF»bool equals(const «IF isPolymorphic(type)»«getRootType(type).typeName»«ELSE»«typeName»«ENDIF»& other, std::size_t maxUlps) const«IF isPolymorphic(type) && hasExtendsDeclaration(type)» override«ENDIF»
+	{
+	«IF isPolymorphic(type)»
+		if (typeid(*this) != typeid(other)) {
+	        return false;
+		}
+	«ENDIF»
+		return this->equalsInternal(other, maxUlps);
+	}
 protected:
 	// printing «typeName» with google-test and google-mock
 	/**
@@ -242,7 +252,7 @@ protected:
 	 * @return true if objects are equal, false otherwise
 	 */
 	«IF hasExtendsDeclaration(type)»
-		bool equals(const «IF isPolymorphic(type)»«getRootType(type).typeName»& otherBase«ELSE»«typeName»& other«ENDIF») const«IF isPolymorphic(type)» override«ENDIF»
+		bool equalsInternal(const «IF isPolymorphic(type)»«getRootType(type).typeName»& otherBase«ELSE»«typeName»& other«ENDIF», std::size_t maxUlps) const«IF isPolymorphic(type)» override«ENDIF»
 		{
 			«IF getMembers(type).size > 0»
 				«IF isPolymorphic(type)»
@@ -250,24 +260,25 @@ protected:
 				«ENDIF»
 				return
 				«FOR member: getMembers(type) SEPARATOR '&&'»
-					joynr::util::compareValues(this->«member.joynrName», other.«member.joynrName»)
+					joynr::util::compareValues(this->«member.joynrName», other.«member.joynrName», maxUlps)
 				«ENDFOR»
-				&& «getExtendedType(type).joynrName»::equals(other);
+				&& «getExtendedType(type).joynrName»::equalsInternal(other, maxUlps);
 			«ELSE»
-				return «getExtendedType(type).joynrName»::equals(other);
+				return «getExtendedType(type).joynrName»::equalsInternal(other, maxUlps);
 			«ENDIF»
 		}
 	«ELSE»
-		«IF isPolymorphic(type)»virtual «ENDIF»bool equals(const «typeName»& other) const
+		«IF isPolymorphic(type)»virtual «ENDIF»bool equalsInternal(const «typeName»& other, std::size_t maxUlps) const
 		{
 			«IF getMembers(type).size > 0»
 				return
 				«FOR member: getMembers(type) SEPARATOR ' &&'»
-					joynr::util::compareValues(this->«member.joynrName», other.«member.joynrName»)
+					joynr::util::compareValues(this->«member.joynrName», other.«member.joynrName», maxUlps)
 				«ENDFOR»
 				;
 			«ELSE»
 				std::ignore = other;
+				std::ignore = maxUlps;
 				return true;
 			«ENDIF»
 		}

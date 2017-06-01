@@ -2,6 +2,9 @@
 
 ## API relevant changes
 * **[C++]** virtual methods (such as `clone()`) are only generated for polymorphic datatypes
+* **[C++]** floating point members of generated datatypes are now compared w.r.t. a specific precision;
+  operator== uses a fixed precision of `4` ULPs (Units in the Last Place); the `equals()` can be used to perform
+  comparison with a custom precision
 
 ## Other changes
 * **[C++]** The cluster controller can be configured in such a way that access control checks are performed
