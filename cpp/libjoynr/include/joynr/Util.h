@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -30,6 +31,7 @@
 #include <utility>
 #include <vector>
 
+#include <boost/math/special_functions/next.hpp>
 #include <boost/mpl/begin_end.hpp>
 #include <boost/mpl/deref.hpp>
 #include <boost/mpl/next_prior.hpp>
@@ -203,6 +205,34 @@ template <typename T>
 auto as_weak_ptr(std::shared_ptr<T> ptr)
 {
     return std::weak_ptr<T>(ptr);
+}
+
+/**
+ * calculate the number of Units in the Last Place between x and y
+ */
+template <typename FloatingPoint>
+FloatingPoint getAbsFloatDistance(FloatingPoint x, FloatingPoint y)
+{
+    return std::abs(boost::math::float_distance(x, y));
+}
+
+template <typename T>
+std::enable_if_t<std::is_floating_point<T>::value, bool> compareValues(
+        const T& x,
+        const T& y,
+        const std::uint32_t maxUlps = 4)
+{
+    return getAbsFloatDistance(x, y) <= maxUlps;
+}
+
+template <typename T>
+std::enable_if_t<!std::is_floating_point<T>::value, bool> compareValues(
+        const T& x,
+        const T& y,
+        const std::uint32_t maxUlps = 4)
+{
+    std::ignore = maxUlps;
+    return x == y;
 }
 
 } // namespace util
