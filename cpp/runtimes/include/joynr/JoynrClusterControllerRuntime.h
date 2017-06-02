@@ -150,7 +150,7 @@ protected:
 
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
-    std::unique_ptr<LocalDomainAccessController> localDomainAccessController;
+    std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
     ClusterControllerSettings clusterControllerSettings;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION

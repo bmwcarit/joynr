@@ -667,7 +667,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
         }
     }
 
-    localDomainAccessController = std::make_unique<joynr::LocalDomainAccessController>(
+    localDomainAccessController = std::make_shared<joynr::LocalDomainAccessController>(
             std::move(localDomainAccessStore), clusterControllerSettings.getUseOnlyLDAS());
 
     if (!clusterControllerSettings.getUseOnlyLDAS()) {
