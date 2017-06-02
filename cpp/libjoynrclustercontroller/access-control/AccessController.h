@@ -40,8 +40,8 @@ class LocalDomainAccessController;
 class AccessController : public IAccessController
 {
 public:
-    AccessController(LocalCapabilitiesDirectory& localCapabilitiesDirectory,
-                     LocalDomainAccessController& localDomainAccessController);
+    AccessController(std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
+                     std::shared_ptr<LocalDomainAccessController> localDomainAccessController);
 
     ~AccessController() override;
 
@@ -64,8 +64,8 @@ private:
     DISALLOW_COPY_AND_ASSIGN(AccessController);
     bool needsPermissionCheck(const ImmutableMessage& message);
 
-    LocalCapabilitiesDirectory& localCapabilitiesDirectory;
-    LocalDomainAccessController& localDomainAccessController;
+    std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
+    std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
     std::shared_ptr<ProviderRegistrationObserver> providerRegistrationObserver;
     std::vector<std::string> whitelistParticipantIds;
 
