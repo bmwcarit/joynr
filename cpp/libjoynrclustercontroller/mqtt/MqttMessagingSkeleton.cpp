@@ -20,14 +20,11 @@
 
 #include <smrf/exceptions.h>
 
-#include "joynr/DispatcherUtils.h"
 #include "joynr/IMessageRouter.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/Message.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/serializer/Serializer.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 #include "libjoynrclustercontroller/mqtt/MqttReceiver.h"
 
@@ -91,41 +88,6 @@ void MqttMessagingSkeleton::transmit(
         std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    const std::string& messageType = message->getType();
-
-    if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST() ||
-        messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST() ||
-        messageType == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST() ||
-        messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST()) {
-
-        boost::optional<std::string> optionalReplyTo = message->getReplyTo();
-
-        if (!optionalReplyTo) {
-            JOYNR_LOG_ERROR(logger,
-                            "message {} did not contain replyTo header, discarding",
-                            message->getId());
-            return;
-        }
-        const std::string& replyTo = *optionalReplyTo;
-        try {
-            using system::RoutingTypes::MqttAddress;
-            MqttAddress address;
-            joynr::serializer::deserializeFromJson(address, replyTo);
-            // because the message is received via global transport, isGloballyVisible must be true
-            const bool isGloballyVisible = true;
-            messageRouter.addNextHop(message->getSender(),
-                                     std::make_shared<const MqttAddress>(address),
-                                     isGloballyVisible);
-        } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_FATAL(logger,
-                            "could not deserialize MqttAddress from {} - error: {}",
-                            replyTo,
-                            e.what());
-            // do not try to route the message if address is not valid
-            return;
-        }
-    }
-
     message->setReceivedFromGlobal(true);
 
     try {

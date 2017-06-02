@@ -258,12 +258,15 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
 void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
                                     std::uint32_t tryCount)
 {
+    assert(message);
     // Validate the message if possible
     if (securityManager != nullptr && !securityManager->validate(*message)) {
         std::string errorMessage("messageId " + message->getId() + " failed validation");
         JOYNR_LOG_ERROR(logger, errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
+
+    registerGlobalRoutingEntryIfRequired(*message);
 
     JOYNR_LOG_TRACE(logger, "Route message with Id {}", message->getId());
     // search for the destination addresses

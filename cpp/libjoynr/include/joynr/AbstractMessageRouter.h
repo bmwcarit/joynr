@@ -122,6 +122,7 @@ protected:
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
     getDestinationAddresses(const ImmutableMessage& message);
 
+    void registerGlobalRoutingEntryIfRequired(const ImmutableMessage& message);
     virtual void routeInternal(std::shared_ptr<ImmutableMessage> message,
                                std::uint32_t tryCount) = 0;
 

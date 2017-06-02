@@ -152,6 +152,47 @@ void AbstractMessageRouter::checkExpiryDate(const ImmutableMessage& message)
     }
 }
 
+void AbstractMessageRouter::registerGlobalRoutingEntryIfRequired(const ImmutableMessage& message)
+{
+    if (!message.isReceivedFromGlobal()) {
+        return;
+    }
+
+    const std::string& messageType = message.getType();
+
+    if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST()) {
+
+        boost::optional<std::string> optionalReplyTo = message.getReplyTo();
+
+        if (!optionalReplyTo) {
+            std::string errorMessage("message " + message.getId() +
+                                     " did not contain replyTo header, discarding");
+            JOYNR_LOG_ERROR(logger, errorMessage);
+            throw exceptions::JoynrMessageNotSentException(errorMessage);
+        }
+        const std::string& replyTo = *optionalReplyTo;
+        try {
+            using system::RoutingTypes::Address;
+            std::shared_ptr<const Address> address;
+            joynr::serializer::deserializeFromJson(address, replyTo);
+
+            // because the message is received via global transport (isGloballyVisible=true),
+            // isGloballyVisible must be true
+            const bool isGloballyVisible = true;
+            addNextHop(message.getSender(), address, isGloballyVisible);
+        } catch (const std::invalid_argument& e) {
+            std::string errorMessage("could not deserialize Address from " + replyTo +
+                                     " - error: " + e.what());
+            JOYNR_LOG_FATAL(logger, errorMessage);
+            // do not try to route the message if address is not valid
+            throw exceptions::JoynrMessageNotSentException(errorMessage);
+        }
+    }
+}
+
 void AbstractMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount)
 {
     assert(messagingStubFactory);
