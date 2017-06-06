@@ -127,7 +127,7 @@ AbstractMessageRouter::getDestinationAddresses(const ImmutableMessage& message)
             std::shared_ptr<const joynr::system::RoutingTypes::Address> globalTransport =
                     addressCalculator->compute(message);
             if (globalTransport) {
-                addresses.insert(globalTransport);
+                addresses.insert(std::move(globalTransport));
             }
         }
     } else {
