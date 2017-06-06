@@ -973,13 +973,6 @@ public:
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
 };
 
-
-class MockIRequestCallerDirectory : public joynr::IRequestCallerDirectory {
-public:
-    MOCK_METHOD1(lookupRequestCaller, std::shared_ptr<joynr::RequestCaller>(const std::string& participantId));
-    MOCK_METHOD1(containsRequestCaller, bool(const std::string& participantId));
-};
-
 class MockSubscriptionManager : public joynr::SubscriptionManager {
 public:
     using SubscriptionManager::SubscriptionManager;
