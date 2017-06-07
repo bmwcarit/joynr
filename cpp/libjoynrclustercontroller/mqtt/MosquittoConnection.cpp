@@ -75,6 +75,7 @@ MosquittoConnection::~MosquittoConnection()
 
 void MosquittoConnection::on_disconnect(int rc)
 {
+    isConnected = false;
     if (rc == 0) {
         JOYNR_LOG_DEBUG(logger, "Disconnected from tcp://{}:{}", host, port);
     } else {
