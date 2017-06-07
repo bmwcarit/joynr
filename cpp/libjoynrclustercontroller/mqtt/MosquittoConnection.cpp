@@ -31,7 +31,7 @@ INIT_LOGGER(MosquittoConnection);
 MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSettings,
                                          const ClusterControllerSettings& ccSettings,
                                          const std::string& clientId)
-        : mosquittopp(clientId.c_str()),
+        : mosquittopp(clientId.c_str(), false),
           messagingSettings(messagingSettings),
           host(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost()),
           port(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort()),
