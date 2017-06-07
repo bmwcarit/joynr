@@ -41,6 +41,7 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
           additionalTopics(),
           additionalTopicsMutex(),
           isConnected(false),
+          isInitialConnection(true),
           isRunning(false),
           isChannelIdRegistered(false),
           subscribedToChannelTopic(false),
@@ -206,11 +207,16 @@ void MosquittoConnection::on_connect(int rc)
     } else {
         JOYNR_LOG_DEBUG(logger, "Mosquitto Connection established");
         isConnected = true;
-        restoreSubscriptions();
+
+        // The MQTT broker will reestablish subscriptions based on the client ID.
+        if (isInitialConnection) {
+            isInitialConnection = false;
+            createSubscriptions();
+        }
     }
 }
 
-void MosquittoConnection::restoreSubscriptions()
+void MosquittoConnection::createSubscriptions()
 {
     while (!isChannelIdRegistered && isRunning) {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));

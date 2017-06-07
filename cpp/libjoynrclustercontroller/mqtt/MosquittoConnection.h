@@ -84,7 +84,7 @@ private:
     void on_message(const mosquitto_message* message) final;
     void on_publish(int mid) final;
     void on_subscribe(int mid, int qos_count, const int* granted_qos) final;
-    void restoreSubscriptions();
+    void createSubscriptions();
     void subscribeToTopicInternal(const std::string& topic, const bool isChannelTopic = false);
 
     const MessagingSettings& messagingSettings;
@@ -101,6 +101,7 @@ private:
     std::recursive_mutex additionalTopicsMutex;
 
     std::atomic<bool> isConnected;
+    std::atomic<bool> isInitialConnection;
     std::atomic<bool> isRunning;
     std::atomic<bool> isChannelIdRegistered;
     std::atomic<bool> subscribedToChannelTopic;
