@@ -19,8 +19,9 @@
 
 define([
     "joynr/messaging/channel/ChannelMessagingSkeleton",
-    "joynr/system/RoutingTypes/ChannelAddress"
-], function(ChannelMessagingSkeleton, ChannelAddress) {
+    "joynr/system/RoutingTypes/ChannelAddress",
+    "joynr/messaging/JoynrMessage"
+], function(ChannelMessagingSkeleton, ChannelAddress, JoynrMessage) {
 
     describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", function() {
 
@@ -88,6 +89,31 @@ define([
                     done();
                 });
 
+        function setsReceivedFromGlobal(message) {
+            messageRouterSpy.route.calls.reset();
+            expect(message.isReceivedFromGlobal).toEqual(false);
+            expect(messageRouterSpy.route).not.toHaveBeenCalled();
+            channelMessagingSkeleton.receiveMessage(message);
+            expect(messageRouterSpy.route).toHaveBeenCalledTimes(1);
+            expect(messageRouterSpy.route.calls.argsFor(0)[0].isReceivedFromGlobal).toEqual(true);
+        }
+
+        it("sets receivedFromGlobal", function() {
+            var requestMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            });
+            setsReceivedFromGlobal(requestMessage);
+
+            var multicastMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+            });
+            setsReceivedFromGlobal(multicastMessage);
+
+            var subscriptionRequestMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
+            });
+            setsReceivedFromGlobal(subscriptionRequestMessage);
+        });
     });
 
 });

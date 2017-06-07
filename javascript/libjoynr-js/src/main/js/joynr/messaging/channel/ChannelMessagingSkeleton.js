@@ -21,8 +21,8 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
     "joynr/util/Typing",
     "joynr/types/TypeRegistrySingleton",
     "joynr/system/LoggerFactory",
-    "joynr/system/RoutingTypes/ChannelAddress"
-], function(Typing, TypeRegistrySingleton, LoggerFactory, ChannelAddress) {
+    "joynr/messaging/JoynrMessage"
+], function(Typing, TypeRegistrySingleton, LoggerFactory, JoynrMessage) {
 
     /**
      * @name ChannelMessagingSkeleton
@@ -54,6 +54,8 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
          */
         this.receiveMessage =
                 function receiveMessage(joynrMessage) {
+                    joynrMessage = new JoynrMessage(joynrMessage);
+                    joynrMessage.setReceivedFromGlobal(true);
                     var replyToAddress;
                     if (joynrMessage.replyChannelId !== undefined) {
                         try {

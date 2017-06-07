@@ -18,12 +18,10 @@
  */
 
 define("joynr/messaging/mqtt/MqttMessagingSkeleton", [
-    "joynr/messaging/JoynrMessage",
     "joynr/util/UtilInternal",
-    "joynr/system/LoggerFactory",
     "joynr/util/Typing",
     "joynr/types/TypeRegistrySingleton"
-], function(JoynrMessage, Util, LoggerFactory, Typing, TypeRegistrySingleton) {
+], function(Util, Typing, TypeRegistrySingleton) {
 
     var typeRegistry = TypeRegistrySingleton.getInstance();
 
@@ -50,9 +48,7 @@ define("joynr/messaging/mqtt/MqttMessagingSkeleton", [
 
                 settings.client.onmessage =
                         function(topic, message) {
-                            if (JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type) {
-                                message.setReceivedFromGlobal(true);
-                            }
+                            message.setReceivedFromGlobal(true);
                             var replyToMqttAddress = message.replyChannelId;
                             if (!Util.checkNullUndefined(replyToMqttAddress)) {
                                 settings.messageRouter.addNextHop(
