@@ -24,6 +24,7 @@
 #include <string>
 #include <thread>
 #include <unordered_set>
+#include <mutex>
 
 #include <mosquittopp.h>
 #include <smrf/ByteVector.h>
@@ -70,7 +71,9 @@ public:
     void unsubscribeFromTopic(const std::string& topic);
     void registerChannelId(const std::string& channelId);
     void registerReceiveCallback(std::function<void(smrf::ByteVector&&)> onMessageReceived);
+    void registerReadyToSendChangedCallback(std::function<void(bool)> readyToSendCallback);
     bool isSubscribedToChannelTopic() const;
+    bool isReadyToSend() const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoConnection);
@@ -86,6 +89,7 @@ private:
     void on_subscribe(int mid, int qos_count, const int* granted_qos) final;
     void createSubscriptions();
     void subscribeToTopicInternal(const std::string& topic, const bool isChannelTopic = false);
+    void setReadyToSend(bool readyToSend);
 
     const MessagingSettings& messagingSettings;
     const std::string host;
@@ -105,8 +109,11 @@ private:
     std::atomic<bool> isRunning;
     std::atomic<bool> isChannelIdRegistered;
     std::atomic<bool> subscribedToChannelTopic;
+    std::atomic<bool> readyToSend;
 
     std::function<void(smrf::ByteVector&&)> onMessageReceived;
+    std::mutex onReadyToSendChangedMutex;
+    std::function<void(bool)> onReadyToSendChanged;
 
     std::thread thread;
 
