@@ -438,8 +438,6 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                             "mqtt MessageSender");
 
             mqttMessageSender = std::make_shared<MqttSender>(mosquittoConnection);
-
-            mqttMessageSender->registerReceiver(mqttMessageReceiver);
         }
 
         messagingStubFactory->registerStubFactory(

@@ -52,7 +52,7 @@ void MqttSender::sendMessage(
         return;
     }
 
-    if (!receiver->isConnected()) {
+    if (!mosquittoConnection->isSubscribedToChannelTopic()) {
         const std::string msg = "MqttSender is not connected, delaying message";
         JOYNR_LOG_DEBUG(logger, msg);
         onFailure(exceptions::JoynrDelayMessageException(std::chrono::seconds(2), msg));
@@ -77,11 +77,6 @@ void MqttSender::sendMessage(
     const smrf::ByteVector& rawMessage = message->getSerializedMessage();
     mosquittoConnection->publishMessage(
             topic, qosLevel, onFailure, rawMessage.size(), rawMessage.data());
-}
-
-void MqttSender::registerReceiver(std::shared_ptr<ITransportMessageReceiver> receiver)
-{
-    this->receiver = std::move(receiver);
 }
 
 } // namespace joynr

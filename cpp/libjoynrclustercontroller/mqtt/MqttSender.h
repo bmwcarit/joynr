@@ -46,8 +46,6 @@ public:
                      const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
-    void registerReceiver(std::shared_ptr<ITransportMessageReceiver> receiver) override;
-
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttSender);
 
