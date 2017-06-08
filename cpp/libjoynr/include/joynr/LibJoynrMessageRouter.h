@@ -84,7 +84,7 @@ public:
 
     ~LibJoynrMessageRouter() override;
 
-    void routeInternal(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0);
+    void routeInternal(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) final;
 
     /*
      * Implement methods from IMessageRouter

@@ -91,8 +91,7 @@ public:
 
     ~CcMessageRouter() override;
 
-    void routeInternal(std::shared_ptr<ImmutableMessage> message,
-                       std::uint32_t tryCount) final override;
+    void routeInternal(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount) final;
 
     /*
      * Implement methods from IMessageRouter
