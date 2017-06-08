@@ -44,8 +44,6 @@ class MqttReceiver;
 class MqttMessagingSkeleton : public IMessagingMulticastSubscriber
 {
 public:
-    static const std::string MQTT_MULTI_LEVEL_WILDCARD;
-
     /*
      * Make multicastId mqtt compliant: convert Kleene star to Hash symbol.
      * This method assumes the multicastId is valid i.e. the Kleene star appears only at the end.

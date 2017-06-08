@@ -33,12 +33,11 @@ namespace joynr
 
 INIT_LOGGER(MqttMessagingSkeleton);
 
-const std::string MqttMessagingSkeleton::MQTT_MULTI_LEVEL_WILDCARD("#");
-
 std::string MqttMessagingSkeleton::translateMulticastWildcard(std::string topic)
 {
+    static constexpr char MQTT_MULTI_LEVEL_WILDCARD = '#';
     if (topic.length() > 0 && topic.back() == util::MULTI_LEVEL_WILDCARD[0]) {
-        topic.back() = MQTT_MULTI_LEVEL_WILDCARD[0];
+        topic.back() = MQTT_MULTI_LEVEL_WILDCARD;
     }
     return topic;
 }
