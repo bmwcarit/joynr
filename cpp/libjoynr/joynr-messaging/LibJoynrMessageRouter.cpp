@@ -329,33 +329,42 @@ void LibJoynrMessageRouter::addMulticastReceiver(
     }
 
     std::function<void()> onSuccessWrapper =
-            [this, multicastId, subscriberParticipantId, onSuccess]() {
+            [ this, multicastId, subscriberParticipantId, onSuccess = std::move(onSuccess) ]()
+    {
         multicastReceiverDirectory.registerMulticastReceiver(multicastId, subscriberParticipantId);
         JOYNR_LOG_TRACE(logger,
                         "added multicast receiver={} for multicastId={}",
                         subscriberParticipantId,
                         multicastId);
-        onSuccess();
+        if (onSuccess) {
+            onSuccess();
+        }
     };
     std::function<void(const exceptions::JoynrRuntimeException&)> onErrorWrapper =
-            [onError, subscriberParticipantId, multicastId](
-                    const exceptions::JoynrRuntimeException& error) {
+            [ onError = std::move(onError), subscriberParticipantId, multicastId ](
+                    const exceptions::JoynrRuntimeException& error)
+    {
         JOYNR_LOG_ERROR(logger,
                         "error adding multicast receiver={} for multicastId={}, error: {}",
                         subscriberParticipantId,
                         multicastId,
                         error.getMessage());
-        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        if (onError) {
+            onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        }
     };
 
     if (!providerAddress) {
         // try to resolve destination address via parent message router
-        auto onResolved = [this,
-                           multicastId,
-                           subscriberParticipantId,
-                           providerParticipantId,
-                           onSuccessWrapper,
-                           onErrorWrapper](const bool& resolved) {
+        auto onResolved = [
+            this,
+            multicastId,
+            subscriberParticipantId,
+            providerParticipantId,
+            onSuccessWrapper = std::move(onSuccessWrapper),
+            onErrorWrapper
+        ](const bool& resolved)
+        {
             if (resolved) {
                 addProvisionedNextHop(
                         providerParticipantId, parentAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
@@ -423,8 +432,9 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
     }
 
     std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
-            [onError, subscriberParticipantId, multicastId](
-                    const exceptions::JoynrException& error) {
+            [ onError = std::move(onError), subscriberParticipantId, multicastId ](
+                    const exceptions::JoynrException& error)
+    {
         JOYNR_LOG_ERROR(logger,
                         "error removing multicast receiver={} for multicastId={}, error: {}",
                         subscriberParticipantId,

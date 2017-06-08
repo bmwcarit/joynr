@@ -494,24 +494,30 @@ void CcMessageRouter::addMulticastReceiver(
     }
 
     std::function<void()> onSuccessWrapper =
-            [this, multicastId, subscriberParticipantId, onSuccess]() {
+            [ this, multicastId, subscriberParticipantId, onSuccess = std::move(onSuccess) ]()
+    {
         multicastReceiverDirectory.registerMulticastReceiver(multicastId, subscriberParticipantId);
         JOYNR_LOG_TRACE(logger,
                         "added multicast receiver={} for multicastId={}",
                         subscriberParticipantId,
                         multicastId);
         saveMulticastReceiverDirectory();
-        onSuccess();
+        if (onSuccess) {
+            onSuccess();
+        }
     };
     std::function<void(const exceptions::JoynrRuntimeException&)> onErrorWrapper =
-            [onError, subscriberParticipantId, multicastId](
-                    const exceptions::JoynrRuntimeException& error) {
+            [ onError = std::move(onError), subscriberParticipantId, multicastId ](
+                    const exceptions::JoynrRuntimeException& error)
+    {
         JOYNR_LOG_ERROR(logger,
                         "error adding multicast receiver={} for multicastId={}, error: {}",
                         subscriberParticipantId,
                         multicastId,
                         error.getMessage());
-        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        if (onError) {
+            onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        }
     };
 
     if (!routingEntry) {
@@ -526,9 +532,9 @@ void CcMessageRouter::addMulticastReceiver(
     registerMulticastReceiver(multicastId,
                               subscriberParticipantId,
                               providerParticipantId,
-                              providerAddress,
-                              onSuccessWrapper,
-                              onErrorWrapper);
+                              std::move(providerAddress),
+                              std::move(onSuccessWrapper),
+                              std::move(onErrorWrapper));
 }
 
 void CcMessageRouter::removeMulticastReceiver(
@@ -553,7 +559,9 @@ void CcMessageRouter::removeMulticastReceiver(
                 "No routing entry for multicast provider (providerParticipantId=" +
                 providerParticipantId + ") found.");
         JOYNR_LOG_ERROR(logger, exception.getMessage());
-        onError(exception);
+        if (onError) {
+            onError(exception);
+        }
         return;
     } else {
         const auto providerAddress = routingEntry->address;
@@ -567,7 +575,9 @@ void CcMessageRouter::removeMulticastReceiver(
                             "provider (address=" +
                                     providerAddress->toString() + ").");
         }
-        onSuccess();
+        if (onSuccess) {
+            onSuccess();
+        }
     }
 }
 
