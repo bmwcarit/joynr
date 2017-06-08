@@ -223,6 +223,7 @@ void LocalCapabilitiesDirectory::remove(const types::DiscoveryEntry& discoveryEn
         capabilitiesClient->remove(discoveryEntry.getParticipantId());
     }
     informObserversOnRemove(discoveryEntry);
+    messageRouter.removeNextHop(discoveryEntry.getParticipantId());
 }
 
 void LocalCapabilitiesDirectory::removeFromGloballyRegisteredCapabilities(
