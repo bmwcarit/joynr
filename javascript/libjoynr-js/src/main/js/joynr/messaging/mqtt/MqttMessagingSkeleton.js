@@ -18,12 +18,11 @@
  */
 
 define("joynr/messaging/mqtt/MqttMessagingSkeleton", [
-    "joynr/util/UtilInternal",
     "joynr/util/Typing",
-    "joynr/types/TypeRegistrySingleton"
-], function(Util, Typing, TypeRegistrySingleton) {
-
-    var typeRegistry = TypeRegistrySingleton.getInstance();
+    "joynr/system/LoggerFactory",
+    "joynr/system/DiagnosticTags",
+    "joynr/exceptions/JoynrException"
+], function(Typing, LoggerFactory, DiagnosticTags, JoynrException) {
 
     /**
      * @constructor MqttMessagingSkeleton
@@ -42,23 +41,22 @@ define("joynr/messaging/mqtt/MqttMessagingSkeleton", [
                         "settings.messageRouter");
                 Typing.checkProperty(settings.address, "MqttAddress", "settings.address");
 
+                var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
+
                 var multicastSubscriptionCount = {};
-                // because the message is received via global transport, isGloballyVisible must be true
-                var isGloballyVisible = true;
 
                 settings.client.onmessage =
                         function(topic, message) {
                             message.setReceivedFromGlobal(true);
-                            var replyToMqttAddress = message.replyChannelId;
-                            if (!Util.checkNullUndefined(replyToMqttAddress)) {
-                                settings.messageRouter.addNextHop(
-                                        message.from,
-                                        Typing.augmentTypes(
-                                                JSON.parse(replyToMqttAddress),
-                                                typeRegistry),
-                                        isGloballyVisible);
+                            try {
+                                settings.messageRouter.route(message);
+                            } catch (e) {
+                                log.error("unable to process message: "
+                                    + e
+                                    + (e instanceof JoynrException ? " " + e.detailMessage : "")
+                                    + " \nmessge: "
+                                    + DiagnosticTags.forJoynrMessage(message));
                             }
-                            settings.messageRouter.route(message);
                         };
 
                 settings.client.subscribe(settings.address.topic + "/#");

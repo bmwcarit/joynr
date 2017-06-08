@@ -70,24 +70,20 @@ define([
             done();
         });
 
-        it(
-                "event calls through to messageRouter",
-                function(done) {
-                    expect(messageRouterSpy.route).not.toHaveBeenCalled();
-                    channelMessagingSkeleton.receiveMessage(joynrMessage1);
-                    expect(messageRouterSpy.route).toHaveBeenCalledWith(joynrMessage1);
-                    expect(messageRouterSpy.addNextHop).not.toHaveBeenCalled();
-                    expect(messageRouterSpy.route.calls.count()).toBe(1);
-                    channelMessagingSkeleton.receiveMessage(joynrMessage2);
-                    expect(messageRouterSpy.route).toHaveBeenCalledWith(joynrMessage2);
-                    expect(messageRouterSpy.addNextHop).toHaveBeenCalled();
-                    expect(messageRouterSpy.addNextHop.calls.mostRecent().args[0]).toBe(
-                            joynrMessage2.from);
-                    expect(messageRouterSpy.addNextHop.calls.mostRecent().args[1].channelId).toBe(
-                            channelAddress.channelId);
-                    expect(messageRouterSpy.route.calls.count()).toBe(2);
-                    done();
-                });
+        it("event calls through to messageRouter", function(done) {
+            expect(messageRouterSpy.route).not.toHaveBeenCalled();
+
+            channelMessagingSkeleton.receiveMessage(joynrMessage1);
+            expect(messageRouterSpy.route).toHaveBeenCalledWith(joynrMessage1);
+            expect(messageRouterSpy.route.calls.count()).toBe(1);
+
+            channelMessagingSkeleton.receiveMessage(joynrMessage2);
+            expect(messageRouterSpy.route).toHaveBeenCalledWith(joynrMessage2);
+            expect(messageRouterSpy.route.calls.count()).toBe(2);
+
+            expect(messageRouterSpy.addNextHop).not.toHaveBeenCalled();
+            done();
+        });
 
         function setsReceivedFromGlobal(message) {
             messageRouterSpy.route.calls.reset();

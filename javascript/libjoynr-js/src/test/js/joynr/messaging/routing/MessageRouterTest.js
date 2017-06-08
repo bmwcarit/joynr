@@ -54,7 +54,9 @@ define([
             describe(
                     "libjoynr-js.joynr.messaging.routing.MessageRouter",
                     function() {
-                        var store, typeRegistry, receiverParticipantId, receiverParticipantId2, joynrMessage, joynrMessage2;
+                        var store, typeRegistry;
+                        var senderParticipantId, receiverParticipantId, receiverParticipantId2;
+                        var joynrMessage, joynrMessage2;
                         var myChannelId, persistencySpy, otherChannelId, resultObj, address;
                         var messagingStubSpy, messagingSkeletonSpy, messagingStubFactorySpy, messagingSkeletonFactorySpy;
                         var messageQueueSpy, messageRouter, routingProxySpy, parentMessageRouterAddress, incomingAddress;
@@ -98,6 +100,7 @@ define([
                             parentMessageRouterAddress = new BrowserAddress({
                                 windowId : "parentMessageRouterAddress"
                             });
+                            senderParticipantId = "testSenderParticipantId_" + Date.now();
                             receiverParticipantId = "TestMessageRouter_participantId_" + Date.now();
                             receiverParticipantId2 =
                                     "TestMessageRouter_delayedParticipantId_" + Date.now();
@@ -106,7 +109,7 @@ define([
                             });
                             joynrMessage.expiryDate = 9360686108031;
                             joynrMessage.to = receiverParticipantId;
-                            joynrMessage.from = "senderParticipantId";
+                            joynrMessage.from = senderParticipantId;
                             joynrMessage.payload = "hello";
 
                             joynrMessage2 = new JoynrMessage({
@@ -405,6 +408,115 @@ define([
                             done();
                         });
 
+                        function routeMessageWithValidReplyToAddressCallsAddNextHop() {
+                            messageRouter.addNextHop.calls.reset();
+                            expect(messageRouter.addNextHop).not.toHaveBeenCalled();
+                            var channelId = "testChannelId_" + Date.now();
+                            var channelAddress = new ChannelAddress({
+                                messagingEndpointUrl : "http://testurl.com",
+                                channelId : channelId
+                            });
+                            joynrMessage.replyChannelId = JSON.stringify(channelAddress);
+
+                            messageRouter.route(joynrMessage);
+
+                            expect(messageRouter.addNextHop).toHaveBeenCalledTimes(1);
+                            expect(messageRouter.addNextHop.calls.argsFor(0)[0])
+                                    .toBe(senderParticipantId);
+                            expect(messageRouter.addNextHop.calls.argsFor(0)[1].channelId)
+                                    .toBe(channelId);
+                            expect(messageRouter.addNextHop.calls.argsFor(0)[2]).toBe(true);
+                        }
+
+                        it("route calls addNextHop for request messages received from global", function(done) {
+                            spyOn(messageRouter, "addNextHop");
+                            joynrMessage.isReceivedFromGlobal = true;
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST;
+                            routeMessageWithValidReplyToAddressCallsAddNextHop();
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+                            routeMessageWithValidReplyToAddressCallsAddNextHop();
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST;
+                            routeMessageWithValidReplyToAddressCallsAddNextHop();
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
+                            routeMessageWithValidReplyToAddressCallsAddNextHop();
+
+                            done();
+                        });
+
+                        function routeMessageWithValidReplyToAddressDoesNotCallAddNextHop() {
+                            messageRouter.addNextHop.calls.reset();
+                            var channelId = "testChannelId_" + Date.now();
+                            var channelAddress = new ChannelAddress({
+                                messagingEndpointUrl : "http://testurl.com",
+                                channelId : channelId
+                            });
+                            joynrMessage.replyChannelId = JSON.stringify(channelAddress);
+
+                            messageRouter.route(joynrMessage);
+
+                            expect(messageRouter.addNextHop).not.toHaveBeenCalled();
+                        }
+
+                        it("route does NOT call addNextHop for request messages NOT received from global", function(done) {
+                            spyOn(messageRouter, "addNextHop");
+                            joynrMessage.isReceivedFromGlobal = false;
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST;
+                            routeMessageWithValidReplyToAddressDoesNotCallAddNextHop();
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+                            routeMessageWithValidReplyToAddressDoesNotCallAddNextHop();
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST;
+                            routeMessageWithValidReplyToAddressDoesNotCallAddNextHop();
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
+                            routeMessageWithValidReplyToAddressDoesNotCallAddNextHop();
+
+                            done();
+                        });
+
+                        it("route does NOT call addNextHop for non request messages received from global", function(done) {
+                            spyOn(messageRouter, "addNextHop");
+                            joynrMessage.isReceivedFromGlobal = true;
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY;
+                            routeMessageWithValidReplyToAddressDoesNotCallAddNextHop();
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_REPLY;
+                            routeMessageWithValidReplyToAddressDoesNotCallAddNextHop();
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY;
+                            routeMessageWithValidReplyToAddressDoesNotCallAddNextHop();
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION;
+                            routeMessageWithValidReplyToAddressDoesNotCallAddNextHop();
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST;
+                            routeMessageWithValidReplyToAddressDoesNotCallAddNextHop();
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP;
+                            routeMessageWithValidReplyToAddressDoesNotCallAddNextHop();
+
+                            done();
+                        });
+
+                        it("route does NOT call addNextHop for request messages received from global without replyTo address", function(done) {
+                            spyOn(messageRouter, "addNextHop");
+                            joynrMessage.isReceivedFromGlobal = true;
+
+                            joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST;
+
+                            messageRouter.route(joynrMessage);
+
+                            expect(messageRouter.addNextHop).not.toHaveBeenCalled();
+
+                            done();
+                        });
 
                         describe("route multicast messages", function() {
                             var parameters;

@@ -19,10 +19,11 @@
 
 define("joynr/messaging/channel/ChannelMessagingSkeleton", [
     "joynr/util/Typing",
-    "joynr/types/TypeRegistrySingleton",
     "joynr/system/LoggerFactory",
+    "joynr/system/DiagnosticTags",
+    "joynr/exceptions/JoynrException",
     "joynr/messaging/JoynrMessage"
-], function(Typing, TypeRegistrySingleton, LoggerFactory, JoynrMessage) {
+], function(Typing, LoggerFactory, DiagnosticTags, JoynrException, JoynrMessage) {
 
     /**
      * @name ChannelMessagingSkeleton
@@ -40,9 +41,6 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
         }
 
         var messageRouter = settings.messageRouter;
-        var typeRegistry = TypeRegistrySingleton.getInstance();
-        // participants from ChannelMessagingSkeleton are always globally visible
-        var isGloballyVisible = true;
 
         /**
          * Lets all listeners receive a message
@@ -56,25 +54,15 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
                 function receiveMessage(joynrMessage) {
                     joynrMessage = new JoynrMessage(joynrMessage);
                     joynrMessage.setReceivedFromGlobal(true);
-                    var replyToAddress;
-                    if (joynrMessage.replyChannelId !== undefined) {
-                        try {
-                            replyToAddress =
-                                    Typing.augmentTypes(
-                                            JSON.parse(joynrMessage.replyChannelId),
-                                            typeRegistry);
-                            messageRouter.addNextHop(
-                                    joynrMessage.from,
-                                    replyToAddress,
-                                    isGloballyVisible);
-                        } catch (e) {
-                            // message dropped if unknown replyTo address type
-                            log.error("unable to process message: replyTo address type unknown: "
-                                + joynrMessage.replyChannelId);
-                            return;
-                        }
+                    try {
+                        messageRouter.route(joynrMessage);
+                    } catch (e) {
+                        log.error("unable to process message: "
+                            + e
+                            + (e instanceof JoynrException ? " " + e.detailMessage : "")
+                            + " \nmessge: "
+                            + DiagnosticTags.forJoynrMessage(joynrMessage));
                     }
-                    messageRouter.route(joynrMessage);
                 };
 
     }

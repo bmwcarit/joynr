@@ -32,6 +32,7 @@ define(
             "joynr/messaging/MessageReplyToAddressCalculator",
             "joynr/exceptions/JoynrException",
             "joynr/util/Typing",
+            "joynr/util/UtilInternal",
             "joynr/util/JSONSerializer",
         ],
         function(Promise,
@@ -43,6 +44,7 @@ define(
                 MessageReplyToAddressCalculator,
                 JoynrException,
                 Typing,
+                Util,
                 JSONSerializer) {
 
             /**
@@ -454,6 +456,30 @@ define(
                     }
                 }
 
+                function registerGlobalRoutingEntryIfRequired(joynrMessage) {
+                    if (!joynrMessage.isReceivedFromGlobal) {
+                        return;
+                    }
+
+                    var type = joynrMessage.type;
+                    if (type === JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST ||
+                            type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
+                            type === JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
+                            type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
+                        var replyToAddress = joynrMessage.replyChannelId;
+                        if (!Util.checkNullUndefined(replyToAddress)) {
+                            // because the message is received via global transport, isGloballyVisible must be true
+                            var isGloballyVisible = true;
+                            that.addNextHop(
+                                    joynrMessage.from,
+                                    Typing.augmentTypes(
+                                            JSON.parse(replyToAddress),
+                                            typeRegistry),
+                                    isGloballyVisible);
+                        }
+                    }
+                }
+
                 /**
                  * @name MessageRouter#route
                  * @function
@@ -464,6 +490,10 @@ define(
                  */
                 this.route =
                         function route(joynrMessage) {
+                    // TODO check expiry date of joynrMessage
+
+                    registerGlobalRoutingEntryIfRequired(joynrMessage);
+
                     function forwardToRouteInternal(address) {
                         return routeInternal(address, joynrMessage);
                     }
