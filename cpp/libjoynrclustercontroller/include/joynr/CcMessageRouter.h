@@ -87,7 +87,8 @@ public:
                     std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                     const std::string& globalClusterControllerAddress,
                     int maxThreads = 1,
-                    std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
+                    std::unique_ptr<MessageQueue<std::string>> messageQueue =
+                            std::make_unique<MessageQueue<std::string>>());
 
     ~CcMessageRouter() override;
 

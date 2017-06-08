@@ -59,7 +59,7 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         int maxThreads,
-        std::unique_ptr<MessageQueue> messageQueue)
+        std::unique_ptr<MessageQueue<std::string>> messageQueue)
         : AbstractMessageRouter(std::move(messagingStubFactory),
                                 ioService,
                                 std::move(addressCalculator),

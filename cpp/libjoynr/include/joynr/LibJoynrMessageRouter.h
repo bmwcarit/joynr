@@ -80,7 +80,8 @@ public:
             boost::asio::io_service& ioService,
             std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
             int maxThreads = 1,
-            std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
+            std::unique_ptr<MessageQueue<std::string>> messageQueue =
+                    std::make_unique<MessageQueue<std::string>>());
 
     ~LibJoynrMessageRouter() override;
 

@@ -89,7 +89,7 @@ protected:
              typename =  std::enable_if_t<std::is_same<U, LibJoynrMessageRouter>::value>>
     std::unique_ptr<LibJoynrMessageRouter> createMessageRouter()
     {
-        auto messageQueueForMessageRouter = std::make_unique<MessageQueue>();
+        auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
         messageQueue = messageQueueForMessageRouter.get();
 
         auto libJoynrMessageRouter = std::make_unique<LibJoynrMessageRouter>(
@@ -110,7 +110,7 @@ protected:
     {
         const std::string globalCcAddress("globalAddress");
         ClusterControllerSettings ccSettings(settings);
-        auto messageQueueForMessageRouter = std::make_unique<MessageQueue>();
+        auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
         messageQueue = messageQueueForMessageRouter.get();
 
         return std::make_unique<CcMessageRouter>(
@@ -129,7 +129,7 @@ protected:
     std::string settingsFileName;
     Settings settings;
     MessagingSettings messagingSettings;
-    MessageQueue* messageQueue;
+    MessageQueue<std::string>* messageQueue;
     std::shared_ptr<MockMessagingStubFactory> messagingStubFactory;
 
     std::unique_ptr<T> messageRouter;

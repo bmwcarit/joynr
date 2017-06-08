@@ -51,7 +51,7 @@ AbstractMessageRouter::AbstractMessageRouter(
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         int maxThreads,
-        std::unique_ptr<MessageQueue> messageQueue)
+        std::unique_ptr<MessageQueue<std::string>> messageQueue)
         : routingTable("AbstractMessageRouter-RoutingTable",
                        ioService,
                        std::bind(&AbstractMessageRouter::routingTableSaveFilterFunc,
@@ -215,8 +215,7 @@ void AbstractMessageRouter::sendMessages(
             break;
         }
 
-        std::unique_ptr<MessageQueueItem> item(
-                messageQueue->getNextMessageForParticipant(destinationPartId));
+        std::unique_ptr<MessageQueueItem> item(messageQueue->getNextMessageFor(destinationPartId));
 
         if (!item) {
             break;
@@ -285,7 +284,8 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(const boost::system::er
 void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 {
     JOYNR_LOG_TRACE(logger, "message queued: {}", message->toLogMessage());
-    messageQueue->queueMessage(std::move(message));
+    std::string recipient = message->getRecipient();
+    messageQueue->queueMessage(std::move(recipient), std::move(message));
 }
 
 void AbstractMessageRouter::loadRoutingTable(std::string fileName)

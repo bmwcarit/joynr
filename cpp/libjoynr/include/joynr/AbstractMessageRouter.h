@@ -111,12 +111,12 @@ protected:
     };
 
     // Instantiation of this class only possible through its child classes.
-    AbstractMessageRouter(
-            std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
-            boost::asio::io_service& ioService,
-            std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
-            int maxThreads = 1,
-            std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
+    AbstractMessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+                          boost::asio::io_service& ioService,
+                          std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+                          int maxThreads = 1,
+                          std::unique_ptr<MessageQueue<std::string>> messageQueue =
+                                  std::make_unique<MessageQueue<std::string>>());
 
     virtual bool publishToGlobal(const ImmutableMessage& message) = 0;
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
@@ -148,7 +148,7 @@ protected:
     MulticastReceiverDirectory multicastReceiverDirectory;
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
     ThreadPoolDelayedScheduler messageScheduler;
-    std::unique_ptr<MessageQueue> messageQueue;
+    std::unique_ptr<MessageQueue<std::string>> messageQueue;
     std::string routingTableFileName;
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
     SteadyTimer messageQueueCleanerTimer;
