@@ -26,7 +26,6 @@
 #include <gmock/gmock.h>
 
 #include "joynr/LocalCapabilitiesDirectory.h"
-#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -128,6 +127,8 @@ public:
     {
         std::ignore = domains;
         std::ignore = interfaceName;
+        std::ignore = messagingTtl;
+        std::ignore = onError;
         std::vector<types::GlobalDiscoveryEntry> result;
         onSuccess(result);
     }
@@ -139,6 +140,7 @@ public:
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
     {
         std::ignore = participantId;
+        std::ignore = onError;
         std::vector<types::GlobalDiscoveryEntry> result;
         onSuccess(result);
     }
@@ -626,6 +628,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCapabilitiesMultipleTimesDoesNotD
                                                PUBLIC_KEY_ID);
             localCapabilitiesDirectory->add(entry);
         } catch (const exceptions::JoynrException& e) {
+            std::ignore = e;
             exceptionCounter++;
         }
     }
