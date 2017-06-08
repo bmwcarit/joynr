@@ -142,8 +142,9 @@ define([
                 participantId : discoveryEntry1.participantId,
                 cacheMaxAge : discoveryQos.cacheMaxAge
             });
-            expect(result).toBe(discoveryEntry1);
-            expect(result).toEqual(discoveryEntry1);
+            expect(result).toBeDefined();
+            expect(result.length).toBe(1);
+            expect(result[0]).toEqual(discoveryEntry1);
         });
 
         it("register global entry, returned when looking for global entries", function() {
@@ -221,7 +222,7 @@ define([
                 cacheMaxAge : discoveryQos.cacheMaxAge
             });
             expect(result2).toBeDefined();
-            expect(result.domain).not.toBe(result2.domain);
+            expect(result[0].domain).not.toBe(result2[0].domain);
 
             // TODO locally registered capabilities wont have a channelAddress....
             // expect(result[0].channelId).toBe(result[1].channelId);
@@ -254,7 +255,9 @@ define([
                 participantId : discoveryEntry2.participantId,
                 cacheMaxAge : discoveryQos.cacheMaxAge
             });
-            expect(result).toBe(discoveryEntry2);
+            expect(result).toBeDefined();
+            expect(result.length).toBe(1);
+            expect(result[0]).toBe(discoveryEntry2);
         });
 
         it("gets capabilities for domain/interface", function() {
