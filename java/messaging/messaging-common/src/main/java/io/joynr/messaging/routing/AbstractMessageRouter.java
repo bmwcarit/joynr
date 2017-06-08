@@ -90,7 +90,7 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
         startMessageWorkerThreads(maxParallelSends);
-
+        startRoutingTableCleanupThread();
     }
 
     private void startMessageWorkerThreads(int numberOfWorkThreads) {
@@ -103,6 +103,16 @@ abstract public class AbstractMessageRouter implements MessageRouter {
             }
             workerFutures.add(messageWorkerFuture);
         }
+    }
+
+    private void startRoutingTableCleanupThread() {
+        scheduler.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                logger.trace("Cleaning up routingTable ...");
+                routingTable.purge();
+            }
+        }, 60000L, 60000L, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -164,7 +174,9 @@ abstract public class AbstractMessageRouter implements MessageRouter {
 
     @Override
     public void addNextHop(String participantId, Address address, boolean isGloballyVisible) {
-        routingTable.put(participantId, address, isGloballyVisible);
+        final long expiryDateMs = Long.MAX_VALUE;
+        final boolean isSticky = false;
+        routingTable.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky);
     }
 
     @Override
@@ -207,7 +219,10 @@ abstract public class AbstractMessageRouter implements MessageRouter {
 
             // If the message was received from global, the sender is globally visible by definition.
             final boolean isGloballyVisible = true;
-            routingTable.put(message.getSender(), address, isGloballyVisible);
+
+            final long expiryDateMs = Long.MAX_VALUE;
+            final boolean isSticky = false;
+            routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky);
         }
     }
 

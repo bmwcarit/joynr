@@ -158,7 +158,9 @@ public class CcMessageRouterTest {
                                                                                  new HashSet<JoynrMessageProcessor>());
 
                 final boolean isGloballyVisible = true; // toParticipantId is globally visible
-                routingTable.put(toParticipantId, channelAddress, isGloballyVisible);
+                final long expiryDateMs = Long.MAX_VALUE;
+                final boolean isSticky = true;
+                routingTable.put(toParticipantId, channelAddress, isGloballyVisible, expiryDateMs, isSticky);
 
                 Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
 
