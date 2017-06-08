@@ -121,13 +121,15 @@ CcMessageRouter::CcMessageRouter(
         const std::string& globalClusterControllerAddress,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         int maxThreads,
-        std::unique_ptr<MessageQueue<std::string>> messageQueue)
+        std::unique_ptr<MessageQueue<std::string>> messageQueue,
+        std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
         : AbstractMessageRouter(std::move(messagingStubFactory),
                                 ioService,
                                 std::move(addressCalculator),
                                 maxThreads,
                                 std::move(transportStatuses),
-                                std::move(messageQueue)),
+                                std::move(messageQueue),
+                                std::move(transportNotAvailableQueue)),
           joynr::system::RoutingAbstractProvider(),
           multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           securityManager(std::move(securityManager)),

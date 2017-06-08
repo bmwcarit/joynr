@@ -359,7 +359,7 @@ bool MosquittoConnection::isSubscribedToChannelTopic() const
 
 bool MosquittoConnection::isReadyToSend() const
 {
-    return isReadyToSend();
+    return readyToSend;
 }
 
 void MosquittoConnection::on_subscribe(int mid, int qos_count, const int* granted_qos)

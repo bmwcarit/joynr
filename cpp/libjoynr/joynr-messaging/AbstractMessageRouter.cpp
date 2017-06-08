@@ -52,7 +52,8 @@ AbstractMessageRouter::AbstractMessageRouter(
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         int maxThreads,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
-        std::unique_ptr<MessageQueue<std::string>> messageQueue)
+        std::unique_ptr<MessageQueue<std::string>> messageQueue,
+        std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
         : routingTable("AbstractMessageRouter-RoutingTable",
                        ioService,
                        std::bind(&AbstractMessageRouter::routingTableSaveFilterFunc,
@@ -63,6 +64,7 @@ AbstractMessageRouter::AbstractMessageRouter(
           messagingStubFactory(std::move(messagingStubFactory)),
           messageScheduler(maxThreads, "AbstractMessageRouter", ioService),
           messageQueue(std::move(messageQueue)),
+          transportNotAvailableQueue(std::move(transportNotAvailableQueue)),
           routingTableFileName(),
           addressCalculator(std::move(addressCalculator)),
           messageQueueCleanerTimer(ioService),
@@ -70,6 +72,7 @@ AbstractMessageRouter::AbstractMessageRouter(
           transportStatuses(std::move(transportStatuses))
 {
     activateMessageCleanerTimer();
+    registerTransportStatusCallbacks();
 }
 
 AbstractMessageRouter::~AbstractMessageRouter()
@@ -244,6 +247,20 @@ void AbstractMessageRouter::scheduleMessage(
         std::uint32_t tryCount,
         std::chrono::milliseconds delay)
 {
+    for (auto& transportStatus : transportStatuses) {
+        if (transportStatus->isReponsibleFor(destAddress)) {
+            if (!transportStatus->isAvailable()) {
+                JOYNR_LOG_TRACE(logger,
+                                "Transport not available. Message queued: {}",
+                                message->toLogMessage());
+
+                transportNotAvailableQueue->queueMessage(
+                        std::move(transportStatus), std::move(message));
+                return;
+            }
+        }
+    }
+
     auto stub = messagingStubFactory->create(destAddress);
     if (stub) {
         messageScheduler.schedule(new MessageRunnable(std::move(message),
@@ -269,6 +286,26 @@ void AbstractMessageRouter::activateMessageCleanerTimer()
     messageQueueCleanerTimer.expiresFromNow(messageQueueCleanerTimerPeriodMs);
     messageQueueCleanerTimer.asyncWait(std::bind(
             &AbstractMessageRouter::onMessageCleanerTimerExpired, this, std::placeholders::_1));
+}
+
+void AbstractMessageRouter::registerTransportStatusCallbacks()
+{
+    for (auto& transportStatus : transportStatuses) {
+        transportStatus->setAvailabilityChangedCallback([this, transportStatus](bool isAvailable) {
+            if (isAvailable) {
+                rescheduleQueuedMessagesForTransport(transportStatus);
+            }
+        });
+    }
+}
+
+void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
+        std::shared_ptr<ITransportStatus> transportStatus)
+{
+    while (auto nextImmutableMessage =
+                   transportNotAvailableQueue->getNextMessageFor(transportStatus)) {
+        route(nextImmutableMessage->getContent());
+    }
 }
 
 void AbstractMessageRouter::onMessageCleanerTimerExpired(const boost::system::error_code& errorCode)

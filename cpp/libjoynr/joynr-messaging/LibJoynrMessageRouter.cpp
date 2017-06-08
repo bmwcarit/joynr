@@ -60,13 +60,15 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         int maxThreads,
-        std::unique_ptr<MessageQueue<std::string>> messageQueue)
+        std::unique_ptr<MessageQueue<std::string>> messageQueue,
+        std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
         : AbstractMessageRouter(std::move(messagingStubFactory),
                                 ioService,
                                 std::move(addressCalculator),
                                 maxThreads,
                                 std::move(transportStatuses),
-                                std::move(messageQueue)),
+                                std::move(messageQueue),
+                                std::move(transportNotAvailableQueue)),
           parentRouter(nullptr),
           parentAddress(nullptr),
           incomingAddress(incomingAddress),

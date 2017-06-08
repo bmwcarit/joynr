@@ -118,7 +118,10 @@ protected:
                           int maxThreads = 1,
                           std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
                           std::unique_ptr<MessageQueue<std::string>> messageQueue =
-                                  std::make_unique<MessageQueue<std::string>>());
+                                  std::make_unique<MessageQueue<std::string>>(),
+                          std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
+                                  transportNotAvailableQueue = std::make_unique<
+                                          MessageQueue<std::shared_ptr<ITransportStatus>>>());
 
     virtual bool publishToGlobal(const ImmutableMessage& message) = 0;
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
@@ -142,6 +145,8 @@ protected:
                          std::chrono::milliseconds delay = std::chrono::milliseconds(0));
 
     void activateMessageCleanerTimer();
+    void registerTransportStatusCallbacks();
+    void rescheduleQueuedMessagesForTransport(std::shared_ptr<ITransportStatus> transportStatus);
     void onMessageCleanerTimerExpired(const boost::system::error_code& errorCode);
 
     using RoutingTable = Directory<std::string, RoutingEntry>;
@@ -151,6 +156,7 @@ protected:
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
     ThreadPoolDelayedScheduler messageScheduler;
     std::unique_ptr<MessageQueue<std::string>> messageQueue;
+    std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue;
     std::string routingTableFileName;
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
     SteadyTimer messageQueueCleanerTimer;

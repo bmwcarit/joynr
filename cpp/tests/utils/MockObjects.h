@@ -73,6 +73,7 @@
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
+#include "libjoynrclustercontroller/include/joynr/ITransportStatus.h"
 
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
@@ -1380,6 +1381,15 @@ public:
     MOCK_METHOD0(shutdown, void());
     MOCK_METHOD0(startExternalCommunication, void());
     MOCK_METHOD0(stopExternalCommunication, void());
+};
+
+class MockTransportStatus : public joynr::ITransportStatus
+{
+public:
+    MOCK_METHOD1(isReponsibleFor, bool(std::shared_ptr<const joynr::system::RoutingTypes::Address>));
+    MOCK_METHOD0(isAvailable, bool());
+
+    MOCK_METHOD1(setAvailabilityChangedCallback, void(std::function<void(bool)> availabilityChangedCallback));
 };
 
 #ifdef _MSC_VER

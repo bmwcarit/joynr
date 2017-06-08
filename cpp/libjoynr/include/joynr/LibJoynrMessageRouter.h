@@ -82,7 +82,10 @@ public:
             std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
             int maxThreads = 1,
             std::unique_ptr<MessageQueue<std::string>> messageQueue =
-                    std::make_unique<MessageQueue<std::string>>());
+                    std::make_unique<MessageQueue<std::string>>(),
+            std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
+                    transportNotAvailableQueue =
+                            std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
 
     ~LibJoynrMessageRouter() override;
 
