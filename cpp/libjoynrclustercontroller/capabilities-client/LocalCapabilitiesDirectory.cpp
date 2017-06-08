@@ -54,7 +54,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         const std::string clusterControllerId)
         : joynr::system::DiscoveryAbstractProvider(),
           messagingSettings(messagingSettings),
-          capabilitiesClient(capabilitiesClientPtr),
+          capabilitiesClient(std::move(capabilitiesClientPtr)),
           localAddress(localAddress),
           cacheLock(),
           pendingLookupsLock(),
@@ -358,7 +358,8 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
     for (types::GlobalDiscoveryEntry globalDiscoveryEntry : results) {
         types::DiscoveryEntryWithMetaInfo convertedEntry =
                 util::convert(false, globalDiscoveryEntry);
-        capabilitiesMap.insert({globalDiscoveryEntry.getAddress(), globalDiscoveryEntry});
+        capabilitiesMap.insert(
+                {globalDiscoveryEntry.getAddress(), std::move(globalDiscoveryEntry)});
         mergedEntries.push_back(std::move(convertedEntry));
     }
     registerReceivedCapabilities(std::move(capabilitiesMap));
@@ -395,10 +396,11 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                                        callback,
                                        joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         };
-        this->capabilitiesClient->lookup(
-                participantId,
-                std::move(onSuccess),
-                std::bind(&ILocalCapabilitiesCallback::onError, callback, std::placeholders::_1));
+        this->capabilitiesClient->lookup(participantId,
+                                         std::move(onSuccess),
+                                         std::bind(&ILocalCapabilitiesCallback::onError,
+                                                   std::move(callback),
+                                                   std::placeholders::_1));
     }
 }
 
@@ -624,7 +626,7 @@ void LocalCapabilitiesDirectory::lookup(
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
 
-    lookup(domains, interfaceName, localCapabilitiesCallback, discoveryQos);
+    lookup(domains, interfaceName, std::move(localCapabilitiesCallback), discoveryQos);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -655,7 +657,7 @@ void LocalCapabilitiesDirectory::lookup(
 
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(callback), std::move(onError));
-    lookup(participantId, localCapabilitiesCallback);
+    lookup(participantId, std::move(localCapabilitiesCallback));
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -672,7 +674,7 @@ void LocalCapabilitiesDirectory::remove(
 void LocalCapabilitiesDirectory::addProviderRegistrationObserver(
         std::shared_ptr<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
 {
-    observers.push_back(observer);
+    observers.push_back(std::move(observer));
 }
 
 void LocalCapabilitiesDirectory::removeProviderRegistrationObserver(
