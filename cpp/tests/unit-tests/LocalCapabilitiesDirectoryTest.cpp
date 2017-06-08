@@ -321,7 +321,7 @@ const std::string LocalCapabilitiesDirectoryTest::DOMAIN_1_NAME("domainA");
 const std::string LocalCapabilitiesDirectoryTest::DOMAIN_2_NAME("domainB");
 const std::string LocalCapabilitiesDirectoryTest::DOMAIN_3_NAME("domainB");
 const std::string LocalCapabilitiesDirectoryTest::LOCAL_ADDRESS("localAddress");
-const std::string LocalCapabilitiesDirectoryTest::EXTERNAL_ADDRESS("externalAddress");
+const std::string LocalCapabilitiesDirectoryTest::EXTERNAL_ADDRESS(joynr::serializer::serializeToJson(joynr::system::RoutingTypes::MqttAddress()));
 const std::int64_t LocalCapabilitiesDirectoryTest::LASTSEEN_MS(1000);
 const std::int64_t LocalCapabilitiesDirectoryTest::EXPIRYDATE_MS(10000);
 const std::string LocalCapabilitiesDirectoryTest::PUBLIC_KEY_ID("publicKeyId");

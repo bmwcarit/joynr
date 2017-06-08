@@ -18,7 +18,7 @@
      },
      "lastSeenDateMs":556408800,
      "expiryDateMs":3712168800,
-     "address":"http://youwillnotgetme.example.com",
+     "address":"{\"_typeName\":\"joynr.system.RoutingTypes.Address\"}",
      "publicKeyId" : ""
   },
   {
@@ -40,7 +40,7 @@
      },
      "lastSeenDateMs": 556408800,
      "expiryDateMs": 3712168800,
-     "address":"http://youwillnotgetme.example.com",
+     "address":"{\"_typeName\":\"joynr.system.RoutingTypes.Address\"}",
      "publicKeyId" : ""
   }
 ]

@@ -555,46 +555,18 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
     for (auto it = capabilityEntries.cbegin(); it != capabilityEntries.cend(); ++it) {
         const std::string& serializedAddress = it->first;
         const types::DiscoveryEntry& currentEntry = it->second;
-        // TODO: check joynrAddress for nullptr instead of string.find after the deserialization
-        // works as expected.
-        // Currently, JsonDeserializer.deserialize<T> always returns an instance of T
-        std::size_t foundTypeNameKey = serializedAddress.find("\"_typeName\"");
-        std::size_t foundTypeNameValue =
-                serializedAddress.find("\"joynr.system.RoutingTypes.MqttAddress\"");
+        std::shared_ptr<const system::RoutingTypes::Address> address;
         const bool isGloballyVisible = isGlobal(currentEntry);
-        if (boost::starts_with(serializedAddress, "{") && foundTypeNameKey != std::string::npos &&
-            foundTypeNameValue != std::string::npos && foundTypeNameKey < foundTypeNameValue) {
-            try {
-                using system::RoutingTypes::MqttAddress;
-                MqttAddress joynrAddress;
-                joynr::serializer::deserializeFromJson(joynrAddress, serializedAddress);
-                auto addressPtr = std::make_shared<MqttAddress>(joynrAddress);
-                messageRouter.addNextHop(
-                        currentEntry.getParticipantId(), addressPtr, isGloballyVisible);
-            } catch (const std::invalid_argument& e) {
-                JOYNR_LOG_FATAL(logger,
-                                "could not deserialize MqttAddress from {} - error: {}",
-                                serializedAddress,
-                                e.what());
-            }
-        } else {
-            try {
-                using system::RoutingTypes::ChannelAddress;
-
-                ChannelAddress channelAddress;
-                joynr::serializer::deserializeFromJson(channelAddress, serializedAddress);
-                auto channelAddressPtr = std::make_shared<const ChannelAddress>(channelAddress);
-
-                messageRouter.addNextHop(
-                        currentEntry.getParticipantId(), channelAddressPtr, isGloballyVisible);
-            } catch (const std::invalid_argument& e) {
-                JOYNR_LOG_FATAL(logger,
-                                "could not deserialize ChannelAddress from {} - error: {}",
-                                serializedAddress,
-                                e.what());
-            }
+        try {
+            joynr::serializer::deserializeFromJson(address, serializedAddress);
+            messageRouter.addNextHop(currentEntry.getParticipantId(), address, isGloballyVisible);
+            this->insertInCache(currentEntry, false, true);
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_FATAL(logger,
+                            "could not deserialize Address from {} - error: {}",
+                            serializedAddress,
+                            e.what());
         }
-        this->insertInCache(currentEntry, false, true);
     }
 }
 
