@@ -79,6 +79,7 @@ public:
             std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
             boost::asio::io_service& ioService,
             std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+            std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
             int maxThreads = 1,
             std::unique_ptr<MessageQueue<std::string>> messageQueue =
                     std::make_unique<MessageQueue<std::string>>());

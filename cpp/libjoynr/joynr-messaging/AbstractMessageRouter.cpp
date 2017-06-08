@@ -51,6 +51,7 @@ AbstractMessageRouter::AbstractMessageRouter(
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         int maxThreads,
+        std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue)
         : routingTable("AbstractMessageRouter-RoutingTable",
                        ioService,
@@ -65,7 +66,8 @@ AbstractMessageRouter::AbstractMessageRouter(
           routingTableFileName(),
           addressCalculator(std::move(addressCalculator)),
           messageQueueCleanerTimer(ioService),
-          messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000))
+          messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000)),
+          transportStatuses(std::move(transportStatuses))
 {
     activateMessageCleanerTimer();
 }

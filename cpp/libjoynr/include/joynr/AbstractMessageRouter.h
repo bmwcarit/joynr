@@ -37,6 +37,7 @@
 #include "joynr/Runnable.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
+#include "libjoynrclustercontroller/include/joynr/ITransportStatus.h"
 
 namespace boost
 {
@@ -115,6 +116,7 @@ protected:
                           boost::asio::io_service& ioService,
                           std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                           int maxThreads = 1,
+                          std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
                           std::unique_ptr<MessageQueue<std::string>> messageQueue =
                                   std::make_unique<MessageQueue<std::string>>());
 
@@ -153,6 +155,8 @@ protected:
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
     SteadyTimer messageQueueCleanerTimer;
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
+    std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
+
     void queueMessage(std::shared_ptr<ImmutableMessage> message) override;
 
 private:

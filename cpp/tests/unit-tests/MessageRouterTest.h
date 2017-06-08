@@ -91,12 +91,14 @@ protected:
     {
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
         messageQueue = messageQueueForMessageRouter.get();
+        std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
 
         auto libJoynrMessageRouter = std::make_unique<LibJoynrMessageRouter>(
                     webSocketClientAddress,
                     messagingStubFactory,
                     singleThreadedIOService.getIOService(),
                     std::make_unique<WebSocketMulticastAddressCalculator>(localTransport),
+                    std::move(transportStatuses),
                     6,
                     std::move(messageQueueForMessageRouter)
                 );
@@ -112,6 +114,7 @@ protected:
         ClusterControllerSettings ccSettings(settings);
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
         messageQueue = messageQueueForMessageRouter.get();
+        std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
 
         return std::make_unique<CcMessageRouter>(
                     messagingStubFactory,
@@ -120,6 +123,7 @@ protected:
                     singleThreadedIOService.getIOService(),
                     std::make_unique<MqttMulticastAddressCalculator>(globalTransport, ccSettings.getMqttMulticastTopicPrefix()),
                     globalCcAddress,
+                    std::move(transportStatuses),
                     6,
                     std::move(messageQueueForMessageRouter)
                 );
