@@ -93,6 +93,7 @@
 #include "libjoynrclustercontroller/mqtt/MqttMessagingSkeleton.h"
 #include "libjoynrclustercontroller/mqtt/MqttReceiver.h"
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
+#include "libjoynrclustercontroller/mqtt/MqttTransportStatus.h"
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonNonTLS.h"
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonTLS.h"
 
@@ -273,6 +274,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             messagingSettings.getMessagingPropertiesPersistenceFilename());
     std::string clusterControllerId = persist.getChannelId();
     std::string receiverId = persist.getReceiverId();
+    std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
 
     if (doHttpMessaging) {
         if (!httpMessageReceiverSupplied) {
@@ -297,6 +299,9 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
             mosquittoConnection = std::make_shared<MosquittoConnection>(
                     messagingSettings, clusterControllerSettings, mqttCliendId);
+
+            auto mqttTransportStatus = std::make_unique<MqttTransportStatus>(mosquittoConnection);
+            transportStatuses.emplace_back(std::move(mqttTransportStatus));
         }
         if (!mqttMessageReceiver) {
             JOYNR_LOG_DEBUG(logger,
@@ -326,7 +331,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                         std::move(securityManager),
                                                         singleThreadIOService->getIOService(),
                                                         std::move(addressCalculator),
-                                                        globalClusterControllerAddress);
+                                                        globalClusterControllerAddress,
+                                                        std::move(transportStatuses));
     ccMessageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
     ccMessageRouter->loadMulticastReceiverDirectory(
             clusterControllerSettings.getMulticastReceiverDirectoryPersistenceFilename());
