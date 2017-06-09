@@ -55,6 +55,8 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class JeeMessageRouterTest {
+    private final long routingTableGracePeriodMs = 60000L;
+    private final long routingTableCleanupIntervalMs = 60000L;
 
     @Mock
     private ScheduledExecutorService scheduler;
@@ -90,6 +92,8 @@ public class JeeMessageRouterTest {
                                                         scheduler,
                                                         1000L,
                                                         10,
+                                                        routingTableGracePeriodMs,
+                                                        routingTableCleanupIntervalMs,
                                                         messagingStubFactory,
                                                         messagingSkeletonFactory,
                                                         addressManager,
@@ -113,6 +117,8 @@ public class JeeMessageRouterTest {
                                                         scheduler,
                                                         1000L,
                                                         10,
+                                                        routingTableGracePeriodMs,
+                                                        routingTableCleanupIntervalMs,
                                                         messagingStubFactory,
                                                         messagingSkeletonFactory,
                                                         addressManager,

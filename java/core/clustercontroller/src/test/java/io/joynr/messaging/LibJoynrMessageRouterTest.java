@@ -82,6 +82,8 @@ public class LibJoynrMessageRouterTest {
     private String unknownParticipantId = "unknownParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;
     private int maxParallelSends = 10;
+    private long routingTableGracePeriodMs = 60000L;
+    private long routingTableCleanupIntervalMs = 60000L;
 
     private String globalAddress = "global-address";
 
@@ -104,6 +106,8 @@ public class LibJoynrMessageRouterTest {
                                                   provideMessageSchedulerThreadPoolExecutor(),
                                                   sendMsgRetryIntervalMs,
                                                   maxParallelSends,
+                                                  routingTableGracePeriodMs,
+                                                  routingTableCleanupIntervalMs,
                                                   messagingStubFactory,
                                                   messagingSkeletonFactory,
                                                   addressManager,

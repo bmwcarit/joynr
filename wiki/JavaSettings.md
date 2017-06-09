@@ -138,6 +138,24 @@ same interface and domain combination.
 * **User property**: `joynr.discovery.participantids_persistence_file`
 * **Default value**: `joynr_participantIds.properties`
 
+### `PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS`
+A routing table entry has an expiry date; once this point in time has been passed, the entry can
+be removed from the routing table. The expiryDateMs is calculated or updated based on the message
+ttls plus this grace period in milliseconds.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.routingtablegraceperiodms`
+* **Default value**: `30000`
+
+### `PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS`
+The number of milliseconds between two consecutive invocations of the routing table cleanup
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.routingtablecleanupintervalms`
+* **Default value**: `60000`
+
 ### `PROPERTY_SEND_MSG_RETRY_INTERVAL_MS`
 The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,
 MQTT, ...) using middleware-specific messaging stubs. On transmission errors the message router

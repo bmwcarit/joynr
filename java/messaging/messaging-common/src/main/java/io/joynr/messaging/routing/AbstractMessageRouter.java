@@ -59,6 +59,8 @@ abstract public class AbstractMessageRouter implements MessageRouter {
     private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
+    private long routingTableGracePeriodMs;
+    private long routingTableCleanupIntervalMs;
     private MessagingStubFactory messagingStubFactory;
     private final MessagingSkeletonFactory messagingSkeletonFactory;
     private AddressManager addressManager;
@@ -75,6 +77,8 @@ abstract public class AbstractMessageRouter implements MessageRouter {
                                  @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS) long routingTableGracePeriodMs,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS) long routingTableCleanupIntervalMs,
                                  MessagingStubFactory messagingStubFactory,
                                  MessagingSkeletonFactory messagingSkeletonFactory,
                                  AddressManager addressManager,
@@ -84,6 +88,8 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         this.routingTable = routingTable;
         this.scheduler = scheduler;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
+        this.routingTableGracePeriodMs = routingTableGracePeriodMs;
+        this.routingTableCleanupIntervalMs = routingTableCleanupIntervalMs;
         this.messagingStubFactory = messagingStubFactory;
         this.messagingSkeletonFactory = messagingSkeletonFactory;
         this.addressManager = addressManager;
@@ -109,10 +115,9 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         scheduler.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                logger.trace("Cleaning up routingTable ...");
                 routingTable.purge();
             }
-        }, 60000L, 60000L, TimeUnit.MILLISECONDS);
+        }, routingTableCleanupIntervalMs, routingTableCleanupIntervalMs, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -220,7 +225,13 @@ abstract public class AbstractMessageRouter implements MessageRouter {
             // If the message was received from global, the sender is globally visible by definition.
             final boolean isGloballyVisible = true;
 
-            final long expiryDateMs = Long.MAX_VALUE;
+            long expiryDateMs;
+            try {
+                expiryDateMs = Math.addExact(message.getTtlMs(), routingTableGracePeriodMs);
+            } catch (ArithmeticException e) {
+                expiryDateMs = Long.MAX_VALUE;
+            }
+
             final boolean isSticky = false;
             routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky);
         }

@@ -66,6 +66,8 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
 
     public static final String PROPERTY_MESSAGING_MAXIMUM_TTL_MS = "joynr.messaging.maxttlms";
     public static final String PROPERTY_TTL_UPLIFT_MS = "joynr.messaging.ttlupliftms";
+    public static final String PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS = "joynr.messaging.routingtablegraceperiodms";
+    public static final String PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS = "joynr.messaging.routingtablecleanupintervalms";
 
     private final BounceProxyUrl bounceProxyUrl;
     private final long createChannelRetryIntervalMs;
@@ -95,7 +97,6 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
         this.deleteChannelRetryIntervalMs = deleteChannelRetryIntervalMs;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
         this.longPollRetryIntervalMs = longPollRetryIntervalMs;
-
     }
 
     public int getMaximumParallelSends() {
@@ -141,5 +142,4 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public long getDiscoveryRequestTimeoutMs() {
         return discoveryRequestTimeoutMs;
     }
-
 }
