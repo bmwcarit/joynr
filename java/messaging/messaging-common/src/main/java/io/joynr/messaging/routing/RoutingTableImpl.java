@@ -146,6 +146,18 @@ public class RoutingTableImpl implements RoutingTable {
                             isGloballyVisible,
                             expiryDateMs,
                             sticky);
+            } else {
+                // address and isGloballyVisible are identical
+
+                // extend lifetime, if required
+                if (result.getExpiryDateMs() < expiryDateMs) {
+                    result.setExpiryDateMs(expiryDateMs);
+                }
+                // make entry sticky, if required
+                // if entry already was sticky, and new entry is not, keep the sticky attribute
+                if (sticky && !result.getIsSticky()) {
+                    result.setIsSticky(true);
+                }
             }
             return result.getAddress();
         } else {
@@ -212,18 +224,31 @@ public class RoutingTableImpl implements RoutingTable {
     }
 
     public void purge() {
+        logger.trace("purge: begin");
         Iterator<Entry<String, RoutingEntry>> it = hashMap.entrySet().iterator();
+        long currentTimeMillis = System.currentTimeMillis();
         while (it.hasNext()) {
             Entry<String, RoutingEntry> e = it.next();
-            if (!e.getValue().getIsSticky() && e.getValue().expiryDateMs < System.currentTimeMillis()) {
-                logger.trace("purging(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) from routing table",
+            if (logger.isTraceEnabled()) {
+                logger.trace("check: participantId = {}, sticky = {}, expiryDateMs = {}, now = {}",
                              e.getKey(),
-                             e.getValue().getAddress(),
-                             e.getValue().getIsGloballyVisible(),
+                             e.getValue().getIsSticky(),
                              e.getValue().getExpiryDateMs(),
-                             e.getValue().getIsSticky());
+                             currentTimeMillis);
+            }
+
+            if (!e.getValue().getIsSticky() && e.getValue().expiryDateMs < currentTimeMillis) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("purging(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) from routing table",
+                                 e.getKey(),
+                                 e.getValue().getAddress(),
+                                 e.getValue().getIsGloballyVisible(),
+                                 e.getValue().getExpiryDateMs(),
+                                 e.getValue().getIsSticky());
+                }
                 it.remove();
             }
         }
+        logger.trace("purge: end");
     }
 }
