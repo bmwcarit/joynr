@@ -71,7 +71,7 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
         JOYNR_LOG_DEBUG(logger, "MQTT connection not encrypted");
     };
 
-    connect(host.c_str(), port, messagingSettings.getMqttKeepAliveTime().count());
+    connect(host.c_str(), port, messagingSettings.getMqttKeepAliveTimeSeconds().count());
 }
 
 MosquittoConnection::~MosquittoConnection()
@@ -148,7 +148,7 @@ void MosquittoConnection::stop()
 void MosquittoConnection::runLoop()
 {
     std::unique_lock<std::mutex> reconnectLock(reconnectMutex);
-    const int mqttConnectionTimeoutMs = messagingSettings.getMqttConnectionTimeout().count();
+    const int mqttConnectionTimeoutMs = messagingSettings.getMqttConnectionTimeoutMs().count();
 
     while (isRunning) {
         int rc = loop(mqttConnectionTimeoutMs);
@@ -171,7 +171,7 @@ void MosquittoConnection::runLoop()
                                 mosqpp::strerror(rc));
             }
             reconnectConditional.wait_for(
-                    reconnectLock, messagingSettings.getMqttReconnectSleepTime());
+                    reconnectLock, messagingSettings.getMqttReconnectDelayTimeSeconds());
             reconnect();
         }
     }

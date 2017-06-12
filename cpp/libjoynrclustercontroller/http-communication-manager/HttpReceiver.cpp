@@ -96,8 +96,8 @@ void HttpReceiver::startReceiveQueue()
 
     // Get the settings specific to long polling
     LongPollingMessageReceiverSettings longPollSettings = {
-            std::chrono::milliseconds(settings.getBrokerTimeout()),
-            std::chrono::milliseconds(settings.getLongPollTimeout()),
+            std::chrono::milliseconds(settings.getBrokerTimeoutMs()),
+            std::chrono::milliseconds(settings.getLongPollTimeoutMs()),
             std::chrono::milliseconds(settings.getLongPollRetryInterval()),
             std::chrono::milliseconds(settings.getCreateChannelRetryInterval())};
 

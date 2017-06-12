@@ -63,12 +63,12 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
 
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_KEEP_ALIVE_TIME()));
-    EXPECT_EQ(messagingSettings.getMqttKeepAliveTime().count(), MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME().count());
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_RECONNECT_SLEEP_TIME()));
-    EXPECT_EQ(messagingSettings.getMqttReconnectSleepTime().count(), MessagingSettings::DEFAULT_MQTT_RECONNECT_SLEEP_TIME().count());
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS()));
+    EXPECT_EQ(messagingSettings.getMqttKeepAliveTimeSeconds().count(), MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS().count());
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS()));
+    EXPECT_EQ(messagingSettings.getMqttReconnectDelayTimeSeconds().count(), MessagingSettings::DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS().count());
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()));
-    EXPECT_EQ(messagingSettings.getMqttConnectionTimeout().count(), MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
+    EXPECT_EQ(messagingSettings.getMqttConnectionTimeoutMs().count(), MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
     EXPECT_EQ(messagingSettings.getTtlUpliftMs(), MessagingSettings::DEFAULT_TTL_UPLIFT_MS());
 }
 
