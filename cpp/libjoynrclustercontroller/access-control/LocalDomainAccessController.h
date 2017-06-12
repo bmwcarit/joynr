@@ -112,9 +112,9 @@ public:
      * @param role The domain that is being accessed
      * @return Returns true, if user uid has role role for domain domain.
      */
-    bool hasRole(const std::string& userId,
-                 const std::string& domain,
-                 infrastructure::DacTypes::Role::Enum role);
+    virtual bool hasRole(const std::string& userId,
+                         const std::string& domain,
+                         infrastructure::DacTypes::Role::Enum role);
 
     /**
       * Get consumer permission to access an interface

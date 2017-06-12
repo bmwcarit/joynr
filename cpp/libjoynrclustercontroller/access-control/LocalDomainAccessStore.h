@@ -302,7 +302,7 @@ public:
      * @param updatedMasterAce The entry to add
      * @return false if update fails.
      */
-    bool updateMasterAccessControlEntry(
+    virtual bool updateMasterAccessControlEntry(
             const infrastructure::DacTypes::MasterAccessControlEntry& updatedMasterAce);
 
     /**
@@ -315,10 +315,10 @@ public:
      * @param operation
      * @return false if remove fails or master ACE that match given parameters was not found.
      */
-    bool removeMasterAccessControlEntry(const std::string& userId,
-                                        const std::string& domain,
-                                        const std::string& interfaceName,
-                                        const std::string& operation);
+    virtual bool removeMasterAccessControlEntry(const std::string& userId,
+                                                const std::string& domain,
+                                                const std::string& interfaceName,
+                                                const std::string& operation);
 
     /**
      * Returns a list of master ACEs from Mediator ACL that apply to user uid,
@@ -397,7 +397,7 @@ public:
      * @param updatedMediatorAce The entry to add
      * @return false if update fails.
      */
-    bool updateMediatorAccessControlEntry(
+    virtual bool updateMediatorAccessControlEntry(
             const infrastructure::DacTypes::MasterAccessControlEntry& updatedMediatorAce);
 
     /**
@@ -409,10 +409,10 @@ public:
      * @param operation
      * @return false if remove fails or master ACE that match given parameters was not found.
      */
-    bool removeMediatorAccessControlEntry(const std::string& userId,
-                                          const std::string& domain,
-                                          const std::string& interfaceName,
-                                          const std::string& operation);
+    virtual bool removeMediatorAccessControlEntry(const std::string& userId,
+                                                  const std::string& domain,
+                                                  const std::string& interfaceName,
+                                                  const std::string& operation);
 
     /**
      * Returns a list of owner ACEs that apply to user uid,
@@ -490,7 +490,7 @@ public:
      * @param updatedOwnerAce The entry to add
      * @return false if update fails.
      */
-    bool updateOwnerAccessControlEntry(
+    virtual bool updateOwnerAccessControlEntry(
             const infrastructure::DacTypes::OwnerAccessControlEntry& updatedOwnerAce);
 
     /**
@@ -502,10 +502,10 @@ public:
      * @param operation
      * @return false if remove fails or ownerAce ACE that match given parameters was not found.
      */
-    bool removeOwnerAccessControlEntry(const std::string& userId,
-                                       const std::string& domain,
-                                       const std::string& interfaceName,
-                                       const std::string& operation);
+    virtual bool removeOwnerAccessControlEntry(const std::string& userId,
+                                               const std::string& domain,
+                                               const std::string& interfaceName,
+                                               const std::string& operation);
 
     /**
      * Returns a list of master registration control entries that define the registration rights
@@ -550,7 +550,7 @@ public:
      * @param updatedMasterRce The master RCE to be updated.
      * @return true if update succeeded, false otherwise.
      */
-    bool updateMasterRegistrationControlEntry(
+    virtual bool updateMasterRegistrationControlEntry(
             const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMasterRce);
 
     /**
@@ -561,9 +561,9 @@ public:
      * @param interfaceName Provider interface.
      * @return true if remove succeeded, false otherwise.
      */
-    bool removeMasterRegistrationControlEntry(const std::string& uid,
-                                              const std::string& domain,
-                                              const std::string& interfaceName);
+    virtual bool removeMasterRegistrationControlEntry(const std::string& uid,
+                                                      const std::string& domain,
+                                                      const std::string& interfaceName);
 
     /**
      * Returns a list of mediator registration control entries that define the registration rights
@@ -625,7 +625,7 @@ public:
      * @param updatedMediatorRce The mediator RCE to be updated.
      * @return true if update succeeded, false otherwise.
      */
-    bool updateMediatorRegistrationControlEntry(
+    virtual bool updateMediatorRegistrationControlEntry(
             const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMediatorRce);
 
     /**
@@ -636,9 +636,9 @@ public:
      * @param interfaceName Provider interface.
      * @return true if remove succeeded, false otherwise.
      */
-    bool removeMediatorRegistrationControlEntry(const std::string& uid,
-                                                const std::string& domain,
-                                                const std::string& interfaceName);
+    virtual bool removeMediatorRegistrationControlEntry(const std::string& uid,
+                                                        const std::string& domain,
+                                                        const std::string& interfaceName);
 
     /**
      * Returns a list of owner registration control entries that define the registration rights
@@ -682,7 +682,7 @@ public:
      * @param updatedOwnerRce The owner RCE to be updated.
      * @return true if update succeeded, false otherwise.
      */
-    bool updateOwnerRegistrationControlEntry(
+    virtual bool updateOwnerRegistrationControlEntry(
             const infrastructure::DacTypes::OwnerRegistrationControlEntry& updatedOwnerRce);
 
     /**
@@ -693,9 +693,9 @@ public:
      * @param interfaceName Provider interface.
      * @return true if remove succeeded, false otherwise.
      */
-    bool removeOwnerRegistrationControlEntry(const std::string& uid,
-                                             const std::string& domain,
-                                             const std::string& interfaceName);
+    virtual bool removeOwnerRegistrationControlEntry(const std::string& uid,
+                                                     const std::string& domain,
+                                                     const std::string& interfaceName);
 
     /**
      * Check if only wildcard operations exist for the given combination of

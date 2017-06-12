@@ -177,7 +177,7 @@ void AccessControlListEditor::updateMediatorRegistrationControlEntry(
         onSuccess(false);
     } else {
         bool updateSuccess =
-                localDomainAccessStore->updateMasterRegistrationControlEntry(updatedMediatorRce);
+                localDomainAccessStore->updateMediatorRegistrationControlEntry(updatedMediatorRce);
         onSuccess(updateSuccess);
     }
 }
