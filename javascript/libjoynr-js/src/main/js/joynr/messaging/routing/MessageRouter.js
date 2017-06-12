@@ -31,6 +31,7 @@ define(
             "joynr/messaging/JoynrMessage",
             "joynr/messaging/MessageReplyToAddressCalculator",
             "joynr/exceptions/JoynrException",
+            "joynr/exceptions/JoynrRuntimeException",
             "joynr/util/Typing",
             "joynr/util/UtilInternal",
             "joynr/util/JSONSerializer",
@@ -43,6 +44,7 @@ define(
                 JoynrMessage,
                 MessageReplyToAddressCalculator,
                 JoynrException,
+                JoynrRuntimeException,
                 Typing,
                 Util,
                 JSONSerializer) {
@@ -490,7 +492,12 @@ define(
                  */
                 this.route =
                         function route(joynrMessage) {
-                    // TODO check expiry date of joynrMessage
+                    var now = Date.now();
+                    if (now > joynrMessage.expiryDate) {
+                        var errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
+                        log.warn(errorMsg);
+                        throw new JoynrRuntimeException({detailMessage: errorMsg});
+                    }
 
                     registerGlobalRoutingEntryIfRequired(joynrMessage);
 
@@ -690,7 +697,12 @@ define(
                             if (messageQueue !== undefined) {
                                 i = messageQueue.length;
                                 while (i--) {
-                                    that.route(messageQueue[i]);
+                                    try {
+                                        that.route(messageQueue[i]);
+                                    } catch(error) {
+                                        log.error("queued message could not be sent to " + participantId + ", error: " + error
+                                                + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                                    }
                                 }
                             }
                         };

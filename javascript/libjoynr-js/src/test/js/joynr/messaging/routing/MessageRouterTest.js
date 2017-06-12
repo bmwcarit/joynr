@@ -345,6 +345,8 @@ define([
                                 "drop previously queued message if respective participant gets registered after expiry date",
                                 function(done) {
                                     joynrMessage2.expiryDate = Date.now() + 2000;
+                                    var messageQueue = [];
+                                    messageQueue[0] = joynrMessage2;
 
                                     var returnValue = messageRouter.route(joynrMessage2);
                                     returnValue.catch(function() {});
@@ -353,19 +355,24 @@ define([
                                     waitsFor(function() {
                                         return messageQueueSpy.putMessage.calls.count() > 0;
                                     }, "messageQueueSpy.putMessage invoked", 1000).then(function() {
+                                        expect(messageQueueSpy.putMessage).toHaveBeenCalledTimes(1);
                                         expect(messageQueueSpy.putMessage).toHaveBeenCalledWith(
                                                 joynrMessage2);
+                                        expect(messageQueueSpy.getAndRemoveMessages).not.toHaveBeenCalled();
 
+                                        messageQueueSpy.getAndRemoveMessages
+                                                .and.returnValue(messageQueue);
                                         increaseFakeTime(2000 + 1);
                                         var isGloballyVisible = true;
                                         messageRouter.addNextHop(joynrMessage2.to, address, isGloballyVisible);
-                                        messageRouter.participantRegistered(joynrMessage2.to);
                                         increaseFakeTime(1);
 
                                         return(waitsFor(function() {
                                                 return messageQueueSpy.getAndRemoveMessages.calls.count() > 0;
                                         }, "messageQueueSpy.getAndRemoveMessages to be invoked", 1000));
                                     }).then(function() {
+                                        expect(messageQueueSpy.putMessage).toHaveBeenCalledTimes(1);
+                                        expect(messageQueueSpy.getAndRemoveMessages).toHaveBeenCalledTimes(1);
                                         expect(messageQueueSpy.getAndRemoveMessages)
                                                 .toHaveBeenCalledWith(joynrMessage2.to);
                                         expect(messagingStubFactorySpy.createMessagingStub).not
@@ -377,6 +384,19 @@ define([
                                         return null;
                                     }).catch(fail);
                                 });
+
+                        it("route drops expired message", function(done) {
+                            joynrMessage.expiryDate = Date.now() - 1;
+                            try {
+                                messageRouter.route(joynrMessage);
+                                done.fail("did not throw");
+                            } catch (e) {
+                                expect(e.detailMessage.indexOf("expired message") >= 0).toBe(true);
+                            }
+                            expect(messagingStubFactorySpy.createMessagingStub).not
+                                    .toHaveBeenCalled();
+                            done();
+                        });
 
                         it("sets replyTo address for non local messages", function(done) {
                             var isGloballyVisible = true;
