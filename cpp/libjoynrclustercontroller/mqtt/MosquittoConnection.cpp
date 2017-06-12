@@ -181,27 +181,10 @@ void MosquittoConnection::runLoop()
 void MosquittoConnection::on_connect(int rc)
 {
     if (rc > 0) {
-        if (rc == 1) {
-            JOYNR_LOG_ERROR(logger,
-                            "Mosquitto Connection Error {} ({})",
-                            rc,
-                            "connection refused (unacceptable protocol version)");
-        } else if (rc == 2) {
-            JOYNR_LOG_ERROR(logger,
-                            "Mosquitto Connection Error {} ({})",
-                            rc,
-                            "connection refused (identifier rejected)");
-        } else if (rc == 3) {
-            JOYNR_LOG_DEBUG(logger,
-                            "Mosquitto Connection Error {} ({})",
-                            rc,
-                            "connection refused (broker unavailable)");
-        } else {
-            JOYNR_LOG_ERROR(logger,
-                            "Mosquitto Connection Error {} ({})",
-                            rc,
-                            "unknown error code (reserved for future use)");
-        }
+        JOYNR_LOG_ERROR(logger,
+                        "Mosquitto Connection Error: {} ({})",
+                        std::to_string(rc),
+                        mosqpp::strerror(rc));
     } else {
         JOYNR_LOG_DEBUG(logger, "Mosquitto Connection established");
         isConnected = true;
