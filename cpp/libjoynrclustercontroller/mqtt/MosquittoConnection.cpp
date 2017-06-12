@@ -41,15 +41,13 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
           additionalTopics(),
           additionalTopicsMutex(),
           isConnected(false),
-          isInitialConnection(true),
           isRunning(false),
           isChannelIdRegistered(false),
           subscribedToChannelTopic(false),
           readyToSend(false),
           onMessageReceived(),
           onReadyToSendChangedMutex(),
-          onReadyToSendChanged(),
-          thread()
+          onReadyToSendChanged()
 {
     JOYNR_LOG_DEBUG(logger, "Try to connect to tcp://{}:{}", host, port);
 
@@ -68,19 +66,20 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
     } else {
         JOYNR_LOG_DEBUG(logger, "MQTT connection not encrypted");
     };
-
-    connect(host.c_str(), port, messagingSettings.getMqttKeepAliveTimeSeconds().count());
 }
 
 MosquittoConnection::~MosquittoConnection()
 {
     stop();
+    stopLoop(true);
+
+    mosqpp::lib_cleanup();
 }
 
 void MosquittoConnection::on_disconnect(int rc)
 {
-    isConnected = false;
     setReadyToSend(false);
+    isConnected = false;
 
     if (rc == 0) {
         JOYNR_LOG_DEBUG(logger, "Disconnected from tcp://{}:{}", host, port);
@@ -90,7 +89,10 @@ void MosquittoConnection::on_disconnect(int rc)
                         host,
                         port,
                         mosqpp::strerror(rc));
+        reconnect();
+        return;
     }
+    stopLoop();
 }
 
 void MosquittoConnection::on_log(int level, const char* str)
@@ -130,59 +132,67 @@ bool MosquittoConnection::isMqttRetain() const
 
 void MosquittoConnection::start()
 {
-    isRunning = true;
-    thread = std::thread(&MosquittoConnection::runLoop, this);
+    JOYNR_LOG_TRACE(
+            logger, "Start called with isRunning: {}, isConnected: {}", isRunning, isConnected);
+
+    connect(host.c_str(), port, messagingSettings.getMqttKeepAliveTimeSeconds().count());
+
+    reconnect_delay_set(messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
+                        messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
+                        false);
+
+    startLoop();
+}
+
+void MosquittoConnection::startLoop()
+{
+    int rc = loop_start();
+    if (rc == MOSQ_ERR_SUCCESS) {
+        JOYNR_LOG_TRACE(logger, "Mosquitto loop started");
+        isRunning = true;
+    } else {
+        JOYNR_LOG_ERROR(logger,
+                        "Mosquitto loop start failed: error: {} ({})",
+                        std::to_string(rc),
+                        mosqpp::strerror(rc));
+    }
 }
 
 void MosquittoConnection::stop()
 {
-    isRunning = false;
-    if (thread.joinable()) {
-        thread.join();
+    if (isConnected) {
+        int rc = disconnect();
+
+        if (rc == MOSQ_ERR_SUCCESS) {
+            JOYNR_LOG_TRACE(logger, "Mosquitto Connection disconnected");
+        } else {
+            JOYNR_LOG_ERROR(logger,
+                            "Mosquitto disconnect failed: error: {} ({})",
+                            std::to_string(rc),
+                            mosqpp::strerror(rc));
+            stopLoop(true);
+            mosqpp::lib_cleanup();
+        }
+    } else if (isRunning) {
+        stopLoop(true);
+        mosqpp::lib_cleanup();
     }
+    setReadyToSend(false);
 }
 
-void MosquittoConnection::runLoop()
+void MosquittoConnection::stopLoop(bool force)
 {
-    const int mqttConnectionTimeoutMs = messagingSettings.getMqttConnectionTimeoutMs().count();
+    int rc = loop_stop(force);
 
-    while (isRunning) {
-        int rc = loop(mqttConnectionTimeoutMs);
-
-        if (rc != MOSQ_ERR_SUCCESS) {
-            if (rc == MOSQ_ERR_CONN_LOST) {
-                JOYNR_LOG_DEBUG(logger,
-                                "error: connection to broker lost ({}), trying to reconnect...",
-                                mosqpp::strerror(rc));
-            } else if (rc == MOSQ_ERR_NO_CONN) {
-                JOYNR_LOG_DEBUG(logger,
-                                "error: not connected to a broker ({}), trying to reconnect...",
-                                mosqpp::strerror(rc));
-            } else {
-                // MOSQ_ERR_INVAL || MOSQ_ERR_NOMEM || MOSQ_ERR_PROTOCOL || MOSQ_ERR_ERRNO
-                JOYNR_LOG_ERROR(logger,
-                                "connection to broker lost, unexpected error: {} ({}), trying to "
-                                "reconnect...",
-                                std::to_string(rc),
-                                mosqpp::strerror(rc));
-            }
-            std::this_thread::sleep_for(messagingSettings.getMqttReconnectSleepTimeSeconds());
-            reconnect();
-        }
-    }
-
-    JOYNR_LOG_TRACE(logger, "Try to disconnect Mosquitto Connection");
-    int rc = disconnect();
     if (rc == MOSQ_ERR_SUCCESS) {
-        JOYNR_LOG_DEBUG(logger, "Mosquitto Connection disconnected");
+        isRunning = false;
+        JOYNR_LOG_TRACE(logger, "Mosquitto loop stopped");
     } else {
         JOYNR_LOG_ERROR(logger,
-                        "Mosquitto disconnect failed: error: {} ({})",
+                        "Mosquitto loop stop failed: error: {} ({})",
                         std::to_string(rc),
                         mosqpp::strerror(rc));
     }
-
-    mosqpp::lib_cleanup();
 }
 
 void MosquittoConnection::on_connect(int rc)
@@ -197,10 +207,6 @@ void MosquittoConnection::on_connect(int rc)
         isConnected = true;
 
         createSubscriptions();
-
-        if (isInitialConnection) {
-            isInitialConnection = false;
-        }
     }
 }
 

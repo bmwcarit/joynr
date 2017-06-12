@@ -3,7 +3,8 @@
 ## API relevant changes
 
 ## Other changes
-* **[C++]** Cleaned up MessagingSettings. All Settings which correspond to `seconds` time unit,
+* **[C++]** Mosquitto Connection uses now internal Mosquitto Loop thread handling.
+* **[C++]** Cleaned up MessagingSettings. All settings which correspond to `seconds` time unit,
   have now `seconds` suffix.
 
 
