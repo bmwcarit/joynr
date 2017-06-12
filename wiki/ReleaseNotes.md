@@ -1,3 +1,12 @@
+# joynr 0.27.1
+
+## API relevant changes
+
+## Other changes
+* **[C++]** Cleaned up MessagingSettings. All Settings which correspond to `seconds` time unit,
+  have now `seconds` suffix.
+
+
 # joynr 0.27.0
 
 ## API relevant changes
