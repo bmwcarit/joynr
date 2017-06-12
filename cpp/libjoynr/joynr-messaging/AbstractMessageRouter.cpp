@@ -247,15 +247,14 @@ void AbstractMessageRouter::scheduleMessage(
         std::uint32_t tryCount,
         std::chrono::milliseconds delay)
 {
-    for (auto& transportStatus : transportStatuses) {
+    for (const auto& transportStatus : transportStatuses) {
         if (transportStatus->isReponsibleFor(destAddress)) {
             if (!transportStatus->isAvailable()) {
                 JOYNR_LOG_TRACE(logger,
                                 "Transport not available. Message queued: {}",
                                 message->toLogMessage());
 
-                transportNotAvailableQueue->queueMessage(
-                        std::move(transportStatus), std::move(message));
+                transportNotAvailableQueue->queueMessage(transportStatus, std::move(message));
                 return;
             }
         }
