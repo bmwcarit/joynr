@@ -4,7 +4,8 @@
 * **[C++, API]** Ease implementation of SubscriptionListener for empty broadcasts.
 
 ## Other changes
-* **[C++]** Cleaned up MessagingSettings. All Settings which correspond to `seconds` time unit,
+* **[C++]** Mosquitto Connection uses now internal Mosquitto Loop thread handling.
+* **[C++]** Cleaned up MessagingSettings. All settings which correspond to `seconds` time unit,
   have now `seconds` suffix.
 
 # joynr 0.27.0

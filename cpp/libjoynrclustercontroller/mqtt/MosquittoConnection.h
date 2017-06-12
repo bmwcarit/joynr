@@ -22,10 +22,8 @@
 #include <cstdint>
 #include <functional>
 #include <string>
-#include <thread>
 #include <unordered_set>
 #include <mutex>
-#include <condition_variable>
 
 #include <mosquittopp.h>
 #include <smrf/ByteVector.h>
@@ -59,7 +57,16 @@ public:
     std::string getMqttPrio() const;
     bool isMqttRetain() const;
 
+    /**
+     * Starts mosquitto's internal loop in case it is not running or handles reconnect when
+     * external communication with MQTT broker needs to be restored.
+     */
     void start();
+
+    /**
+     * Stops external communication by disconnecting from MQTT broker. Mosquitto loop is
+     * not stopped.
+     */
     void stop();
 
     void publishMessage(
@@ -79,7 +86,17 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoConnection);
 
-    void runLoop();
+    /**
+     * Starts mosquitto's internal loop. This function wraps internal mosquitto function loop_start
+     */
+    void startLoop();
+
+    /**
+     * Stops mosquitto's internal loop. This function wraps internal mosquitto function loop_stop
+     * @param force Set to true to force stopping of the loop. If false, stop (disconnect) must have
+     * already been called.
+     */
+    void stopLoop(bool force = false);
 
     void on_disconnect(int rc) final;
     void on_log(int level, const char* str) final;
@@ -106,8 +123,8 @@ private:
     std::recursive_mutex additionalTopicsMutex;
 
     std::atomic<bool> isConnected;
-    std::atomic<bool> isInitialConnection;
     std::atomic<bool> isRunning;
+    std::atomic<bool> isWaitingForDisconnect;
     std::atomic<bool> isChannelIdRegistered;
     std::atomic<bool> subscribedToChannelTopic;
     std::atomic<bool> readyToSend;
@@ -115,10 +132,6 @@ private:
     std::function<void(smrf::ByteVector&&)> onMessageReceived;
     std::mutex onReadyToSendChangedMutex;
     std::function<void(bool)> onReadyToSendChanged;
-
-    std::thread thread;
-    std::condition_variable reconnectConditional;
-    std::mutex reconnectMutex;
 
     ADD_LOGGER(MosquittoConnection);
 };
