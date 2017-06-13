@@ -36,7 +36,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
-import io.joynr.messaging.NoOpRawMessagingPreprocessor;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
@@ -56,7 +56,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     private boolean httpBridgeEnabled;
 
     @Inject
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
     public JeeMqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String enableHttpBridge,
                                             @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
                                             @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
@@ -64,7 +64,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             MessageRouter messageRouter,
                                             MqttClientFactory mqttClientFactory,
                                             @Named(CHANNELID) String channelId,
-                                            MqttTopicPrefixProvider mqttTopicPrefixProvider) {
+                                            MqttTopicPrefixProvider mqttTopicPrefixProvider,
+                                            RawMessagingPreprocessor rawMessagingPreprocessor) {
         // CHECKSTYLE:ON
         super(enableSharedSubscriptions,
               ownAddress,
@@ -73,7 +74,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               mqttClientFactory,
               channelId,
               mqttTopicPrefixProvider,
-              new NoOpRawMessagingPreprocessor(),
+              rawMessagingPreprocessor,
               new HashSet<JoynrMessageProcessor>());
         httpBridgeEnabled = Boolean.valueOf(enableHttpBridge);
         logger.debug("Created with httpBridgeEnabled: {} ownAddress: {} channelId: {}", new Object[]{ httpBridgeEnabled,
