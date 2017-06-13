@@ -59,6 +59,8 @@ abstract public class AbstractMessageRouter implements MessageRouter {
     private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
+    private long routingTableGracePeriodMs;
+    private long routingTableCleanupIntervalMs;
     private MessagingStubFactory messagingStubFactory;
     private final MessagingSkeletonFactory messagingSkeletonFactory;
     private AddressManager addressManager;
@@ -75,6 +77,8 @@ abstract public class AbstractMessageRouter implements MessageRouter {
                                  @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS) long routingTableGracePeriodMs,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS) long routingTableCleanupIntervalMs,
                                  MessagingStubFactory messagingStubFactory,
                                  MessagingSkeletonFactory messagingSkeletonFactory,
                                  AddressManager addressManager,
@@ -84,13 +88,15 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         this.routingTable = routingTable;
         this.scheduler = scheduler;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
+        this.routingTableGracePeriodMs = routingTableGracePeriodMs;
+        this.routingTableCleanupIntervalMs = routingTableCleanupIntervalMs;
         this.messagingStubFactory = messagingStubFactory;
         this.messagingSkeletonFactory = messagingSkeletonFactory;
         this.addressManager = addressManager;
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
         startMessageWorkerThreads(maxParallelSends);
-
+        startRoutingTableCleanupThread();
     }
 
     private void startMessageWorkerThreads(int numberOfWorkThreads) {
@@ -103,6 +109,15 @@ abstract public class AbstractMessageRouter implements MessageRouter {
             }
             workerFutures.add(messageWorkerFuture);
         }
+    }
+
+    private void startRoutingTableCleanupThread() {
+        scheduler.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                routingTable.purge();
+            }
+        }, routingTableCleanupIntervalMs, routingTableCleanupIntervalMs, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -164,7 +179,9 @@ abstract public class AbstractMessageRouter implements MessageRouter {
 
     @Override
     public void addNextHop(String participantId, Address address, boolean isGloballyVisible) {
-        routingTable.put(participantId, address, isGloballyVisible);
+        final long expiryDateMs = Long.MAX_VALUE;
+        final boolean isSticky = false;
+        routingTable.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky);
     }
 
     @Override
@@ -207,7 +224,16 @@ abstract public class AbstractMessageRouter implements MessageRouter {
 
             // If the message was received from global, the sender is globally visible by definition.
             final boolean isGloballyVisible = true;
-            routingTable.put(message.getSender(), address, isGloballyVisible);
+
+            long expiryDateMs;
+            try {
+                expiryDateMs = Math.addExact(message.getTtlMs(), routingTableGracePeriodMs);
+            } catch (ArithmeticException e) {
+                expiryDateMs = Long.MAX_VALUE;
+            }
+
+            final boolean isSticky = false;
+            routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky);
         }
     }
 

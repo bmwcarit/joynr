@@ -12,6 +12,10 @@
   `access-control/use-ldas-only` property in the cluster controller settings.
 * **[Java]** Introduced property joynr.messaging.maxmessagesinqueue to restrict number of messages being processed
   at a time. See the [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Introduced property joynr.messaging.routingtablegraceperiodms.
+  See the [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Introduced property joynr.messaging.routingtablecleanupintervalms.
+  See the [Java Configuration Reference](JavaSettings.md) for more details.
 
 # joynr 0.26.0
 

@@ -25,6 +25,7 @@ This project has dependencies to:
   AntLR Parser Generator under BSD License
   AOP alliance under Public Domain
   aopalliance version 1.0 repackaged as a module under CDDL + GPLv2 with classpath exception
+  Apache Commons CLI under Apache License, Version 2.0
   Apache Commons Lang under Apache License, Version 2.0
   Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
   Apache Geronimo JSR-317 JPA 2.0 Spec API under The Apache Software License, Version 2.0
