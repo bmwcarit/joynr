@@ -55,7 +55,10 @@ public:
         std::ignore = publication;
         std::shared_ptr<ISubscriptionListenerBase> listener =
                 Base::subscriptionManager->getSubscriptionListener(Base::subscriptionId);
-        listener->onError(error);
+
+        if (listener) {
+            listener->onError(error);
+        }
     }
 
     template <typename Holder = T>
@@ -65,7 +68,10 @@ public:
         std::ignore = publication;
         auto listener = std::dynamic_pointer_cast<ISubscriptionListener<void>>(
                 Base::subscriptionManager->getSubscriptionListener(Base::subscriptionId));
-        listener->onReceive();
+
+        if (listener) {
+            listener->onReceive();
+        }
     }
 
     template <typename Holder = T>
@@ -77,7 +83,10 @@ public:
         std::ignore = publication;
         auto listener = std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(
                 Base::subscriptionManager->getSubscriptionListener(Base::subscriptionId));
-        listener->onReceive(value, values...);
+
+        if (listener) {
+            listener->onReceive(value, values...);
+        }
     }
 
 private:

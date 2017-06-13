@@ -83,7 +83,7 @@ public:
             }
         } catch (websocketpp::exception e) {
             JOYNR_LOG_ERROR(
-                    logger, "websocket not connected (websocketpp error message: %1)", e.what());
+                    logger, "websocket not connected (websocketpp error message: {})", e.what());
         }
 
         return false;

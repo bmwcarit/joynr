@@ -920,6 +920,7 @@ define(
                             expectedArguments.toDiscoveryEntry = new DiscoveryEntryWithMetaInfo(parameters.toDiscoveryEntry);
                             expectedArguments.request = new OneWayRequest(parameters.request);
 
+                            dispatcherSpy.sendOneWayRequest.and.returnValue(Promise.resolve());
                             requestReplyManager.sendOneWayRequest(parameters);
 
                             expect(dispatcherSpy.sendOneWayRequest).toHaveBeenCalledWith(

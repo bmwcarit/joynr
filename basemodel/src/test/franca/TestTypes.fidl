@@ -58,7 +58,7 @@ typeCollection TestTypes {
 		Vowel[] vowels
 	}
 
-	struct TEverythingStruct {
+	struct TEverythingStruct polymorphic {
 		Int8 tInt8
 		UInt8 tUInt8
 		Int16 tInt16

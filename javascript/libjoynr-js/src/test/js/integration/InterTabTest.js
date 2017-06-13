@@ -1,4 +1,4 @@
-/*global fail: true */
+/*global fail: true, xit: true */
 /*jslint es5: true */
 
 /*
@@ -226,7 +226,7 @@ define([
                                                             interfaceName : interfaceName,
                                                             discoveryQos : new DiscoveryQosGen(
                                                                     {
-                                                                        discoveryScope : DiscoveryScope.LOCAL_AND_GLOBAL
+                                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY
                                                                     })
                                                         })
                                                 .then(
@@ -302,7 +302,7 @@ define([
                                     var providerQos = new joynr.types.ProviderQos({
                                         customParameters : [],
                                         priority : Date.now(),
-                                        scope : joynr.types.ProviderScope.GLOBAL,
+                                        scope : joynr.types.ProviderScope.LOCAL,
                                         supportsOnChangeSubscriptions : true
                                     });
 
@@ -628,7 +628,7 @@ define([
                                     }).catch(fail);
                                 });
 
-                        it(
+                        xit(
                                 "Create separate joynr instance with provider and arbitrate",
                                 function(done) {
                                     /*
@@ -679,7 +679,7 @@ define([
                                     });
                                 });
 
-                        it(
+                        xit(
                                 "Create discovery proxy and check if the cc discovery provider works properly",
                                 function(done) {
                                     var discoveredEntries;
@@ -825,7 +825,7 @@ define([
                                     });
                                 });
 
-                        it(
+                        xit(
                                 "Create routing proxy and check if the cc routing provider works properly",
                                 function(done) {
                                     /*

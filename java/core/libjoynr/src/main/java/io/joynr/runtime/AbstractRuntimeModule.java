@@ -92,6 +92,10 @@ import joynr.system.RoutingTypes.Address;
 
 abstract class AbstractRuntimeModule extends AbstractModule {
 
+    // TODO start skeletons and MQTT in a separate thread pool
+    private static final int MQTT_THREADS = 4;
+    private static final int MAX_SKELETON_THREADS = 5;
+
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
     MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
     @SuppressWarnings("URF_UNREAD_FIELD")
@@ -147,7 +151,9 @@ abstract class AbstractRuntimeModule extends AbstractModule {
 
         install(new StaticCapabilitiesProvisioningModule());
 
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d").build();
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d")
+                                                                     .setDaemon(true)
+                                                                     .build();
         ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
                                             .toInstance(cleanupExecutor);
@@ -167,9 +173,10 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     @Named(MessageRouter.SCHEDULEDTHREADPOOL)
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
         ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
+                                                                              .setDaemon(true)
                                                                               .build();
-        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends,
-                                                                                schedulerNamedThreadFactory);
+        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends
+                + MAX_SKELETON_THREADS + MQTT_THREADS, schedulerNamedThreadFactory);
         scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
         scheduler.allowCoreThreadTimeOut(true);
         return scheduler;

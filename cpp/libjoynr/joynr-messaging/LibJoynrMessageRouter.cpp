@@ -58,13 +58,17 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+        std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         int maxThreads,
-        std::unique_ptr<MessageQueue> messageQueue)
+        std::unique_ptr<MessageQueue<std::string>> messageQueue,
+        std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
         : AbstractMessageRouter(std::move(messagingStubFactory),
                                 ioService,
                                 std::move(addressCalculator),
                                 maxThreads,
-                                std::move(messageQueue)),
+                                std::move(transportStatuses),
+                                std::move(messageQueue),
+                                std::move(transportNotAvailableQueue)),
           parentRouter(nullptr),
           parentAddress(nullptr),
           incomingAddress(incomingAddress),
@@ -106,18 +110,9 @@ void LibJoynrMessageRouter::setParentRouter(std::unique_ptr<system::RoutingProxy
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
   */
-void LibJoynrMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount)
+void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
+                                          std::uint32_t tryCount)
 {
-    assert(messagingStubFactory != nullptr);
-    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now());
-    if (now > message->getExpiryDate()) {
-        std::string errorMessage("Received expired message. Dropping the message (ID: " +
-                                 message->getId() + ").");
-        JOYNR_LOG_WARN(logger, errorMessage);
-        throw exceptions::JoynrMessageNotSentException(errorMessage);
-    }
-
     JOYNR_LOG_TRACE(logger, "Route message with Id {}", message->getId());
     // search for the destination addresses
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
@@ -338,33 +333,42 @@ void LibJoynrMessageRouter::addMulticastReceiver(
     }
 
     std::function<void()> onSuccessWrapper =
-            [this, multicastId, subscriberParticipantId, onSuccess]() {
+            [ this, multicastId, subscriberParticipantId, onSuccess = std::move(onSuccess) ]()
+    {
         multicastReceiverDirectory.registerMulticastReceiver(multicastId, subscriberParticipantId);
         JOYNR_LOG_TRACE(logger,
                         "added multicast receiver={} for multicastId={}",
                         subscriberParticipantId,
                         multicastId);
-        onSuccess();
+        if (onSuccess) {
+            onSuccess();
+        }
     };
     std::function<void(const exceptions::JoynrRuntimeException&)> onErrorWrapper =
-            [onError, subscriberParticipantId, multicastId](
-                    const exceptions::JoynrRuntimeException& error) {
+            [ onError = std::move(onError), subscriberParticipantId, multicastId ](
+                    const exceptions::JoynrRuntimeException& error)
+    {
         JOYNR_LOG_ERROR(logger,
                         "error adding multicast receiver={} for multicastId={}, error: {}",
                         subscriberParticipantId,
                         multicastId,
                         error.getMessage());
-        onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        if (onError) {
+            onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+        }
     };
 
     if (!providerAddress) {
         // try to resolve destination address via parent message router
-        auto onResolved = [this,
-                           multicastId,
-                           subscriberParticipantId,
-                           providerParticipantId,
-                           onSuccessWrapper,
-                           onErrorWrapper](const bool& resolved) {
+        auto onResolved = [
+            this,
+            multicastId,
+            subscriberParticipantId,
+            providerParticipantId,
+            onSuccessWrapper = std::move(onSuccessWrapper),
+            onErrorWrapper
+        ](const bool& resolved)
+        {
             if (resolved) {
                 addProvisionedNextHop(
                         providerParticipantId, parentAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
@@ -432,8 +436,9 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
     }
 
     std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
-            [onError, subscriberParticipantId, multicastId](
-                    const exceptions::JoynrException& error) {
+            [ onError = std::move(onError), subscriberParticipantId, multicastId ](
+                    const exceptions::JoynrException& error)
+    {
         JOYNR_LOG_ERROR(logger,
                         "error removing multicast receiver={} for multicastId={}, error: {}",
                         subscriberParticipantId,

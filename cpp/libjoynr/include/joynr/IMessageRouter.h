@@ -59,22 +59,25 @@ public:
 
     virtual void removeNextHop(
             const std::string& participantId,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) = 0;
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
+                    onError = nullptr) = 0;
 
     virtual void addMulticastReceiver(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
             const std::string& providerParticipantId,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) = 0;
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
+                    onError = nullptr) = 0;
 
     virtual void removeMulticastReceiver(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
             const std::string& providerParticipantId,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) = 0;
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
+                    onError = nullptr) = 0;
 
     virtual void queueMessage(std::shared_ptr<ImmutableMessage> message) = 0;
 };

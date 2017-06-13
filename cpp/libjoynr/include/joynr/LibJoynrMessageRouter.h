@@ -79,16 +79,21 @@ public:
             std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
             boost::asio::io_service& ioService,
             std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+            std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
             int maxThreads = 1,
-            std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
+            std::unique_ptr<MessageQueue<std::string>> messageQueue =
+                    std::make_unique<MessageQueue<std::string>>(),
+            std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
+                    transportNotAvailableQueue =
+                            std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
 
     ~LibJoynrMessageRouter() override;
+
+    void routeInternal(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) final;
 
     /*
      * Implement methods from IMessageRouter
      */
-    void route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) final;
-
     void addNextHop(const std::string& participantId,
                     const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
                     bool isGloballyVisible,

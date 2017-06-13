@@ -179,7 +179,7 @@ public class DispatcherImpl implements Dispatcher {
         final long expiryDate = message.getTtlMs();
         final Map<String, String> customHeaders = message.getCustomHeaders();
         if (DispatcherUtils.isExpired(expiryDate)) {
-            logger.debug("TTL expired, discarding message : {}", message.toLogMessage());
+            logger.debug("TTL expired, discarding message : {}", message);
             return;
         }
 

@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>0.26.0</version>
+	<version>0.27.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -487,7 +487,7 @@
 			<dependency>
 				<groupId>io.joynr.mqtt</groupId>
 				<artifactId>mqtt-client</artifactId>
-				<version>0.0.3</version>
+				<version>0.0.4</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject</groupId>
@@ -1433,8 +1433,8 @@
 						<configuration>
 							<rules>
 								<requireMavenVersion>
-									<version>[3.1,3.4)</version>
-									<message>Wrong Maven version. You must use Maven 3.1.x to 3.3.x to build joynr.</message>
+									<version>[3.1,)</version>
+									<message>Wrong Maven version. You must use Maven 3.1.x or newer to build joynr.</message>
 								</requireMavenVersion>
 								<requireJavaVersion>
 									<version>1.8.0</version>

@@ -513,7 +513,7 @@ must be set on the command line. Right click again and select **Run Configuratio
 Alternatively, run the provider from the command line by executing the following Maven command:
 
 ```bash
-<RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<my provider domain>"
+<RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="-d <my provider domain>"
 ```
 
 >**Note:**
@@ -531,18 +531,18 @@ should be able to see log output.
 Alternatively, run the consumer from the command line by executing the following Maven command:
 
 ```bash
-<RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="<my provider domain>"
+<RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="-d <my provider domain>"
 ```
 
 >When using HTTP/Jetty, an additional argument is necessary to run the provider and consumer
 >applications:
 >```bash
 ><RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" \
->  -Dexec.args="<my provider domain> http" \
+>  -Dexec.args="-d <my provider domain> -t http" \
 >  -Djoynr.messaging.discoverydirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/ \
 >  -Djoynr.messaging.domainaccesscontrollerurl=http://localhost:8080/discovery/channels/domainaccesscontroller_channelid/
 ><RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" \
->  -Dexec.args="<my provider domain> http" \
+>  -Dexec.args="-d <my provider domain> -t http" \
 >  -Djoynr.messaging.discoverydirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/ \
 >  -Djoynr.messaging.domainaccesscontrollerurl=http://localhost:8080/discovery/channels/domainaccesscontroller_channelid/
 >```

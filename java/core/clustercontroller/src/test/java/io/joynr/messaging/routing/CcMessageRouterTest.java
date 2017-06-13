@@ -113,6 +113,9 @@ public class CcMessageRouterTest {
 
             private Long msgRetryIntervalMs = 10L;
             private int maximumParallelSends = 1;
+            private int maxMessagesInQueue = 10;
+            private long routingTableGracePeriodMs = 30000;
+            private long routingTableCleanupIntervalMs = 60000;
 
             @Override
             protected void configure() {
@@ -122,6 +125,15 @@ public class CcMessageRouterTest {
                 bind(MulticastReceiverRegistry.class).to(InMemoryMulticastReceiverRegistry.class).asEagerSingleton();
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
                                 .toInstance(msgRetryIntervalMs);
+                bind(Integer.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS))
+                                   .toInstance(maximumParallelSends);
+                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS))
+                                .toInstance(routingTableGracePeriodMs);
+                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS))
+                                .toInstance(routingTableCleanupIntervalMs);
+
+                bind(Integer.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGES_INQUEUE))
+                                   .toInstance(maxMessagesInQueue);
                 bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
                               .to(false);
 
@@ -153,7 +165,9 @@ public class CcMessageRouterTest {
                                                                                  new HashSet<JoynrMessageProcessor>());
 
                 final boolean isGloballyVisible = true; // toParticipantId is globally visible
-                routingTable.put(toParticipantId, channelAddress, isGloballyVisible);
+                final long expiryDateMs = Long.MAX_VALUE;
+                final boolean isSticky = true;
+                routingTable.put(toParticipantId, channelAddress, isGloballyVisible, expiryDateMs, isSticky);
 
                 Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
 
@@ -215,7 +229,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testRetryForNoParticipantFound() throws Exception {
-        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1000).getValue());
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
         joynrMessage.setTtlAbsolute(true);
         joynrMessage.setRecipient("I don't exist");
 

@@ -51,7 +51,9 @@ AbstractMessageRouter::AbstractMessageRouter(
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         int maxThreads,
-        std::unique_ptr<MessageQueue> messageQueue)
+        std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
+        std::unique_ptr<MessageQueue<std::string>> messageQueue,
+        std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
         : routingTable("AbstractMessageRouter-RoutingTable",
                        ioService,
                        std::bind(&AbstractMessageRouter::routingTableSaveFilterFunc,
@@ -62,12 +64,15 @@ AbstractMessageRouter::AbstractMessageRouter(
           messagingStubFactory(std::move(messagingStubFactory)),
           messageScheduler(maxThreads, "AbstractMessageRouter", ioService),
           messageQueue(std::move(messageQueue)),
+          transportNotAvailableQueue(std::move(transportNotAvailableQueue)),
           routingTableFileName(),
           addressCalculator(std::move(addressCalculator)),
           messageQueueCleanerTimer(ioService),
-          messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000))
+          messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000)),
+          transportStatuses(std::move(transportStatuses))
 {
     activateMessageCleanerTimer();
+    registerTransportStatusCallbacks();
 }
 
 AbstractMessageRouter::~AbstractMessageRouter()
@@ -127,7 +132,7 @@ AbstractMessageRouter::getDestinationAddresses(const ImmutableMessage& message)
             std::shared_ptr<const joynr::system::RoutingTypes::Address> globalTransport =
                     addressCalculator->compute(message);
             if (globalTransport) {
-                addresses.insert(globalTransport);
+                addresses.insert(std::move(globalTransport));
             }
         }
     } else {
@@ -138,6 +143,67 @@ AbstractMessageRouter::getDestinationAddresses(const ImmutableMessage& message)
         }
     }
     return addresses;
+}
+
+void AbstractMessageRouter::checkExpiryDate(const ImmutableMessage& message)
+{
+    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now());
+    if (now > message.getExpiryDate()) {
+        std::string errorMessage("Received expired message. Dropping the message (ID: " +
+                                 message.getId() + ").");
+        JOYNR_LOG_WARN(logger, errorMessage);
+        throw exceptions::JoynrMessageNotSentException(errorMessage);
+    }
+}
+
+void AbstractMessageRouter::registerGlobalRoutingEntryIfRequired(const ImmutableMessage& message)
+{
+    if (!message.isReceivedFromGlobal()) {
+        return;
+    }
+
+    const std::string& messageType = message.getType();
+
+    if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST() ||
+        messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST()) {
+
+        boost::optional<std::string> optionalReplyTo = message.getReplyTo();
+
+        if (!optionalReplyTo) {
+            std::string errorMessage("message " + message.getId() +
+                                     " did not contain replyTo header, discarding");
+            JOYNR_LOG_ERROR(logger, errorMessage);
+            throw exceptions::JoynrMessageNotSentException(errorMessage);
+        }
+        const std::string& replyTo = *optionalReplyTo;
+        try {
+            using system::RoutingTypes::Address;
+            std::shared_ptr<const Address> address;
+            joynr::serializer::deserializeFromJson(address, replyTo);
+
+            // because the message is received via global transport (isGloballyVisible=true),
+            // isGloballyVisible must be true
+            const bool isGloballyVisible = true;
+            addNextHop(message.getSender(), address, isGloballyVisible);
+        } catch (const std::invalid_argument& e) {
+            std::string errorMessage("could not deserialize Address from " + replyTo +
+                                     " - error: " + e.what());
+            JOYNR_LOG_FATAL(logger, errorMessage);
+            // do not try to route the message if address is not valid
+            throw exceptions::JoynrMessageNotSentException(errorMessage);
+        }
+    }
+}
+
+void AbstractMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount)
+{
+    assert(messagingStubFactory);
+    assert(message);
+    checkExpiryDate(*message);
+    routeInternal(std::move(message), tryCount);
 }
 
 void AbstractMessageRouter::sendMessages(
@@ -154,8 +220,7 @@ void AbstractMessageRouter::sendMessages(
             break;
         }
 
-        std::unique_ptr<MessageQueueItem> item(
-                messageQueue->getNextMessageForParticipant(destinationPartId));
+        std::unique_ptr<MessageQueueItem> item(messageQueue->getNextMessageFor(destinationPartId));
 
         if (!item) {
             break;
@@ -182,6 +247,19 @@ void AbstractMessageRouter::scheduleMessage(
         std::uint32_t tryCount,
         std::chrono::milliseconds delay)
 {
+    for (const auto& transportStatus : transportStatuses) {
+        if (transportStatus->isReponsibleFor(destAddress)) {
+            if (!transportStatus->isAvailable()) {
+                JOYNR_LOG_TRACE(logger,
+                                "Transport not available. Message queued: {}",
+                                message->toLogMessage());
+
+                transportNotAvailableQueue->queueMessage(transportStatus, std::move(message));
+                return;
+            }
+        }
+    }
+
     auto stub = messagingStubFactory->create(destAddress);
     if (stub) {
         messageScheduler.schedule(new MessageRunnable(std::move(message),
@@ -209,6 +287,26 @@ void AbstractMessageRouter::activateMessageCleanerTimer()
             &AbstractMessageRouter::onMessageCleanerTimerExpired, this, std::placeholders::_1));
 }
 
+void AbstractMessageRouter::registerTransportStatusCallbacks()
+{
+    for (auto& transportStatus : transportStatuses) {
+        transportStatus->setAvailabilityChangedCallback([this, transportStatus](bool isAvailable) {
+            if (isAvailable) {
+                rescheduleQueuedMessagesForTransport(transportStatus);
+            }
+        });
+    }
+}
+
+void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
+        std::shared_ptr<ITransportStatus> transportStatus)
+{
+    while (auto nextImmutableMessage =
+                   transportNotAvailableQueue->getNextMessageFor(transportStatus)) {
+        route(nextImmutableMessage->getContent());
+    }
+}
+
 void AbstractMessageRouter::onMessageCleanerTimerExpired(const boost::system::error_code& errorCode)
 {
     if (!errorCode) {
@@ -224,7 +322,8 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(const boost::system::er
 void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 {
     JOYNR_LOG_TRACE(logger, "message queued: {}", message->toLogMessage());
-    messageQueue->queueMessage(std::move(message));
+    std::string recipient = message->getRecipient();
+    messageQueue->queueMessage(std::move(recipient), std::move(message));
 }
 
 void AbstractMessageRouter::loadRoutingTable(std::string fileName)

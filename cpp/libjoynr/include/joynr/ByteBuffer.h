@@ -20,12 +20,59 @@
 #define BYTEBUFFER_H
 
 #include <cstdint>
+#include <cstring>
 #include <vector>
+
+#include <muesli/Traits.h>
 
 namespace joynr
 {
 
-using ByteBuffer = std::vector<std::int8_t>;
+namespace detail
+{
+using InternalByte = std::uint8_t;
+using ExternalByte = std::int8_t;
 
+using InternalByteBuffer = std::vector<InternalByte>;
+using ExternalByteBuffer = std::vector<ExternalByte>;
+} // namespace detail
+
+class ByteBuffer : public detail::InternalByteBuffer
+{
+public:
+    using detail::InternalByteBuffer::InternalByteBuffer;
+
+    template <typename Archive>
+    void save(Archive& archive)
+    {
+        detail::ExternalByteBuffer externalBuffer;
+        copyBuffer(*this, externalBuffer);
+        archive(externalBuffer);
+    }
+
+    template <typename Archive>
+    void load(Archive& archive)
+    {
+        detail::ExternalByteBuffer externalBuffer;
+        archive(externalBuffer);
+        copyBuffer(externalBuffer, *this);
+    }
+
+private:
+    template <typename Source, typename Dest>
+    static void copyBuffer(const Source& source, Dest& dest)
+    {
+        dest.resize(source.size());
+        std::memcpy(dest.data(), source.data(), source.size());
+    }
+};
 } // namespace joynr
+
+namespace muesli
+{
+template <>
+struct SkipIntroOutroTraits<joynr::ByteBuffer> : std::true_type
+{
+};
+} // namespace muesli
 #endif // BYTEBUFFER_H

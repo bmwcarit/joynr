@@ -1,6 +1,6 @@
-#Stateless Broadcasts Concept: aka multicast
+# Stateless Broadcasts Concept: aka multicast
 
-##Overview
+## Overview
 
 Standard joynr messages are addressed point-to-point, meaning that each joynr
 message is addressed to an individual participantId. This addressing paradigm is
@@ -25,9 +25,9 @@ applications wanting to use partitions. All other changes will be performed at t
 Dispatching (Subscription/PublicationManager) and Messaging (Message Router /
 Messaging Skeleton) layers only.
 
-##Technical Details
+## Technical Details
 
-###MulticastId
+### MulticastId
 * A MulticastId is a composite of the provider's participantId, the name of
   the broadcast as modelled in Franca IDL, and an optional partition.
 * A partition is a list of strings that represent a hierarchy similar to a URL
@@ -35,13 +35,13 @@ Messaging Skeleton) layers only.
   A MulticastId can thus be calculated from information available to the
   consumer at discovery.
 
-###Partitions
+### Partitions
 A partition allows finer control of whom should receive a given multicast message. A single
 broadcast can thus be modeled in Franca. At runtime, consumers can subscribe for a subset
 of all publications being sent. The fireBroadcast method called by the provider allows the provider
 to state which partition the broadcast is for.
 
-####Partition Syntax and Wildcards
+#### Partition Syntax and Wildcards
 * A partition segment is case-sensitive.
 * A partition segment may only contain alphanumeric characters: A-Z, a-z and 0-9.
 * Subscribers may use the + character to wildcard a single level partition segment.
@@ -51,7 +51,7 @@ to state which partition the broadcast is for.
   Example: subscribing to a/b/* will be notified for a/b/c, a/b/d and a/b/c/d, but not for a/c/d.
 * Providers must not use wildcards in partitions when firing a broadcast.
 
-###Registering to receive multicast messages
+### Registering to receive multicast messages
 When an application subscribes to a broadcast, its libjoynr calls
 registerMulticastReceiver with the MulticastId, the receiver's own participantId,
 and the provider's participantId.
@@ -76,7 +76,7 @@ provider's address corresponding to its participantId found in the MulticastId.
 ![Sequence
 Diagram](diagrams/SequenceDiagram-Java-MulticastSubscribe.png)
 
-###Sending a multicast message
+### Sending a multicast message
 All non-selective broadcasts will be sent via joynr multicast messages.
 Attribute subscriptions and selective broadcasts will still be sent as
 unicast publication message for now.
@@ -101,7 +101,7 @@ controllers:
 * The ChannelMessagingStub must POST the message to a channel equal to
   {provider's participantId}{broadcastName}{concatenation of partition elements}.
 
-###Receiving a multicast message
+### Receiving a multicast message
 Incoming messages are passed from the receiving messaging skeleton to the
 MessageRouter. The MessageRouter uses the information in the RoutingTable to
 multicast the message on all messaging stubs that are registered as receivers on
@@ -110,7 +110,7 @@ the given MulticastId.
 ![Sequence Diagram](diagrams/SequenceDiagram-Java-MulticastPublish.png)
 
 
-####Prevent infinite echo publication
+#### Prevent infinite echo publication
 Because the broadcast messages are sent to a MulticastId rather than
 individual participants, the problem for the cluster controller is knowing
 whether the message being processed is intended for initial global publication,
@@ -125,7 +125,7 @@ set to TRUE, it means that it was received for distribution to the registered li
 but not for global publication.
 
 
-###Issues
+### Issues
 * As Providers became stateless, the publication ttl included in the OnChangeSubscription
   is currently not being used by the provider. Possible alternatives to overcome this limitation are
   being considered.

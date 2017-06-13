@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.26.0</version>
+		<version>0.27.0</version>
 	</parent>
 
 	<properties>
@@ -965,6 +965,7 @@
 									<configFile>${basedir}/src/test/karma/karma.system.integration.conf.js</configFile>
 								</configuration>
 							</execution>
+							-->
 							<execution>
 								<phase>integration-test</phase>
 								<id>karma-intertab-integration-tests</id>
@@ -975,7 +976,6 @@
 									<configFile>${basedir}/src/test/karma/karma.intertab.integration.conf.js</configFile>
 								</configuration>
 							</execution>
-							-->
 						</executions>
 						<configuration>
 							<karmaExecutable>${project.build.directory}/node-classes/node_modules/.bin/karma</karmaExecutable>

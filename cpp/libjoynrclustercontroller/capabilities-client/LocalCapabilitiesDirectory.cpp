@@ -54,7 +54,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         const std::string clusterControllerId)
         : joynr::system::DiscoveryAbstractProvider(),
           messagingSettings(messagingSettings),
-          capabilitiesClient(capabilitiesClientPtr),
+          capabilitiesClient(std::move(capabilitiesClientPtr)),
           localAddress(localAddress),
           cacheLock(),
           pendingLookupsLock(),
@@ -223,6 +223,7 @@ void LocalCapabilitiesDirectory::remove(const types::DiscoveryEntry& discoveryEn
         capabilitiesClient->remove(discoveryEntry.getParticipantId());
     }
     informObserversOnRemove(discoveryEntry);
+    messageRouter.removeNextHop(discoveryEntry.getParticipantId());
 }
 
 void LocalCapabilitiesDirectory::removeFromGloballyRegisteredCapabilities(
@@ -357,7 +358,8 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
     for (types::GlobalDiscoveryEntry globalDiscoveryEntry : results) {
         types::DiscoveryEntryWithMetaInfo convertedEntry =
                 util::convert(false, globalDiscoveryEntry);
-        capabilitiesMap.insert({globalDiscoveryEntry.getAddress(), globalDiscoveryEntry});
+        capabilitiesMap.insert(
+                {globalDiscoveryEntry.getAddress(), std::move(globalDiscoveryEntry)});
         mergedEntries.push_back(std::move(convertedEntry));
     }
     registerReceivedCapabilities(std::move(capabilitiesMap));
@@ -394,10 +396,11 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                                        callback,
                                        joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         };
-        this->capabilitiesClient->lookup(
-                participantId,
-                std::move(onSuccess),
-                std::bind(&ILocalCapabilitiesCallback::onError, callback, std::placeholders::_1));
+        this->capabilitiesClient->lookup(participantId,
+                                         std::move(onSuccess),
+                                         std::bind(&ILocalCapabilitiesCallback::onError,
+                                                   std::move(callback),
+                                                   std::placeholders::_1));
     }
 }
 
@@ -552,46 +555,18 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
     for (auto it = capabilityEntries.cbegin(); it != capabilityEntries.cend(); ++it) {
         const std::string& serializedAddress = it->first;
         const types::DiscoveryEntry& currentEntry = it->second;
-        // TODO: check joynrAddress for nullptr instead of string.find after the deserialization
-        // works as expected.
-        // Currently, JsonDeserializer.deserialize<T> always returns an instance of T
-        std::size_t foundTypeNameKey = serializedAddress.find("\"_typeName\"");
-        std::size_t foundTypeNameValue =
-                serializedAddress.find("\"joynr.system.RoutingTypes.MqttAddress\"");
+        std::shared_ptr<const system::RoutingTypes::Address> address;
         const bool isGloballyVisible = isGlobal(currentEntry);
-        if (boost::starts_with(serializedAddress, "{") && foundTypeNameKey != std::string::npos &&
-            foundTypeNameValue != std::string::npos && foundTypeNameKey < foundTypeNameValue) {
-            try {
-                using system::RoutingTypes::MqttAddress;
-                MqttAddress joynrAddress;
-                joynr::serializer::deserializeFromJson(joynrAddress, serializedAddress);
-                auto addressPtr = std::make_shared<MqttAddress>(joynrAddress);
-                messageRouter.addNextHop(
-                        currentEntry.getParticipantId(), addressPtr, isGloballyVisible);
-            } catch (const std::invalid_argument& e) {
-                JOYNR_LOG_FATAL(logger,
-                                "could not deserialize MqttAddress from {} - error: {}",
-                                serializedAddress,
-                                e.what());
-            }
-        } else {
-            try {
-                using system::RoutingTypes::ChannelAddress;
-
-                ChannelAddress channelAddress;
-                joynr::serializer::deserializeFromJson(channelAddress, serializedAddress);
-                auto channelAddressPtr = std::make_shared<const ChannelAddress>(channelAddress);
-
-                messageRouter.addNextHop(
-                        currentEntry.getParticipantId(), channelAddressPtr, isGloballyVisible);
-            } catch (const std::invalid_argument& e) {
-                JOYNR_LOG_FATAL(logger,
-                                "could not deserialize ChannelAddress from {} - error: {}",
-                                serializedAddress,
-                                e.what());
-            }
+        try {
+            joynr::serializer::deserializeFromJson(address, serializedAddress);
+            messageRouter.addNextHop(currentEntry.getParticipantId(), address, isGloballyVisible);
+            this->insertInCache(currentEntry, false, true);
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_FATAL(logger,
+                            "could not deserialize Address from {} - error: {}",
+                            serializedAddress,
+                            e.what());
         }
-        this->insertInCache(currentEntry, false, true);
     }
 }
 
@@ -623,7 +598,7 @@ void LocalCapabilitiesDirectory::lookup(
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
 
-    lookup(domains, interfaceName, localCapabilitiesCallback, discoveryQos);
+    lookup(domains, interfaceName, std::move(localCapabilitiesCallback), discoveryQos);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -654,7 +629,7 @@ void LocalCapabilitiesDirectory::lookup(
 
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(callback), std::move(onError));
-    lookup(participantId, localCapabilitiesCallback);
+    lookup(participantId, std::move(localCapabilitiesCallback));
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -671,7 +646,7 @@ void LocalCapabilitiesDirectory::remove(
 void LocalCapabilitiesDirectory::addProviderRegistrationObserver(
         std::shared_ptr<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
 {
-    observers.push_back(observer);
+    observers.push_back(std::move(observer));
 }
 
 void LocalCapabilitiesDirectory::removeProviderRegistrationObserver(

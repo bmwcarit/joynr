@@ -4,3 +4,7 @@ ws-port=4242
 mqtt-client-id-prefix=joynr
 mqtt-multicast-topic-prefix=
 mqtt-unicast-topic-prefix=
+
+[access-control]
+# Access control on messages is disabled by default. Set to true to enable.
+enable=false

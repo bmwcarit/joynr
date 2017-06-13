@@ -24,8 +24,6 @@
 #include "joynr/ImmutableMessage.h"
 #include "joynr/Message.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/serializer/Serializer.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
 {
@@ -41,38 +39,7 @@ void HttpMessagingSkeleton::transmit(
         std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    const std::string& messageType = message->getType();
-    if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST() ||
-        messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST() ||
-        messageType == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST()) {
-
-        boost::optional<std::string> optionalReplyTo = message->getReplyTo();
-        if (!optionalReplyTo) {
-            JOYNR_LOG_ERROR(logger,
-                            "message {} did not contain replyTo header, discarding",
-                            message->getId());
-            return;
-        }
-        const std::string& replyTo = *optionalReplyTo;
-        try {
-            using system::RoutingTypes::ChannelAddress;
-
-            ChannelAddress channelAddress;
-            joynr::serializer::deserializeFromJson(channelAddress, replyTo);
-
-            auto address = std::make_shared<const ChannelAddress>(channelAddress);
-            // because the message is received via global transport, isGloballyVisible must be true
-            const bool isGloballyVisible = true;
-            messageRouter.addNextHop(message->getSender(), address, isGloballyVisible);
-        } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_ERROR(logger,
-                            "could not deserialize ChannelAddress from {} - error: {}",
-                            replyTo,
-                            e.what());
-            // do not try to route the message if address is not valid
-            return;
-        }
-    }
+    message->setReceivedFromGlobal(true);
 
     try {
         messageRouter.route(std::move(message));

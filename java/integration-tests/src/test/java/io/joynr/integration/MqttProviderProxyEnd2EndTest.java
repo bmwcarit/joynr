@@ -20,6 +20,7 @@ package io.joynr.integration;
  */
 
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -85,6 +86,24 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
 
         return application.getRuntime();
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT * 1000)
+    public void testLargeByteArray() throws Exception {
+        testProxy proxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
+                                         .setMessagingQos(messagingQos)
+                                         .setDiscoveryQos(discoveryQos)
+                                         .build();
+
+        Byte[] largeByteArray = new Byte[1024 * 100];
+
+        for (int i = 0; i < largeByteArray.length; i++) {
+            largeByteArray[i] = (byte) (i % 256);
+        }
+
+        Byte[] returnValue = proxy.methodWithByteArray(largeByteArray);
+
+        assertArrayEquals(returnValue, largeByteArray);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT * 1000)

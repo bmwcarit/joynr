@@ -31,7 +31,7 @@ INIT_LOGGER(MosquittoConnection);
 MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSettings,
                                          const ClusterControllerSettings& ccSettings,
                                          const std::string& clientId)
-        : mosquittopp(clientId.c_str()),
+        : mosquittopp(clientId.c_str(), false),
           messagingSettings(messagingSettings),
           host(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost()),
           port(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort()),
@@ -41,10 +41,14 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
           additionalTopics(),
           additionalTopicsMutex(),
           isConnected(false),
+          isInitialConnection(true),
           isRunning(false),
           isChannelIdRegistered(false),
           subscribedToChannelTopic(false),
+          readyToSend(false),
           onMessageReceived(),
+          onReadyToSendChangedMutex(),
+          onReadyToSendChanged(),
           thread()
 {
     JOYNR_LOG_DEBUG(logger, "Try to connect to tcp://{}:{}", host, port);
@@ -75,6 +79,9 @@ MosquittoConnection::~MosquittoConnection()
 
 void MosquittoConnection::on_disconnect(int rc)
 {
+    isConnected = false;
+    setReadyToSend(false);
+
     if (rc == 0) {
         JOYNR_LOG_DEBUG(logger, "Disconnected from tcp://{}:{}", host, port);
     } else {
@@ -181,35 +188,23 @@ void MosquittoConnection::runLoop()
 void MosquittoConnection::on_connect(int rc)
 {
     if (rc > 0) {
-        if (rc == 1) {
-            JOYNR_LOG_ERROR(logger,
-                            "Mosquitto Connection Error {} ({})",
-                            rc,
-                            "connection refused (unacceptable protocol version)");
-        } else if (rc == 2) {
-            JOYNR_LOG_ERROR(logger,
-                            "Mosquitto Connection Error {} ({})",
-                            rc,
-                            "connection refused (identifier rejected)");
-        } else if (rc == 3) {
-            JOYNR_LOG_DEBUG(logger,
-                            "Mosquitto Connection Error {} ({})",
-                            rc,
-                            "connection refused (broker unavailable)");
-        } else {
-            JOYNR_LOG_ERROR(logger,
-                            "Mosquitto Connection Error {} ({})",
-                            rc,
-                            "unknown error code (reserved for future use)");
-        }
+        JOYNR_LOG_ERROR(logger,
+                        "Mosquitto Connection Error: {} ({})",
+                        std::to_string(rc),
+                        mosqpp::strerror(rc));
     } else {
         JOYNR_LOG_DEBUG(logger, "Mosquitto Connection established");
         isConnected = true;
-        restoreSubscriptions();
+
+        createSubscriptions();
+
+        if (isInitialConnection) {
+            isInitialConnection = false;
+        }
     }
 }
 
-void MosquittoConnection::restoreSubscriptions()
+void MosquittoConnection::createSubscriptions()
 {
     while (!isChannelIdRegistered && isRunning) {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
@@ -331,9 +326,21 @@ void MosquittoConnection::registerReceiveCallback(
     this->onMessageReceived = onMessageReceived;
 }
 
+void MosquittoConnection::registerReadyToSendChangedCallback(
+        std::function<void(bool)> onReadyToSendChanged)
+{
+    std::lock_guard<std::mutex> lock(onReadyToSendChangedMutex);
+    this->onReadyToSendChanged = std::move(onReadyToSendChanged);
+}
+
 bool MosquittoConnection::isSubscribedToChannelTopic() const
 {
     return subscribedToChannelTopic;
+}
+
+bool MosquittoConnection::isReadyToSend() const
+{
+    return readyToSend;
 }
 
 void MosquittoConnection::on_subscribe(int mid, int qos_count, const int* granted_qos)
@@ -346,6 +353,7 @@ void MosquittoConnection::on_subscribe(int mid, int qos_count, const int* grante
 
     if (mid == subscribeChannelMid) {
         subscribedToChannelTopic = true;
+        setReadyToSend(isConnected);
     }
 }
 
@@ -365,6 +373,18 @@ void MosquittoConnection::on_message(const mosquitto_message* message)
 void MosquittoConnection::on_publish(int mid)
 {
     JOYNR_LOG_TRACE(logger, "published message with mid {}", std::to_string(mid));
+}
+
+void MosquittoConnection::setReadyToSend(bool readyToSend)
+{
+    if (this->readyToSend != readyToSend) {
+        this->readyToSend = readyToSend;
+
+        std::lock_guard<std::mutex> lock(onReadyToSendChangedMutex);
+        if (onReadyToSendChanged) {
+            onReadyToSendChanged(readyToSend);
+        }
+    }
 }
 
 } // namespace joynr

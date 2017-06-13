@@ -75,9 +75,7 @@ void «interfaceName»RequestInterpreter::execute(
 		std::shared_ptr<«interfaceName»RequestCaller> «requestCallerName» =
 				std::dynamic_pointer_cast<«interfaceName»RequestCaller>(requestCaller);
 
-		«IF francaIntf.hasMethodWithArguments || francaIntf.hasWriteAttribute»
-			const std::vector<std::string>& paramTypes = request.getParamDatatypes();
-		«ENDIF»
+		const std::vector<std::string>& paramTypes = request.getParamDatatypes();
 		const std::string& methodName = request.getMethodName();
 
 		// execute operation
@@ -85,7 +83,7 @@ void «interfaceName»RequestInterpreter::execute(
 			«FOR attribute : attributes»
 				«val attributeName = attribute.joynrName»
 				«IF attribute.readable»
-				if (methodName == "get«attributeName.toFirstUpper»"){
+				if (methodName == "get«attributeName.toFirstUpper»" && paramTypes.size() == 0){
 					auto requestCallerOnSuccess =
 							[onSuccess = std::move(onSuccess)](«attribute.typeName» «attributeName»){
 								BaseReply reply;

@@ -103,6 +103,21 @@ The number of threads used by the message router to send joynr messages.
 * **User property**: `joynr.messaging.maximumparallelsends`
 * **Default value**: `20`
 
+### `PROPERTY_MAX_MESSAGES_INQUEUE`
+The number of messages (incoming and outgoing) that can be queued in the
+message router at the same time. The queue is blocking, so that messaging
+skeletons that receive a message that no longer has room in the queue will
+block until a message can be removed from the queue and processed.
+**NOTE** This value works in conjunction with joynr.messaging.maximumparallelsends,
+which determines the number of worker threads started to process messages.
+The sum of the two values is the maximum number of messages handled by
+joynr in parallel.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.maxmessagesinqueue`
+* **Default value**: `20`
+
 ### `PROPERTY_MESSAGING_MAXIMUM_TTL_MS`
 The maximum allowed time-to-live (TTL) of joynr messages. The TTL used in a joynr message is set on
 the proxy builder using the messaging QoS object. These TTLs are only accepted up to the maximum
@@ -122,6 +137,24 @@ same interface and domain combination.
 * **Type**: String
 * **User property**: `joynr.discovery.participantids_persistence_file`
 * **Default value**: `joynr_participantIds.properties`
+
+### `PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS`
+A routing table entry has an expiry date; once this point in time has been passed, the entry can
+be removed from the routing table. The expiryDateMs is calculated or updated based on the message
+ttls plus this grace period in milliseconds.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.routingtablegraceperiodms`
+* **Default value**: `30000`
+
+### `PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS`
+The number of milliseconds between two consecutive invocations of the routing table cleanup
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.routingtablecleanupintervalms`
+* **Default value**: `60000`
 
 ### `PROPERTY_SEND_MSG_RETRY_INTERVAL_MS`
 The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,

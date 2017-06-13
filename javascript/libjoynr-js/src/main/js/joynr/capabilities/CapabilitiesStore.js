@@ -307,7 +307,8 @@ define(
                                 storedEntries =
                                         discoveryEntryStoreByParticipantId[settings.participantId];
                                 if (qosMatches(storedEntries, settings.cacheMaxAge)) {
-                                    returnValue = storedEntries;
+                                    returnValue = [ storedEntries
+                                    ];
                                 } else {
                                     returnValue = undefined;
                                 }

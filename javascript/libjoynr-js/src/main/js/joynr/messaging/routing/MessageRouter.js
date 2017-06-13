@@ -31,7 +31,9 @@ define(
             "joynr/messaging/JoynrMessage",
             "joynr/messaging/MessageReplyToAddressCalculator",
             "joynr/exceptions/JoynrException",
+            "joynr/exceptions/JoynrRuntimeException",
             "joynr/util/Typing",
+            "joynr/util/UtilInternal",
             "joynr/util/JSONSerializer",
         ],
         function(Promise,
@@ -42,7 +44,9 @@ define(
                 JoynrMessage,
                 MessageReplyToAddressCalculator,
                 JoynrException,
+                JoynrRuntimeException,
                 Typing,
+                Util,
                 JSONSerializer) {
 
             /**
@@ -454,6 +458,30 @@ define(
                     }
                 }
 
+                function registerGlobalRoutingEntryIfRequired(joynrMessage) {
+                    if (!joynrMessage.isReceivedFromGlobal) {
+                        return;
+                    }
+
+                    var type = joynrMessage.type;
+                    if (type === JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST ||
+                            type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
+                            type === JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
+                            type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
+                        var replyToAddress = joynrMessage.replyChannelId;
+                        if (!Util.checkNullUndefined(replyToAddress)) {
+                            // because the message is received via global transport, isGloballyVisible must be true
+                            var isGloballyVisible = true;
+                            that.addNextHop(
+                                    joynrMessage.from,
+                                    Typing.augmentTypes(
+                                            JSON.parse(replyToAddress),
+                                            typeRegistry),
+                                    isGloballyVisible);
+                        }
+                    }
+                }
+
                 /**
                  * @name MessageRouter#route
                  * @function
@@ -464,6 +492,15 @@ define(
                  */
                 this.route =
                         function route(joynrMessage) {
+                    var now = Date.now();
+                    if (now > joynrMessage.expiryDate) {
+                        var errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
+                        log.warn(errorMsg);
+                        throw new JoynrRuntimeException({detailMessage: errorMsg});
+                    }
+
+                    registerGlobalRoutingEntryIfRequired(joynrMessage);
+
                     function forwardToRouteInternal(address) {
                         return routeInternal(address, joynrMessage);
                     }
@@ -660,7 +697,12 @@ define(
                             if (messageQueue !== undefined) {
                                 i = messageQueue.length;
                                 while (i--) {
-                                    that.route(messageQueue[i]);
+                                    try {
+                                        that.route(messageQueue[i]);
+                                    } catch(error) {
+                                        log.error("queued message could not be sent to " + participantId + ", error: " + error
+                                                + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                                    }
                                 }
                             }
                         };

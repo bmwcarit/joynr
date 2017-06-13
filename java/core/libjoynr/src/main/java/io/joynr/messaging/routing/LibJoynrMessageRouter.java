@@ -79,18 +79,26 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
                                  @Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
                                  @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS) long routingTableGracePeriodMs,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS) long routingTableCleanupIntervalMs,
                                  MessagingStubFactory messagingStubFactory,
                                  MessagingSkeletonFactory messagingSkeletonFactory,
                                  AddressManager addressManager,
-                                 MulticastReceiverRegistry multicastReceiverRegistry) {
+                                 MulticastReceiverRegistry multicastReceiverRegistry,
+                                 BoundedDelayQueue<DelayableImmutableMessage> messageQueue) {
         // CHECKSTYLE:ON
         super(routingTable,
               scheduler,
               sendMsgRetryIntervalMs,
+              maxParallelSends,
+              routingTableGracePeriodMs,
+              routingTableCleanupIntervalMs,
               messagingStubFactory,
               messagingSkeletonFactory,
               addressManager,
-              multicastReceiverRegistry);
+              multicastReceiverRegistry,
+              messageQueue);
         this.incomingAddress = incomingAddress;
     }
 

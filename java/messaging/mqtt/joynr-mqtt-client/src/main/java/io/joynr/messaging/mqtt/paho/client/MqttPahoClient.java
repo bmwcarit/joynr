@@ -58,6 +58,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     private Set<String> subscribedTopics = new HashSet<>();
 
+    private boolean shutdown = false;
+
     public MqttPahoClient(MqttClient mqttClient,
                           int reconnectSleepMS,
                           int keepAliveTimerSec,
@@ -73,8 +75,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void start() {
-        while (!mqttClient.isConnected()) {
+    public synchronized void start() {
+        while (!shutdown && !mqttClient.isConnected()) {
             try {
                 mqttClient.setCallback(this);
                 mqttClient.setTimeToWait(timeToWaitMs);
@@ -84,7 +86,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                     subscribe(topic);
                 }
             } catch (MqttException mqttError) {
-                logger.error("MQTT Connect failed.", mqttError);
+                logger.error("MQTT Connect failed. Error code {}", mqttError.getReasonCode(), mqttError);
                 switch (mqttError.getReasonCode()) {
                 case MqttException.REASON_CODE_CLIENT_EXCEPTION:
                 case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
@@ -99,6 +101,10 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 case MqttException.REASON_CODE_SUBSCRIBE_FAILED:
                 case MqttException.REASON_CODE_UNEXPECTED_ERROR:
                 case MqttException.REASON_CODE_WRITE_TIMEOUT:
+                    if (shutdown) {
+                        return;
+                    }
+
                     try {
                         Thread.sleep(reconnectSleepMs);
                     } catch (InterruptedException e) {
@@ -135,7 +141,11 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 subscribed = true;
                 subscribedTopics.add(topic);
             } catch (MqttException mqttError) {
-                logger.debug("MQTT subscribe to: " + topic + " failed: " + mqttError.getMessage(), mqttError);
+                logger.debug("MQTT subscribe to {} failed: {}. Error code {}",
+                             topic,
+                             mqttError.getMessage(),
+                             mqttError.getReasonCode(),
+                             mqttError);
                 switch (mqttError.getReasonCode()) {
                 case MqttException.REASON_CODE_CLIENT_EXCEPTION:
                 case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
@@ -176,7 +186,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void shutdown() {
+    public synchronized void shutdown() {
+        shutdown = true;
         logger.info("Attempting shutdown of MQTT connection.");
         try {
             mqttClient.disconnectForcibly(10000, 10000);
@@ -205,7 +216,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             logger.debug("MQTT Publish to: {}", topic);
             mqttClient.publish(topic, message);
         } catch (MqttException e) {
-            logger.debug("MQTT Publish failed: {}", e.getMessage(), e);
+            logger.debug("MQTT Publish failed: {}. Error code {}", e.getMessage(), e.getReasonCode(), e);
             switch (e.getReasonCode()) {
             case MqttException.REASON_CODE_CLIENT_EXCEPTION:
                 Throwable cause = e.getCause();
@@ -251,7 +262,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             case MqttException.REASON_CODE_INVALID_MESSAGE:
             case MqttException.REASON_CODE_CONNECTION_LOST:
             case MqttException.REASON_CODE_UNEXPECTED_ERROR:
-                logger.debug("MQTT connection lost, trying to reconnect");
+                logger.debug("MQTT connection lost, trying to reconnect. Error code {}", reason);
                 start();
                 break;
             case MqttException.REASON_CODE_CLIENT_EXCEPTION:
@@ -269,14 +280,15 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             case MqttException.REASON_CODE_NOT_AUTHORIZED:
             case MqttException.REASON_CODE_SOCKET_FACTORY_MISMATCH:
             case MqttException.REASON_CODE_SSL_CONFIG_ERROR:
-                logger.error("MQTT Connection is incorrectly configured. Connection not possible: "
-                        + mqttError.getMessage());
+                logger.error("MQTT Connection is incorrectly configured. Connection not possible: {}. Error code {}",
+                             mqttError.getMessage(),
+                             reason);
                 shutdown();
                 break;
             // the following error codes can occur if the client is closing / already closed
             case MqttException.REASON_CODE_CLIENT_CLOSED:
             case MqttException.REASON_CODE_CLIENT_DISCONNECTING:
-                logger.trace("MQTT connection lost due to client shutting down");
+                logger.trace("MQTT connection lost due to client shutting down. Error code {}", reason);
                 break;
             // the following error codes should not be thrown when the connectionLost() callback is called
             // they are listed here for the sake of completeness
@@ -290,8 +302,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             case MqttException.REASON_CODE_MAX_INFLIGHT:
             case MqttException.REASON_CODE_DISCONNECTED_BUFFER_FULL:
             default:
-                logger.error("received error reason that should not have been thrown for connection loss: "
-                        + mqttError.getMessage());
+                logger.error("received error reason that should not have been thrown for connection loss: {}. Error code {}",
+                             mqttError.getMessage(),
+                             reason);
                 shutdown();
             }
 

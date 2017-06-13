@@ -41,9 +41,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
-import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 /**
  * Connects to the MQTT broker
@@ -126,19 +124,9 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     }
 
     private void forwardMessage(ImmutableMessage message, FailureAction failureAction) {
-        LOG.debug("<<< INCOMING <<< {}", message.toLogMessage());
+        LOG.debug("<<< INCOMING <<< {}", message);
         try {
-            if (message.getType().equals(Message.VALUE_MESSAGE_TYPE_MULTICAST)) {
-                message.setReceivedFromGlobal(true);
-            }
-            String replyToMqttAddress = message.getReplyTo();
-            // because the message is received via global transport, isGloballyVisible must be true
-            final boolean isGloballyVisible = true;
-            if (replyToMqttAddress != null && !replyToMqttAddress.isEmpty()) {
-                messageRouter.addNextHop(message.getSender(),
-                                         RoutingTypesUtil.fromAddressString(replyToMqttAddress),
-                                         isGloballyVisible);
-            }
+            message.setReceivedFromGlobal(true);
             messageRouter.route(message);
         } catch (Exception e) {
             LOG.error("Error processing incoming message. Message will be dropped: {} ", e);

@@ -86,6 +86,7 @@ public class ProviderWrapperTest {
     private static final Map<String, Serializable> expectedMessageContext = Maps.newHashMap();
 
     private static final AnnotationLiteral<io.joynr.jeeintegration.api.SubscriptionPublisher> SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL = new AnnotationLiteral<io.joynr.jeeintegration.api.SubscriptionPublisher>() {
+        private static final long serialVersionUID = 1L;
     };
 
     public static interface TestServiceProviderInterface extends SubscriptionPublisherInjection<SubscriptionPublisher> {
@@ -233,8 +234,8 @@ public class ProviderWrapperTest {
         Object result = subject.invoke(proxy, method, new Object[0]);
         assertNotNull(result);
         assertTrue(result instanceof Promise);
-        assertTrue(((Promise) result).isRejected());
-        ((Promise) result).then(new PromiseListener() {
+        assertTrue(((Promise<?>) result).isRejected());
+        ((Promise<?>) result).then(new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
                 fail("Should never get here");
@@ -257,8 +258,8 @@ public class ProviderWrapperTest {
         Object result = subject.invoke(proxy, method, new Object[0]);
         assertNotNull(result);
         assertTrue(result instanceof Promise);
-        assertTrue(((Promise) result).isRejected());
-        ((Promise) result).then(new PromiseListener() {
+        assertTrue(((Promise<?>) result).isRejected());
+        ((Promise<?>) result).then(new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
                 fail("Should never get here");
@@ -281,7 +282,7 @@ public class ProviderWrapperTest {
         Object result = subject.invoke(proxy, method, new Object[0]);
 
         assertTrue(result instanceof Promise);
-        Promise promise = (Promise) result;
+        Promise<?> promise = (Promise<?>) result;
         assertTrue(promise.isFulfilled());
         promise.then(new PromiseListener() {
             @Override
@@ -383,11 +384,10 @@ public class ProviderWrapperTest {
         verify(joynrJeeMessageContext).setMessageContext(expectedMessageContext);
     }
 
-    @SuppressWarnings("rawtypes")
     private void assertPromiseEquals(Object result, Object value) {
-        assertTrue(((Promise) result).isFulfilled());
+        assertTrue(((Promise<?>) result).isFulfilled());
         Boolean[] ensureFulfilled = new Boolean[]{ false };
-        ((Promise) result).then(new PromiseListener() {
+        ((Promise<?>) result).then(new PromiseListener() {
 
             @Override
             public void onRejection(JoynrException error) {

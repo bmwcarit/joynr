@@ -37,6 +37,7 @@
 #include "joynr/Runnable.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
+#include "libjoynrclustercontroller/include/joynr/ITransportStatus.h"
 
 namespace boost
 {
@@ -78,6 +79,9 @@ public:
     void saveRoutingTable();
     void loadRoutingTable(std::string fileName);
 
+    void route(std::shared_ptr<ImmutableMessage> message,
+               std::uint32_t tryCount = 0) final override;
+
     friend class MessageRunnable;
     friend class ConsumerPermissionCallback;
 
@@ -108,16 +112,24 @@ protected:
     };
 
     // Instantiation of this class only possible through its child classes.
-    AbstractMessageRouter(
-            std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
-            boost::asio::io_service& ioService,
-            std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
-            int maxThreads = 1,
-            std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
+    AbstractMessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+                          boost::asio::io_service& ioService,
+                          std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+                          int maxThreads = 1,
+                          std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
+                          std::unique_ptr<MessageQueue<std::string>> messageQueue =
+                                  std::make_unique<MessageQueue<std::string>>(),
+                          std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
+                                  transportNotAvailableQueue = std::make_unique<
+                                          MessageQueue<std::shared_ptr<ITransportStatus>>>());
 
     virtual bool publishToGlobal(const ImmutableMessage& message) = 0;
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
     getDestinationAddresses(const ImmutableMessage& message);
+
+    void registerGlobalRoutingEntryIfRequired(const ImmutableMessage& message);
+    virtual void routeInternal(std::shared_ptr<ImmutableMessage> message,
+                               std::uint32_t tryCount) = 0;
 
     std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
             const std::unordered_set<std::string>& participantIds);
@@ -133,6 +145,8 @@ protected:
                          std::chrono::milliseconds delay = std::chrono::milliseconds(0));
 
     void activateMessageCleanerTimer();
+    void registerTransportStatusCallbacks();
+    void rescheduleQueuedMessagesForTransport(std::shared_ptr<ITransportStatus> transportStatus);
     void onMessageCleanerTimerExpired(const boost::system::error_code& errorCode);
 
     using RoutingTable = Directory<std::string, RoutingEntry>;
@@ -141,16 +155,21 @@ protected:
     MulticastReceiverDirectory multicastReceiverDirectory;
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
     ThreadPoolDelayedScheduler messageScheduler;
-    std::unique_ptr<MessageQueue> messageQueue;
+    std::unique_ptr<MessageQueue<std::string>> messageQueue;
+    std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue;
     std::string routingTableFileName;
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
     SteadyTimer messageQueueCleanerTimer;
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
+    std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
+
     void queueMessage(std::shared_ptr<ImmutableMessage> message) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessageRouter);
     ADD_LOGGER(AbstractMessageRouter);
+
+    void checkExpiryDate(const ImmutableMessage& message);
 
     bool routingTableSaveFilterFunc(std::shared_ptr<RoutingEntry> routingEntry);
 };

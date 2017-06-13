@@ -29,6 +29,7 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
@@ -44,9 +45,11 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.system.Discovery;
 import joynr.system.DiscoveryProxy;
 import joynr.types.DiscoveryEntry;
@@ -78,6 +81,10 @@ public class LocalDiscoveryAggregatorTest {
     @Mock
     DiscoveryProxy discoveryProxyMock;
     @Mock
+    ProxyBuilderFactory proxyBuilderFactory;
+    @Mock
+    ProxyBuilder<DiscoveryProxy> proxyBuilder;
+    @Mock
     Callback<Void> addCallback;
     @Mock
     private Callback<DiscoveryEntryWithMetaInfo[]> lookupCallback;
@@ -91,10 +98,16 @@ public class LocalDiscoveryAggregatorTest {
         systemServicesDomain = "test.system.service.domain";
         anotherDomain = "anotherDomain";
         discoveryProviderParticipantId = "test.discovery.provider.participant";
+
+        when(proxyBuilderFactory.get(anyString(), eq(DiscoveryProxy.class))).thenReturn(proxyBuilder);
+        when(proxyBuilder.build()).thenReturn(discoveryProxyMock);
+        when(proxyBuilder.setMessagingQos(any(MessagingQos.class))).thenReturn(proxyBuilder);
+
         localDiscoveryAggregator = new LocalDiscoveryAggregator(systemServicesDomain,
                                                                 discoveryProviderParticipantId,
-                                                                "routingProviderParticipantId");
-        localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyMock);
+                                                                "routingProviderParticipantId",
+                                                                proxyBuilderFactory);
+        localDiscoveryAggregator.forceQueryOfDiscoveryProxy();
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
         discoveryProviderEntry = new DiscoveryEntryWithMetaInfo(new Version(0, 1),
@@ -234,43 +247,5 @@ public class LocalDiscoveryAggregatorTest {
                                                    any(String[].class),
                                                    anyString(),
                                                    any(DiscoveryQos.class));
-    }
-
-    @Test(expected = JoynrRuntimeException.class)
-    public void addThrowsIfProxyNotSet() {
-        localDiscoveryAggregator.setDiscoveryProxy(null);
-
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(0, 0),
-                                                           "anyDomain",
-                                                           "anyInterface",
-                                                           "anyParticipant",
-                                                           new ProviderQos(),
-                                                           System.currentTimeMillis(),
-                                                           expiryDateMs,
-                                                           publicKeyId);
-        localDiscoveryAggregator.add(addCallback, discoveryEntry);
-        verify(addCallback, never()).resolve();
-
-    }
-
-    @Test(expected = JoynrRuntimeException.class)
-    public void lookupByParticipantThrowsIfProxyNotSet() {
-        localDiscoveryAggregator.setDiscoveryProxy(null);
-        localDiscoveryAggregator.lookup(lookupParticipantCallback, "someParticipant");
-        verify(lookupParticipantCallback, never()).resolve(any());
-    }
-
-    @Test(expected = JoynrRuntimeException.class)
-    public void lookupByDomainThrowsIfProxyNotSet() {
-        localDiscoveryAggregator.setDiscoveryProxy(null);
-        localDiscoveryAggregator.lookup(lookupCallback, new String[]{ "anyDomain" }, "anyInterface", new DiscoveryQos());
-        verify(lookupCallback, never()).resolve(any());
-    }
-
-    @Test(expected = JoynrRuntimeException.class)
-    public void removeThrowsIfProxyNotSet() {
-        localDiscoveryAggregator.setDiscoveryProxy(null);
-        localDiscoveryAggregator.remove(removeCallback, "anyParticipant");
-        verify(removeCallback, never()).resolve();
     }
 }

@@ -57,6 +57,7 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
         bind(MessageRouter.class).to(CcMessageRouter.class).in(Singleton.class);
 
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.scheduler.capabilities.freshness-%d")
+                                                                     .setDaemon(true)
                                                                      .build();
         ScheduledExecutorService capabilitiesFreshnessUpdateExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))

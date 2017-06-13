@@ -52,8 +52,6 @@ public:
             const joynr::system::RoutingTypes::Address& destinationAddress,
             std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
-
-    virtual void registerReceiver(std::shared_ptr<ITransportMessageReceiver>) = 0;
 };
 } // namespace joynr
 

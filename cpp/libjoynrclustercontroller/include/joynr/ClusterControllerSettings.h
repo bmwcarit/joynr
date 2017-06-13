@@ -42,6 +42,12 @@ public:
     static const std::string& SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
     static const std::string& SETTING_WS_TLS_PORT();
     static const std::string& SETTING_WS_PORT();
+    static const std::string& SETTING_USE_ONLY_LDAS();
+
+    static const std::string& SETTING_ACCESS_CONTROL_ENABLE();
+    static const std::string& SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS();
+    static const std::string&
+    SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID();
 
     static const std::string& DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME();
     static const std::string& DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
@@ -49,6 +55,8 @@ public:
     static const std::string& DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX();
     static const std::string& DEFAULT_MQTT_UNICAST_TOPIC_PREFIX();
     static const std::string& DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
+    static bool DEFAULT_ENABLE_ACCESS_CONTROLLER();
+    static bool DEFAULT_USE_ONLY_LDAS();
 
     explicit ClusterControllerSettings(Settings& settings);
     ClusterControllerSettings(const ClusterControllerSettings&) = default;
@@ -90,6 +98,15 @@ public:
 
     std::string getLocalDomainAccessStorePersistenceFilename() const;
     void setLocalDomainAccessStorePersistenceFilename(const std::string& filename);
+
+    bool enableAccessController() const;
+    void setEnableAccessController(bool enable);
+
+    std::string getGlobalDomainAccessControlAddress() const;
+    std::string getGlobalDomainAccessControlParticipantId() const;
+
+    bool getUseOnlyLDAS() const;
+    void setUseOnlyLDAS(bool useLDASonly);
 
     void printSettings() const;
 

@@ -22,9 +22,11 @@ package io.joynr.messaging.routing;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -34,7 +36,6 @@ import com.google.inject.name.Named;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
@@ -43,7 +44,10 @@ import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,27 +59,65 @@ abstract public class AbstractMessageRouter implements MessageRouter {
     private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
+    private long routingTableGracePeriodMs;
+    private long routingTableCleanupIntervalMs;
     private MessagingStubFactory messagingStubFactory;
     private final MessagingSkeletonFactory messagingSkeletonFactory;
     private AddressManager addressManager;
     protected final MulticastReceiverRegistry multicastReceiverRegistry;
 
+    private BoundedDelayQueue<DelayableImmutableMessage> messageQueue;
+
+    private List<ScheduledFuture<?>> workerFutures;
+
     @Inject
     @Singleton
+    // CHECKSTYLE:OFF
     public AbstractMessageRouter(RoutingTable routingTable,
                                  @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS) long routingTableGracePeriodMs,
+                                 @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS) long routingTableCleanupIntervalMs,
                                  MessagingStubFactory messagingStubFactory,
                                  MessagingSkeletonFactory messagingSkeletonFactory,
                                  AddressManager addressManager,
-                                 MulticastReceiverRegistry multicastReceiverRegistry) {
+                                 MulticastReceiverRegistry multicastReceiverRegistry,
+                                 BoundedDelayQueue<DelayableImmutableMessage> messageQueue) {
+        // CHECKSTYLE:ON
         this.routingTable = routingTable;
         this.scheduler = scheduler;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
+        this.routingTableGracePeriodMs = routingTableGracePeriodMs;
+        this.routingTableCleanupIntervalMs = routingTableCleanupIntervalMs;
         this.messagingStubFactory = messagingStubFactory;
         this.messagingSkeletonFactory = messagingSkeletonFactory;
         this.addressManager = addressManager;
         this.multicastReceiverRegistry = multicastReceiverRegistry;
+        this.messageQueue = messageQueue;
+        startMessageWorkerThreads(maxParallelSends);
+        startRoutingTableCleanupThread();
+    }
+
+    private void startMessageWorkerThreads(int numberOfWorkThreads) {
+        workerFutures = new ArrayList<ScheduledFuture<?>>(numberOfWorkThreads);
+        for (int i = 0; i < numberOfWorkThreads; i++) {
+            ScheduledFuture<?> messageWorkerFuture = scheduler.schedule(new MessageWorker(i), 0, TimeUnit.MILLISECONDS);
+            if (messageWorkerFuture == null) {
+                logger.warn("scheduling messageWorker-" + i + "returned a null future. Cancel at shutdown not possible");
+                continue;
+            }
+            workerFutures.add(messageWorkerFuture);
+        }
+    }
+
+    private void startRoutingTableCleanupThread() {
+        scheduler.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                routingTable.purge();
+            }
+        }, routingTableCleanupIntervalMs, routingTableCleanupIntervalMs, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -137,12 +179,15 @@ abstract public class AbstractMessageRouter implements MessageRouter {
 
     @Override
     public void addNextHop(String participantId, Address address, boolean isGloballyVisible) {
-        routingTable.put(participantId, address, isGloballyVisible);
+        final long expiryDateMs = Long.MAX_VALUE;
+        final boolean isSticky = false;
+        routingTable.put(participantId, address, isGloballyVisible, expiryDateMs, isSticky);
     }
 
     @Override
     public void route(final ImmutableMessage message) {
         checkExpiry(message);
+        registerGlobalRoutingEntryIfRequired(message);
         routeInternal(message, 0, 0);
     }
 
@@ -159,40 +204,47 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         return addressManager.getAddresses(message);
     }
 
+    private void registerGlobalRoutingEntryIfRequired(final ImmutableMessage message) {
+        if (!message.isReceivedFromGlobal()) {
+            return;
+        }
+
+        String messageType = message.getType();
+
+        if (!messageType.equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
+                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
+                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)
+                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
+            return;
+        }
+
+        String replyTo = message.getReplyTo();
+        if (replyTo != null && !replyTo.isEmpty()) {
+            Address address = RoutingTypesUtil.fromAddressString(replyTo);
+
+            // If the message was received from global, the sender is globally visible by definition.
+            final boolean isGloballyVisible = true;
+
+            long expiryDateMs;
+            try {
+                expiryDateMs = Math.addExact(message.getTtlMs(), routingTableGracePeriodMs);
+            } catch (ArithmeticException e) {
+                expiryDateMs = Long.MAX_VALUE;
+            }
+
+            final boolean isSticky = false;
+            routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky);
+        }
+    }
+
     private void routeInternal(final ImmutableMessage message, final long delayMs, final int retriesCount) {
+        logger.trace("Scheduling {} with delay {} and retries {}", new Object[]{ message, delayMs, retriesCount });
+        DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, delayMs, retriesCount);
         try {
-            logger.trace("Scheduling {} with delay {} and retries {}", new Object[]{ message, delayMs, retriesCount });
-            schedule(new Runnable() {
-                @Override
-                public void run() {
-                    logger.trace("Starting processing of message {}", message);
-                    try {
-                        checkExpiry(message);
-
-                        Set<Address> addresses = getAddresses(message);
-                        if (addresses.isEmpty()) {
-                            throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
-                                    + message.getRecipient());
-                        }
-                        for (Address address : addresses) {
-                            logger.trace(">>>>> SEND  {}", message.toLogMessage());
-
-                            IMessagingStub messagingStub = messagingStubFactory.create(address);
-                            messagingStub.transmit(message, createFailureAction(message, retriesCount));
-                        }
-                    } catch (Exception error) {
-                        logger.error("error in scheduled message router thread: {}", error.getMessage());
-                        FailureAction failureAction = createFailureAction(message, retriesCount);
-                        failureAction.execute(error);
-                    }
-                }
-            },
-                     message.getId(),
-                     delayMs,
-                     TimeUnit.MILLISECONDS);
-        } catch (RejectedExecutionException e) {
-            logger.error("Execution rejected while scheduling SendSerializedMessageRequest ", e);
-            throw new JoynrSendBufferFullException(e);
+            messageQueue.putBounded(delayableMessage);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new JoynrShutdownException("INTERRUPTED. Shutting down");
         }
     }
 
@@ -238,24 +290,11 @@ abstract public class AbstractMessageRouter implements MessageRouter {
                     delayMs += exponentialBackoff(delayMs, retriesCount);
                 }
 
-                try {
-                    logger.error("Rescheduling messageId: {} with delay " + delayMs + " ms, TTL is: {} ms",
-                                 messageId,
-                                 DateFormatter.format(message.getTtlMs()));
-                    routeInternal(message, delayMs, retriesCount + 1);
-                    return;
-                } catch (JoynrSendBufferFullException e) {
-                    try {
-                        logger.error("Rescheduling message: {} delayed {} ms because send buffer is full",
-                                     delayMs,
-                                     messageId);
-                        Thread.sleep(delayMs);
-                        this.execute(e);
-                    } catch (InterruptedException e1) {
-                        Thread.currentThread().interrupt();
-                        return;
-                    }
-                }
+                logger.error("Rescheduling messageId: {} with delay " + delayMs + " ms, TTL is: {} ms",
+                             messageId,
+                             DateFormatter.format(message.getTtlMs()));
+                routeInternal(message, delayMs, retriesCount + 1);
+                return;
             }
         };
         return failureAction;
@@ -263,6 +302,10 @@ abstract public class AbstractMessageRouter implements MessageRouter {
 
     @Override
     public void shutdown() {
+        for (ScheduledFuture<?> workerFuture : workerFutures) {
+            workerFuture.cancel(true);
+        }
+
         scheduler.shutdown();
         try {
             if (!scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS)) {
@@ -284,4 +327,49 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         return millis;
     }
 
+    class MessageWorker implements Runnable {
+        private int number;
+
+        public MessageWorker(int number) {
+            this.number = number;
+        }
+
+        @Override
+        public void run() {
+            while (!Thread.interrupted()) {
+                Thread.currentThread().setName("joynrMessageWorker-" + number);
+                ImmutableMessage message = null;
+                DelayableImmutableMessage delayableMessage;
+                int retriesCount = 0;
+                try {
+                    delayableMessage = messageQueue.take();
+                    retriesCount = delayableMessage.getRetriesCount();
+                    message = delayableMessage.getMessage();
+                    logger.trace("Starting processing of message {}", message);
+                    checkExpiry(message);
+
+                    Set<Address> addresses = getAddresses(message);
+                    if (addresses.isEmpty()) {
+                        throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
+                                + message.getRecipient());
+                    }
+                    for (Address address : addresses) {
+                        logger.trace(">>>>> SEND  {} to address {}", message, address);
+
+                        IMessagingStub messagingStub = messagingStubFactory.create(address);
+                        messagingStub.transmit(message, createFailureAction(message, retriesCount));
+                    }
+                } catch (InterruptedException e) {
+                    logger.trace("Message Worker interrupted. Stopping.");
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (Exception error) {
+                    logger.error("error in scheduled message router thread: {}", error.getMessage());
+                    FailureAction failureAction = createFailureAction(message, retriesCount);
+                    failureAction.execute(error);
+                }
+            }
+
+        }
+    }
 }

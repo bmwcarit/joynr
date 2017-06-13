@@ -46,19 +46,27 @@ public class CcMessageRouter extends AbstractMessageRouter {
     public CcMessageRouter(RoutingTable routingTable,
                            @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                            @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
+                           @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
+                           @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS) long routingTableGracePeriodMs,
+                           @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS) long routingTableCleanupIntervalMs,
                            MessagingStubFactory messagingStubFactory,
                            MessagingSkeletonFactory messagingSkeletonFactory,
                            AddressManager addressManager,
                            MulticastReceiverRegistry multicastReceiverRegistry,
                            AccessController accessController,
-                           @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl) {
+                           @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl,
+                           BoundedDelayQueue<DelayableImmutableMessage> messageQueue) {
         super(routingTable,
               scheduler,
               sendMsgRetryIntervalMs,
+              maxParallelSends,
+              routingTableGracePeriodMs,
+              routingTableCleanupIntervalMs,
               messagingStubFactory,
               messagingSkeletonFactory,
               addressManager,
-              multicastReceiverRegistry);
+              multicastReceiverRegistry,
+              messageQueue);
 
         this.accessController = accessController;
         this.enableAccessControl = enableAccessControl;

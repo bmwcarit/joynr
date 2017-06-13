@@ -18,6 +18,7 @@ under the License.
 This project has dependencies to:
   android under Apache License, Version 2.0
   AOP alliance under Public Domain
+  Apache Commons CLI under Apache License, Version 2.0
   Apache Groovy under The Apache Software License, Version 2.0
   Apache HttpClient under Apache License
   Apache HttpCore under Apache License

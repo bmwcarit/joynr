@@ -160,9 +160,11 @@ std::size_t hash_value(const «typeName»& «typeName.toFirstLower»Value)
 	return «typeName.toFirstLower»Value.hashCode();
 }
 
+«IF isPolymorphic(type)»
 std::unique_ptr<«getRootType(type).typeName»> «typeName»::clone() const {
 	return std::make_unique<«typeName»>(const_cast<«typeName»&>(*this));
 }
+«ENDIF»
 
 «getNamespaceEnder(type, true)»
 '''

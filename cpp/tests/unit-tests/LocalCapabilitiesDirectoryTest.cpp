@@ -26,7 +26,6 @@
 #include <gmock/gmock.h>
 
 #include "joynr/LocalCapabilitiesDirectory.h"
-#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -128,6 +127,8 @@ public:
     {
         std::ignore = domains;
         std::ignore = interfaceName;
+        std::ignore = messagingTtl;
+        std::ignore = onError;
         std::vector<types::GlobalDiscoveryEntry> result;
         onSuccess(result);
     }
@@ -139,6 +140,7 @@ public:
             std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
     {
         std::ignore = participantId;
+        std::ignore = onError;
         std::vector<types::GlobalDiscoveryEntry> result;
         onSuccess(result);
     }
@@ -321,7 +323,7 @@ const std::string LocalCapabilitiesDirectoryTest::DOMAIN_1_NAME("domainA");
 const std::string LocalCapabilitiesDirectoryTest::DOMAIN_2_NAME("domainB");
 const std::string LocalCapabilitiesDirectoryTest::DOMAIN_3_NAME("domainB");
 const std::string LocalCapabilitiesDirectoryTest::LOCAL_ADDRESS("localAddress");
-const std::string LocalCapabilitiesDirectoryTest::EXTERNAL_ADDRESS("externalAddress");
+const std::string LocalCapabilitiesDirectoryTest::EXTERNAL_ADDRESS(joynr::serializer::serializeToJson(joynr::system::RoutingTypes::MqttAddress()));
 const std::int64_t LocalCapabilitiesDirectoryTest::LASTSEEN_MS(1000);
 const std::int64_t LocalCapabilitiesDirectoryTest::EXPIRYDATE_MS(10000);
 const std::string LocalCapabilitiesDirectoryTest::PUBLIC_KEY_ID("publicKeyId");
@@ -626,6 +628,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCapabilitiesMultipleTimesDoesNotD
                                                PUBLIC_KEY_ID);
             localCapabilitiesDirectory->add(entry);
         } catch (const exceptions::JoynrException& e) {
+            std::ignore = e;
             exceptionCounter++;
         }
     }

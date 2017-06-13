@@ -1,3 +1,23 @@
+# joynr 0.27.0
+
+## API relevant changes
+* **[C++]** virtual methods (such as `clone()`) are only generated for polymorphic datatypes
+* **[C++]** floating point members of generated datatypes are now compared w.r.t. a specific precision;
+  `operator==` uses a fixed precision of `4` ULPs (Units in the Last Place); the `equals()` method can be used to perform
+  comparison with a custom precision
+
+## Other changes
+* **[C++]** The cluster controller can be configured in such a way that access control checks are performed
+  only with locally provisioned or cached data. The configuration is done by using the
+  `access-control/use-ldas-only` property in the cluster controller settings.
+* **[Java]** Introduced property joynr.messaging.maxmessagesinqueue to restrict number of messages being processed
+  at a time. See the [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Introduced property joynr.messaging.routingtablegraceperiodms.
+  See the [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Introduced property joynr.messaging.routingtablecleanupintervalms.
+  See the [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** RawMessagingPreprocessor will be injected in JeeMqttMessagingSkeletonProvider correctly
+
 # joynr 0.26.0
 
 ## API relevant changes
