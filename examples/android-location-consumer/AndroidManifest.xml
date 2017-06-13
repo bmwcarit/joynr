@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.joynr.examples.android_example"
     android:versionCode="1"
-    android:versionName="0.27.0-SNAPSHOT" >
+    android:versionName="0.27.0" >
   <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="21"/>
     
   
