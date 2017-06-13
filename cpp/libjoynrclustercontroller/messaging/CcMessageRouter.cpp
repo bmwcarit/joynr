@@ -119,13 +119,17 @@ CcMessageRouter::CcMessageRouter(
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         const std::string& globalClusterControllerAddress,
+        std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         int maxThreads,
-        std::unique_ptr<MessageQueue> messageQueue)
+        std::unique_ptr<MessageQueue<std::string>> messageQueue,
+        std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
         : AbstractMessageRouter(std::move(messagingStubFactory),
                                 ioService,
                                 std::move(addressCalculator),
                                 maxThreads,
-                                std::move(messageQueue)),
+                                std::move(transportStatuses),
+                                std::move(messageQueue),
+                                std::move(transportNotAvailableQueue)),
           joynr::system::RoutingAbstractProvider(),
           multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           securityManager(std::move(securityManager)),
@@ -586,7 +590,8 @@ void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
     JOYNR_LOG_TRACE(logger, "message queued: {}", message->toLogMessage());
     messageNotificationProvider->fireMessageQueuedForDelivery(
             message->getRecipient(), message->getType());
-    messageQueue->queueMessage(std::move(message));
+    std::string recipient = message->getRecipient();
+    messageQueue->queueMessage(std::move(recipient), std::move(message));
 }
 
 /**

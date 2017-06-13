@@ -51,7 +51,9 @@ AbstractMessageRouter::AbstractMessageRouter(
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         int maxThreads,
-        std::unique_ptr<MessageQueue> messageQueue)
+        std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
+        std::unique_ptr<MessageQueue<std::string>> messageQueue,
+        std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
         : routingTable("AbstractMessageRouter-RoutingTable",
                        ioService,
                        std::bind(&AbstractMessageRouter::routingTableSaveFilterFunc,
@@ -62,12 +64,15 @@ AbstractMessageRouter::AbstractMessageRouter(
           messagingStubFactory(std::move(messagingStubFactory)),
           messageScheduler(maxThreads, "AbstractMessageRouter", ioService),
           messageQueue(std::move(messageQueue)),
+          transportNotAvailableQueue(std::move(transportNotAvailableQueue)),
           routingTableFileName(),
           addressCalculator(std::move(addressCalculator)),
           messageQueueCleanerTimer(ioService),
-          messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000))
+          messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000)),
+          transportStatuses(std::move(transportStatuses))
 {
     activateMessageCleanerTimer();
+    registerTransportStatusCallbacks();
 }
 
 AbstractMessageRouter::~AbstractMessageRouter()
@@ -215,8 +220,7 @@ void AbstractMessageRouter::sendMessages(
             break;
         }
 
-        std::unique_ptr<MessageQueueItem> item(
-                messageQueue->getNextMessageForParticipant(destinationPartId));
+        std::unique_ptr<MessageQueueItem> item(messageQueue->getNextMessageFor(destinationPartId));
 
         if (!item) {
             break;
@@ -243,6 +247,19 @@ void AbstractMessageRouter::scheduleMessage(
         std::uint32_t tryCount,
         std::chrono::milliseconds delay)
 {
+    for (const auto& transportStatus : transportStatuses) {
+        if (transportStatus->isReponsibleFor(destAddress)) {
+            if (!transportStatus->isAvailable()) {
+                JOYNR_LOG_TRACE(logger,
+                                "Transport not available. Message queued: {}",
+                                message->toLogMessage());
+
+                transportNotAvailableQueue->queueMessage(transportStatus, std::move(message));
+                return;
+            }
+        }
+    }
+
     auto stub = messagingStubFactory->create(destAddress);
     if (stub) {
         messageScheduler.schedule(new MessageRunnable(std::move(message),
@@ -270,6 +287,26 @@ void AbstractMessageRouter::activateMessageCleanerTimer()
             &AbstractMessageRouter::onMessageCleanerTimerExpired, this, std::placeholders::_1));
 }
 
+void AbstractMessageRouter::registerTransportStatusCallbacks()
+{
+    for (auto& transportStatus : transportStatuses) {
+        transportStatus->setAvailabilityChangedCallback([this, transportStatus](bool isAvailable) {
+            if (isAvailable) {
+                rescheduleQueuedMessagesForTransport(transportStatus);
+            }
+        });
+    }
+}
+
+void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
+        std::shared_ptr<ITransportStatus> transportStatus)
+{
+    while (auto nextImmutableMessage =
+                   transportNotAvailableQueue->getNextMessageFor(transportStatus)) {
+        route(nextImmutableMessage->getContent());
+    }
+}
+
 void AbstractMessageRouter::onMessageCleanerTimerExpired(const boost::system::error_code& errorCode)
 {
     if (!errorCode) {
@@ -285,7 +322,8 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(const boost::system::er
 void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 {
     JOYNR_LOG_TRACE(logger, "message queued: {}", message->toLogMessage());
-    messageQueue->queueMessage(std::move(message));
+    std::string recipient = message->getRecipient();
+    messageQueue->queueMessage(std::move(recipient), std::move(message));
 }
 
 void AbstractMessageRouter::loadRoutingTable(std::string fileName)

@@ -79,8 +79,13 @@ public:
             std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
             boost::asio::io_service& ioService,
             std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+            std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
             int maxThreads = 1,
-            std::unique_ptr<MessageQueue> messageQueue = std::make_unique<MessageQueue>());
+            std::unique_ptr<MessageQueue<std::string>> messageQueue =
+                    std::make_unique<MessageQueue<std::string>>(),
+            std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
+                    transportNotAvailableQueue =
+                            std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
 
     ~LibJoynrMessageRouter() override;
 

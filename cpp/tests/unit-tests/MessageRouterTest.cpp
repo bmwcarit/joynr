@@ -47,6 +47,7 @@ using ::testing::InvokeArgument;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::Truly;
+using ::testing::SaveArg;
 
 using namespace joynr;
 
@@ -211,6 +212,49 @@ TYPED_TEST(MessageRouterTest, routeMessageToMqttAddress) {
             ).Times(1);
 
     this->routeMessageToAddress();
+}
+
+TYPED_TEST(MessageRouterTest, routedMessageQueuedIfTransportIsNotAvailable) {
+    auto mockTransportStatus = std::make_shared<MockTransportStatus>();
+
+    std::function<void(bool)> availabilityChangedCallback;
+    EXPECT_CALL(*mockTransportStatus, setAvailabilityChangedCallback(_)).WillOnce(SaveArg<0>(&availabilityChangedCallback));
+
+    this->messageRouter = this->createMessageRouter({mockTransportStatus});
+
+    const std::string to = "to";
+    const bool isGloballyVisible = true;
+    auto mqttAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>("brokerUri", "topic");
+    auto address = std::dynamic_pointer_cast<const joynr::system::RoutingTypes::Address>(mqttAddress);
+
+    this->messageRouter->addNextHop(to, mqttAddress, isGloballyVisible);
+    this->mutableMessage.setRecipient(to);
+
+    ON_CALL(*mockTransportStatus, isReponsibleFor(address)).
+            WillByDefault(Return(true));
+    EXPECT_CALL(*mockTransportStatus, isAvailable()).
+            Times(2).
+            WillOnce(Return(false)).
+            WillOnce(Return(true));
+
+    // The first message is supposed to be queued as the transport is not available
+    std::shared_ptr<ImmutableMessage> immutableMessage = this->mutableMessage.getImmutableMessage();
+    this->messageRouter->route(immutableMessage);
+
+    EXPECT_EQ(1, this->transportNotAvailableQueueRef->getQueueLength());
+
+    // Now pretend that the transport became available
+    joynr::Semaphore semaphore(0);
+    auto mockMessagingStub = std::make_shared<MockMessagingStub>();
+    ON_CALL(*mockMessagingStub, transmit(immutableMessage, _)).
+            WillByDefault(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*(this->messagingStubFactory), create(address)).
+            Times(1).
+            WillOnce(Return(mockMessagingStub));
+
+    availabilityChangedCallback(true);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 }
 
 TYPED_TEST(MessageRouterTest, restoreRoutingTable) {
