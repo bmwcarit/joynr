@@ -213,12 +213,10 @@ void MosquittoConnection::on_connect(int rc)
         JOYNR_LOG_DEBUG(logger, "Mosquitto Connection established");
         isConnected = true;
 
-        // The MQTT broker will reestablish subscriptions based on the client ID.
+        createSubscriptions();
+
         if (isInitialConnection) {
             isInitialConnection = false;
-            createSubscriptions();
-        } else {
-            setReadyToSend(true);
         }
     }
 }
