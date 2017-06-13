@@ -16,6 +16,7 @@
   See the [Java Configuration Reference](JavaSettings.md) for more details.
 * **[Java]** Introduced property joynr.messaging.routingtablecleanupintervalms.
   See the [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** RawMessagingPreprocessor will be injected in JeeMqttMessagingSkeletonProvider correctly
 
 # joynr 0.26.0
 
