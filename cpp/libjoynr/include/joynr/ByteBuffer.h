@@ -41,6 +41,20 @@ class ByteBuffer : public detail::InternalByteBuffer
 {
 public:
     using detail::InternalByteBuffer::InternalByteBuffer;
+    using detail::InternalByteBuffer::operator=;
+
+    ByteBuffer() = default;
+    ByteBuffer(ByteBuffer&&) = default;
+    ByteBuffer(const ByteBuffer&) = default;
+    ByteBuffer(const detail::InternalByteBuffer& bb) : detail::InternalByteBuffer(bb)
+    {
+    }
+    ByteBuffer(detail::InternalByteBuffer&& bb) : detail::InternalByteBuffer(std::move(bb))
+    {
+    }
+
+    ByteBuffer& operator=(ByteBuffer&&) = default;
+    ByteBuffer& operator=(const ByteBuffer&) = default;
 
     template <typename Archive>
     void save(Archive& archive)
