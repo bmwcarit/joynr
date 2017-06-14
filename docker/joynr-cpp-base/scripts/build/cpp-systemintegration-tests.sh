@@ -43,9 +43,9 @@ SUCCESS=$?
 echo '####################################################'
 echo '# stop services'
 echo '####################################################'
-kill -TERM $MOSQUITTO_PID
-wait $MOSQUITTO_PID
 
 /data/src/docker/joynr-base/scripts/stop-payara.sh
+kill -TERM $MOSQUITTO_PID
+wait $MOSQUITTO_PID
 
 exit $SUCCESS
