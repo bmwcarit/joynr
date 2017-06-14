@@ -35,11 +35,11 @@ public:
     explicit MqttTransportStatus(std::shared_ptr<MosquittoConnection> mosquittoConnection);
     ~MqttTransportStatus() override;
 
-    virtual bool isReponsibleFor(std::shared_ptr<const joynr::system::RoutingTypes::Address>);
-    virtual bool isAvailable();
+    bool isReponsibleFor(std::shared_ptr<const joynr::system::RoutingTypes::Address>) override;
+    bool isAvailable() override;
 
-    virtual void setAvailabilityChangedCallback(
-            std::function<void(bool)> availabilityChangedCallback);
+    void setAvailabilityChangedCallback(
+            std::function<void(bool)> availabilityChangedCallback) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttTransportStatus);
