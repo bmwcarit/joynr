@@ -56,6 +56,14 @@ const std::string& SystemServicesSettings::SETTING_CC_MESSAGENOTIFICATIONPROVIDE
     return value;
 }
 
+const std::string& SystemServicesSettings::
+        SETTING_CC_ACCESSCONTROLLISTEDITORPROVIDER_PARTICIPANTID()
+{
+    static const std::string value(
+            "system.services/cc-accesscontrollisteditorprovider-participantid");
+    return value;
+}
+
 const std::string& SystemServicesSettings::DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME()
 {
     static const std::string value("default-system-services.settings");
@@ -101,6 +109,17 @@ void SystemServicesSettings::setCcMessageNotificationProviderParticipantId(
         const std::string& participantId)
 {
     settings.set(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID(), participantId);
+}
+
+std::string SystemServicesSettings::getCcAccessControlListEditorProviderParticipantId() const
+{
+    return settings.get<std::string>(SETTING_CC_ACCESSCONTROLLISTEDITORPROVIDER_PARTICIPANTID());
+}
+
+void SystemServicesSettings::setCcAccessControlListEditorProviderParticipantId(
+        const std::string& participantId)
+{
+    settings.set(SETTING_CC_ACCESSCONTROLLISTEDITORPROVIDER_PARTICIPANTID(), participantId);
 }
 
 bool SystemServicesSettings::contains(const std::string& key) const

@@ -1285,6 +1285,12 @@ public:
                      const std::string& domain,
                      const std::string& interfaceName,
                      joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
+
+    MOCK_METHOD3(hasRole,
+                 bool(
+                     const std::string& userId,
+                     const std::string& domain,
+                     joynr::infrastructure::DacTypes::Role::Enum role));
 };
 
 class MockMessagingSettings : public joynr::MessagingSettings {

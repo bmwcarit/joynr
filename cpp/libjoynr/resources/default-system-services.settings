@@ -3,3 +3,4 @@ domain=io.joynr.system
 cc-routingprovider-participantid=CC.RoutingProvider.ParticipantId
 cc-discoveryprovider-participantid=CC.DiscoveryProvider.ParticipantId
 cc-messagenotificationprovider-participantid=CC.MessageNotificationProvider.ParticipantId
+cc-accesscontrollisteditorprovider-participantid=CC.AccessControlListEditor.ParticipantId

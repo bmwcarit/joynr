@@ -61,6 +61,7 @@
 #include "joynr/SubscriptionManager.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/infrastructure/AccessControlListEditorProvider.h"
 #include "joynr/infrastructure/DacTypes/ControlEntry.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
@@ -80,6 +81,7 @@
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynrclustercontroller/access-control/AccessController.h"
+#include "libjoynrclustercontroller/access-control/AccessControlListEditor.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 #include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
@@ -149,6 +151,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           multicastMessagingSkeletonDirectory(
                   std::make_shared<MulticastMessagingSkeletonDirectory>()),
           ccMessageRouter(nullptr),
+          aclEditor(nullptr),
           lifetimeSemaphore(0)
 {
     initializeAllDependencies();
@@ -653,7 +656,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
                 logger, "Access control file with entries does not exists.", ACC_ENTRIES_FILE);
     }
 
-    auto localDomainAccessStore = std::make_unique<joynr::LocalDomainAccessStore>(
+    auto localDomainAccessStore = std::make_shared<joynr::LocalDomainAccessStore>(
             clusterControllerSettings.getLocalDomainAccessStorePersistenceFilename());
 
     // Use update methods to insert deserialized entries in access store
@@ -661,8 +664,8 @@ void JoynrClusterControllerRuntime::enableAccessController(
         localDomainAccessStore->updateMasterAccessControlEntry(entry);
     }
 
-    localDomainAccessController = std::make_unique<joynr::LocalDomainAccessController>(
-            std::move(localDomainAccessStore), clusterControllerSettings.getUseOnlyLDAS());
+    localDomainAccessController = std::make_shared<joynr::LocalDomainAccessController>(
+            localDomainAccessStore, clusterControllerSettings.getUseOnlyLDAS());
 
     if (!clusterControllerSettings.getUseOnlyLDAS()) {
         auto proxyGlobalDomainAccessController = createGlobalDomainAccessControllerProxy();
@@ -671,7 +674,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
     }
 
     auto accessController = std::make_shared<joynr::AccessController>(
-            *localCapabilitiesDirectory, *localDomainAccessController);
+            localCapabilitiesDirectory, localDomainAccessController);
 
     // whitelist provisioned entries into access controller
     for (const auto& entry : provisionedEntries) {
@@ -679,6 +682,9 @@ void JoynrClusterControllerRuntime::enableAccessController(
     }
 
     ccMessageRouter->setAccessController(std::move(accessController));
+
+    aclEditor = std::make_shared<AccessControlListEditor>(
+            std::move(localDomainAccessStore), localDomainAccessController);
 }
 
 std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterControllerRuntime::
@@ -819,6 +825,26 @@ void JoynrClusterControllerRuntime::registerMessageNotificationProvider()
     registerProvider(domain, messageNotificationProvider, messageNotificationProviderQos);
 }
 
+void JoynrClusterControllerRuntime::registerAccessControlListEditorProvider()
+{
+    std::string domain(systemServicesSettings.getDomain());
+    std::shared_ptr<joynr::infrastructure::AccessControlListEditorProvider> aclEditorProvider(
+            aclEditor);
+    std::string interfaceName(aclEditorProvider->getInterfaceName());
+    std::string participantId(
+            systemServicesSettings.getCcAccessControlListEditorProviderParticipantId());
+
+    // provision the participant ID for the AccessControlListEditor provider
+    participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
+
+    joynr::types::ProviderQos aclEditorProviderQos;
+    aclEditorProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
+    aclEditorProviderQos.setPriority(1);
+    aclEditorProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
+    aclEditorProviderQos.setSupportsOnChangeSubscriptions(false);
+    registerProvider(domain, aclEditorProvider, aclEditorProviderQos);
+}
+
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
     JOYNR_LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
@@ -917,6 +943,9 @@ void JoynrClusterControllerRuntime::start()
     registerRoutingProvider();
     registerDiscoveryProvider();
     registerMessageNotificationProvider();
+#ifdef JOYNR_ENABLE_ACCESS_CONTROL
+    registerAccessControlListEditorProvider();
+#endif // JOYNR_ENABLE_ACCESS_CONTROL
     singleThreadIOService->start();
 }
 

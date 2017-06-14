@@ -98,11 +98,11 @@ class AccessControllerTest : public ::testing::Test {
 public:
     AccessControllerTest() :
         singleThreadedIOService(),
-        localDomainAccessControllerMock(std::make_unique<LocalDomainAccessStore>(), false),
+        localDomainAccessControllerMock(std::make_shared<MockLocalDomainAccessController>(std::make_unique<LocalDomainAccessStore>(), false)),
         accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
         settings(),
         messagingSettingsMock(settings),
-        localCapabilitiesDirectoryMock(messagingSettingsMock, settings, singleThreadedIOService.getIOService()),
+        localCapabilitiesDirectoryMock(std::make_shared<MockLocalCapabilitiesDirectory>(messagingSettingsMock, settings, singleThreadedIOService.getIOService())),
         accessController(
                 localCapabilitiesDirectoryMock,
                 localDomainAccessControllerMock
@@ -165,7 +165,7 @@ public:
 
     void prepareConsumerTest() {
         EXPECT_CALL(
-                localCapabilitiesDirectoryMock,
+                *localCapabilitiesDirectoryMock,
                 lookup(toParticipantId,
                        A<std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)>>(),
                        A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>())
@@ -176,11 +176,11 @@ public:
 
 protected:
     SingleThreadedIOService singleThreadedIOService;
-    MockLocalDomainAccessController localDomainAccessControllerMock;
+    std::shared_ptr<MockLocalDomainAccessController> localDomainAccessControllerMock;
     std::shared_ptr<MockConsumerPermissionCallback> accessControllerCallback;
     Settings settings;
     MockMessagingSettings messagingSettingsMock;
-    MockLocalCapabilitiesDirectory localCapabilitiesDirectoryMock;
+    std::shared_ptr<MockLocalCapabilitiesDirectory> localCapabilitiesDirectoryMock;
     AccessController accessController;
     MutableMessageFactory messageFactory;
     MutableMessage mutableMessage;
@@ -214,7 +214,7 @@ TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl) {
     prepareConsumerTest();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
     EXPECT_CALL(
-            localDomainAccessControllerMock,
+            *localDomainAccessControllerMock,
             getConsumerPermission(DUMMY_USERID, TEST_DOMAIN, TEST_INTERFACE, TrustLevel::HIGH, _)
     )
             .Times(1)
@@ -233,7 +233,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
     prepareConsumerTest();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
     EXPECT_CALL(
-            localDomainAccessControllerMock,
+            *localDomainAccessControllerMock,
             getConsumerPermission(DUMMY_USERID, TEST_DOMAIN, TEST_INTERFACE, TrustLevel::HIGH, _)
     )
             .Times(1)
@@ -242,7 +242,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl) {
     Permission::Enum permissionYes = Permission::YES;
     DefaultValue<Permission::Enum>::Set(permissionYes);
     EXPECT_CALL(
-            localDomainAccessControllerMock,
+            *localDomainAccessControllerMock,
             getConsumerPermission(
                     DUMMY_USERID,
                     TEST_DOMAIN,
@@ -266,7 +266,7 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
     prepareConsumerTest();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
     EXPECT_CALL(
-            localDomainAccessControllerMock,
+            *localDomainAccessControllerMock,
             getConsumerPermission(DUMMY_USERID, TEST_DOMAIN, TEST_INTERFACE, TrustLevel::HIGH, _)
     )
             .Times(1)
@@ -288,7 +288,7 @@ TEST_F(AccessControllerTest, hasProviderPermission) {
     Permission::Enum permissionYes = Permission::YES;
     DefaultValue<Permission::Enum>::Set(permissionYes);
     EXPECT_CALL(
-            localDomainAccessControllerMock,
+            *localDomainAccessControllerMock,
             getProviderPermission(_, _, _, _)
     )
             .Times(1)
@@ -301,7 +301,7 @@ TEST_F(AccessControllerTest, hasNoProviderPermission) {
     Permission::Enum permissionNo = Permission::NO;
     DefaultValue<Permission::Enum>::Set(permissionNo);
     EXPECT_CALL(
-            localDomainAccessControllerMock,
+            *localDomainAccessControllerMock,
             getProviderPermission(_, _, _, _)
     )
             .Times(1)

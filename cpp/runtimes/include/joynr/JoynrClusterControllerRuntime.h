@@ -46,6 +46,7 @@ class JoynrClusterControllerRuntimeTest;
 namespace joynr
 {
 
+class AccessControlListEditor;
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
 class ITransportMessageReceiver;
@@ -110,6 +111,7 @@ public:
     void registerRoutingProvider();
     void registerDiscoveryProvider();
     void registerMessageNotificationProvider();
+    void registerAccessControlListEditorProvider();
 
     /*
      * Inject predefined capabilities stored in a JSON file.
@@ -150,7 +152,7 @@ protected:
 
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
-    std::unique_ptr<LocalDomainAccessController> localDomainAccessController;
+    std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
     ClusterControllerSettings clusterControllerSettings;
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
@@ -177,6 +179,7 @@ private:
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
 
     std::shared_ptr<CcMessageRouter> ccMessageRouter;
+    std::shared_ptr<AccessControlListEditor> aclEditor;
 
     void enableAccessController(
             const std::map<std::string, types::DiscoveryEntryWithMetaInfo>& provisionedEntries);
