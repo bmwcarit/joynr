@@ -49,7 +49,9 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
           onMessageReceived(),
           onReadyToSendChangedMutex(),
           onReadyToSendChanged(),
-          thread()
+          thread(),
+          reconnectConditional(),
+          reconnectMutex()
 {
     JOYNR_LOG_DEBUG(logger, "Try to connect to tcp://{}:{}", host, port);
 
@@ -137,6 +139,7 @@ void MosquittoConnection::start()
 void MosquittoConnection::stop()
 {
     isRunning = false;
+    reconnectConditional.notify_all();
     if (thread.joinable()) {
         thread.join();
     }
@@ -144,6 +147,7 @@ void MosquittoConnection::stop()
 
 void MosquittoConnection::runLoop()
 {
+    std::unique_lock<std::mutex> reconnectLock(reconnectMutex);
     const int mqttConnectionTimeoutMs = messagingSettings.getMqttConnectionTimeout().count();
 
     while (isRunning) {
@@ -166,7 +170,8 @@ void MosquittoConnection::runLoop()
                                 std::to_string(rc),
                                 mosqpp::strerror(rc));
             }
-            std::this_thread::sleep_for(messagingSettings.getMqttReconnectSleepTime());
+            reconnectConditional.wait_for(
+                    reconnectLock, messagingSettings.getMqttReconnectSleepTime());
             reconnect();
         }
     }

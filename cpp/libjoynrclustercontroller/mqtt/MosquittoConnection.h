@@ -25,6 +25,7 @@
 #include <thread>
 #include <unordered_set>
 #include <mutex>
+#include <condition_variable>
 
 #include <mosquittopp.h>
 #include <smrf/ByteVector.h>
@@ -116,6 +117,8 @@ private:
     std::function<void(bool)> onReadyToSendChanged;
 
     std::thread thread;
+    std::condition_variable reconnectConditional;
+    std::mutex reconnectMutex;
 
     ADD_LOGGER(MosquittoConnection);
 };
