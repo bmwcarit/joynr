@@ -101,7 +101,7 @@ std::chrono::seconds MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME()
 
 const std::string& MessagingSettings::SETTING_MQTT_RECONNECT_SLEEP_TIME()
 {
-    static const std::string value("messaging/mqtt-reconnect-sleep-time");
+    static const std::string value("messaging/mqtt-reconnect-sleep-time-ms");
     return value;
 }
 
