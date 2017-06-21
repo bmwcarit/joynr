@@ -360,7 +360,7 @@ std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallb
     JOYNR_LOG_TRACE(logger, "Getting subscription callback for subscription id={}", subscriptionId);
     if (!subscriptions.contains(subscriptionId)) {
         JOYNR_LOG_TRACE(logger,
-                        "Trying to acces a non existing subscription callback for id={}",
+                        "Trying to access a non existing subscription callback for id={}",
                         subscriptionId);
         return std::shared_ptr<ISubscriptionCallback>();
     }
@@ -380,7 +380,7 @@ std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getMulticastSubscrip
     auto subscriptionIds = multicastSubscribers.getReceivers(multicastId);
     if (subscriptionIds.empty()) {
         JOYNR_LOG_WARN(logger,
-                       "Trying to acces a non existing subscription callback for mutlicast id={}",
+                       "Trying to access a non existing subscription callback for multicast id={}",
                        multicastId);
         return std::shared_ptr<ISubscriptionCallback>();
     }
@@ -393,7 +393,7 @@ std::shared_ptr<ISubscriptionListenerBase> SubscriptionManager::getSubscriptionL
     JOYNR_LOG_TRACE(logger, "Getting subscription listener for subscription id={}", subscriptionId);
     if (!subscriptions.contains(subscriptionId)) {
         JOYNR_LOG_WARN(logger,
-                       "Trying to acces a non existing subscription listener for id={}",
+                       "Trying to access a non existing subscription listener for id={}",
                        subscriptionId);
         return std::shared_ptr<ISubscriptionListenerBase>();
     }
