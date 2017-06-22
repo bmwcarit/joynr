@@ -1,6 +1,14 @@
+# joynr 0.28.0
+
+## API relevant changes
+* **[C++, API]** Ease implementation of SubscriptionListener for empty broadcasts.
+
+## Other changes
+
 # joynr 0.27.0
 
 ## API relevant changes
+* **[C++]** Provide SubscriptionListener specialization for empty broadcasts.
 * **[C++]** virtual methods (such as `clone()`) are only generated for polymorphic datatypes
 * **[C++]** floating point members of generated datatypes are now compared w.r.t. a specific precision;
   `operator==` uses a fixed precision of `4` ULPs (Units in the Last Place); the `equals()` method can be used to perform

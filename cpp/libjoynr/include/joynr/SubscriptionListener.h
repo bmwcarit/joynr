@@ -19,6 +19,8 @@
 #ifndef SUBSCRIPTIONLISTENER_H
 #define SUBSCRIPTIONLISTENER_H
 
+#include <tuple>
+
 #include "joynr/ISubscriptionListener.h"
 
 namespace joynr
@@ -68,6 +70,44 @@ public:
      */
     virtual void onError(const exceptions::JoynrRuntimeException& error)
     {
+    }
+};
+
+/**
+ * @brief Specialization for broadcasts without parameters.
+ */
+template <>
+class SubscriptionListener<void> : public ISubscriptionListener<void>
+{
+    SubscriptionListener() = default;
+    ~SubscriptionListener() override = default;
+
+    /**
+     * @brief onSubscribed Gets called when the subscription is successfully registered at the
+     * provider
+     * @param subscriptionId the subscription id of the subscription as string
+     *
+     * Since the onSubscribed callback is called by a communication middleware thread, it should
+     * not be blocked, wait for user interaction, or do larger computation.
+     */
+    void onSubscribed(const std::string& subscriptionId) override
+    {
+        std::ignore = subscriptionId;
+    }
+
+    /**
+     * @brief Method to be called on receiving publication without parameters
+     */
+    void onReceive() override
+    {
+    }
+
+    /**
+     * @brief Method to be called on missing a publication
+     */
+    void onError(const exceptions::JoynrRuntimeException& error) override
+    {
+        std::ignore = error;
     }
 };
 
