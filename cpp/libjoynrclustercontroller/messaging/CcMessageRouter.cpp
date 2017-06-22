@@ -274,8 +274,7 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
 
     JOYNR_LOG_TRACE(logger, "Route message with Id {}", message->getId());
     // search for the destination addresses
-    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
-            getDestinationAddresses(*message);
+    AbstractMessageRouter::AddressUnorderedSet destAddresses = getDestinationAddresses(*message);
     // if destination address is not known
     if (destAddresses.empty()) {
         if (message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {

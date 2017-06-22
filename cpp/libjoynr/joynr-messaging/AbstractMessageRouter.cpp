@@ -99,10 +99,11 @@ void AbstractMessageRouter::addProvisionedNextHop(
     addToRoutingTable(participantId, std::move(routingEntry));
 }
 
-std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
-AbstractMessageRouter::lookupAddresses(const std::unordered_set<std::string>& participantIds)
+AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::lookupAddresses(
+        const std::unordered_set<std::string>& participantIds)
 {
-    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
+    AbstractMessageRouter::AddressUnorderedSet addresses;
+
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
     for (const auto& participantId : participantIds) {
         const auto routingEntry = routingTable.lookup(participantId);
@@ -111,13 +112,14 @@ AbstractMessageRouter::lookupAddresses(const std::unordered_set<std::string>& pa
             addresses.insert(destAddress);
         }
     }
+    assert(addresses.size() <= participantIds.size());
     return addresses;
 }
 
-std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
-AbstractMessageRouter::getDestinationAddresses(const ImmutableMessage& message)
+AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestinationAddresses(
+        const ImmutableMessage& message)
 {
-    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> addresses;
+    AbstractMessageRouter::AddressUnorderedSet addresses;
     if (message.getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
         const std::string& multicastId = message.getRecipient();
 

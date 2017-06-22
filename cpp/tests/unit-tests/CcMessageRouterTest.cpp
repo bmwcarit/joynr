@@ -44,6 +44,7 @@
 
 using ::testing::Pointee;
 using ::testing::Return;
+using ::testing::WhenDynamicCastTo;
 
 using namespace joynr;
 
@@ -90,9 +91,11 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastRecivers(const bool is
 {
     const std::string subscriberParticipantId1("subscriberPartId1");
     const std::string subscriberParticipantId2("subscriberPartId2");
+    const std::string subscriberParticipantId3("subscriberPartId3");
     const std::string providerParticipantId("providerParticipantId");
     const std::string multicastNameAndPartitions("multicastName/partition0");
     const std::string multicastId(providerParticipantId + "/" + multicastNameAndPartitions);
+    const std::string consumerRuntimeWebSocketClientAddressString("ConsumerRuntimeWebSocketAddress");
 
     // create a new pointer representin the multicast address
     std::shared_ptr<joynr::system::RoutingTypes::MqttAddress> multicastAddress(
@@ -100,12 +103,14 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastRecivers(const bool is
     );
     multicastAddress->setTopic(multicastId);
 
-    auto expectedAddress1 = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("subscriberTopic1");
+    auto expectedAddress1 = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(consumerRuntimeWebSocketClientAddressString);
     auto expectedAddress2 = std::make_shared<const joynr::InProcessMessagingAddress>();
-    auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("providerTopic");
+    auto expectedAddress3 = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(consumerRuntimeWebSocketClientAddressString);
+    auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("ProviderRuntimeWebSocketAddress");
 
     messageRouter->addProvisionedNextHop(subscriberParticipantId1, expectedAddress1, DEFAULT_IS_GLOBALLY_VISIBLE);
     messageRouter->addProvisionedNextHop(subscriberParticipantId2, expectedAddress2, DEFAULT_IS_GLOBALLY_VISIBLE);
+    messageRouter->addProvisionedNextHop(subscriberParticipantId3, expectedAddress3, DEFAULT_IS_GLOBALLY_VISIBLE);
     messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isProviderGloballyVisible);
 
     auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
@@ -128,11 +133,37 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastRecivers(const bool is
         [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
     );
 
+    messageRouter->addMulticastReceiver(
+        multicastId,
+        subscriberParticipantId3,
+        providerParticipantId,
+        []() { },
+        [](const joynr::exceptions::ProviderRuntimeException&){ FAIL() << "onError called"; }
+    );
+
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
     mutableMessage.setSender(providerParticipantId);
     mutableMessage.setRecipient(multicastId);
 
-    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress1)))).Times(1);
+    // verify that the publication is sent only once to the websocket address used by
+    // both subscriberParticipantId1 and subscriberParticipantId3 identified by
+    // consumerRuntimeWebSocketClientAddressString
+    EXPECT_CALL(
+        *messagingStubFactory,
+        create(
+            Property(
+                &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
+                WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress *>(
+                    Pointee(
+                        Property(
+                            &joynr::system::RoutingTypes::WebSocketClientAddress::getId,
+                            Eq(consumerRuntimeWebSocketClientAddressString)
+                        )
+                    )
+                )
+            )
+        )
+    ).Times(1);
     EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress2)))).Times(1);
     size_t count = isProviderGloballyVisible ? 1 : 0;
     EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*multicastAddress)))).Times(count);

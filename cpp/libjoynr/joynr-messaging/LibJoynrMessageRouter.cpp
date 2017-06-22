@@ -115,8 +115,7 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
 {
     JOYNR_LOG_TRACE(logger, "Route message with Id {}", message->getId());
     // search for the destination addresses
-    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> destAddresses =
-            getDestinationAddresses(*message);
+    AbstractMessageRouter::AddressUnorderedSet destAddresses = getDestinationAddresses(*message);
 
     // if destination address is not known
     if (destAddresses.empty()) {

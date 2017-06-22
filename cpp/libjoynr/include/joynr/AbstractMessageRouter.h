@@ -37,6 +37,7 @@
 #include "joynr/Runnable.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "libjoynrclustercontroller/include/joynr/ITransportStatus.h"
 
 namespace boost
@@ -111,6 +112,32 @@ protected:
         bool isGloballyVisible;
     };
 
+    struct AddressEqual
+    {
+    public:
+        bool operator()(std::shared_ptr<const joynr::system::RoutingTypes::Address> address1,
+                        std::shared_ptr<const joynr::system::RoutingTypes::Address> address2) const
+        {
+            return (*address1 == *address2);
+        }
+    };
+
+    struct AddressHash
+    {
+    public:
+        size_t operator()(std::shared_ptr<const joynr::system::RoutingTypes::Address> address) const
+        {
+            return address->hashCode();
+        }
+    };
+
+    // use specialized set with custom comparator to prevent duplicate insertion
+    // of elements with logically equivalent content
+    using AddressUnorderedSet =
+            std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>,
+                               AddressHash,
+                               AddressEqual>;
+
     // Instantiation of this class only possible through its child classes.
     AbstractMessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                           boost::asio::io_service& ioService,
@@ -124,15 +151,13 @@ protected:
                                           MessageQueue<std::shared_ptr<ITransportStatus>>>());
 
     virtual bool publishToGlobal(const ImmutableMessage& message) = 0;
-    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
-    getDestinationAddresses(const ImmutableMessage& message);
+    AddressUnorderedSet getDestinationAddresses(const ImmutableMessage& message);
 
     void registerGlobalRoutingEntryIfRequired(const ImmutableMessage& message);
     virtual void routeInternal(std::shared_ptr<ImmutableMessage> message,
                                std::uint32_t tryCount) = 0;
 
-    std::unordered_set<std::shared_ptr<const joynr::system::RoutingTypes::Address>> lookupAddresses(
-            const std::unordered_set<std::string>& participantIds);
+    AddressUnorderedSet lookupAddresses(const std::unordered_set<std::string>& participantIds);
 
     void sendMessages(const std::string& destinationPartId,
                       std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
