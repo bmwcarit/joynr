@@ -26,10 +26,10 @@
 
 #include "joynr/IMessageRouter.h"
 #include "joynr/ISubscriptionCallback.h"
+#include "joynr/ISubscriptionListener.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SingleThreadedDelayedScheduler.h"
-#include "joynr/SubscriptionListener.h"
 #include "joynr/SubscriptionQos.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionUtil.h"
