@@ -296,6 +296,7 @@ void AccessController::hasConsumerPermission(
 
         // Try to determine permission without expensive message deserialization
         // For now TrustLevel::HIGH is assumed.
+
         const std::string& msgCreatorUid = message->getCreator();
         localDomainAccessController->getConsumerPermission(
                 msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
@@ -315,10 +316,8 @@ bool AccessController::hasProviderPermission(const std::string& userId,
                                              const std::string& domain,
                                              const std::string& interfaceName)
 {
-    return (localDomainAccessController->getProviderPermission(
-                    userId, domain, interfaceName, trustLevel) == Permission::Enum::YES)
-                   ? true
-                   : false;
+    return localDomainAccessController->getProviderPermission(
+                   userId, domain, interfaceName, trustLevel) == Permission::Enum::YES;
 }
 
 } // namespace joynr
