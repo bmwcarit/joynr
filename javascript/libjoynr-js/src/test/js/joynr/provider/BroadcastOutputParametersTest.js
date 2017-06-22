@@ -51,6 +51,14 @@ define([ "joynr/provider/BroadcastOutputParameters"
             expect(broadcastOutputParameters instanceof BroadcastOutputParameters).toEqual(true);
         });
 
+        it("can be empty", function() {
+            var broadcastOutputParameters = new BroadcastOutputParameters([]);
+            expect(broadcastOutputParameters).toBeDefined();
+            expect(broadcastOutputParameters).not.toBeNull();
+            expect(typeof broadcastOutputParameters === "object").toBeTruthy();
+            expect(broadcastOutputParameters instanceof BroadcastOutputParameters).toEqual(true);
+        });
+
         it("has setters and getters for each output parameter", function() {
             var broadcastOutputParameters = new BroadcastOutputParameters([
                 {
