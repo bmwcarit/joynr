@@ -286,8 +286,7 @@ abstract public class AbstractMessageRouter implements MessageRouter {
                 if (error instanceof JoynrDelayMessageException) {
                     delayMs = ((JoynrDelayMessageException) error).getDelayMs();
                 } else {
-                    delayMs = sendMsgRetryIntervalMs;
-                    delayMs += exponentialBackoff(delayMs, retriesCount);
+                    delayMs = createDelayWithExponentialBackoff(sendMsgRetryIntervalMs, retriesCount);
                 }
 
                 logger.error("Rescheduling messageId: {} with delay " + delayMs + " ms, TTL is: {} ms",
@@ -320,7 +319,7 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         }
     }
 
-    private long exponentialBackoff(long delayMs, int retries) {
+    private long createDelayWithExponentialBackoff(long delayMs, int retries) {
         logger.trace("TRIES: " + retries);
         long millis = delayMs + (long) ((2 ^ (retries)) * delayMs * Math.random());
         logger.trace("MILLIS: " + millis);
