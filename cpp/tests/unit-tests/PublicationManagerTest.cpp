@@ -1122,10 +1122,15 @@ TEST_F(PublicationManagerTest, restorePersistedAttributeSubscriptions) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
 
+    SubscriptionRequest subscriptionRequest2;
+    subscriptionRequest2.setSubscribeToName(attributeName);
+    subscriptionRequest2.setQos(qos);
+
     {
         PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
         publicationManager.loadSavedAttributeSubscriptionRequestsMap(attributeSubscriptionsPersistenceFilename);
         publicationManager.add(senderId, receiverId, subscriptionRequest);
+        publicationManager.add(senderId, receiverId, subscriptionRequest2);
     }
 
     PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
@@ -1138,7 +1143,14 @@ TEST_F(PublicationManagerTest, restorePersistedAttributeSubscriptions) {
     SubscriptionPublication subscriptionPublication;
     subscriptionPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     subscriptionPublication.setResponse(attributeValue);
+
+    const std::string attributeValue2 = "attributeValue2";
+    SubscriptionPublication subscriptionPublication2;
+    subscriptionPublication2.setSubscriptionId(subscriptionRequest2.getSubscriptionId());
+    subscriptionPublication2.setResponse(attributeValue2);
+
     EXPECT_CALL(mockPublicationSender, sendSubscriptionPublicationMock(Eq(receiverId), Eq(senderId), _, Eq(ByRef(subscriptionPublication)))).Times(AtLeast(2));
+    EXPECT_CALL(mockPublicationSender, sendSubscriptionPublicationMock(Eq(receiverId), Eq(senderId), _, Eq(ByRef(subscriptionPublication2)))).Times(AtLeast(2));
     publicationManager.restore(receiverId,
                                 requestCaller,
                                 &mockPublicationSender);
@@ -1146,6 +1158,7 @@ TEST_F(PublicationManagerTest, restorePersistedAttributeSubscriptions) {
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
 
     publicationManager.attributeValueChanged(subscriptionRequest.getSubscriptionId(), attributeValue);
+    publicationManager.attributeValueChanged(subscriptionRequest2.getSubscriptionId(), attributeValue2);
 
     std::remove(attributeSubscriptionsPersistenceFilename.c_str());
 }
@@ -1160,14 +1173,22 @@ TEST_F(PublicationManagerTest, restorePersistedBroadcastSubscriptions) {
     const std::string broadcastSenderId = "BroadcastSenderId";
     const std::string broadcastReceiverId = "BroadcastReceiverId";
     const std::string broadcastSubscriptionId = "Location";
+
     BroadcastSubscriptionRequest broadcastSubscriptionRequest;
     broadcastSubscriptionRequest.setSubscriptionId(broadcastSubscriptionId);
     broadcastSubscriptionRequest.setQos(std::make_shared<joynr::OnChangeSubscriptionQos>());
+
+    const std::string broadcastSenderId2 = "BroadcastSenderId2";
+    const std::string broadcastSubscriptionId2 = "Location2";
+    BroadcastSubscriptionRequest broadcastSubscriptionRequest2;
+    broadcastSubscriptionRequest2.setSubscriptionId(broadcastSubscriptionId2);
+    broadcastSubscriptionRequest2.setQos(std::make_shared<joynr::OnChangeSubscriptionQos>());
 
     {
         PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
         publicationManager.loadSavedBroadcastSubscriptionRequestsMap(broadcastSubscriptionsPersistenceFilename);
         publicationManager.add(broadcastSenderId, broadcastReceiverId, broadcastSubscriptionRequest);
+        publicationManager.add(broadcastSenderId2, broadcastReceiverId, broadcastSubscriptionRequest2);
     }
 
     PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
@@ -1181,7 +1202,9 @@ TEST_F(PublicationManagerTest, restorePersistedBroadcastSubscriptions) {
                                 &mockPublicationSender);
 
     EXPECT_CALL(mockPublicationSender, sendSubscriptionPublicationMock(Eq(broadcastReceiverId), Eq(broadcastSenderId), _, _));
+    EXPECT_CALL(mockPublicationSender, sendSubscriptionPublicationMock(Eq(broadcastReceiverId), Eq(broadcastSenderId2), _, _));
     publicationManager.broadcastOccurred(broadcastSubscriptionId);
+    publicationManager.broadcastOccurred(broadcastSubscriptionId2);
 
     std::remove(broadcastSubscriptionsPersistenceFilename.c_str());
 }
