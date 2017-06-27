@@ -1296,8 +1296,8 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
 void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(SubscriptionRequest& subscriptionRequest)
 {
     joynr::Semaphore semaphore(0);
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
     MockPublicationSender mockPublicationSender;
+    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     std::string proxyId = "ProxyId";
@@ -1357,8 +1357,8 @@ TEST_F(PublicationManagerTest, multicast_sendSubscriptionReplyOnSuccessfulRegist
 void PublicationManagerTest::sendSubscriptionExceptionOnExpiredRegistration(SubscriptionRequest& subscriptionRequest)
 {
     joynr::Semaphore semaphore(0);
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
     MockPublicationSender mockPublicationSender;
+    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     std::string proxyId = "ProxyId";
@@ -1425,10 +1425,10 @@ TEST_F(PublicationManagerTest, attribute_provideCallContextWhenPollingAttribute)
     const std::string proxyParticipantId("proxyId");
     const std::string providerParticipantId("providerId");
 
+    MockPublicationSender mockPublicationSender;
     PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
     std::shared_ptr<MockTestRequestCaller> requestCaller = std::make_shared<MockTestRequestCaller>();
     std::shared_ptr<PeriodicSubscriptionQos> qos = std::make_shared<PeriodicSubscriptionQos>(200, 100, 100, 200);
-    MockPublicationSender mockPublicationSender;
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setQos(qos);
