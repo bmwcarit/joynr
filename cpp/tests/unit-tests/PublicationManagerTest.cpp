@@ -1096,7 +1096,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
 }
 
-TEST_F(PublicationManagerTest, restorePersistetAttributeSubscriptions) {
+TEST_F(PublicationManagerTest, restorePersistedAttributeSubscriptions) {
     MockPublicationSender mockPublicationSender;
 
     const std::string attributeSubscriptionsPersistenceFilename = "test-SubscriptionRequest.persist";
@@ -1150,7 +1150,7 @@ TEST_F(PublicationManagerTest, restorePersistetAttributeSubscriptions) {
     std::remove(attributeSubscriptionsPersistenceFilename.c_str());
 }
 
-TEST_F(PublicationManagerTest, restorePersistetBroadcastSubscriptions) {
+TEST_F(PublicationManagerTest, restorePersistedBroadcastSubscriptions) {
     MockPublicationSender mockPublicationSender;
 
     const std::string broadcastSubscriptionsPersistenceFilename = "test-BroadcastSubscriptionRequest.persist";
