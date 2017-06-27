@@ -34,9 +34,7 @@ SteadyTimer::SteadyTimer(boost::asio::io_service& io_service)
 {
 }
 
-SteadyTimer::~SteadyTimer()
-{
-}
+SteadyTimer::~SteadyTimer() = default;
 
 void SteadyTimer::cancel()
 {
