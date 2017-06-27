@@ -71,12 +71,12 @@ public class BoundedDelayQueueTest {
                 }
             }
         });
-        Thread.sleep(1);
+        Thread.sleep(20);
         State state = runInThread.getState();
         assertEquals(State.WAITING, state);
 
         boundedDelayQueue.putBounded(delayed1);
-        Thread.sleep(1);
+        Thread.sleep(20);
         assertTrue(delayedTaken.contains(delayed1));
         assertTrue(boundedDelayQueue.isEmpty());
 
@@ -100,18 +100,19 @@ public class BoundedDelayQueueTest {
                 }
             }
         });
-        Thread.sleep(1);
+        Thread.sleep(20);
         State state = runInThread.getState();
         assertEquals(State.WAITING, state);
         assertEquals(1, boundedDelayQueue.size());
 
         delayedTaken.add(boundedDelayQueue.take());
-        Thread.sleep(1);
+        assertTrue(delayedTaken.contains(delayed1));
+        assertEquals(1, delayedTaken.size());
+        Thread.sleep(20);
         assertEquals(1, boundedDelayQueue.size());
 
         delayedTaken.add(boundedDelayQueue.take());
 
-        assertTrue(delayedTaken.contains(delayed1));
         assertTrue(delayedTaken.contains(delayed2));
     }
 
@@ -132,12 +133,12 @@ public class BoundedDelayQueueTest {
                 }
             }
         });
-        Thread.sleep(1);
+        Thread.sleep(20);
         State state = runInThread.getState();
         assertEquals(State.TIMED_WAITING, state);
         assertEquals(1, boundedDelayQueue.size());
 
-        Thread.sleep(50);
+        Thread.sleep(40);
         assertEquals(1, boundedDelayQueue.size());
         assertFalse(delayedTaken.contains(delayed1));
 
@@ -164,16 +165,17 @@ public class BoundedDelayQueueTest {
                 }
             }
         });
-        Thread.sleep(1);
+        Thread.sleep(20);
         State state = runInThread.getState();
         assertEquals(State.TIMED_WAITING, state);
         delayed2 = new TimedDelayed(0);
         boundedDelayQueue.putBounded(delayed2);
-        Thread.sleep(1);
+        Thread.sleep(20);
         assertEquals(1, boundedDelayQueue.size());
 
         assertTrue(delayedTaken.contains(delayed2));
-        Thread.sleep(120);
+        assertFalse(delayedTaken.contains(delayed1));
+        Thread.sleep(100);
         assertTrue(delayedTaken.contains(delayed1));
     }
 
