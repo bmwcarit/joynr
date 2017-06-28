@@ -13,6 +13,15 @@ localhost) are marked below as REQUIRED.
 
 ## ConfigurableMessagingSettings
 
+### `CHANNELID`
+When shared subscriptions are enabled for MQTT the channel ID identifies the cluster. Each node of the
+cluster must use the same value. If no channel ID is specified a random UUID will be used as
+the channel ID.
+
+### `RECEIVERID`
+When shared subscriptions are enabled for MQTT the receiver ID identifies a node within a cluster.
+If no receiver ID is specified a random UUID will be used as the receiver ID.
+
 ### `PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID`
 The channel ID of the global capabilities directory (backend). To be able to connect to the global
 capabilities directory a disovery entry is created in the local capabilities directory as well as an
