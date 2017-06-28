@@ -26,6 +26,9 @@ import static org.junit.Assert.fail;
 import java.lang.Thread.State;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
 
 import org.junit.After;
 import org.junit.Before;
@@ -36,6 +39,7 @@ public class BoundedDelayQueueTest {
     private TimedDelayed delayed1;
     private TimedDelayed delayed2;
     final Collection<TimedDelayed> delayedTaken = new ArrayList<>();
+    ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
 
     @Before
     public void setUp() throws Exception {
@@ -47,6 +51,10 @@ public class BoundedDelayQueueTest {
 
     @After
     public void tearDown() throws Exception {
+    }
+
+    Future<?> runInExecutor(Runnable runnable) {
+        return scheduledThreadPoolExecutor.submit(runnable);
     }
 
     Thread runInThread(Runnable runnable) {
@@ -80,6 +88,29 @@ public class BoundedDelayQueueTest {
         assertTrue(delayedTaken.contains(delayed1));
         assertTrue(boundedDelayQueue.isEmpty());
 
+    }
+
+    @Test
+    public void testInterruptingBlockedTake() throws InterruptedException {
+        final Semaphore continueOnInterrupt = new Semaphore(0);
+        final Semaphore runnableRunning = new Semaphore(0);
+        boundedDelayQueue = new BoundedDelayQueue<TimedDelayed>(2);
+        Future<?> runInThread = runInExecutor(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    runnableRunning.release(1);
+                    boundedDelayQueue.take();
+                } catch (InterruptedException e) {
+                    continueOnInterrupt.release(1);
+                }
+            }
+        });
+        // Make sure the thread runs and take is called
+        // before cancelling
+        runnableRunning.acquire(1);
+        runInThread.cancel(true);
+        continueOnInterrupt.acquire(1);
     }
 
     @Test
