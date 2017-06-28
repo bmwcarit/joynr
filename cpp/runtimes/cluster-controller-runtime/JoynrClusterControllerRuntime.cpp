@@ -827,6 +827,10 @@ void JoynrClusterControllerRuntime::registerMessageNotificationProvider()
 
 void JoynrClusterControllerRuntime::registerAccessControlListEditorProvider()
 {
+    if (!clusterControllerSettings.enableAccessController()) {
+        return;
+    }
+
     std::string domain(systemServicesSettings.getDomain());
     std::shared_ptr<joynr::infrastructure::AccessControlListEditorProvider> aclEditorProvider(
             aclEditor);
