@@ -49,8 +49,6 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
           onReadyToSendChangedMutex(),
           onReadyToSendChanged()
 {
-    JOYNR_LOG_DEBUG(logger, "Try to connect to tcp://{}:{}", host, port);
-
     mosqpp::lib_init();
 
     if (ccSettings.isMqttTlsEnabled()) {
@@ -65,7 +63,7 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
         }
     } else {
         JOYNR_LOG_DEBUG(logger, "MQTT connection not encrypted");
-    };
+    }
 }
 
 MosquittoConnection::~MosquittoConnection()
@@ -135,7 +133,8 @@ void MosquittoConnection::start()
     JOYNR_LOG_TRACE(
             logger, "Start called with isRunning: {}, isConnected: {}", isRunning, isConnected);
 
-    connect(host.c_str(), port, messagingSettings.getMqttKeepAliveTimeSeconds().count());
+    JOYNR_LOG_DEBUG(logger, "Try to connect to tcp://{}:{}", host, port);
+    connect_async(host.c_str(), port, messagingSettings.getMqttKeepAliveTimeSeconds().count());
 
     reconnect_delay_set(messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
                         messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
