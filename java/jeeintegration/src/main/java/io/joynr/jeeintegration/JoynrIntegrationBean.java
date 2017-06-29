@@ -43,6 +43,7 @@ import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.types.ProviderQos;
@@ -157,6 +158,10 @@ public class JoynrIntegrationBean {
                 }
             }
         }
+
+        MessageRouter messageRouter = getJoynrInjector().getInstance(MessageRouter.class);
+        messageRouter.shutdown();
+
         MessagingStubFactory messagingStubFactory = getJoynrInjector().getInstance(MessagingStubFactory.class);
         MessagingSkeletonFactory messagingSkeletonFactory = getJoynrInjector().getInstance(MessagingSkeletonFactory.class);
         messagingSkeletonFactory.shutdown();
