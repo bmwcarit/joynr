@@ -681,10 +681,13 @@ void JoynrClusterControllerRuntime::enableAccessController(
         accessController->addParticipantToWhitelist(entry.second.getParticipantId());
     }
 
-    ccMessageRouter->setAccessController(std::move(accessController));
+    ccMessageRouter->setAccessController(accessController);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
             std::move(localDomainAccessStore), localDomainAccessController);
+
+    // Set accessController also in LocalCapabilitiesDirectory
+    localCapabilitiesDirectory->setAccessController(accessController);
 }
 
 std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterControllerRuntime::
