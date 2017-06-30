@@ -67,7 +67,9 @@ public:
               expiryDateMs(0),
               dummyParticipantId1(),
               dummyParticipantId2(),
-              callback()
+              callback(),
+              defaultOnSuccess([](){}),
+              defaultOnError([](const joynr::exceptions::ProviderRuntimeException&){})
     {
         singleThreadedIOService.start();
         messagingSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(100);
@@ -292,6 +294,9 @@ protected:
     std::string dummyParticipantId3;
     joynr::types::DiscoveryQos discoveryQos;
     std::unordered_multimap<std::string, types::DiscoveryEntry> globalCapEntryMap;
+    std::shared_ptr<MockLocalCapabilitiesDirectoryCallback> callback;
+    std::function<void()> defaultOnSuccess;
+    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> defaultOnError;
 
     static const std::string INTERFACE_1_NAME;
     static const std::string DOMAIN_1_NAME;
@@ -305,9 +310,10 @@ protected:
     static const std::int64_t EXPIRYDATE_MS;
     static const std::string PUBLIC_KEY_ID;
     static const int TIMEOUT;
-    std::shared_ptr<MockLocalCapabilitiesDirectoryCallback> callback;
+
     void registerReceivedCapabilities(const std::string& addressType,
                                       const std::string& serializedAddress);
+
     ADD_LOGGER(LocalCapabilitiesDirectoryTest);
 
 private:
@@ -342,7 +348,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGloballyDelegatesToCapabilitiesClient)
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache)
@@ -364,7 +372,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache)
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
@@ -390,7 +400,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient)
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
@@ -595,7 +607,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     joynr::types::DiscoveryEntry entry2(providerVersion,
                                         DOMAIN_2_NAME,
                                         INTERFACE_1_NAME,
@@ -604,7 +618,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
                                         lastSeenDateMs,
                                         expiryDateMs,
                                         PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry2);
+    localCapabilitiesDirectory->add(entry2,
+                                    defaultOnSuccess,
+                                    defaultOnError);
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerCapabilitiesMultipleTimesDoesNotDuplicate)
@@ -626,7 +642,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCapabilitiesMultipleTimesDoesNotD
                                                lastSeenDateMs,
                                                expiryDateMs,
                                                PUBLIC_KEY_ID);
-            localCapabilitiesDirectory->add(entry);
+            localCapabilitiesDirectory->add(entry,
+                                            defaultOnSuccess,
+                                            defaultOnError);
         } catch (const exceptions::JoynrException& e) {
             std::ignore = e;
             exceptionCounter++;
@@ -659,7 +677,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
@@ -699,7 +719,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal)
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
@@ -734,7 +756,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
     EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
@@ -780,7 +804,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
     EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     // localCapabilitiesDirectory->registerReceivedCapabilities(globalCapEntryMap);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _))
@@ -853,7 +879,9 @@ TEST_F(LocalCapabilitiesDirectoryTest,
 
     EXPECT_TRUE(localCapabilitiesDirectory->hasPendingLookups());
 
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
 
     EXPECT_EQ(1, callback->getResults(10).size());
     EXPECT_TRUE(localCapabilitiesDirectory->hasPendingLookups());
@@ -947,7 +975,9 @@ TEST_F(LocalCapabilitiesDirectoryTest,
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
 
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     localCapabilitiesDirectory->lookup(
             {DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
 
@@ -1016,7 +1046,9 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
 
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     localCapabilitiesDirectory->lookup(
             {DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
 
@@ -1049,7 +1081,9 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
 
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     localCapabilitiesDirectory->lookup(
             {DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
 
@@ -1117,7 +1151,9 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
 
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     localCapabilitiesDirectory->lookup(
             {DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
 
@@ -1149,7 +1185,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsLocalEntries_
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
 
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     localCapabilitiesDirectory->lookup(
             {DOMAIN_1_NAME, DOMAIN_2_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
 
@@ -1201,10 +1239,18 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupMultipeDomainsReturnsResultForMulti
                                          lastSeenDateMs,
                                          expiryDateMs,
                                          PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry1);
-    localCapabilitiesDirectory->add(entry2);
-    localCapabilitiesDirectory->add(entry31);
-    localCapabilitiesDirectory->add(entry32);
+    localCapabilitiesDirectory->add(entry1,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+    localCapabilitiesDirectory->add(entry2,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+    localCapabilitiesDirectory->add(entry31,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+    localCapabilitiesDirectory->add(entry32,
+                                    defaultOnSuccess,
+                                    defaultOnError);
 
     EXPECT_CALL(*capabilitiesClient,
                 lookup(_,
@@ -1243,7 +1289,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillOnce(
             InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
@@ -1295,7 +1343,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal)
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
@@ -1326,7 +1376,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
 
     // get the local entry
@@ -1376,7 +1428,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
@@ -1498,9 +1552,15 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                         expiryDateMs,
                                         PUBLIC_KEY_ID);
 
-    localCapabilitiesDirectory->add(entry1);
-    localCapabilitiesDirectory->add(entry2);
-    localCapabilitiesDirectory->add(entry3);
+    localCapabilitiesDirectory->add(entry1,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+    localCapabilitiesDirectory->add(entry2,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+    localCapabilitiesDirectory->add(entry3,
+                                    defaultOnSuccess,
+                                    defaultOnError);
 
     // create a new object
     auto localCapabilitiesDirectory2 = std::make_unique<LocalCapabilitiesDirectory>(messagingSettings,
@@ -1596,7 +1656,9 @@ TEST_P(LocalCapabilitiesDirectoryPurgeTest, purgeTimedOutEntries)
                                        lastSeenDateMs,
                                        10,
                                        PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry);
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
     localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);

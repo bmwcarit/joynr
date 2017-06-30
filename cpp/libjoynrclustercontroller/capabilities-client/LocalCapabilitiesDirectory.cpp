@@ -129,7 +129,7 @@ void LocalCapabilitiesDirectory::cleanCaches()
     cleanCache(zero);
 }
 
-void LocalCapabilitiesDirectory::add(const types::DiscoveryEntry& discoveryEntry)
+void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discoveryEntry)
 {
     const bool isGloballyVisible = isGlobal(discoveryEntry);
 
@@ -577,7 +577,7 @@ void LocalCapabilitiesDirectory::add(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    add(discoveryEntry);
+    addInternal(discoveryEntry);
     onSuccess();
 }
 

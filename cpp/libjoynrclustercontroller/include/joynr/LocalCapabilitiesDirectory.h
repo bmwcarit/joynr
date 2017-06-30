@@ -85,8 +85,6 @@ public:
 
     ~LocalCapabilitiesDirectory() override;
 
-    void add(const joynr::types::DiscoveryEntry& entry);
-
     virtual void remove(const std::string& participantId);
 
     /*
@@ -271,6 +269,8 @@ private:
                         const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
     void callPendingLookups(const InterfaceAddress& interfaceAddress);
     bool isGlobal(const types::DiscoveryEntry& discoveryEntry) const;
+
+    void addInternal(const joynr::types::DiscoveryEntry& entry);
 };
 
 class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback
