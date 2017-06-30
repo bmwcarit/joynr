@@ -70,6 +70,8 @@ abstract public class AbstractMessageRouter implements MessageRouter {
 
     private List<ScheduledFuture<?>> workerFutures;
 
+    protected abstract boolean shutdownScheduler();
+
     @Inject
     @Singleton
     // CHECKSTYLE:OFF
@@ -305,17 +307,19 @@ abstract public class AbstractMessageRouter implements MessageRouter {
             workerFuture.cancel(true);
         }
 
-        scheduler.shutdown();
-        try {
-            if (!scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS)) {
-                logger.error("Message Scheduler did not shut down in time. Timedout out waiting for executor service to shutdown after {}ms.",
-                             TERMINATION_TIMEOUT);
-                logger.debug("Attempting to shutdown scheduler {} forcibly.", scheduler);
-                scheduler.shutdownNow();
+        if (shutdownScheduler()) {
+            scheduler.shutdown();
+            try {
+                if (!scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS)) {
+                    logger.error("Message Scheduler did not shut down in time. Timedout out waiting for executor service to shutdown after {}ms.",
+                                 TERMINATION_TIMEOUT);
+                    logger.debug("Attempting to shutdown scheduler {} forcibly.", scheduler);
+                    scheduler.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.error("Message Scheduler shutdown interrupted: {}", e.getMessage());
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            logger.error("Message Scheduler shutdown interrupted: {}", e.getMessage());
         }
     }
 
@@ -368,7 +372,6 @@ abstract public class AbstractMessageRouter implements MessageRouter {
                     failureAction.execute(error);
                 }
             }
-
         }
     }
 }

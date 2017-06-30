@@ -110,26 +110,4 @@ public class JeeMessageRouterTest {
         assertTrue(passedDelaybleMessage.getValue().getDelay(TimeUnit.MILLISECONDS) <= 0);
 
     }
-
-    @Test
-    public void testShutdown() throws InterruptedException {
-        JeeMessageRouter subject = new JeeMessageRouter(routingTable,
-                                                        scheduler,
-                                                        1000L,
-                                                        10,
-                                                        routingTableGracePeriodMs,
-                                                        routingTableCleanupIntervalMs,
-                                                        messagingStubFactory,
-                                                        messagingSkeletonFactory,
-                                                        addressManager,
-                                                        multicastReceiverRegistry,
-                                                        null,
-                                                        false,
-                                                        messageQueue);
-
-        subject.shutdown();
-
-        verify(scheduler).shutdown();
-    }
-
 }
