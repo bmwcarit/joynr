@@ -85,23 +85,26 @@ public:
 
     ~LocalCapabilitiesDirectory() override;
 
-    virtual void remove(const std::string& participantId);
+    /*
+     * Remove all capabilities associated to participantId.
+     */
+    void remove(const std::string& participantId);
 
     /*
      * Returns a list of capabilitiess matching the given domain and interfaceName,
      * this is an asynchronous request, must supply a callback.
      */
-    virtual void lookup(const std::vector<std::string>& domains,
-                        const std::string& interfaceName,
-                        std::shared_ptr<ILocalCapabilitiesCallback> callback,
-                        const joynr::types::DiscoveryQos& discoveryQos);
+    void lookup(const std::vector<std::string>& domains,
+                const std::string& interfaceName,
+                std::shared_ptr<ILocalCapabilitiesCallback> callback,
+                const joynr::types::DiscoveryQos& discoveryQos);
 
     /*
      * Returns a capability entry for a given participant ID or an empty list
      * if it cannot be found.
      */
-    virtual void lookup(const std::string& participantId,
-                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
+    void lookup(const std::string& participantId,
+                std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     /*
       * Returns a list of locally cached capabilitiy entries. This method is used
