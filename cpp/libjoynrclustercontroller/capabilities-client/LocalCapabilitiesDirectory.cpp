@@ -25,7 +25,10 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/asio/io_service.hpp>
 
+#include "joynr/access-control/IAccessController.h"
+
 #include "joynr/CapabilityUtils.h"
+#include "joynr/CallContextStorage.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/IMessageRouter.h"
@@ -37,6 +40,7 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/Util.h"
+
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 
 namespace joynr
@@ -67,6 +71,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           observers(),
           libJoynrSettings(libjoynrSettings),
           pendingLookups(),
+          accessController(nullptr),
           checkExpiredDiscoveryEntriesTimer(ioService),
           freshnessUpdateTimer(ioService),
           clusterControllerId(clusterControllerId)
@@ -576,9 +581,33 @@ void LocalCapabilitiesDirectory::add(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::ignore = onError;
-    addInternal(discoveryEntry);
-    onSuccess();
+    if (hasProviderPermission(discoveryEntry)) {
+        addInternal(discoveryEntry);
+        onSuccess();
+        return;
+    }
+    onError(joynr::exceptions::ProviderRuntimeException(
+            "Provider does not have permissions to register domain/interface."));
+}
+
+bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEntry& discoveryEntry)
+{
+    if (accessController) {
+        const CallContext& callContext = CallContextStorage::get();
+        const std::string& ownerId = callContext.getPrincipal();
+        return accessController->hasProviderPermission(ownerId,
+                                                       infrastructure::DacTypes::TrustLevel::HIGH,
+                                                       discoveryEntry.getDomain(),
+                                                       discoveryEntry.getInterfaceName());
+    }
+    return true;
+}
+
+void LocalCapabilitiesDirectory::setAccessController(
+        std::shared_ptr<IAccessController> accessController)
+{
+    assert(accessController);
+    this->accessController = std::move(accessController);
 }
 
 // inherited method from joynr::system::DiscoveryProvider

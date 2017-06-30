@@ -54,7 +54,7 @@ class io_service;
 
 namespace joynr
 {
-
+class IAccessController;
 class ICapabilitiesClient;
 class LibjoynrSettings;
 class IMessageRouter;
@@ -194,6 +194,11 @@ public:
      */
     bool hasPendingLookups();
 
+    /*
+     * Set AccessController so that registration of providers can be checked.
+     */
+    void setAccessController(std::shared_ptr<IAccessController> accessController);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     MessagingSettings& messagingSettings;
@@ -250,6 +255,8 @@ private:
     std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
             pendingLookups;
 
+    std::shared_ptr<IAccessController> accessController;
+
     boost::asio::steady_timer checkExpiredDiscoveryEntriesTimer;
 
     void scheduleCleanupTimer();
@@ -274,6 +281,7 @@ private:
     bool isGlobal(const types::DiscoveryEntry& discoveryEntry) const;
 
     void addInternal(const joynr::types::DiscoveryEntry& entry);
+    bool hasProviderPermission(const types::DiscoveryEntry& discoveryEntry);
 };
 
 class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback
