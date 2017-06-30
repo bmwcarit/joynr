@@ -52,9 +52,4 @@ public interface Dispatcher extends MessageArrivedListener {
                                MessagingQos qosSettings);
 
     void sendMulticast(String fromParticipantId, MulticastPublication multicastPublication, MessagingQos messagingQos);
-
-    /**
-     * @param clear indicates whether the channel should be closed
-     */
-    public void shutdown(boolean clear);
 }

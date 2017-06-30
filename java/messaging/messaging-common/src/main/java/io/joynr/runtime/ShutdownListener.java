@@ -1,4 +1,4 @@
-package io.joynr.messaging.mqtt;
+package io.joynr.runtime;
 
 /*
  * #%L
@@ -19,22 +19,8 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
-import com.google.inject.Inject;
+public interface ShutdownListener {
 
-import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import joynr.system.RoutingTypes.MqttAddress;
+    void shutdown();
 
-public class MqttMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<MqttMessagingStub, MqttAddress> {
-
-    private JoynrMqttClient mqttClient;
-
-    @Inject
-    public MqttMessagingStubFactory(MqttClientFactory mqttClientFactory) {
-        this.mqttClient = mqttClientFactory.create();
-    }
-
-    @Override
-    protected MqttMessagingStub createInternal(MqttAddress address) {
-        return new MqttMessagingStub(address, mqttClient);
-    }
 }

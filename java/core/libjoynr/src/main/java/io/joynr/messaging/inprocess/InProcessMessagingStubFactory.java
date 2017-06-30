@@ -27,9 +27,4 @@ public class InProcessMessagingStubFactory extends
     protected InProcessMessagingStub createInternal(InProcessAddress address) {
         return new InProcessMessagingStub((address).getSkeleton());
     }
-
-    @Override
-    public void shutdown() {
-        // nothing to do
-    }
 }

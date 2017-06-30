@@ -52,12 +52,6 @@ public class MessagingStubFactory {
         return messagingStubFactory.create(address);
     }
 
-    public void shutdown() {
-        for (AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address> messagingStubFactory : middlewareMessagingStubFactories.values()) {
-            messagingStubFactory.shutdown();
-        }
-    }
-
     public void register(Class<? extends Address> address,
                          AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address> middlewareMessagingStubFactory) {
         middlewareMessagingStubFactories.put(address, middlewareMessagingStubFactory);

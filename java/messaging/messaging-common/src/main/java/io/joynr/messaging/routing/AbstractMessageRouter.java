@@ -43,6 +43,8 @@ import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.Address;
@@ -51,9 +53,7 @@ import joynr.system.RoutingTypes.RoutingTypesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract public class AbstractMessageRouter implements MessageRouter {
-    private static final long TERMINATION_TIMEOUT = 5000;
-
+abstract public class AbstractMessageRouter implements MessageRouter, ShutdownListener {
     private Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
     private final RoutingTable routingTable;
     private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
@@ -70,8 +70,6 @@ abstract public class AbstractMessageRouter implements MessageRouter {
 
     private List<ScheduledFuture<?>> workerFutures;
 
-    protected abstract boolean shutdownScheduler();
-
     @Inject
     @Singleton
     // CHECKSTYLE:OFF
@@ -85,7 +83,8 @@ abstract public class AbstractMessageRouter implements MessageRouter {
                                  MessagingSkeletonFactory messagingSkeletonFactory,
                                  AddressManager addressManager,
                                  MulticastReceiverRegistry multicastReceiverRegistry,
-                                 BoundedDelayQueue<DelayableImmutableMessage> messageQueue) {
+                                 BoundedDelayQueue<DelayableImmutableMessage> messageQueue,
+                                 ShutdownNotifier shutdownNotifier) {
         // CHECKSTYLE:ON
         this.routingTable = routingTable;
         this.scheduler = scheduler;
@@ -97,6 +96,7 @@ abstract public class AbstractMessageRouter implements MessageRouter {
         this.addressManager = addressManager;
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
+        shutdownNotifier.registerForShutdown(this);
         startMessageWorkerThreads(maxParallelSends);
         startRoutingTableCleanupThread();
     }
@@ -305,21 +305,6 @@ abstract public class AbstractMessageRouter implements MessageRouter {
     public void shutdown() {
         for (ScheduledFuture<?> workerFuture : workerFutures) {
             workerFuture.cancel(true);
-        }
-
-        if (shutdownScheduler()) {
-            scheduler.shutdown();
-            try {
-                if (!scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS)) {
-                    logger.error("Message Scheduler did not shut down in time. Timedout out waiting for executor service to shutdown after {}ms.",
-                                 TERMINATION_TIMEOUT);
-                    logger.debug("Attempting to shutdown scheduler {} forcibly.", scheduler);
-                    scheduler.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                logger.error("Message Scheduler shutdown interrupted: {}", e.getMessage());
-            }
         }
     }
 

@@ -39,6 +39,7 @@ import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.runtime.ShutdownNotifier;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -89,6 +90,9 @@ public class PushingPublicationTest {
     @Mock
     private AttributePollInterpreter attributePollInterpreter;
 
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
+
     private ScheduledExecutorService cleanupScheduler = Executors.newSingleThreadScheduledExecutor();
 
     private SubscriptionRequest subscriptionRequest;
@@ -108,7 +112,8 @@ public class PushingPublicationTest {
                                                         dispatcher,
                                                         providerDirectory,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class));
+                                                        Mockito.mock(SubscriptionRequestStorage.class),
+                                                        shutdownNotifier);
         subscriptionId = "subscriptionId";
         proxyId = "proxyId";
         providerId = "providerId";

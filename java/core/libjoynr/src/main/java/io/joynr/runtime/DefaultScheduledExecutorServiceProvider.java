@@ -37,7 +37,7 @@ import com.google.inject.Singleton;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 
 @Singleton
-public class DefaultScheduledExecutorServiceProvider implements Provider<ScheduledExecutorService> {
+public class DefaultScheduledExecutorServiceProvider implements Provider<ScheduledExecutorService>, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(DefaultScheduledExecutorServiceProvider.class);
     private static final int MQTT_THREADS = 4;
     private static final int MAX_SKELETON_THREADS = 5;
@@ -45,7 +45,8 @@ public class DefaultScheduledExecutorServiceProvider implements Provider<Schedul
     private ScheduledThreadPoolExecutor scheduler;
 
     @Inject
-    public DefaultScheduledExecutorServiceProvider(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
+    public DefaultScheduledExecutorServiceProvider(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends,
+                                                   ShutdownNotifier shutdownNotifier) {
         ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
                                                                               .setDaemon(true)
                                                                               .build();
@@ -53,6 +54,8 @@ public class DefaultScheduledExecutorServiceProvider implements Provider<Schedul
                                                     schedulerNamedThreadFactory);
         scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
         scheduler.allowCoreThreadTimeOut(true);
+
+        shutdownNotifier.registerForShutdown(this);
     }
 
     @Override
@@ -60,6 +63,7 @@ public class DefaultScheduledExecutorServiceProvider implements Provider<Schedul
         return scheduler;
     }
 
+    @Override
     public void shutdown() {
         scheduler.shutdown();
         try {

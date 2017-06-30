@@ -9,11 +9,8 @@ import com.google.inject.name.Named;
 
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.ProviderDirectory;
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
-import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.sender.LibJoynrMessageSender;
 import io.joynr.proxy.ProxyBuilder;
@@ -48,10 +45,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
     @Inject
     public LibjoynrRuntime(ObjectMapper objectMapper,
                            ProxyBuilderFactory proxyBuilderFactory,
-                           ProviderDirectory requestCallerDirectory,
-                           ReplyCallerDirectory replyCallerDirectory,
                            Dispatcher dispatcher,
-                           MessagingStubFactory messagingStubFactory,
                            MessagingSkeletonFactory messagingSkeletonFactory,
                            LocalDiscoveryAggregator localDiscoveryAggregator,
                            RoutingTable routingTable,
@@ -64,10 +58,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                            @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String parentRoutingProviderParticipantId) {
         super(objectMapper,
               proxyBuilderFactory,
-              requestCallerDirectory,
-              replyCallerDirectory,
               dispatcher,
-              messagingStubFactory,
               messagingSkeletonFactory,
               localDiscoveryAggregator,
               routingTable,

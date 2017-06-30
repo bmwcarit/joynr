@@ -44,10 +44,11 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
@@ -58,7 +59,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryListener<ProviderContainer> {
+public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryListener<ProviderContainer>,
+        ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(RequestReplyManagerImpl.class);
     private boolean running = true;
 
@@ -70,7 +72,6 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     private ReplyCallerDirectory replyCallerDirectory;
     private ProviderDirectory providerDirectory;
     private RequestInterpreter requestInterpreter;
-    private MessageRouter messageRouter;
     private MessageSender messageSender;
     private MutableMessageFactory messageFactory;
 
@@ -80,18 +81,18 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
     public RequestReplyManagerImpl(MutableMessageFactory messageFactory,
                                    ReplyCallerDirectory replyCallerDirectory,
                                    ProviderDirectory providerDirectory,
-                                   MessageRouter messageRouter,
                                    MessageSender messageSender,
                                    RequestInterpreter requestInterpreter,
-                                   @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
+                                   @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
+                                   ShutdownNotifier shutdownNotifier) {
         this.messageFactory = messageFactory;
         this.replyCallerDirectory = replyCallerDirectory;
         this.providerDirectory = providerDirectory;
-        this.messageRouter = messageRouter;
         this.messageSender = messageSender;
         this.requestInterpreter = requestInterpreter;
         this.cleanupScheduler = cleanupScheduler;
         providerDirectory.addListener(this);
+        shutdownNotifier.registerForShutdown(this);
     }
 
     /*
@@ -307,9 +308,6 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                 thread.interrupt();
             }
         }
-        messageRouter.shutdown();
         providerDirectory.removeListener(this);
-        replyCallerDirectory.shutdown();
-        cleanupScheduler.shutdownNow();
     }
 }

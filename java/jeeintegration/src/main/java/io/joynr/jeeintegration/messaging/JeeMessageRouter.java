@@ -31,6 +31,7 @@ import io.joynr.accesscontrol.AccessController;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
+import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.messaging.routing.BoundedDelayQueue;
@@ -71,7 +72,8 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter
                             MulticastReceiverRegistry multicastReceiverRegistry,
                             AccessController accessController,
                             @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl,
-                            BoundedDelayQueue<DelayableImmutableMessage> messageQueue) {
+                            BoundedDelayQueue<DelayableImmutableMessage> messageQueue,
+                            ShutdownNotifier shutdownNotifier) {
         super(routingTable,
               scheduler,
               sendMsgRetryIntervalMs,
@@ -84,7 +86,8 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter
               multicastReceiverRegistry,
               accessController,
               enableAccessControl,
-              messageQueue);
+              messageQueue,
+              shutdownNotifier);
         if (LOG.isDebugEnabled()) {
             LOG.debug(format("Initialising with:%n\troutingTable: %s%n\tscheduler: %s%n\tsendMsgRetryIntervalMs: %d%n\tmessageStubFactory: %s",
                              routingTable,
@@ -99,10 +102,5 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter
     protected void schedule(Runnable runnable, String messageId, long delay, TimeUnit timeUnit) {
         LOG.trace("Scheduling {} on {} with delay {} {}", new Object[]{ runnable, scheduler, delay, timeUnit });
         scheduler.schedule(runnable, delay, timeUnit);
-    }
-
-    @Override
-    protected boolean shutdownScheduler() {
-        return false;
     }
 }

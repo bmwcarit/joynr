@@ -63,6 +63,8 @@ import io.joynr.pubsub.publication.AttributeListener;
 import io.joynr.pubsub.publication.BroadcastFilter;
 import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.pubsub.publication.MulticastListener;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastPublication;
@@ -77,7 +79,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-public class PublicationManagerImpl implements PublicationManager, DirectoryListener<ProviderContainer> {
+public class PublicationManagerImpl implements PublicationManager, DirectoryListener<ProviderContainer>,
+        ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(PublicationManagerImpl.class);
     // Map ProviderId -> SubscriptionRequest
     private final SetMultimap<String, PublicationInformation> queuedSubscriptionRequests;
@@ -182,7 +185,8 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                   Dispatcher dispatcher,
                                   ProviderDirectory providerDirectory,
                                   @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
-                                  SubscriptionRequestStorage subscriptionRequestStorage) {
+                                  SubscriptionRequestStorage subscriptionRequestStorage,
+                                  ShutdownNotifier shutdownNotifier) {
         super();
         this.dispatcher = dispatcher;
         this.providerDirectory = providerDirectory;
@@ -198,6 +202,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         this.attributePollInterpreter = attributePollInterpreter;
         providerDirectory.addListener(this);
         queueSavedSubscriptionRequests();
+        shutdownNotifier.registerForShutdown(this);
     }
 
     private void queueSavedSubscriptionRequests() {
