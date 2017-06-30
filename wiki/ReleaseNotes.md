@@ -1,3 +1,12 @@
+# joynr 0.27.2
+
+## API relevant changes
+none
+
+## Other changes
+* **[JEE]** Applications can inject a MqttClientIdProvider to generate an id for the mqtt client.
+  The producer method must be annotated with JoynrMqttClientIdProvider.
+
 # joynr 0.27.1
 
 ## API relevant changes
@@ -7,7 +16,6 @@
 * **[C++]** Mosquitto Connection uses now internal Mosquitto Loop thread handling.
 * **[C++]** Cleaned up MessagingSettings. All settings which correspond to `seconds` time unit,
   have now `seconds` suffix.
-
 
 # joynr 0.27.0
 
