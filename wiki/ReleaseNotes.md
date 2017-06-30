@@ -3,6 +3,7 @@
 ## API relevant changes
 
 ## Other changes
+* **[JEE]** Fixed cleanup of thread pool when application is undeployed
 * **[C++]** Mosquitto Connection uses now internal Mosquitto Loop thread handling.
 * **[C++]** Cleaned up MessagingSettings. All settings which correspond to `seconds` time unit,
   have now `seconds` suffix.
