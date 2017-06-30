@@ -21,15 +21,10 @@ package io.joynr.runtime;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Named;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -92,10 +87,6 @@ import joynr.system.RoutingTypes.Address;
 
 abstract class AbstractRuntimeModule extends AbstractModule {
 
-    // TODO start skeletons and MQTT in a separate thread pool
-    private static final int MQTT_THREADS = 4;
-    private static final int MAX_SKELETON_THREADS = 5;
-
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
     MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
     @SuppressWarnings("URF_UNREAD_FIELD")
@@ -148,15 +139,13 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(RoutingTable.class).to(RoutingTableImpl.class).asEagerSingleton();
         bind(MulticastReceiverRegistry.class).to(InMemoryMulticastReceiverRegistry.class).asEagerSingleton();
         bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
+        bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
+                                            .toProvider(DefaultScheduledExecutorServiceProvider.class);
 
         install(new StaticCapabilitiesProvisioningModule());
 
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.Cleanup-%d")
-                                                                     .setDaemon(true)
-                                                                     .build();
-        ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(JOYNR_SCHEDULER_CLEANUP))
-                                            .toInstance(cleanupExecutor);
+                                            .toProvider(DefaultScheduledExecutorServiceProvider.class);
         Multibinder.newSetBinder(binder(), new TypeLiteral<JoynrMessageProcessor>() {
         });
     }
@@ -167,19 +156,4 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     Address getDispatcherAddress() {
         return new InProcessAddress();
     }
-
-    @Provides
-    @Singleton
-    @Named(MessageRouter.SCHEDULEDTHREADPOOL)
-    ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(@Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
-        ThreadFactory schedulerNamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("joynr.MessageScheduler-scheduler-%d")
-                                                                              .setDaemon(true)
-                                                                              .build();
-        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(maximumParallelSends
-                + MAX_SKELETON_THREADS + MQTT_THREADS, schedulerNamedThreadFactory);
-        scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
-        scheduler.allowCoreThreadTimeOut(true);
-        return scheduler;
-    }
-
 }
