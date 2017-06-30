@@ -152,7 +152,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
                   std::make_shared<MulticastMessagingSkeletonDirectory>()),
           ccMessageRouter(nullptr),
           aclEditor(nullptr),
-          lifetimeSemaphore(0)
+          lifetimeSemaphore(0),
+          accessController(nullptr)
 {
     initializeAllDependencies();
 }
@@ -673,7 +674,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
                 std::move(proxyGlobalDomainAccessController));
     }
 
-    auto accessController = std::make_shared<joynr::AccessController>(
+    accessController = std::make_shared<joynr::AccessController>(
             localCapabilitiesDirectory, localDomainAccessController);
 
     // whitelist provisioned entries into access controller
@@ -681,13 +682,13 @@ void JoynrClusterControllerRuntime::enableAccessController(
         accessController->addParticipantToWhitelist(entry.second.getParticipantId());
     }
 
-    ccMessageRouter->setAccessController(accessController);
+    ccMessageRouter->setAccessController(std::move(util::as_weak_ptr(accessController)));
 
     aclEditor = std::make_shared<AccessControlListEditor>(
             std::move(localDomainAccessStore), localDomainAccessController);
 
     // Set accessController also in LocalCapabilitiesDirectory
-    localCapabilitiesDirectory->setAccessController(accessController);
+    localCapabilitiesDirectory->setAccessController(std::move(util::as_weak_ptr(accessController)));
 }
 
 std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterControllerRuntime::

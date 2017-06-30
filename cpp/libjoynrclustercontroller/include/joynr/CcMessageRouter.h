@@ -194,7 +194,7 @@ public:
      * Public methods specific to CcMessageRouter
      */
     bool publishToGlobal(const ImmutableMessage& message) final;
-    void setAccessController(std::shared_ptr<IAccessController> accessController);
+    void setAccessController(std::weak_ptr<IAccessController> accessController);
     void saveMulticastReceiverDirectory() const;
     void loadMulticastReceiverDirectory(std::string filename);
     std::shared_ptr<joynr::system::MessageNotificationProvider> getMessageNotificationProvider()
@@ -217,7 +217,7 @@ private:
 
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
     std::unique_ptr<IPlatformSecurityManager> securityManager;
-    std::shared_ptr<IAccessController> accessController;
+    std::weak_ptr<IAccessController> accessController;
     std::string multicastReceveiverDirectoryFilename;
     const std::string globalClusterControllerAddress;
     std::shared_ptr<CcMessageNotificationProvider> messageNotificationProvider;

@@ -29,6 +29,7 @@
 
 #include "joynr/CapabilityUtils.h"
 #include "joynr/CallContextStorage.h"
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/IMessageRouter.h"
@@ -71,7 +72,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           observers(),
           libJoynrSettings(libjoynrSettings),
           pendingLookups(),
-          accessController(nullptr),
+          accessController(),
           checkExpiredDiscoveryEntriesTimer(ioService),
           freshnessUpdateTimer(ioService),
           clusterControllerId(clusterControllerId)
@@ -592,21 +593,21 @@ void LocalCapabilitiesDirectory::add(
 
 bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEntry& discoveryEntry)
 {
-    if (accessController) {
+    if (auto gotAccessController = accessController.lock()) {
         const CallContext& callContext = CallContextStorage::get();
         const std::string& ownerId = callContext.getPrincipal();
-        return accessController->hasProviderPermission(ownerId,
-                                                       infrastructure::DacTypes::TrustLevel::HIGH,
-                                                       discoveryEntry.getDomain(),
-                                                       discoveryEntry.getInterfaceName());
+        return gotAccessController->hasProviderPermission(
+                ownerId,
+                infrastructure::DacTypes::TrustLevel::HIGH,
+                discoveryEntry.getDomain(),
+                discoveryEntry.getInterfaceName());
     }
-    return true;
+    return false;
 }
 
 void LocalCapabilitiesDirectory::setAccessController(
-        std::shared_ptr<IAccessController> accessController)
+        std::weak_ptr<IAccessController> accessController)
 {
-    assert(accessController);
     this->accessController = std::move(accessController);
 }
 

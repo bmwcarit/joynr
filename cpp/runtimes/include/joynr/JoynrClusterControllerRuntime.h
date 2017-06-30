@@ -46,6 +46,7 @@ class JoynrClusterControllerRuntimeTest;
 namespace joynr
 {
 
+class AccessController;
 class AccessControlListEditor;
 class LocalCapabilitiesDirectory;
 class ILocalChannelUrlDirectory;
@@ -186,6 +187,8 @@ private:
     friend class ::JoynrClusterControllerRuntimeTest;
 
     Semaphore lifetimeSemaphore;
+
+    std::shared_ptr<joynr::AccessController> accessController;
 };
 
 } // namespace joynr

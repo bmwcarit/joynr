@@ -197,7 +197,7 @@ public:
     /*
      * Set AccessController so that registration of providers can be checked.
      */
-    void setAccessController(std::shared_ptr<IAccessController> accessController);
+    void setAccessController(std::weak_ptr<IAccessController> accessController);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
@@ -255,7 +255,7 @@ private:
     std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
             pendingLookups;
 
-    std::shared_ptr<IAccessController> accessController;
+    std::weak_ptr<IAccessController> accessController;
 
     boost::asio::steady_timer checkExpiredDiscoveryEntriesTimer;
 

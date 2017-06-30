@@ -133,6 +133,7 @@ CcMessageRouter::CcMessageRouter(
           joynr::system::RoutingAbstractProvider(),
           multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           securityManager(std::move(securityManager)),
+          accessController(),
           multicastReceveiverDirectoryFilename(),
           globalClusterControllerAddress(globalClusterControllerAddress),
           messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>())
@@ -145,9 +146,8 @@ CcMessageRouter::~CcMessageRouter()
 {
 }
 
-void CcMessageRouter::setAccessController(std::shared_ptr<IAccessController> accessController)
+void CcMessageRouter::setAccessController(std::weak_ptr<IAccessController> accessController)
 {
-    assert(accessController);
     this->accessController = std::move(accessController);
 }
 
@@ -294,12 +294,12 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
     }
 
     for (std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress : destAddresses) {
-        if (accessController) {
+        if (auto gotAccessController = accessController.lock()) {
             // Access control checks are asynchronous, callback will send message
             // if access is granted
             auto callback =
                     std::make_shared<ConsumerPermissionCallback>(*this, message, destAddress);
-            accessController->hasConsumerPermission(message, callback);
+            gotAccessController->hasConsumerPermission(message, callback);
             return;
         }
 
