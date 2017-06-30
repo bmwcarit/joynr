@@ -48,13 +48,6 @@
 							<goal>generate</goal>
 						</goals>
 					</execution>
-					<execution>
-						<phase>clean</phase>
-						<id>clean</id>
-						<goals>
-							<goal>clean</goal>
-						</goals>
-					</execution>
 				</executions>
 				<dependencies>
 					<dependency>
