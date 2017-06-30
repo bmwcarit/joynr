@@ -100,4 +100,9 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter
         LOG.trace("Scheduling {} on {} with delay {} {}", new Object[]{ runnable, scheduler, delay, timeUnit });
         scheduler.schedule(runnable, delay, timeUnit);
     }
+
+    @Override
+    protected boolean shutdownScheduler() {
+        return false;
+    }
 }

@@ -217,4 +217,9 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     public void setIncomingAddress(Address incomingAddress) {
         this.incomingAddress = incomingAddress;
     }
+
+    @Override
+    protected boolean shutdownScheduler() {
+        return true;
+    }
 }

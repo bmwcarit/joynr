@@ -44,8 +44,8 @@ public:
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_URL();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
-    static const std::string& SETTING_MQTT_KEEP_ALIVE_TIME();
-    static const std::string& SETTING_MQTT_RECONNECT_SLEEP_TIME();
+    static const std::string& SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS();
+    static const std::string& SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS();
     static const std::string& SETTING_MQTT_CONNECTION_TIMEOUT_MS();
     static const std::string& SETTING_INDEX();
     static const std::string& SETTING_CREATE_CHANNEL_RETRY_INTERVAL();
@@ -103,8 +103,8 @@ public:
      * @see SETTING_MAXIMUM_TTL_MS
      */
     static std::uint64_t DEFAULT_MAXIMUM_TTL_MS();
-    static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME();
-    static std::chrono::milliseconds DEFAULT_MQTT_RECONNECT_SLEEP_TIME();
+    static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS();
+    static std::chrono::seconds DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS();
     static std::chrono::milliseconds DEFAULT_MQTT_CONNECTION_TIMEOUT_MS();
     static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
 
@@ -118,11 +118,11 @@ public:
     std::string getCapabilitiesDirectoryChannelId() const;
     std::string getCapabilitiesDirectoryParticipantId() const;
 
-    std::chrono::seconds getMqttKeepAliveTime() const;
-    void setMqttKeepAliveTime(std::chrono::seconds mqttKeepAliveTime);
-    std::chrono::milliseconds getMqttReconnectSleepTime() const;
-    void setMqttReconnectSleepTime(std::chrono::milliseconds mqttReconnectSleepTime);
-    std::chrono::milliseconds getMqttConnectionTimeout() const;
+    std::chrono::seconds getMqttKeepAliveTimeSeconds() const;
+    void setMqttKeepAliveTimeSeconds(std::chrono::seconds mqttKeepAliveTimeSeconds);
+    std::chrono::seconds getMqttReconnectDelayTimeSeconds() const;
+    void setMqttReconnectDelayTimeSeconds(std::chrono::seconds mqttReconnectDelayTimeSeconds);
+    std::chrono::milliseconds getMqttConnectionTimeoutMs() const;
     std::int64_t getIndex() const;
     void setIndex(std::int64_t index);
     int getCreateChannelRetryInterval() const;
@@ -151,12 +151,12 @@ public:
     void setClientCertificatePassword(const std::string& clientCertificatePassword);
     std::string getMessagingPropertiesPersistenceFilename() const;
     void setMessagingPropertiesPersistenceFilename(const std::string& persistenceFilename);
-    std::int64_t getLongPollTimeout() const;
-    void setLongPollTimeout(std::int64_t timeout_ms);
+    std::int64_t getLongPollTimeoutMs() const;
+    void setLongPollTimeoutMs(std::int64_t timeout_ms);
     std::int64_t getHttpConnectTimeout() const;
-    void setHttpConnectTimeout(std::int64_t timeout_ms);
-    std::int64_t getBrokerTimeout() const;
-    void setBrokerTimeout(std::int64_t timeout_ms);
+    void setHttpConnectTimeoutMs(std::int64_t timeout_ms);
+    std::int64_t getBrokerTimeoutMs() const;
+    void setBrokerTimeoutMs(std::int64_t timeout_ms);
 
     /**
      * @brief getMaximumTtlMs Get the maximum allowed time-to-live value in milliseconds for joynr

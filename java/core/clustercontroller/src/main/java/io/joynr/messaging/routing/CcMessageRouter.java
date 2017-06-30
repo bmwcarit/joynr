@@ -92,4 +92,9 @@ public class CcMessageRouter extends AbstractMessageRouter {
             super.route(message);
         }
     }
+
+    @Override
+    protected boolean shutdownScheduler() {
+        return true;
+    }
 }
