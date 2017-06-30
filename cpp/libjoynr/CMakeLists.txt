@@ -107,7 +107,6 @@ file(GLOB_RECURSE JoynrLib_GENERATED_SOURCES
 )
 
 set(JoynrLib_PRIVATE_HEADERS
-    "common/CallContextStorage.h"
     "in-process/InProcessMessagingSkeleton.h"
     "in-process/InProcessMessagingStubFactory.h"
     "in-process/InProcessMessagingStub.h"

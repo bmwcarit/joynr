@@ -29,6 +29,7 @@
 #include <boost/asio/io_service.hpp>
 
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/CallContextStorage.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/IPublicationSender.h"
@@ -50,7 +51,6 @@
 #include "joynr/exceptions/JoynrExceptionUtil.h"
 #include "joynr/exceptions/SubscriptionException.h"
 #include "joynr/serializer/Serializer.h"
-#include "libjoynr/common/CallContextStorage.h"
 
 namespace joynr
 {

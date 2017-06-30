@@ -22,7 +22,7 @@
 #include <boost/thread/barrier.hpp>
 #include <gtest/gtest.h>
 
-#include "libjoynr/common/CallContextStorage.h"
+#include "joynr/CallContextStorage.h"
 
 using namespace ::testing;
 

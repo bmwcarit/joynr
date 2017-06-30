@@ -26,6 +26,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "joynr/CallContextStorage.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/SubscriptionPublication.h"
@@ -42,7 +43,6 @@
 #include "joynr/SubscriptionReply.h"
 #include "joynr/Semaphore.h"
 #include "joynr/IMessageSender.h"
-#include "libjoynr/common/CallContextStorage.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/utils/MockObjects.h"

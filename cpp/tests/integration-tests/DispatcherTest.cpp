@@ -42,8 +42,7 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/CallContext.h"
-
-#include "libjoynr/common/CallContextStorage.h"
+#include "joynr/CallContextStorage.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/utils/MockObjects.h"
