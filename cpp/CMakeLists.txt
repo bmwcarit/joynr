@@ -720,7 +720,7 @@ get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_
 message(STATUS "variable muesli_INCLUDE_DIRECTORIES= ${muesli_INCLUDE_DIRECTORIES}")
 
 if (USE_PLATFORM_SMRF)
-    find_package(smrf 0.1.4 REQUIRED CONFIG)
+    find_package(smrf 0.2.0 REQUIRED CONFIG)
 else(USE_PLATFORM_SMRF)
     message(STATUS "############ Download: smrf ############")
 
@@ -731,7 +731,7 @@ else(USE_PLATFORM_SMRF)
     AddExternalProject(
         smrf
         GIT_REPOSITORY https://github.com/bmwcarit/smrf
-        GIT_TAG 0.1.4
+        GIT_TAG 0.2.0
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
