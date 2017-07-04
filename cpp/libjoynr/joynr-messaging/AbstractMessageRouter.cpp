@@ -199,9 +199,29 @@ void AbstractMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std
 }
 
 void AbstractMessageRouter::sendMessages(
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+{
+    JOYNR_LOG_TRACE(logger, "sendMessages: sending messages for {}", address->toString());
+    std::unordered_set<std::string> participantIdSet;
+    {
+        ReadLocker lock(routingTableLock);
+        participantIdSet = routingTable.lookupParticipantIdsByAddress(address);
+    }
+    if (participantIdSet.size() > 0) {
+        for (const auto& participantId : participantIdSet) {
+            sendMessages(participantId, address);
+        }
+    }
+}
+
+void AbstractMessageRouter::sendMessages(
         const std::string& destinationPartId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
+    JOYNR_LOG_TRACE(logger,
+                    "sendMessages: sending messages for destinationPartId {} and {}",
+                    destinationPartId,
+                    address->toString());
     while (true) {
         // We have to check all the time whether the messaging stub is still available because
         // it will be deleted if a disconnect occurs (this may happen while this method
