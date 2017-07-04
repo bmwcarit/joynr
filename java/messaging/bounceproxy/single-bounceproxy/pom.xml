@@ -55,7 +55,7 @@
 		<dependency>
 			<groupId>io.joynr.smrf.java</groupId>
 			<artifactId>smrf</artifactId>
-			<version>0.1.4</version>
+			<version>${smrf.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.spec</groupId>
