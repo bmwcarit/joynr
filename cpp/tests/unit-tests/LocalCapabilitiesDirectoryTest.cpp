@@ -55,7 +55,7 @@ public:
     LocalCapabilitiesDirectoryTest()
             : settingsFileName("LocalCapabilitiesDirectoryTest.settings"),
               settings(settingsFileName),
-              libjoynrSettings(settings),
+              clusterControllerSettings(settings),
               messagingSettings(settings),
               capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
               singleThreadedIOService(),
@@ -78,7 +78,7 @@ public:
                                                              capabilitiesClient,
                                                              LOCAL_ADDRESS,
                                                              mockMessageRouter,
-                                                             libjoynrSettings,
+                                                             clusterControllerSettings,
                                                              singleThreadedIOService.getIOService(),
                                                              clusterControllerId);
     }
@@ -278,7 +278,7 @@ public:
 protected:
     std::string settingsFileName;
     Settings settings;
-    LibjoynrSettings libjoynrSettings;
+    ClusterControllerSettings clusterControllerSettings;
     MessagingSettings messagingSettings;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
     SingleThreadedIOService singleThreadedIOService;
@@ -1565,7 +1565,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                                                               capabilitiesClient,
                                                                               LOCAL_ADDRESS,
                                                                               mockMessageRouter,
-                                                                              libjoynrSettings,
+                                                                              clusterControllerSettings,
                                                                               singleThreadedIOService.getIOService(),
                                                                               "clusterControllerId");
 

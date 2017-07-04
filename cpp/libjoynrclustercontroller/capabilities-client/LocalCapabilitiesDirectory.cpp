@@ -54,7 +54,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
         const std::string& localAddress,
         IMessageRouter& messageRouter,
-        LibjoynrSettings& libjoynrSettings,
+        ClusterControllerSettings& clusterControllerSettings,
         boost::asio::io_service& ioService,
         const std::string clusterControllerId)
         : joynr::system::DiscoveryAbstractProvider(),
@@ -70,7 +70,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           registeredGlobalCapabilities(),
           messageRouter(messageRouter),
           observers(),
-          libJoynrSettings(libjoynrSettings),
+          clusterControllerSettings(clusterControllerSettings),
           pendingLookups(),
           accessController(),
           checkExpiredDiscoveryEntriesTimer(ioService),
@@ -688,7 +688,7 @@ void LocalCapabilitiesDirectory::removeProviderRegistrationObserver(
 void LocalCapabilitiesDirectory::updatePersistedFile()
 {
     saveLocalCapabilitiesToFile(
-            libJoynrSettings.getLocalCapabilitiesDirectoryPersistenceFilename());
+            clusterControllerSettings.getLocalCapabilitiesDirectoryPersistenceFilename());
 }
 
 void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& fileName)
@@ -721,7 +721,7 @@ std::string LocalCapabilitiesDirectory::serializeLocalCapabilitiesToJson() const
 void LocalCapabilitiesDirectory::loadPersistedFile()
 {
     const std::string persistencyFile =
-            libJoynrSettings.getLocalCapabilitiesDirectoryPersistenceFilename();
+            clusterControllerSettings.getLocalCapabilitiesDirectoryPersistenceFilename();
     std::string jsonString;
     try {
         jsonString = joynr::util::loadStringFromFile(persistencyFile);

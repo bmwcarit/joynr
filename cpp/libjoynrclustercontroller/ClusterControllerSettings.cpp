@@ -39,6 +39,12 @@ void ClusterControllerSettings::checkSettings()
         setMulticastReceiverDirectoryPersistenceFilename(
                 DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME());
     }
+
+    if (!settings.contains(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME())) {
+        setLocalCapabilitiesDirectoryPersistenceFilename(
+                DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME());
+    }
+
     if (!settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX())) {
         setMqttClientIdPrefix(DEFAULT_MQTT_CLIENT_ID_PREFIX());
     }
@@ -79,6 +85,20 @@ void ClusterControllerSettings::checkSettings()
                             SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID());
         }
     }
+}
+
+const std::string& ClusterControllerSettings::
+        SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
+{
+    static const std::string value("lib-joynr/local-capabilities-directory-persistence-file");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::
+        DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
+{
+    static const std::string value("LocalCapabilitiesDirectory.persist");
+    return value;
 }
 
 const std::string& ClusterControllerSettings::
@@ -373,12 +393,28 @@ void ClusterControllerSettings::setUseOnlyLDAS(bool useOnlyLDAS)
     settings.set(SETTING_USE_ONLY_LDAS(), useOnlyLDAS);
 }
 
+std::string ClusterControllerSettings::getLocalCapabilitiesDirectoryPersistenceFilename() const
+{
+    return settings.get<std::string>(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME());
+}
+
+void ClusterControllerSettings::setLocalCapabilitiesDirectoryPersistenceFilename(
+        const std::string& filename)
+{
+    settings.set(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(), filename);
+}
+
 void ClusterControllerSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {}  = {}",
                     SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME(),
                     getMulticastReceiverDirectoryPersistenceFilename());
+
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(),
+                    getLocalCapabilitiesDirectoryPersistenceFilename());
 
     JOYNR_LOG_DEBUG(
             logger, "SETTING: {}  = {}", SETTING_MQTT_CLIENT_ID_PREFIX(), getMqttClientIdPrefix());

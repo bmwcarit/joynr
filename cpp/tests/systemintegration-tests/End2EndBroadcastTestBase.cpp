@@ -229,7 +229,7 @@ public:
         // Delete persisted files
         std::remove(messagingPropertiesPersistenceFileName1.c_str());
         std::remove(messagingPropertiesPersistenceFileName2.c_str());
-        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(integration1Settings.get<std::string>(LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()).c_str());
         std::remove(integration2Settings.get<std::string>(LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()).c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());

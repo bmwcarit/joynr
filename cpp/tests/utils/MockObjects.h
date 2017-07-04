@@ -78,6 +78,7 @@
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/MessagingSettings.h"
@@ -91,7 +92,6 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/IProxyBuilder.h"
-#include "joynr/LibjoynrSettings.h"
 #include "joynr/types/Version.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/IClusterControllerSignalHandler.h"
@@ -1309,8 +1309,8 @@ class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory 
 public:
     MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings, joynr::Settings& settings, boost::asio::io_service& ioService):
         messageRouter(ioService),
-        libjoynrMockSettings(settings),
-        LocalCapabilitiesDirectory(messagingSettings, nullptr, "localAddress", messageRouter, libjoynrMockSettings, ioService, "clusterControllerId"){}
+        clusterControllerMockSettings(settings),
+        LocalCapabilitiesDirectory(messagingSettings, nullptr, "localAddress", messageRouter, clusterControllerMockSettings, ioService, "clusterControllerId"){}
 
     MOCK_METHOD3(
             lookup,
@@ -1322,7 +1322,7 @@ public:
 
 private:
     MockMessageRouter messageRouter;
-    joynr::LibjoynrSettings libjoynrMockSettings;
+    joynr::ClusterControllerSettings clusterControllerMockSettings;
 };
 
 class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback

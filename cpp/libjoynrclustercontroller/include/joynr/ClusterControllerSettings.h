@@ -32,6 +32,7 @@ class Settings;
 class JOYNR_EXPORT ClusterControllerSettings
 {
 public:
+    static const std::string& SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
     static const std::string& SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
     static const std::string& SETTING_MQTT_CLIENT_ID_PREFIX();
     static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME();
@@ -50,6 +51,7 @@ public:
     SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID();
 
     static const std::string& DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME();
+    static const std::string& DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_MQTT_CLIENT_ID_PREFIX();
     static const std::string& DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX();
@@ -107,6 +109,9 @@ public:
 
     bool getUseOnlyLDAS() const;
     void setUseOnlyLDAS(bool useLDASonly);
+
+    std::string getLocalCapabilitiesDirectoryPersistenceFilename() const;
+    void setLocalCapabilitiesDirectoryPersistenceFilename(const std::string& filename);
 
     void printSettings() const;
 

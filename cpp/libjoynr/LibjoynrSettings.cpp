@@ -39,11 +39,6 @@ void LibjoynrSettings::checkSettings()
                 DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME());
     }
 
-    if (!settings.contains(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME())) {
-        setLocalCapabilitiesDirectoryPersistenceFilename(
-                DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME());
-    }
-
     if (!settings.contains(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME())) {
         setMessageRouterPersistenceFilename(DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME());
     }
@@ -67,17 +62,6 @@ const std::string& LibjoynrSettings::SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSIS
 const std::string& LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
 {
     static const std::string value("BroadcastSubscriptionRequests.persist");
-    return value;
-}
-const std::string& LibjoynrSettings::SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
-{
-    static const std::string value("lib-joynr/local-capabilities-directory-persistence-file");
-    return value;
-}
-
-const std::string& LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
-{
-    static const std::string value("LocalCapabilitiesDirectory.persist");
     return value;
 }
 
@@ -125,16 +109,6 @@ void LibjoynrSettings::setBroadcastSubscriptionRequestPersistenceFilename(
         const std::string& filename)
 {
     settings.set(SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME(), filename);
-}
-
-std::string LibjoynrSettings::getLocalCapabilitiesDirectoryPersistenceFilename() const
-{
-    return settings.get<std::string>(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME());
-}
-
-void LibjoynrSettings::setLocalCapabilitiesDirectoryPersistenceFilename(const std::string& filename)
-{
-    settings.set(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(), filename);
 }
 
 std::string LibjoynrSettings::getMessageRouterPersistenceFilename() const

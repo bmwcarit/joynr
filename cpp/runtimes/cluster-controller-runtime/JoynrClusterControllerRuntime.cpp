@@ -510,7 +510,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
                                                          capabilitiesClient,
                                                          globalClusterControllerAddress,
                                                          *ccMessageRouter,
-                                                         libjoynrSettings,
+                                                         clusterControllerSettings,
                                                          singleThreadIOService->getIOService(),
                                                          clusterControllerId);
     localCapabilitiesDirectory->loadPersistedFile();

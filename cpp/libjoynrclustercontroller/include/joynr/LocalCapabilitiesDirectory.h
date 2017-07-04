@@ -56,7 +56,7 @@ namespace joynr
 {
 class IAccessController;
 class ICapabilitiesClient;
-class LibjoynrSettings;
+class ClusterControllerSettings;
 class IMessageRouter;
 
 /**
@@ -79,7 +79,7 @@ public:
                                std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
                                const std::string& localAddress,
                                IMessageRouter& messageRouter,
-                               LibjoynrSettings& libJoynrSettings,
+                               ClusterControllerSettings& clusterControllerSettings,
                                boost::asio::io_service& ioService,
                                const std::string clusterControllerId);
 
@@ -250,7 +250,7 @@ private:
     IMessageRouter& messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
 
-    LibjoynrSettings& libJoynrSettings; // to retrieve info about persistency
+    ClusterControllerSettings& clusterControllerSettings; // to retrieve info about persistency
 
     std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
             pendingLookups;
