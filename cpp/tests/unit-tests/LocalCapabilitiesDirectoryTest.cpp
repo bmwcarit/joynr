@@ -57,7 +57,6 @@ public:
               settings(settingsFileName),
               libjoynrSettings(settings),
               messagingSettings(settings),
-              libjoynrsettings(settings),
               capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
               singleThreadedIOService(),
               mockMessageRouter(singleThreadedIOService.getIOService()),
@@ -281,7 +280,6 @@ protected:
     Settings settings;
     LibjoynrSettings libjoynrSettings;
     MessagingSettings messagingSettings;
-    LibjoynrSettings libjoynrsettings;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
     SingleThreadedIOService singleThreadedIOService;
     MockMessageRouter mockMessageRouter;
