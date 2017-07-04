@@ -25,7 +25,6 @@
 #include <string>
 #include <unordered_set>
 
-#include "joynr/Directory.h"
 #include "joynr/IMessageRouter.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
@@ -33,8 +32,10 @@
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/RoutingTable.h"
 #include "joynr/ReadWriteLock.h"
 #include "joynr/Runnable.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -87,31 +88,6 @@ public:
     friend class ConsumerPermissionCallback;
 
 protected:
-    struct RoutingEntry
-    {
-        RoutingEntry() : address(nullptr), isGloballyVisible(true)
-        {
-        }
-
-        explicit RoutingEntry(std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
-                              bool isGloballyVisible)
-                : address(std::move(address)), isGloballyVisible(isGloballyVisible)
-        {
-        }
-
-        RoutingEntry(RoutingEntry&&) = default;
-        RoutingEntry& operator=(RoutingEntry&&) = default;
-
-        template <typename Archive>
-        void serialize(Archive& archive)
-        {
-            archive(MUESLI_NVP(address), MUESLI_NVP(isGloballyVisible));
-        }
-
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> address;
-        bool isGloballyVisible;
-    };
-
     struct AddressEqual
     {
     public:
@@ -162,7 +138,9 @@ protected:
     void sendMessages(const std::string& destinationPartId,
                       std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
-    void addToRoutingTable(std::string participantId, std::shared_ptr<RoutingEntry> routingEntry);
+    void addToRoutingTable(std::string participantId,
+                           bool isGloballyVisible,
+                           std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
     void scheduleMessage(std::shared_ptr<ImmutableMessage> message,
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
@@ -174,7 +152,6 @@ protected:
     void rescheduleQueuedMessagesForTransport(std::shared_ptr<ITransportStatus> transportStatus);
     void onMessageCleanerTimerExpired(const boost::system::error_code& errorCode);
 
-    using RoutingTable = Directory<std::string, RoutingEntry>;
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
@@ -195,8 +172,6 @@ private:
     ADD_LOGGER(AbstractMessageRouter);
 
     void checkExpiryDate(const ImmutableMessage& message);
-
-    bool routingTableSaveFilterFunc(std::shared_ptr<RoutingEntry> routingEntry);
 };
 
 /**

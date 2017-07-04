@@ -230,7 +230,9 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
             continue;
         }
 
-        const auto routingEntry = routingTable.lookup(providerParticipantId);
+        ReadLocker lock(routingTableLock);
+        const auto routingEntry =
+                routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
         if (!routingEntry) {
             JOYNR_LOG_WARN(logger,
                            "Persisted multicast receivers: No provider address found for "
@@ -310,8 +312,10 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
 
 bool CcMessageRouter::publishToGlobal(const ImmutableMessage& message)
 {
+    // Caution: Do not lock routingTableLock here, it must have been called from outside
+    // method gets called from AbstractMessageRouter
     const std::string& participantId = message.getSender();
-    const auto routingEntry = routingTable.lookup(participantId);
+    const auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
     if (routingEntry && routingEntry->isGloballyVisible) {
         return true;
     }
@@ -346,9 +350,7 @@ void CcMessageRouter::addNextHop(
 {
     std::ignore = onError;
     assert(address);
-    const auto routingEntry =
-            std::make_shared<RoutingEntry>(RoutingEntry(address, isGloballyVisible));
-    addToRoutingTable(participantId, std::move(routingEntry));
+    addToRoutingTable(participantId, isGloballyVisible, address);
     sendMessages(participantId, address);
     if (onSuccess) {
         onSuccess();
@@ -448,7 +450,7 @@ void CcMessageRouter::resolveNextHop(
     bool resolved;
     {
         ReadLocker lock(routingTableLock);
-        resolved = routingTable.contains(participantId);
+        resolved = routingTable.containsParticipantId(participantId);
     }
     onSuccess(resolved);
 }
@@ -489,11 +491,11 @@ void CcMessageRouter::addMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::shared_ptr<RoutingEntry> routingEntry;
+    boost::optional<routingtable::RoutingEntry> routingEntry;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
         ReadLocker lock(routingTableLock);
-        routingEntry = routingTable.lookup(providerParticipantId);
+        routingEntry = routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
     }
 
     std::function<void()> onSuccessWrapper =
@@ -551,10 +553,10 @@ void CcMessageRouter::removeMulticastReceiver(
 
     saveMulticastReceiverDirectory();
 
-    std::shared_ptr<RoutingEntry> routingEntry;
+    boost::optional<routingtable::RoutingEntry> routingEntry;
     {
         ReadLocker lock(routingTableLock);
-        routingEntry = routingTable.lookup(providerParticipantId);
+        routingEntry = routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
     }
 
     if (!routingEntry) {
