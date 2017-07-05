@@ -33,7 +33,6 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/IMessageRouter.h"
-#include "joynr/LibjoynrSettings.h"
 #include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -50,15 +49,14 @@ namespace joynr
 INIT_LOGGER(LocalCapabilitiesDirectory);
 
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
-        MessagingSettings& messagingSettings,
+        ClusterControllerSettings& clusterControllerSettings,
         std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
         const std::string& localAddress,
         IMessageRouter& messageRouter,
-        ClusterControllerSettings& clusterControllerSettings,
         boost::asio::io_service& ioService,
         const std::string clusterControllerId)
         : joynr::system::DiscoveryAbstractProvider(),
-          messagingSettings(messagingSettings),
+          clusterControllerSettings(clusterControllerSettings),
           capabilitiesClient(std::move(capabilitiesClientPtr)),
           localAddress(localAddress),
           cacheLock(),
@@ -70,7 +68,6 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           registeredGlobalCapabilities(),
           messageRouter(messageRouter),
           observers(),
-          clusterControllerSettings(clusterControllerSettings),
           pendingLookups(),
           accessController(),
           checkExpiredDiscoveryEntriesTimer(ioService),
@@ -85,7 +82,7 @@ void LocalCapabilitiesDirectory::scheduleFreshnessUpdate()
 {
     boost::system::error_code timerError = boost::system::error_code();
     freshnessUpdateTimer.expires_from_now(
-            messagingSettings.getCapabilitiesFreshnessUpdateIntervalMs(), timerError);
+            clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs(), timerError);
     if (timerError) {
         JOYNR_LOG_ERROR(logger,
                         "Error from freshness update timer: {}: {}",
@@ -593,6 +590,10 @@ void LocalCapabilitiesDirectory::add(
 
 bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEntry& discoveryEntry)
 {
+    if (!clusterControllerSettings.enableAccessController()) {
+        return true;
+    }
+
     if (auto gotAccessController = accessController.lock()) {
         const CallContext& callContext = CallContextStorage::get();
         const std::string& ownerId = callContext.getPrincipal();
@@ -602,6 +603,8 @@ bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEnt
                 discoveryEntry.getDomain(),
                 discoveryEntry.getInterfaceName());
     }
+
+    // return false in case AC ptr and setting do not match
     return false;
 }
 
@@ -882,7 +885,7 @@ bool LocalCapabilitiesDirectory::isGlobal(const types::DiscoveryEntry& discovery
 void LocalCapabilitiesDirectory::scheduleCleanupTimer()
 {
     boost::system::error_code timerError;
-    auto intervalMs = messagingSettings.getPurgeExpiredDiscoveryEntriesIntervalMs();
+    auto intervalMs = clusterControllerSettings.getPurgeExpiredDiscoveryEntriesIntervalMs();
     checkExpiredDiscoveryEntriesTimer.expires_from_now(
             std::chrono::milliseconds(intervalMs), timerError);
     if (timerError) {

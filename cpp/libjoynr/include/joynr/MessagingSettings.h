@@ -53,7 +53,6 @@ public:
     static const std::string& SETTING_SEND_MSG_RETRY_INTERVAL();
     static const std::string& SETTING_LONGPOLL_RETRY_INTERVAL();
     static const std::string& SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS();
-    static const std::string& SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
 
     static const std::string& SETTING_LOCAL_PROXY_HOST();
     static const std::string& SETTING_LOCAL_PROXY_PORT();
@@ -85,10 +84,8 @@ public:
      */
     static const std::string& SETTING_DISCOVERY_MESSAGES_TTL_MS();
     static const std::string& SETTING_SEND_MESSAGE_MAX_TTL();
-    static const std::string& SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& SETTING_TTL_UPLIFT_MS();
 
-    static std::chrono::milliseconds DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const std::string& DEFAULT_PERSISTENCE_FILENAME();
     static std::int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
@@ -106,7 +103,6 @@ public:
     static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS();
     static std::chrono::seconds DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS();
     static std::chrono::milliseconds DEFAULT_MQTT_CONNECTION_TIMEOUT_MS();
-    static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
 
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
@@ -131,8 +127,6 @@ public:
     void setDeleteChannelRetryInterval(const int& retryInterval);
     std::int64_t getDiscoveryEntryExpiryIntervalMs() const;
     void setDiscoveryEntryExpiryIntervalMs(std::int64_t expiryIntervalMs);
-    int getPurgeExpiredDiscoveryEntriesIntervalMs() const;
-    void setPurgeExpiredDiscoveryEntriesIntervalMs(int purgeExpiredEntriesIntervalMs);
     int getSendMsgRetryInterval() const;
     void setSendMsgRetryInterval(const int& retryInterval);
     int getLongPollRetryInterval() const;
@@ -178,8 +172,6 @@ public:
     void setSendMsgMaxTtl(std::int64_t ttl_ms);
     void setTtlUpliftMs(std::uint64_t ttlUpliftMs);
     std::uint64_t getTtlUpliftMs() const;
-
-    std::chrono::milliseconds getCapabilitiesFreshnessUpdateIntervalMs() const;
 
     bool contains(const std::string& key) const;
 

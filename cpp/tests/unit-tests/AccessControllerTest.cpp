@@ -97,12 +97,12 @@ private:
 class AccessControllerTest : public ::testing::Test {
 public:
     AccessControllerTest() :
+        emptySettings(),
+        clusterControllerSettings(emptySettings),
         singleThreadedIOService(),
         localDomainAccessControllerMock(std::make_shared<MockLocalDomainAccessController>(std::make_unique<LocalDomainAccessStore>(), false)),
         accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
-        settings(),
-        messagingSettingsMock(settings),
-        localCapabilitiesDirectoryMock(std::make_shared<MockLocalCapabilitiesDirectory>(messagingSettingsMock, settings, singleThreadedIOService.getIOService())),
+        localCapabilitiesDirectoryMock(std::make_shared<MockLocalCapabilitiesDirectory>(clusterControllerSettings, singleThreadedIOService.getIOService())),
         accessController(
                 localCapabilitiesDirectoryMock,
                 localDomainAccessControllerMock
@@ -134,17 +134,6 @@ public:
                                      messagingQos,
                                      initOutgoingRequest(TEST_OPERATION, {}),
                                      isLocalMessage);
-
-        ON_CALL(
-                messagingSettingsMock,
-                getDiscoveryDirectoriesDomain()
-        )
-                .WillByDefault(Return("fooDomain"));
-        ON_CALL(
-                messagingSettingsMock,
-                getCapabilitiesDirectoryParticipantId()
-        )
-                .WillByDefault(Return("fooParticipantId"));
 
         std::int64_t lastSeenDateMs = 0;
         std::int64_t expiryDateMs = 0;
@@ -196,11 +185,11 @@ public:
     }
 
 protected:
+    Settings emptySettings;
+    ClusterControllerSettings clusterControllerSettings;
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockLocalDomainAccessController> localDomainAccessControllerMock;
     std::shared_ptr<MockConsumerPermissionCallback> accessControllerCallback;
-    Settings settings;
-    MockMessagingSettings messagingSettingsMock;
     std::shared_ptr<MockLocalCapabilitiesDirectory> localCapabilitiesDirectoryMock;
     AccessController accessController;
     MutableMessageFactory messageFactory;

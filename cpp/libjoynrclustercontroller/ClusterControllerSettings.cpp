@@ -64,6 +64,16 @@ void ClusterControllerSettings::checkSettings()
         setUseOnlyLDAS(DEFAULT_USE_ONLY_LDAS());
     }
 
+    if (!settings.contains(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS())) {
+        setPurgeExpiredDiscoveryEntriesIntervalMs(
+                DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
+    }
+
+    if (!settings.contains(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS())) {
+        settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
+                     DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS().count());
+    }
+
     if (!settings.contains(SETTING_ACCESS_CONTROL_ENABLE())) {
         setEnableAccessController(DEFAULT_ENABLE_ACCESS_CONTROLLER());
     } else if (enableAccessController() && !getUseOnlyLDAS()) {
@@ -183,6 +193,31 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_PRIVATE_KEY_PEM_FILEN
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS()
+{
+    static const std::string value(
+            "cluster-controller/purge-expired-discovery-entries-interval-ms");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()
+{
+    static const std::string value("cluster-controller/capabilities-freshness-update-interval-ms");
+    return value;
+}
+
+int ClusterControllerSettings::DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS()
+{
+    return 60 * 60 * 1000; // 1 hour
+}
+
+std::chrono::milliseconds ClusterControllerSettings::
+        DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()
+{
+    static const std::chrono::milliseconds value(1UL * 60UL * 60UL * 1000UL); // 1 hour
+    return value;
+}
+
 const std::string& ClusterControllerSettings::DEFAULT_MQTT_CLIENT_ID_PREFIX()
 {
     static const std::string value("joynr");
@@ -268,6 +303,18 @@ void ClusterControllerSettings::setWsPort(std::uint16_t port)
 bool ClusterControllerSettings::isMqttClientIdPrefixSet() const
 {
     return settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX());
+}
+
+int ClusterControllerSettings::getPurgeExpiredDiscoveryEntriesIntervalMs() const
+{
+    return settings.get<int>(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
+}
+
+void ClusterControllerSettings::setPurgeExpiredDiscoveryEntriesIntervalMs(
+        int purgeExpiredEntriesIntervalMs)
+{
+    settings.set(
+            SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS(), purgeExpiredEntriesIntervalMs);
 }
 
 std::string ClusterControllerSettings::getMqttClientIdPrefix() const
@@ -404,6 +451,20 @@ void ClusterControllerSettings::setLocalCapabilitiesDirectoryPersistenceFilename
     settings.set(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(), filename);
 }
 
+std::chrono::milliseconds ClusterControllerSettings::getCapabilitiesFreshnessUpdateIntervalMs()
+        const
+{
+    return std::chrono::milliseconds(
+            settings.get<std::uint64_t>(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()));
+}
+
+void ClusterControllerSettings::setCapabilitiesFreshnessUpdateIntervalMs(
+        std::chrono::milliseconds capabilitiesFreshnessUpdateIntervalMs)
+{
+    return settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
+                        capabilitiesFreshnessUpdateIntervalMs.count());
+}
+
 void ClusterControllerSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger,
@@ -481,6 +542,10 @@ void ClusterControllerSettings::printSettings() const
                     "SETTING: {}  = {})",
                     SETTING_ACCESS_CONTROL_ENABLE(),
                     settings.get<std::string>(SETTING_ACCESS_CONTROL_ENABLE()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {} = {})",
+                    SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
+                    getCapabilitiesFreshnessUpdateIntervalMs().count());
     if (settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE())) {
         JOYNR_LOG_DEBUG(logger,
                         "SETTING: {}  = {})",

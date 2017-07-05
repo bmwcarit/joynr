@@ -1296,7 +1296,20 @@ public:
 class MockMessagingSettings : public joynr::MessagingSettings {
 public:
     MockMessagingSettings(joynr::Settings& settings):
-        MessagingSettings(settings){}
+        MessagingSettings(settings) 
+    {
+        ON_CALL(
+                *this,
+                getDiscoveryDirectoriesDomain()
+        )
+                .WillByDefault(Return("fooDomain"));
+        ON_CALL(
+                *this,
+                getCapabilitiesDirectoryParticipantId()
+        )
+                .WillByDefault(Return("fooParticipantId"));
+    }
+
     MOCK_METHOD0(
             getDiscoveryDirectoriesDomain,
             std::string());
@@ -1307,10 +1320,9 @@ public:
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
-    MockLocalCapabilitiesDirectory(MockMessagingSettings& messagingSettings, joynr::Settings& settings, boost::asio::io_service& ioService):
+    MockLocalCapabilitiesDirectory(joynr::ClusterControllerSettings& ccSettings, boost::asio::io_service& ioService):
         messageRouter(ioService),
-        clusterControllerMockSettings(settings),
-        LocalCapabilitiesDirectory(messagingSettings, nullptr, "localAddress", messageRouter, clusterControllerMockSettings, ioService, "clusterControllerId"){}
+        LocalCapabilitiesDirectory(ccSettings, nullptr, "localAddress", messageRouter, ioService, "clusterControllerId"){}
 
     MOCK_METHOD3(
             lookup,
@@ -1322,7 +1334,6 @@ public:
 
 private:
     MockMessageRouter messageRouter;
-    joynr::ClusterControllerSettings clusterControllerMockSettings;
 };
 
 class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback

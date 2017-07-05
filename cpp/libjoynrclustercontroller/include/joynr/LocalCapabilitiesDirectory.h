@@ -75,11 +75,10 @@ class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
 {
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
-    LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
+    LocalCapabilitiesDirectory(ClusterControllerSettings& messagingSettings,
                                std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
                                const std::string& localAddress,
                                IMessageRouter& messageRouter,
-                               ClusterControllerSettings& clusterControllerSettings,
                                boost::asio::io_service& ioService,
                                const std::string clusterControllerId);
 
@@ -201,7 +200,8 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
-    MessagingSettings& messagingSettings;
+    ClusterControllerSettings& clusterControllerSettings; // to retrieve info about persistency
+
     void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
                               std::vector<types::DiscoveryEntry>&& cachedLocalCapabilies,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
@@ -249,8 +249,6 @@ private:
     std::vector<types::GlobalDiscoveryEntry> registeredGlobalCapabilities;
     IMessageRouter& messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
-
-    ClusterControllerSettings& clusterControllerSettings; // to retrieve info about persistency
 
     std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
             pendingLookups;

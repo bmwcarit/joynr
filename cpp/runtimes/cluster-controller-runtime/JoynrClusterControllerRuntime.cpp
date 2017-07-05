@@ -506,11 +506,10 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient =
             std::make_shared<CapabilitiesClient>();
     localCapabilitiesDirectory =
-            std::make_shared<LocalCapabilitiesDirectory>(messagingSettings,
+            std::make_shared<LocalCapabilitiesDirectory>(clusterControllerSettings,
                                                          capabilitiesClient,
                                                          globalClusterControllerAddress,
                                                          *ccMessageRouter,
-                                                         clusterControllerSettings,
                                                          singleThreadIOService->getIOService(),
                                                          clusterControllerId);
     localCapabilitiesDirectory->loadPersistedFile();

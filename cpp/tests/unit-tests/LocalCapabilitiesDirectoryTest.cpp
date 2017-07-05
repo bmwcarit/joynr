@@ -56,7 +56,6 @@ public:
             : settingsFileName("LocalCapabilitiesDirectoryTest.settings"),
               settings(settingsFileName),
               clusterControllerSettings(settings),
-              messagingSettings(settings),
               capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
               singleThreadedIOService(),
               mockMessageRouter(singleThreadedIOService.getIOService()),
@@ -71,14 +70,13 @@ public:
               defaultOnError([](const joynr::exceptions::ProviderRuntimeException&){})
     {
         singleThreadedIOService.start();
-        messagingSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(100);
-        settings.set(MessagingSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(), 200);
+        clusterControllerSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(100);
+        settings.set(ClusterControllerSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(), 200);
         localCapabilitiesDirectory =
-                std::make_unique<LocalCapabilitiesDirectory>(messagingSettings,
+                std::make_unique<LocalCapabilitiesDirectory>(clusterControllerSettings,
                                                              capabilitiesClient,
                                                              LOCAL_ADDRESS,
                                                              mockMessageRouter,
-                                                             clusterControllerSettings,
                                                              singleThreadedIOService.getIOService(),
                                                              clusterControllerId);
     }
@@ -279,7 +277,6 @@ protected:
     std::string settingsFileName;
     Settings settings;
     ClusterControllerSettings clusterControllerSettings;
-    MessagingSettings messagingSettings;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
     SingleThreadedIOService singleThreadedIOService;
     MockMessageRouter mockMessageRouter;
@@ -1561,11 +1558,10 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                     defaultOnError);
 
     // create a new object
-    auto localCapabilitiesDirectory2 = std::make_unique<LocalCapabilitiesDirectory>(messagingSettings,
+    auto localCapabilitiesDirectory2 = std::make_unique<LocalCapabilitiesDirectory>(clusterControllerSettings,
                                                                               capabilitiesClient,
                                                                               LOCAL_ADDRESS,
                                                                               mockMessageRouter,
-                                                                              clusterControllerSettings,
                                                                               singleThreadedIOService.getIOService(),
                                                                               "clusterControllerId");
 
