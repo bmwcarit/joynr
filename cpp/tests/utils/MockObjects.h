@@ -107,22 +107,10 @@ namespace joynr
 class RequestCaller;
 class SubscriptionReply;
 class BroadcastSubscriptionRequest;
-
-namespace exceptions
-{
-class JoynrException;
-class JoynrRuntimeException;
-class ProviderRuntimeException;
-class DiscoveryException;
-} // namespace exceptions
 } // namespace joynr
 
-using ::testing::A;
 using ::testing::_;
-using ::testing::A;
 using ::testing::Eq;
-using ::testing::AllOf;
-using ::testing::Property;
 using ::testing::Return;
 
 // Disable VC++ warnings due to google mock
