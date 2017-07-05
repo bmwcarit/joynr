@@ -20,101 +20,87 @@
 #ifndef MOCKOBJECTS_H_
 #define MOCKOBJECTS_H_
 
-#include <memory>
 #include <chrono>
-#include <string>
-#include <vector>
-#include <mutex>
 #include <condition_variable>
 #include <functional>
+#include <memory>
+#include <mutex>
+#include <string>
 #include <tuple>
+#include <vector>
 
 #include <boost/any.hpp>
 #include <boost/asio.hpp>
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include "joynr/access-control/IAccessController.h"
-#include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
-#include "joynr/tests/DefaulttestProvider.h"
-#include "joynr/tests/testRequestCaller.h"
-#include "joynr/vehicle/DefaultGpsProvider.h"
-#include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
+#include "joynr/AbstractMessageRouter.h"
+#include "joynr/BrokerUrl.h"
+#include "joynr/CapabilitiesRegistrar.h"
+#include "joynr/ClusterControllerDirectories.h"
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/DelayedScheduler.h"
-#include "joynr/Runnable.h"
-#include "joynr/vehicle/GpsRequestCaller.h"
+#include "joynr/DiscoveryQos.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
+#include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
+#include "joynr/IClusterControllerSignalHandler.h"
+#include "joynr/IDispatcher.h"
+#include "joynr/IMessageSender.h"
+#include "joynr/IMessagingMulticastSubscriber.h"
+#include "joynr/IMessagingStub.h"
+#include "joynr/IMessagingStubFactory.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/IMulticastAddressCalculator.h"
+#include "joynr/InProcessConnectorFactory.h"
+#include "joynr/IProxyBuilder.h"
+#include "joynr/IRequestCallerDirectory.h"
+#include "joynr/ISubscriptionListener.h"
 #include "joynr/ITransportMessageReceiver.h"
 #include "joynr/ITransportMessageSender.h"
-#include "joynr/IDispatcher.h"
-#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
-#include "joynr/IMessagingStub.h"
-#include "joynr/ReplyCaller.h"
-#include "joynr/ISubscriptionListener.h"
+#include "joynr/IWebSocketSendInterface.h"
+#include "joynr/LocalCapabilitiesDirectory.h"
+#include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/AbstractMessageRouter.h"
-#include "joynr/IMessageSender.h"
-
-#include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingProxy.h"
-#include "joynr/RequestCallerFactory.h"
-#include "joynr/vehicle/GpsProvider.h"
-
-#include "joynr/IMessagingStubFactory.h"
-#include "joynr/IMessagingMulticastSubscriber.h"
-#include "joynr/IRequestCallerDirectory.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
+#include "joynr/MulticastPublication.h"
+#include "joynr/MulticastSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionRequest.h"
+#include "joynr/OneWayRequest.h"
+#include "joynr/ParticipantIdStorage.h"
+#include "joynr/PublicationManager.h"
+#include "joynr/ReplyCaller.h"
+#include "joynr/Request.h"
+#include "joynr/RequestCallerFactory.h"
+#include "joynr/Runnable.h"
+#include "joynr/Settings.h"
+#include "joynr/system/RoutingProxy.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/SubscriptionManager.h"
+#include "joynr/SubscriptionStop.h"
+#include "joynr/tests/DefaulttestProvider.h"
+#include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
+#include "joynr/tests/testRequestCaller.h"
+#include "joynr/types/Version.h"
+#include "joynr/vehicle/DefaultGpsProvider.h"
+#include "joynr/vehicle/GpsProvider.h"
+#include "joynr/vehicle/GpsRequestCaller.h"
+#include "joynr/WebSocketSettings.h"
 
-#include "joynr/ClusterControllerDirectories.h"
-
-#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
-#include "joynr/CapabilitiesRegistrar.h"
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
-#include "joynr/InProcessConnectorFactory.h"
+#include "libjoynr/websocket/IWebSocketPpClient.h"
+
+#include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
+#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
 #include "libjoynrclustercontroller/include/joynr/ITransportStatus.h"
 
-#include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
-#include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
-
-#include "joynr/ClusterControllerSettings.h"
-#include "joynr/LocalCapabilitiesDirectory.h"
-#include "joynr/ParticipantIdStorage.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/SubscriptionManager.h"
-#include "joynr/MulticastSubscriptionRequest.h"
-#include "joynr/PublicationManager.h"
-#include "joynr/DiscoveryQos.h"
-#include "joynr/BrokerUrl.h"
-#include "joynr/Settings.h"
-#include "joynr/Logger.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/DiscoveryQos.h"
-#include "joynr/IProxyBuilder.h"
-#include "joynr/types/Version.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/IClusterControllerSignalHandler.h"
-
-#include "libjoynr/websocket/IWebSocketPpClient.h"
-#include "joynr/IWebSocketSendInterface.h"
-#include "joynr/WebSocketSettings.h"
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
-
-#include "joynr/MulticastPublication.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/MulticastSubscriptionQos.h"
-
-#include "joynr/OneWayRequest.h"
-#include "joynr/SubscriptionStop.h"
-#include "joynr/Request.h"
-
-#include "joynr/IMulticastAddressCalculator.h"
-
 #include "tests/PrettyPrint.h"
 #include "tests/utils/LibJoynrMockObjects.h"
-
-#include "joynr/ImmutableMessage.h"
 
 namespace joynr
 {
