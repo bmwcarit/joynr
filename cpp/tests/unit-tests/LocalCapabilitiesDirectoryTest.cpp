@@ -1624,6 +1624,61 @@ TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(250)));
 }
 
+class LocalCapabilitiesDirectoryACTest : public LocalCapabilitiesDirectoryTest,
+                                         public ::testing::WithParamInterface<std::tuple<bool,bool>>
+{
+public:
+    LocalCapabilitiesDirectoryACTest():
+        ENABLE_ACCESS_CONTROL(std::get<0>(GetParam())),
+        HAS_PERMISSION(std::get<1>(GetParam()))
+    {
+        clusterControllerSettings.setEnableAccessController(ENABLE_ACCESS_CONTROL);
+    }
+
+protected:
+    const bool ENABLE_ACCESS_CONTROL;
+    const bool HAS_PERMISSION;
+};
+
+TEST_P(LocalCapabilitiesDirectoryACTest, checkPermissionToRegister)
+{
+    auto mockAccessController = std::make_shared<MockAccessController>();
+    ON_CALL(*mockAccessController, hasProviderPermission(_,_,_,_))
+            .WillByDefault(Return(this->HAS_PERMISSION));
+
+    localCapabilitiesDirectory->setAccessController(util::as_weak_ptr(mockAccessController));
+
+    joynr::types::Version providerVersion(47, 11);
+    joynr::types::DiscoveryEntry entry(providerVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_1_NAME,
+                                       dummyParticipantId1,
+                                       types::ProviderQos(),
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+
+    localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    const int numberOfEntriesInLCD = !this->ENABLE_ACCESS_CONTROL || this->HAS_PERMISSION ? 1 : 0;
+    EXPECT_EQ(numberOfEntriesInLCD, callback->getResults(TIMEOUT).size());
+}
+
+std::tuple<bool,bool> const LCDWithAC_UseCases[] = {
+    // Access controller enabled/disabled: tuple[0]
+    // Emulation of "Has and not have" permission: tuple[1]
+    make_tuple( false, false),
+    make_tuple( false, true),
+    make_tuple( true, false),
+    make_tuple( true, true)
+};
+
+INSTANTIATE_TEST_CASE_P(
+  WithAC, LocalCapabilitiesDirectoryACTest, ::testing::ValuesIn(LCDWithAC_UseCases));
+
 class LocalCapabilitiesDirectoryPurgeTest
         : public LocalCapabilitiesDirectoryTest,
           public ::testing::WithParamInterface<types::ProviderScope::Enum>
