@@ -64,6 +64,12 @@ std::string extractParticipantIdFromMulticastId(const std::string& multicastId);
 
 void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards = false);
 
+/**
+ * @brief converts an attribute name to its getter function
+ * @param attributeName name of the attribute; MUST NOT be an empty string!
+ * @return name of getter function;
+ * if the input value is 'foo' this method returns 'getFoo'
+ */
 std::string attributeGetterFromName(const std::string& attributeName);
 
 /*
