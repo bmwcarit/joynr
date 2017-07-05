@@ -47,6 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import io.joynr.ProvidedBy;
@@ -56,12 +57,14 @@ import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
+import io.joynr.jeeintegration.api.JoynrMqttClientIdProvider;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.jeeintegration.api.JoynrRawMessagingPreprocessor;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -103,6 +106,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     private Injector fInjector = null;
 
     private RawMessagingPreprocessor rawMessagePreprocessor;
+    private MqttClientIdProvider mqttClientIdProvider;
 
     /**
      * Constructor in which the JEE runtime injects the managed resources and the JEE joynr integration specific
@@ -121,6 +125,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     public DefaultJoynrRuntimeFactory(@JoynrProperties Instance<Properties> joynrProperties,
                                       @JoynrLocalDomain Instance<String> joynrLocalDomain,
                                       @JoynrRawMessagingPreprocessor Instance<RawMessagingPreprocessor> rawMessagePreprocessor,
+                                      @JoynrMqttClientIdProvider Instance<MqttClientIdProvider> mqttClientIdProvider,
                                       BeanManager beanManager) {
         if (!joynrLocalDomain.isUnsatisfied() && !joynrLocalDomain.isAmbiguous()) {
             this.joynrLocalDomain = joynrLocalDomain.get();
@@ -140,6 +145,18 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             }
         } else {
             this.rawMessagePreprocessor = new NoOpRawMessagingPreprocessor();
+        }
+
+        if (!mqttClientIdProvider.isUnsatisfied()) {
+            if (!mqttClientIdProvider.isAmbiguous()) {
+                this.mqttClientIdProvider = mqttClientIdProvider.get();
+            } else {
+                String message = "Only one MqttClientIdProvider may be provided";
+                LOG.error(message);
+                throw new JoynrIllegalStateException(message);
+            }
+        } else {
+            this.mqttClientIdProvider = null;
         }
 
         Properties configuredProperties;
@@ -184,18 +201,22 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     @Override
     public Injector getInjector() {
         if (fInjector == null) {
+            Module jeeModule = override(new CCInProcessRuntimeModule()).with(new JeeJoynrIntegrationModule(scheduledExecutorService));
+            Module finalModule = override(jeeModule).with(new AbstractModule() {
+                @Override
+                protected void configure() {
+                    bind(RawMessagingPreprocessor.class).toInstance(rawMessagePreprocessor);
+
+                    if (mqttClientIdProvider != null) {
+                        bind(MqttClientIdProvider.class).toInstance(mqttClientIdProvider);
+                    }
+                }
+            });
+
             fInjector = new JoynrInjectorFactory(joynrProperties,
                                                  new StaticDomainAccessControlProvisioningModule(),
                                                  getMessageProcessorsModule(),
-                                                 override(new CCInProcessRuntimeModule()).with(new JeeJoynrIntegrationModule(scheduledExecutorService),
-                                                                                               new AbstractModule() {
-
-                                                                                                   @Override
-                                                                                                   protected void configure() {
-                                                                                                       bind(RawMessagingPreprocessor.class).toInstance(rawMessagePreprocessor);
-
-                                                                                                   }
-                                                                                               })).getInjector();
+                                                 finalModule).getInjector();
         }
         return fInjector;
     }
@@ -290,5 +311,9 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     public RawMessagingPreprocessor getRawMessagePreprocessor() {
         return rawMessagePreprocessor;
+    }
+
+    public MqttClientIdProvider getMqttClientIdProvider() {
+        return mqttClientIdProvider;
     }
 }

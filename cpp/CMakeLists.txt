@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.27.1)
+project(joynr-0.27.2)
 set(JOYNR_MAJOR_VERSION 0)
 set(JOYNR_MINOR_VERSION 27)
-set(JOYNR_PATCH_VERSION 1)
+set(JOYNR_PATCH_VERSION 2)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -720,7 +720,7 @@ get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_
 message(STATUS "variable muesli_INCLUDE_DIRECTORIES= ${muesli_INCLUDE_DIRECTORIES}")
 
 if (USE_PLATFORM_SMRF)
-    find_package(smrf 0.1.4 REQUIRED CONFIG)
+    find_package(smrf 0.2.0 REQUIRED CONFIG)
 else(USE_PLATFORM_SMRF)
     message(STATUS "############ Download: smrf ############")
 
@@ -731,7 +731,7 @@ else(USE_PLATFORM_SMRF)
     AddExternalProject(
         smrf
         GIT_REPOSITORY https://github.com/bmwcarit/smrf
-        GIT_TAG 0.1.4
+        GIT_TAG 0.2.0
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""

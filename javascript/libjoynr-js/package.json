@@ -1,6 +1,6 @@
 {
   "name": "joynr",
-  "version": "0.27.1",
+  "version": "0.27.2",
   "description": "Web-based communication framework for applications wanting to interact with other applications, no matter whether they're deployed on consumer devices, vehicles, or backend infrastructure",
   "license": "Apache-2.0",
   "homepage": "http://joynr.io",
@@ -33,7 +33,7 @@
     "mqtt" : "2.0.1",
     "bluebird" : "3.3.5",
     "promise": ">=7.1.1",
-    "smrf-native": "0.1.4",
+    "smrf-native": "0.2.0",
     "wscpp" : "0.2.3"
   },
   "engines": {

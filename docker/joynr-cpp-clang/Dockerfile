@@ -68,7 +68,7 @@ RUN cd /opt \
 # install smrf
 ###################################################
 
-RUN export SMRF_VERSION=0.1.4 \
+RUN export SMRF_VERSION=0.2.0 \
     && cd /opt \
     && git clone https://github.com/bmwcarit/smrf.git \
     && cd smrf \

@@ -1,3 +1,14 @@
+# joynr 0.27.2
+
+## API relevant changes
+none
+
+## Other changes
+* **[JEE]** Applications can inject a MqttClientIdProvider to generate an id for the mqtt client.
+  The producer method must be annotated with JoynrMqttClientIdProvider.
+* **[Java,C++,JS]** updated SMRF dependency to 0.2.0 which introduces an incompatibility with any previous version
+* **[C++]** Fixed potential crash when a proxy is used after a joynr runtime was deleted.
+
 # joynr 0.27.1
 
 ## API relevant changes
@@ -7,7 +18,6 @@
 * **[C++]** Mosquitto Connection uses now internal Mosquitto Loop thread handling.
 * **[C++]** Cleaned up MessagingSettings. All settings which correspond to `seconds` time unit,
   have now `seconds` suffix.
-
 
 # joynr 0.27.0
 

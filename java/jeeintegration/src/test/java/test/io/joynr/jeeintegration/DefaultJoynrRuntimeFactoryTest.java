@@ -54,12 +54,14 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.ImmutableMessage;
 import joynr.MutableMessage;
 import joynr.Request;
 import joynr.jeeintegration.servicelocator.MyService;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -111,7 +113,16 @@ public class DefaultJoynrRuntimeFactoryTest {
         Bean<JoynrMessageProcessor> bean = mock(Bean.class);
         when(bean.create(Mockito.any())).thenReturn(new JoynrMessageProcessorTest());
         when(beanManager.getBeans(Mockito.<Type> eq(JoynrMessageProcessor.class), Mockito.<Annotation> any())).thenReturn(Sets.newHashSet(bean));
-        fixture = new DefaultJoynrRuntimeFactory(joynrProperties, joynrLocalDomain, rawMessageProcessor, beanManager);
+
+        final String mqttClientId = "someTestMqttClientId";
+        MqttClientIdProvider mqttClientIdProvider = mock(MqttClientIdProvider.class);
+        when(mqttClientIdProvider.getClientId()).thenReturn(mqttClientId);
+        Instance<MqttClientIdProvider> mqttClientIdProviderInstance = mock(Instance.class);
+        when(mqttClientIdProviderInstance.get()).thenReturn(mqttClientIdProvider);
+
+        fixture = new DefaultJoynrRuntimeFactory(joynrProperties, joynrLocalDomain,
+                                                 rawMessageProcessor, mqttClientIdProviderInstance,
+                                                 beanManager);
         scheduledExecutorService = mock(ScheduledExecutorService.class);
         Field executorField = DefaultJoynrRuntimeFactory.class.getDeclaredField("scheduledExecutorService");
         executorField.setAccessible(true);
