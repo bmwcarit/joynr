@@ -63,7 +63,12 @@ void MessageSender::sendRequest(const std::string& senderParticipantId,
                                 std::shared_ptr<IReplyCaller> callback,
                                 bool isLocalMessage)
 {
-    assert(dispatcher != nullptr);
+    if (dispatcher == nullptr) {
+        JOYNR_LOG_ERROR(logger,
+                        "Sending a request failed. Dispatcher is null. Probably a proxy "
+                        "was used after the runtime was deleted.");
+        return;
+    }
 
     MutableMessage message = messageFactory.createRequest(
             senderParticipantId, receiverParticipantId, qos, request, isLocalMessage);
