@@ -107,11 +107,6 @@ void MosquittoConnection::on_log(int level, const char* str)
     }
 }
 
-void MosquittoConnection::on_error()
-{
-    JOYNR_LOG_WARN(logger, "Mosquitto Error");
-}
-
 std::uint16_t MosquittoConnection::getMqttQos() const
 {
     return mqttQos;
