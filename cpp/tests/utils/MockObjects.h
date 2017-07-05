@@ -292,12 +292,6 @@ public:
     MOCK_METHOD1(registerPublicationManager,void(joynr::PublicationManager* publicationManager));
 };
 
-class MockInProcessDispatcher : public MockDispatcher , public joynr::IRequestCallerDirectory {
-public:
-    MOCK_METHOD1(lookupRequestCaller, std::shared_ptr<joynr::RequestCaller>(const std::string& participantId));
-    MOCK_METHOD1(containsRequestCaller, bool(const std::string& participantId));
-};
-
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
 public:
     MOCK_METHOD1(create, std::shared_ptr<joynr::IMessagingStub>(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
@@ -1265,31 +1259,6 @@ public:
                      const std::string& userId,
                      const std::string& domain,
                      joynr::infrastructure::DacTypes::Role::Enum role));
-};
-
-class MockMessagingSettings : public joynr::MessagingSettings {
-public:
-    MockMessagingSettings(joynr::Settings& settings):
-        MessagingSettings(settings) 
-    {
-        ON_CALL(
-                *this,
-                getDiscoveryDirectoriesDomain()
-        )
-                .WillByDefault(Return("fooDomain"));
-        ON_CALL(
-                *this,
-                getCapabilitiesDirectoryParticipantId()
-        )
-                .WillByDefault(Return("fooParticipantId"));
-    }
-
-    MOCK_METHOD0(
-            getDiscoveryDirectoriesDomain,
-            std::string());
-    MOCK_METHOD0(
-            getCapabilitiesDirectoryParticipantId,
-            std::string());
 };
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
