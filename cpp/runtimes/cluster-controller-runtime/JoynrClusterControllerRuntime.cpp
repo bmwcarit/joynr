@@ -25,7 +25,6 @@
 #include <memory>
 
 #include <boost/algorithm/string/predicate.hpp>
-#include <mosquittopp.h>
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/CapabilitiesRegistrar.h"
