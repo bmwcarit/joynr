@@ -177,7 +177,7 @@ set(JoynrLib_SOURCES
     "in-process/InProcessConnectorFactory.cpp"
     "in-process/InProcessDispatcher.cpp"
     "in-process/InProcessMessagingAddress.cpp"
-    "in-process/InProcessMessagingSkeleton.cpp"    
+    "in-process/InProcessMessagingSkeleton.cpp"
     "in-process/InProcessMessagingStub.cpp"
     "in-process/InProcessMessagingStubFactory.cpp"
     "in-process/InProcessPublicationSender.cpp"
@@ -191,12 +191,13 @@ set(JoynrLib_SOURCES
     "joynr-messaging/ImmutableMessage.cpp"
     "joynr-messaging/JoynrMessagingConnectorFactory.cpp"
     "joynr-messaging/LibJoynrMessageRouter.cpp"
-    "joynr-messaging/MessageSender.cpp"    
+    "joynr-messaging/MessageSender.cpp"
     "joynr-messaging/MessagingSettings.cpp"
     "joynr-messaging/MqttMulticastAddressCalculator.cpp"
     "joynr-messaging/MulticastMatcher.cpp"
     "joynr-messaging/MutableMessage.cpp"
-    "joynr-messaging/MutableMessageFactory.cpp"    
+    "joynr-messaging/MutableMessageFactory.cpp"
+    "joynr-messaging/RoutingTable.cpp"
     "joynr-messaging/WebSocketMulticastAddressCalculator.cpp"
     "LibjoynrSettings.cpp"
     "provider/AbstractJoynrProvider.cpp"
@@ -303,7 +304,7 @@ if(JOYNR_ENABLE_DLT_LOGGING)
         Joynr
         PUBLIC
         JOYNR_ENABLE_DLT_LOGGING)
-    
+
     target_include_directories(
         Joynr
         SYSTEM PUBLIC
