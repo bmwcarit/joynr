@@ -25,30 +25,36 @@ namespace joynr
 {
 std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
         const std::string& pathToLibjoynrSettings,
-        const std::string& pathToMessagingSettings)
+        const std::string& pathToMessagingSettings,
+        std::shared_ptr<IKeychain> keyChain)
 {
     auto settings = std::make_unique<Settings>(pathToLibjoynrSettings);
     Settings messagingSettings{pathToMessagingSettings};
     Settings::merge(messagingSettings, *settings, false);
 
-    return createRuntime(std::move(settings));
+    return createRuntime(std::move(settings), std::move(keyChain));
 }
 
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
+std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings,
+                                                          std::shared_ptr<IKeychain> keyChain)
 {
-    return JoynrClusterControllerRuntime::create(std::move(settings));
+    const std::string discoveryEntriesFile("");
+    return JoynrClusterControllerRuntime::create(
+            std::move(settings), discoveryEntriesFile, std::move(keyChain));
 }
 
 std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         const std::string& pathToLibjoynrSettings,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
-        const std::string& pathToMessagingSettings)
+        const std::string& pathToMessagingSettings,
+        std::shared_ptr<IKeychain> keyChain)
 {
     std::unique_ptr<JoynrRuntime> runtime;
 
     try {
-        runtime = createRuntime(pathToLibjoynrSettings, pathToMessagingSettings);
+        runtime =
+                createRuntime(pathToLibjoynrSettings, pathToMessagingSettings, std::move(keyChain));
         onSuccess();
     } catch (exceptions::JoynrRuntimeException& exception) {
         onError(exception);
@@ -59,11 +65,12 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
 std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::unique_ptr<Settings> settings,
         std::function<void()> onSuccess,
-        std::function<void(const exceptions::JoynrRuntimeException& exception)> onError)
+        std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
+        std::shared_ptr<IKeychain> keyChain)
 {
     std::unique_ptr<JoynrRuntime> runtime;
     try {
-        runtime = createRuntime(std::move(settings));
+        runtime = createRuntime(std::move(settings), std::move(keyChain));
         onSuccess();
     } catch (exceptions::JoynrRuntimeException& exception) {
         onError(exception);

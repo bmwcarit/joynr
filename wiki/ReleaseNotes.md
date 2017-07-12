@@ -2,6 +2,8 @@
 
 ## API relevant changes
 * **[C++, API]** Ease implementation of SubscriptionListener for empty broadcasts.
+* **[C++]** JoynrRuntime::createRuntimeAsync and JoynrRuntime::createRuntime now accept an
+  optional IKeychain argument. See the [C++ Documentation](cplusplus.md) for more information.
 
 # joynr 0.27.2
 
