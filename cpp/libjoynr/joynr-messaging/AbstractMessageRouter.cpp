@@ -83,6 +83,9 @@ AbstractMessageRouter::~AbstractMessageRouter()
 
 bool AbstractMessageRouter::routingTableSaveFilterFunc(std::shared_ptr<RoutingEntry> routingEntry)
 {
+    if (!routingEntry) {
+        return false;
+    }
     const auto destAddress = routingEntry->address;
     const joynr::InProcessMessagingAddress* inprocessAddress =
             dynamic_cast<const joynr::InProcessMessagingAddress*>(destAddress.get());
@@ -366,9 +369,12 @@ void AbstractMessageRouter::addToRoutingTable(std::string participantId,
 {
     {
         WriteLocker lock(routingTableLock);
-        routingTable.add(participantId, std::move(routingEntry));
+        routingTable.add(participantId, routingEntry);
     }
-    saveRoutingTable();
+    if (routingTableSaveFilterFunc(std::move(routingEntry))) {
+        // preventing acccess to writing to the disk for inprocess messaging address
+        saveRoutingTable();
+    }
 }
 
 /**
