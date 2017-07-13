@@ -451,3 +451,30 @@ TEST_F(CcMessageRouterTest, persistMulticastReceiverDirectory) {
     EXPECT_CALL(*multicastSubscriber, registerMulticastSubscription(multicastId)).Times(1);
     messageRouter->loadMulticastReceiverDirectory(persistencyFilename);
 }
+
+TEST_F(CcMessageRouterTest, doNotSaveInProcessMessagingAddressToFile) {
+    const std::string providerParticipantId("providerParticipantId");
+    const std::string routingTablePersistenceFilename = "test-RoutingTable.persist";
+    std::remove(routingTablePersistenceFilename.c_str());
+
+    messageRouter->loadRoutingTable(routingTablePersistenceFilename);
+    {
+        auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>();
+        auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
+        messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
+    }
+
+    messageRouter = createMessageRouter();
+    messageRouter->loadRoutingTable(routingTablePersistenceFilename);
+
+    Semaphore successCallbackCalled;
+    messageRouter->resolveNextHop(providerParticipantId,
+        [&successCallbackCalled](const bool& resolved) {
+        if(resolved) {
+            FAIL() << "resolve should not succeed.";}
+        else {
+            successCallbackCalled.notify();
+        }},
+        [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&){ successCallbackCalled.notify(); });
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
+}
