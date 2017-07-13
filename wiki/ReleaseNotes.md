@@ -3,6 +3,14 @@
 ## API relevant changes
 * **[C++, API]** Ease implementation of SubscriptionListener for empty broadcasts.
 
+# joynr 0.27.3
+
+## API relevant changes
+none
+
+## Other changes
+* **[C++]** Fixed crash which occurs when a LibJoynrRuntime is destroyed before the init method was called.
+
 # joynr 0.27.2
 
 ## API relevant changes

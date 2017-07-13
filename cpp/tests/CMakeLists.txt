@@ -306,6 +306,10 @@ if(${BUILD_INTEGRATION_TESTS})
        ${test_HEADERS}
        ${test_SOURCES}
        ${g_IntegrationTests_SOURCES}
+       # Make the LibJoynrWebSocketRuntime available in parallel to the cluster controller runtime
+       "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+       "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
+       "../runtimes/libjoynr-runtime/LibJoynrRuntime.cpp"
     )
 
     target_link_libraries(
