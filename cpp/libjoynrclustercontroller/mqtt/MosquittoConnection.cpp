@@ -49,6 +49,7 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
           onReadyToSendChangedMutex(),
           onReadyToSendChanged()
 {
+    JOYNR_LOG_INFO(logger, "Init mosquitto connection using MQTT client ID: {}", clientId);
     mosqpp::lib_init();
 
     if (ccSettings.isMqttTlsEnabled()) {
