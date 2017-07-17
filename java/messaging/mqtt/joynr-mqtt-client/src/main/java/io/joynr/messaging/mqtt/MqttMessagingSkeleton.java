@@ -151,7 +151,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
 
             forwardMessage(message, failureAction);
         } catch (UnsuppportedVersionException | EncodingException e) {
-            LOG.error("Message: \"{}\", could not be serialized, exception: {}", serializedMessage, e.getMessage());
+            LOG.error("Message: \"{}\", could not be deserialized, exception: {}", serializedMessage, e.getMessage());
             failureAction.execute(e);
         }
     }
