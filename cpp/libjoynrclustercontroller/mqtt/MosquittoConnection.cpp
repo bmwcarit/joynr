@@ -59,8 +59,10 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
                          ccSettings.getMqttPrivateKeyPemFilename().c_str());
 
         if (rc != MOSQ_ERR_SUCCESS) {
-            JOYNR_LOG_ERROR(
-                    logger, "Could not initialize TLS connection - {}", mosqpp::strerror(rc));
+            mosqpp::lib_cleanup();
+            JOYNR_LOG_FATAL(logger,
+                            "fatal failure to initialize TLS connection - {}",
+                            mosqpp::strerror(rc));
         }
     } else {
         JOYNR_LOG_DEBUG(logger, "MQTT connection not encrypted");
