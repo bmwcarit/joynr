@@ -124,9 +124,9 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     }
 
     private void forwardMessage(ImmutableMessage message, FailureAction failureAction) {
+        message.setReceivedFromGlobal(true);
         LOG.debug("<<< INCOMING <<< {}", message);
         try {
-            message.setReceivedFromGlobal(true);
             messageRouter.route(message);
         } catch (Exception e) {
             LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
