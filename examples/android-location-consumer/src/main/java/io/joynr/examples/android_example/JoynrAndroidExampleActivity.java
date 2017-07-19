@@ -79,8 +79,8 @@ public class JoynrAndroidExampleActivity extends Activity {
         try {
             URI clusterControllerUrl = new URI(clusterControllerUrlString);
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, clusterControllerUrl.getHost());
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, ""
-                    + clusterControllerUrl.getPort());
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT,
+                                    "" + clusterControllerUrl.getPort());
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL,
                                     clusterControllerUrl.getScheme());
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
