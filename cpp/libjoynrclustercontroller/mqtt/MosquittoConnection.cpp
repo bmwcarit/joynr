@@ -369,6 +369,13 @@ void MosquittoConnection::on_message(const mosquitto_message* message)
         return;
     }
 
+    if (!message || message->payloadlen <= 0) {
+        JOYNR_LOG_ERROR(
+                logger,
+                "Discarding received message: invalid message or non-positive payload's length.");
+        return;
+    }
+
     std::uint8_t* data = static_cast<std::uint8_t*>(message->payload);
     smrf::ByteVector rawMessage(data, data + message->payloadlen);
     onMessageReceived(std::move(rawMessage));
