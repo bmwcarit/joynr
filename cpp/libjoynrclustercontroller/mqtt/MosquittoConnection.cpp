@@ -312,6 +312,7 @@ void MosquittoConnection::publishMessage(
         onFailure(exceptions::JoynrDelayMessageException(
                 "error sending message: mid (mqtt message id): " + std::to_string(mid) +
                 ", error: " + std::to_string(rc) + " (" + mosqpp::strerror(rc) + ")"));
+        return;
     }
     JOYNR_LOG_TRACE(logger, "published message with mqtt message id {}", std::to_string(mid));
 }
