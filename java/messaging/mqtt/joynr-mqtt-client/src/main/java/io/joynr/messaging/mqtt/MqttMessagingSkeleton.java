@@ -129,7 +129,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
             message.setReceivedFromGlobal(true);
             messageRouter.route(message);
         } catch (Exception e) {
-            LOG.error("Error processing incoming message. Message will be dropped: {} ", e);
+            LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
             failureAction.execute(e);
         }
     }
