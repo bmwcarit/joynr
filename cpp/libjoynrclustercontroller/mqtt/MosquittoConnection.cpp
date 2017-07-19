@@ -252,16 +252,20 @@ void MosquittoConnection::subscribeToTopicInternal(const std::string& topic,
 
 void MosquittoConnection::subscribeToTopic(const std::string& topic)
 {
-    while (!isChannelIdRegistered && isRunning) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+    if (!isChannelIdRegistered) {
+        std::string errorMsg = "No channelId registered, cannot subscribe to topic " + topic;
+        throw exceptions::JoynrRuntimeException(errorMsg);
     }
+
     {
         std::lock_guard<std::recursive_mutex> lock(additionalTopicsMutex);
         if (additionalTopics.find(topic) != additionalTopics.end()) {
-            JOYNR_LOG_DEBUG(logger, "already subscribed to topic {}", topic);
+            JOYNR_LOG_DEBUG(logger, "Already subscribed to topic {}", topic);
             return;
         }
+
         subscribeToTopicInternal(topic);
+
         additionalTopics.insert(topic);
     }
 }
