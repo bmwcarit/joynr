@@ -450,7 +450,7 @@ std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry> LocalDomain
     JOYNR_LOG_TRACE(
             logger, "execute: entering getEditableOwnerRegistrationControlEntry with uid {}", uid);
 
-    return getEntries(ownerRegistrationTable, uid, Role::MASTER);
+    return getEntries(ownerRegistrationTable, uid, Role::OWNER);
 }
 
 boost::optional<OwnerRegistrationControlEntry> LocalDomainAccessStore::
