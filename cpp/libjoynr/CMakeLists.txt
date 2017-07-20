@@ -52,6 +52,7 @@ set(
     JoynrLib_TARGET_LIBRARIES
     Boost::system
     Boost::thread
+    Boost::filesystem
     smrf::smrf
 )
 

@@ -65,6 +65,7 @@ include(${JOYNR_CMAKE_DIR}/CheckOpenSSLImportTargets.cmake)
 find_package(Boost 1.58.0 REQUIRED
     COMPONENTS
     system
+    filesystem
     thread
 )
 include(${JOYNR_CMAKE_DIR}/CheckBoostImportTargets.cmake)

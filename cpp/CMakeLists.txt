@@ -365,6 +365,7 @@ endif(ENABLE_DOXYGEN)
 
 set(JOYNR_BOOST_REQUIRED_COMPONENTS
     system
+    filesystem
     thread)
 set(JOYNR_BOOST_REQUIRED_VERSION 1.58.0)
 find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
