@@ -10,20 +10,19 @@ SUCCESS=0
 echo '####################################################'
 echo '# start services'
 echo '####################################################'
+
+(
+    cd /data/src/java
+    mvn install -DskipTests
+
+    ACCESS_CTRL_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*domain-access-controller-jee*.war")
+    DISCOVERY_DIRECTORY_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*discovery-directory-jee-.*war")
+
+    /data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE,$ACCESS_CTRL_WAR_FILE
+)
+
 mosquitto -c /etc/mosquitto/mosquitto.conf &
 MOSQUITTO_PID=$!
-(
-    cd /data/src/cpp/tests
-    mvn jetty:run-war --quiet &
-    # wait until server is up and running
-    started=
-    while [ "$started" != "200" ]
-    do
-        sleep 2s
-        started=`curl -o /dev/null --silent --head --write-out '%{http_code}\n' http://localhost:8080/bounceproxy/time/`
-    done
-    sleep 5s
-)
 
 echo '####################################################'
 echo '# run system integration test'
@@ -44,11 +43,9 @@ SUCCESS=$?
 echo '####################################################'
 echo '# stop services'
 echo '####################################################'
+
+/data/src/docker/joynr-base/scripts/stop-payara.sh
 kill -TERM $MOSQUITTO_PID
 wait $MOSQUITTO_PID
-(
-    cd /data/src/cpp/tests
-    mvn jetty:stop --quiet
-)
 
 exit $SUCCESS

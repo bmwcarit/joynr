@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@
 #ifndef LIBJOYNRDIRECTORIES_H
 #define LIBJOYNRDIRECTORIES_H
 
-#include "joynr/RequestCaller.h"
-#include "joynr/IReplyCaller.h"
 #include "joynr/Directory.h"
+#include "joynr/IReplyCaller.h"
 #include "joynr/ISubscriptionCallback.h"
+#include "joynr/RequestCaller.h"
 #include <string>
 
 namespace joynr
@@ -30,7 +30,6 @@ namespace joynr
 
 typedef Directory<std::string, RequestCaller> RequestCallerDirectory;
 typedef Directory<std::string, IReplyCaller> ReplyCallerDirectory;
-typedef Directory<std::string, ISubscriptionCallback> AttributeSubscriptionDirectory;
 
 } // namespace joynr
 #endif // LIBJOYNRDIRECTORIES_H

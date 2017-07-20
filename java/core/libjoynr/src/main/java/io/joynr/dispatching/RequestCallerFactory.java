@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,27 +19,31 @@ package io.joynr.dispatching;
  * #L%
  */
 
-import io.joynr.provider.ProviderAnnotations;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.ProviderAnnotations;
+
 public class RequestCallerFactory {
     public RequestCaller create(final Object provider) {
-        return (RequestCaller) Proxy.newProxyInstance(provider.getClass().getClassLoader(), new Class<?>[]{
-                ProviderAnnotations.getProvidedInterface(provider), RequestCaller.class }, new InvocationHandler() {
+        Object proxy = Proxy.newProxyInstance(provider.getClass().getClassLoader(),
+                                              new Class<?>[]{ ProviderAnnotations.getProvidedInterface(provider),
+                                                      JoynrProvider.class },
+                                              new InvocationHandler() {
 
-            @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                try {
-                    return method.invoke(provider, args);
-                } catch (InvocationTargetException ex) {
-                    throw ex.getCause();
-                }
-            }
-
-        });
+                                                  @Override
+                                                  public Object invoke(Object proxy, Method method, Object[] args)
+                                                                                                                  throws Throwable {
+                                                      try {
+                                                          return method.invoke(provider, args);
+                                                      } catch (InvocationTargetException ex) {
+                                                          throw ex.getCause();
+                                                      }
+                                                  }
+                                              });
+        return new RequestCaller(proxy, provider);
     }
 }

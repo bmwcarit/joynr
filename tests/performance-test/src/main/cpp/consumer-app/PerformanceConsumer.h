@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,8 +71,8 @@ public:
         if (messageCount == 0) {
             throw std::invalid_argument("messageCount must be >= 1");
         }
-        std::unique_ptr<ProxyBuilder<EchoProxy>> proxyBuilder(
-                runtime->createProxyBuilder<EchoProxy>(domain));
+        std::unique_ptr<ProxyBuilder<EchoProxy>> proxyBuilder =
+                runtime->createProxyBuilder<EchoProxy>(domain);
 
         if (!proxyBuilder) {
             std::cerr << "Failed to create Echo proxy builder" << std::endl;
@@ -85,10 +85,9 @@ public:
 
         try {
             // Build a proxy
-            echoProxy.reset(proxyBuilder->setMessagingQos(MessagingQos(ttl))
-                                    ->setCached(false)
-                                    ->setDiscoveryQos(discoveryQos)
-                                    ->build());
+            echoProxy = proxyBuilder->setMessagingQos(MessagingQos(ttl))
+                                ->setDiscoveryQos(discoveryQos)
+                                ->build();
         } catch (const std::exception& e) {
             std::cerr << "Failed to build Echo proxy: " << e.what() << std::endl;
             exit(EXIT_FAILURE);

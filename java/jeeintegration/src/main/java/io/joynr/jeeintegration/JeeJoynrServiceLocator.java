@@ -6,7 +6,7 @@ package io.joynr.jeeintegration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import javax.ejb.Singleton;
 import javax.inject.Inject;
 
 import joynr.exceptions.ApplicationException;
-import joynr.exceptions.ProviderRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +41,7 @@ import com.google.common.collect.Sets;
 
 import io.joynr.UsedBy;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.api.ServiceLocator;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.util.AnnotationUtil;
@@ -123,10 +123,10 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                                                                                   method.getParameterTypes())
                                                                        .invoke(joynrProxy, args);
                                                   } catch (InvocationTargetException e) {
-                                                      if (e.getCause() instanceof ProviderRuntimeException) {
-                                                          throw ((ProviderRuntimeException) e.getCause());
-                                                      } else if (e.getCause() instanceof ApplicationException) {
-                                                          throw ((ApplicationException) e.getCause());
+                                                      if (e.getTargetException() instanceof JoynrRuntimeException) {
+                                                          throw ((JoynrRuntimeException) e.getTargetException());
+                                                      } else if (e.getTargetException() instanceof ApplicationException) {
+                                                          throw ((ApplicationException) e.getTargetException());
                                                       }
                                                       throw e;
                                                   }

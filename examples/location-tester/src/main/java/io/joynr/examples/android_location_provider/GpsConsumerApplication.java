@@ -3,7 +3,7 @@ package io.joynr.examples.android_location_provider;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -231,7 +231,9 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         }, subscriptionQos);
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DM_DEFAULT_ENCODING", justification = "Just reading key-input, encoding does not matter here")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+                                                      value = "DM_DEFAULT_ENCODING",
+                                                      justification = "Just reading key-input, encoding does not matter here")
     static void pressQEnterToContinue() {
         try {
             // sleep a while to have the log output at the end

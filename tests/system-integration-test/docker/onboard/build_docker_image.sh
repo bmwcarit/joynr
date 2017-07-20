@@ -11,7 +11,7 @@ MAVENSETTINGS=${HOME}/.m2/settings.xml
 BASE_DOCKER_IMAGE=joynr-runtime-environment-base:latest
 DOCKER_IMAGE_VERSION=latest
 DOCKER_RUN_ADD_FLAGS=
-JOBS=2
+JOBS=4
 
 # The --no-XYZ-build options can be used to skip building the given artifact
 # inside a Docker container (which can be quite slow depending on your system).
@@ -213,5 +213,5 @@ echo "environment:" `env`
 echo "docker build -t sit-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $BUILDDIR"
 docker build -t sit-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $BUILDDIR
 
-docker images | grep '<none' | awk '{print $3}' | xargs docker rmi -f 2>/dev/null
+docker images --filter "dangling=true" -q | xargs docker rmi -f 2>/dev/null
 rm -Rf $BUILDDIR

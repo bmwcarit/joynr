@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,8 @@ import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import joynr.PeriodicSubscriptionQos;
 import joynr.exceptions.PublicationMissedException;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,6 +83,7 @@ public class SubscriptionTimersTest {
 
     private String fromParticipantId;
     private String toParticipantId;
+    private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
     private Future<String> future;
 
     class IntegerReference extends TypeReference<Integer> {
@@ -95,6 +98,8 @@ public class SubscriptionTimersTest {
         attributeName = "testAttribute";
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";
+        toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        toDiscoveryEntry.setParticipantId(toParticipantId);
         future = new Future<String>();
     }
 
@@ -116,7 +121,7 @@ public class SubscriptionTimersTest {
                                                                                             qos,
                                                                                             future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toParticipantId),
+                                                          Sets.newHashSet(toDiscoveryEntry),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
         Thread.sleep(subscriptionLength);
@@ -157,7 +162,7 @@ public class SubscriptionTimersTest {
                                                                                             qos,
                                                                                             future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toParticipantId),
+                                                          Sets.newHashSet(toDiscoveryEntry),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 

@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public class ExpiredDiscoveryEntryCacheCleaner {
         }, cacheCleanupIntervalInMinutes, cacheCleanupIntervalInMinutes, TimeUnit.MINUTES);
     }
 
-    private void doCleanupFor(CleanupAction cleanupAction, DiscoveryEntryStore ... caches) {
+    private void doCleanupFor(CleanupAction cleanupAction, DiscoveryEntryStore... caches) {
         Set<DiscoveryEntry> expiredDiscoveryEntries = new HashSet<>();
         long now = System.currentTimeMillis();
         for (DiscoveryEntryStore cache : caches) {
@@ -98,7 +98,9 @@ public class ExpiredDiscoveryEntryCacheCleaner {
                 }
             }
         }
-        logger.debug("The following expired participant IDs will be cleaned from the caches {}:\n{}", Arrays.toString(caches), expiredDiscoveryEntries);
+        logger.debug("The following expired participant IDs will be cleaned from the caches {}:\n{}",
+                     Arrays.toString(caches),
+                     expiredDiscoveryEntries);
         cleanupAction.cleanup(expiredDiscoveryEntries);
     }
 }

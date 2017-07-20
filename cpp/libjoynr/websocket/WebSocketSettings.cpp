@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "WebSocketSettings.h"
+#include "joynr/WebSocketSettings.h"
 
 #include <cassert>
 
@@ -50,6 +50,24 @@ const std::string& WebSocketSettings::SETTING_CC_MESSAGING_URL()
 const std::string& WebSocketSettings::SETTING_RECONNECT_SLEEP_TIME_MS()
 {
     static const std::string value("websocket/reconnect-sleep-time-ms");
+    return value;
+}
+
+const std::string& WebSocketSettings::SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME()
+{
+    static const std::string value("websocket/certificate-authority-pem-filename");
+    return value;
+}
+
+const std::string& WebSocketSettings::SETTING_CERTIFICATE_PEM_FILENAME()
+{
+    static const std::string value("websocket/certificate-pem-filename");
+    return value;
+}
+
+const std::string& WebSocketSettings::SETTING_PRIVATE_KEY_PEM_FILENAME()
+{
+    static const std::string value("websocket/private-key-pem-filename");
     return value;
 }
 
@@ -102,6 +120,37 @@ void WebSocketSettings::setReconnectSleepTimeMs(
             WebSocketSettings::SETTING_RECONNECT_SLEEP_TIME_MS(), reconnectSleepTimeMs.count());
 }
 
+void WebSocketSettings::setCertificateAuthorityPemFilename(const std::string& filename)
+{
+    settings.set(WebSocketSettings::SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME(), filename);
+}
+
+std::string WebSocketSettings::getCertificateAuthorityPemFilename() const
+{
+    return settings.get<std::string>(
+            WebSocketSettings::SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME());
+}
+
+void WebSocketSettings::setCertificatePemFilename(const std::string& filename)
+{
+    settings.set(WebSocketSettings::SETTING_CERTIFICATE_PEM_FILENAME(), filename);
+}
+
+std::string WebSocketSettings::getCertificatePemFilename() const
+{
+    return settings.get<std::string>(WebSocketSettings::SETTING_CERTIFICATE_PEM_FILENAME());
+}
+
+void WebSocketSettings::setPrivateKeyPemFilename(const std::string& filename)
+{
+    settings.set(WebSocketSettings::SETTING_PRIVATE_KEY_PEM_FILENAME(), filename);
+}
+
+std::string WebSocketSettings::getPrivateKeyPemFilename() const
+{
+    return settings.get<std::string>(WebSocketSettings::SETTING_PRIVATE_KEY_PEM_FILENAME());
+}
+
 bool WebSocketSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
@@ -113,6 +162,21 @@ void WebSocketSettings::printSettings() const
                     "SETTING: {}  = {}",
                     SETTING_CC_MESSAGING_URL(),
                     settings.get<std::string>(SETTING_CC_MESSAGING_URL()));
+
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME(),
+                    settings.get<std::string>(SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME()));
+
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_CERTIFICATE_PEM_FILENAME(),
+                    settings.get<std::string>(SETTING_CERTIFICATE_PEM_FILENAME()));
+
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_PRIVATE_KEY_PEM_FILENAME(),
+                    settings.get<std::string>(SETTING_PRIVATE_KEY_PEM_FILENAME()));
 }
 
 } // namespace joynr

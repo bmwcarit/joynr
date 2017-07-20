@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,20 +77,14 @@ class «getDllExportMacro()» «className» : virtual public I«interfaceName»,
 public:
 	/**
 	 * @brief Parameterized constructor
-	 * @param messagingAddress The address
 	 * @param connectorFactory The connector factory
-	 * @param cache The client cache
 	 * @param domain The provider domain
 	 * @param qosSettings The quality of service settings
-	 * @param cached True, if cached, false otherwise
 	 */
 	«className»(
-			std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
-			joynr::IClientCache* cache,
 			const std::string& domain,
-			const joynr::MessagingQos& qosSettings,
-			bool cached
+			const joynr::MessagingQos& qosSettings
 	);
 	«FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»
 		«var attributeName = attribute.joynrName»

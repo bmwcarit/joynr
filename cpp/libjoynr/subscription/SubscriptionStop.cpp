@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ SubscriptionStop::SubscriptionStop() : subscriptionId()
 {
 }
 
-std::string SubscriptionStop::getSubscriptionId() const
+const std::string& SubscriptionStop::getSubscriptionId() const
 {
     return subscriptionId;
 }
@@ -34,6 +34,11 @@ std::string SubscriptionStop::getSubscriptionId() const
 void SubscriptionStop::setSubscriptionId(const std::string& subscriptionId)
 {
     this->subscriptionId = subscriptionId;
+}
+
+void SubscriptionStop::setSubscriptionId(std::string&& subscriptionId)
+{
+    this->subscriptionId = std::move(subscriptionId);
 }
 
 bool SubscriptionStop::operator==(const SubscriptionStop& other) const

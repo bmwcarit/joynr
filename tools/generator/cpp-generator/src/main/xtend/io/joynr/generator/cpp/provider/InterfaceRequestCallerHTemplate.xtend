@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,39 +158,15 @@ public:
 		);
 
 	«ENDFOR»
-	/**
-	 * @brief Register an attribute listener
-	 * @param attributeName The name of the attribute for which a listener should be registered
-	 * @param attributeListener The listener to be registered
-	 */
-	void registerAttributeListener(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener) override;
-
-	/**
-	 * @brief Unregister an attribute listener
-	 * @param attributeName The name of the attribute for which a listener should be unregistered
-	 * @param attributeListener The listener to be unregistered
-	 */
-	void unregisterAttributeListener(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener) override;
-
-	/**
-	 * @brief Register a broadcast listener
-	 * @param broadcastName The name of the broadcast for which a listener should be registered
-	 * @param broadcastListener The listener to be registered
-	 */
-	void registerBroadcastListener(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener) override;
-
-	/**
-	 * @brief Unregister a broadcast listener
-	 * @param broadcastName The name of the broadcast for which a listener should be unregistered
-	 * @param broadcastListener The listener to be unregistered
-	 */
-	void unregisterBroadcastListener(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener) override;
 
 	/**
 	 * @brief Get the version of the provider instance
 	 * @return the version of the provider instance
 	 */
 	joynr::types::Version getProviderVersion() override;
+
+protected:
+	std::shared_ptr<IJoynrProvider> getProvider() override;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);

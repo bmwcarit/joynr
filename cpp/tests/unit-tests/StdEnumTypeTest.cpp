@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@
  */
 #include <gtest/gtest.h>
 
-#include "PrettyPrint.h"
-
 #include "joynr/tests/testTypes/TestEnum.h"
 #include "joynr/tests/testTypes/TestEnumExtended.h"
 #include "joynr/tests/EnumInsideInterface.h"
 #include "joynr/tests/EnumInsideInterfaceWithoutVersion.h"
 #include "joynr/types/TestTypesWithoutVersion/EnumInsideTypeCollectionWithoutVersion.h"
+
+#include "tests/PrettyPrint.h"
 
 using namespace joynr::tests::testTypes;
 

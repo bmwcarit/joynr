@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,17 +64,17 @@ public abstract class PubSubTimerBase {
             boolean isExpiredNow = isExpiredInMs(0);
             boolean isExpiredBeforeNextPublication = isExpiredInMs(delay);
             if (!isExpiredNow && !isExpiredBeforeNextPublication && !state.isStopped()) {
-                logger.info("Rescheduling PubSubTimer with delay {}.", delay);
+                logger.trace("Rescheduling PubSubTimer with delay {}.", delay);
                 timer.schedule(getTimerTask(), delay);
             } else {
-                logger.info("Will not reschedule PubSubTimer: "
+                logger.trace("Will not reschedule PubSubTimer: "
                         + (isExpiredNow ? "endDate is reached"
                                 : (isExpiredBeforeNextPublication ? "endDate will be reached before next publication"
                                         : "publication stopped")) + ".");
-                logger.debug("SubscriptionEndDate: "
+                logger.trace("SubscriptionEndDate: "
                         + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate));
-                logger.debug("CurrentSystemTime: " + System.currentTimeMillis());
-                logger.debug("Delay: ", delay);
+                logger.trace("CurrentSystemTime: " + System.currentTimeMillis());
+                logger.trace("Delay: ", delay);
             }
         }
 

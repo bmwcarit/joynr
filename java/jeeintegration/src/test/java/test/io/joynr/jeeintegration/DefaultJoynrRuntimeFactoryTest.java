@@ -6,7 +6,7 @@ package test.io.joynr.jeeintegration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,16 +47,21 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
-import io.joynr.dispatching.JoynrMessageFactory;
-import io.joynr.dispatching.JoynrMessageProcessor;
+import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
+import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.runtime.JoynrRuntime;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.MutableMessage;
 import joynr.Request;
 import joynr.jeeintegration.servicelocator.MyService;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -75,8 +80,12 @@ public class DefaultJoynrRuntimeFactoryTest {
     @Stateless
     private class JoynrMessageProcessorTest implements JoynrMessageProcessor {
         @Override
-        public JoynrMessage process(JoynrMessage joynrMessage) {
-            joynrMessage.getHeader().put("test", "test");
+        public MutableMessage processOutgoing(MutableMessage joynrMessage) {
+            joynrMessage.getCustomHeaders().put("test", "test");
+            return joynrMessage;
+        }
+        @Override
+        public ImmutableMessage processIncoming(ImmutableMessage joynrMessage) {
             return joynrMessage;
         }
     }
@@ -98,11 +107,22 @@ public class DefaultJoynrRuntimeFactoryTest {
         when(joynrProperties.get()).thenReturn(joynrPropertiesValues);
         Instance<String> joynrLocalDomain = mock(Instance.class);
         when(joynrLocalDomain.get()).thenReturn(LOCAL_DOMAIN);
+        Instance<RawMessagingPreprocessor> rawMessageProcessor = mock(Instance.class);
+        when(rawMessageProcessor.get()).thenReturn(new NoOpRawMessagingPreprocessor());
         BeanManager beanManager = mock(BeanManager.class);
         Bean<JoynrMessageProcessor> bean = mock(Bean.class);
         when(bean.create(Mockito.any())).thenReturn(new JoynrMessageProcessorTest());
         when(beanManager.getBeans(Mockito.<Type> eq(JoynrMessageProcessor.class), Mockito.<Annotation> any())).thenReturn(Sets.newHashSet(bean));
-        fixture = new DefaultJoynrRuntimeFactory(joynrProperties, joynrLocalDomain, beanManager);
+
+        final String mqttClientId = "someTestMqttClientId";
+        MqttClientIdProvider mqttClientIdProvider = mock(MqttClientIdProvider.class);
+        when(mqttClientIdProvider.getClientId()).thenReturn(mqttClientId);
+        Instance<MqttClientIdProvider> mqttClientIdProviderInstance = mock(Instance.class);
+        when(mqttClientIdProviderInstance.get()).thenReturn(mqttClientIdProvider);
+
+        fixture = new DefaultJoynrRuntimeFactory(joynrProperties, joynrLocalDomain,
+                                                 rawMessageProcessor, mqttClientIdProviderInstance,
+                                                 beanManager);
         scheduledExecutorService = mock(ScheduledExecutorService.class);
         Field executorField = DefaultJoynrRuntimeFactory.class.getDeclaredField("scheduledExecutorService");
         executorField.setAccessible(true);
@@ -127,15 +147,15 @@ public class DefaultJoynrRuntimeFactoryTest {
     }
 
     @Test
-    public void testJoynrMessageProcessUsed() throws Exception {
+    public void testJoynrMessageProcessorUsed() throws Exception {
         createFixture();
         Injector injector = fixture.getInjector();
-        JoynrMessageFactory joynrMessageFactory = injector.getInstance(JoynrMessageFactory.class);
-        JoynrMessage request = joynrMessageFactory.createRequest("from",
+        MutableMessageFactory messageFactory = injector.getInstance(MutableMessageFactory.class);
+        MutableMessage request = messageFactory.createRequest("from",
                                                                  "to",
                                                                  new Request("name", new Object[0], new Class[0]),
                                                                  new MessagingQos());
-        assertEquals("test", request.getHeader().get("test"));
+        assertEquals("test", request.getCustomHeaders().get("test"));
     }
 
     @Test

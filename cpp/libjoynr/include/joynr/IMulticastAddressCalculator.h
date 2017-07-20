@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,12 @@
 #include <memory>
 
 #include "joynr/JoynrExport.h"
-#include <joynr/JoynrMessage.h>
-#include <joynr/system/RoutingTypes/Address.h>
+#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {
+
+class ImmutableMessage;
 
 class JOYNR_EXPORT IMulticastAddressCalculator
 {
@@ -36,7 +37,7 @@ public:
      * Compute a multicast routing address for the given message.
      */
     virtual std::shared_ptr<const joynr::system::RoutingTypes::Address> compute(
-            const JoynrMessage& message) = 0;
+            const ImmutableMessage& message) = 0;
 };
 
 } // namespace joynr

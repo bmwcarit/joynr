@@ -1,11 +1,9 @@
 package io.joynr.dispatching;
 
-import io.joynr.provider.JoynrProvider;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,5 +19,37 @@ import io.joynr.provider.JoynrProvider;
  * #L%
  */
 
-public interface RequestCaller extends JoynrProvider {
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import io.joynr.provider.AbstractJoynrProvider;
+import io.joynr.provider.CallContext;
+import io.joynr.provider.JoynrProvider;
+
+public class RequestCaller implements JoynrProvider {
+
+    private Object provider;
+    private Object proxy;
+
+    public RequestCaller(Object proxy, Object provider) {
+        this.proxy = proxy;
+        this.provider = provider;
+    }
+
+    public void setContext(CallContext context) {
+
+        if (provider instanceof AbstractJoynrProvider) {
+            if (context != null) {
+                AbstractJoynrProvider.setCallContext(context);
+            }
+        }
+    }
+
+    public Object invoke(Method method, Object[] params) throws IllegalAccessException, IllegalArgumentException,
+                                                        InvocationTargetException {
+        return method.invoke(proxy, params);
+    }
+
+    public Object getProxy() {
+        return proxy;
+    }
 }

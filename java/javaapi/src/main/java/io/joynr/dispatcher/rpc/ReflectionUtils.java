@@ -3,7 +3,7 @@ package io.joynr.dispatcher.rpc;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -50,20 +52,20 @@ public class ReflectionUtils {
     private static final String STRING = "String";
     private static final String BOOLEAN = "Boolean";
 
-    // TODO findMethod looks for the method name only. =>Overloading is not supported. ParameterTypes should be checked
-    // too. Workaround for sync/async methods with same name: only sync interface is used.
-    @Deprecated
-    public static Method findMethod(Class<?> clazz, String methodName) throws NoSuchMethodException {
-        logger.warn("Warning findMethod uses only the method name to find a method to invoke => method overloading is not supported.");
-        Method[] methods = clazz.getDeclaredMethods();
-        for (Method method : methods) {
-            if (method.getName().equals(methodName)) {
-                return method;
+    public static List<Method> findMethodsByName(Class<?> clazz, String methodName) throws NoSuchMethodException {
+        ArrayList<Method> methodsList = new ArrayList<Method>(Arrays.asList(clazz.getDeclaredMethods()));
+        if (methodsList.isEmpty()) {
+            throw new NoSuchMethodException(methodName);
+        }
+
+        for (Iterator<Method> iterator = methodsList.iterator(); iterator.hasNext();) {
+            Method method = iterator.next();
+            if (!method.getName().equals(methodName)) {
+                iterator.remove();
 
             }
         }
-
-        throw new NoSuchMethodException(methodName);
+        return methodsList;
     }
 
     public static Method findMethodByParamTypes(Class<?> clazz, String methodName, Class<?>[] parameterTypes)

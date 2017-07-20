@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,8 @@
 namespace joynr
 {
 
-ProxyFactory::ProxyFactory(
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingEndpointAddress,
-        std::unique_ptr<ConnectorFactory> connectorFactory,
-        IClientCache* cache)
-        : messagingEndpointAddress(messagingEndpointAddress),
-          connectorFactory(std::move(connectorFactory)),
-          cache(cache)
+ProxyFactory::ProxyFactory(std::unique_ptr<ConnectorFactory> connectorFactory)
+        : connectorFactory(std::move(connectorFactory))
 {
 }
 

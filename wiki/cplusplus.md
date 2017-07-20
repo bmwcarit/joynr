@@ -76,6 +76,9 @@ joynr::<Package>::<Interface>RequestCaller
 joynr::<Package>::<Interface>RequestInterpreter
 joynr::<Package>::<Interface>SyncProxy
 ```
+# Configuration Reference
+See [C++ Configuration Reference](CppConfigurationReference.md) for a complete listing of
+all configuration properties available to use in joynr C++ applications.
 
 # Building a C++ consumer application
 
@@ -116,30 +119,34 @@ As a prerequisite, the **provider** and **consumer domain** need to be defined a
 
 ```cpp
     // setup providerDomain, pathToMessagingSettings, and optionally pathToMessagingSettings
-    JoynrRuntime* runtime =
+    std::unique_ptr<JoynrRuntime> runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
-    ProxyBuilder<<Package>::<Interface>Proxy>* proxyBuilder =
+    std::unique_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 ```
 
-Use the createRuntimeAsync static method of JoynrRuntime to create the runtime asynchronously:
+Use the ```createRuntimeAsync``` static method of ```JoynrRuntime``` to create the runtime
+asynchronously:
 
 
 ```cpp
-    auto onRuntimeCreated = [](std::unique_ptr<JoynrRuntime> createdRuntime) {
-        // Process the created runtime here
+    auto onSuccess = []() {
+        // this lambda will be called once the runtime is initialized
     };
 
-    auto onErrorCallback = [](exceptions::JoynrRuntimeException& exception) {
+    auto onError = [](const exceptions::JoynrRuntimeException& exception) {
         // Process the error here
     };
 
-    JoynrRuntime::createRuntimeAsync(
+    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntimeAsync(
         pathToLibJoynrSettings,
-        onRuntimeCreated,
-        onErrorCallback,
+        onSuccess,
+        onError,
         pathToMessagingSettings);
 ```
+
+The ```JoynrRuntime``` instance that is returned by ```createRuntimeAsync``` MUST NOT be
+used before ```onSuccess``` is called.
 
 ## The discovery quality of service
 
@@ -276,12 +283,12 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
 
     // setup discoveryQos, messagingQos attributes
 
-    ProxyBuilder<<Package>::<Interface>Proxy>* proxyBuilder =
+    std::unique_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 
     try {
-        <Package>::<Interface>Proxy* proxy = proxyBuilder
-            ->setMessagingQos(messagingQos) // optional
+        std::unique_ptr<<Package>::<Interface>Proxy> proxy = proxyBuilder->setMessagingQos(messagingQos)
+            ->setCached(false) // optional
             ->setDiscoveryQos(discoveryQos) // optional
             ->build();
 
@@ -341,8 +348,6 @@ The message order on Joynr RPCs will not be preserved.
 ```cpp
 #include "joynr/<Package>/<TypeCollection>/<Type>.h"
 
-std::shared_ptr<joynr::Future<<ReturnType1> [, ..., <ReturnTypeN>]> >
-    future(new joynr::Future<<ReturnType1> [, ..., <ReturnTypeN>]>());
 <ReturnType1> retval1;
 ...
 <ReturnTypeN> retvalN;
@@ -357,7 +362,7 @@ std::function<void(const joynr::exceptions::JoynrException&)> onError =
         // error handling
     };
 
-future = <interface>Proxy-><method>(... arguments ..., [onSuccess [, onError]]);
+auto future = <interface>Proxy-><method>(... arguments ..., [onSuccess [, onError]]);
 try {
     std::uint16_t optionalTimeoutMs = 500;
     future->get([optionalTimeoutMs, ]retval1 [, ..., retvalN ]);
@@ -775,7 +780,7 @@ main(int argc, char** argv)
 
 ```cpp
     // setup pathToLibJoynrSettings, and optionally pathToMessagingSettings
-    JoynrRuntime* runtime =
+    std::unique_ptr<JoynrRuntime> runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
 ```
 
@@ -810,19 +815,38 @@ Any specific broadcast filters must be added prior to registry.
 
 ```cpp
     // create instance of provider class
-    std::shared_ptr<My<Interface>Provider> provider(new My<Interface>Provider());
+    auto provider = std::make_shared<My<Interface>Provider>();
 
     // set up providerQos
     types::ProviderQos providerQos;
     // call setters to configure providerQos
 
     // create filter instance for each broadcast filter
-    std::shared_ptr<<Broadcast>BroadcastFilter> <broadcast>BroadcastFilter(
-            new <Broadcast>BroadcastFilter());
+    auto <broadcast>BroadcastFilter = std::make_shared<<Broadcast>BroadcastFilter>();
     provider->addBroadcastFilter(<broadcast>BroadcastFilter);
 
     runtime->registerProvider<<Package>::<Interface>Provider>(
         providerDomain, provider, providerQos);
+```
+
+Alternatively, use the ```registerProviderAsync``` method of ```JoynrRuntime``` to register the provider
+asynchronously:
+
+```cpp
+    auto onSuccess = []() {
+        // this lambda will be called once the provider is registered
+    };
+
+    auto onError = [](const exceptions::JoynrRuntimeException& exception) {
+        // Process the error here
+    };
+
+    runtime->registerProviderAsync<<Package>::<Interface>Provider>(
+        providerDomain,
+        provider,
+        providerQos,
+        onSuccess,
+        onError);
 ```
 
 ### Shutting down
@@ -832,8 +856,25 @@ On exit of the application it should cleanly unregister any providers the applic
     // for each provider class
     runtime->unregisterProvider<Package>::<Interface>Provider>(
         providerDomain, provider);
+```
 
-    delete runtime;
+Alternatively, use the ```unregisterProviderAsync``` method of ```JoynrRuntime``` to unregister the provider
+asynchronously:
+
+```cpp
+    auto onSuccess = []() {
+        // this lambda will be called once the provider is unregistered
+    };
+
+    auto onError = [](const exceptions::JoynrRuntimeException& exception) {
+        // Process the error here
+    };
+
+    runtime->unregisterProviderAsync<<Package>::<Interface>Provider>(
+        providerDomain,
+        provider,
+        onSuccess,
+        onError);
 ```
 
 ## The My&lt;Interface>Provider class
@@ -848,7 +889,18 @@ The following Joynr C++ include files are required:
 ```
 
 ### The base class
-The provider class must extend the generated class ```joynr::<Package>::Default<Interface>Provider```  and implement getter and setter methods for each Franca attribute and a method for each method of the Franca interface. In order to send broadcasts the generated code of the super class ```joynr::<Interface>Provider``` can be used.
+The provider class must extend the generated class ```joynr::<Package>::Default<Interface>Provider```
+and implement a method for each method of the Franca interface.
+
+It may override the provided default implementation of getter and setter methods for each Franca
+attribute (where required).
+
+In order to send broadcasts the generated code of the super class ```joynr::<Interface>Provider```
+can be used.
+
+If the value of a notifiable attribute gets changed directly inside the implementation of a method
+or (non-default) setter, the `<Attribute>Changed(<Attribute>)` method needs to be called in order
+to inform subscribers about the value change.
 
 ```cpp
 #include "My<Interface>Provider.h"

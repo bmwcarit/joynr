@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,8 +89,10 @@ public class ExpiredDiscoveryEntryCacheCleanerTest {
 
         subject.scheduleCleanUpForCaches(cleanupAction, cache);
 
-        verify(scheduledExecutorService).scheduleAtFixedRate(runnableArgumentCaptor.capture(), eq(1L), eq(1L),
-            eq(TimeUnit.MINUTES));
+        verify(scheduledExecutorService).scheduleAtFixedRate(runnableArgumentCaptor.capture(),
+                                                             eq(1L),
+                                                             eq(1L),
+                                                             eq(TimeUnit.MINUTES));
         Runnable cleanupTask = runnableArgumentCaptor.getValue();
         cleanupTask.run();
         verify(cache).getAllDiscoveryEntries();

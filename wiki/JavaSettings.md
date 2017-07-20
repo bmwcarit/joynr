@@ -13,6 +13,15 @@ localhost) are marked below as REQUIRED.
 
 ## ConfigurableMessagingSettings
 
+### `CHANNELID`
+When shared subscriptions are enabled for MQTT the channel ID identifies the cluster. Each node of the
+cluster must use the same value. If no channel ID is specified a random UUID will be used as
+the channel ID.
+
+### `RECEIVERID`
+When shared subscriptions are enabled for MQTT the receiver ID identifies a node within a cluster.
+If no receiver ID is specified a random UUID will be used as the receiver ID.
+
 ### `PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID`
 The channel ID of the global capabilities directory (backend). To be able to connect to the global
 capabilities directory a disovery entry is created in the local capabilities directory as well as an
@@ -103,6 +112,21 @@ The number of threads used by the message router to send joynr messages.
 * **User property**: `joynr.messaging.maximumparallelsends`
 * **Default value**: `20`
 
+### `PROPERTY_MAX_MESSAGES_INQUEUE`
+The number of messages (incoming and outgoing) that can be queued in the
+message router at the same time. The queue is blocking, so that messaging
+skeletons that receive a message that no longer has room in the queue will
+block until a message can be removed from the queue and processed.
+**NOTE** This value works in conjunction with joynr.messaging.maximumparallelsends,
+which determines the number of worker threads started to process messages.
+The sum of the two values is the maximum number of messages handled by
+joynr in parallel.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.maxmessagesinqueue`
+* **Default value**: `20`
+
 ### `PROPERTY_MESSAGING_MAXIMUM_TTL_MS`
 The maximum allowed time-to-live (TTL) of joynr messages. The TTL used in a joynr message is set on
 the proxy builder using the messaging QoS object. These TTLs are only accepted up to the maximum
@@ -122,6 +146,24 @@ same interface and domain combination.
 * **Type**: String
 * **User property**: `joynr.discovery.participantids_persistence_file`
 * **Default value**: `joynr_participantIds.properties`
+
+### `PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS`
+A routing table entry has an expiry date; once this point in time has been passed, the entry can
+be removed from the routing table. The expiryDateMs is calculated or updated based on the message
+ttls plus this grace period in milliseconds.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.routingtablegraceperiodms`
+* **Default value**: `30000`
+
+### `PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS`
+The number of milliseconds between two consecutive invocations of the routing table cleanup
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.routingtablecleanupintervalms`
+* **Default value**: `60000`
 
 ### `PROPERTY_SEND_MSG_RETRY_INTERVAL_MS`
 The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,
@@ -148,6 +190,15 @@ updates the ```lastSeenDateMs``` of all capabilities registered via this cluster
 * **User property**: `joynr.capabilities.freshnessupdateintervalms`
 * **Default value**: `3600000`
 
+##Access Control
+### `PROPERTY_ACCESSCONTROL_ENABLE`
+Enables or disables access control checks.
+
+* **OPTIONAL**
+* **Type**: boolean
+* **User property**: `joynr.accesscontrol.enable`
+* **Default value**: `false`
+
 ##MessagingPropertyKeys
 
 ### `PROPERTY_BOUNCE_PROXY_URL`
@@ -163,36 +214,73 @@ channel in the backend. The cluster controller polls the channel to download the
 ### `PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT`
 Select primary global transport middleware which will be used to register providers. The provider
 will be reachable via the selected global transport middleware.
+Possible values: `mqtt, longpolling, servlet`
+Longpolling is not supported in Jee.
 
 * **REQUIRED if using more than one global transport**
 * **Type**: String
 * **User property**: `joynr.messaging.primaryglobaltransport`
 * **Default value**: NOT SET
 
-### `CAPABILITYDIRECTORYURL`
+### `MQTT_TOPIC_PREFIX_REPLYTO`
+Set the mqtt prefix to be prepended to replyTo topics when using shared subscriptions.
+If shared subscriptions are disabled, the unicast prefix is used, i.e. the replyTo address
+is the same as the global address for provider registration.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.topicprefix.sharedsubscriptionsreplyto`
+* **Default value**: `replyto/`
+
+### `MQTT_TOPIC_PREFIX_UNICAST`
+Can be used to set the cluster topic prefix (shared by all nodes in a MQTT cluster-node
+configuration).
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.topicprefix.unicast`
+* **Default value**: ``
+
+### `MQTT_TOPIC_PREFIX_MULTICAST`
+Set the mqtt prefix to be prepended to multicast topics.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.topicprefix.multicast`
+* **Default value**: ``
+
+### `DISCOVERYDIRECTORYURL`
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
 service. To connect to the global capabilities directory the cluster controller creates an
 appropriate entry in the local capabilities directory.  
 If the capabilities directory is using MQTT as its primary transport, then the URL you set here
 is that of the MQTT broker configured for the capabilities directory. E.g.
-`tcp://mqttbroker:1883`.  
+`tcp://mqttbroker:1883`.
+If the capabilities directory is using HTTP (longpolling) as its primary transport, then the URL
+you set here is that of the capabilities directory's channel
+(channelId=discoverydirectory_channelid) at the Bounceproxy. E.g.
+`http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
 See also the static capabilities provisioning documentation below.
 
 * **OPTIONAL** (see static capabilities provisioning)
 * **Type**: String
-* **User property**: `joynr.messaging.capabilitiesdirectoryurl`
-* **Default value**: `http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
+* **User property**: `joynr.messaging.discoverydirectoryurl`
+* **Default value**: `tcp://localhost:1883`
 
 ### `DOMAINACCESSCONTROLLERURL`
 The URL of the receive channel (incoming message queue) of the global domain access
 controller service. To connect to the global domain access controller directory
 the cluster controller creates an appropriate entry in the local capabilities directory.
-See also the static capabilities provisioning documentation below.
+If the domain access controller is using HTTP (longpolling) as its primary transport, then the URL
+you set here is that of the domain access controller's channel
+(channelId=domainaccesscontroller_channelid) at the Bounceproxy. E.g.
+`http://localhost:8080/discovery/channels/domainaccesscontroller_channelid/`
+See also the static capabilities provisioning documentation below and DISCOVERYDIRECTORYURL above.
 
 * **OPTIONAL** (see static capabilities provisioning)
 * **Type**: String
 * **User property**: `joynr.messaging.domainaccesscontrollerurl`
-* **Default value**: `http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
+* **Default value**: `tcp://localhost:1883`
 
 ### `PROPERTY_SERVLET_HOST_PATH`
 If a joynr application is deployed into a servlet on an application server, the servlet host path is
@@ -243,6 +331,59 @@ trying to connect again.
 * **Type**: int
 * **User property**: `joynr.messaging.mqtt.reconnect.sleepms`
 * **Default value**: `1000`
+
+### `PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC`
+Sets the "keep alive" interval measured in seconds. If no message is transmitted during this period,
+the client sends a ping message which is acknowledged by the server. This allows a client to detect
+disconnects without using TCP/IP mechanisms. A value of 0 disables the "keep alive" mechanism.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.keepalivetimersec`
+* **Default value**: `60`
+
+### `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC`
+Sets the connection timeout measured in seconds. This value states how long a client will wait until
+a network connection to the server is established. A value of 0 means that a client will wait until
+the network connection is established successfully or fails.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.connectiontimeoutsec`
+* **Default value**: `30`
+
+### `PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS`
+Sets the maximum time for an action to complete (measured in milliseconds) before the control is returned
+to the application. A value of -1 means that no timeout is used for actions.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.timetowaitms`
+* **Default value**: `-1`
+
+### `PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS`
+
+Use this key to activate shared subscription support by setting the property's value to true.
+Shared subscriptions are a feature of HiveMQ which allow queue semantics to be used for
+subscribers to MQTT topics. That is, only one subscriber receives a message, rather than all
+subscribers. This feature can be used to load balance incoming messages on MQTT. This feature
+is useful if you want to run a cluster of JEE nodes while using only MQTT for communication
+(an alternative is to use the HTTP bridge configuration).
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `joynr.messaging.mqtt.enable.sharedsubscriptions`
+* **Default value**: `false`
+
+### `PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT`
+Controls how many messages will be send in parallel before the mqtt module expects an acknowledgment
+from the broker. Increase this value for applications which generate a lot of traffic in order to
+improve the performance.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.maxmsgsinflight`
+* **Default value**: `10`
 
 ## SystemServicesSettings
 
@@ -355,15 +496,6 @@ global cached discovery entries.
 
 These properties are defined as constants in the
 `io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys` class.
-
-### `JEE_ENABLE_SHARED_SUBSCRIPTIONS`
-
-Use this key to activate shared subscription support by setting the property's value to true. Shared subscriptions are a feature of HiveMQ which allow queue semantics to be used for subscribers to MQTT topics. That is, only one subscriber receives a message, rather than all subscribers. This feature can be used to load balance incoming messages on MQTT. This feature is useful if you want to run a cluster of JEE nodes while using only MQTT for communication (an alternative is to use the HTTP bridge configuration).
-
-* **OPTIONAL**
-* **Type**: Boolean
-* **User property**: `joynr.jeeintegration.enable.sharedsubscriptions`
-* **Default value**: `false`
 
 ### `JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY`
 

@@ -73,7 +73,7 @@ E.g. `tcp://mqtt.mycompany.net:1883`.
 
 #### Optional Properties
 
-* `JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS` - enables the [HiveMQ](http://www.hivemq.com) specific 'shared subscription' feature, which allows clustering of JEE applications using just MQTT for communication. Set this to `true` to enable the feature. Defaults to `false`.
+* `MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS` - enables the [HiveMQ](http://www.hivemq.com) specific 'shared subscription' feature, which allows clustering of JEE applications using just MQTT for communication. Set this to `true` to enable the feature. Defaults to `false`.
 * `JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY` -
 set this property to `true` if you want to use the HTTP Bridge functionality. In this
 configuration incoming messages are communicated via HTTP and can then be load-balanced
@@ -115,7 +115,7 @@ An example of a configuration EJB is:
 			"http://myapp.com:8080");
 		joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID,
 			"provider.domain");
-		joynrProperties.setProperty(JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS,
+		joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS,
 			Boolean.TRUE.toString());
 		joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI,
 			"tcp://mqttbroker.com:1883");
@@ -144,12 +144,12 @@ Configure your container runtime with a `ManagedScheduledExecutorService`
 resource which has the name `'concurrent/joynrMessagingScheduledExecutor'`.
 
 For example for Glassfish/Payara:
-`asadmin create-managed-scheduled-executor-service --corepoolsize=10 concurrent/joynrMessagingScheduledExecutor`
+`asadmin create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor`
 
-Note the `--corepoolsize=10` option. The default will only create one thread,
-which can lead to blocking, so you should use at least 10 threads. Depending on your
-load, you can experiment with higher values to enable more concurrency when
-communicating joynr messages.
+Note the `--corepoolsize=100` option. The default will only create one thread, which can lead to
+blocking. 100 threads should be sufficient for quite a few joynr applications.
+Depending on your load, you can experiment with different values. Use higher values to enable more
+concurrency when communicating joynr messages.
 
 ### Generating the interfaces
 
@@ -255,8 +255,15 @@ In some cases you might want to register your providers under a different domain
 application default (specified via `@JoynrLocalDomain`, see configuration documentation above).
 
 In order to do so, use the `@ProviderDomain` annotation on your implementing bean in addition
-to the `@ServiceLocator` annotation. The value you provide will be used as the domain when
+to the `@ServiceProvider` annotation. The value you provide will be used as the domain when
 registering the bean as a joynr provider.
+Here is an example of what that looks like:
+
+    @ServiceProvider(serviceInterface = MyServiceSync.class)
+    @ProviderDomain(MY_CUSTOM_DOMAIN)
+    private static class CustomDomainMyServiceBean implements MyServiceSync {
+        ...
+    }
 
 #### <a name="publishing_multicasts"></a> Publishing Multicasts
 
@@ -291,6 +298,50 @@ Here is an example of what that looks like:
 See also the
 [Radio JEE provider bean](../examples/radio-jee/radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBean.java)
 for a working example.
+
+#### Injecting a RawMessagingPreprocessor
+
+if you need to inspect or modify incoming joynr messages, you can provide a producer of
+@JoynrRawMessagingPreprocessor, whose process method will be called for each incoming MQTT
+message.
+
+For example:
+
+	@Produces
+	@JoynrRawMessagingPreprocessor
+	RawMessagingPreprocessor rawMessagingPreprocessor() {
+		return new RawMessagingPreprocessor() {
+			@Override
+			public String process(String rawMessage, @Nonnull Map<String, Serializable> context) {
+				// do something with the message here, and add entries to the context
+				return rawMessage;
+			}
+		};
+	}
+
+Inject `JoynrJeeMessageMetaInfo` to your EJB in order to retrieve the context for a received message.
+
+The context can be accessed by calling `JoynrJeeMessageMetaInfo.getMessageContext()`:
+
+    @Stateless
+    @ServiceProvider(serviceInterface = MyServiceSync.class)
+    public class MyBean implements MyServiceSync {
+        private JoynrJeeMessageMetaInfo messageMetaInfo;
+
+        @Inject
+        public MyBean(JoynrJeeMessageMetaInfo messageMetaInfo) {
+            this.messageMetaInfo = messageMetaInfo;
+        }
+
+        ... other method implementations ...
+
+        @Override
+        public void myMethod() {
+            ...
+            Map<String, Serializable> context = messageMetaInfo.getMessageContext();
+            ...
+        }
+    }
 
 ### Calling services
 
@@ -358,7 +409,7 @@ for requests originating from inside the cluster to be routed directly
 to the correct node.
 
 Activate this mode with the
-`JeeIntegrationPropertyKeys.JEE_ENABLE_SHARED_SUBSCRIPTIONS`
+`MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS`
 property.
 
 ### HTTP Bridge
@@ -371,7 +422,7 @@ which holds the mappings between application URLs and the topics for which
 they are interested in.
 
 A limitation of this solution is that replies for requests which originated
-from a clustered application are not guarateed to be received by the cluster
+from a clustered application are not guaranteed to be received by the cluster
 node which sent the request. A possible solution could be to provide extra
 logic on the load balancer. However, without this you should only use
 fire-and-forget semantics for outgoing messages.
@@ -425,12 +476,12 @@ referenced libs.
     <dependency>
       <groupId>com.fasterxml.jackson.jaxrs</groupId>
       <artifactId>jackson-jaxrs-json-provider</artifactId>
-      <version>2.6.2</version>
+      <version>2.8.8</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-xml</artifactId>
-      <version>2.6.2</version>
+      <version>2.8.8</version>
     </dependency>
 
 Finally in case you're using JSON: Not setting a value to the @JsonProperty annotations
@@ -465,10 +516,14 @@ Here's an example of a message processor:
 ```
 @Stateless
 public class MyMessageProcessor implements JoynrMessageProcessor {
-    public JoynrMessage process(JoynrMessage joynrMessage) {
+    public MutableMessage processOutgoing(MutableMessage joynrMessage) {
         Map<String, String> myCustomHeaders = new HashMap<>();
         myCustomHeaders.put("my-correlation-id", UUID.randomUuid().toString());
         joynrMessage.setCustomHeaders(myCustomHeaders);
+        return joynrMessage;
+    }
+
+    public ImmutableMessage processIncoming(ImmutableMessage joynrMessage) {
         return joynrMessage;
     }
 }
@@ -500,14 +555,41 @@ The following describes running the example on [Payara 4.1](http://www.payara.fi
 install the application server and you will also need to install an MQTT broker, e.g.
 [Mosquitto](http://mosquitto.org).
 
-Start the MQTT broker, and make sure it's accepting traffic on `1883`.
+You need to configure Payara with a ManagedScheduledExecutorService, see
+[JEE Container configuration](#jee-container-configuration).
 
-Next, fire up the joynr backend service by changing to the `radio-jee` directory and
-executing `mvn -N -Pbackend-services jetty:run`.
+You also need a connection pool for the database which shall be used by the backend services
+to persist data.
+For this example, we'll create a database on the JavaDB (based on Derby) database which is
+installed as part of Payara:
+```
+    bin/asadmin create-jdbc-connection-pool \
+        --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
+        --restype javax.sql.XADataSource \
+        --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool
+```
+Next, create a datasource resource pointing to that database connection. Here's an
+example of what that would look like when using the connection pool created above:
+```
+`bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS`
+`bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DomainAccessControllerDS`
+```
+
+After this, you can start the database:
+
+`bin/asadmin start-database`
+
+Start the MQTT broker, and make sure it's accepting traffic on `1883`.
 
 Then start up the Payara server by changing to the Payara install directory and executing
 `bin/asadmin start-domain`. Follow the instructions above for configuring the required
-managed executor service. Finally, deploy the provider and consumer applications:
+managed executor service and databse.
+
+Next, fire up the joynr backend services:
+- `bin/asadmin deploy <joynr home>/asadmin deploy <JOYNR_REPO>/examples/radio-jee/radio-jee-backend-services/target/discovery-jee.war`
+- `bin/asadmin deploy <joynr home>/asadmin deploy <JOYNR_REPO>/examples/radio-jee/radio-jee-backend-services/target/accesscontrol-jee.war`
+
+Finally, deploy the provider and consumer applications:
 
 - `bin/asadmin deploy <joynr home>/examples/radio-jee/radio-jee-provider/target/radio-jee-provider.war`
 - `bin/asadmin deploy <joynr home>/examples/radio-jee/radio-jee-consumer/target/radio-jee-consumer.war`
@@ -531,7 +613,7 @@ Radio service, and the consumer thereof.
 If you want to use the radio JEE example as a template for building a joynr based JEE application
 don't forget to change the joynr dependency version in the Maven POMs to a release version. If you
 change the parent POM, which is also likely, don't forget to pull the necessary `dependencyManagement`
-entries from the joynr parent POM into your own POM.  
+entries from the joynr parent POM into your own POM.
 You'll also likely want to change the way the FIDL file is included in the API project. In this
 example it is obtained from the `radio-app` Maven dependency, but you will probably want to have it
 in, e.g., `${project.root}/my-api/src/main/model/my.fidl`, and then reference that file directly

@@ -3,7 +3,7 @@ package io.joynr.messaging.http;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.http.operation.HttpConstants;
 import io.joynr.messaging.http.operation.HttpPost;
 import io.joynr.messaging.http.operation.HttpRequestFactory;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.system.RoutingTypes.ChannelAddress;
 
 import java.io.IOException;
@@ -44,7 +46,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
@@ -55,7 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class HttpMessageSender implements IMessageSender {
+public class HttpMessageSender implements ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(HttpMessageSender.class);
     private static final int DELAY_RECEIVER_NOT_STARTED_MS = 100;
     private static final String RECEIVER_NOT_STARTED_REASON = "cannot send until receiver is started";
@@ -68,13 +70,16 @@ public class HttpMessageSender implements IMessageSender {
     private MessageReceiver messageReceiver;
 
     @Inject
+    // CHECKSTYLE:OFF
     public HttpMessageSender(MessageReceiver messageReceiver,
                              CloseableHttpClient httpclient,
                              HttpRequestFactory httpRequestFactory,
                              HttpConstants httpConstants,
                              RequestConfig defaultRequestConfig,
                              ObjectMapper objectMapper,
-                             UrlResolver urlResolver) {
+                             UrlResolver urlResolver,
+                             ShutdownNotifier shutdownNotifier) {
+        // CHECKSTYLE:ON
         this.messageReceiver = messageReceiver;
         this.httpclient = httpclient;
         this.httpRequestFactory = httpRequestFactory;
@@ -82,10 +87,10 @@ public class HttpMessageSender implements IMessageSender {
         this.defaultRequestConfig = defaultRequestConfig;
         this.objectMapper = objectMapper;
         this.urlResolver = urlResolver;
+        shutdownNotifier.registerForShutdown(this);
     }
 
-    @Override
-    public void sendMessage(ChannelAddress address, String serializedMessage, FailureAction failureAction) {
+    public void sendMessage(ChannelAddress address, byte[] serializedMessage, FailureAction failureAction) {
         // check if messageReceiver is ready to receive replies otherwise delay request by at least 100 ms
         if (!messageReceiver.isReady()) {
             long delay_ms = DELAY_RECEIVER_NOT_STARTED_MS;
@@ -105,7 +110,7 @@ public class HttpMessageSender implements IMessageSender {
             HttpPost httpPost = httpRequestFactory.createHttpPost(URI.create(sendUrl));
             httpPost.addHeader(new BasicHeader(httpConstants.getHEADER_CONTENT_TYPE(),
                                                httpConstants.getAPPLICATION_JSON() + ";charset=UTF-8"));
-            httpPost.setEntity(new StringEntity(serializedMessage, "UTF-8"));
+            httpPost.setEntity(new ByteArrayEntity(serializedMessage));
 
             // Clone the default config
             Builder requestConfigBuilder = RequestConfig.copy(defaultRequestConfig);
@@ -166,6 +171,7 @@ public class HttpMessageSender implements IMessageSender {
         }
     }
 
+    @Override
     public void shutdown() {
         try {
             httpclient.close();

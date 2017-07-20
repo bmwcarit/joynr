@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ typeCollection TestTypes {
 
 	typedef TypeDefForPrimitive is Int32
 	typedef TypeDefForTStruct is TStruct
+	typedef TypeDefForTStringKeyMap is TStringKeyMap
+	typedef TypeDefForTEnum is TEnum
 
 	struct TStructExtended extends TStruct {
 		TEnum tEnum
@@ -56,7 +58,7 @@ typeCollection TestTypes {
 		Vowel[] vowels
 	}
 
-	struct TEverythingStruct {
+	struct TEverythingStruct polymorphic {
 		Int8 tInt8
 		UInt8 tUInt8
 		Int16 tInt16
@@ -99,6 +101,17 @@ typeCollection TestTypes {
 	map TEverythingMap {TEnum to TEverythingExtendedStruct}
 
 	map TStringToByteBufferMap {String to ByteBuffer}
+
+	struct TStructWithTypedefMembers {
+		TypeDefForPrimitive typeDefForPrimitive
+		TypeDefForTStruct typeDefForTStruct
+		TypeDefForTStringKeyMap typeDefForTStringKeyMap
+		TypeDefForTEnum typeDefForTEnum
+		TypeDefForPrimitive[] arrayOfTypeDefForPrimitive
+		TypeDefForTStruct[] arrayOfTypeDefForTStruct
+		TypeDefForTStringKeyMap[] arrayOfTypeDefForTStringKeyMap
+		TypeDefForTEnum[] arrayOfTypeDefForTEnum
+	}
 }
 
 typeCollection TestTypesWithoutVersion {

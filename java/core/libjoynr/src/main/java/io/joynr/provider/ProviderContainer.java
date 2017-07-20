@@ -3,7 +3,7 @@ package io.joynr.provider;
 /*
  * #%L
  * %%
- * Copyright (C) 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package io.joynr.provider;
  */
 
 import io.joynr.dispatching.RequestCaller;
+import io.joynr.exceptions.JoynrRuntimeException;
 
 /**
  * A data container for provider relevant information. It is used joynr internally to
@@ -58,5 +59,16 @@ public class ProviderContainer {
 
     public SubscriptionPublisherObservable getSubscriptionPublisher() {
         return subscriptionPublisher;
+    }
+
+    /**
+     *
+     * @return the reflection proxy used to make the call to the provided method
+     */
+    public Object getProviderProxy() {
+        if (requestCaller == null) {
+            throw new JoynrRuntimeException("request caller was not found for " + providedInterface);
+        }
+        return requestCaller.getProxy();
     }
 }

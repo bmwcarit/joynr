@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@
 
 define("joynr/dispatching/types/MulticastSubscriptionRequest", [
     "joynr/util/Typing",
-    "joynr/proxy/OnChangeSubscriptionQos",
-    "joynr/proxy/BroadcastFilterParameters"
-], function(Typing, OnChangeSubscriptionQos, BroadcastFilterParameters) {
-
+    "joynr/proxy/MulticastSubscriptionQos",
+    "joynr/system/LoggerFactory"
+], function(Typing, MulticastSubscriptionQos, LoggerFactory) {
+    var log = LoggerFactory.getLogger("joynr/dispatching/types/MulticastSubscriptionRequest");
     var defaultSettings = {
-        qos : new OnChangeSubscriptionQos()
+        qos : new MulticastSubscriptionQos()
     };
 
     /**
@@ -42,10 +42,23 @@ define("joynr/dispatching/types/MulticastSubscriptionRequest", [
         Typing.checkProperty(settings.multicastId, "String", "settings.multicastId");
         Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
         Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
-        Typing.checkPropertyIfDefined(settings.qos, [
-            "Object",
-            "OnChangeSubscriptionQos"
-        ], "settings.qos");
+
+        try {
+            Typing.checkPropertyIfDefined(settings.qos, [
+                "Object",
+                "MulticastSubscriptionQos"
+            ], "settings.qos");
+        } catch (e) {
+            if (Typing.getObjectType(settings.qos) === "OnChangeSubscriptionQos") {
+                log.warn("multicast subscription was passed an OnChangeSubscriptionQos. "
+                    + "The minIntervalMs and publicationTtlMs will be discarded");
+                settings.qos = new MulticastSubscriptionQos({
+                    expiryDateMs : settings.qos.expiryDateMs
+                });
+            } else {
+                throw e;
+            }
+        }
 
         /**
          * @name MulticastSubscriptionRequest#multicastId

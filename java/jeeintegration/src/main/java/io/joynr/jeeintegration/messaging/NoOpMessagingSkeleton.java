@@ -3,7 +3,7 @@ package io.joynr.jeeintegration.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
-import joynr.JoynrMessage;
 
 /**
  * Because the messaging stub will refuse to send a message via MQTT unless a messaging skeleton has been registered
@@ -43,11 +42,7 @@ public class NoOpMessagingSkeleton implements IMessagingSkeleton {
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
-    }
-
-    @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
     }
 
     @Override

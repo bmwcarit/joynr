@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,13 @@ namespace RoutingTypes
 class Address;
 } // namespace RoutingTypes
 } // namespace system
-class IMessaging;
+class IMessagingStub;
 
 class IMessagingStubFactory
 {
 public:
     virtual ~IMessagingStubFactory() = default;
-    virtual std::shared_ptr<IMessaging> create(const std::shared_ptr<
+    virtual std::shared_ptr<IMessagingStub> create(const std::shared_ptr<
             const joynr::system::RoutingTypes::Address>& destinationAddress) = 0;
     virtual void remove(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
                                 destinationAddress) = 0;

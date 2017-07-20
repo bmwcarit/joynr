@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2015 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2015 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,23 @@ provisioning.ccAddress = {
 
 provisioning.logging = {
     configuration : {
+        appenders : {
+            appender : [
+                {
+                    type : "Console",
+                    name : "STDOUT",
+                    PatternLayout : {
+                        pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+                    }
+                }
+            ]
+        },
         loggers : {
             root : {
-                level : "error"
+                level : "debug",
+                AppenderRef : [{
+                        ref : "STDOUT"
+                }]
             }
         }
     }

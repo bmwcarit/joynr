@@ -10,7 +10,7 @@ import com.google.inject.Singleton;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import com.google.inject.Singleton;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 /**
  * CommunicationManagerMock used in DispatcherTest.java to simulate the HttpCommunicationManager
@@ -39,8 +39,7 @@ import joynr.JoynrMessage;
 @Singleton
 public class MessageReceiverMock implements MessageReceiver {
 
-    private List<JoynrMessage> sentMessages = Lists.newArrayList();
-    private List<JoynrMessage> receivedMessages = Lists.newArrayList();
+    private List<ImmutableMessage> receivedMessages = Lists.newArrayList();
 
     private MessageArrivedListener messageArrivedListener;
     private boolean blockInitialisation = false;
@@ -51,18 +50,14 @@ public class MessageReceiverMock implements MessageReceiver {
         return "abc";
     }
 
-    public void receiveMessage(JoynrMessage message) {
+    public void receiveMessage(ImmutableMessage message) {
         receivedMessages.add(message);
         if (messageArrivedListener != null) {
             messageArrivedListener.messageArrived(message);
         }
     }
 
-    public List<JoynrMessage> getSentMessages() {
-        return sentMessages;
-    }
-
-    public List<JoynrMessage> getReceivedMessages() {
+    public List<ImmutableMessage> getReceivedMessages() {
         return receivedMessages;
     }
 

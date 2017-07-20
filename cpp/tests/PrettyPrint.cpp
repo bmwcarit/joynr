@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
  * limitations under the License.
  * #L%
  */
+#include "tests/PrettyPrint.h"
+
 #include <gtest/gtest.h>
-#include "PrettyPrint.h"
 
 #include "joynr/serializer/Serializer.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
-#include "joynr/JoynrMessage.h"
 #include "joynr/types/TestTypes/TStruct.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
@@ -56,12 +56,6 @@ void PrintTo(const joynr::system::RoutingTypes::WebSocketAddress& value, ::std::
 }
 
 } // namespace system
-
-void PrintTo(const JoynrMessage& value, ::std::ostream* os)
-{
-    *os << joynr::serializer::serializeToJson(value);
-}
-
 } // namespace joynr
 
 void PrintTo(const StatusCodeEnum& value, ::std::ostream* os)

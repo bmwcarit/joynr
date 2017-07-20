@@ -3,7 +3,7 @@ package io.joynr.arbitration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.Set;
 import com.google.inject.Inject;
 
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Version;
 
 /**
@@ -60,15 +61,15 @@ public class DiscoveryEntryVersionFilter {
      *
      * @return the filtered discovery entry set.
      */
-    public Set<DiscoveryEntry> filter(Version callerVersion,
-                                      Set<DiscoveryEntry> discoveryEntries,
-                                      Map<String, Set<Version>> discoveredVersions) {
+    public Set<DiscoveryEntryWithMetaInfo> filter(Version callerVersion,
+                                                  Set<DiscoveryEntryWithMetaInfo> discoveryEntries,
+                                                  Map<String, Set<Version>> discoveredVersions) {
         if (callerVersion == null || discoveryEntries == null) {
             throw new IllegalArgumentException(String.format("Neither callerVersion (%s) nor discoveryEntries (%s) can be null.",
                                                              callerVersion,
                                                              discoveryEntries));
         }
-        Iterator<DiscoveryEntry> iterator = discoveryEntries.iterator();
+        Iterator<DiscoveryEntryWithMetaInfo> iterator = discoveryEntries.iterator();
         while (iterator.hasNext()) {
             DiscoveryEntry discoveryEntry = iterator.next();
             if (discoveredVersions != null) {

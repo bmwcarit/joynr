@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@
 define([
     "global/Promise",
     "joynr/system/RoutingTypes/ChannelAddress",
-    "joynr/messaging/channel/ChannelMessagingStubFactory",
-    "joynr/messaging/MessageReplyToAddressCalculator"
-], function(Promise, ChannelAddress, ChannelMessagingStubFactory, MessageReplyToAddressCalculator) {
+    "joynr/messaging/channel/ChannelMessagingSender",
+    "joynr/messaging/channel/ChannelMessagingStubFactory"
+], function(Promise, ChannelAddress, ChannelMessagingSender, ChannelMessagingStubFactory) {
 
     describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStubFactory", function() {
         var channelMessagingSender, channelMessagingStubFactory, destChannelId;
@@ -34,8 +34,8 @@ define([
             destChannelId = "destChannelId";
             myChannelId = "myChannelId";
             url = "http://testurl";
-            channelMessagingSender = jasmine.createSpyObj("channelMessagingSender", [ "send"
-            ]);
+            channelMessagingSender = Object.create(ChannelMessagingSender.prototype);
+            channelMessagingSender.send = jasmine.createSpy("channelMessagingSender.send");
             channelMessagingSender.send.and.returnValue(Promise.resolve());
             channelAddress1 = new ChannelAddress({
                 channelId : destChannelId,
@@ -46,10 +46,7 @@ define([
                 messagingEndpointUrl : url
             });
             channelMessagingStubFactory = new ChannelMessagingStubFactory({
-                channelMessagingSender : channelMessagingSender,
-                messageReplyToAddressCalculator : new MessageReplyToAddressCalculator({
-                    replyToAddress : ""
-                })
+                channelMessagingSender : channelMessagingSender
             });
 
             channelMessagingStubFactory.globalAddressReady(channelAddress2);
@@ -59,18 +56,16 @@ define([
             done();
         });
 
-        it(
-                "is instantiable and of correct type",
-                function(done) {
-                    expect(ChannelMessagingStubFactory).toBeDefined();
-                    expect(typeof ChannelMessagingStubFactory === "function").toBeTruthy();
-                    expect(channelMessagingStubFactory).toBeDefined();
-                    expect(channelMessagingStubFactory instanceof ChannelMessagingStubFactory)
-                            .toBeTruthy();
-                    expect(channelMessagingStubFactory.build).toBeDefined();
-                    expect(typeof channelMessagingStubFactory.build === "function").toBeTruthy();
-                    done();
-                });
+        it("is instantiable and of correct type", function(done) {
+            expect(ChannelMessagingStubFactory).toBeDefined();
+            expect(typeof ChannelMessagingStubFactory).toEqual("function");
+            expect(channelMessagingStubFactory).toBeDefined();
+            expect(channelMessagingStubFactory instanceof ChannelMessagingStubFactory)
+                    .toEqual(true);
+            expect(channelMessagingStubFactory.build).toBeDefined();
+            expect(typeof channelMessagingStubFactory.build).toEqual("function");
+            done();
+        });
 
         it("creates a messaging stub and uses it correctly", function(done) {
             var channelMessagingStub = channelMessagingStubFactory.build(channelAddress1);

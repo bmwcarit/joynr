@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,21 @@
 #ifndef LIBJOYNRWEBSOCKETRUNTIME_H
 #define LIBJOYNRWEBSOCKETRUNTIME_H
 
-#include <memory>
 #include <functional>
+#include <memory>
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Logger.h"
-#include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Settings.h"
-#include "libjoynr/websocket/WebSocketSettings.h"
+#include "joynr/WebSocketSettings.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
 namespace joynr
 {
-class WebSocketPpClient;
+class IWebSocketPpClient;
 class WebSocketLibJoynrMessagingSkeleton;
+class IWebSocketPpClient;
 
 class LibJoynrWebSocketRuntime : public LibJoynrRuntime
 {
@@ -41,16 +43,18 @@ public:
     ~LibJoynrWebSocketRuntime() override;
 
 protected:
-    void startLibJoynrMessagingSkeleton(std::shared_ptr<MessageRouter> messageRouter) override;
+    void startLibJoynrMessagingSkeleton(std::shared_ptr<IMessageRouter> messageRouter) override;
+    void connect(std::function<void()> onSuccess,
+                 std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrWebSocketRuntime);
 
-    void connect(std::function<void()> runtimeCreatedCallback);
     void sendInitializationMsg();
+    void createWebsocketClient();
 
     WebSocketSettings wsSettings;
-    std::shared_ptr<WebSocketPpClient> websocket;
+    std::shared_ptr<IWebSocketPpClient> websocket;
     std::string initializationMsg;
     ADD_LOGGER(LibJoynrWebSocketRuntime);
 

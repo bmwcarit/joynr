@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include "joynr/PrivateCopyAssign.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "tests/utils/MockObjects.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/Settings.h"
@@ -37,7 +37,9 @@
 #include "joynr/tests/testProxy.h"
 #include "joynr/Semaphore.h"
 #include "joynr/serializer/Serializer.h"
-#include "JoynrTest.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -48,25 +50,20 @@ using testing::ByRef;
 using testing::SetArgReferee;
 using testing::AtLeast;
 
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
-
 class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
-    std::string settingsFilenameMqttWithHttpBackend;
+    std::string settingsFilenameMqtt;
     std::string settingsFilenameHttp;
     std::unique_ptr<JoynrClusterControllerRuntime> runtime;
     joynr::types::Localisation::GpsLocation gpsLocation;
-    std::shared_ptr<MockMessageReceiver> mockHttpMessageReceiver;
-    std::shared_ptr<MockMessageSender> mockHttpMessageSender;
-    std::shared_ptr<MockMessageReceiver> mockMqttMessageReceiver;
-    std::shared_ptr<MockMessageSender> mockMqttMessageSender;
+    std::shared_ptr<MockTransportMessageReceiver> mockHttpMessageReceiver;
+    std::shared_ptr<MockTransportMessageSender> mockHttpMessageSender;
+    std::shared_ptr<MockTransportMessageReceiver> mockMqttMessageReceiver;
+    std::shared_ptr<MockTransportMessageSender> mockMqttMessageSender;
     Semaphore semaphore;
 
     JoynrClusterControllerRuntimeTest() :
-        settingsFilenameMqttWithHttpBackend("test-resources/MqttWithHttpBackendJoynrClusterControllerRuntimeTest.settings"),
+        settingsFilenameMqtt("test-resources/MqttJoynrClusterControllerRuntimeTest.settings"),
         settingsFilenameHttp("test-resources/HttpJoynrClusterControllerRuntimeTest.settings"),
             runtime(nullptr),
             gpsLocation(
@@ -82,10 +79,10 @@ public:
                 444,                        // device time
                 444                         // time
             ),
-            mockHttpMessageReceiver(std::make_shared<MockMessageReceiver>()),
-            mockHttpMessageSender(std::make_shared<MockMessageSender>()),
-            mockMqttMessageReceiver(std::make_shared<MockMessageReceiver>()),
-            mockMqttMessageSender(std::make_shared<MockMessageSender>()),
+            mockHttpMessageReceiver(std::make_shared<MockTransportMessageReceiver>()),
+            mockHttpMessageSender(std::make_shared<MockTransportMessageSender>()),
+            mockMqttMessageReceiver(std::make_shared<MockTransportMessageReceiver>()),
+            mockMqttMessageSender(std::make_shared<MockTransportMessageSender>()),
             semaphore(0)
     {;
         std::string httpChannelId("http_JoynrClusterControllerRuntimeTest.ChannelId");
@@ -105,25 +102,23 @@ public:
                 .WillByDefault(::testing::ReturnRefOfCopy(serializedChannelAddress));
         ON_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
                 .WillByDefault(::testing::ReturnRefOfCopy(serializedMqttAddress));
-
-
     }
 
     ~JoynrClusterControllerRuntimeTest(){
         if (runtime) {
             runtime->deleteChannel();
-            runtime->stopMessaging();
+            runtime->stopExternalCommunication();
         }
     }
 
-    void createRuntimeMqttWithHttpBackend() {
+    void createRuntimeMqtt() {
         EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
-                .Times(1);
+                .Times(0);
         EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
 
         runtime = std::make_unique<JoynrClusterControllerRuntime>(
-                    std::make_unique<Settings>(settingsFilenameMqttWithHttpBackend),
+                    std::make_unique<Settings>(settingsFilenameMqtt),
                     mockHttpMessageReceiver,
                     mockHttpMessageSender,
                     mockMqttMessageReceiver,
@@ -134,6 +129,8 @@ public:
     void createRuntimeHttp() {
         EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
+        EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
+                .Times(0);
 
         runtime = std::make_unique<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(settingsFilenameHttp),
@@ -144,7 +141,7 @@ public:
         );
     }
 
-    void startMessagingDoesNotThrow();
+    void startExternalCommunicationDoesNotThrow();
 
     void invokeOnSuccessWithGpsLocation(
             std::function<void(const joynr::types::Localisation::GpsLocation location)> onSuccess,
@@ -155,7 +152,7 @@ public:
 
     void TearDown() override{
         // Delete persisted files
-        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
@@ -165,9 +162,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntimeTest);
 };
 
-TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeMqttWithHttpBackend)
+TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeMqtt)
 {
-    createRuntimeMqttWithHttpBackend();
+    createRuntimeMqtt();
     ASSERT_TRUE(runtime != nullptr);
 }
 
@@ -177,38 +174,46 @@ TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeHttp)
     ASSERT_TRUE(runtime != nullptr);
 }
 
-void JoynrClusterControllerRuntimeTest::startMessagingDoesNotThrow() {
+void JoynrClusterControllerRuntimeTest::startExternalCommunicationDoesNotThrow() {
+    ASSERT_TRUE(runtime != nullptr);
+    runtime->startExternalCommunication();
+    runtime->stopExternalCommunication();
+}
+
+TEST_F(JoynrClusterControllerRuntimeTest, startExternalCommunicationHttpDoesNotThrow)
+{
     EXPECT_CALL(*mockHttpMessageReceiver, startReceiveQueue())
             .Times(1);
     EXPECT_CALL(*mockHttpMessageReceiver, stopReceiveQueue())
             .Times(1);
 
-    ASSERT_TRUE(runtime != nullptr);
-    runtime->startMessaging();
-    runtime->stopMessaging();
-}
-
-TEST_F(JoynrClusterControllerRuntimeTest, startMessagingHttpDoesNotThrow)
-{
     createRuntimeHttp();
-    startMessagingDoesNotThrow();
+    startExternalCommunicationDoesNotThrow();
 }
 
-TEST_F(JoynrClusterControllerRuntimeTest, startMessagingMqttWithHttpBackendDoesNotThrow)
+TEST_F(JoynrClusterControllerRuntimeTest, startExternalCommunicationMqttDoesNotThrow)
 {
-    createRuntimeMqttWithHttpBackend();
-    EXPECT_CALL(*mockMqttMessageReceiver, startReceiveQueue())
-            .Times(1);
-    EXPECT_CALL(*mockMqttMessageReceiver, stopReceiveQueue())
-            .Times(1);
-    startMessagingDoesNotThrow();
+    EXPECT_CALL(*mockHttpMessageReceiver, startReceiveQueue())
+            .Times(0);
+    EXPECT_CALL(*mockHttpMessageReceiver, stopReceiveQueue())
+            .Times(0);
+
+    createRuntimeMqtt();
+    startExternalCommunicationDoesNotThrow();
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 {
-    createRuntimeMqttWithHttpBackend();
+    createRuntimeMqtt();
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     auto mockTestProvider = std::make_shared<MockTestProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
 
     EXPECT_CALL(
             *mockTestProvider,
@@ -220,14 +225,15 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
                       &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
             ));
 
-    runtime->startMessaging();
+    runtime->startExternalCommunication();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
-                mockTestProvider
+                mockTestProvider,
+                providerQos
     );
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime->createProxyBuilder<tests::testProxy>(domain));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -237,7 +243,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
     std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 
@@ -253,8 +258,15 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArguments)
 {
-    createRuntimeMqttWithHttpBackend();
+    createRuntimeMqtt();
     auto mockTestProvider = std::make_shared<MockTestProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
 
     std::vector<int> ints;
@@ -263,14 +275,15 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     ints.push_back(12);
     int sum = 22;
 
-    runtime->startMessaging();
+    runtime->startExternalCommunication();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
-                mockTestProvider
+                mockTestProvider,
+                providerQos
     );
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime->createProxyBuilder<tests::testProxy>(domain));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -280,7 +293,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 
     std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 
@@ -295,10 +307,17 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
-    createRuntimeMqttWithHttpBackend();
+    createRuntimeMqtt();
     std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     auto mockTestProvider = std::make_shared<MockTestProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
 
     EXPECT_CALL(
             *mockTestProvider,
@@ -311,14 +330,15 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
                     &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
             ));
 
-    runtime->startMessaging();
+    runtime->startExternalCommunication();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
-                mockTestProvider
+                mockTestProvider,
+                providerQos
     );
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime->createProxyBuilder<tests::testProxy>(domain));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -327,7 +347,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
     std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 
@@ -338,6 +357,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                     480, // validity
+                    1000, // publication ttl
                     200, // min interval
                     200, // max interval
                     200  // alert after interval
@@ -353,10 +373,17 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
 
 
 TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
-    createRuntimeMqttWithHttpBackend();
+    createRuntimeMqtt();
     std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     auto mockTestProvider = std::make_shared<MockTestProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
 
     EXPECT_CALL(
             *mockTestProvider,
@@ -368,14 +395,15 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
                     &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation
             ));
 
-    runtime->startMessaging();
+    runtime->startExternalCommunication();
     std::string participantId = runtime->registerProvider<tests::testProvider>(
                 domain,
-                mockTestProvider
+                mockTestProvider,
+                providerQos
     );
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder(
-            runtime->createProxyBuilder<tests::testProxy>(domain));
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
@@ -384,7 +412,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build());
 
@@ -392,6 +419,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
 
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                     2000,   // validity
+                    1000, // publication ttl
                     100,   // min interval
                     1000,   // max interval
                     10000  // alert after interval

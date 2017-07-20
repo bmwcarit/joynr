@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.joynrmessaging
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package io.joynr.generator.cpp.joynrmessaging
 import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppInterfaceUtil
 import io.joynr.generator.cpp.util.CppStdTypeUtil
+import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.InterfaceTemplate
@@ -28,7 +29,6 @@ import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.franca.core.franca.FMethod
-import io.joynr.generator.cpp.util.InterfaceSubscriptionUtil
 
 class InterfaceJoynrMessagingConnectorCppTemplate extends InterfaceTemplate{
 
@@ -44,23 +44,48 @@ class InterfaceJoynrMessagingConnectorCppTemplate extends InterfaceTemplate{
 	def produceParameterSetters(FMethod method)
 '''
 «IF !method.fireAndForget»
-joynr::Request internalRequestObject;
+joynr::Request request;
 «ELSE»
-joynr::OneWayRequest internalRequestObject;
+joynr::OneWayRequest request;
 «ENDIF»
 
-internalRequestObject.setMethodName("«method.joynrName»");
-internalRequestObject.setParamDatatypes({
+request.setMethodName("«method.joynrName»");
+request.setParamDatatypes({
 	«FOR param : getInputParameters(method) SEPARATOR ','»
 	"«param.joynrTypeName»"
 	«ENDFOR»
 	});
-internalRequestObject.setParams(
+request.setParams(
 	«FOR param : getInputParameters(method) SEPARATOR ','»
 		«param.name»
 	«ENDFOR»
 );
 '''
+
+	def getParamsPlaceholders(int numberOfParams) {
+		var placeholders = ""
+		for (var i = 0; i < numberOfParams; i++) {
+			if(i != 0) {
+				placeholders += ", "
+			}
+			placeholders += "{}"
+		}
+		return placeholders;
+	}
+
+	def logMethodCall(FMethod method)
+	'''
+		JOYNR_LOG_DEBUG(logger,
+				"REQUEST call proxy: requestReplyId: {}, method: {}, params: «getParamsPlaceholders(method.inputParameters.size)», proxy "
+				"participantId: {}, provider participantId: [{}]",
+				request.getRequestReplyId(),
+				request.getMethodName(),
+				«FOR inputParam : method.inputParameters»
+					joynr::serializer::serializeToJson(«inputParam.joynrName»),
+				«ENDFOR»
+				proxyParticipantId,
+				providerParticipantId);
+	'''
 
 	override generate()
 '''
@@ -71,8 +96,7 @@ internalRequestObject.setParams(
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»JoynrMessagingConnector.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/ReplyCaller.h"
-#include "joynr/JoynrMessageSender.h"
-#include "joynr/ISubscriptionManager.h"
+#include "joynr/IMessageSender.h"
 #include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/MulticastSubscriptionCallback.h"
 #include "joynr/Util.h"
@@ -81,6 +105,8 @@ internalRequestObject.setParams(
 #include <cstdint>
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/Request.h"
+#include "joynr/OneWayRequest.h"
 «IF !francaIntf.attributes.empty»
 	#include "joynr/SubscriptionRequest.h"
 «ENDIF»
@@ -88,6 +114,7 @@ internalRequestObject.setParams(
 	#include "joynr/BroadcastSubscriptionRequest.h"
 «ENDIF»
 «IF !francaIntf.broadcasts.filter[!selective].empty»
+	#include "joynr/MulticastSubscriptionQos.h"
 	#include "joynr/MulticastSubscriptionRequest.h"
 «ENDIF»
 
@@ -116,20 +143,14 @@ internalRequestObject.setParams(
 «getNamespaceStarter(francaIntf)»
 «val className = interfaceName + "JoynrMessagingConnector"»
 «className»::«className»(
-		joynr::IJoynrMessageSender* joynrMessageSender,
-		joynr::ISubscriptionManager* subscriptionManager,
+		std::shared_ptr<joynr::IMessageSender> messageSender,
+		std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager,
 		const std::string& domain,
 		const std::string& proxyParticipantId,
-		const std::string& providerParticipantId,
 		const joynr::MessagingQos &qosSettings,
-		joynr::IClientCache *cache,
-		bool cached)
-	: joynr::AbstractJoynrMessagingConnector(joynrMessageSender, subscriptionManager, domain, INTERFACE_NAME(), proxyParticipantId, providerParticipantId, qosSettings, cache, cached)
+		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
+	: joynr::AbstractJoynrMessagingConnector(messageSender, subscriptionManager, domain, INTERFACE_NAME(), proxyParticipantId, qosSettings, providerDiscoveryEntry)
 {
-}
-
-bool «className»::usesClusterController() const{
-	return joynr::AbstractJoynrMessagingConnector::usesClusterController();
 }
 
 «FOR attribute: getAttributes(francaIntf)»
@@ -138,45 +159,67 @@ bool «className»::usesClusterController() const{
 	«IF attribute.readable»
 		«produceSyncGetterSignature(attribute, className)»
 		{
-			auto future = std::make_shared<joynr::Future<«returnType»>>();
-
-			std::function<void(const «returnType»& «attributeName»)> onSuccess =
-					[future] (const «returnType»& «attributeName») {
-						future->onSuccess(«attributeName»);
-					};
-
-			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onError =
-					[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
-						future->onError(error);
-					};
-
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccess), std::move(onError));
-			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
+			auto future = get«attributeName.toFirstUpper»Async();
 			future->get(«attributeName»);
 		}
 
 		«produceAsyncGetterSignature(attribute, className)»
 		{
+			joynr::Request request;
+			// explicitly set to no parameters
+			request.setParams();
+			request.setMethodName("get«attributeName.toFirstUpper»");
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
-			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
-					[future, onSuccess = std::move(onSuccess)] (const «returnType»& «attributeName») {
-						future->onSuccess(«attributeName»);
-						if (onSuccess){
-							onSuccess(«attributeName»);
-						}
-					};
+			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper = [
+					future,
+					onSuccess = std::move(onSuccess),
+					requestReplyId = request.getRequestReplyId(),
+					methodName = request.getMethodName()
+			] (const «returnType»& «attributeName») {
+				JOYNR_LOG_DEBUG(logger,
+						"REQUEST returns successful: requestReplyId: {}, method: {}, response: {}",
+						requestReplyId,
+						methodName,
+						joynr::serializer::serializeToJson(«attributeName»)
+				);
+				future->onSuccess(«attributeName»);
+				if (onSuccess){
+					onSuccess(«attributeName»);
+				}
+			};
 
-			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
-					[future, onError = std::move(onError)] (const std::shared_ptr<exceptions::JoynrException>& error) {
-						future->onError(error);
-						if (onError){
-							onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
-						}
-					};
+			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper = [
+					future,
+					onError = std::move(onError),
+					requestReplyId = request.getRequestReplyId(),
+					methodName = request.getMethodName()
+			] (const std::shared_ptr<exceptions::JoynrException>& error) {
+				JOYNR_LOG_DEBUG(logger,
+						"REQUEST returns error: requestReplyId: {}, method: {}, response: {}",
+						requestReplyId,
+						methodName,
+						error->what()
+				);
+				future->onError(error);
+				if (onError){
+					onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
+				}
+			};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-			attributeRequest<«returnType»>("get«attributeName.toFirstUpper»", replyCaller);
+			try {
+				JOYNR_LOG_DEBUG(logger,
+						"REQUEST call proxy: requestReplyId: {}, method: {}, proxy "
+						"participantId: {}, provider participantId: [{}]",
+						request.getRequestReplyId(),
+						request.getMethodName(),
+						proxyParticipantId,
+						providerParticipantId);
+				auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
+				operationRequest(std::move(replyCaller), std::move(request));
+			} catch (const std::invalid_argument& exception) {
+				throw joynr::exceptions::MethodInvocationException(exception.what());
+			}
 
 			return future;
 		}
@@ -185,56 +228,68 @@ bool «className»::usesClusterController() const{
 	«IF attribute.writable»
 		«produceAsyncSetterSignature(attribute, className)»
 		{
-			joynr::Request internalRequestObject;
-			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
-			internalRequestObject.setParamDatatypes({"«attribute.joynrTypeName»"});
-			internalRequestObject.setParams(«attributeName»);
+			joynr::Request request;
+			request.setMethodName("set«attributeName.toFirstUpper»");
+			request.setParamDatatypes({"«attribute.joynrTypeName»"});
+			request.setParams(«attributeName»);
 
 			auto future = std::make_shared<joynr::Future<void>>();
 
-			std::function<void()> onSuccessWrapper =
-					[future, onSuccess = std::move(onSuccess)] () {
-						future->onSuccess();
-						if (onSuccess) {
-							onSuccess();
-						}
-					};
+			std::function<void()> onSuccessWrapper = [
+					future,
+					onSuccess = std::move(onSuccess),
+					requestReplyId = request.getRequestReplyId(),
+					methodName = request.getMethodName()
+			] () {
+				JOYNR_LOG_DEBUG(logger,
+						"REQUEST returns successful: requestReplyId: {}, method: {}",
+						requestReplyId,
+						methodName
+				);
+				future->onSuccess();
+				if (onSuccess) {
+					onSuccess();
+				}
+			};
 
-			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
-				[future, onError = std::move(onError)] (const std::shared_ptr<exceptions::JoynrException>& error) {
-					future->onError(error);
-					if (onError) {
-						onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
-					}
-				};
+			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper = [
+					future,
+					onError = std::move(onError),
+					requestReplyId = request.getRequestReplyId(),
+					methodName = request.getMethodName()
+			] (const std::shared_ptr<exceptions::JoynrException>& error) {
+				JOYNR_LOG_DEBUG(logger,
+					"REQUEST returns error: requestReplyId: {}, method: {}, response: {}",
+					requestReplyId,
+					methodName,
+					error->what()
+				);
+				future->onError(error);
+				if (onError) {
+					onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
+				}
+			};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-			operationRequest(replyCaller, internalRequestObject);
+			try {
+				JOYNR_LOG_DEBUG(logger,
+						"REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy "
+						"participantId: {}, provider participantId: [{}]",
+						request.getRequestReplyId(),
+						request.getMethodName(),
+						joynr::serializer::serializeToJson(«attributeName»),
+						proxyParticipantId,
+						providerParticipantId);
+				auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
+				operationRequest(std::move(replyCaller), std::move(request));
+			} catch (const std::invalid_argument& exception) {
+				throw joynr::exceptions::MethodInvocationException(exception.what());
+			}
 			return future;
 		}
 
 		«produceSyncSetterSignature(attribute, className)»
 		{
-			joynr::Request internalRequestObject;
-			internalRequestObject.setMethodName("set«attributeName.toFirstUpper»");
-			internalRequestObject.setParamDatatypes({"«attribute.joynrTypeName»"});
-			internalRequestObject.setParams(«attributeName»);
-
-			auto future = std::make_shared<joynr::Future<void>>();
-
-
-			std::function<void()> onSuccess =
-					[future] () {
-						future->onSuccess();
-					};
-
-			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onError =
-					[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
-						future->onError(error);
-					};
-
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccess), std::move(onError));
-			operationRequest(replyCaller, internalRequestObject);
+			auto future = set«attributeName.toFirstUpper»Async(«attributeName»);
 			future->get();
 		}
 
@@ -264,19 +319,27 @@ bool «className»::usesClusterController() const{
 
 			auto future = std::make_shared<Future<std::string>>();
 			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnType»>
-			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
 						subscriptionListener,
 						subscriptionQos,
 						subscriptionRequest);
-			JOYNR_LOG_DEBUG(logger, subscriptionRequest.toString());
-			joynrMessageSender->sendSubscriptionRequest(
+			JOYNR_LOG_DEBUG(logger,
+					"SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy "
+					"participantId: {}, provider participantId: [{}]",
+					subscriptionRequest.getSubscriptionId(),
+					attributeName,
+					joynr::serializer::serializeToJson(*subscriptionQos),
+					proxyParticipantId,
+					providerParticipantId);
+			messageSender->sendSubscriptionRequest(
 						proxyParticipantId,
 						providerParticipantId,
 						clonedMessagingQos,
-						subscriptionRequest
+						subscriptionRequest,
+						providerDiscoveryEntry.getIsLocal()
 			);
 			return future;
 		}
@@ -286,7 +349,7 @@ bool «className»::usesClusterController() const{
 			subscriptionStop.setSubscriptionId(subscriptionId);
 
 			subscriptionManager->unregisterSubscription(subscriptionId);
-			joynrMessageSender->sendSubscriptionStop(
+			messageSender->sendSubscriptionStop(
 						proxyParticipantId,
 						providerParticipantId,
 						qosSettings,
@@ -305,22 +368,8 @@ bool «className»::usesClusterController() const{
 	«IF !method.fireAndForget»
 		«produceSyncMethodSignature(method, className)»
 		{
-			«produceParameterSetters(method)»
-			auto future = std::make_shared<joynr::Future<«outputParameters»>>();
-
-			std::function<void(«outputTypedConstParamList»)> onSuccess =
-					[future] («outputTypedConstParamList») {
-						future->onSuccess(«outputUntypedParamList»);
-					};
-
-			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onError =
-				[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
-					future->onError(error);
-				};
-
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccess), std::move(onError));
-			operationRequest(replyCaller, internalRequestObject);
-			future->get(«getCommaSeperatedUntypedOutputParameterList(method)»);
+			auto future = «method.joynrName»Async(«method.commaSeperatedUntypedInputParameterList»);
+			future->get(«method.commaSeperatedUntypedOutputParameterList»);
 		}
 
 		«produceAsyncMethodSignature(francaIntf, method, className)»
@@ -329,22 +378,53 @@ bool «className»::usesClusterController() const{
 
 			auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
-			std::function<void(«outputTypedConstParamList»)> onSuccessWrapper =
-					[future, onSuccess = std::move(onSuccess)] («outputTypedConstParamList») {
-						future->onSuccess(«outputUntypedParamList»);
-						if (onSuccess) {
-							onSuccess(«outputUntypedParamList»);
-						}
-					};
+			std::function<void(«outputTypedConstParamList»)> onSuccessWrapper = [
+					future,
+					onSuccess = std::move(onSuccess),
+					requestReplyId = request.getRequestReplyId(),
+					methodName = request.getMethodName()
+			] («outputTypedConstParamList»)
+			{
+				JOYNR_LOG_DEBUG(logger,
+					"REQUEST returns successful: requestReplyId: {}, method: {}, response: «getParamsPlaceholders(method.outputParameters.size)»",
+					requestReplyId,
+					methodName«IF !method.outputParameters.empty»,«ENDIF»
+					«FOR outParam : method.outputParameters SEPARATOR ", "»
+						joynr::serializer::serializeToJson(«outParam.joynrName»)
+					«ENDFOR»
+				);
+				future->onSuccess(«outputUntypedParamList»);
+				if (onSuccess) {
+					onSuccess(«outputUntypedParamList»);
+				}
+			};
 
-			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper =
-					[future, onRuntimeError = std::move(onRuntimeError)«IF method.hasErrorEnum», onApplicationError = std::move(onApplicationError)«ENDIF»] (const std::shared_ptr<exceptions::JoynrException>& error) {
-					future->onError(error);
+			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper = [
+					future,
+					onRuntimeError = std::move(onRuntimeError),
+					«IF method.hasErrorEnum»onApplicationError = std::move(onApplicationError),«ENDIF»
+					requestReplyId = request.getRequestReplyId(),
+					methodName = request.getMethodName()
+			] (const std::shared_ptr<exceptions::JoynrException>& error)
+			{
+				JOYNR_LOG_DEBUG(logger,
+					"REQUEST returns error: requestReplyId: {}, method: {}, response: {}",
+					requestReplyId,
+					methodName,
+					error->what()
+				);
+				future->onError(error);
 					«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
 				};
 
-			auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
-			operationRequest(replyCaller, internalRequestObject);
+			try {
+				«logMethodCall(method)»
+
+				auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
+				operationRequest(std::move(replyCaller), std::move(request));
+			} catch (const std::invalid_argument& exception) {
+				throw joynr::exceptions::MethodInvocationException(exception.what());
+			}
 			return future;
 		}
 	«ELSE»
@@ -352,7 +432,7 @@ bool «className»::usesClusterController() const{
 			{
 				«produceParameterSetters(method)»
 
-				operationOneWayRequest(internalRequestObject);
+				operationOneWayRequest(std::move(request));
 			}
 	«ENDIF»
 «ENDFOR»
@@ -368,8 +448,8 @@ bool «className»::usesClusterController() const{
 			auto subscriptionRequest = std::make_shared<joynr::MulticastSubscriptionRequest>();
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					subscriptionListener,
-					subscriptionQos,
+					std::move(subscriptionListener),
+					std::move(subscriptionQos),
 					subscriptionRequest«
 					»«IF !broadcast.selective»«
 					»,
@@ -388,8 +468,8 @@ bool «className»::usesClusterController() const{
 			subscriptionRequest->setSubscriptionId(subscriptionId);
 		«ENDIF»
 		return subscribeTo«broadcastName.toFirstUpper»Broadcast(
-					subscriptionListener,
-					subscriptionQos,
+					std::move(subscriptionListener),
+					std::move(subscriptionQos),
 					subscriptionRequest«
 					»«IF !broadcast.selective»«
 					»,
@@ -400,15 +480,16 @@ bool «className»::usesClusterController() const{
 
 	std::shared_ptr<joynr::Future<std::string>> «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				«IF broadcast.selective»
+					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 					BroadcastSubscriptionRequest& subscriptionRequest
 				«ELSE»
+					std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
 					std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest,
 					const std::vector<std::string>& partitions
 				«ENDIF»
 	) {
-		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName» broadcast.");
+		JOYNR_LOG_TRACE(logger, "Subscribing to «broadcastName» broadcast.");
 		std::string broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
 		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
@@ -416,43 +497,55 @@ bool «className»::usesClusterController() const{
 		auto future = std::make_shared<Future<std::string>>();
 		«IF broadcast.selective»
 			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 			subscriptionManager->registerSubscription(
 							broadcastName,
 							subscriptionCallback,
 							subscriptionListener,
 							subscriptionQos,
 							subscriptionRequest);
-			JOYNR_LOG_DEBUG(logger, subscriptionRequest.toString());
-			joynrMessageSender->sendBroadcastSubscriptionRequest(
+			messageSender->sendBroadcastSubscriptionRequest(
 						proxyParticipantId,
 						providerParticipantId,
 						clonedMessagingQos,
-						subscriptionRequest
+						subscriptionRequest,
+						providerDiscoveryEntry.getIsLocal()
 			);
 		«ELSE»
 			auto subscriptionCallback = std::make_shared<joynr::MulticastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager);
+			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager.get());
 			std::function<void()> onSuccess =
-					[this, clonedMessagingQos, subscriptionRequest] () {
-						JOYNR_LOG_DEBUG(logger, subscriptionRequest->toString());
-						joynrMessageSender->sendMulticastSubscriptionRequest(
-									proxyParticipantId,
-									providerParticipantId,
-									clonedMessagingQos,
-									*subscriptionRequest
-						);
+					[messageSender = joynr::util::as_weak_ptr(messageSender),
+					proxyParticipantId = proxyParticipantId,
+					providerParticipantId = providerParticipantId,
+					clonedMessagingQos, subscriptionRequest,
+					isLocalMessage = providerDiscoveryEntry.getIsLocal()] () {
+						if (auto ptr = messageSender.lock())
+						{
+							ptr->sendMulticastSubscriptionRequest(
+										proxyParticipantId,
+										providerParticipantId,
+										clonedMessagingQos,
+										*subscriptionRequest,
+										isLocalMessage
+							);
+						}
 					};
 
 			std::string subscriptionId = subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId();
 			std::function<void(const exceptions::ProviderRuntimeException& error)> onError =
-					[this, subscriptionListener, subscriptionId] (const exceptions::ProviderRuntimeException& error) {
+					[subscriptionListener,
+					subscriptionManager = joynr::util::as_weak_ptr(subscriptionManager),
+					subscriptionId] (const exceptions::ProviderRuntimeException& error) {
 						std::string message = "Could not register subscription to «broadcastName». Error from subscription manager: "
 									+ error.getMessage();
 						JOYNR_LOG_ERROR(logger, message);
 						exceptions::SubscriptionException subscriptionException(message, subscriptionId);
 						subscriptionListener->onError(subscriptionException);
-						subscriptionManager->unregisterSubscription(subscriptionId);
+						if (auto ptr = subscriptionManager.lock())
+						{
+							ptr->unregisterSubscription(subscriptionId);
+						}
 				};
 			subscriptionManager->registerSubscription(
 							broadcastName,
@@ -466,6 +559,18 @@ bool «className»::usesClusterController() const{
 							std::move(onSuccess),
 							std::move(onError));
 		«ENDIF»
+		JOYNR_LOG_DEBUG(logger,
+				"SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy "
+				"participantId: {}, provider participantId: [{}]",
+				«IF broadcast.selective»
+					subscriptionRequest.getSubscriptionId(),
+				«ELSE»
+					subscriptionRequest->getSubscriptionId(),
+				«ENDIF»
+				broadcastName,
+				joynr::serializer::serializeToJson(*subscriptionQos),
+				proxyParticipantId,
+				providerParticipantId);
 		return future;
 	}
 
@@ -474,7 +579,7 @@ bool «className»::usesClusterController() const{
 		subscriptionStop.setSubscriptionId(subscriptionId);
 
 		subscriptionManager->unregisterSubscription(subscriptionId);
-		joynrMessageSender->sendSubscriptionStop(
+		messageSender->sendSubscriptionStop(
 					proxyParticipantId,
 					providerParticipantId,
 					qosSettings,

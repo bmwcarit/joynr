@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,8 +84,8 @@ int main(int argc, char* argv[])
                 boost::filesystem::system_complete(appFilename).parent_path().string();
         std::string pathToSettings(appDirectory + "/resources/performancetest-consumer.settings");
 
-        std::unique_ptr<joynr::JoynrRuntime> runtime(
-                joynr::JoynrRuntime::createRuntime(pathToSettings));
+        std::unique_ptr<joynr::JoynrRuntime> runtime =
+                joynr::JoynrRuntime::createRuntime(pathToSettings);
         std::unique_ptr<joynr::IPerformanceConsumer> consumer;
 
         if (syncMode == SyncMode::SYNC) {

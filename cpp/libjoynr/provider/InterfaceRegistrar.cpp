@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,8 +60,12 @@ std::shared_ptr<IRequestInterpreter> InterfaceRegistrar::getRequestInterpreter(
 {
     std::lock_guard<std::mutex> lock(requestInterpretersMutex);
 
-    assert(requestInterpreters.find(interfaceName) != requestInterpreters.end());
-    return requestInterpreters[interfaceName];
+    std::shared_ptr<IRequestInterpreter> requestInterpreter;
+    auto it = requestInterpreters.find(interfaceName);
+    if (it != requestInterpreters.cend()) {
+        requestInterpreter = it->second;
+    }
+    return requestInterpreter;
 }
 
 void InterfaceRegistrar::reset()

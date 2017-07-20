@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,15 @@
  * #L%
  */
 #include "joynr/JoynrRuntime.h"
-#include "JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/Settings.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
-JoynrRuntime* JoynrRuntime::createRuntime(const std::string& pathToLibjoynrSettings,
-                                          const std::string& pathToMessagingSettings)
+std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
+        const std::string& pathToLibjoynrSettings,
+        const std::string& pathToMessagingSettings)
 {
     auto settings = std::make_unique<Settings>(pathToLibjoynrSettings);
     Settings messagingSettings{pathToMessagingSettings};
@@ -33,37 +34,41 @@ JoynrRuntime* JoynrRuntime::createRuntime(const std::string& pathToLibjoynrSetti
     return createRuntime(std::move(settings));
 }
 
-JoynrRuntime* JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
+std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
 {
     return JoynrClusterControllerRuntime::create(std::move(settings));
 }
 
-void JoynrRuntime::createRuntimeAsync(
+std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         const std::string& pathToLibjoynrSettings,
-        std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)> runtimeCreatedCallback,
-        std::function<void(exceptions::JoynrRuntimeException& exception)>
-                runtimeCreationErrorCallback,
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         const std::string& pathToMessagingSettings)
 {
+    std::unique_ptr<JoynrRuntime> runtime;
+
     try {
-        runtimeCreatedCallback(std::unique_ptr<JoynrRuntime>(
-                createRuntime(pathToLibjoynrSettings, pathToMessagingSettings)));
+        runtime = createRuntime(pathToLibjoynrSettings, pathToMessagingSettings);
+        onSuccess();
     } catch (exceptions::JoynrRuntimeException& exception) {
-        runtimeCreationErrorCallback(exception);
+        onError(exception);
     }
+    return runtime;
 }
 
-void JoynrRuntime::createRuntimeAsync(
+std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::unique_ptr<Settings> settings,
-        std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)> runtimeCreatedCallback,
-        std::function<void(exceptions::JoynrRuntimeException& exception)>
-                runtimeCreationErrorCallback)
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException& exception)> onError)
 {
+    std::unique_ptr<JoynrRuntime> runtime;
     try {
-        runtimeCreatedCallback(std::unique_ptr<JoynrRuntime>(createRuntime(std::move(settings))));
+        runtime = createRuntime(std::move(settings));
+        onSuccess();
     } catch (exceptions::JoynrRuntimeException& exception) {
-        runtimeCreationErrorCallback(exception);
+        onError(exception);
     }
+    return runtime;
 }
 
 } // namespace joynr

@@ -3,7 +3,7 @@ package io.joynr.messaging.routing;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,32 @@ package io.joynr.messaging.routing;
 import joynr.system.RoutingTypes.Address;
 
 public interface RoutingTable {
-    public Address get(String participantId);
+    Address get(String participantId);
 
-    public Address put(String participantId, Address address);
+    Address put(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs, boolean isSticky);
 
-    public boolean containsKey(String participantId);
+    boolean containsKey(String participantId);
 
-    public void remove(String participantId);
+    /**
+     * Query the routing table for the status of isGloballyVisible parameter
+     * @param participantId
+     * @return true if participantId is globally visible,
+     *         false if participantId is not globally visible
+     * @throws JoynrRuntimeException if no entry exists for the given participantId
+     */
+    boolean getIsGloballyVisible(String participantId);
+
+    /**
+     * Sets the isSticky attribute of the Routing Entry for the participantId.
+     * If true, the routing entry will not be get purged from routing table
+     * by the cleanup thread.
+     * @param participantId
+     * @param isSticky
+     * @throws JoynrRuntimeException if no entry exists for the given participantId
+     */
+    void setIsSticky(String participantId, boolean isSticky);
+
+    void remove(String participantId);
 
     /**
      * Apply the specified operation to all addresses currently held in the routing table.
@@ -37,4 +56,9 @@ public interface RoutingTable {
      *            the address operation to perform.
      */
     void apply(AddressOperation addressOperation);
+
+    /**
+     * Purge all expired routing entries from the table
+     */
+    void purge();
 }

@@ -76,12 +76,14 @@ See the [Java Configuration Reference](JavaSettings.md) for a complete listing o
 configuration properties available to use in joynr Java applications.
 
 ## The external (global) transport middlewares
-joynr is able to communicate to other clusters via HTTP using Atmosphere, or MQTT using Eclipe Paho,
-both of which can be in operation at the same time. Guice is also used to inject the required
-functionality.
+joynr is able to communicate to other clusters via HTTP using Atmosphere, or MQTT using Eclipe Paho.
+Guice is also used to inject the required functionality. Though both (Atmosphere and MQTT) can be
+injected together at the same time joynr is only able to communicate over one global transport
+middleware at the same time. The only exception are fire and forget method calls which do not
+expect an answer.
 
 After choosing which RuntimeModule you are using, override it with the
-```AtmosphereMessagingModule``` and the ```MqttPahoModule```. See the Radio example, in particular
+```AtmosphereMessagingModule``` or the ```MqttPahoModule```. See the Radio example, in particular
 ```MyRadioConsumerApplication``` and ```MyRadioProviderApplication``` for a detailed example of how
 this is done.
 
@@ -107,7 +109,7 @@ import io.joynr.exceptions.ApplicationException;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.AtmosphereMessagingModule;
+import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
@@ -175,7 +177,7 @@ public static void main(String[] args) throws IOException {
     Properties appConfig = new Properties();
     appConfig.setProperty(APP_CONFIG_PROVIDER_DOMAIN, providerDomain);
 
-    Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+    Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
 
     JoynrApplication myConsumerApp =
       new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(
@@ -1119,7 +1121,7 @@ public static void main(String[] args) {
     joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
     Properties appConfig = new Properties();
     provisionAccessControl(joynrConfig, localDomain);
-    Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+    Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
     JoynrApplication joynrApplication =
         new JoynrInjectorFactory(joynrConfig,
             runtimeModule,
@@ -1248,10 +1250,19 @@ import joynr.<Package>.<Interface>AbstractProvider;
 ```
 
 ### The base class
-The provider class must extend the generated class ```<Interface>AbstractProvider``` (or
-Default<Interface>Provider) and implement getter methods for each Franca attribute and a method for
-each method of the Franca interface. In order to send broadcasts the generated code of the super
-class ```<Interface>AbstractProvider``` can be used.
+The provider class must either extend the generated class `Default<Interface>Provider` or
+alternatively at least its super class ```<Interface>AbstractProvider```.
+
+In the latter case it must as well implement getter and / or setter methods itself for each Franca
+attribute (where required). The class `Default<Interface>Provider` already includes default
+implementations of getter and setter methods (where required).
+
+In both cases it must implement a method for each method of the Franca interface. In order to send
+broadcasts the generated code of the super class ```<Interface>AbstractProvider``` can be used.
+
+If the value of a notifiable attribute gets changed directly inside the implementation of a method
+or (non-default) setter, the `<Attribute>Changed(<Attribute>)` method needs to be called in order
+to inform subscribers about the value change.
 
 ```java
 package myPackage;

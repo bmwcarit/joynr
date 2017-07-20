@@ -3,7 +3,7 @@ package io.joynr.proxy.invocation;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
-import joynr.OnChangeSubscriptionQos;
+import joynr.MulticastSubscriptionQos;
 
 public class MulticastSubscribeInvocation extends SubscriptionInvocation {
 
@@ -62,15 +62,17 @@ public class MulticastSubscribeInvocation extends SubscriptionInvocation {
     }
 
     @Override
-    public OnChangeSubscriptionQos getQos() {
-        return (OnChangeSubscriptionQos) super.getQos();
+    public MulticastSubscriptionQos getQos() {
+        return (MulticastSubscriptionQos) super.getQos();
     }
 
     public BroadcastSubscriptionListener getListener() {
         return listener;
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "MulticastSubscribeInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+                                                      value = "EI_EXPOSE_REP",
+                                                      justification = "MulticastSubscribeInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
     public Class<?>[] getOutParameterTypes() {
         return outParameterTypes;
     }

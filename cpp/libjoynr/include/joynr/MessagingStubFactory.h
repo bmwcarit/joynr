@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,20 @@
 #ifndef MESSAGINGSTUBFACTORY_H
 #define MESSAGINGSTUBFACTORY_H
 
-#include <string>
 #include <memory>
 #include <mutex>
-#include <vector>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include <boost/functional/hash/extensions.hpp>
 
+#include "joynr/IMessagingStub.h"
+#include "joynr/IMessagingStubFactory.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/RuntimeConfig.h"
 #include "joynr/ThreadSafeMap.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/IMessagingStubFactory.h"
-#include "joynr/IMessaging.h"
 
 namespace joynr
 {
@@ -57,7 +57,7 @@ public:
     // Those Skeletons must be registered before the MessagingStubFactory is used.
     MessagingStubFactory();
 
-    std::shared_ptr<IMessaging> create(const std::shared_ptr<
+    std::shared_ptr<IMessagingStub> create(const std::shared_ptr<
             const joynr::system::RoutingTypes::Address>& destinationAddress) override;
     void remove(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
                         destinationAddress) override;
@@ -87,7 +87,7 @@ private:
     };
     template <typename K, typename V>
     using Map = std::unordered_map<K, V, AddressPtrHash, AddressPtrCompare>;
-    ThreadSafeMap<AddressPtr, std::shared_ptr<IMessaging>, Map> address2MessagingStubMap;
+    ThreadSafeMap<AddressPtr, std::shared_ptr<IMessagingStub>, Map> address2MessagingStubMap;
     std::vector<std::shared_ptr<IMiddlewareMessagingStubFactory>> factoryList;
     std::mutex mutex;
 };

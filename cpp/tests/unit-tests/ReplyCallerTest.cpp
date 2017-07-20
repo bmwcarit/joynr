@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,15 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <memory>
+
 #include "joynr/ReplyCaller.h"
+
 #include "tests/utils/MockObjects.h"
-#include "utils/MockCallback.h"
+#include "tests/utils/MockCallback.h"
 
 using ::testing::Property;
 using ::testing::Eq;

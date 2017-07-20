@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProxyInvocationHandlerTest {
@@ -125,7 +127,11 @@ public class ProxyInvocationHandlerTest {
             }
         });
 
-        proxyInvocationHandler.createConnector(new ArbitrationResult("participantId"));
+        ArbitrationResult arbitrationResult = new ArbitrationResult();
+        DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
+        discoveryEntry.setParticipantId("participantId");
+        arbitrationResult.setDiscoveryEntries(Sets.newHashSet(discoveryEntry));
+        proxyInvocationHandler.createConnector(arbitrationResult);
 
         // if the bug that causes one thread to hang in arbitration exists, one
         // of these calls will never return, causing the test to timeout and fail
@@ -141,7 +147,11 @@ public class ProxyInvocationHandlerTest {
         Method fireAndForgetMethod = TestServiceSync.class.getMethod("callMe", new Class<?>[]{ String.class });
         Object[] args = new Object[]{ "test" };
 
-        proxyInvocationHandler.createConnector(new ArbitrationResult("participantId"));
+        ArbitrationResult arbitrationResult = new ArbitrationResult();
+        DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
+        discoveryEntry.setParticipantId("participantId");
+        arbitrationResult.setDiscoveryEntries(Sets.newHashSet(discoveryEntry));
+        proxyInvocationHandler.createConnector(arbitrationResult);
         proxyInvocationHandler.invoke(fireAndForgetMethod, args);
 
         verify(connectorInvocationHandler).executeOneWayMethod(fireAndForgetMethod, args);
@@ -189,7 +199,11 @@ public class ProxyInvocationHandlerTest {
         Object[] args = new Object[]{ broadcastSubscriptionListener, subscriptionQos,
                 new String[]{ "one", "two", "three" } };
 
-        proxyInvocationHandler.createConnector(new ArbitrationResult("participantId"));
+        ArbitrationResult arbitrationResult = new ArbitrationResult();
+        DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
+        discoveryEntry.setParticipantId("participantId");
+        arbitrationResult.setDiscoveryEntries(Sets.newHashSet(discoveryEntry));
+        proxyInvocationHandler.createConnector(arbitrationResult);
         proxyInvocationHandler.invoke(subscribeMethod, args);
 
         ArgumentCaptor<MulticastSubscribeInvocation> captor = ArgumentCaptor.forClass(MulticastSubscribeInvocation.class);

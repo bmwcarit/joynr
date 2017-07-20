@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,18 @@
 #ifndef IDISPATCHER_H
 #define IDISPATCHER_H
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace joynr
 {
 
+class ImmutableMessage;
 class ISubscriptionManager;
 class PublicationManager;
 class IReplyCaller;
 class MessagingQos;
 class RequestCaller;
-class JoynrMessage;
 
 class IDispatcher
 {
@@ -43,9 +43,10 @@ public:
     virtual void addRequestCaller(const std::string& participantId,
                                   std::shared_ptr<RequestCaller> requestCaller) = 0;
     virtual void removeRequestCaller(const std::string& participantId) = 0;
-    virtual void receive(const JoynrMessage& message) = 0;
+    virtual void receive(std::shared_ptr<ImmutableMessage> message) = 0;
 
-    virtual void registerSubscriptionManager(ISubscriptionManager* subscriptionManager) = 0;
+    virtual void registerSubscriptionManager(
+            std::shared_ptr<ISubscriptionManager> subscriptionManager) = 0;
     virtual void registerPublicationManager(PublicationManager* publicationManager) = 0;
 };
 

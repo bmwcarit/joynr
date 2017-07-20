@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import io.joynr.messaging.MessagingQos;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 public interface RequestReplyManager {
 
@@ -35,8 +36,8 @@ public interface RequestReplyManager {
      *
      * @param fromParticipantId
      *            ParticipantId of the sending endpoint.
-     * @param toParticipantId
-     *            ParticipantId of the endpoint to send to
+     * @param toDiscoveryEntry
+     *            DiscoveryEntry of the endpoint to send to
      * @param request
      *            Request to be send
      * @param ttl_ms
@@ -44,7 +45,7 @@ public interface RequestReplyManager {
      */
 
     public void sendRequest(final String fromParticipantId,
-                            final String toParticipantId,
+                            final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
                             Request request,
                             MessagingQos qosSettings);
 
@@ -54,8 +55,8 @@ public interface RequestReplyManager {
      *
      * @param fromParticipantId
      *            ParticipantId of the sending endpoint.
-     * @param toParticipantId
-     *            ParticipantId of the endpoint to send to
+     * @param toDiscoveryEntry
+     *            DiscoveryEntry of the endpoint to send to
      * @param request
      *            Request to be send
      * @param synchronizedReplyCaller
@@ -66,7 +67,7 @@ public interface RequestReplyManager {
      */
 
     public Object sendSyncRequest(final String fromParticipantId,
-                                  final String toParticipantId,
+                                  final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
                                   Request request,
                                   SynchronizedReplyCaller synchronizedReplyCaller,
                                   MessagingQos qosSettings);
@@ -76,8 +77,8 @@ public interface RequestReplyManager {
      *
      * @param fromParticipantId
      *            ParticipantId of the endpoint to send to
-     * @param toParticipantIds
-     *            ParticipantIds of the endpoints to send to
+     * @param toDiscoveryEntries
+     *            DiscveryEntries of the endpoints to send to
      * @param oneWayRequest
      *            The request data tto send to the endpoints
      * @param ttl_ms
@@ -85,7 +86,7 @@ public interface RequestReplyManager {
      */
 
     public void sendOneWayRequest(final String fromParticipantId,
-                                  final Set<String> toParticipantIds,
+                                  final Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                   OneWayRequest oneWayRequest,
                                   MessagingQos messagingQos);
 

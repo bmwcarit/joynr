@@ -2,7 +2,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,11 @@
  * #L%
  */
 
-(function() {
-    var setupDefaultClusterControllerSettings =
+define("joynr/start/settings/defaultClusterControllerSettings", [
+    "joynr/types/ProviderScope",
+    "joynr/util/UtilInternal"
+], function(ProviderScope, Util) {
+    var defaultClusterControllerSettings =
             function(settings) {
                 var defaultSettings = {};
                 defaultSettings.discoveryChannel = "discoverydirectory_channelid";
@@ -33,41 +36,34 @@
                         };
 
                 var globalCapDirCapability = {
-                    domain : "io.joynr",
-                    interfaceName : "infrastructure/GlobalCapabilitiesDirectory",
-                    providerQos : {
-                        qos : [],
-                        version : 0,
-                        priority : 1,
-                        isLocalOnly : false,
-                        supportsOnChangeSubscriptions : true
-                    },
-                    address : JSON.stringify({
-                        _typeName : "joynr.system.RoutingTypes.ChannelAddress",
-                        channelId : defaultSettings.discoveryChannel,
-                        messagingEndpointUrl : defaultSettings.getDefaultDiscoveryChannelUrl()
-                    }),
-                    publicKeyId : "",
-                    participantId : "capabilitiesdirectory_participantid",
                     providerVersion : {
                         majorVersion : 0,
                         minorVersion : 1
-                    }
+                    },
+                    domain : "io.joynr",
+                    interfaceName : "infrastructure/GlobalCapabilitiesDirectory",
+                    participantId : "capabilitiesdirectory_participantid",
+                    qos : {
+                        customParameters : [],
+                        priority : 1,
+                        scope : ProviderScope.GLOBAL,
+                        supportsOnChangeSubscriptions : true
+                    },
+                    lastSeenDateMs : Date.now(),
+                    expiryDateMs : Util.getMaxLongValue(),
+                    publicKeyId : "",
+                    address : JSON.stringify({
+                        _typeName : "joynr.system.RoutingTypes.MqttAddress",
+                        topic : defaultSettings.discoveryChannel,
+                        brokerUri : settings.brokerUri
+                    })
                 };
 
                 defaultSettings.capabilities = [ globalCapDirCapability
                 ];
                 return defaultSettings;
             };
-
-    // AMD support
-    if (typeof define === 'function' && define.amd) {
-        define("joynr/start/settings/defaultClusterControllerSettings", [], function() {
-            return setupDefaultClusterControllerSettings;
-        });
-    } else {
-        window.joynr = window.joynr || {};
-        window.joynr.start = window.joynr.start || {};
-        window.joynr.start.defaultClusterControllerSettings = setupDefaultClusterControllerSettings;
-    }
-}());
+    return function(settings) {
+        return defaultClusterControllerSettings(settings);
+    };
+});

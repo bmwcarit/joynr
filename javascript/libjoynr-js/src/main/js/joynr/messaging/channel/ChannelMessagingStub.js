@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ define("joynr/messaging/channel/ChannelMessagingStub", [ "global/Promise"
      * @param {Object} settings
      * @param {ChannelMessagingSender|Object} settings.channelMessagingSender the channel message sender to send the messages with
      * @param {String} settings.channelId the destination channelId
-     * @param {MessageReplyToAddressCalculator} settings.messageReplyToAddressCalculator calculates the replyTo address
      */
     function ChannelMessagingStub(settings) {
         /**
@@ -49,8 +48,6 @@ define("joynr/messaging/channel/ChannelMessagingStub", [ "global/Promise"
                                     + " is the local channel address.";
                         return Promise.reject(new Error(errorMsg));
                     }
-                    // if outgoing request => set my own channel address as replyChannelId
-                    settings.messageReplyToAddressCalculator.setReplyTo(joynrMessage);
                     return settings.channelMessagingSender.send(
                             joynrMessage,
                             settings.destinationChannelAddress);

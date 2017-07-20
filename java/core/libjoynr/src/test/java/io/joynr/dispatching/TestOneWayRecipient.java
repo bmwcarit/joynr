@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,22 +22,33 @@ package io.joynr.dispatching;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class TestOneWayRecipient extends WaitTillCondition implements RequestCaller {
+import joynr.tests.DefaulttestProvider;
 
-    public TestOneWayRecipient(int numberOfMessagesExpected) {
-        super(numberOfMessagesExpected);
-    }
-
+public class TestOneWayRecipient extends DefaulttestProvider {
+    private WaitTillCondition waitTillCondition;
     private Collection<Object> receivedPayloads = new ArrayList<Object>();
 
-    public void receive(String message) {
-        receivedPayloads.add(message);
-        releaseSemaphorePermit();
+    public TestOneWayRecipient(int numberOfMessagesExpected) {
+        waitTillCondition = new WaitTillCondition(numberOfMessagesExpected) {
+
+            @Override
+            protected Collection<Object> getReceivedPayloads() {
+                return receivedPayloads;
+            }
+        };
     }
 
     @Override
+    public void fireAndForgetMethod(String message) {
+        receivedPayloads.add(message);
+        waitTillCondition.releaseSemaphorePermit();
+    }
+
     protected Collection<Object> getReceivedPayloads() {
         return receivedPayloads;
     }
 
+    public void assertAllPayloadsReceived(long timeOutMs) {
+        waitTillCondition.assertAllPayloadsReceived(timeOutMs);
+    }
 }

@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -42,7 +41,7 @@ import java.util.concurrent.ThreadFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
@@ -59,17 +58,21 @@ import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
-import joynr.JoynrMessage;
+import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.MethodInvocationException;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,8 +92,10 @@ public class RequestReplyManagerTest {
     private ProviderDirectory providerDirectory;
     private String testSenderParticipantId;
     private String testOneWayRecipientParticipantId;
-    private Set<String> testOneWayRecipientParticipantIds;
+    private DiscoveryEntryWithMetaInfo testOneWayRecipientDiscoveryEntry;
+    private Set<DiscoveryEntryWithMetaInfo> testOneWayRecipientDiscoveryEntries;
     private String testMessageResponderParticipantId;
+    private DiscoveryEntryWithMetaInfo testMessageResponderDiscoveryEntry;
     private String testResponderUnregisteredParticipantId;
 
     private final String payload1 = "testPayload 1";
@@ -107,16 +112,25 @@ public class RequestReplyManagerTest {
     private MessageRouter messageRouterMock;
 
     @Mock
+    private MessageSender messageSenderMock;
+
+    @Mock
     private AbstractSubscriptionPublisher subscriptionPublisherMock;
 
     @Mock
     private ProviderContainer providerContainer;
+    private RequestCallerFactory requestCallerFactory;
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException, JsonGenerationException, IOException {
+        requestCallerFactory = new RequestCallerFactory();
         testOneWayRecipientParticipantId = "testOneWayRecipientParticipantId";
-        testOneWayRecipientParticipantIds = Sets.newHashSet(testOneWayRecipientParticipantId);
+        testOneWayRecipientDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        testOneWayRecipientDiscoveryEntry.setParticipantId(testOneWayRecipientParticipantId);
+        testOneWayRecipientDiscoveryEntries = Sets.newHashSet(testOneWayRecipientDiscoveryEntry);
         testMessageResponderParticipantId = "testMessageResponderParticipantId";
+        testMessageResponderDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        testMessageResponderDiscoveryEntry.setParticipantId(testMessageResponderParticipantId);
         testSenderParticipantId = "testSenderParticipantId";
         testResponderUnregisteredParticipantId = "testResponderUnregisteredParticipantId";
 
@@ -125,6 +139,7 @@ public class RequestReplyManagerTest {
             @Override
             protected void configure() {
                 install(new JoynrMessageScopeModule());
+                bind(MessageSender.class).toInstance(messageSenderMock);
                 bind(MessageRouter.class).toInstance(messageRouterMock);
                 bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);
                 requestStaticInjection(RpcUtils.class, Request.class, JoynrMessagingConnectorFactory.class);
@@ -158,26 +173,16 @@ public class RequestReplyManagerTest {
 
         // MethodMetaInformation methodMetaInformation = new
         // MethodMetaInformation(TestRequestCaller.class.getMethod("respond", new Class[]{ Object.class }));
-        Method method = TestRequestCaller.class.getMethod("respond", new Class[]{ String.class });
+        Method method = TestProvider.class.getMethod("methodWithStrings", new Class[]{ String.class });
         request1 = new Request(method.getName(), params1, method.getParameterTypes());
         request2 = new Request(method.getName(), params2, method.getParameterTypes());
         request3 = new Request("unknownMethodName", params2, method.getParameterTypes());
 
-        Method fireAndForgetMethod = TestOneWayRecipient.class.getMethod("receive", new Class[]{ String.class });
+        Method fireAndForgetMethod = TestOneWayRecipient.class.getMethod("fireAndForgetMethod",
+                                                                         new Class[]{ String.class });
         oneWay1 = new OneWayRequest(fireAndForgetMethod.getName(),
                                     new Object[]{ payload1 },
                                     fireAndForgetMethod.getParameterTypes());
-        Map<String, String> headerToResponder = Maps.newHashMap();
-        headerToResponder.put(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID, testSenderParticipantId);
-        headerToResponder.put(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID, testMessageResponderParticipantId);
-        headerToResponder.put(JoynrMessage.HEADER_NAME_CONTENT_TYPE, JoynrMessage.CONTENT_TYPE_TEXT_PLAIN);
-
-        Map<String, String> requestHeader = Maps.newHashMap();
-        requestHeader.put(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID, testSenderParticipantId);
-        requestHeader.put(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID, testResponderUnregisteredParticipantId);
-        requestHeader.put(JoynrMessage.HEADER_NAME_EXPIRY_DATE, String.valueOf(System.currentTimeMillis()
-                + TIME_TO_LIVE));
-        requestHeader.put(JoynrMessage.HEADER_NAME_CONTENT_TYPE, JoynrMessage.CONTENT_TYPE_APPLICATION_JSON);
     }
 
     @After
@@ -189,16 +194,14 @@ public class RequestReplyManagerTest {
     @Test
     public void oneWayMessagesAreSentToTheCommunicationManager() throws Exception {
         requestReplyManager.sendOneWayRequest(testSenderParticipantId,
-                                              testOneWayRecipientParticipantIds,
+                                              testOneWayRecipientDiscoveryEntries,
                                               oneWay1,
                                               new MessagingQos(TIME_TO_LIVE));
 
-        ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
-        verify(messageRouterMock, times(1)).route(messageCapture.capture());
-        assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                     testSenderParticipantId);
-        assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                     testOneWayRecipientParticipantId);
+        ArgumentCaptor<MutableMessage> messageCapture = ArgumentCaptor.forClass(MutableMessage.class);
+        verify(messageSenderMock, times(1)).sendMessage(messageCapture.capture());
+        assertEquals(messageCapture.getValue().getSender(), testSenderParticipantId);
+        assertEquals(messageCapture.getValue().getRecipient(), testOneWayRecipientParticipantId);
 
         assertEquals(oneWay1, objectMapper.readValue(messageCapture.getValue().getPayload(), OneWayRequest.class));
     }
@@ -206,18 +209,17 @@ public class RequestReplyManagerTest {
     @Test
     public void requestMessagesSentToTheCommunicationManager() throws Exception {
         requestReplyManager.sendRequest(testSenderParticipantId,
-                                        testMessageResponderParticipantId,
+                                        testMessageResponderDiscoveryEntry,
                                         request1,
                                         new MessagingQos(TIME_TO_LIVE));
 
-        ArgumentCaptor<JoynrMessage> messageCapture = ArgumentCaptor.forClass(JoynrMessage.class);
-        verify(messageRouterMock, times(1)).route(messageCapture.capture());
-        assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_FROM_PARTICIPANT_ID),
-                     testSenderParticipantId);
-        assertEquals(messageCapture.getValue().getHeaderValue(JoynrMessage.HEADER_NAME_TO_PARTICIPANT_ID),
-                     testMessageResponderParticipantId);
+        ArgumentCaptor<MutableMessage> messageCapture = ArgumentCaptor.forClass(MutableMessage.class);
+        verify(messageSenderMock, times(1)).sendMessage(messageCapture.capture());
+        assertEquals(messageCapture.getValue().getSender(), testSenderParticipantId);
+        assertEquals(messageCapture.getValue().getRecipient(), testMessageResponderParticipantId);
 
-        assertEquals(messageCapture.getValue().getPayload(), objectMapper.writeValueAsString(request1));
+        assertEquals(new String(messageCapture.getValue().getPayload(), Charsets.UTF_8),
+                     objectMapper.writeValueAsString(request1));
     }
 
     private abstract class ReplyCallback extends ProviderCallback<Reply> {
@@ -225,9 +227,9 @@ public class RequestReplyManagerTest {
 
     @Test
     public void requestCallerInvokedForIncomingRequest() throws Exception {
-        TestRequestCaller testRequestCallerSpy = spy(new TestRequestCaller(1));
+        TestProvider testRequestCallerSpy = spy(new TestProvider(1));
 
-        when(providerContainer.getRequestCaller()).thenReturn(testRequestCallerSpy);
+        when(providerContainer.getRequestCaller()).thenReturn(requestCallerFactory.create(testRequestCallerSpy));
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
         providerDirectory.add(testMessageResponderParticipantId, providerContainer);
         ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
@@ -236,32 +238,30 @@ public class RequestReplyManagerTest {
         String reply = (String) testRequestCallerSpy.getSentPayloadFor(request1);
 
         ArgumentCaptor<Reply> replyCapture = ArgumentCaptor.forClass(Reply.class);
-        verify(testRequestCallerSpy).respond(eq(payload1));
+        verify(testRequestCallerSpy).methodWithStrings(eq(payload1));
         verify(replyCallbackMock).onSuccess(replyCapture.capture());
         assertEquals(reply, replyCapture.getValue().getResponse()[0]);
     }
 
     @Test
     public void requestCallerRejectsForIncomingRequest() throws Exception {
-        TestRequestCaller testRequestCallerSpy = spy(new TestRequestCaller(1));
+        TestProvider testRequestCallerSpy = spy(new TestProvider(1));
 
-        when(providerContainer.getRequestCaller()).thenReturn(testRequestCallerSpy);
+        when(providerContainer.getRequestCaller()).thenReturn(requestCallerFactory.create(testRequestCallerSpy));
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
         providerDirectory.add(testMessageResponderParticipantId, providerContainer);
         ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
         requestReplyManager.handleRequest(replyCallbackMock, testMessageResponderParticipantId, request3, TIME_TO_LIVE);
-
-        String reply = (String) testRequestCallerSpy.getSentPayloadFor(request1);
 
         ArgumentCaptor<JoynrException> exceptionCapture = ArgumentCaptor.forClass(JoynrException.class);
         verify(replyCallbackMock).onFailure(exceptionCapture.capture());
         assertTrue(exceptionCapture.getValue() instanceof MethodInvocationException);
         assertEquals(((MethodInvocationException) (exceptionCapture.getValue())).getProviderVersion()
                                                                                 .getMajorVersion()
-                                                                                .intValue(), 6);
+                                                                                .intValue(), 47);
         assertEquals(((MethodInvocationException) (exceptionCapture.getValue())).getProviderVersion()
                                                                                 .getMinorVersion()
-                                                                                .intValue(), 16);
+                                                                                .intValue(), 11);
     }
 
     @Test
@@ -291,10 +291,10 @@ public class RequestReplyManagerTest {
                                           ExpiryDate.fromRelativeTtl((int) (TIME_TO_LIVE * 5)).getValue());
 
         Thread.sleep((long) (TIME_TO_LIVE * 0.03 + 20));
-        TestRequestCaller testResponderUnregistered = new TestRequestCaller(1);
+        TestProvider testResponderUnregistered = new TestProvider(1);
 
         testResponderUnregistered.waitForMessage((int) (TIME_TO_LIVE * 0.05));
-        when(providerContainer.getRequestCaller()).thenReturn(testResponderUnregistered);
+        when(providerContainer.getRequestCaller()).thenReturn(requestCallerFactory.create(testResponderUnregistered));
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
         providerDirectory.add(testResponderUnregisteredParticipantId, providerContainer);
 
@@ -305,7 +305,7 @@ public class RequestReplyManagerTest {
 
     @Test
     public void requestReplyMessagesRemoveCallBackByTtl() throws Exception {
-        TestRequestCaller testResponder = new TestRequestCaller(1);
+        TestProvider testResponder = new TestProvider(1);
         ExpiryDate ttlReplyCaller = ExpiryDate.fromRelativeTtl(1000L);
 
         final ReplyCaller replyCaller = mock(ReplyCaller.class);
@@ -331,7 +331,7 @@ public class RequestReplyManagerTest {
 
     private void testOneWay(int expectedCalls, long forTtl) {
         TestOneWayRecipient oneWayRecipient = spy(new TestOneWayRecipient(expectedCalls));
-        when(providerContainer.getRequestCaller()).thenReturn(oneWayRecipient);
+        when(providerContainer.getRequestCaller()).thenReturn(requestCallerFactory.create(oneWayRecipient));
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
         providerDirectory.add(testOneWayRecipientParticipantId, providerContainer);
 

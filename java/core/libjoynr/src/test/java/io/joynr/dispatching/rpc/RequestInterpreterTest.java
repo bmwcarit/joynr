@@ -3,7 +3,7 @@ package io.joynr.dispatching.rpc;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@ package io.joynr.dispatching.rpc;
 
 import static org.mockito.Mockito.verify;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,8 +35,11 @@ import com.google.inject.Provider;
 
 import io.joynr.context.JoynrMessageScope;
 import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.RequestCallerFactory;
+import io.joynr.messaging.JoynrMessageMetaInfo;
 import io.joynr.messaging.JoynrMessageCreator;
 import joynr.OneWayRequest;
+import joynr.tests.DefaulttestProvider;
 
 /**
  * Unit tests for {@link RequestInterpreter}.
@@ -41,9 +47,9 @@ import joynr.OneWayRequest;
 @RunWith(MockitoJUnitRunner.class)
 public class RequestInterpreterTest {
 
-    private static class TestRequestCaller implements RequestCaller {
-        @SuppressWarnings("unused")
-        public void test() {
+    private static class TestRequestCaller extends RequestCaller {
+        public TestRequestCaller() {
+            super(null, new DefaulttestProvider());
         }
     }
 
@@ -54,7 +60,13 @@ public class RequestInterpreterTest {
     private Provider<JoynrMessageCreator> joynrMessageCreatorProvider;
 
     @Mock
+    private Provider<JoynrMessageMetaInfo> joynrMessageContextProvider;
+
+    @Mock
     private JoynrMessageCreator joynrMessageCreator;
+
+    @Mock
+    private JoynrMessageMetaInfo joynrMessageContext;
 
     private RequestInterpreter subject;
 
@@ -64,11 +76,13 @@ public class RequestInterpreterTest {
 
     @Before
     public void setup() {
-        subject = new RequestInterpreter(joynrMessageScope, joynrMessageCreatorProvider);
-        requestCaller = new TestRequestCaller();
-        request = new OneWayRequest("test", new Object[0], new Class[0]);
+        RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
+        requestCaller = requestCallerFactory.create(new DefaulttestProvider());
+        subject = new RequestInterpreter(joynrMessageScope, joynrMessageCreatorProvider, joynrMessageContextProvider);
+        request = new OneWayRequest("getTestAttribute", new Object[0], new Class[0]);
         request.setCreatorUserId("creator");
         Mockito.when(joynrMessageCreatorProvider.get()).thenReturn(joynrMessageCreator);
+        Mockito.when(joynrMessageContextProvider.get()).thenReturn(joynrMessageContext);
     }
 
     @Test
@@ -85,4 +99,11 @@ public class RequestInterpreterTest {
         verify(joynrMessageCreator).setMessageCreatorId("creator");
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testContextSet() {
+        subject.invokeMethod(requestCaller, request);
+        verify(joynrMessageContextProvider).get();
+        verify(joynrMessageContext).setMessageContext(Mockito.anyMap());
+    }
 }

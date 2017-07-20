@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,17 @@
  * limitations under the License.
  * #L%
  */
-#include "gtest/gtest.h"
-
-#include "joynr/ThreadPoolDelayedScheduler.h"
-#include "utils/MockObjects.h"
-#include "joynr/SingleThreadedIOService.h"
-#include "utils/TestRunnable.h"
-
 #include <cstdint>
 #include <cassert>
 #include <chrono>
+
+#include <gtest/gtest.h>
+
+#include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/SingleThreadedIOService.h"
+
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/TestRunnable.h"
 
 using namespace ::testing;
 using namespace joynr;

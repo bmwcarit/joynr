@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,11 @@ class TypeDefHTemplate implements TypeDefTemplate{
 '''
 
 private def getTypeDefinition(FTypeDef type)'''
-typedef «type.actualType.typeName» «type.joynrName»;
+«IF isEnum(type)»
+	typedef «type.actualType.typeName.substring(0, type.actualType.typeName.length-6)» «type.joynrName»;
+«ELSE»
+	typedef «type.actualType.typeName» «type.joynrName»;
+«ENDIF»
 '''
 
 }

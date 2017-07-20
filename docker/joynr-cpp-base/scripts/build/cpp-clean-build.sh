@@ -57,7 +57,7 @@ echo "ADDITIONAL_CMAKE_ARGS is $ADDITIONAL_CMAKE_ARGS"
 log "CLEAN BUILD DIRECTORY"
 rm -rf ~/.cmake/packages
 rm -rf /data/build/joynr
-mkdir /data/build/joynr
+mkdir -p /data/build/joynr
 
 cd /data/build/joynr
 
@@ -74,6 +74,7 @@ cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=$DBUS \
       -DBUILD_TESTS=$BUILD_TESTS \
       -DCMAKE_INSTALL_SYSCONFDIR=/etc \
       -DCMAKE_INSTALL_PREFIX=/usr \
+      -DJOYNR_ENABLE_ACCESS_CONTROL:BOOL=ON \
       $ADDITIONAL_CMAKE_ARGS \
       /data/src/cpp
 

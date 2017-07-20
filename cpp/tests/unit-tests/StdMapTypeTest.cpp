@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@
  */
 #include <gtest/gtest.h>
 
-#include "PrettyPrint.h"
-
 #include "joynr/types/TestTypes/TStringKeyMap.h"
 #include "joynr/tests/MapInsideInterface.h"
 #include "joynr/tests/MapInsideInterfaceWithoutVersion.h"
 #include "joynr/types/TestTypesWithoutVersion/MapInsideTypeCollectionWithoutVersion.h"
+
+#include "tests/PrettyPrint.h"
 
 class StdMapTypeTest : public testing::Test {
 public:

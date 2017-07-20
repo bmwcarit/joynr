@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,7 +117,7 @@ define(
 
                     // return promise to caller
                     return settings.dependencies.requestReplyManager.sendRequest({
-                        to : parent.providerParticipantId,
+                        toDiscoveryEntry : parent.providerDiscoveryEntry,
                         from : parent.proxyParticipantId,
                         messagingQos : messagingQos,
                         request : request
@@ -151,7 +151,7 @@ define(
                     // return promise to caller
                     return settings.dependencies.subscriptionManager.registerSubscription({
                         proxyId : parent.proxyParticipantId,
-                        providerId : parent.providerParticipantId,
+                        providerDiscoveryEntry : parent.providerDiscoveryEntry,
                         attributeName : attributeName,
                         attributeType : attributeType,
                         qos : requestSettings.subscriptionQos,

@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,16 +54,13 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 // the connectors will contain the JSON related code
 
 «syncClassName»::«syncClassName»(
-		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
-		joynr::IClientCache *cache,
 		const std::string &domain,
-		const joynr::MessagingQos &qosSettings,
-		bool cached
+		const joynr::MessagingQos &qosSettings
 ) :
-		joynr::ProxyBase(connectorFactory, cache, domain, qosSettings, cached),
-		«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)«IF hasFireAndForgetMethods(francaIntf)»,
-		«interfaceName»FireAndForgetProxy(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)«ENDIF»
+		joynr::ProxyBase(connectorFactory, domain, qosSettings),
+		«className»Base(connectorFactory, domain, qosSettings)«IF hasFireAndForgetMethods(francaIntf)»,
+		«interfaceName»FireAndForgetProxy(connectorFactory, domain, qosSettings)«ENDIF»
 {
 }
 

@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -279,7 +279,7 @@ define(
                                             });
 
                             return settings.dependencies.requestReplyManager.sendOneWayRequest({
-                                to : proxyOperation.parent.providerParticipantId,
+                                toDiscoveryEntry : proxyOperation.parent.providerDiscoveryEntry,
                                 from : proxyOperation.parent.proxyParticipantId,
                                 messagingQos : messagingQos,
                                 request : oneWayRequest
@@ -296,12 +296,13 @@ define(
                                             });
 
                             return settings.dependencies.requestReplyManager
-                                    .sendRequest({
-                                        to : proxyOperation.parent.providerParticipantId,
-                                        from : proxyOperation.parent.proxyParticipantId,
-                                        messagingQos : messagingQos,
-                                        request : request
-                                    })
+                                    .sendRequest(
+                                            {
+                                                toDiscoveryEntry : proxyOperation.parent.providerDiscoveryEntry,
+                                                from : proxyOperation.parent.proxyParticipantId,
+                                                messagingQos : messagingQos,
+                                                request : request
+                                            })
                                     .then(
                                             function(response) {
                                                 var responseKey, argumentValue;

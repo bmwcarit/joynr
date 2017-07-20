@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "PrettyPrint.h"
-
 #include "joynr/exceptions/JoynrException.h"
+
+#include "tests/PrettyPrint.h"
 
 template <typename ... Ts>
 class MockCallback{

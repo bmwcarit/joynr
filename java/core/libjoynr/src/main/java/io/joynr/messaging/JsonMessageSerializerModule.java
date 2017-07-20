@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import io.joynr.messaging.serialize.JoynrArraySerializer;
 import io.joynr.messaging.serialize.JoynrEnumSerializer;
 import io.joynr.messaging.serialize.JoynrListSerializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
-import io.joynr.messaging.serialize.NumberSerializer;
+import io.joynr.messaging.serialize.OneWayRequestDeserializer;
 import io.joynr.messaging.serialize.RequestDeserializer;
+import joynr.OneWayRequest;
 import joynr.Request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -67,7 +68,6 @@ public class JsonMessageSerializerModule extends AbstractModule {
                                                                       .getDefaultTyper(SimpleType.construct(Object.class));
 
         SimpleModule module = new SimpleModule("NonTypedModule", new Version(1, 0, 0, "", "", ""));
-        module.addSerializer(Number.class, new NumberSerializer());
         module.addSerializer(new JoynrEnumSerializer());
         module.addSerializer(new JoynrListSerializer());
         module.addSerializer(new JoynrArraySerializer());
@@ -77,6 +77,7 @@ public class JsonMessageSerializerModule extends AbstractModule {
                                                                                            null);
 
         module.addDeserializer(Request.class, new RequestDeserializer(objectMapper));
+        module.addDeserializer(OneWayRequest.class, new OneWayRequestDeserializer(objectMapper));
         module.addDeserializer(Object.class, new JoynrUntypedObjectDeserializer(typeDeserializer));
 
         module.setMixInAnnotation(Throwable.class, ThrowableMixIn.class);

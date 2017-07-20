@@ -3,7 +3,7 @@ package io.joynr.messaging.bounceproxy.service;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ package io.joynr.messaging.bounceproxy.service;
 
 import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
 import io.joynr.messaging.service.MessagingService;
-import joynr.JoynrMessage;
 
 public abstract class AbstractMessagingService implements MessagingService {
 
@@ -32,11 +31,10 @@ public abstract class AbstractMessagingService implements MessagingService {
     }
 
     /* (non-Javadoc)
-     * @see io.joynr.messaging.service.MessagingService#passMessageToReceiver(java.lang.String, joynr.JoynrMessage)
+     * @see io.joynr.messaging.service.MessagingService#passMessageToReceiver(java.lang.String, byte[])
      */
     @Override
-    public void passMessageToReceiver(String ccid, JoynrMessage message) {
-        longPollingDelegate.postMessage(ccid, message);
+    public void passMessageToReceiver(String ccid, byte[] serializedMessage) {
+        longPollingDelegate.postMessage(ccid, serializedMessage);
     }
-
 }

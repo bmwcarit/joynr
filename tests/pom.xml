@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2016 BMW Car IT GmbH
+  Copyright (C) 2011 - 2017 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -25,15 +25,58 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>0.23.0-SNAPSHOT</version>
+		<version>0.28.0-SNAPSHOT</version>
 	</parent>
 
 	<modules>
 		<module>test-base</module>
 		<module>performance-test</module>
+		<module>performance-test-jee</module>
 		<module>robustness-test</module>
 		<module>inter-language-test</module>
 		<module>inter-language-test-jee</module>
 		<module>system-integration-test</module>
 	</modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>copy-backend-services-jee</id>
+                            <phase>none</phase>
+                            <goals>
+                                <goal>copy</goal>
+                            </goals>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>io.joynr.java.backend-services</groupId>
+                                        <artifactId>domain-access-controller-jee</artifactId>
+                                        <version>${project.version}</version>
+                                        <type>war</type>
+                                        <outputDirectory>${project.build.directory}</outputDirectory>
+                                        <destFileName>accesscontrol-jee.war</destFileName>
+                                    </artifactItem>
+                                    <artifactItem>
+                                        <groupId>io.joynr.java.backend-services</groupId>
+                                        <artifactId>discovery-directory-jee</artifactId>
+                                        <version>${project.version}</version>
+                                        <type>war</type>
+                                        <outputDirectory>${project.build.directory}</outputDirectory>
+                                        <destFileName>discovery-jee.war</destFileName>
+                                    </artifactItem>
+                                </artifactItems>
+                                <overWriteReleases>false</overWriteReleases>
+                                <overWriteSnapshots>true</overWriteSnapshots>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

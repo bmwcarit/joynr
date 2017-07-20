@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,11 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
 #include <cstdio>
+#include <limits>
+
+#include <gtest/gtest.h>
+
 #include "PrettyPrint.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Settings.h"
@@ -30,17 +33,15 @@ public:
     MessagingSettingsTest() :
         testSettingsFileNameNonExistent("test-resources/MessagingSettingsTest-nonexistent.settings"),
         testSettingsFileNameHttp("test-resources/HttpMessagingSettingsTest.settings"),
-        testSettingsFileNameMqtt("test-resources/MqttMessagingSettingsTest.settings"),
-        testSettingsFileNameMqttWithHttpBackend("test-resources/MqttWithHttpBackendMessagingSettingsTest.settings")
+        testSettingsFileNameMqtt("test-resources/MqttMessagingSettingsTest.settings")
     {
     }
 
 protected:
     ADD_LOGGER(MessagingSettingsTest);
-    std::string testSettingsFileNameNonExistent;
-    std::string testSettingsFileNameHttp;
-    std::string testSettingsFileNameMqtt;
-    std::string testSettingsFileNameMqttWithHttpBackend;
+    const std::string testSettingsFileNameNonExistent;
+    const std::string testSettingsFileNameHttp;
+    const std::string testSettingsFileNameMqtt;
 };
 
 INIT_LOGGER(MessagingSettingsTest);
@@ -55,7 +56,6 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
     MessagingSettings messagingSettings(testSettings);
 
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BROKER_URL()));
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BOUNCE_PROXY_URL()));
 
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
 
@@ -63,10 +63,12 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
 
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_KEEP_ALIVE_TIME()));
-    EXPECT_EQ(messagingSettings.getMqttKeepAliveTime().count(), MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME().count());
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_RECONNECT_SLEEP_TIME()));
-    EXPECT_EQ(messagingSettings.getMqttReconnectSleepTime().count(), MessagingSettings::DEFAULT_MQTT_RECONNECT_SLEEP_TIME().count());
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS()));
+    EXPECT_EQ(messagingSettings.getMqttKeepAliveTimeSeconds().count(), MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS().count());
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS()));
+    EXPECT_EQ(messagingSettings.getMqttReconnectDelayTimeSeconds().count(), MessagingSettings::DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS().count());
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()));
+    EXPECT_EQ(messagingSettings.getMqttConnectionTimeoutMs().count(), MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
     EXPECT_EQ(messagingSettings.getTtlUpliftMs(), MessagingSettings::DEFAULT_TTL_UPLIFT_MS());
 }
 
@@ -83,16 +85,11 @@ TEST_F(MessagingSettingsTest, overrideDefaultSettings) {
 
 void checkBrokerSettings(
         MessagingSettings messagingSettings,
-        std::string expectedBrokerUrl,
-        std::string expectedBounceProxyUrl) {
+        std::string expectedBrokerUrl) {
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BROKER_URL()));
-    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_BOUNCE_PROXY_URL()));
 
     std::string brokerUrl = messagingSettings.getBrokerUrlString();
     EXPECT_EQ(expectedBrokerUrl, brokerUrl);
-
-    std::string bounceProxyUrl = messagingSettings.getBounceProxyUrlString();
-    EXPECT_EQ(expectedBounceProxyUrl, bounceProxyUrl);
 }
 
 void checkDiscoveryDirectorySettings(
@@ -104,26 +101,7 @@ void checkDiscoveryDirectorySettings(
     EXPECT_EQ(expectedCapabilitiesDirectoryChannelId, capabilitiesDirectoryChannelId);
 }
 
-TEST_F(MessagingSettingsTest, mqttWithHttpBackend) {
-    std::string expectedBrokerUrl("mqtt://custom-broker-host:1883/");
-    std::string expectedBounceProxyUrl("http://custom-bounceproxy-host:8080/bounceproxy/");
-    std::string expectedCapabilitiesDirectoryChannelId("discoverydirectory_channelid");
-
-    Settings testSettings(testSettingsFileNameMqttWithHttpBackend);
-    EXPECT_TRUE(testSettings.isLoaded());
-    MessagingSettings messagingSettings(testSettings);
-
-    // the file contains different settings for brokerUrl and bounceProxyUrl
-    checkBrokerSettings(messagingSettings, expectedBrokerUrl, expectedBounceProxyUrl);
-
-    checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
-}
-
-/*
- * This test does not work anymore, as http only can not be configured by setting the broker url to a http url
- * Before re-activating this patch, a parameter should be added to the settings file which explicitely enable/disables http/mqtt
- */
-TEST_F(MessagingSettingsTest, DISABLED_httpOnly) {
+TEST_F(MessagingSettingsTest, httpOnly) {
     std::string expectedBrokerUrl("http://custom-bounceproxy-host:8080/bounceproxy/");
     std::string expectedCapabilitiesDirectoryChannelId("discoverydirectory_channelid");
 
@@ -131,27 +109,31 @@ TEST_F(MessagingSettingsTest, DISABLED_httpOnly) {
     EXPECT_TRUE(testSettings.isLoaded());
     MessagingSettings messagingSettings(testSettings);
 
-    // since only brokerUrl is present, bounceProxyUrl is setup identically
-    checkBrokerSettings(messagingSettings, expectedBrokerUrl, expectedBrokerUrl);
+    checkBrokerSettings(messagingSettings, expectedBrokerUrl);
 
     checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
 }
 
-/*
- * This test does not work anymore, as mqtt only can not be configured by setting the broker url to a mqtt url
- * Before re-activating this patch, a parameter should be added to the settings file which explicitely enable/disables http/mqtt
- */
-TEST_F(MessagingSettingsTest, DISABLED_mqttOnly) {
+TEST_F(MessagingSettingsTest, mqttOnly) {
     std::string expectedBrokerUrl("mqtt://custom-broker-host:1883/");
-    std::string defaultBounceProxyUrl("http://localhost:8080/bounceproxy/");
     std::string expectedCapabilitiesDirectoryChannelId("mqtt_discoverydirectory_channelid");
 
     Settings testSettings(testSettingsFileNameMqtt);
     EXPECT_TRUE(testSettings.isLoaded());
     MessagingSettings messagingSettings(testSettings);
 
-    // since only brokerUrl is present, bounceProxyUrl is setup identically
-    checkBrokerSettings(messagingSettings, expectedBrokerUrl, defaultBounceProxyUrl);
+    checkBrokerSettings(messagingSettings, expectedBrokerUrl);
 
     checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
+}
+
+TEST_F(MessagingSettingsTest, discoveryEntryExpiryIntervalMsStores64BitValue)
+{
+    const std::string fileName = "test-resources/MessagingSettingsDiscoveryEntryExpiryIntervalMs.settings";
+    Settings testSettings(fileName);
+    EXPECT_TRUE(testSettings.isLoaded());
+    MessagingSettings messagingSettings(testSettings);
+
+    constexpr std::int64_t int64Max = std::numeric_limits<std::int64_t>::max();
+    EXPECT_EQ(int64Max, messagingSettings.getDiscoveryEntryExpiryIntervalMs());
 }

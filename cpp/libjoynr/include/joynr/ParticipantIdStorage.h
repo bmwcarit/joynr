@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@
 
 #include <string>
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
@@ -48,37 +48,28 @@ public:
      * provider. This is useful for provisioning of provider participant IDs.
      * @param domain the domain of the provider.
      * @param interfaceName the interface name of the provider.
-     * @param authenticationToken the authentication token of the provider.
      * @param participantId the participantId to set.
      */
-    virtual void setProviderParticipantId(
-            const std::string& domain,
-            const std::string& interfaceName,
-            const std::string& participantId,
-            const std::string& authenticationToken = "defaultAuthenticationToken");
+    virtual void setProviderParticipantId(const std::string& domain,
+                                          const std::string& interfaceName,
+                                          const std::string& participantId);
 
     /**
      * Get a provider participant id
      */
-    virtual std::string getProviderParticipantId(
-            const std::string& domain,
-            const std::string& interfaceName,
-            const std::string& authenticationToken = "defaultAuthenticationToken");
+    virtual std::string getProviderParticipantId(const std::string& domain,
+                                                 const std::string& interfaceName);
 
     /**
      * Get a provider participant id or use a default
      */
-    virtual std::string getProviderParticipantId(
-            const std::string& domain,
-            const std::string& interfaceName,
-            const std::string& defaultValue,
-            const std::string& authenticationToken = "defaultAuthenticationToken");
+    virtual std::string getProviderParticipantId(const std::string& domain,
+                                                 const std::string& interfaceName,
+                                                 const std::string& defaultValue);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ParticipantIdStorage);
-    std::string createProviderKey(const std::string& domain,
-                                  const std::string& interfaceName,
-                                  const std::string& authenticationToken);
+    std::string createProviderKey(const std::string& domain, const std::string& interfaceName);
     std::string filename;
 };
 

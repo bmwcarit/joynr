@@ -1,11 +1,9 @@
 package io.joynr.messaging.inprocess;
 
-import io.joynr.messaging.FailureAction;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +19,17 @@ import io.joynr.messaging.FailureAction;
  * #L%
  */
 
-import io.joynr.messaging.IMessaging;
-
 import javax.inject.Inject;
 
-import joynr.JoynrMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class InProcessMessagingStub implements IMessaging {
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.IMessagingStub;
+import joynr.ImmutableMessage;
+
+public class InProcessMessagingStub implements IMessagingStub {
+    private static final Logger LOG = LoggerFactory.getLogger(InProcessMessagingStub.class);
 
     private final InProcessMessagingSkeleton skeleton;
 
@@ -37,13 +39,9 @@ public class InProcessMessagingStub implements IMessaging {
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
+        LOG.trace(">>> OUTGOING >>> {}", message);
+
         skeleton.transmit(message, failureAction);
     }
-
-    @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
-        throw new IllegalStateException("InProcess messaging should not send serialized messages");
-    }
-
 }

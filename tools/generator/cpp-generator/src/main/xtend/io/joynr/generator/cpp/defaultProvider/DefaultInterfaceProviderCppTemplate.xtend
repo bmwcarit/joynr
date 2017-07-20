@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.defaultProvider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,12 +67,6 @@ Default«interfaceName»Provider::Default«interfaceName»Provider() :
 	std::chrono::milliseconds millisSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(
 			std::chrono::system_clock::now().time_since_epoch()
 	);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
-	providerQos.setPriority(millisSinceEpoch.count());
-	providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
-	providerQos.setSupportsOnChangeSubscriptions(true);
-#pragma GCC diagnostic pop
 }
 
 Default«interfaceName»Provider::~Default«interfaceName»Provider()

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,17 +27,17 @@ MessagingStubFactory::MessagingStubFactory() : address2MessagingStubMap(), facto
 {
 }
 
-std::shared_ptr<IMessaging> MessagingStubFactory::create(
+std::shared_ptr<IMessagingStub> MessagingStubFactory::create(
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)
 {
-    std::shared_ptr<IMessaging> stub = address2MessagingStubMap.value(destinationAddress);
+    std::shared_ptr<IMessagingStub> stub = address2MessagingStubMap.value(destinationAddress);
     if (!stub) {
         for (std::vector<std::shared_ptr<IMiddlewareMessagingStubFactory>>::iterator it =
                      this->factoryList.begin();
              it != factoryList.end();
              ++it) {
             if ((*it)->canCreate(*destinationAddress)) {
-                std::shared_ptr<IMessaging> stub = (*it)->create(*destinationAddress);
+                std::shared_ptr<IMessagingStub> stub = (*it)->create(*destinationAddress);
                 if (stub != nullptr) {
                     address2MessagingStubMap.insert(destinationAddress, stub);
                 }
@@ -65,7 +65,7 @@ bool MessagingStubFactory::contains(
 void MessagingStubFactory::registerStubFactory(
         std::shared_ptr<IMiddlewareMessagingStubFactory> factory)
 {
-    this->factoryList.push_back(factory);
+    this->factoryList.push_back(std::move(factory));
 }
 
 } // namespace joynr

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,49 +26,46 @@ INIT_LOGGER(CapabilitiesRegistrar);
 
 CapabilitiesRegistrar::CapabilitiesRegistrar(
         std::vector<IDispatcher*> dispatcherList,
-        joynr::system::IDiscoverySync& discoveryProxy,
+        system::IDiscoveryAsync& discoveryProxy,
         std::shared_ptr<ParticipantIdStorage> participantIdStorage,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
-        std::shared_ptr<MessageRouter> messageRouter,
+        std::shared_ptr<IMessageRouter> messageRouter,
         std::int64_t defaultExpiryIntervalMs,
-        PublicationManager& publicationManager)
+        PublicationManager& publicationManager,
+        const std::string& globalAddress)
         : dispatcherList(dispatcherList),
           discoveryProxy(discoveryProxy),
           participantIdStorage(participantIdStorage),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
           defaultExpiryIntervalMs(defaultExpiryIntervalMs),
-          publicationManager(publicationManager)
+          publicationManager(publicationManager),
+          globalAddress(globalAddress)
 {
 }
 
-void CapabilitiesRegistrar::remove(const std::string& participantId)
+void CapabilitiesRegistrar::removeAsync(
+        const std::string& participantId,
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onError)
 {
     for (IDispatcher* currentDispatcher : dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
-    try {
-        discoveryProxy.remove(participantId);
-    } catch (const exceptions::JoynrException& e) {
-        JOYNR_LOG_ERROR(logger,
-                        "Unable to remove provider (participant ID: {}) to discovery. Error: {}",
-                        participantId,
-                        e.getMessage());
-    }
 
-    auto future = std::make_shared<Future<void>>();
-    auto onSuccess = [future]() { future->onSuccess(); };
-    auto onError = [future](const joynr::exceptions::ProviderRuntimeException& error) {
-        future->onError(std::make_shared<joynr::exceptions::ProviderRuntimeException>(error));
+    auto onSuccessWrapper = [
+        messageRouter = util::as_weak_ptr(messageRouter),
+        participantId,
+        onSuccess = std::move(onSuccess),
+        onError
+    ]
+    {
+        if (auto ptr = messageRouter.lock()) {
+            ptr->removeNextHop(participantId, std::move(onSuccess), std::move(onError));
+        }
     };
-    messageRouter->removeNextHop(participantId, std::move(onSuccess), std::move(onError));
-    try {
-        future->get();
-    } catch (const exceptions::JoynrRuntimeException& e) {
-        JOYNR_LOG_ERROR(logger,
-                        "Unable to remove next hop (participant ID: {}) from message router.",
-                        participantId);
-    }
+
+    discoveryProxy.removeAsync(participantId, std::move(onSuccessWrapper), std::move(onError));
 }
 
 void CapabilitiesRegistrar::addDispatcher(IDispatcher* dispatcher)

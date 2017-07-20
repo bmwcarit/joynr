@@ -1,0 +1,14 @@
+[cluster-controller]
+ws-tls-port=4243
+ws-port=4242
+mqtt-client-id-prefix=joynr
+mqtt-multicast-topic-prefix=
+mqtt-unicast-topic-prefix=
+
+# The interval at which the caches are checked for discovery entries which have
+# expired, and all those found will be removed.
+purge-expired-discovery-entries-interval-ms=3600000
+
+[access-control]
+# Access control on messages is disabled by default. Set to true to enable.
+enable=false

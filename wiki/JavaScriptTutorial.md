@@ -57,14 +57,24 @@ also work here.
 For both, consumer and provider, the backend (Bounceproxy and Discovery) has to be started first.
 
 ### Starting the Backend
+Run a MQTT broker (e.g. [Mosquitto](http://mosquitto.org)) listening on port 1883 and deploy
+discovery-directory-jee and domain-access-controller-jee to a Java EE application server
+(e.g. Payara):
+```
+asadmin deploy <RADIO_HOME>/target/discovery-jee.war
+asadmin deploy <RADIO_HOME>/target/accesscontrol-jee.war
+```
+
+See [JEE Developer Guide](wiki/jee.md) or [Radio App Tutorial](wiki/Tutorial.md) for the
+configuration of Payara.
+
+### Deploy provider and consumer on a Jetty server
 The following Maven command will start a [Jetty Server](http://eclipse.org/jetty/) on
-`localhost:8080` and automatically deploy Bounceproxy and Discovery services:
+`localhost:8080` and automatically deploy provider and consumer webapp:
 
 ```bash
 <RADIO_HOME>$ mvn jetty:run-war
 ```
-
-This will also deploy the provider and consumer webapp on the jetty server.
 
 ### Running the Provider and Consumer
 
@@ -74,7 +84,7 @@ Firefox):
 * Provider: http://localhost:8080/provider.html
 * Consumer: http://localhost:8080/consumer.html
 
-##Provisioning
+## Provisioning
 joynr provides four different joynr runtimes:
 
 * WebSocket libjoynr runtime: communicates

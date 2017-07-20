@@ -3,7 +3,7 @@ package io.joynr.messaging.routing;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,23 +27,23 @@ import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingStub;
 import joynr.system.RoutingTypes.Address;
 
 @Singleton
 public class MessagingStubFactory {
 
     public static final String MIDDLEWARE_MESSAGING_STUB_FACTORIES = "MIDDLEWARE_MESSAGING_STUB_FACTORIES";
-    private Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> middlewareMessagingStubFactories;
+    private Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> middlewareMessagingStubFactories;
 
     @Inject
-    public MessagingStubFactory(@Named(MIDDLEWARE_MESSAGING_STUB_FACTORIES) Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address>> middlewareMessagingStubFactories) {
+    public MessagingStubFactory(@Named(MIDDLEWARE_MESSAGING_STUB_FACTORIES) Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> middlewareMessagingStubFactories) {
         this.middlewareMessagingStubFactories = middlewareMessagingStubFactories;
     }
 
-    public IMessaging create(Address address) {
+    public IMessagingStub create(Address address) {
         @SuppressWarnings("unchecked")
-        AbstractMiddlewareMessagingStubFactory<? extends IMessaging, Address> messagingStubFactory = (AbstractMiddlewareMessagingStubFactory<? extends IMessaging, Address>) middlewareMessagingStubFactories.get(address.getClass());
+        AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, Address> messagingStubFactory = (AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, Address>) middlewareMessagingStubFactories.get(address.getClass());
 
         if (messagingStubFactory == null) {
             throw new JoynrMessageNotSentException("Failed to send Request: Address type not supported: "
@@ -52,14 +52,8 @@ public class MessagingStubFactory {
         return messagingStubFactory.create(address);
     }
 
-    public void shutdown() {
-        for (AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address> messagingStubFactory : middlewareMessagingStubFactories.values()) {
-            messagingStubFactory.shutdown();
-        }
-    }
-
     public void register(Class<? extends Address> address,
-                         AbstractMiddlewareMessagingStubFactory<? extends IMessaging, ? extends Address> middlewareMessagingStubFactory) {
+                         AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address> middlewareMessagingStubFactory) {
         middlewareMessagingStubFactories.put(address, middlewareMessagingStubFactory);
     }
 }

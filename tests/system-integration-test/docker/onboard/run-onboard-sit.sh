@@ -2,7 +2,7 @@
 ###
 # #%L
 # %%
-# Copyright (C) 2016 BMW Car IT GmbH
+# Copyright (C) 2017 BMW Car IT GmbH
 # %%
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ CONSUMER_DOMAIN_PREFIXES=$CONSUMER_DOMAIN_PREFIXES$DOMAIN_PREFIX
 echo "start cluster controller + providers with domain prefix $DOMAIN_PREFIX"
 (
 	cd ${CPP_HOME}/bin
-	./cluster-controller ${DATA_DIR}/onboard-cc-messaging.settings & CLUSTER_CONTROLLER_PID=$!
+	/usr/bin/cluster-controller ${DATA_DIR}/onboard-cc-messaging.settings & CLUSTER_CONTROLLER_PID=$!
 	./jsit-provider-ws $DOMAIN_PREFIX.cpp runForever & CPP_PROVIDER_PID=$!
 
 	cd ${NODE_APP_HOME}

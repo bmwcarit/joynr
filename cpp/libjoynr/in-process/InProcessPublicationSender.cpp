@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,18 @@
 #include <tuple>
 
 #include "joynr/ISubscriptionCallback.h"
+#include "joynr/ISubscriptionManager.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
-#include "joynr/ISubscriptionManager.h"
 
 namespace joynr
 {
 
 INIT_LOGGER(InProcessPublicationSender);
 
-InProcessPublicationSender::InProcessPublicationSender(ISubscriptionManager* subscriptionManager)
-        : subscriptionManager(subscriptionManager)
+InProcessPublicationSender::InProcessPublicationSender(
+        std::shared_ptr<ISubscriptionManager> subscriptionManager)
+        : subscriptionManager(std::move(subscriptionManager))
 {
 }
 
@@ -52,8 +53,8 @@ void InProcessPublicationSender::sendSubscriptionPublication(
       * just call the InProcessDispatcher!
       */
 
-    const std::string subscriptionId = subscriptionPublication.getSubscriptionId();
-    JOYNR_LOG_TRACE(logger, "Sending publication. id={}", subscriptionId);
+    const std::string& subscriptionId = subscriptionPublication.getSubscriptionId();
+    JOYNR_LOG_DEBUG(logger, "Sending publication. id={}", subscriptionId);
     assert(subscriptionManager != nullptr);
     subscriptionManager->touchSubscriptionState(subscriptionId);
     std::shared_ptr<ISubscriptionCallback> callback =
@@ -80,8 +81,8 @@ void InProcessPublicationSender::sendSubscriptionReply(const std::string& sender
     std::ignore = receiverParticipantId;
     std::ignore = qos;
 
-    const std::string subscriptionId = subscriptionReply.getSubscriptionId();
-    JOYNR_LOG_TRACE(logger, "Sending publication. id={}", subscriptionId);
+    const std::string& subscriptionId = subscriptionReply.getSubscriptionId();
+    JOYNR_LOG_DEBUG(logger, "Sending publication. id={}", subscriptionId);
     assert(subscriptionManager != nullptr);
     std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);

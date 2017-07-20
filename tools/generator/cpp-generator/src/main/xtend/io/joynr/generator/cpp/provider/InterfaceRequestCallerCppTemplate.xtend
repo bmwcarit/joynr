@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 «getNamespaceStarter(francaIntf)»
 «interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider)
 	: joynr::RequestCaller(provider->getInterfaceName()),
-	  provider(provider)
+	  provider(std::move(provider))
 {
 }
 
@@ -192,28 +192,14 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 
 «ENDFOR»
 
-void «interfaceName»RequestCaller::registerAttributeListener(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener)
+joynr::types::Version «interfaceName»RequestCaller::getProviderVersion()
 {
-	provider->registerAttributeListener(attributeName, attributeListener);
-}
-
-void «interfaceName»RequestCaller::unregisterAttributeListener(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener)
-{
-	provider->unregisterAttributeListener(attributeName, attributeListener);
-}
-
-void «interfaceName»RequestCaller::registerBroadcastListener(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener)
-{
-	provider->registerBroadcastListener(broadcastName, broadcastListener);
-}
-
-void «interfaceName»RequestCaller::unregisterBroadcastListener(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener)
-{
-	provider->unregisterBroadcastListener(broadcastName, broadcastListener);
-}
-
-joynr::types::Version «interfaceName»RequestCaller::getProviderVersion() {
 	return joynr::types::Version(provider->MAJOR_VERSION, provider->MINOR_VERSION);
+}
+
+std::shared_ptr<IJoynrProvider> «interfaceName»RequestCaller::getProvider()
+{
+	return provider;
 }
 
 «getNamespaceEnder(francaIntf)»

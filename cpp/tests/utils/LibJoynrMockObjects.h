@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,27 @@
 #ifndef LIBJOYNR_MOCKOBJECTS_H_
 #define LIBJOYNR_MOCKOBJECTS_H_
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <memory>
 #include <numeric>
 #include <string>
 #include <tuple>
 #include <vector>
-#include "PrettyPrint.h"
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/ISubscriptionListener.h"
 
+#include "tests/PrettyPrint.h"
+
 using ::testing::A;
 using ::testing::_;
-using ::testing::A;
 using ::testing::Eq;
 using ::testing::NotNull;
 using ::testing::AllOf;
+using ::testing::Invoke;
 using ::testing::Property;
 
 // Disable VC++ warnings due to google mock
@@ -142,6 +144,22 @@ public:
         joynr::tests::testAbstractProvider::registerBroadcastListener(broadcastListener);
     }
 
+    void methodWithNoInputParameters(std::function<void(const std::int32_t& result)> onSuccess,
+                                     std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError) override
+    {
+        methodWithNoInputParametersMock([](const std::int32_t&){},
+                                        [](const joynr::exceptions::ProviderRuntimeException&){});
+        joynr::tests::DefaulttestProvider::methodWithNoInputParameters(std::move(onSuccess), std::move(onError));
+    }
+
+    MOCK_METHOD2(
+            methodWithNoInputParametersMock,
+            void(std::function<void(
+                    const std::int32_t& result
+                 )> onSuccess,
+                 std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError)
+    );
+
     MOCK_METHOD2(
             getLocation,
             void(
@@ -231,7 +249,7 @@ public:
                 const std::string& result)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) override
     {
-        std::string result("QtAnotherDerivedStruct");
+        std::string result("AnotherDerivedStruct");
         onSuccess(result);
     }
 

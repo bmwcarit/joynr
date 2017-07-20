@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.serialize.JoynrEnumSerializer;
 import io.joynr.messaging.serialize.JoynrListSerializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
-import io.joynr.messaging.serialize.NumberSerializer;
 import io.joynr.messaging.util.Utilities;
 
 import java.util.ArrayList;
@@ -42,8 +41,9 @@ import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
+import org.apache.commons.io.Charsets;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -126,7 +126,7 @@ public abstract class AbstractBounceProxyServerTest {
         RestAssured.baseURI = getBounceProxyBaseUri();
 
         int index = 1;
-        List<String> expectedPayloads = new ArrayList<String>();
+        List<byte[]> expectedPayloads = new ArrayList<byte[]>();
 
         for (int i = 0; i < maxRuns; i++) {
             expectedPayloads.clear();
@@ -134,18 +134,18 @@ public abstract class AbstractBounceProxyServerTest {
             long startTime_ms = System.currentTimeMillis();
             ScheduledFuture<Response> longPollConsumer = bpMock.longPollInOwnThread(channelId, 30000);
 
-            String postPayload = payload + index++ + "-" + UUID.randomUUID().toString();
+            byte[] postPayload = (payload + index++ + "-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
             expectedPayloads.add(postPayload);
             ScheduledFuture<Response> postMessage = bpMock.postMessageInOwnThread(channelId, 5000, postPayload);
 
-            String postPayload2 = payload + index++ + "-" + UUID.randomUUID().toString();
+            byte[] postPayload2 = (payload + index++ + "-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
             expectedPayloads.add(postPayload2);
             ScheduledFuture<Response> postMessage2 = bpMock.postMessageInOwnThread(channelId, 5000, postPayload2);
 
             // wait until the long poll returns
             Response responseLongPoll = longPollConsumer.get();
-            String responseBody = responseLongPoll.getBody().asString();
-            List<String> listOfJsonStrings = Utilities.splitJson(responseBody);
+            byte[] responseBody = responseLongPoll.getBody().asByteArray();
+            List<ImmutableMessage> receivedMessages = Utilities.splitSMRF(responseBody);
 
             // wait until the POSTs are finished.
             postMessage.get();
@@ -153,18 +153,17 @@ public abstract class AbstractBounceProxyServerTest {
 
             long elapsedTime_ms = System.currentTimeMillis() - startTime_ms;
 
-            if (listOfJsonStrings.size() < 2 && elapsedTime_ms < maxTimePerRun) {
+            if (receivedMessages.size() < 2 && elapsedTime_ms < maxTimePerRun) {
                 // Thread.sleep(100);
                 Response responseLongPoll2 = bpMock.longPollInOwnThread(channelId, 30000).get();
-                String responseBody2 = responseLongPoll2.getBody().asString();
-                List<String> listOfJsonStrings2 = Utilities.splitJson(responseBody2);
-                listOfJsonStrings.addAll(listOfJsonStrings2);
+                byte[] responseBody2 = responseLongPoll2.getBody().asByteArray();
+                List<ImmutableMessage> receivedMessages2 = Utilities.splitSMRF(responseBody2);
+                receivedMessages.addAll(receivedMessages2);
             }
 
-            ArrayList<String> payloads = new ArrayList<String>();
-            for (String json : listOfJsonStrings) {
-                JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class);
-                payloads.add(message.getPayload());
+            ArrayList<byte[]> payloads = new ArrayList<byte[]>();
+            for (ImmutableMessage message : receivedMessages) {
+                payloads.add(message.getUnencryptedBody());
             }
 
             elapsedTime_ms = System.currentTimeMillis() - startTime_ms;
@@ -193,7 +192,7 @@ public abstract class AbstractBounceProxyServerTest {
 
         RestAssured.baseURI = getBounceProxyBaseUri();
 
-        List<String> expectedPayloads = new ArrayList<String>();
+        List<byte[]> expectedPayloads = new ArrayList<byte[]>();
 
         for (int i = 0; i < maxRuns; i++) {
 
@@ -201,22 +200,21 @@ public abstract class AbstractBounceProxyServerTest {
 
             ScheduledFuture<Response> longPollConsumer = bpMock.longPollInOwnThread(channelId, 30000);
 
-            String postPayload = payload + i + "-" + UUID.randomUUID().toString();
+            byte[] postPayload = (payload + i + "-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8);
             expectedPayloads.add(postPayload);
             ScheduledFuture<Response> postMessage = bpMock.postMessageInOwnThread(channelId, 5000, postPayload);
 
             // wait until the long poll returns
             Response responseLongPoll = longPollConsumer.get();
-            String responseBody = responseLongPoll.getBody().asString();
-            List<String> listOfJsonStrings = Utilities.splitJson(responseBody);
+            byte[] responseBody = responseLongPoll.getBody().asByteArray();
+            List<ImmutableMessage> receivedMessages = Utilities.splitSMRF(responseBody);
 
             // wait until the POSTs are finished.
             postMessage.get();
 
-            ArrayList<String> payloads = new ArrayList<String>();
-            for (String json : listOfJsonStrings) {
-                JoynrMessage message = objectMapper.readValue(json, JoynrMessage.class);
-                payloads.add(message.getPayload());
+            ArrayList<byte[]> payloads = new ArrayList<byte[]>();
+            for (ImmutableMessage message : receivedMessages) {
+                payloads.add(message.getUnencryptedBody());
             }
 
             // assertFalse("Unresolved bug that causes duplicate messages to be sent", payloads.size() == 2);
@@ -242,7 +240,9 @@ public abstract class AbstractBounceProxyServerTest {
         Thread.sleep(5000);
 
         for (String channel : channels) {
-            bpMock.postMessageInOwnThread(channel, 10000, "payload-" + UUID.randomUUID().toString());
+            bpMock.postMessageInOwnThread(channel,
+                                          10000,
+                                          ("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8));
             Thread.sleep(50);
 
         }
@@ -258,7 +258,8 @@ public abstract class AbstractBounceProxyServerTest {
     @Test
     public void testPostMessageToNonExistingChannel() throws Exception {
 
-        String serializedMessage = bpMock.createSerializedJoynrMessage(100000l, "some-payload");
+        byte[] serializedMessage = bpMock.createImmutableMessage(100000l, "some-payload".getBytes(Charsets.UTF_8))
+                                         .getSerializedMessage();
         /* @formatter:off */
         Response postMessageResponse = bpMock.onrequest()
                                              .with()
@@ -296,7 +297,6 @@ public abstract class AbstractBounceProxyServerTest {
                                                                       .getDefaultTyper(SimpleType.construct(Object.class));
 
         SimpleModule module = new SimpleModule("NonTypedModule", new Version(1, 0, 0, "", "", ""));
-        module.addSerializer(Number.class, new NumberSerializer());
         module.addSerializer(new JoynrEnumSerializer());
         module.addSerializer(new JoynrListSerializer());
 

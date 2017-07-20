@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,18 +43,15 @@ class InterfaceProxyCppTemplate extends InterfaceTemplate {
 
 «getNamespaceStarter(francaIntf)»
 «className»::«className»(
-		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
-		joynr::IClientCache *cache,
 		const std::string &domain,
-		const joynr::MessagingQos &qosSettings,
-		bool cached
+		const joynr::MessagingQos &qosSettings
 ) :
-		joynr::ProxyBase(connectorFactory, cache, domain, qosSettings, cached),
-		«className»Base(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),
-		«IF hasFireAndForgetMethods(francaIntf)»«fireAndForgetClassName»(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),«ENDIF»
-		«syncClassName»(messagingAddress, connectorFactory, cache, domain, qosSettings, cached),
-		«asyncClassName»(messagingAddress, connectorFactory, cache, domain, qosSettings, cached)
+		joynr::ProxyBase(connectorFactory, domain, qosSettings),
+		«className»Base(connectorFactory, domain, qosSettings),
+		«IF hasFireAndForgetMethods(francaIntf)»«fireAndForgetClassName»(connectorFactory, domain, qosSettings),«ENDIF»
+		«syncClassName»(connectorFactory, domain, qosSettings),
+		«asyncClassName»(connectorFactory, domain, qosSettings)
 {
 }
 

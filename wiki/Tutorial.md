@@ -167,7 +167,7 @@ can be stopped by hitting `q`. The provider will be unregistered and the applica
 
 ```c++
 ...
-JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToLibJoynSettings, pathToMessagingSettings);
+std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToLibJoynSettings, pathToMessagingSettings);
 // Initialize the quality of service settings
 // Set the priority so that the consumer application always uses the most recently started provider
 std::chrono::milliseconds millisSinceEpoch =
@@ -247,11 +247,11 @@ you added to the interface, and add a print statement so that you can see the re
 int main(int argc, char* argv[])
 {
     ...
-    JoynrRuntime* runtime =
+    std::unique_ptr<JoynrRuntime> runtime =
             JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
-    ProxyBuilder<vehicle::RadioProxy>* proxyBuilder =
+    std::unique_ptr<ProxyBuilder<vehicle::RadioProxy>> proxyBuilder =
             runtime->createProxyBuilder<vehicle::RadioProxy>(providerDomain);
 
     // Messaging Quality of service
@@ -278,10 +278,10 @@ int main(int argc, char* argv[])
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     // Build a proxy
-    vehicle::RadioProxy* proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
-                                         ->setCached(false)
-                                         ->setDiscoveryQos(discoveryQos)
-                                         ->build();
+    std::unique_ptr<vehicle::RadioProxy> proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
+                                                             ->setCached(false)
+                                                             ->setDiscoveryQos(discoveryQos)
+                                                             ->build();
 
     vehicle::RadioStation currentStation;
     try {
@@ -430,16 +430,75 @@ and cpp-java.
 You need to have Maven installed. Joynr is tested with Maven 3.3.3,
 but more recent versions should also work here.
 
-For both, consumer and provider, the backend (Bounceproxy and Discovery) has to be started first.
+For both, consumer and provider, the backend (Discovery and Access Control) has to be started first.
+You will also need to install an MQTT broker, e.g. [Mosquitto](http://mosquitto.org).
 
 ### Starting the Backend
-The following Maven command will start a [Jetty Server](http://eclipse.org/jetty/) on
-`localhost:8080` and automatically deploy
-[Bounceproxy and Discovery services](using_joynr.md#discovery-directories):
 
-```bash
-<RADIO_HOME>$ mvn jetty:run
+The following section describes how to run the joynr MQTT backend services on
+(Payara 4.1](http://www.payara.fish).
+First, install the application server. It has to be configured once before the first start:
+
+***Payara configuration***
 ```
+Start up the Payara server by changing to the Payara install directory and executing
+
+    bin/asadmin start-domain
+
+Configure your JEE application server with a `ManagedScheduledExecutorService`
+resource which has the name `'concurrent/joynrMessagingScheduledExecutor'`:
+
+    bin/asadmin create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor
+
+Note the `--corepoolsize=100` option. The default will only create one thread,
+which can lead to blocking.
+
+You also need a connection pool for the database which shall be used by the backend services
+to persist data.
+For this example, we'll create a database on the JavaDB (based on Derby) database which is
+installed as part of Payara:
+
+    bin/asadmin create-jdbc-connection-pool \
+        --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
+        --restype javax.sql.XADataSource \
+        --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool
+
+Next, create a datasource resource pointing to that database connection. Here's an
+example of what that would look like when using the connection pool created above:
+
+    bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS
+    bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DomainAccessControllerDS
+
+Afterwards you can stop the Payara server by executing
+
+    bin/asadmin stop-domain
+```
+
+Start the MQTT broker, and make sure it's accepting traffic on `1883`.
+
+Start the database and the Payara server by changing to the Payara install directory and executing:
+```bash
+bin/asadmin start-database
+bin/asadmin start-domain
+```
+
+Finally, fire up the joynr backend services:
+```bash
+bin/asadmin deploy <RADIO_HOME>/target/discovery-jee.war
+bin/asadmin deploy <RADIO_HOME>/target/accesscontrol-jee.war
+```
+
+>**Note:**
+>Instead of communicating via MQTT (default), joynr can also be configured to use **HTTP**
+>(longpolling). However, **(non selective) broadcasts are not working when using HTTP**.
+>Instead of a MQTT broker, a HTTP bounceproxy is used. The following Maven command will start a
+>[Jetty Server](http://eclipse.org/jetty/) on `localhost:8080` and automatically deploy
+>the whole joynr http backend, i.e. Domain Access Controller as well as
+>[Http Bounceproxy and Discovery services](using_joynr.md#discovery-directories):
+>```bash
+><RADIO_HOME>$ mvn jetty:run \
+>  -Djoynr.messaging.discoverydirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
+>```
 
 ### Java
 
@@ -454,7 +513,7 @@ must be set on the command line. Right click again and select **Run Configuratio
 Alternatively, run the provider from the command line by executing the following Maven command:
 
 ```bash
-<RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<my provider domain>"
+<RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="-d <my provider domain>"
 ```
 
 >**Note:**
@@ -472,8 +531,21 @@ should be able to see log output.
 Alternatively, run the consumer from the command line by executing the following Maven command:
 
 ```bash
-<RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="<my provider domain>"
+<RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="-d <my provider domain>"
 ```
+
+>When using HTTP/Jetty, an additional argument is necessary to run the provider and consumer
+>applications:
+>```bash
+><RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" \
+>  -Dexec.args="-d <my provider domain> -t http" \
+>  -Djoynr.messaging.discoverydirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/ \
+>  -Djoynr.messaging.domainaccesscontrollerurl=http://localhost:8080/discovery/channels/domainaccesscontroller_channelid/
+><RADIO_HOME>$ mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" \
+>  -Dexec.args="-d <my provider domain> -t http" \
+>  -Djoynr.messaging.discoverydirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/ \
+>  -Djoynr.messaging.domainaccesscontrollerurl=http://localhost:8080/discovery/channels/domainaccesscontroller_channelid/
+>```
 
 ### C++
 Pick a domain that will be used to identify the provider and run the example:
@@ -492,7 +564,19 @@ In another terminal window execute:
 <CPP_BUILD_DIRECTORY>/radio/bin$ ./radio-app-consumer-cc <my provider domain>
 ```
 
-This consumer will make a call to the joynr runtime to find a provider with the domain. If there are
+>To use HTTP instead of MQTT (see [Starting the backend](#starting-the-backend)), start a
+>cluster controller with the provided http settings file:
+>```bash
+><CPP_BUILD_DIRECTORY>/radio/bin$ ./cluster-controller resources/cc.messaging.settings
+>```
+>Then you can start provider-ws and consumer-ws which establish a websocket connection to a
+>standalone cluster controller (instead of the cc variants which use an embedded cluster controller):
+>```bash
+><CPP_BUILD_DIRECTORY>/radio/bin$ ./radio-app-provider-ws <my provider domain>
+><CPP_BUILD_DIRECTORY>/radio/bin$ ./radio-app-consumer-ws <my provider domain>
+>```
+
+The consumer will make a call to the joynr runtime to find a provider with the domain. If there are
 several providers of the same type registered on the same domain, then the ArbitrationStrategy (see
 in the main function of MyRadioConsumerApplication.cpp) is used to work out which provider to take.
 

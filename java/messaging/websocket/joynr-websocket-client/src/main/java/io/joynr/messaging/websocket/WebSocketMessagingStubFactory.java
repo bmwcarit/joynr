@@ -3,7 +3,7 @@ package io.joynr.messaging.websocket;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package io.joynr.messaging.websocket;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -30,23 +29,16 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 public class WebSocketMessagingStubFactory extends
         AbstractMiddlewareMessagingStubFactory<WebSocketMessagingStub, WebSocketAddress> {
 
-    private ObjectMapper objectMapper;
     private WebSocketEndpointFactory webSocketEndpointFactory;
 
     @Inject
-    public WebSocketMessagingStubFactory(WebSocketEndpointFactory webSocketClientFactory, ObjectMapper objectMapper) {
+    public WebSocketMessagingStubFactory(WebSocketEndpointFactory webSocketClientFactory) {
         this.webSocketEndpointFactory = webSocketClientFactory;
-        this.objectMapper = objectMapper;
     }
 
     @Override
     protected WebSocketMessagingStub createInternal(WebSocketAddress address) {
         JoynrWebSocketEndpoint webSocketEndpoint = webSocketEndpointFactory.create(address);
-        return new WebSocketMessagingStub(address, webSocketEndpoint, objectMapper);
-    }
-
-    @Override
-    public void shutdown() {
-        // Nothing to do. Skeleton shuts down the client
+        return new WebSocketMessagingStub(address, webSocketEndpoint);
     }
 }

@@ -1,9 +1,11 @@
 package io.joynr.messaging.bounceproxy.filter;
 
+import joynr.ImmutableMessage;
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +21,7 @@ package io.joynr.messaging.bounceproxy.filter;
  * #L%
  */
 
-import joynr.JoynrMessage;
+import joynr.MutableMessage;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.BroadcastFilter.BroadcastAction.ACTION;
@@ -46,23 +48,22 @@ public class MessageSerializationFilter implements PerRequestBroadcastFilter {
 
     @Override
     public BroadcastAction filter(Object originalMessage, Object message) {
-        if (message instanceof JoynrMessage) {
+        if (message instanceof MutableMessage) {
             logger.trace("filter {}", message);
-
-            message = serialize(message);
-            return new BroadcastAction(ACTION.CONTINUE, message);
+            return new BroadcastAction(ACTION.CONTINUE, serialize((MutableMessage) message));
+        } else if (message instanceof ImmutableMessage) {
+            logger.trace("filter {}", message);
+            return new BroadcastAction(ACTION.CONTINUE, ((ImmutableMessage) message).getSerializedMessage());
         }
         return new BroadcastAction(ACTION.CONTINUE, message);
     }
 
-    private Object serialize(Object message) {
-
+    private Object serialize(MutableMessage message) {
         try {
-            message = mapper.writeValueAsString(message);
+            return message.getImmutableMessage().getSerializedMessage();
         } catch (Exception e) {
             logger.error("error serializing message", e);
         }
         return message;
     }
-
 }

@@ -3,7 +3,7 @@ package io.joynr.dispatching.rpc;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import io.joynr.dispatching.Directory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -39,10 +41,10 @@ import com.google.inject.name.Named;
 
 /**
  * Queue to store replyCallers and remove them if the round-trip TTL of the corresponding request expires.
- * 
+ *
  */
 @Singleton
-public class ReplyCallerDirectory extends Directory<ReplyCaller> {
+public class ReplyCallerDirectory extends Directory<ReplyCaller> implements ShutdownListener {
 
     private boolean shutdown = false;
     private static final Logger logger = LoggerFactory.getLogger(ReplyCallerDirectory.class);
@@ -50,8 +52,10 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> {
     private ScheduledExecutorService cleanupScheduler;
 
     @Inject
-    public ReplyCallerDirectory(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
+    public ReplyCallerDirectory(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
+                                ShutdownNotifier shutdownNotifier) {
         this.cleanupScheduler = cleanupScheduler;
+        shutdownNotifier.registerForShutdown(this);
     }
 
     public void addReplyCaller(final String requestReplyId,
@@ -62,6 +66,7 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> {
 
         try {
             cleanupScheduler.schedule(new Runnable() {
+                @Override
                 public void run() {
                     removeExpiredReplyCaller(requestReplyId);
                 }
@@ -88,13 +93,8 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> {
 
     }
 
+    @Override
     public void shutdown() {
-        // outstandingReplyCaller.values();
-        // for (ContentWithExpiryDate<ReplyCaller> wrapper : outstandingReplyCaller.values()) {
-        // ReplyCaller replyCaller = wrapper.getContent();
-        // replyCaller.shutdown();
-        //
-        // }
         shutdown = true;
     }
 

@@ -1,0 +1,48 @@
+[messaging]
+# The maximum allowed TTL value for joynr messages.
+# 2592000000 = 30 days in milliseconds
+max-ttl-ms=2592000000
+
+# When a new provider is registered, an appropriate discovery entry is added
+# to the capabilities directory in order to make the new provider discoverable.
+# If no expiry information is given during provider registration, this setting
+# is used to determine a default expiry date. The expiry date will be
+# 'now' + discovery-entry-expiry-interval-ms. After this date the capabilities
+# directory might delete the discovery information and the provider is not
+# discoverable anymore. # 86400000 = 1 day in millisecond.
+discovery-entry-expiry-interval-ms=86400000
+
+broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@/
+
+discovery-directories-domain=io.joynr
+# TTL in msecs of messages used in communication between local discovery service and backend
+# discovery service.
+# If backend discovery service is not available at the time the provider is registered, the provider
+# will be added anyway to the backend discovery if the backend discovery service becomes available
+# within the TTL.
+# 1814400000 = 21 days
+discovery-messages-ttl=1814400000
+
+capabilities-directory-url=" "
+capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"tcp://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
+capabilities-directory-participantid=capabilitiesdirectory_participantid
+
+# Time span in seconds after which the mqtt broker will send a PING message to the client
+# if no other messages have been exchanged with the mqtt broker
+mqtt-keep-alive-time-seconds=60
+# Time to wait in milliseconds between mqtt reconnect attempts
+mqtt-reconnect-sleep-time-ms=1000
+
+
+index=0
+create-channel-retry-interval=500
+delete-channel-retry-interval=5000
+send-msg-retry-interval=500
+longpoll-retry-interval=5000
+local-proxy-host=
+http-debug=
+local-proxy-port=
+persistence-file=joynr.settings
+long-poll-timeout=
+broker-timeout=
+max-send-ttl=

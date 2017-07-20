@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,28 @@
  */
 #include "joynr/FixedParticipantArbitrationStrategyFunction.h"
 
-#include "joynr/types/DiscoveryEntry.h"
-#include "joynr/DiscoveryQos.h"
-#include "joynr/types/ProviderQos.h"
-#include "joynr/types/CustomParameter.h"
+#include <tuple> // for std::ignore
+
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/types/CustomParameter.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
 
-std::string FixedParticipantArbitrationStrategyFunction::select(
+types::DiscoveryEntryWithMetaInfo FixedParticipantArbitrationStrategyFunction::select(
         const std::map<std::string, types::CustomParameter> customParameters,
-        const std::vector<types::DiscoveryEntry>& discoveryEntries) const
+        const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const
 {
     std::ignore = customParameters;
-    if (discoveryEntries.empty())
+    if (discoveryEntries.empty()) {
         throw exceptions::DiscoveryException("No provider found for given ParticipantId");
+    }
 
-    if (discoveryEntries.size() > 1)
+    if (discoveryEntries.size() > 1) {
         throw exceptions::DiscoveryException("No provider found for given ParticipantId");
+    }
 
-    return discoveryEntries.front().getParticipantId();
+    return discoveryEntries.front();
 }
 } // namespace joynr

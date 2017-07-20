@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,20 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-#include <initializer_list>
 #include <functional>
 #include <memory>
 
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
+#include "joynr/ByteBuffer.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/Logger.h"
-#include "joynr/JoynrMessage.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/JoynrMessage.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
 #include "joynr/types/TestTypes/TStruct.h"
@@ -68,45 +67,6 @@ private:
 };
 
 INIT_LOGGER(JoynrJsonSerializerTest);
-
-TEST_F(JoynrJsonSerializerTest, receivedFromGlobalAttributeIsIgnoredBySerialization)
-{
-    // Create a JoynrMessage
-    JoynrMessage msg;
-    msg.setType("TESTTYPE");
-    std::string payload = "testPayload";
-    msg.setPayload(payload);
-
-    msg.setReceivedFromGlobal(true);
-    ASSERT_TRUE(msg.isReceivedFromGlobal());
-
-    // Serialize into JSON
-    std::string json = joynr::serializer::serializeToJson(msg);
-    JOYNR_LOG_TRACE(logger, "JoynrMessage JSON: {}",json);
-
-    JoynrMessage deserializedMsg;
-    joynr::serializer::deserializeFromJson(deserializedMsg, json);
-
-    EXPECT_FALSE(deserializedMsg.isReceivedFromGlobal());
-}
-
-TEST_F(JoynrJsonSerializerTest, serializeJoynrMessage)
-{
-    // Create a JoynrMessage
-    JoynrMessage msg;
-    msg.setType("TESTTYPE");
-    std::string payload = "/67589\?\?8zhkbv\?\?\?\?\?\?\?\?\?\?L\?\?Lkj\?\?jhljvhl\?\?\?\?\?\?/\?\?\?\?\?\?";
-    msg.setPayload(payload);
-
-    // Serialize into JSON
-    std::string json = joynr::serializer::serializeToJson(msg);
-    JOYNR_LOG_TRACE(logger, "JoynrMessage JSON: {}",json);
-
-    JoynrMessage deserializedMsg;
-    joynr::serializer::deserializeFromJson(deserializedMsg, json);
-
-    EXPECT_EQ(msg, deserializedMsg);
-}
 
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerApplicationException)
 {
@@ -285,7 +245,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerMulticastSubscriptionRequest)
     expectedRequest.setMulticastId("multicastId");
     expectedRequest.setSubscriptionId("000-10000-01101");
     expectedRequest.setSubscribeToName("subscribeToName");
-    auto qos = std::make_shared<OnChangeSubscriptionQos>();
+    auto qos = std::make_shared<MulticastSubscriptionQos>();
     expectedRequest.setQos(qos);
 
     // Serialize into JSON
@@ -343,14 +303,14 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeMasterAccessControlEntry)
     using namespace joynr::infrastructure::DacTypes;
 
     std::vector<TrustLevel::Enum> possibleTrustLevels(
-                std::initializer_list<TrustLevel::Enum>{
+                {
                     TrustLevel::LOW,
                     TrustLevel::MID,
                     TrustLevel::HIGH
                 });
 
     std::vector<Permission::Enum> possiblePermissions(
-                std::initializer_list<Permission::Enum>{
+                {
                     Permission::NO,
                     Permission::ASK,
                     Permission::YES
@@ -453,34 +413,14 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
 {
     using namespace joynr::types::TestTypes;
 
-    std::vector<std::uint8_t> byteBuffer(
-                std::initializer_list<std::uint8_t>{
-                    1,2,3
-                });
-    std::vector<std::uint8_t> uInt8Array(
-                std::initializer_list<std::uint8_t>{
-                    3,2,1
-                });
-    std::vector<TEnum::Enum> enumArray(
-                std::initializer_list<TEnum::Enum>{
-                    TEnum::TLITERALB
-                });
-    std::vector<std::string> stringArray(
-                std::initializer_list<std::string>{
-                    "one", "four"
-                });
-    std::vector<Vowel::Enum> vowelinies(
-                std::initializer_list<Vowel::Enum>{
-                    Vowel::A,
-                    Vowel::E
-                });
+    ByteBuffer byteBuffer({1, 2, 3});
+    std::vector<std::uint8_t> uInt8Array({3, 2, 1});
+    std::vector<TEnum::Enum> enumArray({TEnum::TLITERALB});
+    std::vector<std::string> stringArray({"one", "four"});
+    std::vector<Vowel::Enum> vowelinies({Vowel::A, Vowel::E});
     Word wordWithVowelinies{vowelinies};
     Word wordEmpty{};
-    std::vector<Word> words(
-                std::initializer_list<Word>{
-                    wordWithVowelinies,
-                    wordEmpty
-                });
+    std::vector<Word> words({wordWithVowelinies, wordEmpty});
     TStringKeyMap stringMap;
     stringMap.insert({"StringKey", "StringValue"});
 

@@ -3,7 +3,7 @@ package io.joynr.exceptions;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ public class JoynrMessageNotSentException extends JoynrRuntimeException {
 
     public JoynrMessageNotSentException(String errorMsg, Throwable cause) {
         super(errorMsg, cause);
-
     }
 
     private static final long serialVersionUID = -4092692826208168737L;

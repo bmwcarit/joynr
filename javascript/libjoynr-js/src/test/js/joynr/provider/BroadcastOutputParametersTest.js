@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,14 @@ define([ "joynr/provider/BroadcastOutputParameters"
                     type : "String"
                 }
             ]);
+            expect(broadcastOutputParameters).toBeDefined();
+            expect(broadcastOutputParameters).not.toBeNull();
+            expect(typeof broadcastOutputParameters === "object").toBeTruthy();
+            expect(broadcastOutputParameters instanceof BroadcastOutputParameters).toEqual(true);
+        });
+
+        it("can be empty", function() {
+            var broadcastOutputParameters = new BroadcastOutputParameters([]);
             expect(broadcastOutputParameters).toBeDefined();
             expect(broadcastOutputParameters).not.toBeNull();
             expect(typeof broadcastOutputParameters === "object").toBeTruthy();

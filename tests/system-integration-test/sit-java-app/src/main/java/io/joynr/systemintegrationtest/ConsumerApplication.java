@@ -3,7 +3,7 @@ package io.joynr.systemintegrationtest;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,8 +155,8 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 int addendB = 4444444;
                 Integer sum = systemIntegrationTestProxy.add(addendA, addendB);
                 if (sum != null && sum == (addendA + addendB)) {
-                    LOG.info("SIT RESULT success: Java consumer -> " + providerDomain
-                        + " (" + addendA + " + " + addendB + " =  " + sum + ")");
+                    LOG.info("SIT RESULT success: Java consumer -> " + providerDomain + " (" + addendA + " + "
+                            + addendB + " =  " + sum + ")");
                     success = true;
                 }
             } catch (Exception e) {

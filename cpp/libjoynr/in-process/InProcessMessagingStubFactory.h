@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef INPROCESSMESSAGINGSTUBFACTORYB_H
-#define INPROCESSMESSAGINGSTUBFACTORYB_H
+#ifndef INPROCESSMESSAGINGSTUBFACTORY_H
+#define INPROCESSMESSAGINGSTUBFACTORY_H
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 
@@ -29,14 +29,14 @@ class InProcessMessagingStubFactory : public IMiddlewareMessagingStubFactory
 
 public:
     InProcessMessagingStubFactory();
-    std::shared_ptr<IMessaging> create(
+    std::shared_ptr<IMessagingStub> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
-    void registerOnMessagingStubClosedCallback(std::function<void(
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)>
+    void registerOnMessagingStubClosedCallback(std::function<
+            void(std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
                                                        onMessagingStubClosedCallback) override;
 };
 
 } // namespace joynr
 
-#endif // INPROCESSMESSAGINGSTUBFACTORYB_H
+#endif // INPROCESSMESSAGINGSTUBFACTORY_H

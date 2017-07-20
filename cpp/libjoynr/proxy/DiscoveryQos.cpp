@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,9 @@
 namespace joynr
 {
 
-std::int64_t& DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT_MS()
+std::int64_t DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT_MS()
 {
-    static std::int64_t default_timeout = 30000;
-    return default_timeout;
-}
-
-std::int64_t& DiscoveryQos::DEFAULT_DISCOVERYTIMEOUT()
-{
-    return DEFAULT_DISCOVERYTIMEOUT_MS();
+    return 30000;
 }
 
 DiscoveryQos::ArbitrationStrategy& DiscoveryQos::DEFAULT_ARBITRATIONSTRATEGY()
@@ -40,20 +34,14 @@ DiscoveryQos::ArbitrationStrategy& DiscoveryQos::DEFAULT_ARBITRATIONSTRATEGY()
     return default_strategy;
 }
 
-std::int64_t& DiscoveryQos::DO_NOT_USE_CACHE()
+std::int64_t DiscoveryQos::DO_NOT_USE_CACHE()
 {
-    static std::int64_t do_not_use_cache = 0;
-    return do_not_use_cache;
+    return 0;
 }
 
-std::int64_t& DiscoveryQos::DEFAULT_CACHEMAXAGE_MS()
+std::int64_t DiscoveryQos::DEFAULT_CACHEMAXAGE_MS()
 {
     return DO_NOT_USE_CACHE();
-}
-
-std::int64_t& DiscoveryQos::DEFAULT_CACHEMAXAGE()
-{
-    return DEFAULT_CACHEMAXAGE_MS();
 }
 
 joynr::types::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
@@ -63,15 +51,9 @@ joynr::types::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
     return default_scope;
 }
 
-std::int64_t& DiscoveryQos::DEFAULT_RETRYINTERVAL_MS()
+std::int64_t DiscoveryQos::DEFAULT_RETRYINTERVAL_MS()
 {
-    static std::int64_t default_retryInterval = 1000;
-    return default_retryInterval;
-}
-
-std::int64_t& DiscoveryQos::DEFAULT_RETRYINTERVAL()
-{
-    return DEFAULT_RETRYINTERVAL_MS();
+    return 1000;
 }
 
 DiscoveryQos::DiscoveryQos()
@@ -85,7 +67,7 @@ DiscoveryQos::DiscoveryQos()
 {
 }
 
-DiscoveryQos::DiscoveryQos(const std::int64_t& cacheMaxAge)
+DiscoveryQos::DiscoveryQos(std::int64_t cacheMaxAge)
         : customParameters(),
           arbitrationStrategy(DEFAULT_ARBITRATIONSTRATEGY()),
           discoveryTimeoutMs(DEFAULT_DISCOVERYTIMEOUT_MS()),
@@ -109,19 +91,9 @@ void DiscoveryQos::setDiscoveryTimeoutMs(std::int64_t discoveryTimeoutMs)
     }
 }
 
-void DiscoveryQos::setDiscoveryTimeout(std::int64_t discoveryTimeout)
-{
-    setDiscoveryTimeoutMs(discoveryTimeout);
-}
-
 std::int64_t DiscoveryQos::getDiscoveryTimeoutMs() const
 {
     return discoveryTimeoutMs;
-}
-
-std::int64_t DiscoveryQos::getDiscoveryTimeout() const
-{
-    return getDiscoveryTimeoutMs();
 }
 
 DiscoveryQos::ArbitrationStrategy DiscoveryQos::getArbitrationStrategy() const
@@ -150,19 +122,9 @@ std::int64_t DiscoveryQos::getCacheMaxAgeMs() const
     return cacheMaxAgeMs;
 }
 
-std::int64_t DiscoveryQos::getCacheMaxAge() const
-{
-    return getCacheMaxAgeMs();
-}
-
-void DiscoveryQos::setCacheMaxAgeMs(const std::int64_t& cacheMaxAgeMs)
+void DiscoveryQos::setCacheMaxAgeMs(const std::int64_t cacheMaxAgeMs)
 {
     this->cacheMaxAgeMs = cacheMaxAgeMs;
-}
-
-void DiscoveryQos::setCacheMaxAge(const std::int64_t& cacheMaxAge)
-{
-    setCacheMaxAgeMs(cacheMaxAge);
 }
 
 bool DiscoveryQos::getProviderMustSupportOnChange() const
@@ -196,19 +158,9 @@ std::int64_t DiscoveryQos::getRetryIntervalMs() const
     return this->retryIntervalMs;
 }
 
-std::int64_t DiscoveryQos::getRetryInterval() const
-{
-    return getRetryIntervalMs();
-}
-
 void DiscoveryQos::setRetryIntervalMs(std::int64_t retryIntervalMs)
 {
     this->retryIntervalMs = retryIntervalMs;
-}
-
-void DiscoveryQos::setRetryInterval(std::int64_t retryInterval)
-{
-    setRetryIntervalMs(retryInterval);
 }
 
 } // namespace joynr

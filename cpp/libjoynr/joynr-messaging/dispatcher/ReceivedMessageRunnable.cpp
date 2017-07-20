@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,23 +20,26 @@
 
 #include <cassert>
 
+#include "joynr/CallContextStorage.h"
 #include "joynr/Dispatcher.h"
-#include "common/CallContextStorage.h"
+#include "joynr/Message.h"
+#include "joynr/ImmutableMessage.h"
 
 namespace joynr
 {
 
 INIT_LOGGER(ReceivedMessageRunnable);
 
-ReceivedMessageRunnable::ReceivedMessageRunnable(const JoynrMessage& message,
+ReceivedMessageRunnable::ReceivedMessageRunnable(std::shared_ptr<ImmutableMessage> message,
                                                  Dispatcher& dispatcher)
         : Runnable(true),
-          ObjectWithDecayTime(message.getHeaderExpiryDate()),
-          message(message),
+          ObjectWithDecayTime(message->getExpiryDate()),
+          message(std::move(message)),
           dispatcher(dispatcher)
 {
-    JOYNR_LOG_DEBUG(
-            logger, "Creating ReceivedMessageRunnable for message type: {}", message.getType());
+    JOYNR_LOG_TRACE(logger,
+                    "Creating ReceivedMessageRunnable for message: {}",
+                    this->message->toLogMessage());
 }
 
 void ReceivedMessageRunnable::shutdown()
@@ -45,14 +48,12 @@ void ReceivedMessageRunnable::shutdown()
 
 void ReceivedMessageRunnable::run()
 {
-    const std::string messageType = message.getType();
+    const std::string& messageType = message->getType();
 
-    JOYNR_LOG_DEBUG(logger,
-                    "Running ReceivedMessageRunnable for message type: {}, msg ID: {} and "
-                    "payload: {}",
+    JOYNR_LOG_TRACE(logger,
+                    "Running ReceivedMessageRunnable for message type: {}, msg ID: {}",
                     messageType,
-                    message.getHeaderMessageId(),
-                    message.getPayload());
+                    message->getId());
     if (isExpired()) {
         JOYNR_LOG_DEBUG(
                 logger, "Dropping ReceivedMessageRunnable message, because it is expired: ");
@@ -60,33 +61,32 @@ void ReceivedMessageRunnable::run()
     }
 
     CallContext callContext;
-    callContext.setPrincipal(message.getHeaderCreatorUserId());
+    callContext.setPrincipal(message->getCreator());
 
-    CallContextStorage::set(callContext);
+    CallContextStorage::set(std::move(callContext));
 
-    if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REQUEST) {
-        dispatcher.handleRequestReceived(message);
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_REPLY) {
-        dispatcher.handleReplyReceived(message);
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_ONE_WAY) {
-        dispatcher.handleOneWayRequestReceived(message);
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST) {
-        dispatcher.handleSubscriptionRequestReceived(message);
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) {
-        dispatcher.handleBroadcastSubscriptionRequestReceived(message);
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
-        dispatcher.handleMulticastSubscriptionRequestReceived(message);
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
-        dispatcher.handleSubscriptionReplyReceived(message);
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_MULTICAST) {
-        dispatcher.handleMulticastReceived(message);
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_PUBLICATION) {
-        dispatcher.handlePublicationReceived(message);
-    } else if (messageType == JoynrMessage::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP) {
-        dispatcher.handleSubscriptionStopReceived(message);
+    if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST()) {
+        dispatcher.handleRequestReceived(*message);
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_REPLY()) {
+        dispatcher.handleReplyReceived(*message);
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_ONE_WAY()) {
+        dispatcher.handleOneWayRequestReceived(*message);
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST()) {
+        dispatcher.handleSubscriptionRequestReceived(*message);
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST()) {
+        dispatcher.handleBroadcastSubscriptionRequestReceived(*message);
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST()) {
+        dispatcher.handleMulticastSubscriptionRequestReceived(*message);
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY()) {
+        dispatcher.handleSubscriptionReplyReceived(*message);
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
+        dispatcher.handleMulticastReceived(*message);
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_PUBLICATION()) {
+        dispatcher.handlePublicationReceived(*message);
+    } else if (messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP()) {
+        dispatcher.handleSubscriptionStopReceived(*message);
     } else {
-        JOYNR_LOG_FATAL(logger, "unknown message type: {}", messageType);
-        assert(false);
+        JOYNR_LOG_ERROR(logger, "unknown message type: {}", messageType);
     }
 
     CallContextStorage::invalidate();

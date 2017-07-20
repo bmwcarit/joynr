@@ -3,7 +3,7 @@ package io.joynr.messaging.inprocess;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,12 @@ package io.joynr.messaging.inprocess;
  * limitations under the License.
  * #L%
  */
+import io.joynr.messaging.FailureAction;
 
 import io.joynr.messaging.IMessagingSkeleton;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 public interface InProcessMessagingSkeleton extends IMessagingSkeleton {
 
-    void transmit(JoynrMessage message);
+    void transmit(ImmutableMessage message, FailureAction failureAction);
 }

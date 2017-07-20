@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,13 +82,13 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             runtimeModule = new LibjoynrWebSocketRuntimeModule();
         } else {
             runtimeModule = new CCInProcessRuntimeModule();
-            // always install HTTP for now
-            backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
-
             if (invocationParameters.getBackendTransportMode() == BackendConfig.MQTT) {
                 joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParameters.getMqttBrokerUri());
                 joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
+            } else {
+                // HTTP
+                backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
             }
         }
 

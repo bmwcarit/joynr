@@ -3,10 +3,13 @@
  */
 package test.io.joynr.jeeintegration.messaging;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +35,18 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.jeeintegration.messaging.JeeMessageRouter;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.AddressManager;
+import io.joynr.messaging.routing.DelayableImmutableMessage;
+import io.joynr.messaging.routing.BoundedDelayQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
-import joynr.JoynrMessage;
+import io.joynr.runtime.ShutdownNotifier;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -48,6 +56,8 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class JeeMessageRouterTest {
+    private final long routingTableGracePeriodMs = 60000L;
+    private final long routingTableCleanupIntervalMs = 60000L;
 
     @Mock
     private ScheduledExecutorService scheduler;
@@ -67,24 +77,43 @@ public class JeeMessageRouterTest {
     @Mock
     private MulticastReceiverRegistry multicastReceiverRegistry;
 
+    @Mock
+    BoundedDelayQueue<DelayableImmutableMessage> messageQueue;
+
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
+
     @Test
-    public void testScheduleMessage() {
+    public void testScheduleMessage() throws InterruptedException {
         Address address = new Address();
-        JoynrMessage message = new JoynrMessage();
-        message.setTo("to");
+        ImmutableMessage message = Mockito.mock(ImmutableMessage.class);
+        when(message.isTtlAbsolute()).thenReturn(true);
+        when(message.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(60000L).getValue());
+        when(message.getRecipient()).thenReturn("to");
         when(routingTable.get("to")).thenReturn(address);
+
         JeeMessageRouter subject = new JeeMessageRouter(routingTable,
                                                         scheduler,
                                                         1000L,
+                                                        10,
+                                                        routingTableGracePeriodMs,
+                                                        routingTableCleanupIntervalMs,
                                                         messagingStubFactory,
                                                         messagingSkeletonFactory,
                                                         addressManager,
-                                                        multicastReceiverRegistry);
+                                                        multicastReceiverRegistry,
+                                                        null,
+                                                        false,
+                                                        messageQueue,
+                                                        shutdownNotifier);
 
-        message.setExpirationDate(ExpiryDate.fromRelativeTtl(60000L));
         subject.route(message);
 
-        verify(scheduler).schedule((Runnable) Mockito.any(), Mockito.eq(0L), Mockito.eq(TimeUnit.MILLISECONDS));
+        ArgumentCaptor<DelayableImmutableMessage> passedDelaybleMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
+        verify(messageQueue).putBounded(passedDelaybleMessage.capture());
+        assertEquals(message, passedDelaybleMessage.getValue().getMessage());
+        assertTrue(passedDelaybleMessage.getValue().getDelay(TimeUnit.MILLISECONDS) <= 0);
+
     }
 
     @Test
@@ -92,14 +121,19 @@ public class JeeMessageRouterTest {
         JeeMessageRouter subject = new JeeMessageRouter(routingTable,
                                                         scheduler,
                                                         1000L,
+                                                        10,
+                                                        routingTableGracePeriodMs,
+                                                        routingTableCleanupIntervalMs,
                                                         messagingStubFactory,
                                                         messagingSkeletonFactory,
                                                         addressManager,
-                                                        multicastReceiverRegistry);
+                                                        multicastReceiverRegistry,
+                                                        null,
+                                                        false,
+                                                        messageQueue,
+                                                        shutdownNotifier);
 
-        subject.shutdown();
-
-        verify(scheduler).shutdown();
+        verify(shutdownNotifier).registerForShutdown(subject);
     }
 
 }

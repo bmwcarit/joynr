@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 
-#include "joynr/IMessaging.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
@@ -26,10 +25,10 @@
 #include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 
-#include "cluster-controller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
-#include "cluster-controller/messaging/joynr-messaging/MqttMessagingStub.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
+#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStub.h"
 
-#include "utils/MockObjects.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 
@@ -60,17 +59,15 @@ protected:
 INIT_LOGGER(MqttMessagingStubFactoryTest);
 
 TEST_F(MqttMessagingStubFactoryTest, canCreateMqttAddressses) {
-    auto mockMessageSender = std::make_shared<MockMessageSender>();
-    std::string receiveChannelId = "channelId";
-    MqttMessagingStubFactory factory(mockMessageSender, receiveChannelId);
+    auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
+    MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_TRUE(factory.canCreate(mqttAddress));
 }
 
 TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses) {
-    auto mockMessageSender = std::make_shared<MockMessageSender>();
-    std::string receiveChannelId = "channelId";
-    MqttMessagingStubFactory factory(mockMessageSender, receiveChannelId);
+    auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
+    MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_FALSE(factory.canCreate(channelAddress));
     EXPECT_FALSE(factory.canCreate(commonApiDbusAddress));
@@ -80,9 +77,8 @@ TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses) {
 }
 
 TEST_F(MqttMessagingStubFactoryTest, createReturnsMessagingStub) {
-    auto mockMessageSender = std::make_shared<MockMessageSender>();
-    std::string receiveChannelId = "channelId";
-    MqttMessagingStubFactory factory(mockMessageSender, receiveChannelId);
+    auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
+    MqttMessagingStubFactory factory(mockMessageSender);
 
     EXPECT_TRUE(factory.create(mqttAddress).get() != nullptr);
 }

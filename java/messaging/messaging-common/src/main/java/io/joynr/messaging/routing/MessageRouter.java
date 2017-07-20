@@ -1,9 +1,8 @@
-package io.joynr.messaging.routing;
-
 /*
  * #%L
+
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +17,19 @@ package io.joynr.messaging.routing;
  * limitations under the License.
  * #L%
  */
+package io.joynr.messaging.routing;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+
 import joynr.system.RoutingTypes.Address;
 
 public interface MessageRouter {
     static final String ROUTER_GLOBAL_ADDRESS = "io.joynr.messaging.globalAddress";
     static final String SCHEDULEDTHREADPOOL = "io.joynr.messaging.scheduledthreadpool";
 
-    public void route(JoynrMessage message);
+    public void route(ImmutableMessage message);
 
-    public void addNextHop(String participantId, Address address);
+    public void addNextHop(String participantId, Address address, boolean isGloballyVisible);
 
     public void shutdown();
 
@@ -39,5 +40,4 @@ public interface MessageRouter {
     void addMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId);
 
     void removeMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId);
-
 }

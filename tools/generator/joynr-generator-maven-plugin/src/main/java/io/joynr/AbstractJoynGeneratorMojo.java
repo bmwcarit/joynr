@@ -4,7 +4,7 @@ package io.joynr;
  * #%L
  * %%
  * Copyright 2001-2005 The Apache Software Foundation.
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,13 +81,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
      * @parameter expression="${joynr.generator.parameter}"
      */
     protected Map<String, String> parameter;
-
-    /**
-     * Properties output directory for header files
-     * @parameter expression="${joynr.generator.outputHeaderPath}"
-     * @deprecated please use <parameter><outputHeaderPath>the output header path</outputHeaderPath></parameter> instead
-     */
-    protected String outputHeaderPath;
 
     /**
      * Properties skips the generation, if set to true
@@ -168,9 +161,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         arguments.setParameter(parameter);
         if (parameter == null) {
             parameter = new HashMap<String, String>();
-        }
-        if (parameter.get("outputHeaderPath") == null) {
-            parameter.put("outputHeaderPath", outputHeaderPath);
         }
         return arguments;
     }

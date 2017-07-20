@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
     // not used
     // std::string pathToLibJoynrSettings(dir.toStdString() +
     // "/resources/test-app-provider.libjoynr.settings");
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // create provider instance
     std::shared_ptr<IltProvider> provider(new IltProvider());
@@ -109,6 +109,5 @@ int main(int argc, char* argv[])
     // Unregister the provider
     runtime->unregisterProvider<interlanguagetest::TestInterfaceProvider>(providerDomain, provider);
 
-    delete runtime;
     return 0;
 }

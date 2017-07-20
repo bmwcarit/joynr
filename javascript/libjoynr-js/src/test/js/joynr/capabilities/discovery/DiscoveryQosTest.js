@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,40 +88,6 @@ define([
             expect(discoveryQos.additionalParameters).toEqual({
                 testKey : "testValue"
             });
-        });
-
-        it("handles deprecated APIs", function() {
-            var discoveryQos = new DiscoveryQos({
-                discoveryTimeout : 12345,
-                discoveryRetryDelay : 123456,
-                arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
-                cacheMaxAgeMs : 1234,
-                discoveryScope : DiscoveryScope.LOCAL_AND_GLOBAL,
-                additionalParameters : {
-                    testKey : "testValue"
-                }
-            });
-            expect(discoveryQos.discoveryTimeoutMs).toEqual(12345);
-            expect(discoveryQos.discoveryTimeout).toEqual(12345);
-            expect(discoveryQos.discoveryRetryDelayMs).toEqual(123456);
-            expect(discoveryQos.discoveryRetryDelay).toEqual(123456);
-            expect(discoveryQos.arbitrationStrategy).toEqual(
-                    ArbitrationStrategyCollection.HighestPriority);
-            expect(discoveryQos.cacheMaxAgeMs).toEqual(1234);
-            expect(discoveryQos.cacheMaxAge).toEqual(1234);
-            expect(discoveryQos.discoveryScope).toEqual(DiscoveryScope.LOCAL_AND_GLOBAL);
-            expect(discoveryQos.additionalParameters).toEqual({
-                testKey : "testValue"
-            });
-            discoveryQos.discoveryTimeout = 1000;
-            expect(discoveryQos.discoveryTimeoutMs).toEqual(1000);
-            expect(discoveryQos.discoveryTimeout).toEqual(1000);
-            discoveryQos.discoveryRetryDelay = 2000;
-            expect(discoveryQos.discoveryRetryDelayMs).toEqual(2000);
-            expect(discoveryQos.discoveryRetryDelay).toEqual(2000);
-            discoveryQos.cacheMaxAge = 3000;
-            expect(discoveryQos.cacheMaxAgeMs).toEqual(3000);
-            expect(discoveryQos.cacheMaxAge).toEqual(3000);
         });
     });
 

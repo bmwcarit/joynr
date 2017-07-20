@@ -3,7 +3,7 @@ package io.joynr.messaging.mqtt;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,32 +22,19 @@ package io.joynr.messaging.mqtt;
 import com.google.inject.Inject;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.JoynrMessageSerializer;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<MqttMessagingStub, MqttAddress> {
 
-    private MqttMessageSerializerFactory mqttMessageSerializerFactory;
     private JoynrMqttClient mqttClient;
-    private MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator;
 
     @Inject
-    public MqttMessagingStubFactory(MqttMessageSerializerFactory mqttMessageSerializerFactory,
-                                    MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator,
-                                    MqttClientFactory mqttClientFactory) {
-        this.mqttMessageSerializerFactory = mqttMessageSerializerFactory;
+    public MqttMessagingStubFactory(MqttClientFactory mqttClientFactory) {
         this.mqttClient = mqttClientFactory.create();
-        this.mqttMessageReplyToAddressCalculator = mqttMessageReplyToAddressCalculator;
     }
 
     @Override
     protected MqttMessagingStub createInternal(MqttAddress address) {
-        JoynrMessageSerializer messageSerializer = mqttMessageSerializerFactory.create(address);
-        return new MqttMessagingStub(address, mqttClient, messageSerializer, mqttMessageReplyToAddressCalculator);
-    }
-
-    @Override
-    public void shutdown() {
-        // nothing to do. MqttClient is shutdown by the skeleton
+        return new MqttMessagingStub(address, mqttClient);
     }
 }

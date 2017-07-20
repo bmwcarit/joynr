@@ -3,7 +3,7 @@ package io.joynr.examples.jee;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,11 @@ public class RadioConsumerRestEndpoint {
     @GET
     @Path("/current-station")
     public RadioStation getCurrentRadioStation() {
-        return getRadioClient().getCurrentStation();
+        try {
+            return getRadioClient().getCurrentStation();
+        } catch (Exception e) {
+            throw new WebApplicationException(e);
+        }
     }
 
     @GET
@@ -72,9 +76,10 @@ public class RadioConsumerRestEndpoint {
     }
 
     @POST
-    public boolean addRadioStation(RadioStation radioStation) {
+    @Produces({MediaType.TEXT_PLAIN})
+    public boolean addRadioStation(String name) {
         try {
-            return getRadioClient().addFavoriteStation(radioStation);
+            return getRadioClient().addFavoriteStation(new RadioStation(name, true, Country.GERMANY));
         } catch (ApplicationException e) {
             throw new WebApplicationException(e.getMessage());
         }

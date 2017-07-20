@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ import com.google.inject.Module;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 import io.joynr.integration.util.DummyJoynrApplication;
-import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
 import io.joynr.messaging.websocket.WebSocketEndpointFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
@@ -48,10 +48,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- *
- */
-public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
+public class WebSocketProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
     private static final long CONST_DEFAULT_TEST_TIMEOUT = 10000;
     private JoynrRuntime ccJoynrRuntime;
@@ -82,16 +79,16 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
     private JoynrRuntime createClusterController(Properties webSocketConfig) {
         Properties ccConfig = new Properties();
         ccConfig.putAll(webSocketConfig);
+        ccConfig.putAll(baseTestConfig);
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
         injectorCC = new JoynrInjectorFactory(ccConfig, Modules.override(new CCWebSocketRuntimeModule())
-                                                               .with(new AtmosphereMessagingModule(),
-                                                                     new AbstractModule() {
-                                                                         @Override
-                                                                         protected void configure() {
-                                                                             bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
-                                                                                                .toInstance(Boolean.TRUE);
-                                                                         }
-                                                                     })).getInjector();
+                                                               .with(new MqttPahoModule(), new AbstractModule() {
+                                                                   @Override
+                                                                   protected void configure() {
+                                                                       bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
+                                                                                          .toInstance(Boolean.TRUE);
+                                                                   }
+                                                               })).getInjector();
         return injectorCC.getInstance(JoynrRuntime.class);
     }
 
@@ -99,8 +96,10 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
     protected JoynrRuntime getRuntime(final Properties joynrConfig, final Module... modules) {
         if (ccJoynrRuntime == null) {
             ccJoynrRuntime = createClusterController(webSocketConfig);
+            createdRuntimes.add(ccJoynrRuntime);
         }
         joynrConfig.putAll(webSocketConfig);
+        joynrConfig.putAll(baseTestConfig);
         joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
         Module modulesWithRuntime = Modules.override(modules)
                                            .with(Modules.override(new LibjoynrWebSocketRuntimeModule())
@@ -114,7 +113,6 @@ public class WebSocketProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest 
                                                         }));
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
-        dummyApplications.add(application);
         return application.getRuntime();
     }
 

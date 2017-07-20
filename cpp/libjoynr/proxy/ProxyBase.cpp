@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  * #L%
  */
 #include "joynr/ProxyBase.h"
-
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include <tuple>
 
 #include "joynr/Util.h"
@@ -28,26 +28,23 @@ namespace joynr
 INIT_LOGGER(ProxyBase);
 
 ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
-                     IClientCache* cache,
                      const std::string& domain,
-                     const MessagingQos& qosSettings,
-                     bool cached)
+                     const MessagingQos& qosSettings)
         : connectorFactory(connectorFactory),
-          cache(cache),
           domain(domain),
           qosSettings(qosSettings),
-          cached(cached),
-          providerParticipantId(""),
-          proxyParticipantId("")
+          proxyParticipantId(""),
+          providerDiscoveryEntry()
 {
     proxyParticipantId = util::createUuid();
 }
 
-void ProxyBase::handleArbitrationFinished(const std::string& participantId,
-                                          bool useInProcessConnector)
+void ProxyBase::handleArbitrationFinished(
+        const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
+        bool useInProcessConnector)
 {
     std::ignore = useInProcessConnector;
-    providerParticipantId = participantId;
+    this->providerDiscoveryEntry = providerDiscoveryEntry;
 }
 
 const std::string& ProxyBase::getProxyParticipantId() const

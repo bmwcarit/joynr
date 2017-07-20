@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ package io.joynr.proxy;
  */
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.routing.MessageRouter;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -28,29 +27,21 @@ import javax.inject.Inject;
 import com.google.common.collect.Sets;
 import com.google.inject.name.Named;
 
-import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.DiscoveryAsync;
-import joynr.system.RoutingTypes.Address;
 
 public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
 
     private final DiscoveryAsync localDiscoveryAggregator;
     private final ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
-    private final MessageRouter messageRouter;
-    private final Address libjoynrMessagingAddress;
     private final long maxMessagingTtl;
 
     @Inject
     public ProxyBuilderFactoryImpl(DiscoveryAsync localDiscoveryAggregator,
                                    ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
-                                   MessageRouter messageRouter,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS) long maxMessagingTtl,
-                                   @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address libjoynrMessagingAddress) {
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS) long maxMessagingTtl) {
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
-        this.messageRouter = messageRouter;
         this.maxMessagingTtl = maxMessagingTtl;
-        this.libjoynrMessagingAddress = libjoynrMessagingAddress;
     }
 
     @Override
@@ -61,11 +52,9 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
     @Override
     public <T> ProxyBuilder<T> get(Set<String> domains, Class<T> interfaceClass) {
         return new ProxyBuilderDefaultImpl<>(localDiscoveryAggregator,
-                domains,
-                interfaceClass,
-                proxyInvocationHandlerFactory,
-                messageRouter,
-                maxMessagingTtl,
-                libjoynrMessagingAddress);
+                                             domains,
+                                             interfaceClass,
+                                             proxyInvocationHandlerFactory,
+                                             maxMessagingTtl);
     }
 }

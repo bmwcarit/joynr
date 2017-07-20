@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 #include <gmock/gmock.h>
 
 #include "tests/utils/MockObjects.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
@@ -82,7 +82,7 @@ public:
         runtime2->stop(deleteChannel);
 
         // Delete persisted files
-        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
@@ -111,19 +111,19 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime2->createProxyBuilder<tests::testProxy>(domain);
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
+    discoveryQos.setDiscoveryTimeoutMs(3000);
 
     std::int64_t qosRoundTripTTL = 50000;
 
     // Send a message and expect to get a result
-    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
-                                               ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                               ->setCached(false)
-                                               ->setDiscoveryQos(discoveryQos)
-                                               ->build());
+    std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
+                     ->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                     ->setDiscoveryQos(discoveryQos)
+                     ->build();
     std::uint64_t startTime = DispatcherUtils::nowInMilliseconds();
     std::vector<std::shared_ptr<Future<int> > >testFutureList;
     int numberOfRequests = 150;
@@ -163,9 +163,9 @@ INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         )
 );
 
-INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+INSTANTIATE_TEST_CASE_P(Mqtt,
         End2EndPerformanceTest,
         testing::Values(
-            std::make_tuple("test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings","test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings")
+            std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings","test-resources/MqttSystemIntegrationTest2.settings")
         )
 );

@@ -3,7 +3,7 @@ package io.joynr.messaging.mqtt;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,24 +22,28 @@ package io.joynr.messaging.mqtt;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttMulticastAddressCalculator implements MulticastAddressCalculator {
 
     private MqttAddress globalAddress;
+    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     @Inject
-    public MqttMulticastAddressCalculator(@Named(MqttModule.PROPERTY_MQTT_ADDRESS) MqttAddress globalAddress) {
+    public MqttMulticastAddressCalculator(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress globalAddress,
+                                          MqttTopicPrefixProvider mqttTopicPrefixProvider) {
         this.globalAddress = (MqttAddress) globalAddress;
+        this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
     }
 
     @Override
-    public Address calculate(JoynrMessage message) {
+    public Address calculate(ImmutableMessage message) {
         Address result = null;
         if (globalAddress != null) {
-            result = new MqttAddress(globalAddress.getBrokerUri(), message.getTo());
+            String topic = mqttTopicPrefixProvider.getMulticastTopicPrefix() + message.getRecipient();
+            result = new MqttAddress(globalAddress.getBrokerUri(), topic);
         }
         return result;
     }

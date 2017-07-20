@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,30 +20,26 @@
 #ifndef LIBJOYNRRUNTIME_H
 #define LIBJOYNRRUNTIME_H
 
-#include <string>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <string>
 
-#include "joynr/PrivateCopyAssign.h"
-
-#include "joynr/JoynrRuntime.h"
-
-#include "joynr/LibjoynrSettings.h"
-#include "joynr/SystemServicesSettings.h"
-#include "joynr/ProxyBuilder.h"
-#include "joynr/IMessaging.h"
-#include "joynr/JoynrMessageSender.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/SubscriptionManager.h"
+#include "joynr/JoynrRuntime.h"
+#include "joynr/LibjoynrSettings.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ProxyBuilder.h"
 #include "joynr/Semaphore.h"
+#include "joynr/SubscriptionManager.h"
+#include "joynr/SystemServicesSettings.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
 
-class IMessaging;
-class JoynrMessageSender;
-class MessageRouter;
+class IMessageRouter;
+class LibJoynrMessageRouter;
+class IMessageSender;
 class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
 class IMulticastAddressCalculator;
@@ -56,15 +52,12 @@ public:
     explicit LibJoynrRuntime(std::unique_ptr<Settings> settings);
     ~LibJoynrRuntime() override;
 
-    void unregisterProvider(const std::string& participantId) override;
-
 protected:
-    SubscriptionManager* subscriptionManager;
+    std::shared_ptr<IMessageRouter> getMessageRouter() final;
+
+    std::shared_ptr<SubscriptionManager> subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
-    InProcessConnectorFactory* inProcessConnectorFactory;
-    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
-    std::shared_ptr<IMessaging> joynrMessagingSendStub;
-    JoynrMessageSender* joynrMessageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     IDispatcher* joynrDispatcher;
     IDispatcher* inProcessDispatcher;
 
@@ -75,15 +68,18 @@ protected:
 
     std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
 
-    virtual void startLibJoynrMessagingSkeleton(std::shared_ptr<MessageRouter> messageRouter) = 0;
+    virtual void startLibJoynrMessagingSkeleton(std::shared_ptr<IMessageRouter> messageRouter) = 0;
 
     void init(std::shared_ptr<IMiddlewareMessagingStubFactory> middlewareMessagingStubFactory,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> libjoynrMessagingAddress,
               std::shared_ptr<const joynr::system::RoutingTypes::Address> ccMessagingAddress,
-              std::unique_ptr<IMulticastAddressCalculator> addressCalculator);
+              std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+              std::function<void()> onSuccess,
+              std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
+    std::shared_ptr<LibJoynrMessageRouter> libJoynrMessageRouter;
 };
 
 } // namespace joynr

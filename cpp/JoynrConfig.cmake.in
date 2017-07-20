@@ -69,6 +69,7 @@ find_package(Boost 1.58.0 REQUIRED
 )
 include(${JOYNR_CMAKE_DIR}/CheckBoostImportTargets.cmake)
 
+# Threads
 find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
 
 # Our library dependencies (contains definitions for IMPORTED targets)

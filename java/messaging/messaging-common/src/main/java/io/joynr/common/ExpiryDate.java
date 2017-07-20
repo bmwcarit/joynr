@@ -3,7 +3,7 @@ package io.joynr.common;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,10 @@ public class ExpiryDate {
             expiryDate = Math.addExact(creationTime, relativeTtl);
         } catch (ArithmeticException exception) {
             expiryDate = Long.MAX_VALUE;
+        }
+        // do not exceed Javascript max safe integer (2^53-1)
+        if (expiryDate > 9007199254740991L) {
+            expiryDate = 9007199254740991L;
         }
         return new ExpiryDate(relativeTtl, expiryDate, creationTime);
     }

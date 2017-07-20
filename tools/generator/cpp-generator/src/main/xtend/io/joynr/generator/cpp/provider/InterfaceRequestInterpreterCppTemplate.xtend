@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ void «interfaceName»RequestInterpreter::execute(
 			«FOR attribute : attributes»
 				«val attributeName = attribute.joynrName»
 				«IF attribute.readable»
-				if (methodName == "get«attributeName.toFirstUpper»"){
+				if (methodName == "get«attributeName.toFirstUpper»" && paramTypes.size() == 0){
 					auto requestCallerOnSuccess =
 							[onSuccess = std::move(onSuccess)](«attribute.typeName» «attributeName»){
 								BaseReply reply;

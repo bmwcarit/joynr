@@ -33,7 +33,7 @@ RUN dnf update -y \
 RUN cd /opt \
     && git clone https://github.com/miloyip/rapidjson.git rapidjson \
     && cd rapidjson \
-    && git checkout ab791ae90cbfd2e229be1b5e9db577728cfb3352 \
+    && git checkout v1.1.0 \
     && mkdir build \
     && cd build \
     && cmake -DRAPIDJSON_BUILD_DOC=OFF \
@@ -51,7 +51,7 @@ RUN cd /opt \
 RUN cd /opt \
     && git clone https://github.com/bmwcarit/muesli.git \
     && cd muesli \
-    && git checkout 0.1.4 \
+    && git checkout 0.3.1 \
     && mkdir build \
     && cd build \
     && cmake -DBUILD_MUESLI_TESTS=Off -DUSE_PLATFORM_RAPIDJSON=On .. \
@@ -73,3 +73,19 @@ RUN cd /opt \
     && make install -j"$(nproc)" \
     && cd /opt/ \
     && rm -rf googletest
+
+###################################################
+# install smrf
+###################################################
+
+RUN export SMRF_VERSION=0.2.0 \
+    && cd /opt \
+    && git clone https://github.com/bmwcarit/smrf.git \
+    && cd smrf \
+    && git checkout $SMRF_VERSION \
+    && mkdir build \
+    && cd build \
+    && cmake -DBUILD_TESTS=Off .. \
+    && make install -j"$(nproc)" \
+    && cd /opt \
+    && rm -rf smrf

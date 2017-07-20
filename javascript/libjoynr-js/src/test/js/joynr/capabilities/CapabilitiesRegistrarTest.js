@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,6 @@ define([
                         var publicationManagerSpy;
                         var participantId;
                         var domain;
-                        var authToken;
                         var participantIdStorageSpy;
                         var discoveryStubSpy;
                         var messageRouterSpy;
@@ -89,7 +88,12 @@ define([
                             spyOn(provider, "checkImplementation").and.callThrough();
 
                             providerQos =
-                                    new ProviderQos([], 1, Date.now(), ProviderScope.GLOBAL, true);
+                                    new ProviderQos({
+                                        customParameters : [],
+                                        priority : Date.now(),
+                                        scope : ProviderScope.GLOBAL,
+                                        supportsOnChangeSubscriptions : true
+                                    });
 
                             provider.myAttribute = new ProviderAttributeNotifyReadWrite(provider, {
                                 dependencies : {
@@ -100,7 +104,6 @@ define([
                             localChannelId = "localChannelId";
                             domain = "testdomain";
                             address = "address";
-                            authToken = "authToken";
                             participantId = "myParticipantId";
                             participantIdStorageSpy =
                                     jasmine.createSpyObj(
@@ -163,6 +166,8 @@ define([
                             expect(capabilitiesRegistrar.registerProvider).toBeDefined();
                             expect(typeof capabilitiesRegistrar.registerProvider === "function")
                                     .toBeTruthy();
+                            expect(typeof capabilitiesRegistrar.register === "function")
+                            .toBeTruthy();
                             done();
                         });
 
@@ -227,10 +232,12 @@ define([
                             }).catch(function() {
                                return null;
                             });
+                            var isGloballyVisible = (providerQos.scope === ProviderScope.GLOBAL);
                             expect(messageRouterSpy.addNextHop).toHaveBeenCalled();
                             expect(messageRouterSpy.addNextHop).toHaveBeenCalledWith(
                                     participantId,
-                                    libjoynrMessagingAddress);
+                                    libjoynrMessagingAddress,
+                                    isGloballyVisible);
                             done();
                         });
 
@@ -246,6 +253,42 @@ define([
                             expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
                             expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(
                                     participantId,
+                                    provider);
+                            done();
+                        });
+
+                        it("handles calls to function register", function(done) {
+                            capabilitiesRegistrar.register({
+                                domain: "domain",
+                                provider: provider,
+                                providerQos : providerQos
+                            }).then(function() {
+                               return null;
+                            }).catch(function() {
+                               return null;
+                            });
+                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
+                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(
+                                    participantId,
+                                    provider);
+                            done();
+                        });
+
+                        it("uses passed-in participantId", function(done) {
+                            var myParticipantId = "myParticipantId";
+                            capabilitiesRegistrar.register({
+                                domain: "domain",
+                                provider: provider,
+                                providerQos : providerQos,
+                                participantId : myParticipantId
+                            }).then(function() {
+                               return null;
+                            }).catch(function() {
+                               return null;
+                            });
+                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
+                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(
+                                    myParticipantId,
                                     provider);
                             done();
                         });
@@ -317,8 +360,7 @@ define([
                         });
 
                         it("returns the provider participant ID", function(done) {
-                            capabilitiesRegistrar.registerCapability(
-                                    authToken,
+                            capabilitiesRegistrar.registerProvider(
                                     domain,
                                     provider,
                                     providerQos).then(function(result) {
@@ -336,8 +378,7 @@ define([
                                 function(done) {
                                     discoveryStubSpy.add.and.returnValue(Promise.reject(new Error("Some error.")));
 
-                                    capabilitiesRegistrar.registerCapability(
-                                            authToken,
+                                    capabilitiesRegistrar.registerProvider(
                                             domain,
                                             provider,
                                             providerQos).then(function() {
@@ -353,30 +394,10 @@ define([
                                             });
                         });
 
-                        it("passes calls to deprecated registerCapability to registerProvider without authToken", function(done) {
-                            spyOn(capabilitiesRegistrar, "registerProvider").and.callThrough();
-                            capabilitiesRegistrar.registerCapability(
-                                    authToken,
-                                    domain,
-                                    provider,
-                                    providerQos).then(function() {
-                                expect(capabilitiesRegistrar.registerProvider).toHaveBeenCalledWith(domain, provider, providerQos);
-                                done();
-                                return null;
-                            }).catch(fail);
-                        });
-
                         it(
                                 "CapabilitiesRegistrar throws exception when called while shut down",
                                 function(done) {
                                     capabilitiesRegistrar.shutdown();
-                                    expect(function() {
-                                        capabilitiesRegistrar.registerCapability(
-                                                authToken,
-                                                domain,
-                                                provider,
-                                                providerQos);
-                                    }).toThrow();
                                     expect(function() {
                                         capabilitiesRegistrar.registerProvider(
                                                 domain,
@@ -385,9 +406,6 @@ define([
                                     }).toThrow();
                                     expect(function() {
                                         capabilitiesRegistrar.unregisterProvider(domain, provider);
-                                    }).toThrow();
-                                    expect(function() {
-                                        capabilitiesRegistrar.unregisterCapability(domain, provider);
                                     }).toThrow();
                                     done();
                                 });

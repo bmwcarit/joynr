@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,14 @@
 #include <memory>
 #include "tests/utils/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/MessageSender.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
 #include "joynr/SingleThreadedIOService.h"
 
 #include "joynr/UnicastBroadcastListener.h"
+
+#include "tests/JoynrTest.h"
 
 using namespace ::testing;
 using ::testing::InSequence;
@@ -48,7 +50,7 @@ public:
         proxyParticipantId("proxyParticipantId"),
         subscriptionId("subscriptionId"),
         mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
-        messageSender(new JoynrMessageSender(mockMessageRouter)),
+        messageSender(new MessageSender(mockMessageRouter)),
         publicationManager(singleThreadedIOService.getIOService(), messageSender),
         publicationSender(),
         request(),
@@ -70,6 +72,7 @@ public:
         request.setSubscriptionId(subscriptionId);
 
         auto qos = std::make_shared<OnChangeSubscriptionQos>(
+                    1000, // publication ttl
                     80, // validity_ms
                     100 // minInterval_ms
         );
@@ -107,7 +110,7 @@ protected:
     std::string proxyParticipantId;
     std::string subscriptionId;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    IJoynrMessageSender* messageSender;
+    IMessageSender* messageSender;
     PublicationManager publicationManager;
     MockPublicationSender publicationSender;
     BroadcastSubscriptionRequest request;
@@ -166,11 +169,15 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam) 
 
     const std::vector<std::string> singleParam = {"A", "B"};
 
+    using ImmutableMessagePtr = std::shared_ptr<ImmutableMessage>;
+
+    const std::string expectedRecipient = providerParticipantId+"/broadcastWithSingleArrayParameter";
     EXPECT_CALL(*mockMessageRouter, route(
                      AllOf(
-                         A<JoynrMessage>(),
-                         Property(&JoynrMessage::getHeaderFrom, Eq(providerParticipantId)),
-                         Property(&JoynrMessage::getHeaderTo, Eq(providerParticipantId+"/broadcastWithSingleArrayParameter"))),
+                         A<ImmutableMessagePtr>(),
+                         MessageHasSender(providerParticipantId),
+                         MessageHasRecipient(expectedRecipient)
+                        ),
                      _
                      ));
 

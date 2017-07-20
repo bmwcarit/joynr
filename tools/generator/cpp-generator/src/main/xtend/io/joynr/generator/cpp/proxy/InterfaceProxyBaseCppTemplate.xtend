@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,39 +43,34 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className».h"
 #include "joynr/ConnectorFactory.h"
 #include "joynr/ISubscriptionListener.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«serviceName»InProcessConnector.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«serviceName»JoynrMessagingConnector.h"
 
 «getNamespaceStarter(francaIntf)»
 «className»::«className»(
-		std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 		joynr::ConnectorFactory* connectorFactory,
-		joynr::IClientCache *cache,
 		const std::string &domain,
-		const joynr::MessagingQos &qosSettings,
-		bool cached
+		const joynr::MessagingQos &qosSettings
 ) :
-		joynr::ProxyBase(connectorFactory, cache, domain, qosSettings, cached),
-		messagingAddress(messagingAddress),
+		joynr::ProxyBase(connectorFactory, domain, qosSettings),
 		connector()
 {
 }
 
 void «className»::handleArbitrationFinished(
-		const std::string &providerParticipantId,
+		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
 		bool useInProcessConnector
 ) {
 	connector = connectorFactory->create<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::I«serviceName»Connector>(
 				domain,
 				proxyParticipantId,
-				providerParticipantId,
 				qosSettings,
-				cache,
-				cached,
-				useInProcessConnector
+				useInProcessConnector,
+				providerDiscoveryEntry
 	);
 
-	joynr::ProxyBase::handleArbitrationFinished(providerParticipantId, useInProcessConnector);
+	joynr::ProxyBase::handleArbitrationFinished(providerDiscoveryEntry, useInProcessConnector);
 }
 
 «FOR attribute: getAttributes(francaIntf).filter[attribute | attribute.notifiable]»

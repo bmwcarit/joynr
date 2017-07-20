@@ -3,7 +3,7 @@ package joynr;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ package joynr;
  * #L%
  */
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -39,6 +41,7 @@ public class OneWayRequest implements JoynrMessageType {
     private String[] paramDatatypes;
     private Object[] params;
     private String creatorUserId;
+    private Map<String, Serializable> context;
 
     public OneWayRequest() {
     }
@@ -88,6 +91,15 @@ public class OneWayRequest implements JoynrMessageType {
     @JsonIgnore
     public boolean hasParams() {
         return params != null && params.length > 0;
+    }
+
+    @JsonIgnore
+    public Map<String, Serializable> getContext() {
+        return context;
+    }
+
+    public void setContext(Map<String, Serializable> context) {
+        this.context = context;
     }
 
     @JsonIgnore

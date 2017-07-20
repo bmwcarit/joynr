@@ -4,7 +4,7 @@ package io.joynr.messaging.service;
  * #%L
  * joynr::java::messaging::channel-service
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class ChannelSetUpTest extends AbstractChannelSetUpTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .post(serverUrl + "?ccid=channel-123");
 
         assertEquals(200 /* OK */, response.getStatusCode());
@@ -94,7 +94,7 @@ public class ChannelSetUpTest extends AbstractChannelSetUpTest {
 
         Response response = //
         given(). //
-               when()
+        when()
                .post(serverUrl + "?ccid=channel-123");
 
         assertEquals(201 /* Created */, response.getStatusCode());

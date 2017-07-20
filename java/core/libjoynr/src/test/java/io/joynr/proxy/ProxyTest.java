@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,10 @@ package io.joynr.proxy;
  * #L%
  */
 
-import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -34,6 +32,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -42,6 +41,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.common.collect.Sets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -70,7 +70,6 @@ import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -79,12 +78,13 @@ import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.SystemServicesSettings;
+import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
 import joynr.system.RoutingTypes.Address;
-import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 import joynr.vehicle.NavigationBroadcastInterface.LocationUpdateBroadcastListener;
@@ -124,6 +124,8 @@ public class ProxyTest {
 
     private String domain;
     private String toParticipantId;
+    private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
+    private Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries;
     private String asyncReplyText = "replyText";
 
     @Mock
@@ -160,10 +162,23 @@ public class ProxyTest {
         public static final String INTERFACE_NAME = "TestInterface";
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Before
     public void setUp() throws Exception {
+        domain = "TestDomain";
         toParticipantId = "TestParticipantId";
+        toDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                          domain,
+                                                          TestInterface.INTERFACE_NAME,
+                                                          toParticipantId,
+                                                          new ProviderQos(),
+                                                          System.currentTimeMillis(),
+                                                          System.currentTimeMillis() + ONE_MINUTE_IN_MS,
+                                                          "publicKeyId",
+                                                          true);
+        toDiscoveryEntries = new HashSet<DiscoveryEntryWithMetaInfo>();
+        toDiscoveryEntries.add(toDiscoveryEntry);
+
         MockitoAnnotations.initMocks(this);
         Injector injector = Guice.createInjector(new AbstractModule() {
 
@@ -192,31 +207,23 @@ public class ProxyTest {
 
         proxyBuilderFactory = new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                           injector.getInstance(ProxyInvocationHandlerFactory.class),
-                                                          messageRouter,
-                                                          MAX_TTL_MS,
-                                                          new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
+                                                          MAX_TTL_MS);
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
-                                                                   domain,
-                                                                   TestInterface.INTERFACE_NAME,
-                                                                   toParticipantId,
-                                                                   new ProviderQos(),
-                                                                   System.currentTimeMillis(),
-                                                                   System.currentTimeMillis() + ONE_MINUTE_IN_MS,
-                                                                   "publicKeyId");
 
-                DiscoveryEntry[] fakeCapabilitiesResult = { discoveryEntry };
+                DiscoveryEntryWithMetaInfo[] fakeCapabilitiesResult = { toDiscoveryEntry };
                 ((Callback) args[0]).resolve((Object) fakeCapabilitiesResult);
                 return null;
             }
-        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
-                                                 Mockito.<String[]> any(),
-                                                 Mockito.<String> any(),
-                                                 Mockito.<joynr.types.DiscoveryQos> any());
+        })
+               .when(localDiscoveryAggregator)
+               .lookup(Mockito.<Callback> any(),
+                       Mockito.<String[]> any(),
+                       Mockito.<String> any(),
+                       Mockito.<joynr.types.DiscoveryQos> any());
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -229,11 +236,13 @@ public class ProxyTest {
                 request.getFuture().resolve(request.getSubscriptionId());
                 return null;
             }
-        }).when(subscriptionManager).registerAttributeSubscription(any(String.class),
-                                                                   (Set<String>) argThat(contains(toParticipantId)),
-                                                                   Mockito.any(AttributeSubscribeInvocation.class));
+        })
+               .when(subscriptionManager)
+               .registerAttributeSubscription(any(String.class),
+                                              eq(Sets.newHashSet(toDiscoveryEntry)),
+                                              Mockito.any(AttributeSubscribeInvocation.class));
 
-        Mockito.doAnswer(new Answer<Object>() { //TODO simulate resolve here ! subscription reply bastern ... handle subscriptionreply ausführen..
+        Mockito.doAnswer(new Answer<Object>() { //TODO simulate resolve here ! subscription reply bastern ... handle subscriptionreply ausführen.. 
             @Override
             public Object answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
@@ -245,9 +254,11 @@ public class ProxyTest {
                 request.getFuture().resolve(request.getSubscriptionId());
                 return null;
             }
-        }).when(subscriptionManager).registerBroadcastSubscription(any(String.class),
-                                                                   (Set<String>) argThat(contains(toParticipantId)),
-                                                                   Mockito.any(BroadcastSubscribeInvocation.class));
+        })
+               .when(subscriptionManager)
+               .registerBroadcastSubscription(any(String.class),
+                                              eq(Sets.newHashSet(toDiscoveryEntry)),
+                                              Mockito.any(BroadcastSubscribeInvocation.class));
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -261,11 +272,11 @@ public class ProxyTest {
                 request.getFuture().resolve(request.getSubscriptionId());
                 return null;
             }
-        }).when(subscriptionManager).registerMulticastSubscription(any(String.class),
-                                                                   (Set<String>) argThat(contains(toParticipantId)),
-                                                                   Mockito.any(MulticastSubscribeInvocation.class));
-
-        domain = "TestDomain";
+        })
+               .when(subscriptionManager)
+               .registerMulticastSubscription(any(String.class),
+                                              eq(Sets.newHashSet(toDiscoveryEntry)),
+                                              Mockito.any(MulticastSubscribeInvocation.class));
 
         discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         messagingQos = new MessagingQos();
@@ -274,13 +285,13 @@ public class ProxyTest {
         discoveryEntryVersionFilterField.setAccessible(true);
         discoveryEntryVersionFilterField.set(ArbitratorFactory.class, discoveryEntryVersionFilter);
 
-        doAnswer(new Answer<Set<DiscoveryEntry>>() {
+        doAnswer(new Answer<Set<DiscoveryEntryWithMetaInfo>>() {
             @Override
-            public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
-                return (Set<DiscoveryEntry>) invocation.getArguments()[1];
+            public Set<DiscoveryEntryWithMetaInfo> answer(InvocationOnMock invocation) throws Throwable {
+                return (Set<DiscoveryEntryWithMetaInfo>) invocation.getArguments()[1];
             }
         }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
-                                                    Mockito.<Set<DiscoveryEntry>> any(),
+                                                    Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
                                                     Mockito.<Map<String, Set<Version>>> any());
     }
 
@@ -317,7 +328,7 @@ public class ProxyTest {
     public void createProxyAndCallSyncMethodSuccess() throws Exception {
         String requestReplyId = "createProxyAndCallSyncMethod_requestReplyId";
         Mockito.when(requestReplyManager.sendSyncRequest(Mockito.<String> any(),
-                                                         Mockito.<String> any(),
+                                                         Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                          Mockito.<Request> any(),
                                                          Mockito.<SynchronizedReplyCaller> any(),
                                                          Mockito.<MessagingQos> any()))
@@ -334,7 +345,7 @@ public class ProxyTest {
     public void createProxyAndCallSyncMethodFailWithApplicationError() throws Exception {
         String requestReplyId = "createProxyAndCallSyncMethod_requestReplyId";
         Mockito.when(requestReplyManager.sendSyncRequest(Mockito.<String> any(),
-                                                         Mockito.<String> any(),
+                                                         Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                          Mockito.<Request> any(),
                                                          Mockito.<SynchronizedReplyCaller> any(),
                                                          Mockito.<MessagingQos> any()))
@@ -376,10 +387,12 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, new TextNode(asyncReplyText)));
                 return null;
             }
-        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
-                                                 Mockito.<String> any(),
-                                                 Mockito.<Request> any(),
-                                                 Mockito.<MessagingQos> any());
+        })
+               .when(requestReplyManager)
+               .sendRequest(Mockito.<String> any(),
+                            Mockito.<DiscoveryEntryWithMetaInfo> any(),
+                            Mockito.<Request> any(),
+                            Mockito.<MessagingQos> any());
         final Future<String> future = proxy.asyncMethod(callback);
 
         // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
@@ -415,10 +428,12 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, expected));
                 return null;
             }
-        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
-                                                 Mockito.<String> any(),
-                                                 Mockito.<Request> any(),
-                                                 Mockito.<MessagingQos> any());
+        })
+               .when(requestReplyManager)
+               .sendRequest(Mockito.<String> any(),
+                            Mockito.<DiscoveryEntryWithMetaInfo> any(),
+                            Mockito.<Request> any(),
+                            Mockito.<MessagingQos> any());
 
         CallbackWithModeledError<String, Enum<?>> callbackWithApplicationException = Mockito.mock(CallbackWithModeledError.class);
         final Future<String> future = proxy.asyncMethodWithApplicationError(callbackWithApplicationException);
@@ -461,10 +476,12 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().error(expectedException);
                 return null;
             }
-        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
-                                                 Mockito.<String> any(),
-                                                 Mockito.<Request> any(),
-                                                 Mockito.<MessagingQos> any());
+        })
+               .when(requestReplyManager)
+               .sendRequest(Mockito.<String> any(),
+                            Mockito.<DiscoveryEntryWithMetaInfo> any(),
+                            Mockito.<Request> any(),
+                            Mockito.<MessagingQos> any());
 
         boolean exceptionThrown = false;
         String reply = "";
@@ -482,30 +499,24 @@ public class ProxyTest {
         Assert.assertEquals("", reply);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxySubscribeToBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
         String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
-        long publicationTtl_ms = 5000;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
-                                                                               .setExpiryDateMs(expiryDate)
-                                                                               .setPublicationTtlMs(publicationTtl_ms);
+        MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos().setExpiryDateMs(expiryDate);
 
         proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class), subscriptionQos);
 
         ArgumentCaptor<MulticastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(MulticastSubscribeInvocation.class);
 
         verify(subscriptionManager, times(1)).registerMulticastSubscription(eq(fromParticipantId),
-                                                                            (Set<String>) argThat(contains(toParticipantId)),
+                                                                            eq(Sets.newHashSet(toDiscoveryEntry)),
                                                                             subscriptionRequest.capture());
         assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscriptionName());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxySubscribeAndUnsubscribeFromSelectiveBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
@@ -526,7 +537,7 @@ public class ProxyTest {
         ArgumentCaptor<BroadcastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(BroadcastSubscribeInvocation.class);
 
         verify(subscriptionManager, times(1)).registerBroadcastSubscription(eq(fromParticipantId),
-                                                                            (Set<String>) argThat(contains(toParticipantId)),
+                                                                            eq(Sets.newHashSet(toDiscoveryEntry)),
                                                                             subscriptionRequest.capture());
 
         assertEquals("locationUpdateSelective", subscriptionRequest.getValue().getBroadcastName());
@@ -534,23 +545,18 @@ public class ProxyTest {
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId.get(100L));
         verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                     (Set<String>) argThat(contains(toParticipantId)),
+                                                                     eq(Sets.newHashSet(toDiscoveryEntry)),
                                                                      eq(subscriptionId.get()),
                                                                      any(MessagingQos.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxySubscribeAndUnsubscribeFromBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
         String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
-        long publicationTtl_ms = 5000;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
-                                                                               .setExpiryDateMs(expiryDate)
-                                                                               .setPublicationTtlMs(publicationTtl_ms);
+        MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos().setExpiryDateMs(expiryDate);
 
         Future<String> subscriptionId = proxy.subscribeToLocationUpdateBroadcast(mock(LocationUpdateBroadcastListener.class),
                                                                                  subscriptionQos);
@@ -558,7 +564,7 @@ public class ProxyTest {
         ArgumentCaptor<MulticastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(MulticastSubscribeInvocation.class);
 
         verify(subscriptionManager, times(1)).registerMulticastSubscription(eq(fromParticipantId),
-                                                                            (Set<String>) argThat(contains(toParticipantId)),
+                                                                            eq(Sets.newHashSet(toDiscoveryEntry)),
                                                                             subscriptionRequest.capture());
 
         assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscriptionName());
@@ -566,23 +572,18 @@ public class ProxyTest {
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId.get(100L));
         verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                     (Set<String>) argThat(contains(toParticipantId)),
+                                                                     eq(Sets.newHashSet(toDiscoveryEntry)),
                                                                      eq(subscriptionId.get()),
                                                                      any(MessagingQos.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxySubscribeToBroadcastWithSubscriptionId() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
         String fromParticipantId = proxyBuilder.getParticipantId();
         NavigationProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        long minInterval_ms = 0;
         long expiryDate = System.currentTimeMillis() + 30000;
-        long publicationTtl_ms = 5000;
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos().setMinIntervalMs(minInterval_ms)
-                                                                               .setExpiryDateMs(expiryDate)
-                                                                               .setPublicationTtlMs(publicationTtl_ms);
+        MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos().setExpiryDateMs(expiryDate);
 
         String subscriptionId = UUID.randomUUID().toString();
         Future<String> subscriptionId2 = proxy.subscribeToLocationUpdateBroadcast(subscriptionId,
@@ -594,14 +595,13 @@ public class ProxyTest {
         ArgumentCaptor<MulticastSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(MulticastSubscribeInvocation.class);
 
         verify(subscriptionManager, times(1)).registerMulticastSubscription(eq(fromParticipantId),
-                                                                            (Set<String>) argThat(contains(toParticipantId)),
+                                                                            eq(Sets.newHashSet(toDiscoveryEntry)),
                                                                             subscriptionRequest.capture());
 
         assertEquals("locationUpdate", subscriptionRequest.getValue().getSubscriptionName());
         assertEquals(subscriptionId, subscriptionRequest.getValue().getSubscriptionId());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxySubscribeAndUnsubscribeFromAttribute() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
@@ -616,14 +616,13 @@ public class ProxyTest {
 
         abstract class BooleanSubscriptionListener implements AttributeSubscriptionListener<Boolean> {
         }
-        ;
         Future<String> subscriptionId = proxy.subscribeToGuidanceActive(mock(BooleanSubscriptionListener.class),
                                                                         subscriptionQos);
 
         ArgumentCaptor<AttributeSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(AttributeSubscribeInvocation.class);
 
         verify(subscriptionManager, times(1)).registerAttributeSubscription(eq(fromParticipantId),
-                                                                            (Set<String>) argThat(contains(toParticipantId)),
+                                                                            eq(Sets.newHashSet(toDiscoveryEntry)),
                                                                             subscriptionRequest.capture());
 
         assertEquals("guidanceActive", subscriptionRequest.getValue().getAttributeName());
@@ -631,12 +630,11 @@ public class ProxyTest {
         // now, let's remove the previous subscriptionRequest
         proxy.unsubscribeFromGuidanceActive(subscriptionId.get());
         verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                     (Set<String>) argThat(contains(toParticipantId)),
+                                                                     eq(Sets.newHashSet(toDiscoveryEntry)),
                                                                      eq(subscriptionId.get()),
                                                                      any(MessagingQos.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxySubscribeToAttributeWithSubscriptionId() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
@@ -651,7 +649,6 @@ public class ProxyTest {
 
         abstract class BooleanSubscriptionListener implements AttributeSubscriptionListener<Boolean> {
         }
-        ;
         String subscriptionId = UUID.randomUUID().toString();
         Future<String> subscriptionId2 = proxy.subscribeToGuidanceActive(subscriptionId,
                                                                          mock(BooleanSubscriptionListener.class),
@@ -662,14 +659,13 @@ public class ProxyTest {
         ArgumentCaptor<AttributeSubscribeInvocation> subscriptionRequest = ArgumentCaptor.forClass(AttributeSubscribeInvocation.class);
 
         verify(subscriptionManager, times(1)).registerAttributeSubscription(eq(fromParticipantId),
-                                                                            (Set<String>) argThat(contains(toParticipantId)),
+                                                                            eq(Sets.newHashSet(toDiscoveryEntry)),
                                                                             subscriptionRequest.capture());
 
         assertEquals("guidanceActive", subscriptionRequest.getValue().getAttributeName());
         assertEquals(subscriptionId, subscriptionRequest.getValue().getSubscriptionId());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void createProxyUnSubscribeFromBroadcast() throws Exception {
         ProxyBuilder<NavigationProxy> proxyBuilder = getProxyBuilder(NavigationProxy.class);
@@ -680,8 +676,9 @@ public class ProxyTest {
         proxy.unsubscribeFromLocationUpdateBroadcast(subscriptionId);
 
         verify(subscriptionManager, times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                                     (Set<String>) argThat(contains(toParticipantId)),
+                                                                     eq(Sets.newHashSet(toDiscoveryEntry)),
                                                                      eq(subscriptionId),
                                                                      any(MessagingQos.class));
     }
+
 }

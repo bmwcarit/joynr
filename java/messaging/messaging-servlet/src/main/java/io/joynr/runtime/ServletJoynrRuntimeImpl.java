@@ -3,7 +3,7 @@ package io.joynr.runtime;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,8 @@ import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.ProviderDirectory;
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.messaging.MessagingSkeletonFactory;
-import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.ProxyBuilderFactory;
 
@@ -45,10 +42,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
     @Inject
     public ServletJoynrRuntimeImpl(ObjectMapper objectMapper,
                                    ProxyBuilderFactory builderFactory,
-                                   ProviderDirectory providerContainer,
-                                   ReplyCallerDirectory replyCallerDirectory,
                                    Dispatcher dispatcher,
-                                   MessagingStubFactory messagingStubFactory,
                                    MessagingSkeletonFactory messagingSkeletonFactory,
                                    LocalDiscoveryAggregator localDiscoveryAggregator,
                                    LocalCapabilitiesDirectory localCapabilitiesDirectory,
@@ -61,10 +55,7 @@ public class ServletJoynrRuntimeImpl extends ClusterControllerRuntime {
         // CHECKSTYLE:ON
         super(objectMapper,
               builderFactory,
-              providerContainer,
-              replyCallerDirectory,
               dispatcher,
-              messagingStubFactory,
               messagingSkeletonFactory,
               localDiscoveryAggregator,
               routingTable,

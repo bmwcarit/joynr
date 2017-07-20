@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,23 @@ define("joynr/dispatching/types/SubscriptionInformation", [
                 this.filterParameters = request.filterParameters;
             }
         }
+
+        /*
+         * the following members may contain native timer objects, which cannot
+         * be serialized via JSON.stringify(), hence they must be excluded
+         */
+        Object.defineProperty(this, 'endDateTimeout', {
+            enumerable : false,
+            configurable : false,
+            writable : true,
+            value : undefined
+        });
+        Object.defineProperty(this, 'subscriptionInterval', {
+            enumerable : false,
+            configurable : false,
+            writable : true,
+            value : undefined
+        });
 
         /**
          * The joynr type name

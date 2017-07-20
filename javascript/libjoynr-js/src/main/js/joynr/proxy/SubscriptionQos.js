@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,8 +49,6 @@ define(
              * @param {Object}
              *            [settings] the settings object for the constructor call
              * @param {Number}
-             *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
-             * @param {Number}
              *            [settings.expiryDateMs=SubscriptionQos.NO_EXPIRY_DATE] The expiry date is the
              *            end date of the subscription. This value is provided in milliseconds
              *            (since 1970-01-01T00:00:00.000).<br/>
@@ -67,8 +65,6 @@ define(
              *            <ul>
              *              <li>minimum value: 0</li>
              *            </ul>
-             * @param {Number}
-             *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
              * @param {Number}
              *            [settings.publicationTtlMs=SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS]
              *            Time to live for publication messages.<br/>
@@ -105,13 +101,6 @@ define(
                 Util.objectDefineProperty(this, "_typeName", "joynr.SubscriptionQos");
                 Typing.checkPropertyIfDefined(settings, "Object", "settings");
                 if (settings && !(settings instanceof SubscriptionQos)) {
-                    if (settings.expiryDate !== undefined) {
-                        log
-                                .warn("SubscriptionQos has been invoked with deprecated settings member \"expiryDate\". "
-                                    + "By 2017-01-01, the expiry date can only be specified with member \"expiryDateMs\".");
-                        settings.expiryDateMs = settings.expiryDate;
-                        settings.expiryDate = undefined;
-                    }
                     if (settings.validityMs !== undefined) {
                         if (settings.expiryDateMs !== undefined) {
                             log
@@ -125,13 +114,6 @@ define(
                             settings.expiryDateMs,
                             "Number",
                             "settings.expiryDateMs");
-                    if (settings.publicationTtl !== undefined) {
-                        log
-                                .warn("SubscriptionQos has been invoked with deprecated settings member \"publicationTtl\". "
-                                    + "By 2017-01-01, the publication ttl can only be specified with member \"publicationTtlMs\".");
-                        settings.publicationTtlMs = settings.publicationTtl;
-                        settings.publicationTtl = undefined;
-                    }
                     Typing.checkPropertyIfDefined(
                             settings.publicationTtlMs,
                             "Number",

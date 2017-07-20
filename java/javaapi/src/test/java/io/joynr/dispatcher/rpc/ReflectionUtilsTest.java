@@ -3,7 +3,7 @@ package io.joynr.dispatcher.rpc;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,8 +55,7 @@ public class ReflectionUtilsTest {
         addSingleElementToFixture(fixture, "io.joynr.dispatcher.rpc.RequestStatus", RequestStatus.class);
         addSingleElementToFixture(fixture, "io.joynr.dispatcher.rpc.RequestStatus[]", RequestStatus[].class);
 
-        for (Map.Entry<String, Class<?>[]>entry : fixture.entrySet())
-        {
+        for (Map.Entry<String, Class<?>[]> entry : fixture.entrySet()) {
             String datatypeName = ReflectionUtils.toDatatypeNames(entry.getValue())[0];
             String key = entry.getKey();
             Assert.assertEquals(key, datatypeName);

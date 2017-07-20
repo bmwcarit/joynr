@@ -3,7 +3,7 @@ package io.joynr.messaging.routing;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class InMemoryMulticastReceiverRegistry implements MulticastReceiverRegis
     @Override
     public void registerMulticastReceiver(String multicastId, String participantId) {
         Pattern idPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
-        logger.debug("Compiled pattern {} for multicast ID {}", idPattern, multicastId);
+        logger.trace("Compiled pattern {} for multicast ID {}", idPattern, multicastId);
         if (!multicastReceivers.containsKey(idPattern)) {
             multicastReceivers.putIfAbsent(idPattern, new HashSet<String>());
         }

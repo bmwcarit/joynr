@@ -3,7 +3,7 @@ package io.joynr.arbitration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.collect.Sets;
 
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Version;
 
 /**
@@ -62,9 +63,9 @@ public class DiscoveryEntryVersionFilterTest {
     @Test
     public void testEmptySetUnchanged() {
         Version callerVersion = new Version(0, 0);
-        Set<DiscoveryEntry> discoveryEntries = new HashSet<>();
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = new HashSet<>();
 
-        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, null);
+        Set<DiscoveryEntryWithMetaInfo> result = subject.filter(callerVersion, discoveryEntries, null);
 
         assertNotNull(result);
         assertEquals(discoveryEntries, result);
@@ -72,7 +73,7 @@ public class DiscoveryEntryVersionFilterTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCallerVersionNull() {
-        subject.filter(null, new HashSet<DiscoveryEntry>(), null);
+        subject.filter(null, new HashSet<DiscoveryEntryWithMetaInfo>(), null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -83,12 +84,12 @@ public class DiscoveryEntryVersionFilterTest {
     @Test
     public void testIncompatibleVersionFilteredOut() {
         Version callerVersion = new Version(1, 0);
-        DiscoveryEntry discoveryEntry = mock(DiscoveryEntry.class);
+        DiscoveryEntryWithMetaInfo discoveryEntry = mock(DiscoveryEntryWithMetaInfo.class);
         Version providerVersion = new Version(2, 0);
         when(discoveryEntry.getProviderVersion()).thenReturn(providerVersion);
-        Set<DiscoveryEntry> discoveryEntries = Sets.newHashSet(discoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = Sets.newHashSet(discoveryEntry);
 
-        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, null);
+        Set<DiscoveryEntryWithMetaInfo> result = subject.filter(callerVersion, discoveryEntries, null);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -97,13 +98,13 @@ public class DiscoveryEntryVersionFilterTest {
     @Test
     public void testCompatibleVersionLeftIn() {
         Version callerVersion = new Version(1, 0);
-        DiscoveryEntry discoveryEntry = mock(DiscoveryEntry.class);
+        DiscoveryEntryWithMetaInfo discoveryEntry = mock(DiscoveryEntryWithMetaInfo.class);
         Version providerVersion = new Version(1, 0);
         when(discoveryEntry.getProviderVersion()).thenReturn(providerVersion);
-        Set<DiscoveryEntry> discoveryEntries = Sets.newHashSet(discoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = Sets.newHashSet(discoveryEntry);
         when(versionCompatibilityChecker.check(eq(callerVersion), eq(providerVersion))).thenReturn(true);
 
-        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, null);
+        Set<DiscoveryEntryWithMetaInfo> result = subject.filter(callerVersion, discoveryEntries, null);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -113,17 +114,17 @@ public class DiscoveryEntryVersionFilterTest {
     @Test
     public void testOnlyIncompatibleVersionsFilteredOut() {
         Version callerVersion = new Version(0, 0);
-        DiscoveryEntry compatibleEntry = mock(DiscoveryEntry.class);
+        DiscoveryEntryWithMetaInfo compatibleEntry = mock(DiscoveryEntryWithMetaInfo.class);
         Version compatibleVersion = new Version(0, 1);
         when(compatibleEntry.getProviderVersion()).thenReturn(compatibleVersion);
         when(versionCompatibilityChecker.check(eq(callerVersion), eq(compatibleVersion))).thenReturn(true);
-        DiscoveryEntry incompatibleEntry = mock(DiscoveryEntry.class);
+        DiscoveryEntryWithMetaInfo incompatibleEntry = mock(DiscoveryEntryWithMetaInfo.class);
         Version incompatibleVersion = new Version(2, 2);
         when(incompatibleEntry.getProviderVersion()).thenReturn(incompatibleVersion);
         when(versionCompatibilityChecker.check(callerVersion, incompatibleVersion)).thenReturn(false);
-        Set<DiscoveryEntry> discoveryEntries = Sets.newHashSet(compatibleEntry, incompatibleEntry);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = Sets.newHashSet(compatibleEntry, incompatibleEntry);
 
-        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, null);
+        Set<DiscoveryEntryWithMetaInfo> result = subject.filter(callerVersion, discoveryEntries, null);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -133,19 +134,19 @@ public class DiscoveryEntryVersionFilterTest {
     @Test
     public void testFilteredOutVersionsCollected() {
         Version callerVersion = new Version(1, 0);
-        DiscoveryEntry discoveryEntry = mock(DiscoveryEntry.class);
+        DiscoveryEntryWithMetaInfo discoveryEntry = mock(DiscoveryEntryWithMetaInfo.class);
         Version providerVersion = new Version(2, 0);
         when(discoveryEntry.getProviderVersion()).thenReturn(providerVersion);
         when(discoveryEntry.getDomain()).thenReturn("domain");
-        DiscoveryEntry otherDiscoveryEntry = mock(DiscoveryEntry.class);
+        DiscoveryEntryWithMetaInfo otherDiscoveryEntry = mock(DiscoveryEntryWithMetaInfo.class);
         Version otherProviderVersion = new Version(4, 10);
         when(otherDiscoveryEntry.getProviderVersion()).thenReturn(otherProviderVersion);
         when(otherDiscoveryEntry.getDomain()).thenReturn("domain");
-        Set<DiscoveryEntry> discoveryEntries = Sets.newHashSet(discoveryEntry, otherDiscoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = Sets.newHashSet(discoveryEntry, otherDiscoveryEntry);
 
         Map<String, Set<Version>> filteredOutVersions = new HashMap<>();
 
-        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, filteredOutVersions);
+        Set<DiscoveryEntryWithMetaInfo> result = subject.filter(callerVersion, discoveryEntries, filteredOutVersions);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -158,20 +159,20 @@ public class DiscoveryEntryVersionFilterTest {
     @Test
     public void testVersionsCollectedByDomain() {
         Version callerVersion = new Version(1, 0);
-        DiscoveryEntry discoveryEntry = mock(DiscoveryEntry.class);
+        DiscoveryEntryWithMetaInfo discoveryEntry = mock(DiscoveryEntryWithMetaInfo.class);
         Version providerVersion = new Version(2, 0);
         when(discoveryEntry.getProviderVersion()).thenReturn(providerVersion);
         when(discoveryEntry.getDomain()).thenReturn("domain-1");
 
-        DiscoveryEntry otherDiscoveryEntry = mock(DiscoveryEntry.class);
+        DiscoveryEntryWithMetaInfo otherDiscoveryEntry = mock(DiscoveryEntryWithMetaInfo.class);
         Version otherProviderVersion = new Version(4, 10);
         when(otherDiscoveryEntry.getProviderVersion()).thenReturn(otherProviderVersion);
         when(otherDiscoveryEntry.getDomain()).thenReturn("domain-2");
-        Set<DiscoveryEntry> discoveryEntries = Sets.newHashSet(discoveryEntry, otherDiscoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntries = Sets.newHashSet(discoveryEntry, otherDiscoveryEntry);
 
         Map<String, Set<Version>> filteredOutVersions = new HashMap<>();
 
-        Set<DiscoveryEntry> result = subject.filter(callerVersion, discoveryEntries, filteredOutVersions);
+        Set<DiscoveryEntryWithMetaInfo> result = subject.filter(callerVersion, discoveryEntries, filteredOutVersions);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());

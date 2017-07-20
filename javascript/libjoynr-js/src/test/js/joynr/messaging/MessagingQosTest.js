@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,58 @@ define([
                 ttl : 60000,
                 effort : MessagingQosEffort.BEST_EFFORT
             })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                encrypt : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                effort : MessagingQosEffort.BEST_EFFORT,
+                encrypt : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                effort : MessagingQosEffort.BEST_EFFORT,
+                encrypt : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                encrypt : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                effort : MessagingQosEffort.BEST_EFFORT,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                effort : MessagingQosEffort.BEST_EFFORT,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                encrypt : true,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                ttl : 60000,
+                effort : MessagingQosEffort.BEST_EFFORT,
+                encrypt : true,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                effort : MessagingQosEffort.BEST_EFFORT,
+                encrypt : true,
+                compress : true
+            })).toBeDefined();
+            expect(new MessagingQos({
+                compress : true,
+                encrypt : true
+            })).toBeDefined();
         });
 
         it("is of correct type", function() {
@@ -53,6 +105,8 @@ define([
             expect(new MessagingQos()).toEqual(new MessagingQos({
                 ttl : MessagingQos.DEFAULT_TTL
             }));
+            expect(new MessagingQos().encrypt).toEqual(false);
+            expect(new MessagingQos().compress).toEqual(false);
         });
 
         function testTtlValues(ttl) {
@@ -88,6 +142,30 @@ define([
             testEffortValues(MessagingQosEffort.BEST_EFFORT, MessagingQosEffort.BEST_EFFORT);
             testEffortValues(null, MessagingQosEffort.NORMAL);
             testEffortValues("not an enum value", MessagingQosEffort.NORMAL);
+        });
+
+        function testEncryptValues(encrypt) {
+            var messagingQos = new MessagingQos({
+                encrypt : encrypt
+            });
+            expect(messagingQos.encrypt).toBe(encrypt);
+        }
+
+        it("constructs with correct encrypt values", function() {
+            testEncryptValues(false);
+            testEncryptValues(true);
+        });
+
+        function testCompressValues(compress) {
+            var messagingQos = new MessagingQos({
+                compress : compress
+            });
+            expect(messagingQos.compress).toBe(compress);
+        }
+
+        it("constructs with correct compress values", function() {
+            testCompressValues(false);
+            testCompressValues(true);
         });
 
         var runsWithCustomHeaders = [

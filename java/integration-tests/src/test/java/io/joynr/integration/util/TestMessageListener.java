@@ -3,7 +3,7 @@ package io.joynr.integration.util;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import io.joynr.messaging.MessageArrivedListener;
 
 import java.util.List;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import com.google.common.collect.Lists;
 
@@ -47,7 +47,7 @@ public class TestMessageListener extends WaitTillCondition implements MessageArr
     }
 
     @Override
-    public void messageArrived(JoynrMessage message) {
+    public void messageArrived(ImmutableMessage message) {
         receivedPayloads.add(message);
         releaseSemaphorePermit();
     }
@@ -57,7 +57,7 @@ public class TestMessageListener extends WaitTillCondition implements MessageArr
     }
 
     @Override
-    public void error(JoynrMessage message, Throwable error) {
+    public void error(ImmutableMessage message, Throwable error) {
         releaseErrorSemaphorePermit();
         thrownErrors.add(error);
     }

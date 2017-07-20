@@ -4,7 +4,7 @@ package io.joynr.messaging.service;
  * #%L
  * joynr::java::messaging::messaging-service
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGIN
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import java.io.IOException;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -36,7 +35,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,6 +42,7 @@ import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.type.SimpleType;
+import com.google.common.base.Charsets;
 import com.google.inject.servlet.ServletModule;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
@@ -53,7 +52,9 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.system.SystemTimeProvider;
 import io.joynr.messaging.system.TimestampProvider;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.Message;
+import joynr.MutableMessage;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessagingTest extends AbstractServiceInterfaceTest {
@@ -130,15 +131,13 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
     // }
 
     @Test
-    public void testPostMessageWithoutExpiryDate() throws IOException {
-
-        JoynrMessage message = createJoynrMessage();
-        message.setExpirationDate(ExpiryDate.fromAbsolute(0));
-        String serializedMessage = objectMapper.writeValueAsString(message);
+    public void testPostMessageWithoutExpiryDate() throws Exception {
+        ImmutableMessage message = createJoynrMessage(ExpiryDate.fromAbsolute(0));
+        byte[] serializedMessage = message.getSerializedMessage();
 
         Response response = //
         given(). //
-               contentType(ContentType.JSON)
+        contentType(ContentType.BINARY)
                .when()
                .body(serializedMessage)
                .post(serverUrl + "/channels/channel-123/message");
@@ -149,19 +148,17 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
 
         assertEquals(JOYNRMESSAGINGERROR_EXPIRYDATENOTSET.getCode(), error.getCode());
         assertEquals(JOYNRMESSAGINGERROR_EXPIRYDATENOTSET.getDescription(), error.getReason());
-        Mockito.verify(mock, Mockito.never()).passMessageToReceiver("channel-123", message);
+        Mockito.verify(mock, Mockito.never()).passMessageToReceiver("channel-123", serializedMessage);
     }
 
     @Test
-    public void testPostMessageExpiryDateExpired() throws IOException {
-
-        JoynrMessage message = createJoynrMessage();
-        message.setExpirationDate(ExpiryDate.fromAbsolute(1));
-        String serializedMessage = objectMapper.writeValueAsString(message);
+    public void testPostMessageExpiryDateExpired() throws Exception {
+        ImmutableMessage message = createJoynrMessage(ExpiryDate.fromAbsolute(1));
+        byte[] serializedMessage = message.getSerializedMessage();
 
         Response response = //
         given(). //
-               contentType(ContentType.JSON)
+        contentType(ContentType.BINARY)
                .when()
                .body(serializedMessage)
                .post(serverUrl + "/channels/channel-123/message");
@@ -173,42 +170,40 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         assertEquals(JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED.getCode(), error.getCode());
         assertEquals(JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED.getDescription() + ": 127.0.0.1", error.getReason());
 
-        Mockito.verify(mock, Mockito.never()).passMessageToReceiver("channel-123", message);
+        Mockito.verify(mock, Mockito.never()).passMessageToReceiver("channel-123", serializedMessage);
     }
 
     @Test
-    public void testPostMessageWithoutMessageReceivers() throws IOException {
-
+    public void testPostMessageWithoutMessageReceivers() throws Exception {
         Mockito.when(mock.hasMessageReceiver("channel-123")).thenReturn(false);
         Mockito.when(mock.isAssignedForChannel("channel-123")).thenReturn(true);
 
-        JoynrMessage message = createJoynrMessage();
-        String serializedMessage = objectMapper.writeValueAsString(message);
+        ImmutableMessage message = createJoynrMessage();
+        byte[] serializedMessage = message.getSerializedMessage();
 
         Response response = //
         given(). //
-               contentType(ContentType.JSON)
+        contentType(ContentType.BINARY)
                .when()
                .body(serializedMessage)
                .post(serverUrl + "/channels/channel-123/message");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         Mockito.verify(mock).hasMessageReceiver("channel-123");
-        Mockito.verify(mock, Mockito.never()).passMessageToReceiver("channel-123", message);
+        Mockito.verify(mock, Mockito.never()).passMessageToReceiver("channel-123", serializedMessage);
     }
 
     @Test
-    public void testPostMessage() throws JsonProcessingException {
-
+    public void testPostMessage() throws Exception {
         Mockito.when(mock.hasMessageReceiver("channel-123")).thenReturn(true);
         Mockito.when(mock.isAssignedForChannel("channel-123")).thenReturn(true);
 
-        JoynrMessage message = createJoynrMessage();
-        String serializedMessage = objectMapper.writeValueAsString(message);
+        ImmutableMessage message = createJoynrMessage();
+        byte[] serializedMessage = message.getSerializedMessage();
 
         Response response = //
         given(). //
-               contentType(ContentType.JSON)
+        contentType(ContentType.BINARY)
                .when()
                .body(serializedMessage)
                .post(serverUrl + "/channels/channel-123/message");
@@ -216,21 +211,20 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         assertEquals(201 /* Created */, response.getStatusCode());
         assertEquals(serverUrl + "/messages/" + message.getId(), response.getHeader("Location"));
         assertEquals(message.getId(), response.getHeader("msgId"));
-        Mockito.verify(mock).passMessageToReceiver("channel-123", message);
+        Mockito.verify(mock).passMessageToReceiver("channel-123", serializedMessage);
     }
 
     @Test
-    public void testPostMessageChannelWasMigrated() throws JsonProcessingException {
-
+    public void testPostMessageChannelWasMigrated() throws Exception {
         Mockito.when(mock.isAssignedForChannel("channel-123")).thenReturn(false);
         Mockito.when(mock.hasChannelAssignmentMoved("channel-123")).thenReturn(true);
 
-        JoynrMessage message = createJoynrMessage();
-        String serializedMessage = objectMapper.writeValueAsString(message);
+        ImmutableMessage message = createJoynrMessage();
+        byte[] serializedMessage = message.getSerializedMessage();
 
         Response response = //
         given(). //
-               contentType(ContentType.JSON)
+        contentType(ContentType.BINARY)
                .when()
                .body(serializedMessage)
                .post(serverUrl + "/channels/channel-123/message");
@@ -238,21 +232,20 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         assertEquals(410 /* Gone */, response.getStatusCode());
         assertNull(response.getHeader("Location"));
         assertNull(response.getHeader("msgId"));
-        Mockito.verify(mock, Mockito.never()).passMessageToReceiver("channel-123", message);
+        Mockito.verify(mock, Mockito.never()).passMessageToReceiver("channel-123", serializedMessage);
     }
 
     @Test
-    public void testPostMessageChannelWasNotRegistered() throws JsonProcessingException {
-
+    public void testPostMessageChannelWasNotRegistered() throws Exception {
         Mockito.when(mock.isAssignedForChannel("channel-123")).thenReturn(false);
         Mockito.when(mock.hasChannelAssignmentMoved("channel-123")).thenReturn(false);
 
-        JoynrMessage message = createJoynrMessage();
-        String serializedMessage = objectMapper.writeValueAsString(message);
+        ImmutableMessage message = createJoynrMessage();
+        byte[] serializedMessage = message.getSerializedMessage();
 
         Response response = //
         given(). //
-               contentType(ContentType.JSON)
+        contentType(ContentType.BINARY)
                .when()
                .body(serializedMessage)
                .post(serverUrl + "/channels/channel-123/message");
@@ -260,14 +253,23 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         assertEquals(404 /* Not Found */, response.getStatusCode());
         assertNull(response.getHeader("Location"));
         assertNull(response.getHeader("msgId"));
-        Mockito.verify(mock, Mockito.never()).passMessageToReceiver("channel-123", message);
+        Mockito.verify(mock, Mockito.never()).passMessageToReceiver("channel-123", serializedMessage);
     }
 
-    private JoynrMessage createJoynrMessage() {
-        JoynrMessage message = new JoynrMessage();
-        message.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
-        message.setExpirationDate(ExpiryDate.fromRelativeTtl(50000));
-        message.setPayload("payload-" + UUID.randomUUID().toString());
-        return message;
+    private ImmutableMessage createJoynrMessage() throws Exception {
+        return createJoynrMessage(ExpiryDate.fromRelativeTtl(50000));
+    }
+
+    private ImmutableMessage createJoynrMessage(ExpiryDate expiryDate) throws Exception {
+        MutableMessage message = new MutableMessage();
+
+        message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        message.setPayload(("payload-" + UUID.randomUUID().toString()).getBytes(Charsets.UTF_8));
+        message.setTtlAbsolute(true);
+        message.setTtlMs(expiryDate.getValue());
+        message.setSender("");
+        message.setRecipient("");
+
+        return message.getImmutableMessage();
     }
 }

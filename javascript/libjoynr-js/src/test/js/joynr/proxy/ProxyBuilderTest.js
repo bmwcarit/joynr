@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ define([
             "joynr/messaging/MessagingQos",
             "joynr/types/ProviderQos",
             "joynr/types/ProviderScope",
-            "joynr/types/GlobalDiscoveryEntry",
+            "joynr/types/DiscoveryEntryWithMetaInfo",
             "joynr/types/ArbitrationStrategyCollection",
             "joynr/types/DiscoveryScope",
             "joynr/types/Version",
@@ -48,7 +48,7 @@ define([
                 MessagingQos,
                 ProviderQos,
                 ProviderScope,
-                GlobalDiscoveryEntry,
+                DiscoveryEntryWithMetaInfo,
                 ArbitrationStrategyCollection,
                 DiscoveryScope,
                 Version,
@@ -96,19 +96,21 @@ define([
                                 staticArbitration : false
                             };
 
-                            capInfo = new GlobalDiscoveryEntry({
+                            capInfo = new DiscoveryEntryWithMetaInfo({
                                 providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
                                 domain : domain,
                                 interfaceName : interfaceName,
+                                participantId : "myParticipantId",
                                 qos : new ProviderQos({
                                     customParameter : [],
                                     priority : 1,
                                     scope : ProviderScope.GLOBAL,
                                     supportsOnChangeSubscriptions : true
                                 }),
-                                address : "channelId",
+                                lastSeenDateMs : Date.now(),
+                                expiryDateMs : Date.now() + 60000,
                                 publicKeyId : "",
-                                participantId : "myParticipantId"
+                                isLocal : false
                             });
 
                             arbitratedCaps = [ capInfo
@@ -365,8 +367,8 @@ define([
                                             "until the ProxyBuilder promise is not pending any more",
                                             safetyTimeoutDelta).then(function() {
                                         expect(
-                                                spy.onFulfilled.calls.argsFor(0)[0].providerParticipantId)
-                                                .toEqual(arbitratedCaps[0].participantId);
+                                                spy.onFulfilled.calls.argsFor(0)[0].providerDiscoveryEntry)
+                                                .toEqual(arbitratedCaps[0]);
                                         done();
                                         return null;
                                     }).catch(fail);
@@ -399,8 +401,8 @@ define([
                                             "until the ProxyBuilder promise is not pending any more",
                                             safetyTimeoutDelta).then(function() {
                                         expect(
-                                                spy.onFulfilled.calls.argsFor(0)[0].providerParticipantId)
-                                                .toEqual(arbitratedCaps[0].participantId);
+                                                spy.onFulfilled.calls.argsFor(0)[0].providerDiscoveryEntry)
+                                                .toEqual(arbitratedCaps[0]);
                                         expect(
                                                 typeof messageRouterSpy.addNextHop.calls.mostRecent().args[0] === "string")
                                                 .toBeTruthy();
@@ -408,6 +410,8 @@ define([
                                         .toEqual(arbitratedCaps[0].participantId);
                                         expect(messageRouterSpy.addNextHop.calls.mostRecent().args[1])
                                                 .toEqual(libjoynrMessagingAddress);
+                                        expect(messageRouterSpy.addNextHop.calls.mostRecent().args[2])
+                                        .toEqual(true);
                                         done();
                                         return null;
                                     }).catch(fail);

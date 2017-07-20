@@ -3,7 +3,7 @@ package io.joynr.messaging.util;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class MulticastWildcardRegexFactory {
         patternString = patternString.replaceAll("(.*)/[\\+]$", "$1/[^\\/]+\\$");
         patternString = patternString.replaceAll("(.*)/[\\*]$", "$1(/.*)?\\$");
         patternString = patternString.replaceAll("^\\*$", ".+");
-        logger.debug("Creating multicast ID regex pattern: {}", patternString);
+        logger.trace("Creating multicast ID regex pattern: {}", patternString);
         return Pattern.compile(patternString);
     }
 

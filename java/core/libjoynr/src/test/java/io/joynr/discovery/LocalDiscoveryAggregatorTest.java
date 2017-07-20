@@ -3,7 +3,7 @@ package io.joynr.discovery;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
@@ -44,12 +45,15 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.system.Discovery;
 import joynr.system.DiscoveryProxy;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.DiscoveryQos;
 import joynr.types.DiscoveryScope;
 import joynr.types.ProviderQos;
@@ -69,19 +73,23 @@ public class LocalDiscoveryAggregatorTest {
     private String[] oneDomain;
     private String discoveryProviderParticipantId;
     private LocalDiscoveryAggregator localDiscoveryAggregator;
-    private DiscoveryEntry discoveryProviderEntry;
-    private DiscoveryEntry anotherDiscoveryProviderEntry;
-    private DiscoveryEntry[] discoveryProviderEntries;
+    private DiscoveryEntryWithMetaInfo discoveryProviderEntry;
+    private DiscoveryEntryWithMetaInfo anotherDiscoveryProviderEntry;
+    private DiscoveryEntryWithMetaInfo[] discoveryProviderEntries;
     private String publicKeyId = "publicKeyId";
 
     @Mock
     DiscoveryProxy discoveryProxyMock;
     @Mock
+    ProxyBuilderFactory proxyBuilderFactory;
+    @Mock
+    ProxyBuilder<DiscoveryProxy> proxyBuilder;
+    @Mock
     Callback<Void> addCallback;
     @Mock
-    private Callback<DiscoveryEntry[]> lookupCallback;
+    private Callback<DiscoveryEntryWithMetaInfo[]> lookupCallback;
     @Mock
-    private Callback<DiscoveryEntry> lookupParticipantCallback;
+    private Callback<DiscoveryEntryWithMetaInfo> lookupParticipantCallback;
     @Mock
     private Callback<Void> removeCallback;
 
@@ -90,28 +98,36 @@ public class LocalDiscoveryAggregatorTest {
         systemServicesDomain = "test.system.service.domain";
         anotherDomain = "anotherDomain";
         discoveryProviderParticipantId = "test.discovery.provider.participant";
+
+        when(proxyBuilderFactory.get(anyString(), eq(DiscoveryProxy.class))).thenReturn(proxyBuilder);
+        when(proxyBuilder.build()).thenReturn(discoveryProxyMock);
+        when(proxyBuilder.setMessagingQos(any(MessagingQos.class))).thenReturn(proxyBuilder);
+
         localDiscoveryAggregator = new LocalDiscoveryAggregator(systemServicesDomain,
                                                                 discoveryProviderParticipantId,
-                                                                "routingProviderParticipantId");
-        localDiscoveryAggregator.setDiscoveryProxy(discoveryProxyMock);
+                                                                "routingProviderParticipantId",
+                                                                proxyBuilderFactory);
+        localDiscoveryAggregator.forceQueryOfDiscoveryProxy();
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        discoveryProviderEntry = new DiscoveryEntry(new Version(0, 1),
-                                                    systemServicesDomain,
-                                                    Discovery.INTERFACE_NAME,
-                                                    discoveryProviderParticipantId,
-                                                    providerQos,
-                                                    System.currentTimeMillis(),
-                                                    expiryDateMs,
-                                                    publicKeyId);
-        anotherDiscoveryProviderEntry = new DiscoveryEntry(new Version(0, 0),
-                                                           anotherDomain,
-                                                           Discovery.INTERFACE_NAME,
-                                                           discoveryProviderParticipantId,
-                                                           providerQos,
-                                                           System.currentTimeMillis(),
-                                                           expiryDateMs,
-                                                           publicKeyId);
+        discoveryProviderEntry = new DiscoveryEntryWithMetaInfo(new Version(0, 1),
+                                                                systemServicesDomain,
+                                                                Discovery.INTERFACE_NAME,
+                                                                discoveryProviderParticipantId,
+                                                                providerQos,
+                                                                System.currentTimeMillis(),
+                                                                expiryDateMs,
+                                                                publicKeyId,
+                                                                true);
+        anotherDiscoveryProviderEntry = new DiscoveryEntryWithMetaInfo(new Version(0, 0),
+                                                                       anotherDomain,
+                                                                       Discovery.INTERFACE_NAME,
+                                                                       discoveryProviderParticipantId,
+                                                                       providerQos,
+                                                                       System.currentTimeMillis(),
+                                                                       expiryDateMs,
+                                                                       publicKeyId,
+                                                                       true);
     }
 
     @SuppressWarnings("unchecked")
@@ -132,15 +148,15 @@ public class LocalDiscoveryAggregatorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void findsProvisionedEntryForSingleDomain() {
-        discoveryProviderEntries = new DiscoveryEntry[]{ discoveryProviderEntry };
+        discoveryProviderEntries = new DiscoveryEntryWithMetaInfo[]{ discoveryProviderEntry };
         oneDomain = new String[]{ systemServicesDomain };
         // Double Decla. allDomains = new String[]{ anotherDomain, systemServicesDomain };
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
-        Future<DiscoveryEntry[]> discoveryEntryFuture = localDiscoveryAggregator.lookup(lookupCallback,
-                                                                                        oneDomain,
-                                                                                        Discovery.INTERFACE_NAME,
-                                                                                        discoveryQos);
+        Future<DiscoveryEntryWithMetaInfo[]> discoveryEntryFuture = localDiscoveryAggregator.lookup(lookupCallback,
+                                                                                                    oneDomain,
+                                                                                                    Discovery.INTERFACE_NAME,
+                                                                                                    discoveryQos);
         ArgumentCaptor<DiscoveryEntry[]> discoveryEntriesCaptor = ArgumentCaptor.forClass(DiscoveryEntry[].class);
         verify(lookupCallback).resolve((Object) discoveryEntriesCaptor.capture());
         DiscoveryEntry[] discoveryEntriesPassed = discoveryEntriesCaptor.getValue();
@@ -170,7 +186,7 @@ public class LocalDiscoveryAggregatorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void findsProvisionedEntryForMultipleDomains() throws Exception {
-        discoveryProviderEntries = new DiscoveryEntry[]{ anotherDiscoveryProviderEntry };
+        discoveryProviderEntries = new DiscoveryEntryWithMetaInfo[]{ anotherDiscoveryProviderEntry };
         allDomains = new String[]{ systemServicesDomain, anotherDomain };
         String[] missingDomains = new String[]{ anotherDomain };
         DiscoveryQos discoveryQos = new DiscoveryQos();
@@ -179,7 +195,7 @@ public class LocalDiscoveryAggregatorTest {
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) {
-                Callback<DiscoveryEntry[]> callback = (Callback<DiscoveryEntry[]>) invocation.getArguments()[0];
+                Callback<DiscoveryEntryWithMetaInfo[]> callback = (Callback<DiscoveryEntryWithMetaInfo[]>) invocation.getArguments()[0];
                 callback.onSuccess(discoveryProviderEntries);
                 return null;
             }
@@ -188,10 +204,10 @@ public class LocalDiscoveryAggregatorTest {
                                            anyString(),
                                            any(DiscoveryQos.class));
 
-        Future<DiscoveryEntry[]> discoveryEntriesFuture = localDiscoveryAggregator.lookup(lookupCallback,
-                                                                                          allDomains,
-                                                                                          Discovery.INTERFACE_NAME,
-                                                                                          discoveryQos);
+        Future<DiscoveryEntryWithMetaInfo[]> discoveryEntriesFuture = localDiscoveryAggregator.lookup(lookupCallback,
+                                                                                                      allDomains,
+                                                                                                      Discovery.INTERFACE_NAME,
+                                                                                                      discoveryQos);
 
         assertNotNull(discoveryEntriesFuture);
         DiscoveryEntry[] result = discoveryEntriesFuture.get();
@@ -231,43 +247,5 @@ public class LocalDiscoveryAggregatorTest {
                                                    any(String[].class),
                                                    anyString(),
                                                    any(DiscoveryQos.class));
-    }
-
-    @Test(expected = JoynrRuntimeException.class)
-    public void addThrowsIfProxyNotSet() {
-        localDiscoveryAggregator.setDiscoveryProxy(null);
-
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(0, 0),
-                                                           "anyDomain",
-                                                           "anyInterface",
-                                                           "anyParticipant",
-                                                           new ProviderQos(),
-                                                           System.currentTimeMillis(),
-                                                           expiryDateMs,
-                                                           publicKeyId);
-        localDiscoveryAggregator.add(addCallback, discoveryEntry);
-        verify(addCallback, never()).resolve();
-
-    }
-
-    @Test(expected = JoynrRuntimeException.class)
-    public void lookupByParticipantThrowsIfProxyNotSet() {
-        localDiscoveryAggregator.setDiscoveryProxy(null);
-        localDiscoveryAggregator.lookup(lookupParticipantCallback, "someParticipant");
-        verify(lookupParticipantCallback, never()).resolve(any());
-    }
-
-    @Test(expected = JoynrRuntimeException.class)
-    public void lookupByDomainThrowsIfProxyNotSet() {
-        localDiscoveryAggregator.setDiscoveryProxy(null);
-        localDiscoveryAggregator.lookup(lookupCallback, new String[]{ "anyDomain" }, "anyInterface", new DiscoveryQos());
-        verify(lookupCallback, never()).resolve(any());
-    }
-
-    @Test(expected = JoynrRuntimeException.class)
-    public void removeThrowsIfProxyNotSet() {
-        localDiscoveryAggregator.setDiscoveryProxy(null);
-        localDiscoveryAggregator.remove(removeCallback, "anyParticipant");
-        verify(removeCallback, never()).resolve();
     }
 }

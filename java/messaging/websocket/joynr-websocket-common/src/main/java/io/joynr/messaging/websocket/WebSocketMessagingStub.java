@@ -3,7 +3,7 @@ package io.joynr.messaging.websocket;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,43 +24,35 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
-import joynr.JoynrMessage;
+import io.joynr.messaging.IMessagingStub;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 
-public class WebSocketMessagingStub implements IMessaging {
+public class WebSocketMessagingStub implements IMessagingStub {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketMessagingStub.class);
 
-    protected ObjectMapper objectMapper;
     private JoynrWebSocketEndpoint webSocketEndpoint;
 
     private Address toAddress;
 
-    public WebSocketMessagingStub(Address toAddress, JoynrWebSocketEndpoint webSocketEndpoint, ObjectMapper objectMapper) {
+    public WebSocketMessagingStub(Address toAddress, JoynrWebSocketEndpoint webSocketEndpoint) {
         this.toAddress = toAddress;
         this.webSocketEndpoint = webSocketEndpoint;
-        this.objectMapper = objectMapper;
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
-        logger.debug("WebSocketMessagingStub.transmit with message " + message);
-        long timeout = message.getExpiryDate() - System.currentTimeMillis();
-        String serializedMessage;
-        try {
-            serializedMessage = objectMapper.writeValueAsString(message);
-            webSocketEndpoint.writeText(toAddress, serializedMessage, timeout, TimeUnit.MILLISECONDS, failureAction);
-        } catch (JsonProcessingException error) {
-            failureAction.execute(error);
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
+        logger.debug(">>> OUTGOING >>> {}", message);
+
+        if (!message.isTtlAbsolute()) {
+            throw new JoynrRuntimeException("Relative TTL not supported");
         }
-    }
 
-    @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
-        webSocketEndpoint.writeText(toAddress, serializedMessage, 30, TimeUnit.SECONDS, failureAction);
+        long timeout = message.getTtlMs() - System.currentTimeMillis();
+        byte[] serializedMessage = message.getSerializedMessage();
+
+        webSocketEndpoint.writeBytes(toAddress, serializedMessage, timeout, TimeUnit.MILLISECONDS, failureAction);
     }
 }

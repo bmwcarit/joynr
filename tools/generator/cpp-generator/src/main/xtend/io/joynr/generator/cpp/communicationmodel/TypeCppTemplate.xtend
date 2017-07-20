@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.communicationmodel
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,9 +160,11 @@ std::size_t hash_value(const «typeName»& «typeName.toFirstLower»Value)
 	return «typeName.toFirstLower»Value.hashCode();
 }
 
+«IF isPolymorphic(type)»
 std::unique_ptr<«getRootType(type).typeName»> «typeName»::clone() const {
 	return std::make_unique<«typeName»>(const_cast<«typeName»&>(*this));
 }
+«ENDIF»
 
 «getNamespaceEnder(type, true)»
 '''

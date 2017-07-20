@@ -1,9 +1,7 @@
-package io.joynr.messaging.util;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +16,28 @@ package io.joynr.messaging.util;
  * limitations under the License.
  * #L%
  */
+package io.joynr.messaging.util;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+
 import com.google.common.collect.Lists;
 
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+
+import joynr.ImmutableMessage;
+
 public class Utilities {
+    private static final Logger logger = LoggerFactory.getLogger(Utilities.class);
 
     /**
      * return an array of the params, useful for logging in slf4j
-     * 
+     *
      * @param args Arguments which should be returned as array.
      * @return array build from arguments
      */
@@ -81,9 +91,32 @@ public class Utilities {
         return result;
     }
 
+    public static List<ImmutableMessage> splitSMRF(byte[] combinedSMRFMessages) throws EncodingException,
+                                                                               UnsuppportedVersionException {
+        List<ImmutableMessage> result = Lists.newArrayList();
+        byte[] remainingData = combinedSMRFMessages;
+
+        while (remainingData.length > 0) {
+            ImmutableMessage currentMessage = new ImmutableMessage(remainingData);
+            int currentMessageSize = currentMessage.getMessageSize();
+
+            // A message size of 0 may lead to an infinite loop
+            if (currentMessageSize <= 0) {
+                logger.error("One message in a SMRF message sequence had a size <= 0. Dropping remaining messages.");
+                break;
+            }
+
+            remainingData = Arrays.copyOfRange(remainingData, currentMessageSize, remainingData.length);
+
+            result.add(currentMessage);
+        }
+
+        return result;
+    }
+
     /**
      * Returns whether the session ID is encoded into the URL.
-     * 
+     *
      * @param encodedUrl
      *            the url to check
      * @param sessionIdName
@@ -97,7 +130,7 @@ public class Utilities {
 
     /**
      * Returns the URL without the session encoded into the URL.
-     * 
+     *
      * @param url
      *            the url to de-code
      * @param sessionIdName
@@ -117,7 +150,7 @@ public class Utilities {
      * Returns the session id from a URL. It is expected that the URL contains a
      * session, which can be checked by calling
      * {@link Utilities#isSessionEncodedInUrl(String, String)}
-     * 
+     *
      * @param url
      *            the url to get the session ID from
      * @param sessionIdName
@@ -142,7 +175,7 @@ public class Utilities {
 
     /**
      * Returns a url with the session encoded into the URL
-     * 
+     *
      * @param url the URL to encode
      * @param sessionIdName the name of the session ID, e.g. jsessionid
      * @param sessionId the session ID

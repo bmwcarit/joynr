@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,11 +34,13 @@ import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+@Ignore("HTTP does not support binary messages (SMRF)")
 public class BroadcastEnd2EndTest extends AbstractBroadcastEnd2EndTest {
 
     private List<DummyJoynrApplication> dummyApplications = new ArrayList<>();
@@ -74,7 +76,7 @@ public class BroadcastEnd2EndTest extends AbstractBroadcastEnd2EndTest {
     @Override
     @After
     public void tearDown() throws Exception {
-    super.tearDown();
+        super.tearDown();
         for (DummyJoynrApplication application : dummyApplications) {
             application.shutdown();
         }

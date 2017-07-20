@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,19 @@
 #ifndef ABSTRACTJOYNRPROVIDER_H
 #define ABSTRACTJOYNRPROVIDER_H
 
-#include <string>
-#include <memory>
 #include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "joynr/IJoynrProvider.h"
-#include "joynr/types/ProviderQos.h"
+#include "joynr/JoynrExport.h"
+#include "joynr/MulticastBroadcastListener.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/ReadWriteLock.h"
 #include "joynr/SubscriptionAttributeListener.h"
 #include "joynr/UnicastBroadcastListener.h"
-#include "joynr/MulticastBroadcastListener.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrExport.h"
+#include "joynr/types/ProviderQos.h"
 
 namespace joynr
 {
@@ -52,17 +52,6 @@ public:
     ~AbstractJoynrProvider() override;
 
     // --- Interface to be implemented by Providers ---
-
-    /**
-     * @deprecated
-     * @see JoynrRuntime#registerProvider
-     *
-     * @brief Get the provider quality of service settings
-     * @return the provider quality of service settings
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use JoynrRuntime::registerProvider "
-                 "instead.")]] types::ProviderQos
-    getProviderQos() const override;
 
     // --- Support for listening to onChange events ---
 
@@ -169,15 +158,6 @@ protected:
             listener->broadcastOccurred(broadcastName, partitions, values...);
         }
     }
-
-    /**
-     * @deprecated
-     * @see JoynrRuntime#registerProvider
-     *
-     * @brief The provider quality settings
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use JoynrRuntime::registerProvider "
-                 "instead.")]] types::ProviderQos providerQos;
 
     /**
      * @brief Returns a call context object including meta information (such as calling

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
-#include "tests/utils/MockObjects.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/OnChangeSubscriptionQos.h"
@@ -37,13 +35,11 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
+
 using namespace ::testing;
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
 
 static const std::string messagingPropertiesPersistenceFileName1(
         "End2EndBroadcastTest-runtime1-joynr.persist");
@@ -233,7 +229,7 @@ public:
         // Delete persisted files
         std::remove(messagingPropertiesPersistenceFileName1.c_str());
         std::remove(messagingPropertiesPersistenceFileName2.c_str());
-        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(integration1Settings.get<std::string>(LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()).c_str());
         std::remove(integration2Settings.get<std::string>(LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()).c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
@@ -268,7 +264,14 @@ protected:
 
     std::shared_ptr<MyTestProvider> registerProvider(JoynrClusterControllerRuntime& runtime) {
         auto testProvider = std::make_shared<MyTestProvider>();
-        providerParticipantId = runtime.registerProvider<tests::testProvider>(domainName, testProvider);
+        types::ProviderQos providerQos;
+        std::chrono::milliseconds millisSinceEpoch =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch());
+        providerQos.setPriority(millisSinceEpoch.count());
+        providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+        providerQos.setSupportsOnChangeSubscriptions(true);
+        providerParticipantId = runtime.registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
         // This wait is necessary, because registerProvider is async, and a lookup could occur
         // before the register has finished.
@@ -282,22 +285,20 @@ protected:
     }
 
     std::shared_ptr<tests::testProxy> buildProxy(JoynrClusterControllerRuntime& runtime) {
-        ProxyBuilder<tests::testProxy>* testProxyBuilder
+        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder
                 = runtime.createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeoutMs(1000);
+        discoveryQos.setDiscoveryTimeoutMs(3000);
         discoveryQos.setRetryIntervalMs(250);
 
         std::int64_t qosRoundTripTTL = 500;
 
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                                                   ->setCached(false)
                                                    ->setDiscoveryQos(discoveryQos)
                                                    ->build());
 
-        delete testProxyBuilder;
         return testProxy;
     }
 
@@ -333,10 +334,8 @@ protected:
 
         std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
-        std::int64_t minInterval_ms = 50;
-        auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
-                    500000,   // validity_ms
-                    minInterval_ms);  // minInterval_ms
+        auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+        subscriptionQos->setValidityMs(500000);
 
         subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos);
 
@@ -375,6 +374,7 @@ protected:
         std::int64_t minInterval_ms = 50;
         auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                     500000,   // validity_ms
+                    1000,     // publication ttl
                     minInterval_ms);  // minInterval_ms
 
         subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos);

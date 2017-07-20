@@ -2,7 +2,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2016 BMW Car IT GmbH
+  Copyright (C) 2017 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -25,11 +25,12 @@
 	<groupId>io.joynr.java</groupId>
 	<artifactId>jeeintegration</artifactId>
 	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
 
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>java</artifactId>
-		<version>0.23.0-SNAPSHOT</version>
+		<version>0.28.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -151,6 +152,11 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>io.joynr.smrf.java</groupId>
+			<artifactId>smrf</artifactId>
+			<version>${smrf.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>servlet-common</artifactId>
 			<version>${project.version}</version>
@@ -165,6 +171,13 @@
 			<groupId>io.joynr.java.messaging.mqtt</groupId>
 			<artifactId>joynr-mqtt-client</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Test dependencies -->

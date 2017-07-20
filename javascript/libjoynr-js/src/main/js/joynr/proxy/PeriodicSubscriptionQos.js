@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,8 +49,6 @@ define(
              * @param {Object}
              *            [settings] the settings object for the constructor call
              * @param {Number}
-             *            [settings.period] Deprecated parameter. Use settings.periodMs instead
-             * @param {Number}
              *            [settings.periodMs=PeriodicSubscriptionQos.DEFAULT_PERIOD_MS] defines
              *            how often an update may be sent even if the value did not change
              *            (independently from value changes).<br/>
@@ -62,13 +60,9 @@ define(
              *              <li>default value: {@link PeriodicSubscriptionQos.DEFAULT_PERIOD_MS}</li>
              *            </ul>
              * @param {Number}
-             *            [settings.expiryDate] Deprecated parameter. Use settings.expiryDateMs instead
-             * @param {Number}
              *            [settings.expiryDateMs] how long is the subscription valid
              * @param {Number}
              *            [settings.validityMs] The validity of the subscription relative to the current time.
-             * @param {Number}
-             *            [settings.alertAfterInterval] Deprecated parameter. Use settings.alertAfterIntervalMs instead
              * @param {Number}
              *            [settings.alertAfterIntervalMs=PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS] defines how long to wait for an
              *            update before publicationMissed is called.<br/>
@@ -79,8 +73,6 @@ define(
              *              <li>maximum value: {@link PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS}</li>
              *              <li>default value: {@link PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS}</li>
              *            </ul>
-             * @param {Number}
-             *            [settings.publicationTtl] Deprecated parameter. Use settings.publicationTtlMs instead
              * @param {Number}
              *            [settings.publicationTtlMs] Time to live for publication messages
              *
@@ -108,21 +100,7 @@ define(
                 Util.objectDefineProperty(this, "_typeName", "joynr.PeriodicSubscriptionQos");
                 Typing.checkPropertyIfDefined(settings, "Object", "settings");
                 if (settings && !(settings instanceof PeriodicSubscriptionQos)) {
-                    if (settings.period !== undefined) {
-                        log
-                                .warn("PeriodicSubscriptionQos has been invoked with deprecated settings member \"period\". "
-                                    + "By 2017-01-01, the min interval can only be specified with member \"periodMs\".");
-                        settings.periodMs = settings.period;
-                        settings.period = undefined;
-                    }
                     Typing.checkPropertyIfDefined(settings.periodMs, "Number", "settings.periodMs");
-                    if (settings.alertAfterInterval !== undefined) {
-                        log
-                                .warn("PeriodicSubscriptionQos has been invoked with deprecated settings member \"alertAfterInterval\". "
-                                    + "By 2017-01-01, the min interval can only be specified with member \"alertAfterIntervalMs\".");
-                        settings.alertAfterIntervalMs = settings.alertAfterInterval;
-                        settings.alertAfterInterval = undefined;
-                    }
                     Typing.checkPropertyIfDefined(
                             settings.alertAfterIntervalMs,
                             "Number",
@@ -240,10 +218,6 @@ define(
              * @readonly
              */
             PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL = 0;
-            /**
-             * @deprecated Use PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL instead. Will be removed by 01/01/2017
-             */
-            PeriodicSubscriptionQos.NEVER_ALERT = PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
 
             /**
              * Maximum value for [alertAfterIntervalMs]{@link PeriodicSubscriptionQos#alertAfterIntervalMs}.

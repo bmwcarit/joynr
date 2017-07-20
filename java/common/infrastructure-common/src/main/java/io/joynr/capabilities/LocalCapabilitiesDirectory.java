@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.system.DiscoveryProvider;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 import java.util.Set;
 
@@ -93,7 +94,7 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider {
      * @return the capability with the given participant ID. Or null if not found.
      */
     @CheckForNull
-    DiscoveryEntry lookup(String participantId, DiscoveryQos discoveryQos);
+    DiscoveryEntryWithMetaInfo lookup(String participantId, DiscoveryQos discoveryQos);
 
     /**
      *

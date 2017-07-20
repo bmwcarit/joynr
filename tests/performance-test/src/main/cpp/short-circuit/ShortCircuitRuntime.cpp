@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,70 +22,66 @@
 #include <chrono>
 #include <limits>
 
-#include "joynr/Util.h"
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/MessagingStubFactory.h"
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/MessageSender.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include "libjoynr/in-process/InProcessLibJoynrMessagingSkeleton.h"
+#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessPublicationSender.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
+#include "libjoynrclustercontroller/include/joynr/CcMessageRouter.h"
 
 namespace joynr
 {
 
 ShortCircuitRuntime::ShortCircuitRuntime()
 {
-    std::string libjoynrMessagingId = "libjoynr.messaging.participantid_short-circuit-uuid";
-    auto libjoynrMessagingAddress =
-            std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>(
-                    libjoynrMessagingId);
-
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
 
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
 
+    const std::string multicastTopicPrefix = "";
+
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
-            std::make_unique<MqttMulticastAddressCalculator>(nullptr);
+            std::make_unique<MqttMulticastAddressCalculator>(nullptr, multicastTopicPrefix);
 
-    messageRouter = std::make_shared<MessageRouter>(std::move(messagingStubFactory),
-                                                    libjoynrMessagingAddress,
-                                                    singleThreadedIOService.getIOService(),
-                                                    std::move(addressCalculator));
+    const std::string& globalClusterControllerAddress("globalAddress");
 
-    joynrMessageSender = std::make_unique<JoynrMessageSender>(messageRouter);
-    joynrDispatcher =
-            new Dispatcher(joynrMessageSender.get(), singleThreadedIOService.getIOService());
-    joynrMessageSender->registerDispatcher(joynrDispatcher);
+    messageRouter = std::make_shared<CcMessageRouter>(std::move(messagingStubFactory),
+                                                      nullptr,
+                                                      nullptr,
+                                                      singleThreadedIOService.getIOService(),
+                                                      std::move(addressCalculator),
+                                                      globalClusterControllerAddress);
 
-    dispatcherMessagingSkeleton =
-            std::make_shared<InProcessLibJoynrMessagingSkeleton>(joynrDispatcher);
+    messageSender = std::make_shared<MessageSender>(messageRouter);
+    joynrDispatcher = new Dispatcher(messageSender, singleThreadedIOService.getIOService());
+    messageSender->registerDispatcher(joynrDispatcher);
+
+    dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager = new PublicationManager(
-            singleThreadedIOService.getIOService(), joynrMessageSender.get());
-    subscriptionManager =
-            new SubscriptionManager(singleThreadedIOService.getIOService(), messageRouter);
+    publicationManager =
+            new PublicationManager(singleThreadedIOService.getIOService(), messageSender.get());
+    subscriptionManager = std::make_shared<SubscriptionManager>(
+            singleThreadedIOService.getIOService(), messageRouter);
     inProcessDispatcher = new InProcessDispatcher(singleThreadedIOService.getIOService());
 
     inProcessPublicationSender = std::make_unique<InProcessPublicationSender>(subscriptionManager);
-    inProcessConnectorFactory = new InProcessConnectorFactory(
-            subscriptionManager,
+    auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
+            subscriptionManager.get(),
             publicationManager,
             inProcessPublicationSender.get(),
             dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
-    joynrMessagingConnectorFactory =
-            new JoynrMessagingConnectorFactory(joynrMessageSender.get(), subscriptionManager);
-
+    auto joynrMessagingConnectorFactory =
+            std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
     auto connectorFactory = std::make_unique<ConnectorFactory>(
-            inProcessConnectorFactory, joynrMessagingConnectorFactory);
-    proxyFactory = std::make_unique<ProxyFactory>(
-            libjoynrMessagingAddress, std::move(connectorFactory), nullptr);
+            std::move(inProcessConnectorFactory), std::move(joynrMessagingConnectorFactory));
+    proxyFactory = std::make_unique<ProxyFactory>(std::move(connectorFactory));
 
     std::string persistenceFilename = "dummy.txt";
     participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
@@ -105,7 +101,8 @@ ShortCircuitRuntime::ShortCircuitRuntime()
                                                     dispatcherAddress,
                                                     messageRouter,
                                                     std::numeric_limits<std::int64_t>::max(),
-                                                    *publicationManager);
+                                                    *publicationManager,
+                                                    globalClusterControllerAddress);
 
     maximumTtlMs = std::chrono::milliseconds(std::chrono::hours(24) * 30).count();
 }

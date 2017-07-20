@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,11 +38,4 @@ public interface CapabilitiesRegistrar {
     Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos);
 
     void unregisterProvider(String domain, Object provider);
-
-    /**
-     * Shuts down the local capabilities directory and all used thread pools.
-     * @param unregisterAllRegisteredCapabilities if set to true, all added capabilities that are not removed up to
-     * this point, will be removed automatically
-     */
-    void shutdown(boolean unregisterAllRegisteredCapabilities);
 }

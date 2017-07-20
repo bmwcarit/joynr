@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,6 @@ import com.google.inject.name.Named;
 
 @Singleton
 public class ConfigurableMessagingSettings implements MessagingSettings {
-    // public static final String PROPERTY_JOYNR_MESSAGING_CHANNELID = "joynr.messaging.channelId"; //NOT USUALLY SET BY
-    // THE APPLICATION!
-    // public static final String PROPERTY_JOYNR_MESSAGING_CAPABILITIESDIRECTORYURL =
-    // "joynr.messaging.capabilitiesDirectoryUrl";
-    // public static final String PROPERTY_BOUNCE_PROXY_URL = "joynr.messaging.bounceProxyUrl";
-
     public static final String PROPERTY_CC_CONNECTION_TYPE = "joynr.messaging.cc.connectiontype";
 
     public static final String PROPERTY_ARBITRATION_MINIMUMRETRYDELAY = "joynr.arbitration.minimumretrydelay";
@@ -46,6 +40,8 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
 
     public static final String PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID = "joynr.messaging.domainaccesscontrollerparticipantid";
     public static final String PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID = "joynr.messaging.domainaccesscontrollerchannelid";
+    public static final String PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID = "joynr.messaging.domainaccesscontrollisteditorparticipantid";
+    public static final String PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID = "joynr.messaging.domainrolecontrollerparticipantid";
 
     public static final String PROPERTY_CREATE_CHANNEL_RETRY_INTERVAL_MS = "joynr.messaging.createchannelretryintervalms";
     public static final String PROPERTY_DELETE_CHANNEL_RETRY_INTERVAL_MS = "joynr.messaging.deletechannelretryintervalms";
@@ -54,14 +50,18 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_MAX_RETRY_COUNT = "joynr.messaging.maxretriescount";
     public static final String PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE = "joynr.discovery.participantids_persistence_file";
     public static final String DEFAULT_PARTICIPANTIDS_PERSISTENCE_FILE = "joynr_participantIds.properties";
+    public static final String PROPERTY_SUBSCRIPTIONREQUESTS_PERSISISTENCE_FILE = "joynr.dispatching.subscription.subscriptionrequests_persistence_file";
 
     public static final String PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS = "joynr.messaging.maximumparallelsends";
     public static final String PROPERTY_HOSTS_FILENAME = "joynr.messaging.hostsfilename";
 
     public static final String PROPERTY_MAX_MESSAGE_SIZE = "joynr.messaging.maxmessagesize";
+    public static final String PROPERTY_MAX_MESSAGES_INQUEUE = "joynr.messaging.maxmessagesinqueue";
 
     public static final String PROPERTY_MESSAGING_MAXIMUM_TTL_MS = "joynr.messaging.maxttlms";
     public static final String PROPERTY_TTL_UPLIFT_MS = "joynr.messaging.ttlupliftms";
+    public static final String PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS = "joynr.messaging.routingtablegraceperiodms";
+    public static final String PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS = "joynr.messaging.routingtablecleanupintervalms";
 
     private final BounceProxyUrl bounceProxyUrl;
     private final long createChannelRetryIntervalMs;
@@ -91,7 +91,6 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
         this.deleteChannelRetryIntervalMs = deleteChannelRetryIntervalMs;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
         this.longPollRetryIntervalMs = longPollRetryIntervalMs;
-
     }
 
     public int getMaximumParallelSends() {
@@ -137,5 +136,4 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public long getDiscoveryRequestTimeoutMs() {
         return discoveryRequestTimeoutMs;
     }
-
 }

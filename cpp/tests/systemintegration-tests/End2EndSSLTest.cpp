@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,39 +19,46 @@
 
 #include <memory>
 #include <string>
-#include <cstdint>
+#include <chrono>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "tests/utils/MockObjects.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "tests/utils/MockObjects.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/vehicle/GpsProxy.h"
 #include "joynr/Future.h"
 #include "joynr/Util.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/PrivateCopyAssign.h"
+
+#include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using namespace ::testing;
 using namespace joynr;
 
-class End2EndSSLTest : public Test{
+/*********************************************************************************************************
+*
+* To run this test you must use {joynr}/docker/joynr-base/scripts/gen-certificates.sh with the config from
+* {joynr}/docker/joynr-base/openssl.conf to generate test certificates in /data/ssl-data as done in
+* {joynr}/docker/joynr-base/Dockerfile.
+* 
+* The certificates may not be stored in the git repository for security reasons (even if they are only test
+* certificates!)
+*
+**********************************************************************************************************/
+class End2EndSSLTest : public TestWithParam<std::tuple<std::string, std::string>> {
 public:
-    std::string domain;
-    JoynrClusterControllerRuntime* runtime;
-
-    End2EndSSLTest() :
-        domain(),
-        runtime(nullptr)
+    End2EndSSLTest() : domain()
     {
-        auto settings = std::make_unique<Settings>("test-resources/integrationtest.settings");
-        Settings sslSettings{"test-resources/sslintegrationtest.settings"};
-        Settings integrationTestSettings{"test-resources/libjoynrintegrationtest.settings"};
-        Settings::merge(sslSettings, *settings, false);
-        Settings::merge(integrationTestSettings, *settings, false);
-        runtime = new JoynrClusterControllerRuntime(std::move(settings));
+        auto ccSettings = std::make_unique<Settings>(std::get<0>(GetParam()));
+        runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(ccSettings));
+
+        auto libJoynrSettings = std::make_unique<Settings>(std::get<1>(GetParam()));
+        libJoynrRuntime = std::make_unique<TestLibJoynrWebSocketRuntime>(std::move(libJoynrSettings));
+
         std::string uuid = util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
     }
@@ -59,6 +66,7 @@ public:
     // Sets up the test fixture.
     void SetUp(){
        runtime->start();
+       EXPECT_TRUE(libJoynrRuntime->connect(std::chrono::milliseconds(2000)));
     }
 
     // Tears down the test fixture.
@@ -67,7 +75,7 @@ public:
         runtime->stop(deleteChannel);
 
         // Delete persisted files
-        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
@@ -75,34 +83,40 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(550));
     }
 
-    ~End2EndSSLTest(){
-        delete runtime;
-    }
+protected:
+    std::string domain;
+    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
+    std::unique_ptr<TestLibJoynrWebSocketRuntime> libJoynrRuntime;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(End2EndSSLTest);
 };
 
-TEST_F(End2EndSSLTest, DISABLED_call_rpc_method_and_get_expected_result)
+TEST_P(End2EndSSLTest, localconnection_call_rpc_method_and_get_expected_result)
 {
-
     // Create a provider
     auto mockProvider = std::make_shared<MockGpsProvider>();
-    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
-    std::this_thread::sleep_for(std::chrono::milliseconds(550));
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
 
     // Build a proxy
-    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
+    std::unique_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
+            libJoynrRuntime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
+    discoveryQos.setDiscoveryTimeoutMs(3000);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::shared_ptr<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
+    std::unique_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     // Call the provider and wait for a result
     std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellitesAsync());
@@ -112,5 +126,14 @@ TEST_F(End2EndSSLTest, DISABLED_call_rpc_method_and_get_expected_result)
     int actualValue;
     gpsFuture->get(actualValue);
     EXPECT_EQ(expectedValue, actualValue);
-    delete gpsProxyBuilder;
 }
+
+INSTANTIATE_TEST_CASE_P(TLS,
+    End2EndSSLTest,
+    testing::Values(std::make_tuple("test-resources/websocket-cc-tls.settings", "test-resources/websocket-libjoynr-tls.settings"))
+);
+
+INSTANTIATE_TEST_CASE_P(NonTLS,
+    End2EndSSLTest,
+    testing::Values(std::make_tuple("test-resources/websocket-cc-tls.settings", "test-resources/websocket-libjoynr-non-tls.settings"))
+);

@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILI
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID;
-import static io.joynr.messaging.MessagingPropertyKeys.CAPABILITYDIRECTORYURL;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.DISCOVERYDIRECTORYURL;
 import static io.joynr.messaging.MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL;
@@ -62,10 +61,6 @@ public class LegacyCapabilitiesProvisioning {
         protected String discoveryDirectoryUrl;
 
         @Inject(optional = true)
-        @Named(CAPABILITYDIRECTORYURL)
-        protected String deprecatedCapabilityDirectoryUrl;
-
-        @Inject(optional = true)
         @Named(DOMAINACCESSCONTROLLERURL)
         protected String domainAccessControllerUrl;
 
@@ -98,17 +93,15 @@ public class LegacyCapabilitiesProvisioning {
 
         // @CHECKSTYLE:OFF
         public LegacyProvisioningPropertiesHolder(String discoveryDirectoryUrl,
-                String deprecatedCapabilityDirectoryUrl,
-                String domainAccessControllerUrl,
-                String channelId,
-                String discoveryDirectoriesDomain,
-                String capabilitiesDirectoryParticipantId,
-                String capabilitiesDirectoryChannelId,
-                String domainAccessControllerParticipantId,
-                String domainAccessControllerChannelId) {
+                                                  String domainAccessControllerUrl,
+                                                  String channelId,
+                                                  String discoveryDirectoriesDomain,
+                                                  String capabilitiesDirectoryParticipantId,
+                                                  String capabilitiesDirectoryChannelId,
+                                                  String domainAccessControllerParticipantId,
+                                                  String domainAccessControllerChannelId) {
             // @CHECKSTYLE:ON
             this.discoveryDirectoryUrl = discoveryDirectoryUrl;
-            this.deprecatedCapabilityDirectoryUrl = deprecatedCapabilityDirectoryUrl;
             this.domainAccessControllerUrl = domainAccessControllerUrl;
             this.channelId = channelId;
             this.discoveryDirectoriesDomain = discoveryDirectoriesDomain;
@@ -124,13 +117,11 @@ public class LegacyCapabilitiesProvisioning {
 
     @Inject
     public LegacyCapabilitiesProvisioning(LegacyProvisioningPropertiesHolder properties) {
-        String urlToUse = properties.deprecatedCapabilityDirectoryUrl == null || properties.deprecatedCapabilityDirectoryUrl.isEmpty()
-                ? properties.discoveryDirectoryUrl : properties.deprecatedCapabilityDirectoryUrl;
         createDiscoveryEntryFor(GlobalCapabilitiesDirectory.class,
                                 GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                 properties.capabilitiesDirectoryChannelId,
                                 properties.capabilitiesDirectoryParticipantId,
-                                urlToUse,
+                                properties.discoveryDirectoryUrl,
                                 properties.channelId,
                                 properties.discoveryDirectoriesDomain);
         createDiscoveryEntryFor(GlobalDomainAccessController.class,
@@ -152,12 +143,13 @@ public class LegacyCapabilitiesProvisioning {
         boolean hasUrl = isPresent(urlForAddress);
         boolean hasParticipantId = isPresent(participantId);
         if (hasUrl && !hasParticipantId) {
-            throw new IllegalArgumentException(
-                format("When configuring the discovery directory or domain access controller "
-                        + "via properties, you must provide both a URL and a participant ID per service.%n"
-                        + "You provided the URL '%s' and the participant ID '%s' for the service %s.%n"
-                        + "Please complete the configuration and restart the application.",
-                    urlForAddress, participantId, interfaceName));
+            throw new IllegalArgumentException(format("When configuring the discovery directory or domain access controller "
+                                                              + "via properties, you must provide both a URL and a participant ID per service.%n"
+                                                              + "You provided the URL '%s' and the participant ID '%s' for the service %s.%n"
+                                                              + "Please complete the configuration and restart the application.",
+                                                      urlForAddress,
+                                                      participantId,
+                                                      interfaceName));
         }
         if (hasParticipantId && hasUrl && isPresent(channelId) && isPresent(domain)) {
             Address address;
@@ -169,19 +161,19 @@ public class LegacyCapabilitiesProvisioning {
                 address = new ChannelAddress(urlForAddress, channelId);
             }
             DiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
-                domain,
-                interfaceName,
-                participantId,
-                new ProviderQos(),
-                System.currentTimeMillis(),
-                Long.MAX_VALUE,
-                "",
-                address);
+                                                                                    domain,
+                                                                                    interfaceName,
+                                                                                    participantId,
+                                                                                    new ProviderQos(),
+                                                                                    System.currentTimeMillis(),
+                                                                                    Long.MAX_VALUE,
+                                                                                    "",
+                                                                                    address);
             logger.debug("Created legacy discovery entry: {}", discoveryEntry);
             legacyDiscoveryEntries.put(interfaceClass, discoveryEntry);
             legacyAddresses.put(interfaceClass, address);
         } else {
-            logger.debug("Insufficient properties data to create entry for interface {}", interfaceName);
+            logger.trace("Insufficient properties data to create entry for interface {}", interfaceName);
         }
     }
 

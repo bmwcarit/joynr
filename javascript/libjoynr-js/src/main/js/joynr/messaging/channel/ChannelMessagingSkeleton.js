@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,11 @@
 
 define("joynr/messaging/channel/ChannelMessagingSkeleton", [
     "joynr/util/Typing",
-    "joynr/types/TypeRegistrySingleton",
     "joynr/system/LoggerFactory",
-    "joynr/system/RoutingTypes/ChannelAddress"
-], function(Typing, TypeRegistrySingleton, LoggerFactory, ChannelAddress) {
+    "joynr/system/DiagnosticTags",
+    "joynr/exceptions/JoynrException",
+    "joynr/messaging/JoynrMessage"
+], function(Typing, LoggerFactory, DiagnosticTags, JoynrException, JoynrMessage) {
 
     /**
      * @name ChannelMessagingSkeleton
@@ -40,7 +41,6 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
         }
 
         var messageRouter = settings.messageRouter;
-        var typeRegistry = TypeRegistrySingleton.getInstance();
 
         /**
          * Lets all listeners receive a message
@@ -52,22 +52,17 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
          */
         this.receiveMessage =
                 function receiveMessage(joynrMessage) {
-                    var replyToAddress;
-                    if (joynrMessage.replyChannelId !== undefined) {
-                        try {
-                            replyToAddress =
-                                    Typing.augmentTypes(
-                                            JSON.parse(joynrMessage.replyChannelId),
-                                            typeRegistry);
-                            messageRouter.addNextHop(joynrMessage.from, replyToAddress);
-                        } catch (e) {
-                            // message dropped if unknown replyTo address type
-                            log.error("unable to process message: replyTo address type unknown: "
-                                + joynrMessage.replyChannelId);
-                            return;
-                        }
+                    joynrMessage = new JoynrMessage(joynrMessage);
+                    joynrMessage.setReceivedFromGlobal(true);
+                    try {
+                        messageRouter.route(joynrMessage);
+                    } catch (e) {
+                        log.error("unable to process message: "
+                            + e
+                            + (e instanceof JoynrException ? " " + e.detailMessage : "")
+                            + " \nmessge: "
+                            + DiagnosticTags.forJoynrMessage(joynrMessage));
                     }
-                    messageRouter.route(joynrMessage);
                 };
 
     }

@@ -1,24 +1,9 @@
 package io.joynr.demo;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
-import com.google.inject.Module;
-import com.google.inject.name.Named;
-import com.google.inject.util.Modules;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +18,29 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * limitations under the License.
  * #L%
  */
+
+import java.io.IOException;
+import java.util.Properties;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.ParseException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.google.inject.Module;
+import com.google.inject.name.Named;
+import com.google.inject.util.Modules;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -56,6 +64,7 @@ import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import jline.console.ConsoleReader;
+import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.exceptions.ApplicationException;
@@ -97,19 +106,69 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
      */
     public static void main(String[] args) {
         // run application from cmd line using Maven:
-        // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="<provider-domain>"
-        if (args.length < 1 || args.length > 3) {
-            LOG.error("USAGE: java {} <provider-domain> [[websocket]:[http]:[mqtt] [local]]",
-                      MyRadioConsumerApplication.class.getName());
-            return;
+        // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioConsumerApplication" -Dexec.args="<arguments>"
+        DiscoveryScope tmpDiscoveryScope = DiscoveryScope.LOCAL_AND_GLOBAL;
+        String host = "localhost";
+        int port = 4242;
+        String providerDomain = "domain";
+        String transport = null;
+
+        CommandLine line;
+        Options options = new Options();
+        Options helpOptions = new Options();
+        setupOptions(options, helpOptions);
+        CommandLineParser parser = new DefaultParser();
+
+        // check for '-h' option alone first. This is required in order to avoid
+        // reports about missing other args when using only '-h', which should supported
+        // to just get help / usage info.
+        try {
+            line = parser.parse(helpOptions, args);
+
+            if (line.hasOption('h')) {
+                HelpFormatter formatter = new HelpFormatter();
+                // use 'options' here to print help about all possible parameters
+                formatter.printHelp(MyRadioConsumerApplication.class.getName(), options, true);
+                System.exit(0);
+            }
+        } catch (ParseException e) {
+            // ignore, since any option except '-h' will cause this exception
         }
-        String providerDomain = args[0];
+
+        try {
+            line = parser.parse(options, args);
+
+            if (line.hasOption('d')) {
+                providerDomain = line.getOptionValue('d');
+                LOG.info("found domain = " + providerDomain);
+            }
+            if (line.hasOption('H')) {
+                host = line.getOptionValue('H');
+                LOG.info("found host = " + host);
+            }
+            if (line.hasOption('l')) {
+                tmpDiscoveryScope = DiscoveryScope.LOCAL_ONLY;
+                LOG.info("found scope local");
+            }
+            if (line.hasOption('p')) {
+                port = Integer.parseInt(line.getOptionValue('p'));
+                LOG.info("found port = " + port);
+            }
+            if (line.hasOption('t')) {
+                transport = line.getOptionValue('t').toLowerCase();
+                LOG.info("found transport = " + transport);
+            }
+        } catch (ParseException e) {
+            LOG.error("failed to parse command line: " + e);
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp(MyRadioConsumerApplication.class.getName(), options, true);
+            System.exit(1);
+        }
 
         // joynr config properties are used to set joynr configuration at compile time. They are set on the
         // JoynInjectorFactory.
         Properties joynrConfig = new Properties();
-        Module runtimeModule = getRuntimeModule(args, joynrConfig);
-        final DiscoveryScope discoveryScope = getDiscoveryScope(args);
+        Module runtimeModule = getRuntimeModule(transport, host, port, joynrConfig);
 
         LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
         LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
@@ -150,6 +209,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // them on the JoynApplicationModule.
         Properties appConfig = new Properties();
         appConfig.setProperty(APP_CONFIG_PROVIDER_DOMAIN, providerDomain);
+        final DiscoveryScope discoveryScope = tmpDiscoveryScope;
 
         JoynrApplication myRadioConsumerApp = new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(new JoynrApplicationModule(MyRadioConsumerApplication.class,
                                                                                                                                                 appConfig) {
@@ -164,13 +224,71 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         myRadioConsumerApp.shutdown();
     }
 
-    private static Module getRuntimeModule(String[] args, Properties joynrConfig) {
+    private static void setupOptions(Options options, Options helpOptions) {
+        Option optionDomain = Option.builder("d")
+                                    .required(true)
+                                    .argName("domain")
+                                    .desc("the domain of the provider (required)")
+                                    .longOpt("domain")
+                                    .hasArg(true)
+                                    .numberOfArgs(1)
+                                    .type(String.class)
+                                    .build();
+        Option optionHost = Option.builder("H")
+                                  .required(false)
+                                  .argName("host")
+                                  .desc("the websocket host (optional, used in case of websocket transport, default: localhost)")
+                                  .longOpt("host")
+                                  .hasArg(true)
+                                  .numberOfArgs(1)
+                                  .type(String.class)
+                                  .build();
+        Option optionHelp = Option.builder("h")
+                                  .required(false)
+                                  .desc("print this message")
+                                  .longOpt("help")
+                                  .hasArg(false)
+                                  .build();
+        Option optionLocal = Option.builder("l")
+                                   .required(false)
+                                   .desc("optional, if present, the provider is discovered only locally")
+                                   .longOpt("local")
+                                   .hasArg(false)
+                                   .build();
+        Option optionPort = Option.builder("p")
+                                  .required(false)
+                                  .argName("port")
+                                  .desc("the websocket port (optional, used in case of websocket transport, default: 4242)")
+                                  .longOpt("port")
+                                  .hasArg(true)
+                                  .numberOfArgs(1)
+                                  .type(Number.class)
+                                  .build();
+        Option optionTransport = Option.builder("t")
+                                       .required(false)
+                                       .argName("transport")
+                                       .desc("the transport (optional, combination of websocket, http, mqtt with colon as separator, default: mqtt, any combination without websocket uses an embedded cluster controller)")
+                                       .longOpt("transport")
+                                       .hasArg(true)
+                                       .numberOfArgs(1)
+                                       .type(String.class)
+                                       .build();
+
+        options.addOption(optionDomain);
+        options.addOption(optionHelp);
+        options.addOption(optionHost);
+        options.addOption(optionLocal);
+        options.addOption(optionPort);
+        options.addOption(optionTransport);
+        helpOptions.addOption(optionHelp);
+    }
+
+    private static Module getRuntimeModule(String transport, String host, int port, Properties joynrConfig) {
         Module runtimeModule;
-        if (args.length >= 2) {
-            String transport = args[1].toLowerCase();
+        if (transport != null) {
             if (transport.contains("websocket")) {
-                joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
-                joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
+                joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, host);
+                joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "" + port);
                 joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
                 joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
                 runtimeModule = new LibjoynrWebSocketRuntimeModule();
@@ -192,7 +310,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             return Modules.override(runtimeModule).with(backendTransportModules);
         }
 
-        return Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+        return Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
     }
 
     @Override
@@ -235,14 +353,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         System.exit(0);
     }
 
-    private static DiscoveryScope getDiscoveryScope(String[] args) {
-        if (args.length > 2 && args[2].equalsIgnoreCase("local")) {
-            return DiscoveryScope.LOCAL_ONLY;
-        }
-        return DiscoveryScope.LOCAL_AND_GLOBAL;
-    }
-
-    private Future<String> subscribeToWeakSignal(OnChangeSubscriptionQos qos, String... partitions) {
+    private Future<String> subscribeToWeakSignal(MulticastSubscriptionQos qos, String... partitions) {
         return radioProxy.subscribeToWeakSignalBroadcast(new WeakSignalBroadcastAdapter() {
             @Override
             public void onReceive(RadioStation weakSignalStation) {
@@ -311,41 +422,33 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             // subscribe to an attribute
             subscriptionFutureCurrentStation = radioProxy.subscribeToCurrentStation(new AttributeSubscriptionAdapter<RadioStation>() {
 
-                                                                                    @Override
-                                                                                    public void onReceive(RadioStation value) {
-                                                                                        LOG.info(PRINT_BORDER
-                                                                                                + "ATTRIBUTE SUBSCRIPTION: current station: "
-                                                                                                + value + PRINT_BORDER);
-                                                                                    }
+                                                                                        @Override
+                                                                                        public void onReceive(RadioStation value) {
+                                                                                            LOG.info(PRINT_BORDER
+                                                                                                    + "ATTRIBUTE SUBSCRIPTION: current station: "
+                                                                                                    + value
+                                                                                                    + PRINT_BORDER);
+                                                                                        }
 
-                                                                                    @Override
-                                                                                    public void onError(JoynrRuntimeException error) {
-                                                                                        LOG.info(PRINT_BORDER
-                                                                                                + "ATTRIBUTE SUBSCRIPTION: " + error
-                                                                                                + PRINT_BORDER);
-                                                                                    }
-                                                                                },
-                                                                                subscriptionQos);
+                                                                                        @Override
+                                                                                        public void onError(JoynrRuntimeException error) {
+                                                                                            LOG.info(PRINT_BORDER
+                                                                                                    + "ATTRIBUTE SUBSCRIPTION: "
+                                                                                                    + error
+                                                                                                    + PRINT_BORDER);
+                                                                                        }
+                                                                                    },
+                                                                                    subscriptionQos);
 
             // broadcast subscription
-
-            // The provider will send a notification whenever the value changes. The number of sent
-            // notifications may be limited by the min interval QoS.
-            // NOTE: The provider must support on-change notifications in order to use this feature by
-            // calling the <broadcast>EventOccurred method of the <interface>Provider class whenever
-            // the <broadcast> should be triggered.
-            OnChangeSubscriptionQos weakSignalBroadcastSubscriptionQos;
-            // The provider will maintain at least a minimum interval idle time in milliseconds between
-            // successive notifications, even if on-change notifications are enabled and the value changes
-            // more often. This prevents the consumer from being flooded by updated values. The filtering
-            // happens on the provider's side, thus also preventing excessive network traffic.
-            int wsbMinIntervalMs = 1 * 1000;
-            // The provider will send notifications until the end date is reached. The consumer will not receive any
-            // notifications (neither value notifications nor missed publication notifications) after
+            // The provider will send a notification whenever the value changes.
+            MulticastSubscriptionQos weakSignalBroadcastSubscriptionQos;
+            // The consumer will be subscribed to the multicast until the end date is reached, after which the
+            // consumer will be automatically unsubscribed, and will not receive any further notifications
             // this date.
             long wsbValidityMs = 60 * 1000;
-            weakSignalBroadcastSubscriptionQos = new OnChangeSubscriptionQos();
-            weakSignalBroadcastSubscriptionQos.setMinIntervalMs(wsbMinIntervalMs).setValidityMs(wsbValidityMs);
+            weakSignalBroadcastSubscriptionQos = new MulticastSubscriptionQos();
+            weakSignalBroadcastSubscriptionQos.setValidityMs(wsbValidityMs);
 
             weakSignalFuture = subscribeToWeakSignal(weakSignalBroadcastSubscriptionQos);
 
@@ -358,7 +461,9 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             long nsdbValidityMs = 180 * 1000;
             int nsdbPublicationTtlMs = 5 * 1000;
             newStationDiscoveredBroadcastSubscriptionQos = new OnChangeSubscriptionQos();
-            newStationDiscoveredBroadcastSubscriptionQos.setMinIntervalMs(nsdbMinIntervalMs).setValidityMs(nsdbValidityMs).setPublicationTtlMs(nsdbPublicationTtlMs);
+            newStationDiscoveredBroadcastSubscriptionQos.setMinIntervalMs(nsdbMinIntervalMs)
+                                                        .setValidityMs(nsdbValidityMs)
+                                                        .setPublicationTtlMs(nsdbPublicationTtlMs);
             NewStationDiscoveredBroadcastFilterParameters newStationDiscoveredBroadcastFilterParams = new NewStationDiscoveredBroadcastFilterParameters();
             newStationDiscoveredBroadcastFilterParams.setHasTrafficService("true");
             GeoPosition positionOfInterest = new GeoPosition(48.1351250, 11.5819810); // Munich
@@ -390,13 +495,14 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                 RadioStation favoriteStation = new RadioStation("99.3 The Fox Rocks", false, Country.CANADA);
                 success = radioProxy.addFavoriteStation(favoriteStation);
                 LOG.info(PRINT_BORDER + "METHOD: added favorite station: " + favoriteStation + ": " + success
-                         + PRINT_BORDER);
+                        + PRINT_BORDER);
                 success = radioProxy.addFavoriteStation(favoriteStation);
             } catch (ApplicationException exception) {
                 AddFavoriteStationErrorEnum error = exception.getError();
                 switch (error) {
                 case DUPLICATE_RADIOSTATION:
-                    LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following excpected error: " + error);
+                    LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following excpected error: "
+                            + error);
                     break;
                 default:
                     LOG.error(PRINT_BORDER + "METHOD: addFavoriteStation failed with an unexpected error: " + error);
@@ -408,14 +514,18 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                 // add favorite radio station
                 RadioStation favoriteStation = new RadioStation("", false, Country.GERMANY);
                 success = radioProxy.addFavoriteStation(favoriteStation);
-                LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation completed unexpected with the following output: " + success);
+                LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation completed unexpected with the following output: "
+                        + success);
             } catch (ApplicationException exception) {
                 String errorName = exception.getError().name();
-                LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following unexpected ApplicationExcecption: " + errorName);
+                LOG.info(PRINT_BORDER
+                        + "METHOD: addFavoriteStation failed with the following unexpected ApplicationExcecption: "
+                        + errorName);
             } catch (ProviderRuntimeException exception) {
                 String errorName = exception.getMessage();
                 String expectation = errorName.equals(MyRadioProvider.MISSING_NAME) ? "expected" : "unexpected";
-                LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following " + expectation + " exception: " + errorName);
+                LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following " + expectation
+                        + " exception: " + errorName);
             }
 
             // shuffle the stations
@@ -426,31 +536,41 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             // add favorite radio station async
             RadioStation radioStation = new RadioStation("99.4 AFN", false, Country.GERMANY);
             Future<Boolean> future = radioProxy.addFavoriteStation(new CallbackWithModeledError<Boolean, AddFavoriteStationErrorEnum>() {
-                @Override
-                public void onSuccess(Boolean result) {
-                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onSuccess" + PRINT_BORDER);
-                }
+                                                                       @Override
+                                                                       public void onSuccess(Boolean result) {
+                                                                           LOG.info(PRINT_BORDER
+                                                                                   + "ASYNC METHOD: added favorite station: callback onSuccess"
+                                                                                   + PRINT_BORDER);
+                                                                       }
 
-                @Override
-                public void onFailure(JoynrRuntimeException error) {
-                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onFailure: " + error.getMessage() + PRINT_BORDER);
-                }
+                                                                       @Override
+                                                                       public void onFailure(JoynrRuntimeException error) {
+                                                                           LOG.info(PRINT_BORDER
+                                                                                   + "ASYNC METHOD: added favorite station: callback onFailure: "
+                                                                                   + error.getMessage() + PRINT_BORDER);
+                                                                       }
 
-                @Override
-                public void onFailure(AddFavoriteStationErrorEnum errorEnum) {
-                    switch (errorEnum) {
-                    case DUPLICATE_RADIOSTATION:
-                        LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station failed: Duplicate Station!" + PRINT_BORDER);
-                        break;
+                                                                       @Override
+                                                                       public void onFailure(AddFavoriteStationErrorEnum errorEnum) {
+                                                                           switch (errorEnum) {
+                                                                           case DUPLICATE_RADIOSTATION:
+                                                                               LOG.info(PRINT_BORDER
+                                                                                       + "ASYNC METHOD: added favorite station failed: Duplicate Station!"
+                                                                                       + PRINT_BORDER);
+                                                                               break;
 
-                    default:
-                        LOG.error(PRINT_BORDER + "ASYNC METHOD: added favorite station failed: unknown errorEnum:" + errorEnum + PRINT_BORDER);
-                        break;
-                    }
-                    LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: callback onFailure: " + errorEnum
-                    + PRINT_BORDER);
-                }
-            }, radioStation);
+                                                                           default:
+                                                                               LOG.error(PRINT_BORDER
+                                                                                       + "ASYNC METHOD: added favorite station failed: unknown errorEnum:"
+                                                                                       + errorEnum + PRINT_BORDER);
+                                                                               break;
+                                                                           }
+                                                                           LOG.info(PRINT_BORDER
+                                                                                   + "ASYNC METHOD: added favorite station: callback onFailure: "
+                                                                                   + errorEnum + PRINT_BORDER);
+                                                                       }
+                                                                   },
+                                                                   radioStation);
 
             try {
                 long timeoutInMilliseconds = 8000;
@@ -458,8 +578,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                 LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation + ": " + reply
                         + PRINT_BORDER);
             } catch (InterruptedException | JoynrRuntimeException | ApplicationException e) {
-                LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation
-                        + ": " + e.getClass().getSimpleName() + "!");
+                LOG.info(PRINT_BORDER + "ASYNC METHOD: added favorite station: " + radioStation + ": "
+                        + e.getClass().getSimpleName() + "!");
             }
 
             ConsoleReader console;
@@ -474,7 +594,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                         break;
                     case 'm':
                         GetLocationOfCurrentStationReturned locationOfCurrentStation = radioProxy.getLocationOfCurrentStation();
-                        LOG.info("called getLocationOfCurrentStation. country: " + locationOfCurrentStation.country + ", location: " + locationOfCurrentStation.location);
+                        LOG.info("called getLocationOfCurrentStation. country: " + locationOfCurrentStation.country
+                                + ", location: " + locationOfCurrentStation.location);
                         break;
                     default:
                         LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");

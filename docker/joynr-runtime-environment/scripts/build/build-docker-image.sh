@@ -2,13 +2,17 @@
 
 function usage
 {
-    echo "usage: build-docker-image --version versionnumber --joynrrpm rpmname --testrpm testrpmname [--repository mydockerrepo.org]"
+    echo "usage: build-docker-image --version versionnumber --joynrrpm rpmname"
+    echo "       --testrpm testrpmname"
+    echo "       --smrfrpm smrfrpmname"
+    echo "       [--repository mydockerrepo.org]"
     echo "Must be called from the joynr source directory"
 }
 
 repository=
 version=
 joynrrpm=
+smrfrpm=
 testrpm=
 dockerbuildargs=
 http_proxy=""
@@ -28,6 +32,9 @@ echo "PARAM is: $1"
                                    ;;
         -j | --joynrrpm )          shift
                                    joynrrpm="$1"
+                                   ;;
+        -s | --smrfrpm )           shift
+                                   smrfrpm="$1"
                                    ;;
         -t | --testrpm )           shift
                                    testrpm="$1"
@@ -76,13 +83,14 @@ find tests/performance-test/target/ -iregex ".*performance-test-provider.*jar" -
 (
 cd docker/joynr-runtime-environment/
 docker build \
-	-t ${repository}joynr-runtime-environment${version} \
-	--build-arg http_proxy=${http_proxy} \
-	--build-arg https_proxy=${https_proxy} \
-	--build-arg no_proxy=${no_proxy} \
-	--build-arg JOYNR_RPM_NAME=${joynrrpm} \
-	--build-arg JOYNR_TEST_RPM_NAME=${testrpm} \
-	.
+    -t ${repository}joynr-runtime-environment${version} \
+    --build-arg http_proxy=${http_proxy} \
+    --build-arg https_proxy=${https_proxy} \
+    --build-arg no_proxy=${no_proxy} \
+    --build-arg SMRF_RPM_NAME=${smrfrpm} \
+    --build-arg JOYNR_RPM_NAME=${joynrrpm} \
+    --build-arg JOYNR_TEST_RPM_NAME=${testrpm} \
+    .
 
 docker tag ${repository}joynr-runtime-environment${version} ${repository}joynr-runtime-environment:latest
 docker tag ${repository}joynr-runtime-environment${version} joynr-runtime-environment:latest

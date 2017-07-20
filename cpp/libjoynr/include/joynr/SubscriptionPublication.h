@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,17 +36,15 @@ public:
 
     explicit SubscriptionPublication(BaseReply&& reply);
 
-    SubscriptionPublication(const SubscriptionPublication&) = default;
-    SubscriptionPublication& operator=(const SubscriptionPublication&) = default;
-
     SubscriptionPublication(SubscriptionPublication&&) = default;
     SubscriptionPublication& operator=(SubscriptionPublication&&) = default;
 
     bool operator==(const SubscriptionPublication& other) const;
     bool operator!=(const SubscriptionPublication& other) const;
 
-    std::string getSubscriptionId() const;
+    const std::string& getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
+    void setSubscriptionId(std::string&& subscriptionId);
 
     template <typename Archive>
     void serialize(Archive& archive)

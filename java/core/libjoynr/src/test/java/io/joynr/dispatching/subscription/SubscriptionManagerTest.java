@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,10 @@ package io.joynr.dispatching.subscription;
  * #L%
  */
 
-import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -35,7 +33,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -65,13 +62,14 @@ import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
-import joynr.MulticastPublication;
+import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.tests.testBroadcastInterface.LocationUpdateBroadcastListener;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -112,6 +110,7 @@ public class SubscriptionManagerTest {
 
     private String fromParticipantId;
     private String toParticipantId;
+    private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
     private Future<String> future;
 
     @Mock
@@ -176,6 +175,8 @@ public class SubscriptionManagerTest {
         qosSettings = new MessagingQos();
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";
+        toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        toDiscoveryEntry.setParticipantId(toParticipantId);
         future = new Future<String>();
     }
 
@@ -193,7 +194,7 @@ public class SubscriptionManagerTest {
                                                                                             qos,
                                                                                             future);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toParticipantId),
+                                                          Sets.newHashSet(toDiscoveryEntry),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
@@ -207,12 +208,11 @@ public class SubscriptionManagerTest {
                                                              Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   (Set<String>) argThat(contains(toParticipantId)),
+                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void registerBroadcastSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                                JsonGenerationException, JsonMappingException, IOException {
@@ -223,7 +223,7 @@ public class SubscriptionManagerTest {
                                                                                             onChangeQos,
                                                                                             future);
         subscriptionManager.registerBroadcastSubscription(fromParticipantId,
-                                                          Sets.newHashSet(toParticipantId),
+                                                          Sets.newHashSet(toDiscoveryEntry),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
@@ -237,12 +237,11 @@ public class SubscriptionManagerTest {
                                                              Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   (Set<String>) argThat(contains(toParticipantId)),
+                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void registerSubscriptionWithoutExpiryDate() throws JoynrSendBufferFullException,
                                                        JoynrMessageNotSentException, JsonGenerationException,
@@ -256,7 +255,7 @@ public class SubscriptionManagerTest {
                                                                                 qosWithoutExpiryDate,
                                                                                 future);
         subscriptionId = request.getSubscriptionId();
-        subscriptionManager.registerAttributeSubscription(fromParticipantId, Sets.newHashSet(toParticipantId), request);
+        subscriptionManager.registerAttributeSubscription(fromParticipantId, Sets.newHashSet(toDiscoveryEntry), request);
 
         verify(attributeSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(attributeSubscriptionCallback));
         verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
@@ -267,7 +266,7 @@ public class SubscriptionManagerTest {
         verify(subscriptionEndFutures, never()).put(Mockito.anyString(), Mockito.any(ScheduledFuture.class));
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   (Set<String>) argThat(contains(toParticipantId)),
+                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
     }
@@ -292,24 +291,28 @@ public class SubscriptionManagerTest {
         testRegisterMulticastSubscription(null, "one", "two", "three");
     }
 
-    private void testRegisterMulticastSubscription(String subscriptionId, String ... partitions) throws Exception {
+    @SuppressWarnings("unchecked")
+    private void testRegisterMulticastSubscription(String subscriptionId, String... partitions) throws Exception {
         Method method = TestMulticastSubscriptionInterface.class.getMethod("subscribeToMyMulticast", new Class[0]);
         BroadcastSubscriptionListener listener = spy(new BroadcastSubscriptionListener() {
             @Override
             public void onError(SubscriptionException error) {
             }
+
             @Override
             public void onSubscribed(String subscriptionId) {
             }
+
+            @SuppressWarnings("unused")
             public void onReceive() {
             }
         });
-        SubscriptionQos subscriptionQos = mock(OnChangeSubscriptionQos.class);
+        SubscriptionQos subscriptionQos = mock(MulticastSubscriptionQos.class);
         Object[] args;
         if (subscriptionId == null) {
-            args = new Object[] {listener, subscriptionQos, partitions };
+            args = new Object[]{ listener, subscriptionQos, partitions };
         } else {
-            args = new Object[] { subscriptionId, listener, subscriptionQos, partitions };
+            args = new Object[]{ subscriptionId, listener, subscriptionQos, partitions };
         }
         String multicastId = MulticastIdUtil.createMulticastId(toParticipantId, "myMulticast", partitions);
         Set<String> subscriptionIdSet = new HashSet<>();
@@ -319,16 +322,24 @@ public class SubscriptionManagerTest {
 
         MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method, args, future);
 
-        subscriptionManager.registerMulticastSubscription(fromParticipantId, Sets.newHashSet(toParticipantId), invocation);
+        DiscoveryEntryWithMetaInfo toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        toDiscoveryEntry.setParticipantId(toParticipantId);
+        subscriptionManager.registerMulticastSubscription(fromParticipantId,
+                                                          Sets.newHashSet(toDiscoveryEntry),
+                                                          invocation);
 
         verify(multicastSubscribersDirectory).put(any(Pattern.class), anySet());
         assertEquals(1, subscriptionIdSet.size());
         if (subscriptionId != null) {
             assertEquals(subscriptionId, subscriptionIdSet.iterator().next());
         }
+
+        verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
+                                                   eq(Sets.newHashSet(toDiscoveryEntry)),
+                                                   any(SubscriptionRequest.class),
+                                                   any(MessagingQos.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void unregisterSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                         JsonGenerationException, JsonMappingException, IOException {
@@ -337,7 +348,7 @@ public class SubscriptionManagerTest {
         when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
         when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
         subscriptionManager.unregisterSubscription(fromParticipantId,
-                                                   Sets.newHashSet(toParticipantId),
+                                                   Sets.newHashSet(toDiscoveryEntry),
                                                    subscriptionId,
                                                    qosSettings);
 
@@ -345,7 +356,7 @@ public class SubscriptionManagerTest {
         verify(subscriptionState).stop();
 
         verify(dispatcher, times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
-                                                          (Set<String>) argThat(contains(toParticipantId)),
+                                                          eq(Sets.newHashSet(toDiscoveryEntry)),
                                                           Mockito.eq(new SubscriptionStop(subscriptionId)),
                                                           Mockito.any(MessagingQos.class));
 
@@ -432,8 +443,6 @@ public class SubscriptionManagerTest {
 
     @Test
     public void testHandleMulticastSubscriptionWithWildcardSubscribers() {
-        MulticastPublication multicastPublication = new MulticastPublication(Arrays.asList("one"), "one/two/three");
-
         Pattern subscriberOnePattern = Pattern.compile("one/[^/]+/three");
         String subscriberOneId = "one";
         multicastSubscribersDirectory.putIfAbsent(subscriberOnePattern, Sets.newHashSet(subscriberOneId));
@@ -446,6 +455,7 @@ public class SubscriptionManagerTest {
         String subscriberThreeId = "three";
         multicastSubscribersDirectory.putIfAbsent(subscriberThreePattern, Sets.newHashSet(subscriberThreeId));
 
+        @SuppressWarnings("rawtypes")
         Class[] types = new Class[]{ String.class };
         unicastBroadcastTypes.putIfAbsent(subscriberOneId, types);
         unicastBroadcastTypes.putIfAbsent(subscriberTwoId, types);

@@ -3,7 +3,7 @@ package io.joynr.messaging.http.operation;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,14 @@ import static org.hamcrest.Matchers.containsString;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
+
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.AtmosphereMessagingModule;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.ReceiverStatusListener;
@@ -37,7 +41,8 @@ import io.joynr.messaging.routing.MessageRouter;
 import java.util.Properties;
 import java.util.UUID;
 
-import joynr.JoynrMessage;
+import joynr.Message;
+import joynr.MutableMessage;
 
 import org.apache.http.client.config.RequestConfig;
 import org.eclipse.jetty.server.Server;
@@ -105,7 +110,8 @@ public class HttpCommunicationManagerTest {
     private String bounceProxyUrlString;
 
     @Before
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "correct use of RestAssured API")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+                                                      justification = "correct use of RestAssured API")
     public void setUp() throws Exception {
 
         RestAssured.port = port;
@@ -127,6 +133,9 @@ public class HttpCommunicationManagerTest {
                                                          bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
                                                                                   .in(Singleton.class);
                                                          bind(MessageRouter.class).toInstance(mockMessageRouter);
+                                                         Multibinder.newSetBinder(binder(),
+                                                                                  new TypeLiteral<JoynrMessageProcessor>() {
+                                                                                  });
                                                      }
                                                  });
 
@@ -141,10 +150,15 @@ public class HttpCommunicationManagerTest {
     @Test
     public void testCreateOpenAndDeleteChannel() throws Exception {
 
-        JoynrMessage message = new JoynrMessage();
-        message.setType(JoynrMessage.MESSAGE_TYPE_REQUEST);
-        message.setExpirationDate(ExpiryDate.fromRelativeTtl(30000));
-        message.setPayload("testMessage");
+        MutableMessage mutableMessage = new MutableMessage();
+        mutableMessage.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        mutableMessage.setSender("testSender");
+        mutableMessage.setRecipient("testRecipient");
+        mutableMessage.setPayload(new byte[]{ 0, 1, 2 });
+        mutableMessage.setTtlAbsolute(true);
+        mutableMessage.setTtlMs(ExpiryDate.fromRelativeTtl(30000).getValue());
+
+        byte[] serializedMessage = mutableMessage.getImmutableMessage().getSerializedMessage();
 
         final Object waitForChannelCreated = new Object();
         longpollingMessageReceiver.start(dispatcher, new ReceiverStatusListener() {
@@ -167,14 +181,18 @@ public class HttpCommunicationManagerTest {
 
         // post to the channel to see if it exists
 
-        onrequest(1000).with().body(message).expect().statusCode(201).when().post("channels/" + testChannelId
-                + "/message/");
+        onrequest(1000).with()
+                       .body(serializedMessage)
+                       .expect()
+                       .statusCode(201)
+                       .when()
+                       .post("channels/" + testChannelId + "/message/");
 
         longpollingMessageReceiver.shutdown(true);
 
         // post again; this time it should be missing (NO_CONTENT)
         onrequest(1000).with()
-                       .body(message)
+                       .body(serializedMessage)
                        .expect()
                        .statusCode(400)
                        .body(containsString("Channel not found"))
@@ -194,7 +212,7 @@ public class HttpCommunicationManagerTest {
      * @return
      */
     private RequestSpecification onrequest(int timeout_ms) {
-        return given().contentType(ContentType.JSON)
+        return given().contentType(ContentType.BINARY)
                       .log()
                       .everything()
                       .config(RestAssuredConfig.config().httpClient(HttpClientConfig.httpClientConfig()

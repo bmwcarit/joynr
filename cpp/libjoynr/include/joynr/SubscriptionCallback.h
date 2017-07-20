@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@
 #include <memory>
 #include <tuple>
 
-#include "joynr/ISubscriptionCallback.h"
-#include "joynr/ISubscriptionListener.h"
 #include "ISubscriptionManager.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/BasePublication.h"
 #include "joynr/Future.h"
+#include "joynr/ISubscriptionCallback.h"
+#include "joynr/ISubscriptionListener.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/SubscriptionReply.h"
 
 namespace joynr
@@ -84,10 +84,16 @@ public:
         if (error) {
             subscriptionManager->unregisterSubscription(subscriptionReply.getSubscriptionId());
             future->onError(error);
-            listener->onError(*error);
+
+            if (listener) {
+                listener->onError(*error);
+            }
         } else {
             future->onSuccess(subscriptionReply.getSubscriptionId());
-            listener->onSubscribed(subscriptionReply.getSubscriptionId());
+
+            if (listener) {
+                listener->onSubscribed(subscriptionReply.getSubscriptionId());
+            }
         }
     }
 

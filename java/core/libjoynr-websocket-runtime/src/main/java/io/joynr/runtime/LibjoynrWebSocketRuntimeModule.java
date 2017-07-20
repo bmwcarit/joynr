@@ -3,7 +3,7 @@ package io.joynr.runtime;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,10 @@ package io.joynr.runtime;
  * #L%
  */
 import com.google.inject.name.Names;
-import io.joynr.messaging.routing.ChildMessageRouter;
+import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.websocket.WebSocketMessageSerializerFactory;
+import io.joynr.messaging.sender.LibJoynrMessageSender;
+import io.joynr.messaging.sender.MessageSender;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketMulticastAddressCalculator;
@@ -46,13 +47,13 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
         super.configure();
         install(new WebSocketJettyClientModule());
         bind(JoynrRuntime.class).to(LibjoynrRuntime.class).in(Singleton.class);
-        bind(MessageRouter.class).to(ChildMessageRouter.class);
+        bind(MessageRouter.class).to(LibJoynrMessageRouter.class);
+        bind(MessageSender.class).to(LibJoynrMessageSender.class);
         bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
                            .toInstance(Boolean.TRUE);
 
         messagingSkeletonFactory.addBinding(WebSocketAddress.class).to(WebSocketMessagingSkeleton.class);
         messagingStubFactory.addBinding(WebSocketAddress.class).to(WebSocketMessagingStubFactory.class);
-        messageSerializerFactory.addBinding(WebSocketAddress.class).to(WebSocketMessageSerializerFactory.class);
         multicastAddressCalculators.addBinding().to(WebSocketMulticastAddressCalculator.class);
     }
 

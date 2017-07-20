@@ -1,10 +1,10 @@
-/*global fail: true */
+/*global fail: true, xit: true */
 /*jslint es5: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ define([
             "joynr/types/DiscoveryQos",
             "joynr/system/DiscoveryProxy",
             "joynr/system/RoutingProxy",
-            "joynr/system/RoutingProvider",
             "joynr/system/RoutingTypes/ChannelAddress",
             "joynr/system/RoutingTypes/BrowserAddress",
             "joynr/system/RoutingTypes/WebSocketAddress",
@@ -37,8 +36,9 @@ define([
             "joynr/vehicle/RadioProvider",
             "joynr/vehicle/radiotypes/RadioStation",
             "joynr/datatypes/exampleTypes/Country",
-            "joynr/datatypes/exampleTypes/StringMap",
             "joynr/provisioning/provisioning_libjoynr",
+            "joynr/provisioning/provisioning_cc",
+            "joynr/system/RoutingTypes/MqttAddress",
             "integration/IntegrationUtils",
         ],
         function(
@@ -49,7 +49,6 @@ define([
                 DiscoveryQosGen,
                 DiscoveryProxy,
                 RoutingProxy,
-                RoutingProvider,
                 ChannelAddress,
                 BrowserAddress,
                 WebSocketAddress,
@@ -58,8 +57,9 @@ define([
                 RadioProvider,
                 RadioStation,
                 Country,
-                StringMap,
                 provisioning,
+                provisioning_cc,
+                MqttAddress,
                 IntegrationUtils) {
             describe(
                     "libjoynr-js.integration.intertab",
@@ -226,7 +226,7 @@ define([
                                                             interfaceName : interfaceName,
                                                             discoveryQos : new DiscoveryQosGen(
                                                                     {
-                                                                        discoveryScope : DiscoveryScope.LOCAL_AND_GLOBAL
+                                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY
                                                                     })
                                                         })
                                                 .then(
@@ -302,7 +302,7 @@ define([
                                     var providerQos = new joynr.types.ProviderQos({
                                         customParameters : [],
                                         priority : Date.now(),
-                                        scope : joynr.types.ProviderScope.GLOBAL,
+                                        scope : joynr.types.ProviderScope.LOCAL,
                                         supportsOnChangeSubscriptions : true
                                     });
 
@@ -591,7 +591,7 @@ define([
                                                 });
                                     }).then(function(newRadioProxy) {
                                         expect(newRadioProxy).toBeDefined();
-                                        expect(newRadioProxy.providerParticipantId).toEqual(joynr.participantIdStorage.getParticipantId(domain, radioProvider));
+                                        expect(newRadioProxy.providerDiscoveryEntry.participantId).toEqual(joynr.participantIdStorage.getParticipantId(domain, radioProvider));
                                         radioProxy = newRadioProxy;
                                         return radioProxy.addFavoriteStation({
                                             radioStation : "radioStation"
@@ -628,7 +628,7 @@ define([
                                     }).catch(fail);
                                 });
 
-                        it(
+                        xit(
                                 "Create separate joynr instance with provider and arbitrate",
                                 function(done) {
                                     /*
@@ -679,7 +679,7 @@ define([
                                     });
                                 });
 
-                        it(
+                        xit(
                                 "Create discovery proxy and check if the cc discovery provider works properly",
                                 function(done) {
                                     var discoveredEntries;
@@ -825,7 +825,7 @@ define([
                                     });
                                 });
 
-                        it(
+                        xit(
                                 "Create routing proxy and check if the cc routing provider works properly",
                                 function(done) {
                                     /*
@@ -911,7 +911,8 @@ define([
                                         // test participant as ChannelAddress to be resolved
                                         return routingProxy.addNextHop({
                                             participantId : testParticipantId,
-                                            channelAddress : channelAddress
+                                            channelAddress : channelAddress,
+                                            isGloballyVisible : true
                                         });
                                     }).then(function() {
                                         return routingProxy.resolveNextHop({
@@ -936,7 +937,8 @@ define([
                                         expect(success).toBeFalsy();
                                         return routingProxy.addNextHop({
                                             participantId : testParticipantId,
-                                            browserAddress : browserAddress
+                                            browserAddress : browserAddress,
+                                            isGloballyVisible : false
                                         });
                                     }).then(function() {
                                         return routingProxy.resolveNextHop({
@@ -963,7 +965,8 @@ define([
                                         expect(success).toBeFalsy();
                                         return routingProxy.addNextHop({
                                             participantId : testParticipantId,
-                                            webSocketAddress : webSocketAddress
+                                            webSocketAddress : webSocketAddress,
+                                            isGloballyVisible : false
                                         });
                                     }).then(function() {
                                         return routingProxy.resolveNextHop({
@@ -990,7 +993,8 @@ define([
                                         expect(success).toBeFalsy();
                                         return routingProxy.addNextHop({
                                             participantId : testParticipantId,
-                                            commonApiDbusAddress : commonApiDbusAddress
+                                            commonApiDbusAddress : commonApiDbusAddress,
+                                            isGloballyVisible : false
                                         });
                                     }).then(function() {
                                         return routingProxy.resolveNextHop({
@@ -1009,6 +1013,28 @@ define([
                                     }).then(function(opArgs) {
                                         var success = opArgs.resolved;
                                         expect(success).toBeFalsy();
+
+                                        // test routing provider returns correct global address
+                                        return routingProxy.globalAddress.get();
+                                    }).then(function(globalAddressString) {
+                                        expect(globalAddressString).toBeDefined();
+                                        expect(globalAddressString).not.toBeNull();
+                                        var globalAddress = JSON.parse(globalAddressString);
+                                        /*jslint nomen: true*/
+                                        expect(globalAddress._typeName).toEqual(MqttAddress._typeName);
+                                        /*jslint nomen: false*/
+                                        expect(globalAddress.brokerUri).toEqual(provisioning_cc.brokerUri);
+
+                                        // test routing provider returns correct replyTo address
+                                        return routingProxy.replyToAddress.get();
+                                    }).then(function(replyToAddressString) {
+                                        expect(replyToAddressString).toBeDefined();
+                                        expect(replyToAddressString).not.toBeNull();
+                                        var replyToAddress = JSON.parse(replyToAddressString);
+                                        /*jslint nomen: true*/
+                                        expect(replyToAddress._typeName).toEqual(MqttAddress._typeName);
+                                        /*jslint nomen: false*/
+                                        expect(replyToAddress.brokerUri).toEqual(provisioning_cc.brokerUri);
                                         done();
                                         return null;
                                     }).catch(function(error) {

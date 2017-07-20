@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,26 +22,27 @@
 #include <memory>
 #include <tuple>
 
-#include <joynr/JoynrMessage.h>
-#include <joynr/exceptions/JoynrException.h>
-#include <joynr/system/RoutingTypes/Address.h>
-#include <joynr/system/RoutingTypes/MqttAddress.h>
+#include "joynr/ImmutableMessage.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr
 {
 MqttMulticastAddressCalculator::MqttMulticastAddressCalculator(
-        std::shared_ptr<const system::RoutingTypes::MqttAddress> globalAddress)
-        : globalAddress(globalAddress)
+        std::shared_ptr<const system::RoutingTypes::MqttAddress> globalAddress,
+        const std::string& mqttMulticastTopicPrefix)
+        : globalAddress(globalAddress), mqttMulticastTopicPrefix(mqttMulticastTopicPrefix)
 {
 }
 
 std::shared_ptr<const system::RoutingTypes::Address> MqttMulticastAddressCalculator::compute(
-        const JoynrMessage& message)
+        const ImmutableMessage& message)
 {
     if (!globalAddress) {
         return std::shared_ptr<const system::RoutingTypes::MqttAddress>();
     }
     return std::make_shared<const system::RoutingTypes::MqttAddress>(
-            globalAddress->getBrokerUri(), message.getHeaderTo());
+            globalAddress->getBrokerUri(), mqttMulticastTopicPrefix + message.getRecipient());
 }
 }

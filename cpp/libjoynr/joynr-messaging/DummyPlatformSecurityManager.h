@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ public:
     ~DummyPlatformSecurityManager() override = default;
 
     std::string getCurrentProcessUserId() const override;
-    JoynrMessage sign(JoynrMessage message) override;
-    bool validate(const JoynrMessage& message) const override;
+    void sign(MutableMessage& message) override;
+    bool validate(const ImmutableMessage& message) const override;
     std::string encrypt(const std::string& unencryptedBytes) override;
     std::string decrypt(const std::string& encryptedBytes) override;
 

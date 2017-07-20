@@ -61,7 +61,7 @@ RUN cd /opt \
 ###################################################
 
 RUN cd /opt \
-    && git clone http://git.projects.genivi.org/dlt-daemon.git \
+    && git clone https://github.com/GENIVI/dlt-daemon \
     && cd dlt-daemon \
     && git checkout v2.15.0 \
     && sed -i 's/libdir=${exec_prefix}\/lib/libdir=@CMAKE_INSTALL_FULL_LIBDIR@/' automotive-dlt.pc.in \
@@ -73,6 +73,23 @@ RUN cd /opt \
     && cd /opt/ \
     && rm -rf dlt-daemon \
     && echo '/usr/local/lib64' > /etc/ld.so.conf.d/dlt.conf
+
+
+###################################################
+# install flatbuffers
+###################################################
+
+RUN export FLATBUFFERS_VERSION=v1.6.0 \
+        && cd /tmp \
+        && git clone https://github.com/google/flatbuffers.git \
+        && cd flatbuffers \
+        && git checkout $FLATBUFFERS_VERSION \
+        && mkdir build \
+        && cd build \
+        && cmake .. -DFLATBUFFERS_BUILD_TESTS=OFF \
+        && make install -j"$(nproc)" \
+        && rm -rf /tmp/flatbuffers
+
 
 # DLT installs itself in /usr/local/lib64
 ENV PKG_CONFIG_PATH $PKG_CONFIG_PATH:/usr/local/lib64/pkgconfig

@@ -3,7 +3,7 @@ package io.joynr.test.interlanguage;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
-import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.MulticastSubscriptionQos;
 import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithSingleEnumerationParameterBroadcastAdapter;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 
@@ -44,16 +44,6 @@ public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
 
     @Test
     public void doNotReceivePublicationsForOtherPartitions() {
-        int minIntervalMs = 0;
-        int maxIntervalMs = 10000;
-        long validityMs = 60000;
-        int alertAfterIntervalMs = 20000;
-        int publicationTtlMs = 5000;
-        OnChangeWithKeepAliveSubscriptionQos subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos().setMinIntervalMs(minIntervalMs)
-                                                                                                         .setMaxIntervalMs(maxIntervalMs)
-                                                                                                         .setValidityMs(validityMs)
-                                                                                                         .setAlertAfterIntervalMs(alertAfterIntervalMs)
-                                                                                                         .setPublicationTtlMs(publicationTtlMs);
 
         String[] subscribeToPartitions = new String[]{ "partitions0", "partitions1" };
         String[] broadcastPartitions = new String[]{ "otherPartition" };
@@ -82,11 +72,11 @@ public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
             };
 
             Future<String> subscriptionIdFuture = testInterfaceProxy.subscribeToBroadcastWithSingleEnumerationParameterBroadcast(adapter,
-                                                                                                                                 subscriptionQos,
+                                                                                                                                 new MulticastSubscriptionQos(),
                                                                                                                                  subscribeToPartitions);
 
-            String subscriptionId = subscriptionIdFuture.get();
-            LOG.info(name.getMethodName() + " - subscription successful");
+            String subscriptionId = subscriptionIdFuture.get(10000);
+            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
 
             LOG.info(name.getMethodName() + " - Invoking fire method with not matching partitions");
             testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter(broadcastPartitions);

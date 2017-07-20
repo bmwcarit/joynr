@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import joynr.MethodMetaInformation;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 /**
  * This class creates a connector to access a service over JoynRPC using Java dynamic proxies.
@@ -74,10 +75,10 @@ public class JoynrMessagingConnectorFactory {
      * @return connector to execute remote procedure calls
      */
     public JoynrMessagingConnectorInvocationHandler create(final String fromParticipantId,
-                                                           final Set<String> toParticipantIds,
+                                                           final Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                                            final MessagingQos qosSettings) {
 
-        return new JoynrMessagingConnectorInvocationHandler(toParticipantIds,
+        return new JoynrMessagingConnectorInvocationHandler(toDiscoveryEntries,
                                                             fromParticipantId,
                                                             qosSettings,
                                                             requestReplyManager,

@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 	joynr::InterfaceRegistrar::instance().unregisterRequestInterpreter(getInterfaceName());
 }
 
-std::string «interfaceName»AbstractProvider::getInterfaceName() const {
+const std::string& «interfaceName»AbstractProvider::getInterfaceName() const {
 	return I«interfaceName»Base::INTERFACE_NAME();
 }
 

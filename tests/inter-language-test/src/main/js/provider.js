@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,28 @@ var joynr = require("joynr");
 var testbase = require("test-base");
 var log = testbase.logging.log;
 var provisioning = testbase.provisioning_common;
+
+provisioning.logging.configuration = {
+    appenders : {
+        appender : [
+            {
+                type : "Console",
+                name : "STDOUT",
+                PatternLayout : {
+                    pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+                }
+            }
+        ]
+    },
+    loggers : {
+        root : {
+            level : "debug",
+            AppenderRef : [{
+                    ref : "STDOUT"
+            }]
+        }
+    }
+};
 
 if (process.argv.length !== 3) {
     log("please pass a domain as argument");

@@ -17,6 +17,7 @@ under the License.
 
 This project has dependencies to:
   AOP alliance under Public Domain
+  Apache Commons CLI under Apache License, Version 2.0
   Apache HttpClient under Apache License
   Apache HttpClient Mime under Apache License
   Apache HttpCore under Apache License
@@ -33,6 +34,7 @@ This project has dependencies to:
   ehcache under The Apache Software License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
+  flatbuffers-java under Apache License V2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
@@ -56,6 +58,8 @@ This project has dependencies to:
   io.joynr.java:core under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
+  io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
+  io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
   Jackson under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
@@ -83,6 +87,7 @@ This project has dependencies to:
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logging under The Apache Software License, Version 2.0
   Mockito under The MIT License
+  Objenesis under MIT License
   Reflections under WTFPL
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0

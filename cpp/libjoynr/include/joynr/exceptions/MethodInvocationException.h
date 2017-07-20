@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@
 
 #include <string>
 
-#include "joynr/JoynrCommonExport.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/types/Version.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/types/Version.h"
 
 namespace joynr
 {
@@ -35,7 +35,7 @@ namespace exceptions
  * @brief Joynr exception class to report error during method invocations (RPC) at a provider
  * ("no such method", invalid arguments, etc.)
  */
-class JOYNRCOMMON_EXPORT MethodInvocationException : public JoynrRuntimeException
+class JOYNR_EXPORT MethodInvocationException : public JoynrRuntimeException
 {
 public:
     /**

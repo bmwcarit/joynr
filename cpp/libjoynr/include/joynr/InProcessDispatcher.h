@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,16 @@
 #ifndef INPROCESSDISPATCHER_H
 #define INPROCESSDISPATCHER_H
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include "joynr/IDispatcher.h"
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/InProcessAddress.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/LibJoynrDirectories.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrExport.h"
 
 namespace boost
 {
@@ -44,6 +44,7 @@ namespace joynr
 class IReplyCaller;
 class MessagingQos;
 
+// TODO can this class be made obsolete?
 class JOYNR_EXPORT InProcessDispatcher : public IDispatcher, public IRequestCallerDirectory
 {
 public:
@@ -61,9 +62,10 @@ public:
 
     void removeRequestCaller(const std::string& participantId) override;
 
-    void receive(const JoynrMessage& message) override;
+    void receive(std::shared_ptr<ImmutableMessage> message) override;
 
-    void registerSubscriptionManager(ISubscriptionManager* subscriptionManager) override;
+    void registerSubscriptionManager(
+            std::shared_ptr<ISubscriptionManager> subscriptionManager) override;
 
     void registerPublicationManager(PublicationManager* publicationManager) override;
 
@@ -76,7 +78,7 @@ private:
     RequestCallerDirectory requestCallerDirectory;
     ReplyCallerDirectory replyCallerDirectory;
     PublicationManager* publicationManager;
-    ISubscriptionManager* subscriptionManager;
+    std::shared_ptr<ISubscriptionManager> subscriptionManager;
     ADD_LOGGER(InProcessDispatcher);
 };
 

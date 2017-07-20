@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #ifndef ABSTRACTROBUSTNESSTEST_H
 #define ABSTRACTROBUSTNESSTEST_H
 #include <cstdlib>
+#include <memory>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -37,6 +38,15 @@ using joynr::JoynrRuntime;
 using joynr::tests::robustness::TestInterfaceProxy;
 using joynr::exceptions::JoynrRuntimeException;
 using joynr::ProxyBuilder;
+
+template <typename T>
+class MockSubscriptionListenerOneType : public joynr::ISubscriptionListener<T>
+{
+public:
+    MOCK_METHOD1_T(onSubscribed, void(const std::string& subscriptionId));
+    MOCK_METHOD1_T(onReceive, void(const T& value));
+    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
+};
 
 class AbstractRobustnessTest : public ::testing::Test
 {
@@ -68,7 +78,6 @@ protected:
 
         // Build a proxy
         proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
-                        ->setCached(false)
                         ->setDiscoveryQos(discoveryQos)
                         ->build();
 
@@ -79,18 +88,9 @@ protected:
 
     static void TearDownTestCase()
     {
-        if (proxy) {
-            delete proxy;
-            proxy = nullptr;
-        }
-        if (proxyBuilder) {
-            delete proxyBuilder;
-            proxyBuilder = nullptr;
-        }
-        if (runtime) {
-            delete runtime;
-            runtime = nullptr;
-        }
+        proxy.reset();
+        proxyBuilder.reset();
+        runtime.reset();
     }
 
     void callMethodWithStringParameters()
@@ -183,9 +183,9 @@ protected:
         }
     }
 
-    static TestInterfaceProxy* proxy;
-    static ProxyBuilder<TestInterfaceProxy>* proxyBuilder;
-    static JoynrRuntime* runtime;
+    static std::unique_ptr<TestInterfaceProxy> proxy;
+    static std::unique_ptr<ProxyBuilder<TestInterfaceProxy>> proxyBuilder;
+    static std::unique_ptr<JoynrRuntime> runtime;
     static std::string providerDomain;
 
 private:

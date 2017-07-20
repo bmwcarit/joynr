@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,24 +19,23 @@
 #include <memory>
 #include <string>
 
-#include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "tests/utils/MockObjects.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "cluster-controller/capabilities-client/CapabilitiesClient.h"
+
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
-#include "cluster-controller/messaging/MessagingPropertiesPersistence.h"
 #include "joynr/types/Version.h"
+
+#include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
+#include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
+
+#include "tests/utils/MockObjects.h"
+#include "tests/JoynrTest.h"
 
 using namespace ::testing;
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
 
 static const std::string messagingPropertiesPersistenceFileName("CapabilitiesClientTest-joynr.settings");
 static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystemIntegration1.settings");
@@ -69,7 +68,7 @@ public:
         bool deleteChannel = true;
         runtime->stop(deleteChannel);
         // Delete persisted files
-        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
@@ -83,10 +82,10 @@ private:
 INIT_LOGGER(CapabilitiesClientTest);
 
 TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
-    std::unique_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> capabilitiesProxyBuilder (
+    std::unique_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> capabilitiesProxyBuilder =
             runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
                 messagingSettings.getDiscoveryDirectoriesDomain()
-            ));
+            );
 
     DiscoveryQos discoveryQos(10000);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
@@ -95,7 +94,6 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy (
         capabilitiesProxyBuilder
             ->setMessagingQos(MessagingQos(10000)) //TODO magic values.
-            ->setCached(true)
             ->setDiscoveryQos(discoveryQos)
             ->build()
         );
@@ -103,7 +101,6 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::unique_ptr<CapabilitiesClient> capabilitiesClient (std::make_unique<CapabilitiesClient>());
     capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
 
-    std::vector<types::GlobalDiscoveryEntry> globalDiscoveryEntryList;
     std::string capDomain("testDomain");
     std::string capInterface("testInterface");
     types::ProviderQos capProviderQos;
@@ -113,19 +110,20 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::int64_t capLastSeenMs = 0;
     std::int64_t capExpiryDateMs = 1000;
     std::string capSerializedChannelAddress("testChannelId");
-    globalDiscoveryEntryList.push_back(types::GlobalDiscoveryEntry(
-                                           providerVersion,
-                                           capDomain,
-                                           capInterface,
-                                           capParticipantId,
-                                           capProviderQos,
-                                           capLastSeenMs,
-                                           capExpiryDateMs,
-                                           capPublicKeyId,
-                                           capSerializedChannelAddress));
+    types::GlobalDiscoveryEntry globalDiscoveryEntry(providerVersion,
+                capDomain,
+                capInterface,
+                capParticipantId,
+                capProviderQos,
+                capLastSeenMs,
+                capExpiryDateMs,
+                capPublicKeyId,
+                capSerializedChannelAddress);
 
     JOYNR_LOG_DEBUG(logger, "Registering capabilities");
-    capabilitiesClient->add(globalDiscoveryEntryList);
+    capabilitiesClient->add(globalDiscoveryEntry,
+                            [](){},
+                            [](const joynr::exceptions::JoynrRuntimeException& /*exception*/){});
     JOYNR_LOG_DEBUG(logger, "Registered capabilities");
 
     auto callback = std::make_shared<GlobalCapabilitiesMock>();
@@ -150,16 +148,16 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     JOYNR_LOG_DEBUG(logger, "finished get capabilities");
 }
 
-INSTANTIATE_TEST_CASE_P(Http,
+INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         CapabilitiesClientTest,
         testing::Values(
             "test-resources/HttpSystemIntegrationTest1.settings"
         )
 );
 
-INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+INSTANTIATE_TEST_CASE_P(Mqtt,
         CapabilitiesClientTest,
         testing::Values(
-            "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+            "test-resources/MqttSystemIntegrationTest1.settings"
         )
 );

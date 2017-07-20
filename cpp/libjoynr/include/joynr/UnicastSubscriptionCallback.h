@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@
 
 #include <memory>
 
-#include "joynr/SubscriptionCallback.h"
-#include "joynr/ISubscriptionListener.h"
 #include "ISubscriptionManager.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/BasePublication.h"
 #include "joynr/Future.h"
+#include "joynr/ISubscriptionListener.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/SubscriptionCallback.h"
 
 namespace joynr
 {
@@ -55,7 +55,10 @@ public:
         std::ignore = publication;
         std::shared_ptr<ISubscriptionListenerBase> listener =
                 Base::subscriptionManager->getSubscriptionListener(Base::subscriptionId);
-        listener->onError(error);
+
+        if (listener) {
+            listener->onError(error);
+        }
     }
 
     template <typename Holder = T>
@@ -65,7 +68,10 @@ public:
         std::ignore = publication;
         auto listener = std::dynamic_pointer_cast<ISubscriptionListener<void>>(
                 Base::subscriptionManager->getSubscriptionListener(Base::subscriptionId));
-        listener->onReceive();
+
+        if (listener) {
+            listener->onReceive();
+        }
     }
 
     template <typename Holder = T>
@@ -77,7 +83,10 @@ public:
         std::ignore = publication;
         auto listener = std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(
                 Base::subscriptionManager->getSubscriptionListener(Base::subscriptionId));
-        listener->onReceive(value, values...);
+
+        if (listener) {
+            listener->onReceive(value, values...);
+        }
     }
 
 private:

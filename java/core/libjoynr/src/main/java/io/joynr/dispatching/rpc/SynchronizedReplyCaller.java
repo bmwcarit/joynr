@@ -1,12 +1,9 @@
 package io.joynr.dispatching.rpc;
 
-import java.util.Collections;
-import java.util.HashSet;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +20,6 @@ import java.util.HashSet;
  */
 
 import java.util.List;
-import java.util.Set;
 
 import joynr.Reply;
 import joynr.Request;
@@ -31,27 +27,11 @@ import joynr.Request;
 public class SynchronizedReplyCaller implements ReplyCaller {
     private List<Object> responsePayloadContainer;
     final private String fromParticipantId;
-    final private Set<String> toParticipantIds;
     final private String requestReplyId;
     final private Request request;
 
-    public SynchronizedReplyCaller(String fromParticipantId,
-                                   String toParticipantId,
-                                   String requestReplyId,
-                                   Request request) {
+    public SynchronizedReplyCaller(String fromParticipantId, String requestReplyId, Request request) {
         this.fromParticipantId = fromParticipantId;
-        toParticipantIds = new HashSet<>();
-        toParticipantIds.add(toParticipantId);
-        this.requestReplyId = requestReplyId;
-        this.request = request;
-    }
-
-    public SynchronizedReplyCaller(String fromParticipantId,
-                                   Set<String> toParticipantIds,
-                                   String requestReplyId,
-                                   Request request) {
-        this.fromParticipantId = fromParticipantId;
-        this.toParticipantIds = Collections.unmodifiableSet(toParticipantIds);
         this.requestReplyId = requestReplyId;
         this.request = request;
     }
@@ -89,9 +69,6 @@ public class SynchronizedReplyCaller implements ReplyCaller {
         stringBuilder.append("\r\n");
         stringBuilder.append("sender: ");
         stringBuilder.append(fromParticipantId);
-        stringBuilder.append("\r\n");
-        stringBuilder.append("receiver: ");
-        stringBuilder.append(toParticipantIds);
         stringBuilder.append("\r\n");
         stringBuilder.append("requestReplyId: ");
         stringBuilder.append(requestReplyId);

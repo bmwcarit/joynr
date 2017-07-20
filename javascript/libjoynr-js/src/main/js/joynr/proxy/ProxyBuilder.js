@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -200,20 +200,26 @@ define("joynr/proxy/ProxyBuilder", [
                                                         proxy.proxyParticipantId,
                                                         settings.loggingContext);
                                             }
+                                            var isGloballyVisible = false;
                                             if (arbitratedCaps && arbitratedCaps.length > 0) {
-                                                proxy.providerParticipantId =
-                                                        arbitratedCaps[0].participantId;
+                                                proxy.providerDiscoveryEntry =
+                                                        arbitratedCaps[0];
+                                                if (!arbitratedCaps[0].isLocal) {
+                                                    isGloballyVisible = true;
+                                                }
                                             }
+
                                             dependencies.messageRouter.addNextHop(
                                                     proxy.proxyParticipantId,
-                                                    dependencies.libjoynrMessagingAddress).catch(function(error){
+                                                    dependencies.libjoynrMessagingAddress,
+                                                    isGloballyVisible).catch(function(error){
                                                         log.debug("Exception occured while registering the address for interface "
                                                                 + proxy.interfaceName + ", domain " + proxy.domain
                                                                 + ", proxyParticipantId " + proxy.proxyParticipantId
                                                                 + " to message router");
                                                     });
                                             dependencies.messageRouter
-                                                    .setToKnown(proxy.providerParticipantId);
+                                                    .setToKnown(proxy.providerDiscoveryEntry.participantId);
 
                                             var freeze =
                                                     settings.freeze === undefined

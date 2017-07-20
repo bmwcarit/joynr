@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,25 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-#include <memory>
-#include <string>
-#include "joynr/MessageRouter.h"
-#include "joynr/JoynrMessage.h"
-#include "joynr/Dispatcher.h"
-#include "joynr/SubscriptionCallback.h"
 #include <string>
 #include <vector>
-#include "joynr/JoynrMessageFactory.h"
-#include "joynr/JoynrMessageSender.h"
+#include <memory>
+#include <string>
+
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include "joynr/ImmutableMessage.h"
+#include "joynr/Dispatcher.h"
+#include "joynr/SubscriptionCallback.h"
+#include "joynr/MutableMessageFactory.h"
+#include "joynr/MessageSender.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/exceptions/SubscriptionException.h"
-#include "tests/utils/MockObjects.h"
-#include "utils/MockCallback.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/Semaphore.h"
 #include "joynr/tests/Itest.h"
@@ -43,15 +42,14 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/CallContext.h"
-#include "common/CallContextStorage.h"
+#include "joynr/CallContextStorage.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/MockCallback.h"
 
 using namespace ::testing;
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
 
 class DispatcherTest : public ::testing::Test {
 public:
@@ -73,10 +71,11 @@ public:
         proxyParticipantId("TEST-proxyParticipantId"),
         requestReplyId("TEST-requestReplyId"),
         messageFactory(),
-        messageSender(mockMessageRouter),
-        dispatcher(&messageSender, singleThreadIOService.getIOService()),
+        messageSender(std::make_shared<MessageSender>(mockMessageRouter)),
+        dispatcher(messageSender, singleThreadIOService.getIOService()),
         callContext(),
-        getLocationCalledSemaphore(0)
+        getLocationCalledSemaphore(0),
+        isLocalMessage(true)
     {
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
         singleThreadIOService.start();
@@ -116,11 +115,12 @@ protected:
     std::string proxyParticipantId;
     std::string requestReplyId;
 
-    JoynrMessageFactory messageFactory;
-    JoynrMessageSender messageSender;
+    MutableMessageFactory messageFactory;
+    std::shared_ptr<MessageSender> messageSender;
     Dispatcher dispatcher;
     joynr::CallContext callContext;
     joynr::Semaphore getLocationCalledSemaphore;
+    const bool isLocalMessage;
 };
 
 INIT_LOGGER(DispatcherTest);
@@ -148,11 +148,12 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     request.setParamDatatypes(std::vector<std::string>());
 
 
-    JoynrMessage msg = messageFactory.createRequest(
+    MutableMessage mutableMessage = messageFactory.createRequest(
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
-                request
+                request,
+                isLocalMessage
     );
 
     // construct the result we expect in messaging.transmit. The JoynrMessage
@@ -160,7 +161,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     Reply reply;
     reply.setResponse(gpsLocation1);
     reply.setRequestReplyId(requestReplyId);
-    JoynrMessage expectedReply = messageFactory.createReply(
+    MutableMessage expectedReply = messageFactory.createReply(
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
@@ -168,13 +169,14 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     );
 
     JOYNR_LOG_DEBUG(logger, "expectedReply.payload()={}",expectedReply.getPayload());
+
     // setup MockMessaging to expect the response
     EXPECT_CALL(
                 *mockMessageRouter,
                 route(
                     AllOf(
-                        Property(&JoynrMessage::getType, Eq(JoynrMessage::VALUE_MESSAGE_TYPE_REPLY)),
-                        Property(&JoynrMessage::getPayload, Eq(expectedReply.getPayload()))
+                        MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
+                        ImmutableMessageHasPayload(expectedReply.getPayload())
                     ),
                     _
                 )
@@ -184,7 +186,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     // This should cause our mock messaging to receive a reply from the mock provider
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
 
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
     EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
 }
 
@@ -203,7 +205,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     reply.setRequestReplyId(requestReplyId);
     reply.setResponse(gpsLocation1);
 
-    JoynrMessage msg = messageFactory.createReply(
+    MutableMessage mutableMessage = messageFactory.createReply(
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
@@ -214,7 +216,7 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     // test code: send the reply through the dispatcher.
     // This should cause our reply caller to be called
     dispatcher.addReplyCaller(requestReplyId, mockReplyCaller, qos);
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
 }
@@ -227,32 +229,32 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
     SubscriptionReply reply;
     reply.setSubscriptionId(subscriptionId);
 
-    JoynrMessage msg = messageFactory.createSubscriptionReply(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionReply(
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
                 reply
     );
 
-    MockSubscriptionManager mockSubscriptionManager(singleThreadIOService.getIOService(), mockMessageRouter);
+    auto mockSubscriptionManager = std::make_shared<MockSubscriptionManager>(singleThreadIOService.getIOService(), mockMessageRouter);
     auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
-    EXPECT_CALL(mockSubscriptionManager, getSubscriptionCallback(Eq(subscriptionId))).WillOnce(Return(mockSubscriptionCallback));
+    EXPECT_CALL(*mockSubscriptionManager, getSubscriptionCallback(Eq(subscriptionId))).WillOnce(Return(mockSubscriptionCallback));
 
     EXPECT_CALL(*mockSubscriptionCallback, execute(Eq(reply))).WillOnce(ReleaseSemaphore(&semaphore));
 
     // test code: send the subscription reply through the dispatcher.
     // This should cause our subscription callback to be called
-    dispatcher.registerSubscriptionManager(&mockSubscriptionManager);
-    dispatcher.receive(msg);
+    dispatcher.registerSubscriptionManager(mockSubscriptionManager);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
     dispatcher.registerSubscriptionManager(nullptr);
 }
 
 TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback) {
-    MockSubscriptionManager mockSubscriptionManager(
+    auto mockSubscriptionManager = std::make_shared<MockSubscriptionManager>(
                 singleThreadIOService.getIOService(), mockMessageRouter);
-    dispatcher.registerSubscriptionManager(&mockSubscriptionManager);
+    dispatcher.registerSubscriptionManager(mockSubscriptionManager);
 
     const std::string senderParticipantId("senderParticipantId");
     const std::string multicastId = joynr::util::createMulticastId(
@@ -264,18 +266,18 @@ TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback) {
     joynr::MulticastPublication payload;
     payload.setMulticastId(multicastId);
 
-    JoynrMessage message = messageFactory.createMulticastPublication(
+    MutableMessage message = messageFactory.createMulticastPublication(
                 senderParticipantId, qos, payload);
 
     auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
 
-    EXPECT_CALL(mockSubscriptionManager, getMulticastSubscriptionCallback(multicastId))
+    EXPECT_CALL(*mockSubscriptionManager, getMulticastSubscriptionCallback(multicastId))
         .Times(1)
         .WillOnce(Return(mockSubscriptionCallback));
     EXPECT_CALL(*mockSubscriptionCallback, executePublication(_))
         .WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
 
-    dispatcher.receive(message);
+    dispatcher.receive(message.getImmutableMessage());
 
     EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
     dispatcher.registerSubscriptionManager(nullptr);
@@ -291,14 +293,15 @@ TEST_F(DispatcherTest, receive_setCallContext) {
     request.setParams();
     request.setParamDatatypes(std::vector<std::string>());
 
-    JoynrMessage msg = messageFactory.createRequest(
+    MutableMessage mutableMessage = messageFactory.createRequest(
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
-                request
+                request,
+                isLocalMessage
     );
-    msg.setHeaderCreatorUserId(expectedPrincipal);
-
+    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+    immutableMessage->setCreator(expectedPrincipal);
     dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
 
     EXPECT_CALL(
@@ -309,7 +312,7 @@ TEST_F(DispatcherTest, receive_setCallContext) {
                 )
     ).WillOnce(Invoke(this, &DispatcherTest::invokeLocationAndSaveCallContext));
 
-    dispatcher.receive(msg);
+    dispatcher.receive(immutableMessage);
     EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
 
     EXPECT_EQ(expectedPrincipal, callContext.getPrincipal());

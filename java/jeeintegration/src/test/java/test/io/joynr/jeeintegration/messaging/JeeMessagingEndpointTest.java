@@ -6,7 +6,7 @@ package test.io.joynr.jeeintegration.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.jeeintegration.messaging.JeeMessagingEndpoint;
-import joynr.JoynrMessage;
+import joynr.MutableMessage;
 
 /**
  * Unit tests for the {@link JeeMessagingEndpoint}.
@@ -58,35 +58,41 @@ public class JeeMessagingEndpointTest {
 
     @Test
     public void testPostMessageWithoutContentType() throws Exception {
-        callPostMethod((JeeMessagingEndpoint subject, String channelId, String message, UriInfo uriInfo) -> {
+        callPostMethod((JeeMessagingEndpoint subject, String channelId, byte[] message, UriInfo uriInfo) -> {
             subject.postMessageWithoutContentType(channelId, message, uriInfo);
         });
     }
 
     @Test
     public void testPostMessage() throws Exception {
-        callPostMethod((JeeMessagingEndpoint subject, String channelId, String message, UriInfo uriInfo) -> {
+        callPostMethod((JeeMessagingEndpoint subject, String channelId, byte[] message, UriInfo uriInfo) -> {
             subject.postMessage(channelId, message, uriInfo);
         });
     }
 
     private interface PostMethodCaller {
-        void call(JeeMessagingEndpoint subject, String channelId, String message, UriInfo uriInfo) throws Exception;
+        void call(JeeMessagingEndpoint subject, String channelId, byte[] message, UriInfo uriInfo) throws Exception;
     }
 
     private void callPostMethod(PostMethodCaller postMethodCaller) throws Exception {
         SubjectData subjectData = createSubject();
         JeeMessagingEndpoint subject = subjectData.subject;
-        String message = "{'msgId': '1'}";
-        JoynrMessage joynrMessage = new JoynrMessage();
-        joynrMessage.setExpirationDate(ExpiryDate.fromRelativeTtl(1000L));
-        when(subjectData.objectMapper.readValue(message, JoynrMessage.class)).thenReturn(joynrMessage);
+        byte[] payload = new byte[] { 1, 2, 3 };
+
         UriInfo uriInfo = mock(UriInfo.class);
         UriBuilder uriBuilder = mock(UriBuilder.class);
         UriBuilder pathBuilder = mock(UriBuilder.class);
-        when(uriBuilder.path("messages/" + joynrMessage.getId())).thenReturn(pathBuilder);
+
+        MutableMessage mutableMessage = new MutableMessage();
+        mutableMessage.setSender("testSender");
+        mutableMessage.setRecipient("testRecipient");
+        mutableMessage.setTtlAbsolute(true);
+        mutableMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1000L).getValue());
+        mutableMessage.setPayload(payload);
+
+        when(uriBuilder.path("messages/" + mutableMessage.getId())).thenReturn(pathBuilder);
         when(uriInfo.getBaseUriBuilder()).thenReturn(uriBuilder);
-        postMethodCaller.call(subject, "channel-1", message, uriInfo);
+        postMethodCaller.call(subject, "channel-1", mutableMessage.getImmutableMessage().getSerializedMessage(), uriInfo);
         Mockito.verify(subjectData.messageReceiver).receive(Mockito.any());
     }
 
@@ -109,5 +115,4 @@ public class JeeMessagingEndpointTest {
         ServletMessageReceiver messageReceiver;
         JeeMessagingEndpoint subject;
     }
-
 }

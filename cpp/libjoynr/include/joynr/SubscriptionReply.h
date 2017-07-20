@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,9 @@ public:
     SubscriptionReply(const SubscriptionReply& other);
     SubscriptionReply();
 
-    std::string getSubscriptionId() const;
+    const std::string& getSubscriptionId() const;
     void setSubscriptionId(const std::string& subscriptionId);
+    void setSubscriptionId(std::string&& subscriptionId);
 
     std::shared_ptr<exceptions::SubscriptionException> getError() const;
     void setError(std::shared_ptr<exceptions::SubscriptionException> error);

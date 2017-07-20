@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
+import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.tests.DefaulttestProvider;
@@ -170,7 +171,6 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
         final Semaphore broadcastReceived = new Semaphore(0);
 
-        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
         proxy.subscribeToLocationUpdateBroadcast(new testBroadcastInterface.LocationUpdateBroadcastAdapter() {
 
             @Override
@@ -178,7 +178,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
                 assertEquals(expectedLocation, location);
                 broadcastReceived.release();
             }
-        }, subscriptionQos);
+        }, new MulticastSubscriptionQos());
 
         Thread.sleep(300);
 
@@ -191,7 +191,6 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     public void subscribeToBroadcastMultipleOutputs() throws InterruptedException {
         final Semaphore broadcastReceived = new Semaphore(0);
 
-        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
         proxy.subscribeToLocationUpdateWithSpeedBroadcast(new testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter() {
 
                                                               @Override
@@ -201,7 +200,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
                                                                   broadcastReceived.release();
                                                               }
                                                           },
-                                                          subscriptionQos);
+                                                          new MulticastSubscriptionQos());
 
         Thread.sleep(300);
 
@@ -215,7 +214,6 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         final Semaphore broadcastReceived = new Semaphore(0);
         final TestEnum expectedTestEnum = TestEnum.TWO;
 
-        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
         proxy.subscribeToBroadcastWithEnumOutputBroadcast(new testBroadcastInterface.BroadcastWithEnumOutputBroadcastAdapter() {
 
                                                               @Override
@@ -229,7 +227,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
                                                                   fail("Error subscribing to broadcast");
                                                               }
                                                           },
-                                                          subscriptionQos);
+                                                          new MulticastSubscriptionQos());
         Thread.sleep(300);
 
         provider.fireBroadcastWithEnumOutput(expectedTestEnum);
@@ -242,7 +240,6 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         final Semaphore broadcastReceived = new Semaphore(0);
         final Byte[] expectedByteBuffer = { 1, 2, 3 };
 
-        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
         proxy.subscribeToBroadcastWithByteBufferParameterBroadcast(new testBroadcastInterface.BroadcastWithByteBufferParameterBroadcastAdapter() {
 
                                                                        @Override
@@ -257,7 +254,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
                                                                            broadcastReceived.release();
                                                                        }
                                                                    },
-                                                                   subscriptionQos);
+                                                                   new MulticastSubscriptionQos());
         Thread.sleep(300);
 
         provider.fireBroadcastWithByteBufferParameter(expectedByteBuffer);
@@ -278,8 +275,6 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
         final Semaphore broadcastReceived = new Semaphore(0);
 
-        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
-
         Future<String> subscriptionId = proxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
 
                                                                                      @Override
@@ -287,7 +282,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
                                                                                          broadcastReceived.release();
                                                                                      }
                                                                                  },
-                                                                                 subscriptionQos);
+                                                                                 new MulticastSubscriptionQos());
 
         Thread.sleep(300);
 
@@ -312,20 +307,19 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
         final Semaphore broadcastReceived = new Semaphore(0);
 
-        OnChangeSubscriptionQos subscriptionQos = createDefaultOnChangeSubscriptionQos();
         Future<String> subscriptionId = proxy.subscribeToLocationUpdateWithSpeedBroadcast(new testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapter() {
 
-                                                                                      @Override
-                                                                                      public void onReceive(GpsLocation location,
-                                                                                                            Float speed) {
-                                                                                          assertEquals(expectedLocation,
-                                                                                                       location);
-                                                                                          assertEquals(expectedSpeed,
-                                                                                                       speed);
-                                                                                          broadcastReceived.release();
-                                                                                      }
-                                                                                  },
-                                                                                  subscriptionQos);
+                                                                                              @Override
+                                                                                              public void onReceive(GpsLocation location,
+                                                                                                                    Float speed) {
+                                                                                                  assertEquals(expectedLocation,
+                                                                                                               location);
+                                                                                                  assertEquals(expectedSpeed,
+                                                                                                               speed);
+                                                                                                  broadcastReceived.release();
+                                                                                              }
+                                                                                          },
+                                                                                          new MulticastSubscriptionQos());
 
         Thread.sleep(300);
 

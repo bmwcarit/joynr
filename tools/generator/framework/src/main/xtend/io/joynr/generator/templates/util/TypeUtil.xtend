@@ -2,7 +2,7 @@ package io.joynr.generator.templates.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -387,6 +387,9 @@ class TypeUtil {
 		if (type instanceof FMapType){
 			return true;
 		}
+		if (type instanceof FTypeDef){
+			return isMap(type.actualType)
+		}
 		return false
 	}
 
@@ -402,6 +405,9 @@ class TypeUtil {
 		}
 		if (type instanceof FEnumerationType){
 			return true
+		}
+		if (type instanceof FTypeDef){
+			return isEnum(type.actualType)
 		}
 		return false
 	}
@@ -475,7 +481,9 @@ class TypeUtil {
 	}
 
 	def filterComplex(Iterable<? extends Object> iterable, boolean includeTypeDefs) {
-		iterable.filter(typeof(FType)).filter[type | (type.typeDef && includeTypeDefs) || type.compound || type.enum || type.map]
+		iterable.filter(typeof(FType)).filter[type | (type.typeDef && includeTypeDefs)
+			|| (!type.typeDef && (type.compound || type.enum || type.map))
+		]
 	}
 
 	def boolean isPartOfTypeCollection(FType datatype) {
@@ -495,6 +503,18 @@ class TypeUtil {
 		return (datatype.eContainer as FTypeCollection).joynrName;
 	}
 
+	/*
+	 * Returns true if the type is polymorphic
+	 */
+	def boolean isPolymorphic(FCompoundType datatype) {
+		if (datatype instanceof FStructType) {
+			if (hasExtendsDeclaration(datatype)) {
+				return getExtendedType(datatype).polymorphic
+			}
+			return (datatype as FStructType).polymorphic;
+		}
+		return false
+	}
 
 	/*
 	 * Returns true if the member is a 1 Dimensional list, returns false if not. (2D Lists are not supported)

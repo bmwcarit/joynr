@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,9 @@
 
 define(
         "joynr/messaging/MessageReplyToAddressCalculator",
-        [
-            "joynr/messaging/JoynrMessage",
-            "joynr/util/JSONSerializer"
+        [ "joynr/messaging/JoynrMessage"
         ],
-        function(JoynrMessage, JSONSerializer) {
+        function(JoynrMessage) {
 
             /**
              * @name MessageReplyToAddressCalculator
@@ -43,11 +41,11 @@ define(
                         };
 
                 /**
-                 * Helper function allowing to share the reply to address with the calculator after object creation
+                 * Helper function allowing to share the serialized reply to address with the calculator after object creation
                  */
-                this.setReplyToAddress = function(address) {
-                    replyToAddress = JSONSerializer.stringify(address);
-                    if (address !== undefined) {
+                this.setReplyToAddress = function(serializedAddress) {
+                    replyToAddress = serializedAddress;
+                    if (replyToAddress !== undefined) {
                         //disable check implementation
                         checkForExistingReplyToAddress = function() {};
                     }
@@ -55,13 +53,13 @@ define(
 
                 this.setReplyTo =
                         function(message) {
-                            checkForExistingReplyToAddress();
                             var type = message.type;
                             if ((type !== undefined)
                                 && (message.replyChannelId === undefined)
                                 && ((type === JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST)
                                     || (type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST)
                                     || (type === JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) || (type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST))) {
+                                checkForExistingReplyToAddress();
                                 message.replyChannelId = replyToAddress;
                             }
                         };

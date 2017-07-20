@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ var consumerBase = {
                 provisioning.bounceProxyUrl = provisioning.bounceProxyBaseUrl + "/bounceproxy/";
                 joynr.selectRuntime("inprocess");
             }
+            provisioning.logging.configuration.loggers.root.level = "error";
             return joynr.load(provisioning).then(function(loadedJoynr) {
                 joynr = loadedJoynr;
                 log("joynr started");
@@ -92,7 +93,7 @@ var consumerBase = {
                 EchoProvider,
                 EchoProviderImpl.implementation);
 
-        joynr.capabilities.registerCapability("", options.domain, echoProvider, providerQos).then(function() {
+        joynr.registration.registerProvider(options.domain, echoProvider, providerQos).then(function() {
             log("provider registered successfully");
         }).catch(function(error) {
             log("error registering provider: " + error.toString());

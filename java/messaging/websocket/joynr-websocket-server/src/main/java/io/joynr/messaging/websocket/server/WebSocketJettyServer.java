@@ -3,7 +3,7 @@ package io.joynr.messaging.websocket.server;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package io.joynr.messaging.websocket.server;
  */
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +51,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -68,22 +69,19 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
 
     public ObjectMapper objectMapper;
 
-    private IMessaging messageListener;
+    private IMessagingSkeleton messageListener;
 
     private boolean shutdown = false;
 
-    public WebSocketJettyServer(WebSocketAddress address,
-                                ObjectMapper objectMapper,
-                                int maxMessageSize) {
+    public WebSocketJettyServer(WebSocketAddress address, ObjectMapper objectMapper, int maxMessageSize) {
         this.address = address;
         this.objectMapper = objectMapper;
         this.maxMessageSize = maxMessageSize;
     }
 
     @Override
-    public void messageArrived(String message) {
+    public void messageArrived(byte[] message) {
         messageListener.transmit(message, new FailureAction() {
-
             @Override
             public void execute(Throwable error) {
                 logger.error("Unable to process message: {}", error.getMessage());
@@ -143,13 +141,13 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
     }
 
     @Override
-    public void setMessageListener(IMessaging messageListener) {
+    public void setMessageListener(IMessagingSkeleton messageListener) {
         this.messageListener = messageListener;
     }
 
     @Override
     public void shutdown() {
-        shutdown  = true;
+        shutdown = true;
         for (Session session : sessionMap.values()) {
             try {
                 session.disconnect();
@@ -165,8 +163,12 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
     }
 
     @Override
-    public synchronized void writeText(Address toAddress, String message, long timeout, TimeUnit unit, final FailureAction failureAction) {
-        if (! (toAddress instanceof WebSocketClientAddress)) {
+    public synchronized void writeBytes(Address toAddress,
+                                        byte[] message,
+                                        long timeout,
+                                        TimeUnit unit,
+                                        final FailureAction failureAction) {
+        if (!(toAddress instanceof WebSocketClientAddress)) {
             throw new JoynrIllegalStateException("Web Socket Server can only send to WebSocketClientAddresses");
         }
 
@@ -174,14 +176,16 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
         Session session = sessionMap.get(toClientAddress.getId());
         if (session == null) {
             //TODO We need a delay with invalidation of the stub
-            throw new JoynrDelayMessageException("no active session for WebSocketClientAddress: " + toClientAddress.getId());
+            throw new JoynrDelayMessageException("no active session for WebSocketClientAddress: "
+                    + toClientAddress.getId());
         }
         try {
-            session.getRemote().sendString(message, new WriteCallback() {
+            session.getRemote().sendBytes(ByteBuffer.wrap(message), new WriteCallback() {
                 @Override
                 public void writeSuccess() {
                     // Nothing to do
                 }
+
                 @Override
                 public void writeFailed(Throwable error) {
                     if (shutdown) {
@@ -216,7 +220,8 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
         }
 
         @Override
-        public void onWebSocketText(String serializedMessage) {
+        public void onWebSocketBinary(byte[] payload, int offset, int len) {
+            String serializedMessage = new String(payload, offset, len, CHARSET);
             if (isInitializationMessage(serializedMessage)) {
                 try {
                     WebSocketClientAddress webSocketClientAddress = objectMapper.readValue(serializedMessage,
@@ -227,11 +232,12 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                     logger.error("Error parsing WebSocketClientAddress: ", e);
                 }
             } else {
-                messageArrivedListener.messageArrived(serializedMessage);
+                messageArrivedListener.messageArrived(payload);
             }
         }
 
-        @Override public void onWebSocketClose(int statusCode, String reason) {
+        @Override
+        public void onWebSocketClose(int statusCode, String reason) {
             super.onWebSocketClose(statusCode, reason);
             openSockets.remove(CCWebSocketMessagingSkeletonSocket.this);
         }

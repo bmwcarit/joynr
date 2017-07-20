@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
  */
 #include "joynr/AbstractJoynrMessagingConnector.h"
 
-#include "joynr/JoynrMessageSender.h"
+#include "joynr/IMessageSender.h"
 
 namespace joynr
 {
@@ -26,53 +26,42 @@ namespace joynr
 INIT_LOGGER(AbstractJoynrMessagingConnector);
 
 AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
-        IJoynrMessageSender* joynrMessageSender,
-        ISubscriptionManager* subscriptionManager,
+        std::shared_ptr<IMessageSender> messageSender,
+        std::shared_ptr<ISubscriptionManager> subscriptionManager,
         const std::string& domain,
         const std::string& interfaceName,
         const std::string& proxyParticipantId,
-        const std::string& providerParticipantId,
         const MessagingQos& qosSettings,
-        IClientCache* cache,
-        bool cached)
-        : joynrMessageSender(joynrMessageSender),
+        const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
+        : messageSender(messageSender),
           subscriptionManager(subscriptionManager),
           domain(domain),
           interfaceName(interfaceName),
           proxyParticipantId(proxyParticipantId),
-          providerParticipantId(providerParticipantId),
+          providerParticipantId(providerDiscoveryEntry.getParticipantId()),
           qosSettings(qosSettings),
-          cache(cache),
-          cached(cached)
+          providerDiscoveryEntry(providerDiscoveryEntry)
 {
-}
-
-bool AbstractJoynrMessagingConnector::usesClusterController() const
-{
-    return true;
 }
 
 void AbstractJoynrMessagingConnector::operationRequest(std::shared_ptr<IReplyCaller> replyCaller,
-                                                       const Request& request)
+                                                       Request&& request)
 {
-    sendRequest(request, replyCaller);
+    messageSender->sendRequest(proxyParticipantId,
+                               providerParticipantId,
+                               qosSettings,
+                               request,
+                               std::move(replyCaller),
+                               providerDiscoveryEntry.getIsLocal());
 }
 
-void AbstractJoynrMessagingConnector::operationOneWayRequest(const OneWayRequest& request)
+void AbstractJoynrMessagingConnector::operationOneWayRequest(OneWayRequest&& request)
 {
-    sendOneWayRequest(request);
+    messageSender->sendOneWayRequest(proxyParticipantId,
+                                     providerParticipantId,
+                                     qosSettings,
+                                     request,
+                                     providerDiscoveryEntry.getIsLocal());
 }
 
-void AbstractJoynrMessagingConnector::sendRequest(const Request& request,
-                                                  std::shared_ptr<IReplyCaller> replyCaller)
-{
-    joynrMessageSender->sendRequest(
-            proxyParticipantId, providerParticipantId, qosSettings, request, replyCaller);
-}
-
-void AbstractJoynrMessagingConnector::sendOneWayRequest(const OneWayRequest& request)
-{
-    joynrMessageSender->sendOneWayRequest(
-            proxyParticipantId, providerParticipantId, qosSettings, request);
-}
 } // namespace joynr

@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,14 +40,14 @@ public class ResourceContentProvider {
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     public String readFromFileOrResourceOrUrl(String provisionedCapabilitiesJsonFilename) {
-        logger.debug("Attempting to read statically provisioned capabilities from JSON in file/resource/URL: {}",
+        logger.trace("Attempting to read statically provisioned capabilities from JSON in file/resource/URL: {}",
                      provisionedCapabilitiesJsonFilename);
         IOException ioException = null;
         String result = null;
         try {
             URI uri = new URI(provisionedCapabilitiesJsonFilename);
             if (!uri.isAbsolute()) {
-                throw new URISyntaxException(provisionedCapabilitiesJsonFilename, "URI is not aboslute");
+                throw new URISyntaxException(provisionedCapabilitiesJsonFilename, "URI is not absolute");
             }
             result = readFromUri(uri);
         } catch (URISyntaxException e) {
@@ -81,10 +81,10 @@ public class ResourceContentProvider {
         if (file.exists()) {
             return Files.toString(file, UTF8);
         } else {
-            logger.trace("File {} doesn't exist on filesystem, attempting to read from classpath.", provisionedCapabilitiesJsonFilename);
+            logger.trace("File {} doesn't exist on filesystem, attempting to read from classpath.",
+                         provisionedCapabilitiesJsonFilename);
             try (InputStream resourceAsStream = StaticCapabilitiesProvisioning.class.getClassLoader()
-                                                                                    .getResourceAsStream(
-                                                                                        provisionedCapabilitiesJsonFilename)) {
+                                                                                    .getResourceAsStream(provisionedCapabilitiesJsonFilename)) {
                 if (resourceAsStream != null) {
                     return readFromStream(resourceAsStream);
                 }
@@ -102,7 +102,7 @@ public class ResourceContentProvider {
 
     private String readFromStream(InputStream inputStream) throws IOException {
         try (InputStreamReader reader = new InputStreamReader(inputStream, UTF8);
-             BufferedReader bufferedReader = new BufferedReader(reader)) {
+                BufferedReader bufferedReader = new BufferedReader(reader)) {
             StringBuilder builder = new StringBuilder();
             String line = null;
             while ((line = bufferedReader.readLine()) != null) {

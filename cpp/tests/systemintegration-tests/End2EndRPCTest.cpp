@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "tests/utils/MockObjects.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
@@ -53,6 +53,9 @@ public:
                     std::make_unique<Settings>(GetParam())
         );
         domain = "cppEnd2EndRPCTest_Domain_" + util::createUuid();
+
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+        discoveryQos.setDiscoveryTimeoutMs(3000);
     }
     // Sets up the test fixture.
     void SetUp(){
@@ -65,7 +68,7 @@ public:
         runtime->stop(deleteChannel);
 
         // Delete persisted files
-        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
@@ -76,6 +79,10 @@ public:
     ~End2EndRPCTest(){
         delete runtime;
     }
+protected:
+
+    joynr::DiscoveryQos discoveryQos;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(End2EndRPCTest);
 };
@@ -86,28 +93,30 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
 
     auto mockProvider = std::make_shared<MockGpsProvider>();
 
-    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
-    ProxyBuilder<vehicle::GpsProxy>* gpsProxyBuilder = runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
+    std::unique_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
+            runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::shared_ptr<vehicle::GpsProxy> gpsProxy(gpsProxyBuilder
+    std::unique_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
     std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellitesAsync());
     gpsFuture->wait();
     int expectedValue = 42; //as defined in MockGpsProvider
     int actualValue;
     gpsFuture->get(actualValue);
     EXPECT_EQ(expectedValue, actualValue);
-    //TODO CA: shared pointer for proxy builder?
-    delete gpsProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }
@@ -116,25 +125,26 @@ TEST_P(End2EndRPCTest, call_void_operation)
 {
     auto mockProvider = std::make_shared<MockTestProvider>();
 
-    runtime->registerProvider<tests::testProvider>(domain, mockProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>(domain);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     std::int64_t qosRoundTripTTL = 40000;
-    tests::testProxy* testProxy = testProxyBuilder
+    std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
             ->build();
     testProxy->voidOperation();
 //    EXPECT_EQ(expectedValue, gpsFuture->getValue());
-    //TODO CA: shared pointer for proxy builder?
-    delete testProxy;
-    delete testProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }
@@ -143,22 +153,25 @@ TEST_P(End2EndRPCTest, call_void_operation)
 TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 {
     auto mockProvider = std::make_shared<MockTestProvider>();
-    runtime->registerProvider<tests::testProvider>(domain, mockProvider);
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder =
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(1000);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
+    std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
@@ -169,14 +182,13 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 800, // validity_ms
+                1000, // publication ttl
                 100, // minInterval_ms
                 200, // maxInterval_ms
                 1000 // alertInterval_ms
     );
     testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-    //TODO CA: shared pointer for proxy builder?
-    delete testProxyBuilder;
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
 }
@@ -188,9 +200,9 @@ INSTANTIATE_TEST_CASE_P(Http,
         )
 );
 
-INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+INSTANTIATE_TEST_CASE_P(Mqtt,
         End2EndRPCTest,
         testing::Values(
-            "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings"
+            "test-resources/MqttSystemIntegrationTest1.settings"
         )
 );

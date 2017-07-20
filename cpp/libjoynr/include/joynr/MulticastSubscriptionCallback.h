@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,16 @@
 #ifndef MULTICASTSUBSCRIPTIONCALLBACK_H
 #define MULTICASTSUBSCRIPTIONCALLBACK_H
 
+#include <cassert>
 #include <memory>
 
-#include "joynr/SubscriptionCallback.h"
-#include "joynr/ISubscriptionListener.h"
 #include "ISubscriptionManager.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/BasePublication.h"
 #include "joynr/Future.h"
+#include "joynr/ISubscriptionListener.h"
 #include "joynr/MulticastPublication.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/SubscriptionCallback.h"
 
 namespace joynr
 {
@@ -58,7 +59,7 @@ public:
         std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
                 Base::subscriptionManager->getMulticastSubscriptionListeners(
                         multicastPublication.getMulticastId());
-        for (auto listener : listeners) {
+        for (const auto& listener : listeners) {
             listener->onError(error);
         }
     }
@@ -72,8 +73,9 @@ public:
         std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
                 Base::subscriptionManager->getMulticastSubscriptionListeners(
                         multicastPublication.getMulticastId());
-        for (auto listener : listeners) {
+        for (const auto& listener : listeners) {
             auto voidListener = std::dynamic_pointer_cast<ISubscriptionListener<void>>(listener);
+            assert(voidListener);
             voidListener->onReceive();
         }
     }
@@ -89,9 +91,10 @@ public:
         std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
                 Base::subscriptionManager->getMulticastSubscriptionListeners(
                         multicastPublication.getMulticastId());
-        for (auto listener : listeners) {
+        for (const auto& listener : listeners) {
             auto typedListener =
                     std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(listener);
+            assert(typedListener);
             typedListener->onReceive(value, values...);
         }
     }

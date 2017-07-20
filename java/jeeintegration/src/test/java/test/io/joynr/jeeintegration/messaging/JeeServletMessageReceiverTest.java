@@ -6,7 +6,7 @@ package test.io.joynr.jeeintegration.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.jeeintegration.httpbridge.HttpBridgeRegistryClient;
 import io.joynr.jeeintegration.messaging.JeeServletMessageReceiver;
 import io.joynr.messaging.MessageArrivedListener;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -127,8 +127,9 @@ public class JeeServletMessageReceiverTest {
     @Test
     public void testReceive() {
         start();
-        JoynrMessage message = new JoynrMessage();
-        message.setExpirationDate(ExpiryDate.fromRelativeTtl(1000L));
+        ImmutableMessage message = Mockito.mock(ImmutableMessage.class);
+        when(message.isTtlAbsolute()).thenReturn(true);
+        when(message.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000L).getValue());
         subject.receive(message);
         verify(messageArrivedListener).messageArrived(message);
     }
@@ -136,7 +137,7 @@ public class JeeServletMessageReceiverTest {
     @Test
     public void testOnError() {
         start();
-        JoynrMessage message = new JoynrMessage();
+        ImmutableMessage message = Mockito.mock(ImmutableMessage.class);
         Throwable error = new RuntimeException();
         subject.onError(message, error);
         verify(messageArrivedListener).error(message, error);

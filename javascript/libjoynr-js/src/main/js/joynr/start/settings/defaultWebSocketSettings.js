@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,9 @@
  * #L%
  */
 
-(function() {
-    var setupDefaultWebSocketSettings = function(defaultSettings) {
-        defaultSettings.protocol = "ws";
-        defaultSettings.path = "";
-        return defaultSettings;
-    };
-
-    // AMD support
-    if (typeof define === 'function' && define.amd) {
-        define("joynr/start/settings/defaultWebSocketSettings", [], function() {
-            return setupDefaultWebSocketSettings({});
-        });
-    } else {
-        window.joynr = window.joynr || {};
-        window.joynr.start = window.joynr.start || {};
-        window.joynr.start.defaultWebSocketSettings =
-                window.joynr.start.defaultWebSocketSettings || {};
-        setupDefaultWebSocketSettings(window.joynr.start.defaultWebSocketSettings);
-    }
-}());
+define("joynr/start/settings/defaultWebSocketSettings", [], function() {
+    var defaultSettings = {};
+    defaultSettings.protocol = "ws";
+    defaultSettings.path = "";
+    return defaultSettings;
+});

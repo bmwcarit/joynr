@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import io.joynr.generator.templates.util.NamingUtil
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FAttribute
 import org.franca.core.franca.FBroadcast
-import org.eclipse.xtext.util.formallang.StringProduction.ProdElement
 
 class InterfaceSubscriptionUtil {
 	@Inject	extension InterfaceUtil
@@ -143,11 +142,11 @@ std::shared_ptr<joynr::Future<std::string>> «IF className != null»«className�
 			«ENDIF»
 			«IF broadcast.selective»
 			const «serviceInterface.name.toFirstUpper»«broadcast.joynrName.toFirstUpper»BroadcastFilterParameters& filterParameters,
-			«ENDIF»
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»>> subscriptionListener,
-			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos«
-			»«IF !broadcast.selective»«
-			»,
+			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos
+			«ELSE»
+			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes»>> subscriptionListener,
+			std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
 			const std::vector<std::string>& partitions«IF hTemplate» = std::vector<std::string>()«ENDIF»«
 			»«ENDIF»
 )

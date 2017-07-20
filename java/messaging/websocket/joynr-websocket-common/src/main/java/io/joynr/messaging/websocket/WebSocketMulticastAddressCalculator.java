@@ -3,7 +3,7 @@ package io.joynr.messaging.websocket;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.runtime.SystemServicesSettings;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
@@ -39,7 +39,7 @@ public class WebSocketMulticastAddressCalculator implements MulticastAddressCalc
     }
 
     @Override
-    public Address calculate(JoynrMessage message) {
+    public Address calculate(ImmutableMessage message) {
         return globalAddress;
     }
 

@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,25 @@ define(
             "joynr/system/LoggerFactory",
             "joynr/messaging/inprocess/InProcessAddress",
             "joynr/messaging/JoynrMessage",
+            "joynr/messaging/MessageReplyToAddressCalculator",
+            "joynr/exceptions/JoynrException",
+            "joynr/exceptions/JoynrRuntimeException",
             "joynr/util/Typing",
+            "joynr/util/UtilInternal",
             "joynr/util/JSONSerializer",
         ],
-        function(Promise, MulticastWildcardRegexFactory, DiagnosticTags, LoggerFactory, InProcessAddress, JoynrMessage, Typing, JSONSerializer) {
+        function(Promise,
+                MulticastWildcardRegexFactory,
+                DiagnosticTags,
+                LoggerFactory,
+                InProcessAddress,
+                JoynrMessage,
+                MessageReplyToAddressCalculator,
+                JoynrException,
+                JoynrRuntimeException,
+                Typing,
+                Util,
+                JSONSerializer) {
 
             /**
              * Message Router receives a message and forwards it to the correct endpoint, as looked up in the {@link RoutingTable}
@@ -83,6 +98,9 @@ define(
                 var multicastAddressCalculator = settings.multicastAddressCalculator;
                 var messagingSkeletonFactory = settings.messagingSkeletonFactory;
                 var multicastReceiversRegistry = {};
+                var replyToAddress;
+                var messageReplyToAddressCalculator = new MessageReplyToAddressCalculator({});
+                var messagesWithoutReplyTo = [];
 
                 // if (settings.routingTable === undefined) {
                 // throw new Error("routing table is undefined");
@@ -104,6 +122,14 @@ define(
                 function isReady() {
                     return started;
                 }
+
+                this.setReplyToAddress = function (newAddress) {
+                    replyToAddress = newAddress;
+                    messageReplyToAddressCalculator.setReplyToAddress(replyToAddress);
+                    messagesWithoutReplyTo.forEach(function(msg) {
+                        that.route(msg);
+                    });
+                };
 
                 /**
                  * @function MessageRouter#getStorageKey
@@ -154,36 +180,42 @@ define(
                  * @function MessageRouter#addNextHopToParentRoutingTable
                  *
                  * @param {String} participantId
+                 * @param {boolean} isGloballyVisible
                  *
                  * @returns result
                  */
                 this.addNextHopToParentRoutingTable =
-                        function addNextHopToParentRoutingTable(participantId) {
+                        function addNextHopToParentRoutingTable(participantId, isGloballyVisible) {
                             var result;
                             if (Typing.getObjectType(incomingAddress) === "BrowserAddress") {
                                 result = routingProxy.addNextHop({
                                     participantId : participantId,
-                                    browserAddress : incomingAddress
+                                    browserAddress : incomingAddress,
+                                    isGloballyVisible : isGloballyVisible
                                 });
                             } else if (Typing.getObjectType(incomingAddress) === "ChannelAddress") {
                                 result = routingProxy.addNextHop({
                                     participantId : participantId,
-                                    channelAddress : incomingAddress
+                                    channelAddress : incomingAddress,
+                                    isGloballyVisible : isGloballyVisible
                                 });
                             } else if (Typing.getObjectType(incomingAddress) === "WebSocketAddress") {
                                 result = routingProxy.addNextHop({
                                     participantId : participantId,
-                                    webSocketAddress : incomingAddress
+                                    webSocketAddress : incomingAddress,
+                                    isGloballyVisible : isGloballyVisible
                                 });
                             } else if (Typing.getObjectType(incomingAddress) === "WebSocketClientAddress") {
                                 result = routingProxy.addNextHop({
                                     participantId : participantId,
-                                    webSocketClientAddress : incomingAddress
+                                    webSocketClientAddress : incomingAddress,
+                                    isGloballyVisible : isGloballyVisible
                                 });
                             } else if (Typing.getObjectType(incomingAddress) === "CommonApiDbusAddress") {
                                 result = routingProxy.addNextHop({
                                     participantId : participantId,
-                                    commonApiDbusAddress : incomingAddress
+                                    commonApiDbusAddress : incomingAddress,
+                                    isGloballyVisible : isGloballyVisible
                                 });
                             }
                             return result;
@@ -198,6 +230,15 @@ define(
                         function setRoutingProxy(newRoutingProxy) {
                             var hop, participantId, errorFct, receiver, queuedCall;
 
+                            routingProxy = newRoutingProxy;
+
+                            var replyToAddressPromise = routingProxy.replyToAddress.get().then(function(replyToAddress) {
+                                that.setReplyToAddress(replyToAddress);
+                            }).catch(function(error) {
+                                throw new Error("Failed to get replyToAddress from parent router: " + error
+                                        + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                            });
+
                             errorFct = function(error) {
                                 if (!isReady()) {
                                     //in this case, the error is expected, e.g. during shut down
@@ -208,18 +249,19 @@ define(
                                 throw new Error(error);
                             };
 
-                            routingProxy = newRoutingProxy;
                             if (routingProxy !== undefined) {
                                 if (routingProxy.proxyParticipantId !== undefined) {
+                                    // isGloballyVisible is false because the routing provider is local
+                                    var isGloballyVisible = false;
                                     that.addNextHopToParentRoutingTable(
-                                            routingProxy.proxyParticipantId).catch(errorFct);
+                                            routingProxy.proxyParticipantId, isGloballyVisible).catch(errorFct);
                                 }
                                 for (hop in queuedAddNextHopCalls) {
                                     if (queuedAddNextHopCalls.hasOwnProperty(hop)) {
                                         queuedCall = queuedAddNextHopCalls[hop];
                                         if (queuedCall.participantId !== routingProxy.proxyParticipantId) {
                                             that.addNextHopToParentRoutingTable(
-                                                    queuedCall.participantId).then(
+                                                    queuedCall.participantId, queuedCall.isGloballyVisible).then(
                                                     queuedCall.resolve).catch(queuedCall.reject);
                                         }
                                     }
@@ -250,6 +292,7 @@ define(
                             queuedRemoveNextHopCalls = undefined;
                             queuedAddMulticastReceiverCalls = undefined;
                             queuedRemoveMulticastReceiverCalls = undefined;
+                            return replyToAddressPromise;
                         };
 
                 /*
@@ -375,28 +418,66 @@ define(
                                 .forJoynrMessage(joynrMessage));
                         settings.messageQueue.putMessage(joynrMessage);
                         throw new Error(errorMsg);
-                    } else {
-                        messagingStub =
-                                settings.messagingStubFactory
-                                        .createMessagingStub(address);
-                        if (messagingStub === undefined) {
-                            errorMsg =
-                                    "No message receiver found for participantId: "
-                                        + joynrMessage.to
-                                        + " queuing message.";
-                            log.info(errorMsg, DiagnosticTags
-                                    .forJoynrMessage(joynrMessage));
+                    }
+
+                    if (!joynrMessage.isLocalMessage) {
+                        try {
+                            messageReplyToAddressCalculator.setReplyTo(joynrMessage);
+                        } catch (error) {
+                            messagesWithoutReplyTo.push(joynrMessage);
+                            errorMsg = "replyTo address could not be set: "
+                                + error
+                                + ". Queuing message.";
+                            log.warn(errorMsg, JSON.stringify(DiagnosticTags
+                                    .forJoynrMessage(joynrMessage)));
                             throw new Error(errorMsg);
-                        } else {
-                            return messagingStub.transmit(joynrMessage).then(function() {
-                                //succeeded, do nothing
-                                return null;
-                            }).catch(function(error) {
-                                //error while transmitting message
-                                log.debug("Error while transmitting message: " + error);
-                                //TODO queue message and retry later
-                                return null;
-                            });
+                        }
+                    }
+
+                    messagingStub =
+                            settings.messagingStubFactory
+                                    .createMessagingStub(address);
+                    if (messagingStub === undefined) {
+                        errorMsg =
+                                "No message receiver found for participantId: "
+                                    + joynrMessage.to
+                                    + " queuing message.";
+                        log.info(errorMsg, DiagnosticTags
+                                .forJoynrMessage(joynrMessage));
+                        throw new Error(errorMsg);
+                    } else {
+                        return messagingStub.transmit(joynrMessage).then(function() {
+                            //succeeded, do nothing
+                            return null;
+                        }).catch(function(error) {
+                            //error while transmitting message
+                            log.debug("Error while transmitting message: " + error);
+                            //TODO queue message and retry later
+                            return null;
+                        });
+                    }
+                }
+
+                function registerGlobalRoutingEntryIfRequired(joynrMessage) {
+                    if (!joynrMessage.isReceivedFromGlobal) {
+                        return;
+                    }
+
+                    var type = joynrMessage.type;
+                    if (type === JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST ||
+                            type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
+                            type === JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
+                            type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST) {
+                        var replyToAddress = joynrMessage.replyChannelId;
+                        if (!Util.checkNullUndefined(replyToAddress)) {
+                            // because the message is received via global transport, isGloballyVisible must be true
+                            var isGloballyVisible = true;
+                            that.addNextHop(
+                                    joynrMessage.from,
+                                    Typing.augmentTypes(
+                                            JSON.parse(replyToAddress),
+                                            typeRegistry),
+                                    isGloballyVisible);
                         }
                     }
                 }
@@ -411,6 +492,15 @@ define(
                  */
                 this.route =
                         function route(joynrMessage) {
+                    var now = Date.now();
+                    if (now > joynrMessage.expiryDate) {
+                        var errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
+                        log.warn(errorMsg);
+                        throw new JoynrRuntimeException({detailMessage: errorMsg});
+                    }
+
+                    registerGlobalRoutingEntryIfRequired(joynrMessage);
+
                     function forwardToRouteInternal(address) {
                         return routeInternal(address, joynrMessage);
                     }
@@ -437,9 +527,11 @@ define(
                  *            participantId
                  * @param {InProcessAddress|BrowserAddress|ChannelAddress}
                  *            address the address to register
+                 * @param {boolean}
+                 *            isGloballyVisible
                  */
                 this.addNextHop =
-                        function addNextHop(participantId, address) {
+                        function addNextHop(participantId, address, isGloballyVisible) {
                             if (!isReady()) {
                                 log.debug("addNextHop: ignore call as message router is already shut down");
                                 return Promise.reject(new Error("message router is already shut down"));
@@ -462,13 +554,14 @@ define(
 
                             if (routingProxy !== undefined) {
                                 // register remotely
-                                promise = that.addNextHopToParentRoutingTable(participantId);
+                                promise = that.addNextHopToParentRoutingTable(participantId, isGloballyVisible);
                             } else {
                                 if (parentMessageRouterAddress !== undefined) {
                                     promise = new Promise(function(resolve, reject){
                                         queuedAddNextHopCalls[queuedAddNextHopCalls.length] =
                                         {
                                             participantId : participantId,
+                                            isGloballyVisible : isGloballyVisible,
                                             resolve : resolve,
                                             reject : reject
                                         };
@@ -604,7 +697,12 @@ define(
                             if (messageQueue !== undefined) {
                                 i = messageQueue.length;
                                 while (i--) {
-                                    that.route(messageQueue[i]);
+                                    try {
+                                        that.route(messageQueue[i]);
+                                    } catch(error) {
+                                        log.error("queued message could not be sent to " + participantId + ", error: " + error
+                                                + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                                    }
                                 }
                             }
                         };

@@ -62,7 +62,7 @@ fi
 export PATH=$PATH:$JOYNR_SOURCE_DIR/tests/robustness-test
 
 # process ids for background stuff
-JETTY_PID=""
+MOSQUITTO_PID=""
 
 # in case of interrupts, forcibly kill background stuff
 function stopall {
@@ -113,6 +113,33 @@ function prechecks {
 	fi
 }
 
+function start_payara {
+	DISCOVERY_WAR_FILE=$JOYNR_SOURCE_DIR/tests/robustness-test/target/discovery-jee.war
+	ACCESS_CONTROL_WAR_FILE=$JOYNR_SOURCE_DIR/tests/robustness-test/target/accesscontrol-jee.war
+
+	echo "Starting payara"
+
+	asadmin start-database
+	asadmin start-domain
+
+	asadmin deploy --force=true $DISCOVERY_WAR_FILE
+	asadmin deploy --force=true $ACCESS_CONTROL_WAR_FILE
+
+	echo "payara started"
+}
+
+function stop_payara {
+	echo "stopping payara"
+	for app in `asadmin list-applications | egrep '(discovery|access)' | cut -d" " -f1`;
+	do
+		echo "undeploy $app";
+		asadmin undeploy --droptables=true $app;
+	done
+
+	asadmin stop-domain
+	asadmin stop-database
+}
+
 function start_services {
 	cd $JOYNR_SOURCE_DIR/tests/robustness-test
 	rm -f joynr.properties
@@ -120,38 +147,31 @@ function start_services {
 	echo '####################################################'
 	echo '# starting services'
 	echo '####################################################'
-	mvn $SPECIAL_MAVEN_OPTIONS jetty:run-war --quiet > $ROBUSTNESS_RESULTS_DIR/jetty_$1.log 2>&1 &
-	JETTY_PID=$!
-	echo "Starting Jetty with PID $JETTY_PID"
-	# wait until server is up and running or 60 seconds (= 30 * 2) timeout is exceeded
-	started=
-	count=0
-	while [ "$started" != "200" -a "$count" -lt "30" ]
-	do
-		sleep 2
-		started=`curl -o /dev/null --silent --head --write-out '%{http_code}\n' http://localhost:8080/bounceproxy/time/`
-		let count+=1
-	done
-	if [ "$started" != "200" ]
-	then
-		# startup failed
-		stopall
-	fi
-	echo "Jetty successfully started."
+
+	echo "Starting mosquitto"
+	mosquitto -c /etc/mosquitto/mosquitto.conf > $ILT_RESULTS_DIR/mosquitto-$1.log 2>&1 &
+	MOSQUITTO_PID=$!
+	echo "Mosquitto started with PID $MOSQUITTO_PID"
+
+	start_payara
+
 	sleep 5
 }
 
 function stop_services {
-	if [ -n "$JETTY_PID" ]
+	echo '####################################################'
+	echo '# stopping services'
+	echo '####################################################'
+
+	stop_payara
+
+	if [ -n "$MOSQUITTO_PID" ]
 	then
-		cd $JOYNR_SOURCE_DIR/tests/robustness-test
-		echo '####################################################'
-		echo '# stopping services'
-		echo '####################################################'
-		mvn $SPECIAL_MAVEN_OPTIONS jetty:stop --quiet
-		wait $JETTY_PID
-		echo "Stopped Jetty with PID $JETTY_PID"
-		JETTY_PID=""
+		echo "Stopping mosquitto with PID $MOSQUITTO_PID"
+		disown $MOSQUITTO_PID
+		killProcessHierarchy $MOSQUITTO_PID
+		wait $MOSQUITTO_PID
+		MOSQUITTO_PID=""
 	fi
 }
 
@@ -197,7 +217,7 @@ function start_java_provider {
 	cd $JOYNR_SOURCE_DIR/tests/robustness-test
 	rm -f java-provider.persistence_file
 	rm -f java-consumer.persistence_file
-	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.robustness.RobustnessProviderApplication" -Dexec.args="$DOMAIN http:mqtt" > $ROBUSTNESS_RESULTS_DIR/provider_java.log 2>&1 &
+	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.robustness.RobustnessProviderApplication" -Dexec.args="$DOMAIN mqtt" > $ROBUSTNESS_RESULTS_DIR/provider_java.log 2>&1 &
 	PROVIDER_PID=$!
 	disown $PROVIDER_PID
 	echo "Started Java provider with PID $PROVIDER_PID"
@@ -274,7 +294,7 @@ function start_java_consumer {
 	echo '####################################################'
 	cd $JOYNR_SOURCE_DIR/tests/robustness-test
 	rm -f java-consumer.persistence_file
-	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.robustness.RobustnessConsumerApplication" -Dexec.args="$DOMAIN http:mqtt" >> $ROBUSTNESS_RESULTS_DIR/consumer_java_$1.log 2>&1
+	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.robustness.RobustnessConsumerApplication" -Dexec.args="$DOMAIN mqtt" >> $ROBUSTNESS_RESULTS_DIR/consumer_java_$1.log 2>&1
 	SUCCESS=$?
 	if [ "$SUCCESS" != 0 ]
 	then
@@ -355,12 +375,13 @@ rm -f npm-debug.log
 rm -f joynr_participantIds.properties
 
 # prepare JavaScript
+npm run preinstall
 npm install
 npm install jasmine-node
 
 # run the checks
 #
-# Note that the services (jetty) need to be stopped once the
+# Note that the joynr backend services need to be stopped once the
 # provider is changed, since otherwise the discovery service
 # continues to return data for the already stopped provider
 # since it currently assumes that it will be restarted.

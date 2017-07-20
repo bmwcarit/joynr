@@ -3,7 +3,7 @@ package io.joynr.messaging.websocket;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,33 +19,37 @@ package io.joynr.messaging.websocket;
  * #L%
  */
 
-import java.io.IOException;
+import java.util.Set;
 
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.routing.MessageRouter;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
 /**
  *
  */
 public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMessagingSkeleton {
+    private static final Logger LOG = LoggerFactory.getLogger(WebSocketMessagingSkeleton.class);
 
     public final static String WEBSOCKET_IS_MAIN_TRANSPORT = "io.joynr.websocket.is.main.transport";
 
     private MessageRouter messageRouter;
-    private ObjectMapper objectMapper;
     private JoynrWebSocketEndpoint webSocketEndpoint;
     private WebSocketEndpointFactory webSocketEndpointFactory;
     private WebSocketAddress serverAddress;
     private boolean mainTransport;
+    private Set<JoynrMessageProcessor> messageProcessors;
 
     public static class MainTransportFlagBearer {
         @Inject(optional = true)
@@ -68,13 +72,13 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMes
     public WebSocketMessagingSkeleton(@Named(WebsocketModule.WEBSOCKET_SERVER_ADDRESS) WebSocketAddress serverAddress,
                                       WebSocketEndpointFactory webSocketEndpointFactory,
                                       MessageRouter messageRouter,
-                                      ObjectMapper objectMapper,
-                                      MainTransportFlagBearer mainTransportFlagBearer) {
+                                      MainTransportFlagBearer mainTransportFlagBearer,
+                                      Set<JoynrMessageProcessor> messageProcessors) {
         this.serverAddress = serverAddress;
         this.webSocketEndpointFactory = webSocketEndpointFactory;
         this.messageRouter = messageRouter;
-        this.objectMapper = objectMapper;
         this.mainTransport = mainTransportFlagBearer.isMainTransport();
+        this.messageProcessors = messageProcessors;
     }
 
     @Override
@@ -85,23 +89,23 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMes
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         try {
-            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType()) && this.isMainTransport()) {
+            ImmutableMessage message = new ImmutableMessage(serializedMessage);
+
+            LOG.debug("<<< INCOMING <<< {}", message);
+
+            if (messageProcessors != null) {
+                for (JoynrMessageProcessor processor : messageProcessors) {
+                    message = processor.processIncoming(message);
+                }
+            }
+
+            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType()) && this.isMainTransport()) {
                 message.setReceivedFromGlobal(true);
             }
             messageRouter.route(message);
-        } catch (Exception exception) {
-            failureAction.execute(exception);
-        }
-    }
-
-    @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
-        try {
-            JoynrMessage message = objectMapper.readValue(serializedMessage, JoynrMessage.class);
-            transmit(message, failureAction);
-        } catch (IOException error) {
+        } catch (Exception error) {
             failureAction.execute(error);
         }
     }

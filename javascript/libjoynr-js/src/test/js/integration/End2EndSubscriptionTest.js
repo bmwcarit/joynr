@@ -4,7 +4,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ define([
                         var safetyTimeout = 200;
                         var subscriptionQosOnChange;
                         var subscriptionQosInterval;
+                        var subscriptionQosMulticast;
                         var subscriptionQosMixed;
                         var radioProxy;
                         var abstractTest = new End2EndAbstractTest("End2EndSubscriptionTest");
@@ -82,6 +83,10 @@ define([
                                 subscriptionQosMixed = new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
                                     minIntervalMs : 100,
                                     maxIntervalMs : 1000
+                                });
+
+                                subscriptionQosMulticast = new joynr.proxy.MulticastSubscriptionQos({
+                                    validityMs : 100000
                                 });
 
                                 radioProxy = settings.radioProxy;
@@ -365,7 +370,7 @@ define([
 
                         it("subscribe to broadcastWithEnum", function(done) {
                             var mySpy;
-                            setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange).then(function(spy) {
+                            setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosMulticast).then(function(spy) {
                                 mySpy = spy;
                                 return callOperation("triggerBroadcasts", {
                                     broadcastName: "broadcastWithEnum",

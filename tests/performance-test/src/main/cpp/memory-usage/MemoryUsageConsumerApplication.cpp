@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #include <csignal>
 #include <cstdint>
 #include <string>
+#include <memory>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -118,11 +119,11 @@ int main(int argc, char* argv[])
 
     // Initialise the joynr runtime
     std::string pathToMessagingSettings(dir + "/resources/memory-usage-consumer.settings");
-    JoynrRuntime* runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
-    std::unique_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder;
-    proxyBuilder.reset(runtime->createProxyBuilder<tests::performance::EchoProxy>(providerDomain));
+    std::unique_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder =
+            runtime->createProxyBuilder<tests::performance::EchoProxy>(providerDomain);
 
     // Messaging Quality of service
     std::int64_t qosMsgTtl = 30000;                // Time to live is 30 secs in one direction
@@ -138,10 +139,9 @@ int main(int argc, char* argv[])
     std::unique_ptr<tests::performance::EchoProxy> proxy;
     try {
         JOYNR_LOG_DEBUG(logger, "About to call proxyBuilder");
-        proxy.reset(proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
-                            ->setCached(false)
-                            ->setDiscoveryQos(discoveryQos)
-                            ->build());
+        proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
+                        ->setDiscoveryQos(discoveryQos)
+                        ->build();
         JOYNR_LOG_DEBUG(logger, "Call to Proxybuilder successfully completed");
         if (proxy == nullptr) {
             throw new joynr::exceptions::JoynrRuntimeException("received proxy == nullptr");
@@ -160,6 +160,4 @@ int main(int argc, char* argv[])
         JOYNR_LOG_FATAL(logger, "Invalid choice for test case: {}", testCase);
         exit(1);
     }
-
-    delete runtime;
 }

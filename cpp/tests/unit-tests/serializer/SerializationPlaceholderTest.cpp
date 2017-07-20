@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,9 @@
 #include <muesli/streams/StringIStream.h>
 #include <muesli/streams/StringOStream.h>
 
-#include "MockArchive.h"
+#include "tests/unit-tests/serializer/MockArchive.h" // must be included prior to Serializer.h
 
+#include "joynr/serializer/Serializer.h"
 #include "joynr/serializer/SerializationPlaceholder.h"
 
 using namespace testing;

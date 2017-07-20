@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,14 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
-#include "tests/utils/MockObjects.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/serializer/Serializer.h"
-#include "JoynrTest.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 
@@ -40,9 +41,9 @@ public:
             routingDomain(),
             routingProviderParticipantId(),
             runtime(nullptr),
-            mockMessageReceiverHttp(std::make_shared<MockMessageReceiver>()),
-            mockMessageReceiverMqtt(std::make_shared<MockMessageReceiver>()),
-            mockMessageSender(std::make_shared<MockMessageSender>()),
+            mockMessageReceiverHttp(std::make_shared<MockTransportMessageReceiver>()),
+            mockMessageReceiverMqtt(std::make_shared<MockTransportMessageReceiver>()),
+            mockMessageSender(std::make_shared<MockTransportMessageSender>()),
             discoveryQos(),
             routingProxyBuilder(nullptr),
             routingProxy(nullptr)
@@ -68,9 +69,9 @@ public:
         std::string serializedChannelAddress = joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
         std::string serializedMqttAddress = joynr::serializer::serializeToJson(MqttAddress(mqttBrokerUrl, mqttTopic));
 
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
         //runtime can only be created, after MockMessageReceiver has been told to return
@@ -87,19 +88,19 @@ public:
 
     ~SystemServicesRoutingTest(){
         runtime->deleteChannel();
-        runtime->stopMessaging();
+        runtime->stopExternalCommunication();
         std::remove(settingsFilename.c_str());
     }
 
     void SetUp(){
         participantId = util::createUuid();
-        routingProxyBuilder.reset(
-                    runtime->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain));
+        isGloballyVisible = true;
+        routingProxyBuilder = runtime->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
     }
 
     void TearDown(){
         // Delete persisted files
-        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
@@ -111,14 +112,15 @@ protected:
     std::string routingDomain;
     std::string routingProviderParticipantId;
     std::unique_ptr<JoynrClusterControllerRuntime> runtime;
-    std::shared_ptr<IMessageReceiver> mockMessageReceiverHttp;
-    std::shared_ptr<IMessageReceiver> mockMessageReceiverMqtt;
-    std::shared_ptr<MockMessageSender> mockMessageSender;
+    std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
+    std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
+    std::shared_ptr<MockTransportMessageSender> mockMessageSender;
     DiscoveryQos discoveryQos;
     std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder;
     std::unique_ptr<joynr::system::RoutingProxy> routingProxy;
     std::string participantId;
-    
+    bool isGloballyVisible;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(SystemServicesRoutingTest);
 };
@@ -127,21 +129,19 @@ private:
 TEST_F(SystemServicesRoutingTest, routingProviderIsAvailable)
 {
     JOYNR_EXPECT_NO_THROW(
-        routingProxy.reset(routingProxyBuilder
+        routingProxy = routingProxyBuilder
                 ->setMessagingQos(MessagingQos(5000))
-                ->setCached(false)
                 ->setDiscoveryQos(discoveryQos)
-                ->build())
+                ->build()
     );
 }
 
 TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
 {
-    routingProxy.reset(routingProxyBuilder
+    routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     bool isResolvable = false;
     try {
@@ -155,11 +155,10 @@ TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
 
 TEST_F(SystemServicesRoutingTest, addNextHopHttp)
 {
-    routingProxy.reset(routingProxyBuilder
+    routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A", "SystemServicesRoutingTest.endPointUrl");
     bool isResolvable = false;
@@ -172,7 +171,7 @@ TEST_F(SystemServicesRoutingTest, addNextHopHttp)
     EXPECT_FALSE(isResolvable);
 
     try {
-        routingProxy->addNextHop(participantId, address);
+        routingProxy->addNextHop(participantId, address, isGloballyVisible);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "addNextHop was not successful";
     }
@@ -186,11 +185,10 @@ TEST_F(SystemServicesRoutingTest, addNextHopHttp)
 
 TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
 {
-    routingProxy.reset(routingProxyBuilder
+    routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     joynr::system::RoutingTypes::ChannelAddress address("SystemServicesRoutingTest.ChanneldId.A", "SystemServicesRoutingTest.endPointUrl");
     bool isResolvable = false;
@@ -203,7 +201,7 @@ TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
     EXPECT_FALSE(isResolvable);
 
     try {
-        routingProxy->addNextHop(participantId, address);
+        routingProxy->addNextHop(participantId, address, isGloballyVisible);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "addNextHop was not successful";
     }
@@ -230,11 +228,10 @@ TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
 
 TEST_F(SystemServicesRoutingTest, addNextHopMqtt)
 {
-    routingProxy.reset(routingProxyBuilder
+    routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     joynr::system::RoutingTypes::MqttAddress address("brokerUri", "SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
@@ -247,7 +244,7 @@ TEST_F(SystemServicesRoutingTest, addNextHopMqtt)
     EXPECT_FALSE(isResolvable);
 
     try {
-        routingProxy->addNextHop(participantId, address);
+        routingProxy->addNextHop(participantId, address, isGloballyVisible);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "addNextHop was not successful";
     }
@@ -261,11 +258,10 @@ TEST_F(SystemServicesRoutingTest, addNextHopMqtt)
 
 TEST_F(SystemServicesRoutingTest, removeNextHopMqtt)
 {
-    routingProxy.reset(routingProxyBuilder
+    routingProxy = routingProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
-            ->setCached(false)
             ->setDiscoveryQos(discoveryQos)
-            ->build());
+            ->build();
 
     joynr::system::RoutingTypes::MqttAddress address("brokerUri", "SystemServicesRoutingTest.ChanneldId.A");
     bool isResolvable = false;
@@ -278,7 +274,7 @@ TEST_F(SystemServicesRoutingTest, removeNextHopMqtt)
     EXPECT_FALSE(isResolvable);
 
     try {
-        routingProxy->addNextHop(participantId, address);
+        routingProxy->addNextHop(participantId, address, isGloballyVisible);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE()<< "addNextHop was not successful";
     }

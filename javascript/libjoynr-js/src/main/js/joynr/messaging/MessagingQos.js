@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,9 @@ define(
             var log = LoggerFactory.getLogger("joynr/messaging/MessagingQos");
             var defaultSettings = {
                 ttl : 60000,
-                customHeaders : {}
+                customHeaders : {},
+                encrypt : false,
+                compress : false
             };
 
             /**
@@ -40,6 +42,8 @@ define(
              *
              * @param {Object} [settings] the settings object for the constructor call
              * @param {Number} [settings.ttl] Roundtrip timeout for rpc requests, if missing default value is 60 seconds
+             * @param {Boolean} [settings.encrypt] Specifies whether messages will be sent encrypted
+             * @param {Boolean} [settings.compress] Specifies whether messages will be sent compressed
              * @param {MessagingQosEffort} [settings.effort] effort to expend on ensuring message delivery
              *
              * @returns {MessagingQos} a messaging Qos Object
@@ -91,6 +95,30 @@ define(
                  * @type MessagingQosEffort
                  */
                 this.effort = settings.effort;
+
+                /**
+                 * encrypt
+                 *
+                 * @name MessagingQos#encrypt
+                 * @type Boolean
+                 */
+                this.encrypt = settings.encrypt;
+
+                if (settings.encrypt !== true && settings.encrypt !== false) {
+                    throw new Error("encrypt may only contain a boolean");
+                }
+
+                /**
+                 * compress
+                 *
+                 * @name MessagingQos#compress
+                 * @type Boolean
+                 */
+                this.compress = settings.compress;
+
+                if (settings.compress !== true && settings.compress !== false) {
+                    throw new Error("compress may only contain a boolean");
+                }
 
                 /**
                  *
@@ -146,6 +174,24 @@ define(
              * @readonly
              */
             MessagingQos.DEFAULT_TTL = defaultSettings.ttl;
+
+            /**
+             * @name MessagingQos.DEFAULT_ENCRYPT
+             * @type Boolean
+             * @default false
+             * @static
+             * @readonly
+             */
+            MessagingQos.DEFAULT_ENCRYPT = defaultSettings.encrypt;
+
+            /**
+             * @name MessagingQos.DEFAULT_COMPRESS
+             * @type Boolean
+             * @default false
+             * @static
+             * @readonly
+             */
+            MessagingQos.DEFAULT_COMPRESS = defaultSettings.compress;
 
             return MessagingQos;
 

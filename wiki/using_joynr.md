@@ -31,7 +31,7 @@ Communication interfaces are contracts between providers and consumers defining 
 Arbitration is concerned with the rules in determining the preferred provider to communicate with. In the case where an application requests to communicate with a provider for which there are several matching implementations available (for example, a consumer requests a weather service for Munich, and joynr has several registered for Munich), the consumer must provide an arbitration strategy, which will be used to make the selection (cf. also section [Discovery](#discovery))
 
 
-## Capabilities directory
+## Capabilities (discovery) directory
 
 A capability states the domain and interface name for which a provider is registered.
 
@@ -125,8 +125,16 @@ then used to implement the Application modelled by the corresponding Franca file
 ## Runtime Environment
 joynr requires the following components to run:
 
-### Bounceproxy
-Responsible for message store and forward using Comet (currently long poll), based on the Atmosphere Framework.
+### MQTT Broker / HTTP Bounceproxy
+The default configuration communicates via MQTT and needs a MQTT broker (e.g.
+[Mosquitto](http://mosquitto.org)) listening on port 1883.
+If you configure your application to communicate via HTTP, the HTTP bounceproxy is required
+instead of the MQTT broker.
+
+#### HTTP bounceproxy
+joynr can also be configured to communicate via HTTP using Comet (currently long poll), based on the
+Atmosphere Framework. Instead of the MQTT broker, the HTTP bounceproxy is responsible for message
+store and forward in this case.
 
 After joynr has been built (see [Building joynr Java and common components](java_building_joynr.md)),
 you can run the bounceproxy directly within Maven (for test purposes). Just go into the bounceproxy
@@ -141,9 +149,15 @@ The bounceproxy is also tested with glassfish 3.1.2.2. See [Glassfish settings]
 >*Note: This is only for test purposes. You need to have Maven installed. Joynr is built and tested
 >with Maven 3.3.3, but more recent versions of Maven might also work.*
 
-### Discovery Directories
+### Global Discovery Directory
 Centralized directory to discover providers for a given domain and interface.
+There are two variant of the discovery directory, one using MQTT communication (default) and one
+using HTTP communication.
 
+#### MQTT (default)
+See [Infrastructure](infrastructure.md).
+
+#### HTTP
 Run the discovery directories locally along with the bounceproxy:
 
 1. Build and install the whole joynr project from the root directory (see [Building joynr Java and

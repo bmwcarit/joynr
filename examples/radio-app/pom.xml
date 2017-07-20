@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2015 BMW Car IT GmbH
+  Copyright (C) 2011 - 2017 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>0.23.0-SNAPSHOT</version>
+		<version>0.28.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -86,11 +86,18 @@
 			<version>2.12</version>
 		</dependency>
 
+		<!-- Command line parsing used in the demo app -->
+		<dependency>
+			<groupId>commons-cli</groupId>
+			<artifactId>commons-cli</artifactId>
+			<version>1.4</version>
+		</dependency>
+
 		<!--
 			The following dependencies are only required for convenience
 			and are not required for the demo app itself.
-			They allow to run a jetty server that contains the minimum
-			backend
+			They allow to run a jetty server / JEE application server (e.g. Payara)
+			that contains the minimum backend
 		-->
 		<dependency>
 			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
@@ -98,17 +105,28 @@
 			<version>${joynr.version}</version>
 			<type>war</type>
 		</dependency>
-
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
 			<artifactId>discovery-directory-servlet</artifactId>
 			<version>${joynr.version}</version>
 			<type>war</type>
 		</dependency>
-
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
 			<artifactId>domain-access-controller-servlet</artifactId>
+			<version>${joynr.version}</version>
+			<type>war</type>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.backend-services</groupId>
+			<artifactId>discovery-directory-jee</artifactId>
+			<version>${joynr.version}</version>
+			<type>war</type>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.backend-services</groupId>
+			<artifactId>domain-access-controller-jee</artifactId>
 			<version>${joynr.version}</version>
 			<type>war</type>
 		</dependency>
@@ -274,20 +292,45 @@
 			<!--
 				The following plugins are only required for convenience
 				and are not required for the demo app itself.
-				They allow to run a jetty server that contains the minimum
-				backend
+				They allow to run a jetty server / JEE application server (e.g. Payara)
+				that contains the minimum backend
 			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>copy-backend-services</id>
-						<!--
-							NOTE: jetty:run runs in phase test-compile. Hence, backend services
-							must be copied at latest in the process-test-resources phase.
-						-->
-						<phase>process-test-resources</phase>
+						<id>copy-backend-services-jee</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>io.joynr.java.backend-services</groupId>
+									<artifactId>domain-access-controller-jee</artifactId>
+									<version>${joynr.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>accesscontrol-jee.war</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>io.joynr.java.backend-services</groupId>
+									<artifactId>discovery-directory-jee</artifactId>
+									<version>${joynr.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<destFileName>discovery-jee.war</destFileName>
+								</artifactItem>
+							</artifactItems>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-backend-services-http</id>
+						<phase>initialize</phase>
 						<goals>
 							<goal>copy</goal>
 						</goals>

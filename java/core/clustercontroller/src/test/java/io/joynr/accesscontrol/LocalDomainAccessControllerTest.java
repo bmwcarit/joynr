@@ -3,7 +3,7 @@ package io.joynr.accesscontrol;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,21 +36,18 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
-import joynr.OnChangeSubscriptionQos;
+import joynr.MulticastSubscriptionQos;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
-import joynr.infrastructure.GlobalDomainAccessControllerProxy;
+import joynr.infrastructure.GlobalDomainRoleControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
+import joynr.infrastructure.GlobalDomainRoleControllerProxy;
 import joynr.types.GlobalDiscoveryEntry;
 import net.sf.ehcache.CacheManager;
 import org.junit.After;
@@ -83,8 +80,6 @@ public class LocalDomainAccessControllerTest {
     @Mock
     private LocalDiscoveryAggregator localDiscoveryAggregator;
     @Mock
-    private MessageRouter messageRouter;
-    @Mock
     private Dispatcher dispatcher;
 
     @SuppressWarnings("unchecked")
@@ -99,16 +94,13 @@ public class LocalDomainAccessControllerTest {
                                                       any(String.class),
                                                       any(DiscoveryQos.class),
                                                       any(MessagingQos.class))).thenReturn(proxyInvocationHandlerMock);
-        InProcessAddress libjoynrMessagingAddress = new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         GlobalDiscoveryEntry accessControlDomain = mock(GlobalDiscoveryEntry.class);
         when(accessControlDomain.getDomain()).thenReturn("accessControlDomain");
         localDomainAccessController = new LocalDomainAccessControllerImpl(accessControlDomain,
                                                                           domainAccessControlStore,
                                                                           new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                                                                       proxyInvocationHandlerFactoryMock,
-                                                                                                      messageRouter,
-                                                                                                      MAX_TTL,
-                                                                                                      libjoynrMessagingAddress),
+                                                                                                      MAX_TTL),
                                                                           "systemServiceDomain");
 
         // instantiate some template objects
@@ -142,14 +134,13 @@ public class LocalDomainAccessControllerTest {
         domainAccessControlStore.updateDomainRole(userDre);
 
         assertTrue("UID1 should have role OWNER in DRT", localDomainAccessController.hasRole(UID1, DOMAIN1, Role.OWNER));
-        assertFalse("UID1 should not have role MASTER in DRT", localDomainAccessController.hasRole(UID1,
-                                                                                                   DOMAIN1,
-                                                                                                   Role.MASTER));
+        assertFalse("UID1 should not have role MASTER in DRT",
+                    localDomainAccessController.hasRole(UID1, DOMAIN1, Role.MASTER));
 
-        Method method = GlobalDomainAccessControllerProxy.class.getMethod("subscribeToDomainRoleEntryChangedBroadcast",
-                                                                          DomainRoleEntryChangedBroadcastListener.class,
-                                                                          OnChangeSubscriptionQos.class,
-                                                                          String[].class);
+        Method method = GlobalDomainRoleControllerProxy.class.getMethod("subscribeToDomainRoleEntryChangedBroadcast",
+                                                                        DomainRoleEntryChangedBroadcastListener.class,
+                                                                        MulticastSubscriptionQos.class,
+                                                                        String[].class);
         verify(proxyInvocationHandlerMock, times(1)).invoke(any(Object.class), eq(method), any(Object[].class));
     }
 

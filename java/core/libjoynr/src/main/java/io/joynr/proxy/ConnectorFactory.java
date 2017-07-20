@@ -3,7 +3,7 @@ package io.joynr.proxy;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,11 @@ import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.Address;
+import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.ProviderScope;
+
+import java.util.Set;
+
 import javax.annotation.CheckForNull;
 import javax.inject.Named;
 import io.joynr.runtime.SystemServicesSettings;
@@ -59,9 +64,20 @@ public class ConnectorFactory {
     public ConnectorInvocationHandler create(final String fromParticipantId,
                                              final ArbitrationResult arbitrationResult,
                                              final MessagingQos qosSettings) {
-        messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress);
+        // iterate through  arbitrationResult.getDiscoveryEntries()
+        // check if there is at least one Globally visible
+        // set isGloballyVisible = true. otherwise = false
+        boolean isGloballyVisible = false;
+        Set<DiscoveryEntryWithMetaInfo> entries = arbitrationResult.getDiscoveryEntries();
+        for (DiscoveryEntryWithMetaInfo entry : entries) {
+            if (entry.getQos().getScope() == ProviderScope.GLOBAL) {
+                isGloballyVisible = true;
+                break;
+            }
+        }
+        messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress, isGloballyVisible);
         return joynrMessagingConnectorFactory.create(fromParticipantId,
-                                                     arbitrationResult.getParticipantIds(),
+                                                     arbitrationResult.getDiscoveryEntries(),
                                                      qosSettings);
 
     }

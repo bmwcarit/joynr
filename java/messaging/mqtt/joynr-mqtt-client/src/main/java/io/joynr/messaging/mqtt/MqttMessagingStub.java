@@ -3,7 +3,7 @@ package io.joynr.messaging.mqtt;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,67 +19,51 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.JoynrMessageSerializer;
+import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingQosEffort;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
  * Messaging stub used to send messages to a MQTT Broker
  */
-public class MqttMessagingStub implements IMessaging {
+public class MqttMessagingStub implements IMessagingStub {
+    private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingStub.class);
 
     public static final int DEFAULT_QOS_LEVEL = 1;
     public static final int BEST_EFFORT_QOS_LEVEL = 0;
 
     private static final String PRIORITY_LOW = "/low/";
-    private static final String RAW = PRIORITY_LOW + "raw";
     private MqttAddress address;
     private JoynrMqttClient mqttClient;
-    private JoynrMessageSerializer messageSerializer;
-    private MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator;
 
-    public MqttMessagingStub(MqttAddress address,
-                             JoynrMqttClient mqttClient,
-                             JoynrMessageSerializer messageSerializer,
-                             MqttMessageReplyToAddressCalculator mqttMessageReplyToAddressCalculator) {
+    public MqttMessagingStub(MqttAddress address, JoynrMqttClient mqttClient) {
         this.address = address;
         this.mqttClient = mqttClient;
-        this.messageSerializer = messageSerializer;
-        this.mqttMessageReplyToAddressCalculator = mqttMessageReplyToAddressCalculator;
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
-        mqttMessageReplyToAddressCalculator.setReplyTo(message);
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
+        LOG.debug(">>> OUTGOING >>> {}", message);
         String topic = address.getTopic();
-        if (!JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-            topic += PRIORITY_LOW + message.getTo();
+        if (!Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            topic += PRIORITY_LOW + message.getRecipient();
         }
-        String serializedMessage = messageSerializer.serialize(message);
+
         int qosLevel = DEFAULT_QOS_LEVEL;
-        String effortHeaderValue = message.getHeaderValue(JoynrMessage.HEADER_NAME_EFFORT);
+        String effortHeaderValue = message.getEffort();
         if (effortHeaderValue != null && String.valueOf(MessagingQosEffort.BEST_EFFORT).equals(effortHeaderValue)) {
             qosLevel = BEST_EFFORT_QOS_LEVEL;
         }
         try {
-            mqttClient.publishMessage(topic, serializedMessage, qosLevel);
+            mqttClient.publishMessage(topic, message.getSerializedMessage(), qosLevel);
         } catch (Exception error) {
             failureAction.execute(error);
         }
     }
-
-    @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
-        // Unable to access participantId, so publishing to RAW topic
-        String topic = address.getTopic() + RAW;
-        try {
-            mqttClient.publishMessage(topic, serializedMessage);
-        } catch (Exception error) {
-            failureAction.execute(error);
-        }
-    }
-
 }

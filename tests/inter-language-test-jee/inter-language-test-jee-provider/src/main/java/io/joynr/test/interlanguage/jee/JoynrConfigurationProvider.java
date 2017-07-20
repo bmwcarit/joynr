@@ -3,7 +3,7 @@ package io.joynr.test.interlanguage.jee;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,9 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8383/bounceproxy/");
         joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
-                                    "http://localhost:8383/discovery/channels/discoverydirectory_channelid/");
+                                    "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL,
-                                    "http://localhost:8383/discovery/channels/discoverydirectory_channelid/");
+                                    "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "ilt-jee-provider-joynr.properties");
 
         return joynrProperties;

@@ -3,7 +3,7 @@ package io.joynr.messaging.http.operation;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,7 +112,9 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "IS2_INCONSISTENT_SYNC", justification = "shutdown is locked using the shutdownSynchronizer object")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+                                                      value = "IS2_INCONSISTENT_SYNC",
+                                                      justification = "shutdown is locked using the shutdownSynchronizer object")
     public void shutdown(boolean clear) {
         logger.info("SHUTTING DOWN long polling message receiver");
 

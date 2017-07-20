@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@
  */
 #ifndef ILTABSTRACTCONSUMERTEST_H
 #define ILTABSTRACTCONSUMERTEST_H
+#include <chrono>
 #include <cstdlib>
+#include <memory>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -67,7 +69,6 @@ public:
 
         // Build a proxy
         testInterfaceProxy = proxyBuilder->setMessagingQos(joynr::MessagingQos(qosMsgTtl))
-                                     ->setCached(false)
                                      ->setDiscoveryQos(discoveryQos)
                                      ->build();
 
@@ -78,18 +79,9 @@ public:
 
     static void TearDownTestCase()
     {
-        if (testInterfaceProxy) {
-            delete testInterfaceProxy;
-            testInterfaceProxy = nullptr;
-        }
-        if (proxyBuilder) {
-            delete proxyBuilder;
-            proxyBuilder = nullptr;
-        }
-        if (runtime) {
-            delete runtime;
-            runtime = nullptr;
-        }
+        testInterfaceProxy.reset();
+        proxyBuilder.reset();
+        runtime.reset();
     }
 
 protected:
@@ -104,11 +96,15 @@ protected:
         }
     }
 
-    static joynr::interlanguagetest::TestInterfaceProxy* testInterfaceProxy;
-    static joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>* proxyBuilder;
-    static joynr::JoynrRuntime* runtime;
+    static std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy> testInterfaceProxy;
+    static std::unique_ptr<joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>>
+            proxyBuilder;
+    static std::unique_ptr<joynr::JoynrRuntime> runtime;
     static std::string providerDomain;
     static std::string programName;
+
+    static const std::uint16_t subscriptionIdFutureTimeoutMs;
+    static const std::chrono::milliseconds publicationTimeoutMs;
 
     ADD_LOGGER(IltAbstractConsumerTest);
 
@@ -125,15 +121,15 @@ template <typename T>
 INIT_LOGGER(IltAbstractConsumerTest<T>);
 
 template <typename T>
-joynr::interlanguagetest::TestInterfaceProxy* IltAbstractConsumerTest<T>::testInterfaceProxy =
-        nullptr;
+std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy>
+        IltAbstractConsumerTest<T>::testInterfaceProxy;
 
 template <typename T>
-ProxyBuilder<interlanguagetest::TestInterfaceProxy>* IltAbstractConsumerTest<T>::proxyBuilder =
-        nullptr;
+std::unique_ptr<ProxyBuilder<interlanguagetest::TestInterfaceProxy>>
+        IltAbstractConsumerTest<T>::proxyBuilder;
 
 template <typename T>
-JoynrRuntime* IltAbstractConsumerTest<T>::runtime = nullptr;
+std::unique_ptr<JoynrRuntime> IltAbstractConsumerTest<T>::runtime;
 
 template <typename T>
 std::string IltAbstractConsumerTest<T>::providerDomain = "joynr-inter-language-test-domain";
@@ -141,8 +137,11 @@ std::string IltAbstractConsumerTest<T>::providerDomain = "joynr-inter-language-t
 template <typename T>
 std::string IltAbstractConsumerTest<T>::programName;
 
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
+template <typename T>
+const std::uint16_t IltAbstractConsumerTest<T>::subscriptionIdFutureTimeoutMs = 10000;
+
+template <typename T>
+const std::chrono::milliseconds IltAbstractConsumerTest<T>::publicationTimeoutMs =
+        std::chrono::milliseconds(10000);
+
 #endif // ILTABSTRACTCONSUMERTEST_H

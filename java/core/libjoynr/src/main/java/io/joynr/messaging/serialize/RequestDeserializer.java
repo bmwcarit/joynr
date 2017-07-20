@@ -3,7 +3,7 @@ package io.joynr.messaging.serialize;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,16 +30,13 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 
-import io.joynr.dispatcher.rpc.ReflectionUtils;
 import joynr.Request;
 
 /**
- * Deserializer for Requests that uses the correct datatype while deserializing.
- * This is especially necessary for arrays, which are otherwise deserialized to
- * Object[]
- *
+ * Deserializer for Requests that uses the correct datatypes while deserializing.
+ * This is especially necessary for enums, which are otherwise deserialized to String,
+ * and arrays, which are otherwise deserialized to Object[]
  */
 public class RequestDeserializer extends JsonDeserializer<Request> {
     private static final Logger logger = LoggerFactory.getLogger(RequestDeserializer.class);
@@ -51,49 +48,22 @@ public class RequestDeserializer extends JsonDeserializer<Request> {
     }
 
     /* (non-Javadoc)
-     * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
+     * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser,
+     * com.fasterxml.jackson.databind.DeserializationContext)
      */
     @Override
     public Request deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-
         JsonNode node = jp.getCodec().readTree(jp);
         String methodName = node.get("methodName").asText();
         String requestReplyId = node.get("requestReplyId").asText();
-        String[] paramDatatypes;
-        Object[] params;
-        Class<?>[] javaClasses = null;
 
-        ArrayNode paramDatatypesNode = (ArrayNode) node.get("paramDatatypes");
-        if (paramDatatypesNode != null) {
-            paramDatatypes = new String[paramDatatypesNode.size()];
-            int i = 0;
-            for (final JsonNode paramDatatypeNode : paramDatatypesNode) {
-                paramDatatypes[i] = paramDatatypeNode.asText();
-                i++;
-            }
-            javaClasses = ReflectionUtils.toJavaClasses(paramDatatypes);
-        } else {
-            paramDatatypes = new String[0];
-        }
+        ParamsAndParamDatatypesHolder paramsAndParamDatatypes = DeserializerUtils.deserializeParams(objectMapper,
+                                                                                                    node,
+                                                                                                    logger);
 
-        ArrayNode paramsNode = (ArrayNode) node.get("params");
-        if (paramsNode != null && javaClasses != null) {
-            params = new Object[paramsNode.size()];
-            int i = 0;
-            for (final JsonNode paramNode : paramsNode) {
-                try {
-                    params[i] = objectMapper.treeToValue(paramNode, javaClasses[i]);
-                } catch (Exception e) {
-                    logger.error("unable to deserialize to " + javaClasses[i]);
-                    params[i] = null;
-                }
-                i++;
-            }
-        } else {
-            params = new Object[0];
-        }
-
-        return new Request(methodName, params, paramDatatypes, requestReplyId);
-
+        return new Request(methodName,
+                           paramsAndParamDatatypes.params,
+                           paramsAndParamDatatypes.paramDatatypes,
+                           requestReplyId);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-
-#include "MockArchive.h"
-#include "joynr/serializer/Serializer.h"
-
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
+#include "tests/unit-tests/serializer/MockArchive.h" // must be included prior to Serializer.h
+#include "joynr/serializer/Serializer.h"
+
 
 template <typename ExpectedArchive>
 struct DemoType

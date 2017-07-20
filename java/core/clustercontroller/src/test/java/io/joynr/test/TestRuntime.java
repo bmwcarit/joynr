@@ -3,7 +3,7 @@ package io.joynr.test;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,6 @@ import io.joynr.runtime.JoynrRuntime;
 import joynr.types.ProviderQos;
 
 public class TestRuntime implements JoynrRuntime {
-
-    @Deprecated
-    @Override
-    public Future<Void> registerProvider(String domain, AbstractJoynrProvider provider) {
-        return null;
-    }
-
     @Override
     public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
         return null;

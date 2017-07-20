@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,5 +144,11 @@ typeCollection {
       be reached. The address is a subclass of <code>Address</code> and is stored as a JSON string.
 		**>
 		String address
+	}
+
+	<** @description: Used for lookups between libjoynr and a cluster controller. Contains additional information **>
+	struct DiscoveryEntryWithMetaInfo extends DiscoveryEntry {
+		<** @description: Indicates whether a provider is registered at the local cluster controller **>
+		Boolean isLocal
 	}
 }

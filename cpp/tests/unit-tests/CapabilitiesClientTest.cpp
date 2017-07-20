@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "cluster-controller/capabilities-client/CapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
@@ -47,8 +47,6 @@ TEST_F(CapabilitiesClientTestFixture, callWithoutSetProxyBuilder)
 {
     // prepare test data
     joynr::types::GlobalDiscoveryEntry aCapabilitiesInformation;
-    std::vector<types::GlobalDiscoveryEntry> capabilitiesInformationList;
-    capabilitiesInformationList.push_back(aCapabilitiesInformation);
     std::vector<std::string> participantIds = {"aParticipantIDinAvector"};
     auto onSuccess = [](const std::vector<joynr::types::GlobalDiscoveryEntry>& result) {
         std::ignore = result;
@@ -61,7 +59,10 @@ TEST_F(CapabilitiesClientTestFixture, callWithoutSetProxyBuilder)
     EXPECT_CALL(*(proxyBuilder.get()), setMessagingQos(_)).Times(0);
     EXPECT_CALL(*(proxyBuilder.get()), setDiscoveryQos(_)).Times(0);
 
-    EXPECT_DEATH(capClient->add(capabilitiesInformationList), "Assertion.*");
+    EXPECT_DEATH(capClient->add(aCapabilitiesInformation,
+                                [](){},
+                                [](const joynr::exceptions::JoynrRuntimeException& /*exception*/){}),
+                 "Assertion.*");
     EXPECT_DEATH(capClient->remove("aParticipantID"), "Assertion.*");
     EXPECT_DEATH(capClient->remove(participantIds), "Assertion.*");
     EXPECT_DEATH(capClient->lookup({"domain"}, "interface", 0), "Assertion.*");

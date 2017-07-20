@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(inter-language-test-0.23.0-SNAPSHOT)
+project(inter-language-test-0.28.0-SNAPSHOT)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -23,7 +23,7 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.23.0 REQUIRED)
+find_package(Joynr 0.28.0 REQUIRED)
 
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
@@ -221,9 +221,11 @@ if(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
     set(JOYNR_SERVER_HTTP_PORT "8080")
 endif(NOT DEFINED JOYNR_SERVER_HTTP_PORT)
 
+if(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
+    set(JOYNR_SERVER_MQTT_PORT "1883")
+endif(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.settings)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-provider.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-provider.dbus.settings)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-consumer.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-consumer.settings)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/ilt-consumer.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/ilt-consumer.dbus.settings)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.messaging.settings)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.dbus.settings)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.mqtt.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.mqtt.messaging.settings)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.http.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.http.messaging.settings)

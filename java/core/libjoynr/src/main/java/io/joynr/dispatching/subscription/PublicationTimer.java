@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,8 @@ public class PublicationTimer extends PubSubTimerBase {
         SubscriptionQos qos = publicationInformation.getQos();
 
         this.publicationInformation = publicationInformation;
-        this.publicationTtl = qos.getPublicationTtlMs();
+
+        this.publicationTtl = publicationInformation.getQos().getPublicationTtlMs();
 
         boolean hasSubscriptionHeartBeat = qos instanceof HeartbeatSubscriptionInformation;
         boolean isOnChangeSubscription = qos instanceof OnChangeSubscriptionQos;

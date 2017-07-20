@@ -3,7 +3,7 @@ package io.joynr.capabilities;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
+import joynr.types.ProviderScope;
 
 @Singleton
 public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
@@ -85,6 +86,9 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
      */
     @Override
     public Future<Void> registerProvider(final String domain, Object provider, ProviderQos providerQos) {
+        if (providerQos == null) {
+            throw new JoynrRuntimeException("providerQos == null. It must not be null");
+        }
         ProviderContainer providerContainer = providerContainerFactory.create(provider);
         String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                              providerContainer.getInterfaceName());
@@ -97,8 +101,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                            System.currentTimeMillis(),
                                                            System.currentTimeMillis() + defaultExpiryTimeMs,
                                                            defaultPublicKeyId);
-
-        messageRouter.addNextHop(participantId, libjoynrMessagingAddress);
+        final boolean isGloballyVisible = (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
+        messageRouter.addNextHop(participantId, libjoynrMessagingAddress, isGloballyVisible);
         providerDirectory.add(participantId, providerContainer);
 
         Callback<Void> callback = new Callback<Void>() {
@@ -134,22 +138,4 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         localDiscoveryAggregator.remove(callback, participantId);
         providerDirectory.remove(participantId);
     }
-
-    @Override
-    public void shutdown(boolean unregisterAllRegisteredCapabilities) {
-        /* save added capabilities to unregister at shutdown ?
-        if(unregisterAllRegisteredCapabilities) {
-            for (Map.Entry<String, JoynrProvider> entry : registeredLocalProviders.entrySet()) {
-                String domain = entry.getKey();
-                JoynrProvider joynrProvider = entry.getValue();
-                unregisterProvider(domain, joynrProvider);
-            }
-        }
-        registeredLocalProviders.clear();
-         */
-        if (unregisterAllRegisteredCapabilities) {
-            logger.warn("unregisterAllRegisteredCapabilities is not implemented!");
-        }
-    }
-
 }

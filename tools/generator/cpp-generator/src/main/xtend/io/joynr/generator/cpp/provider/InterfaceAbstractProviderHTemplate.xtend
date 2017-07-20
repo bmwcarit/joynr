@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.provider
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public:
 	 * @brief Get the interface name
 	 * @return The name of the interface
 	 */
-	std::string getInterfaceName() const override;
+	const std::string& getInterfaceName() const override;
 «IF !francaIntf.attributes.isNullOrEmpty || !francaIntf.broadcasts.isNullOrEmpty»
 
     «FOR broadcast: francaIntf.broadcasts»

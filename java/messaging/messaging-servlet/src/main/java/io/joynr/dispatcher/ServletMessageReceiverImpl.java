@@ -3,7 +3,7 @@ package io.joynr.dispatcher;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +93,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     }
 
     @Override
-    public void receive(JoynrMessage message) {
+    public void receive(ImmutableMessage message) {
         if (message != null) {
 
             logger.debug("\r\n<<<<<<<< ARRIVED ON CHANNEL: " + channelId + " messageId: {}\r\n{}",
@@ -107,7 +107,7 @@ public class ServletMessageReceiverImpl implements ServletMessageReceiver {
     }
 
     @Override
-    public void onError(JoynrMessage message, Throwable error) {
+    public void onError(ImmutableMessage message, Throwable error) {
         if (messageListener == null) {
             logger.error("\r\n!!!! Dropped Message {}", message, error);
         } else {

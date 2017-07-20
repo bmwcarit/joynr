@@ -3,7 +3,7 @@ package io.joynr.generator.interfaces
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,9 @@ import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.OnChangeSubscriptionQos;
 import joynr.BroadcastFilterParameters;
+«IF hasNonSelectiveBroadcast»
+import joynr.MulticastSubscriptionQos;
+«ENDIF»
 
 «FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, false, true, false)»
 	import «datatype»;
@@ -114,14 +117,14 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 		@JoynrMulticast(name = "«broadcastName»")
 		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				«listenerInterface» subscriptionListener,
-				OnChangeSubscriptionQos subscriptionQos,
+				MulticastSubscriptionQos subscriptionQos,
 				String... partitions);
 
 		@JoynrMulticast(name = "«broadcastName»")
 		abstract Future<String> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				String subscriptionId,
 				«listenerInterface» subscriptionListener,
-				OnChangeSubscriptionQos subscriptionQos,
+				MulticastSubscriptionQos subscriptionQos,
 				String... partitions);
 	«ENDIF»
 

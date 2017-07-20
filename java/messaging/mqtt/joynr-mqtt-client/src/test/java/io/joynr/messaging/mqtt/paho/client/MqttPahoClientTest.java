@@ -3,7 +3,7 @@ package io.joynr.messaging.mqtt.paho.client;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,16 +31,22 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.google.common.base.Charsets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
+import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.NoOpRawMessagingPreprocessor;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttModule;
@@ -57,7 +63,7 @@ public class MqttPahoClientTest {
     private MqttClientFactory mqttClientFactory;
     private MqttAddress ownTopic;
     @Mock
-    private IMessaging mockReceiver;
+    private IMessagingSkeleton mockReceiver;
     @Mock
     private MessageRouter mockMessageRouter;
     private JoynrMqttClient client;
@@ -81,6 +87,14 @@ public class MqttPahoClientTest {
         Properties properties = new Properties();
         properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS, "100");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC, "60");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC, "30");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS, "-1");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
+        properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
+        properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "");
+        properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MessagingPropertyKeys.CHANNELID, "myChannelId");
 
         injector = Guice.createInjector(new MqttPahoModule(),
@@ -92,10 +106,15 @@ public class MqttPahoClientTest {
                                                 bind(MessageRouter.class).toInstance(mockMessageRouter);
                                                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                                                     .toInstance(Executors.newScheduledThreadPool(10));
+                                                bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
+                                                Multibinder.newSetBinder(binder(),
+                                                                         new TypeLiteral<JoynrMessageProcessor>() {
+                                                                         });
                                             }
                                         });
         mqttClientFactory = injector.getInstance(MqttClientFactory.class);
-        ownTopic = injector.getInstance((Key.get(MqttAddress.class, Names.named(MqttModule.PROPERTY_MQTT_ADDRESS))));
+        ownTopic = injector.getInstance((Key.get(MqttAddress.class,
+                                                 Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))));
 
         client = mqttClientFactory.create();
         client.start();
@@ -108,9 +127,10 @@ public class MqttPahoClientTest {
     }
 
     @Test
-    public void mqqtClientTest() throws Exception {
+    public void mqttClientTest() throws Exception {
         client.setMessageListener(mockReceiver);
-        String serializedMessage = "test";
+        String message = "test";
+        byte[] serializedMessage = message.getBytes(Charsets.UTF_8);
         client.publishMessage(ownTopic.getTopic(), serializedMessage);
         verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
         client.shutdown();

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,79 +19,37 @@
 #ifndef ABSTRACTJOYNRMESSAGINGCONNECTOR_H
 #define ABSTRACTJOYNRMESSAGINGCONNECTOR_H
 
-#include <cassert>
-#include <string>
 #include <memory>
-#include <boost/any.hpp>
+#include <string>
 
-#include "joynr/Reply.h"
-#include "joynr/Request.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/Logger.h"
-#include "joynr/IClientCache.h"
-#include "joynr/DispatcherUtils.h"
-#include "joynr/IConnector.h"
-#include "joynr/IReplyCaller.h"
-#include "joynr/ReplyCaller.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/Logger.h"
+#include "joynr/MessagingQos.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
 
-class IJoynrMessageSender;
+class IMessageSender;
+class IReplyCaller;
 class ISubscriptionManager;
+class OneWayRequest;
+class Request;
 
-class JOYNR_EXPORT AbstractJoynrMessagingConnector : public IConnector
+class JOYNR_EXPORT AbstractJoynrMessagingConnector
 {
 public:
-    AbstractJoynrMessagingConnector(IJoynrMessageSender* joynrMessageSender,
-                                    ISubscriptionManager* subscriptionManager,
-                                    const std::string& domain,
-                                    const std::string& interfaceName,
-                                    const std::string& proxyParticipantId,
-                                    const std::string& providerParticipantId,
-                                    const MessagingQos& qosSettings,
-                                    IClientCache* cache,
-                                    bool cached);
-    bool usesClusterController() const override;
-    ~AbstractJoynrMessagingConnector() override = default;
+    AbstractJoynrMessagingConnector(
+            std::shared_ptr<IMessageSender> messageSender,
+            std::shared_ptr<ISubscriptionManager> subscriptionManager,
+            const std::string& domain,
+            const std::string& interfaceName,
+            const std::string& proxyParticipantId,
+            const MessagingQos& qosSettings,
+            const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry);
 
-    /**
-     * @brief Makes a request and returns the received response via the callback.
-     *
-     * @param methodName
-     * @param replyCaller
-
-     */
-    template <typename T>
-    void attributeRequest(const std::string& methodName, std::shared_ptr<IReplyCaller> replyCaller)
-    {
-        std::string attributeID = domain + ":" + interfaceName + ":" + methodName;
-        T* entryValue;
-        if (cached) {
-            boost::any entry = cache->lookUp(attributeID);
-            if (entry.empty()) {
-                JOYNR_LOG_DEBUG(logger, "Cached value for {}  is not valid", methodName);
-            } else if (!(entryValue = boost::any_cast<T>(&entry))) {
-                JOYNR_LOG_DEBUG(
-                        logger, "Cached value for {}  cannot be converted to type T", methodName);
-                assert(false);
-            } else {
-                JOYNR_LOG_DEBUG(logger, "Returning cached value for method {}", methodName);
-                std::shared_ptr<ReplyCaller<T>> typedReplyCaller =
-                        std::dynamic_pointer_cast<ReplyCaller<T>>(replyCaller);
-                typedReplyCaller->returnValue(*entryValue);
-            }
-        } else {
-            Request request;
-            // explicitly set to no parameters
-            request.setParams();
-            request.setMethodName(methodName);
-            sendRequest(request, replyCaller);
-            // TODO the retrieved values are never stored into the cache.
-        }
-    }
+    virtual ~AbstractJoynrMessagingConnector() = default;
 
     /**
      * @brief Makes a request and returns the received response via the callback.
@@ -99,27 +57,22 @@ public:
      * @param replyCaller
      * @param request
      */
-    void operationRequest(std::shared_ptr<IReplyCaller> replyCaller, const Request& request);
-    void operationOneWayRequest(const OneWayRequest& request);
+    void operationRequest(std::shared_ptr<IReplyCaller> replyCaller, Request&& request);
+    void operationOneWayRequest(OneWayRequest&& request);
 
 protected:
-    IJoynrMessageSender* joynrMessageSender;
-    ISubscriptionManager* subscriptionManager;
+    std::shared_ptr<IMessageSender> messageSender;
+    std::shared_ptr<ISubscriptionManager> subscriptionManager;
     std::string domain;
     std::string interfaceName;
     std::string proxyParticipantId;
     std::string providerParticipantId;
     MessagingQos qosSettings;
-    IClientCache* cache;
-    bool cached;
+    types::DiscoveryEntryWithMetaInfo providerDiscoveryEntry;
     ADD_LOGGER(AbstractJoynrMessagingConnector);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrMessagingConnector);
-
-    // Request jsonRequest;
-    void sendRequest(const Request& request, std::shared_ptr<IReplyCaller> replyCaller);
-    void sendOneWayRequest(const OneWayRequest& request);
 };
 
 } // namespace joynr

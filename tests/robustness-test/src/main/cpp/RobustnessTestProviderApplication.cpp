@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 
     // Initialize the joynr runtime
     std::string pathToLibJoynrSettings(dir + "/resources/robustness-test-provider.settings");
-    std::unique_ptr<JoynrRuntime> runtime(JoynrRuntime::createRuntime(pathToLibJoynrSettings));
+    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToLibJoynrSettings);
 
     // create provider instance
     std::shared_ptr<joynr::RobustnessTestProvider> provider(new joynr::RobustnessTestProvider());

@@ -16,8 +16,8 @@ function _sed {
 
 oldVersion=$1
 newVersion=$2
-oldVersionWithoutSuffix=`echo $oldVersion | sed -e "s/-.\+//g"`
-newVersionWithoutSuffix=`echo $newVersion | sed -e "s/-.\+//g"`
+oldVersionWithoutSuffix=`echo $oldVersion | sed -e "s/-.*//g"`
+newVersionWithoutSuffix=`echo $newVersion | sed -e "s/-.*//g"`
 IFS='.' read -a version <<< "$newVersionWithoutSuffix"
 
 _sed 's/set(JOYNR_MAJOR_VERSION .*)/set(JOYNR_MAJOR_VERSION '${version[0]}')/g' cpp/CMakeLists.txt

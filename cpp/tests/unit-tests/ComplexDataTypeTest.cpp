@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,31 +18,13 @@
  */
 
 #include <string>
+#include <unordered_map>
 
 #include <gtest/gtest.h>
 
-#include "joynr/types/TestTypes/TStructExtended.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "joynr/Logger.h"
 
-using namespace joynr::types;
-
-class ComplexDataTypeTest : public testing::Test
-{
-public:
-    ComplexDataTypeTest() = default;
-
-    virtual ~ComplexDataTypeTest() = default;
-
-protected:
-    ADD_LOGGER(ComplexDataTypeTest);
-};
-
-
-
-INIT_LOGGER(ComplexDataTypeTest);
-
-TEST_F(ComplexDataTypeTest, hashCodeFunction)
+TEST(ComplexDataTypeTest, hashCodeFunction)
 {
     using namespace joynr::system::RoutingTypes;
 
@@ -64,7 +46,7 @@ TEST_F(ComplexDataTypeTest, hashCodeFunction)
     EXPECT_NE(address1.hashCode(), address3.hashCode());
 }
 
-TEST_F(ComplexDataTypeTest, UnorderedMapUsingComplexTypesAsKey)
+TEST(ComplexDataTypeTest, UnorderedMapUsingComplexTypesAsKey)
 {
     using namespace joynr::system::RoutingTypes;
     std::unordered_map<WebSocketAddress, std::string> unorderedMapExample;

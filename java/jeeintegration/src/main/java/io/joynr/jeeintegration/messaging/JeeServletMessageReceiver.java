@@ -6,7 +6,7 @@ package io.joynr.jeeintegration.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import io.joynr.jeeintegration.httpbridge.HttpBridgeRegistryClient;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.ReceiverStatusListener;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,7 +149,7 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
     }
 
     @Override
-    public void receive(JoynrMessage message) {
+    public void receive(ImmutableMessage message) {
         if (message != null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(format(">>>>>> Message arrived on channel %s:%n\t%s%n", channelId, message));
@@ -161,7 +161,7 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
     }
 
     @Override
-    public void onError(JoynrMessage message, Throwable error) {
+    public void onError(ImmutableMessage message, Throwable error) {
         if (messageListener != null) {
             messageListener.error(message, error);
         } else {

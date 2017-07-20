@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,20 +40,19 @@ public:
     ~MessagingSettings() = default;
 
     static const std::string& SETTING_BROKER_URL();
-    static const std::string& SETTING_BOUNCE_PROXY_URL();
     static const std::string& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_URL();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
-    static const std::string& SETTING_MQTT_KEEP_ALIVE_TIME();
-    static const std::string& SETTING_MQTT_RECONNECT_SLEEP_TIME();
+    static const std::string& SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS();
+    static const std::string& SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS();
+    static const std::string& SETTING_MQTT_CONNECTION_TIMEOUT_MS();
     static const std::string& SETTING_INDEX();
     static const std::string& SETTING_CREATE_CHANNEL_RETRY_INTERVAL();
     static const std::string& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
     static const std::string& SETTING_SEND_MSG_RETRY_INTERVAL();
     static const std::string& SETTING_LONGPOLL_RETRY_INTERVAL();
     static const std::string& SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS();
-    static const std::string& SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
 
     static const std::string& SETTING_LOCAL_PROXY_HOST();
     static const std::string& SETTING_LOCAL_PROXY_PORT();
@@ -67,6 +66,7 @@ public:
     static const std::string& SETTING_LONGPOLL_TIMEOUT_MS();
     static const std::string& SETTING_HTTP_CONNECT_TIMEOUT_MS();
     static const std::string& SETTING_BROKER_TIMEOUT_MS();
+
     /**
      * @brief SETTING_MAXIMUM_TTL_MS The key used in settings to identifiy the maximum allowed value
      * of the time-to-live joynr message header.
@@ -84,10 +84,8 @@ public:
      */
     static const std::string& SETTING_DISCOVERY_MESSAGES_TTL_MS();
     static const std::string& SETTING_SEND_MESSAGE_MAX_TTL();
-    static const std::string& SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& SETTING_TTL_UPLIFT_MS();
 
-    static std::chrono::milliseconds DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const std::string& DEFAULT_PERSISTENCE_FILENAME();
     static std::int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
@@ -102,17 +100,13 @@ public:
      * @see SETTING_MAXIMUM_TTL_MS
      */
     static std::uint64_t DEFAULT_MAXIMUM_TTL_MS();
-    static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME();
-    static std::chrono::milliseconds DEFAULT_MQTT_RECONNECT_SLEEP_TIME();
-    static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
+    static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS();
+    static std::chrono::seconds DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS();
+    static std::chrono::milliseconds DEFAULT_MQTT_CONNECTION_TIMEOUT_MS();
 
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
     void setBrokerUrl(const BrokerUrl& brokerUrl);
-
-    BrokerUrl getBounceProxyUrl() const;
-    std::string getBounceProxyUrlString() const;
-    void setBounceProxyUrl(const BrokerUrl& brokerUrl);
 
     std::string getDiscoveryDirectoriesDomain() const;
 
@@ -120,20 +114,19 @@ public:
     std::string getCapabilitiesDirectoryChannelId() const;
     std::string getCapabilitiesDirectoryParticipantId() const;
 
-    std::chrono::seconds getMqttKeepAliveTime() const;
-    void setMqttKeepAliveTime(std::chrono::seconds mqttKeepAliveTime);
-    std::chrono::milliseconds getMqttReconnectSleepTime() const;
-    void setMqttReconnectSleepTime(std::chrono::milliseconds mqttReconnectSleepTime);
+    std::chrono::seconds getMqttKeepAliveTimeSeconds() const;
+    void setMqttKeepAliveTimeSeconds(std::chrono::seconds mqttKeepAliveTimeSeconds);
+    std::chrono::seconds getMqttReconnectDelayTimeSeconds() const;
+    void setMqttReconnectDelayTimeSeconds(std::chrono::seconds mqttReconnectDelayTimeSeconds);
+    std::chrono::milliseconds getMqttConnectionTimeoutMs() const;
     std::int64_t getIndex() const;
     void setIndex(std::int64_t index);
     int getCreateChannelRetryInterval() const;
     void setCreateChannelRetryInterval(const int& retryInterval);
     int getDeleteChannelRetryInterval() const;
     void setDeleteChannelRetryInterval(const int& retryInterval);
-    int getDiscoveryEntryExpiryIntervalMs() const;
-    void setDiscoveryEntryExpiryIntervalMs(int expiryIntervalMs);
-    int getPurgeExpiredDiscoveryEntriesIntervalMs() const;
-    void setPurgeExpiredDiscoveryEntriesIntervalMs(int purgeExpiredEntriesIntervalMs);
+    std::int64_t getDiscoveryEntryExpiryIntervalMs() const;
+    void setDiscoveryEntryExpiryIntervalMs(std::int64_t expiryIntervalMs);
     int getSendMsgRetryInterval() const;
     void setSendMsgRetryInterval(const int& retryInterval);
     int getLongPollRetryInterval() const;
@@ -152,12 +145,13 @@ public:
     void setClientCertificatePassword(const std::string& clientCertificatePassword);
     std::string getMessagingPropertiesPersistenceFilename() const;
     void setMessagingPropertiesPersistenceFilename(const std::string& persistenceFilename);
-    std::int64_t getLongPollTimeout() const;
-    void setLongPollTimeout(std::int64_t timeout_ms);
+    std::int64_t getLongPollTimeoutMs() const;
+    void setLongPollTimeoutMs(std::int64_t timeout_ms);
     std::int64_t getHttpConnectTimeout() const;
-    void setHttpConnectTimeout(std::int64_t timeout_ms);
-    std::int64_t getBrokerTimeout() const;
-    void setBrokerTimeout(std::int64_t timeout_ms);
+    void setHttpConnectTimeoutMs(std::int64_t timeout_ms);
+    std::int64_t getBrokerTimeoutMs() const;
+    void setBrokerTimeoutMs(std::int64_t timeout_ms);
+
     /**
      * @brief getMaximumTtlMs Get the maximum allowed time-to-live value in milliseconds for joynr
      * messages.
@@ -178,8 +172,6 @@ public:
     void setSendMsgMaxTtl(std::int64_t ttl_ms);
     void setTtlUpliftMs(std::uint64_t ttlUpliftMs);
     std::uint64_t getTtlUpliftMs() const;
-
-    std::chrono::milliseconds getCapabilitiesFreshnessUpdateIntervalMs() const;
 
     bool contains(const std::string& key) const;
 

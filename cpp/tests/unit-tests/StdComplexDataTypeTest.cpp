@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-
-#include "PrettyPrint.h"
 #include <string>
 #include <unordered_set>
 
+#include <boost/math/special_functions/next.hpp>
+#include <gtest/gtest.h>
+
+#include "joynr/ByteBuffer.h"
 #include "joynr/types/TestTypes/Word.h"
 #include "joynr/types/TestTypes/Vowel.h"
 #include "joynr/types/TestTypes/TEverythingStruct.h"
@@ -32,6 +33,8 @@
 #include "joynr/tests/testTypes/ComplexTestType.h"
 #include "joynr/tests/StructInsideInterfaceWithoutVersion.h"
 #include "joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion.h"
+
+#include "tests/PrettyPrint.h"
 
 using namespace joynr::types;
 
@@ -126,7 +129,7 @@ protected:
     float tFloat;
     std::string tString;
     bool tBoolean;
-    std::vector<std::uint8_t> tByteBuffer;
+    joynr::ByteBuffer tByteBuffer;
     std::vector<std::uint8_t>  tUInt8Array;
     TestTypes::TEnum::Enum tEnum;
     std::vector<joynr::types::TestTypes::TEnum::Enum>  tEnumArray;
@@ -441,4 +444,24 @@ TEST_F(StdComplexDataTypeTest, defaultVersionIsSetInStructInsideTypeCollectionWi
 
     EXPECT_EQ(expectedMajorVersion, joynr::types::TestTypesWithoutVersion::StructInsideTypeCollectionWithoutVersion::MAJOR_VERSION);
     EXPECT_EQ(expectedMinorVersion, joynr::types::TestTypesWithoutVersion::StructInsideTypeCollectionWithoutVersion::MINOR_VERSION);
+}
+
+
+TEST_F(StdComplexDataTypeTest, compareFloatingPointValues) {
+    using namespace boost::math;
+    TestTypes::TEverythingExtendedStruct struct1;
+    const float floatValue1 = 1.0f;
+    struct1.setTFloat(floatValue1);
+
+    // 3 floating point values above floatValue1
+    const float floatValue2 = float_next(float_next(float_next(floatValue1)));
+    TestTypes::TEverythingExtendedStruct struct2;
+    struct2.setTFloat(floatValue2);
+
+    // operator== compares 4 ULPs
+    EXPECT_TRUE(struct1 == struct2);
+
+    // use a custom precision
+    const std::size_t customMaxUlps = 2;
+    EXPECT_FALSE(struct1.equals(struct2, customMaxUlps));
 }

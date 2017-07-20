@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,27 +20,28 @@
 #define JOYNRUNTIME_H
 
 #include <cassert>
-#include <string>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <string>
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/ProxyBuilder.h"
-#include "joynr/ParticipantIdStorage.h"
-#include "joynr/ProxyFactory.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/SystemServicesSettings.h"
-#include "joynr/system/DiscoveryProxy.h"
+#include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/LocalDiscoveryAggregator.h"
+#include "joynr/MessagingSettings.h"
+#include "joynr/ParticipantIdStorage.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ProxyBuilder.h"
+#include "joynr/ProxyFactory.h"
 #include "joynr/PublicationManager.h"
+#include "joynr/SystemServicesSettings.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/system/DiscoveryProxy.h"
 
 namespace joynr
 {
 
 class SingleThreadedIOService;
+
 /**
  * @brief Class representing the central Joynr Api object,
  * used to register / unregister providers and create proxy builders
@@ -54,23 +55,31 @@ public:
     virtual ~JoynrRuntime();
 
     /**
-     * @brief Registers a provider with the joynr communication framework.
+     * @brief Registers a provider with the joynr communication framework asynchronously.
      * @tparam TIntfProvider The interface class of the provider to register. The corresponding
      * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
      * @param domain The domain to register the provider on. Has to be
      * identical at the client to be able to find the provider.
      * @param provider The provider instance to register.
+     * @param providerQos The qos associated with the registered provider.
+     * @param onSucess: Will be invoked when provider registration succeeded.
+     * @param onError: Will be invoked when the provider could not be registered. An exception,
+     * which describes the error, is passed as the parameter.
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
     template <class TIntfProvider>
-    std::string registerProvider(const std::string& domain, std::shared_ptr<TIntfProvider> provider)
+    std::string registerProviderAsync(
+            const std::string& domain,
+            std::shared_ptr<TIntfProvider> provider,
+            const joynr::types::ProviderQos& providerQos,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError)
     {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // remove if providerQos is removed
-        joynr::types::ProviderQos providerQos = provider->getProviderQos();
-#pragma GCC diagnostic pop
-        return registerProvider<TIntfProvider>(domain, provider, providerQos);
+        assert(capabilitiesRegistrar);
+        assert(!domain.empty());
+        return capabilitiesRegistrar->addAsync(
+                domain, provider, providerQos, std::move(onSuccess), std::move(onError));
     }
 
     /**
@@ -89,9 +98,61 @@ public:
                                  std::shared_ptr<TIntfProvider> provider,
                                  const joynr::types::ProviderQos& providerQos)
     {
+        Future<void> future;
+        auto onSuccess = [&future]() { future.onSuccess(); };
+        auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+            future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+        };
+
+        std::string participiantId = registerProviderAsync(
+                domain, provider, providerQos, std::move(onSuccess), std::move(onError));
+        future.get();
+        return participiantId;
+    }
+
+    /**
+     * @brief Unregisters the provider from the joynr communication framework.
+     *
+     * Unregister a provider identified by its globally unique participant ID. The participant ID is
+     * returned during the provider registration process.
+     * @param participantId The participantId of the provider which shall be unregistered
+     * @param onSucess: Will be invoked when provider unregistration succeeded.
+     * @param onError: Will be invoked when the provider could not be unregistered. An exception,
+     * which describes the error, is passed as the parameter.
+     */
+    void unregisterProviderAsync(
+            const std::string& participantId,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError)
+    {
+        assert(capabilitiesRegistrar);
+        capabilitiesRegistrar->removeAsync(participantId, std::move(onSuccess), std::move(onError));
+    }
+
+    /**
+     * @brief Unregisters the provider from the joynr framework
+     * @tparam TIntfProvider The interface class of the provider to unregister. The corresponding
+     * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
+     * @param domain The domain to unregister the provider from. It must match the domain used
+     * during provider registration.
+     * @param provider The provider instance to unregister the provider from.
+     * @param onSucess: Will be invoked when provider unregistration succeeded.
+     * @param onError: Will be invoked when the provider could not be unregistered. An exception,
+     * which describes the error, is passed as the parameter.
+     * @return The globally unique participant ID of the provider. It is assigned by the joynr
+     * communication framework.
+     */
+    template <class TIntfProvider>
+    std::string unregisterProviderAsync(
+            const std::string& domain,
+            std::shared_ptr<TIntfProvider> provider,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError)
+    {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
-        return capabilitiesRegistrar->add<TIntfProvider>(domain, provider, providerQos);
+        return capabilitiesRegistrar->removeAsync(
+                domain, provider, std::move(onSuccess), std::move(onError));
     }
 
     /**
@@ -101,13 +162,22 @@ public:
      * returned during the provider registration process.
      * @param participantId The participantId of the provider which shall be unregistered
      */
-    virtual void unregisterProvider(const std::string& participantId) = 0;
+    void unregisterProvider(const std::string& participantId)
+    {
+        Future<void> future;
+        auto onSuccess = [&future]() { future.onSuccess(); };
+        auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+            future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+        };
+
+        unregisterProviderAsync(participantId, std::move(onSuccess), std::move(onError));
+        future.get();
+    }
 
     /**
      * @brief Unregisters the provider from the joynr framework
      * @tparam TIntfProvider The interface class of the provider to unregister. The corresponding
      * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
-     * @param domain The domain the provider was registered for.
      * @param domain The domain to unregister the provider from. It must match the domain used
      * during provider registration.
      * @param provider The provider instance to unregister the provider from.
@@ -118,9 +188,16 @@ public:
     std::string unregisterProvider(const std::string& domain,
                                    std::shared_ptr<TIntfProvider> provider)
     {
-        assert(capabilitiesRegistrar);
         assert(!domain.empty());
-        return capabilitiesRegistrar->remove<TIntfProvider>(domain, provider);
+        Future<void> future;
+        auto onSuccess = [&future]() { future.onSuccess(); };
+        auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+            future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+        };
+        std::string participantId =
+                unregisterProviderAsync(domain, provider, std::move(onSuccess), std::move(onError));
+        future.get();
+        return participantId;
     }
 
     /**
@@ -134,26 +211,23 @@ public:
      * parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProxy".
      * @param domain The domain to connect this proxy to.
      * @return Pointer to the proxybuilder<T> instance
-     * @return A proxy builder object that can be used to create proxies. The caller takes
-     * ownership of the returned object and must take care to clean up resources properly.
+     * @return A proxy builder object that can be used to create proxies.
      */
     template <class TIntfProxy>
-    ProxyBuilder<TIntfProxy>* createProxyBuilder(const std::string& domain)
+    std::unique_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
         if (!proxyFactory) {
             throw exceptions::JoynrRuntimeException(
-                    "Exception in JoynrRuntime: Creating a proxy before "
-                    "startMessaging was called is not yet supported.");
+                    "Exception in JoynrRuntime: Cannot perform arbitration as"
+                    "runtime is not yet fully initialized.");
         }
-        ProxyBuilder<TIntfProxy>* builder =
-                new ProxyBuilder<TIntfProxy>(*proxyFactory,
-                                             requestCallerDirectory,
-                                             *discoveryProxy,
-                                             domain,
-                                             dispatcherAddress,
-                                             messageRouter,
-                                             messagingSettings.getMaximumTtlMs());
-        return builder;
+        return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
+                                                          requestCallerDirectory,
+                                                          discoveryProxy,
+                                                          domain,
+                                                          dispatcherAddress,
+                                                          getMessageRouter(),
+                                                          messagingSettings.getMaximumTtlMs());
     }
 
     /**
@@ -162,45 +236,46 @@ public:
      * @param pathToMessagingSettings
      * @return pointer to a JoynrRuntime instance
      */
-    static JoynrRuntime* createRuntime(const std::string& pathToLibjoynrSettings,
-                                       const std::string& pathToMessagingSettings = "");
+    static std::unique_ptr<JoynrRuntime> createRuntime(
+            const std::string& pathToLibjoynrSettings,
+            const std::string& pathToMessagingSettings = "");
 
     /**
      * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
      * @param settings settings object
      * @return pointer to a JoynrRuntime instance
      */
-    static JoynrRuntime* createRuntime(std::unique_ptr<Settings> settings);
+    static std::unique_ptr<JoynrRuntime> createRuntime(std::unique_ptr<Settings> settings);
 
     /**
-     * @brief Create a JoynrRuntime object. The call does not block. A callback
+     * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
      * will be called when the runtime creation finished.
      * @param pathToLibjoynrSettings Path to lib joynr setting files
-     * @param runtimeCreatedCallback Is called when the runtime is available
-     * @param runtimeCreationErrorCallback Is called when an error occurs
+     * @param onSuccess Is called when the runtime is available for use
+     * @param onError Is called when an error occurs
      * @param pathToMessagingSettings
-     * @return pointer to a JoynrRuntime instance
+     * @return unique_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
+     * onSuccess is called
      */
-    static void createRuntimeAsync(const std::string& pathToLibjoynrSettings,
-                                   std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
-                                           runtimeCreatedCallback,
-                                   std::function<void(exceptions::JoynrRuntimeException& exception)>
-                                           runtimeCreationErrorCallback,
-                                   const std::string& pathToMessagingSettings = "");
+    static std::unique_ptr<JoynrRuntime> createRuntimeAsync(
+            const std::string& pathToLibjoynrSettings,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
+            const std::string& pathToMessagingSettings = "");
 
     /**
-     * @brief Create a JoynrRuntime object. The call does not block. A callback
+     * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
      * will be called when the runtime creation finished.
      * @param settings settings object
-     * @param runtimeCreatedCallback Is called when the runtime is available
-     * @param runtimeCreationErrorCallback Is called when an error occurs
-     * @return pointer to a JoynrRuntime instance
+     * @param onSuccess Is called when the runtime is available for use
+     * @param onError Is called when an error occurs
+     * @return unique_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
+     * onSuccess is called
      */
-    static void createRuntimeAsync(std::unique_ptr<Settings> settings,
-                                   std::function<void(std::unique_ptr<JoynrRuntime> createdRuntime)>
-                                           runtimeCreatedCallback,
-                                   std::function<void(exceptions::JoynrRuntimeException& exception)>
-                                           runtimeCreationErrorCallback);
+    static std::unique_ptr<JoynrRuntime> createRuntimeAsync(
+            std::unique_ptr<Settings> settings,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException& exception)> onError);
 
 protected:
     // NOTE: The implementation of the constructor and destructor must be inside this
@@ -215,6 +290,20 @@ protected:
 
     static std::unique_ptr<Settings> createSettings(const std::string& pathToLibjoynrSettings,
                                                     const std::string& pathToMessagingSettings);
+
+    /** @brief Return an IMessageRouter instance */
+    virtual std::shared_ptr<IMessageRouter> getMessageRouter() = 0;
+
+    bool checkAndLogCryptoFileExistence(const std::string& caPemFile,
+                                        const std::string& certPemFile,
+                                        const std::string& privateKeyPemFile,
+                                        Logger& logger);
+
+    /** @brief Get provisioned entries.
+     *  @return A map participantId -> DiscoveryEntryWithMetaInfo.
+     */
+    virtual std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> getProvisionedEntries()
+            const;
 
     std::unique_ptr<SingleThreadedIOService> singleThreadIOService;
 
@@ -234,10 +323,8 @@ protected:
     SystemServicesSettings systemServicesSettings;
     /** @brief Address of the dispatcher */
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
-    /** @brief MessageRouter instance */
-    std::shared_ptr<MessageRouter> messageRouter;
     /** @brief Wrapper for discovery proxies */
-    std::unique_ptr<LocalDiscoveryAggregator> discoveryProxy;
+    std::shared_ptr<LocalDiscoveryAggregator> discoveryProxy;
     /**
      * @brief Publication manager receives subscription requests and prepares publications
      * which are send back to the subscription manager.

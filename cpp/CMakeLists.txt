@@ -5,13 +5,18 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.23.0-SNAPSHOT)
+project(joynr-0.28.0-SNAPSHOT)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 23)
+set(JOYNR_MINOR_VERSION 28)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
+)
+
+set(
+    JOYNR_SOVERSION
+    ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}
 )
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -151,6 +156,13 @@ option(
 )
 message(STATUS "option JOYNR_ENABLE_STDOUT_LOGGING=" ${JOYNR_ENABLE_STDOUT_LOGGING})
 
+option(
+    USE_PLATFORM_SMRF
+    "Resolve dependency to SMRF from the system?"
+    ON
+)
+message(STATUS "option USE_PLATFORM_SMRF=" ${USE_PLATFORM_SMRF})
+
 # should we use DBUS to communicate between libjoynr and cluster-controller
 option(
     USE_DBUS_COMMONAPI_COMMUNICATION
@@ -183,7 +195,7 @@ message(STATUS "option ENABLE_DOXYGEN=" ${ENABLE_DOXYGEN})
 
 option(
     BUILD_CLUSTER_CONTROLLER
-    "Build ClusterController?"
+    "Build cluster-controller executable?"
     ON
 )
 message(STATUS "option BUILD_CLUSTER_CONTROLLER=" ${BUILD_CLUSTER_CONTROLLER})
@@ -201,12 +213,11 @@ include(AddClangFormat)
 
 # Following dependencies must be installed by the user beforehand because they either
 # use a shared object or are included through joynr header files into the user's code.
-# Mosquitto is only required when the cluster controller build is enabled.
 set (CHECK_DLT (JOYNR_ENABLE_DLT_LOGGING AND USE_PLATFORM_DLT OR NOT JOYNR_ENABLE_DLT_LOGGING))
-if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND (USE_PLATFORM_MOSQUITTO OR NOT BUILD_CLUSTER_CONTROLLER)))
+if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND USE_PLATFORM_MOSQUITTO AND USE_PLATFORM_SMRF))
     set(codeMsg "message(FATAL_ERROR \"Install target is not available as long as external platform")
     set(codeMsg "${codeMsg} dependencies are used. For more information see USE_PLATFORM_SPDLOG,")
-    set(codeMsg "${codeMsg} USE_PLATFORM_DLT and USE_PLATFORM_MOSQUITTO.\")")
+    set(codeMsg "${codeMsg} USE_PLATFORM_DLT, USE_PLATFORM_MOSQUITTO and USE_PLATFORM_SMRF.\")")
     install(CODE "${codeMsg}")
 endif()
 
@@ -309,6 +320,11 @@ if(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
 endif(NOT DEFINED JOYNR_SERVER_MQTT_PORT)
 message(STATUS "variable JOYNR_SERVER_MQTT_PORT=" ${JOYNR_SERVER_MQTT_PORT})
 
+if(NOT DEFINED JOYNR_SERVER_MQTT_TLS_PORT)
+    set(JOYNR_SERVER_MQTT_TLS_PORT "8883")
+endif(NOT DEFINED JOYNR_SERVER_MQTT_TLS_PORT)
+message(STATUS "variable JOYNR_SERVER_MQTT_TLS_PORT=" ${JOYNR_SERVER_MQTT_TLS_PORT})
+
 # Set the binary directory
 set(JOYNR_BINARY_DIR ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 message(STATUS "variable JOYNR_BINARY_DIR=" ${JOYNR_BINARY_DIR})
@@ -347,10 +363,12 @@ endif(ENABLE_DOXYGEN)
 
 ######## Add Boost ########
 
-find_package(Boost 1.58.0 REQUIRED
-    COMPONENTS
+set(JOYNR_BOOST_REQUIRED_COMPONENTS
     system
-    thread
+    thread)
+set(JOYNR_BOOST_REQUIRED_VERSION 1.58.0)
+find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
+    COMPONENTS ${JOYNR_BOOST_REQUIRED_COMPONENTS}
 )
 include(CheckBoostImportTargets)
 
@@ -494,6 +512,11 @@ include(SetCppStandard)
 #-Wpadded
 #-Wswitch-default
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    # Mac OS X
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,dynamic_lookup")
+endif()
+
 message(STATUS "CMAKE_GENERATOR=" ${CMAKE_GENERATOR})
 message(STATUS "compiler CMAKE_C_COMPILER=" ${CMAKE_C_COMPILER})
 message(STATUS "compiler CMAKE_C_COMPILER_ID=" ${CMAKE_C_COMPILER_ID})
@@ -514,7 +537,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # common-api/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for CommonAPI
     # generated code.
     # All changes to CMAKE_CXX_FLAGS that are not warnings should be added there as well.
-    set(GNU_CXX_FLAGS "-pipe -g")
+    set(GNU_CXX_FLAGS "-pipe")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wall -Wunused-value -Wunused -Wcast-qual -Wpointer-arith")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wextra -Wcast-align -Wdisabled-optimization -Wformat-y2k")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wno-format-extra-args -Wformat-nonliteral -Wformat=2 -Winit-self")
@@ -650,18 +673,19 @@ endif(JOYNR_ENABLE_DLT_LOGGING)
 
 ### Add muesli ############################################################
 if (USE_PLATFORM_MUESLI)
-    find_package(muesli 0.1.4 REQUIRED CONFIG)
+    find_package(muesli 0.3.1 REQUIRED CONFIG)
 else(USE_PLATFORM_MUESLI)
     message(STATUS "############ Download: muesli ############")
 
     AddExternalProject(
         muesli
         GIT_REPOSITORY https://github.com/bmwcarit/muesli
-        GIT_TAG 0.1.4
+        GIT_TAG 0.3.1
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
-        CMAKE_ARGS -DBUILD_MUESLI_TESTS=Off
+        CMAKE_ARGS "-DBUILD_MUESLI_TESTS=Off;"
+                   "-DENABLE_CLANG_FORMATTER=${ENABLE_CLANG_FORMATTER}"
         # Disable build step
         #BUILD_COMMAND ""
     )
@@ -669,44 +693,77 @@ else(USE_PLATFORM_MUESLI)
     ExternalProject_Get_Property(muesli SOURCE_DIR)
     ExternalProject_Get_Property(muesli BINARY_DIR)
 
-    # add import target for mosquitto library
+    # add import target for muesli library
     add_library(muesli::muesli INTERFACE IMPORTED GLOBAL)
     add_dependencies(muesli::muesli muesli)
-    set(includeDirs "${SOURCE_DIR}/include" "${BINARY_DIR}/ThirdParty/src/rapidjson/include")
+
+    # muesli fetches rapidjson via AddExternalProject,
+    # hence rapidjson lies in muesli's build directory
+    set(
+        muesli_INCLUDE_DIRECTORIES
+        "${SOURCE_DIR}/include"
+        "${BINARY_DIR}/ThirdParty/src/rapidjson/include"
+    )
+
     # need to create include dirs manually at cmake time to prevent cmake warning (non existing path
     # in INTERFACE_INCLUDE_DIRECTORIES), since otherwise they are created at make time when cloning
     # the source repositories
-    file(MAKE_DIRECTORY ${includeDirs})
+    file(MAKE_DIRECTORY ${muesli_INCLUDE_DIRECTORIES})
     set_property(
         TARGET muesli::muesli
         APPEND
-        PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${includeDirs}
+        PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${muesli_INCLUDE_DIRECTORIES}
     )
 endif(USE_PLATFORM_MUESLI)
 get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
 
 message(STATUS "variable muesli_INCLUDE_DIRECTORIES= ${muesli_INCLUDE_DIRECTORIES}")
 
+if (USE_PLATFORM_SMRF)
+    find_package(smrf 0.2.0 REQUIRED CONFIG)
+else(USE_PLATFORM_SMRF)
+    message(STATUS "############ Download: smrf ############")
+
+    get_property(EP_PREFIX DIRECTORY PROPERTY EP_PREFIX)
+    set(SMRF_LIBRARY_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}smrf${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    set(SMRF_LIBRARIES "${EP_PREFIX}/src/smrf-build/bin/${SMRF_LIBRARY_NAME}")
+
+    AddExternalProject(
+        smrf
+        GIT_REPOSITORY https://github.com/bmwcarit/smrf
+        GIT_TAG 0.2.0
+        TIMEOUT 10
+        # Disable configure step
+        #CONFIGURE_COMMAND ""
+        CMAKE_ARGS "-DENABLE_CLANG_FORMATTER=${ENABLE_CLANG_FORMATTER};"
+                   "-DBUILD_TESTS=Off"
+        # Disable build step
+        BUILD_BYPRODUCTS ${SMRF_LIBRARIES}
+    )
+
+    ExternalProject_Get_Property(smrf SOURCE_DIR)
+    set(SMRF_INCLUDE_DIRS "${SOURCE_DIR}/cpp/libsmrf/include")
+
+    # The directory does not exist when the import targets are checked. As a workaround
+    # we need to create it here. Otherwise the initial cmake call will fail.
+    file(MAKE_DIRECTORY ${EP_PREFIX}/src/smrf-build/src/lib)
+    file(MAKE_DIRECTORY ${EP_PREFIX}/src/smrf/cpp/libsmrf/include)
+endif(USE_PLATFORM_SMRF)
+include(CheckSMRFImportTargets)
+
 ######## Add submodules ########
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     add_subdirectory(common-api)
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-add_subdirectory(common)
+
 add_subdirectory(libjoynr)
+add_subdirectory(libjoynrclustercontroller)
+add_subdirectory(runtimes)
+
 if(${BUILD_CLUSTER_CONTROLLER})
     add_subdirectory(cluster-controller)
-else()
-    # We still use the websocket default configuration file
-    # copy resources for build tree
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cluster-controller/resources/default-websocket.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings @ONLY)
-    # ...and for install tree
-    install(
-        FILES
-            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
-        DESTINATION ${JOYNR_INSTALL_FULL_SYSCONFDIR}
-    )
 endif(${BUILD_CLUSTER_CONTROLLER})
-add_subdirectory(runtimes)
+
 if(${BUILD_TESTS})
     add_subdirectory(tests)
 endif(${BUILD_TESTS})
@@ -715,19 +772,11 @@ endif(${BUILD_TESTS})
 
 set(
     TARGET_LIBS
-    JoynrCommon
     Joynr
     JoynrWsRuntime
+    JoynrClusterController
+    JoynrClusterControllerRuntime
 )
-
-if(${BUILD_CLUSTER_CONTROLLER})
-    LIST(
-        APPEND
-        TARGET_LIBS
-        JoynrClusterController
-        JoynrClusterControllerRuntime
-    )
-endif(${BUILD_CLUSTER_CONTROLLER})
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     list(
@@ -758,18 +807,21 @@ install(
 # Create the JoynrConfig.cmake and JoynrConfigVersion files
 set(
     JoynrConfig_LIB_COMMON_LIBRARIES
-    JoynrCommon
     Joynr
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
-if(${BUILD_CLUSTER_CONTROLLER})
-    set(
-        JoynrConfig_LIB_INPROCESS_LIBRARIES
-        JoynrClusterController
-        JoynrClusterControllerRuntime
-    )
-endif(${BUILD_CLUSTER_CONTROLLER})
+set(
+    JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS
+    ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
+    ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
+)
+
+set(
+    JoynrConfig_LIB_INPROCESS_LIBRARIES
+    JoynrClusterController
+    JoynrClusterControllerRuntime
+)
 
 set(
     JoynrConfig_LIB_WS_LIBRARIES
@@ -784,29 +836,20 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 # ... for the build tree
-get_target_property(JoynrCommon_PUBLIC_INCLUDE_DIRECTORY JoynrCommon PUBLIC_INCLUDE_DIRECTORY)
 get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     JoynrConfig_LIB_COMMON_INCLUDE_DIRS
-    ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_INCLUDE_DIRS}
     ${muesli_INCLUDE_DIRECTORIES}
     ${runtime_PUBLIC_INCLUDE_DIRECTORY}
 )
-if(${BUILD_CLUSTER_CONTROLLER})
-    get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
-    get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
-    set(
-        JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS
-        ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
-        ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
-    )
-endif(${BUILD_CLUSTER_CONTROLLER})
+
 set(
     JoynrConfig_LIB_WS_INCLUDE_DIRS
-    ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
     ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
     ${spdlog_INCLUDE_DIRS}
     ${muesli_INCLUDE_DIRECTORIES}
@@ -815,7 +858,6 @@ set(
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
         JoynrConfig_LIB_DBUS_INCLUDE_DIRS
-        ${JoynrCommon_PUBLIC_INCLUDE_DIRECTORY}
         ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
         ${spdlog_INCLUDE_DIRS}
         ${muesli_INCLUDE_DIRECTORIES}
@@ -827,6 +869,8 @@ set(JoynrConfig_RESOURCES_DIR "${JoynrConfig_INSTALL_BIN_DIR}/resources")
 
 get_target_property(JoynrConfig_MOSQUITTO_INCLUDE_DIRS mosquitto::mosquitto INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(JoynrConfig_MOSQUITTO_LIBRARIES mosquitto::mosquitto IMPORTED_LOCATION)
+get_target_property(JoynrConfig_SMRF_INCLUDE_DIRS smrf::smrf INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(JoynrConfig_SMRF_LIBRARIES smrf::smrf IMPORTED_LOCATION)
 
 set(JoynrConfig_RESOLVE_DEPENDENCIES)
 
@@ -850,6 +894,12 @@ if(USE_PLATFORM_SPDLOG)
     FillJoynrConfigDependencies("PlatformSpdlog")
 endif(USE_PLATFORM_SPDLOG)
 
+if(USE_PLATFORM_SMRF)
+    FillJoynrConfigDependencies("PlatformSmrf")
+else(USE_PLATFORM_SMRF)
+    FillJoynrConfigDependencies("ExternalProjectSmrf")
+endif(USE_PLATFORM_SMRF)
+
 if(JOYNR_ENABLE_DLT_LOGGING)
 if(USE_PLATFORM_DLT)
     FillJoynrConfigDependencies("PlatformDltlog")
@@ -869,6 +919,7 @@ file(
         "CMake/CheckOpenSSLImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
         "CMake/CheckDltImportTargets.cmake"
+        "CMake/CheckSMRFImportTargets.cmake"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
 # ... for the install tree
@@ -919,6 +970,7 @@ install(
         "CMake/CheckOpenSSLImportTargets.cmake"
         "CMake/CheckMosquittoImportTargets.cmake"
         "CMake/CheckDltImportTargets.cmake"
+        "CMake/CheckSMRFImportTargets.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}"
 )
 

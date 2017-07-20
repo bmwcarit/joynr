@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,12 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-#include "joynr/JoynrMessage.h"
 #include "joynr/StatusCode.h"
 #include "joynr/types/DiscoveryEntry.h"
 
 //void initPretty(void);
 
 namespace joynr {
-
-void PrintTo(const JoynrMessage& value, ::std::ostream* os);
 
 // NOTE: Choosing the right PrintTo method is done by template magic by
 //       the compiler. Therefore, the point in time when the PrintTo method

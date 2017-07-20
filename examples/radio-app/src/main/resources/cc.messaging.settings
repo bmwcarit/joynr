@@ -3,11 +3,7 @@ broker-url=http://localhost:8080/bounceproxy/
 
 discovery-directories-domain=io.joynr
 
-channel-url-directory-url=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
-channel-url-directory-channelid=discoverydirectory_channelid
-channel-url-directory-participantid=channelurldirectory_participantid
-
-capabilities-directory-url=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
+capabilities-directory-url=http://localhost:8080/discovery/channels/
 capabilities-directory-channelid=discoverydirectory_channelid
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 
@@ -26,3 +22,10 @@ persistence-file=joynr.settings
 long-poll-timeout=
 broker-timeout=
 max-send-ttl=
+
+[lib-joynr]
+message-router-persistence-file=cc.MessageRouter.persist
+participant-ids-persistence-file=cc.ParticipantIds.persist
+subscriptionrequest-persistence-file=cc.SubscriptionRequests.persist
+local-capabilities-directory-persistence-file=cc.LocalCapabilitiesDirectory.persist
+broadcastsubscriptionrequest-persistence-file=cc.BroadcastSubscriptionRequests.persist

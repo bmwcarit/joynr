@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-
 #include <string>
 
 #include <gtest/gtest.h>
@@ -31,12 +30,12 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/IReplyCaller.h"
-#include "tests/utils/MockObjects.h"
-#include "utils/MockCallback.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/serializer/Serializer.h"
+
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/MockCallback.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -68,7 +67,8 @@ public:
             Unused, // receiver participant ID
             Unused, // messaging QoS
             Unused, // request object to send
-            std::shared_ptr<IReplyCaller> callback // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller> callback, // reply caller to notify when reply is received
+            bool isLocalMessage
     ) {
         (std::dynamic_pointer_cast<ReplyCaller<void> >(callback))->returnValue();
     }
@@ -79,7 +79,8 @@ public:
             Unused, // receiver participant ID
             Unused, // messaging QoS
             Unused, // request object to send
-            std::shared_ptr<IReplyCaller> callback // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller> callback, // reply caller to notify when reply is received
+            bool isLocalMessage
     ) {
        (std::dynamic_pointer_cast<ReplyCaller<types::Localisation::GpsLocation> >(callback))->returnValue(expectedGpsLocation);
     }
@@ -90,7 +91,8 @@ public:
             Unused, // receiver participant ID
             Unused, // messaging QoS
             Unused, // request object to send
-            std::shared_ptr<IReplyCaller> callback // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller> callback, // reply caller to notify when reply is received
+            bool isLocalMessage
     ) {
 
         std::dynamic_pointer_cast<ReplyCaller<int> >(callback)->returnValue(expectedInt);
@@ -114,26 +116,22 @@ public:
         mockDispatcher(),
         mockMessagingStub(),
         callBack(),
-        mockJoynrMessageSender(),
+        mockMessageSender(),
         proxyParticipantId(),
         providerParticipantId(),
-        mockClientCache(),
-        endPointAddress(),
         asyncTestFixture(nullptr),
         error(nullptr)
     {}
     virtual ~AbstractSyncAsyncTest() = default;
     void SetUp(){
         qosSettings = MessagingQos(456000);
-        endPointAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>("endPointUrl", "endPointAddress");
         proxyParticipantId = "participantId";
         providerParticipantId = "providerParticipantId";
-        mockJoynrMessageSender = new MockJoynrMessageSender();
+        mockMessageSender = std::make_shared<MockMessageSender>();
         // asyncGpsFixture must be created after derived objects have run Setup()
     }
 
     void TearDown(){
-        delete mockJoynrMessageSender;
         delete asyncTestFixture;
     }
 
@@ -145,7 +143,8 @@ public:
             const std::string&,
             const MessagingQos&,
             const Request&,
-            std::shared_ptr<IReplyCaller>
+            std::shared_ptr<IReplyCaller>,
+            bool isLocalMessage
     )>& setExpectationsForSendRequestCall(std::string methodName) = 0;
 
     // sets the exception which shall be returned by the ReplyCaller
@@ -154,18 +153,19 @@ public:
             const std::string&,
             const MessagingQos&,
             const Request&,
-            std::shared_ptr<IReplyCaller>
+            std::shared_ptr<IReplyCaller>,
+            bool isLocalMessage
     )>& setExpectedExceptionForSendRequestCall(const exceptions::JoynrException& error) {
         this->error.reset(error.clone());
         return EXPECT_CALL(
-                *mockJoynrMessageSender,
+                *mockMessageSender,
                 sendRequest(
                         _, // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID
                         _, // messaging QoS
                         _, // request object to send
-                        Pointee(_) // reply caller to notify when reply is received A<IReplyCaller>()
-                        )
+                        Pointee(_), // reply caller to notify when reply is received A<IReplyCaller>()
+                        _) // isLocal flag
                 ).Times(1).WillRepeatedly(Invoke(this, &AbstractSyncAsyncTest::returnError));
     }
 
@@ -173,7 +173,8 @@ public:
             const std::string& receiverParticipantId,
             const MessagingQos& qos,
             const Request& request,
-            std::shared_ptr<IReplyCaller> callback) {
+            std::shared_ptr<IReplyCaller> callback,
+            bool isLocalMessage) {
         callback->returnError(error);
     }
 
@@ -185,10 +186,10 @@ public:
         EXPECT_EQ(expectedEnum, actual.getError<T>());
     }
 
-    virtual tests::Itest* createFixture(bool cacheEnabled)=0;
+    virtual tests::Itest* createFixture()=0;
 
     void testAsync_getAttributeNotCached() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>();
 
@@ -200,10 +201,10 @@ public:
     }
 
     void testSync_setAttributeNotCached() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         EXPECT_CALL(
-                    *mockJoynrMessageSender,
+                    *mockMessageSender,
                     sendRequest(
                         _, //Eq(proxyParticipantId), // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID
@@ -212,7 +213,8 @@ public:
                             Property(&Request::getMethodName, Eq("setLocation")),
                             Property(&Request::getParamDatatypes, (Property(&std::vector<std::string>::size, Eq(1))))
                         ), // request object to send
-                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()) // reply caller to notify when reply is received
+                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()), // reply caller to notify when reply is received
+                        _ // isLocal flag
                     )
         ).WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackVoidResult));
 
@@ -222,7 +224,7 @@ public:
 
 
     void testSync_getAttributeNotCached() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
         setExpectationsForSendRequestCall("getLocation")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
@@ -236,39 +238,8 @@ public:
         delete testFixture;
     }
 
-    void testAsync_getAttributeCached() {
-        asyncTestFixture = createFixture(true);
-
-        MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>* callback = new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>();
-
-        setExpectationsForSendRequestCall("getLocation").Times(0);
-        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(expectedGpsLocation));
-
-        asyncTestFixture->getLocationAsync(
-                [callback] (const types::Localisation::GpsLocation& location) {
-                    callback->onSuccess(location);
-                });
-    }
-
-    void testSync_getAttributeCached() {
-        tests::Itest* testFixture = createFixture(true);
-
-        setExpectationsForSendRequestCall("getLocation").Times(0);
-
-        ON_CALL(mockClientCache, lookUp(_)).WillByDefault(Return(expectedGpsLocation));
-
-        types::Localisation::GpsLocation gpsLocation;
-        try {
-            testFixture->getLocation(gpsLocation);
-        } catch (const exceptions::JoynrException& e) {
-            ADD_FAILURE()<< "getLocation was not successful";
-        }
-        EXPECT_EQ(expectedGpsLocation, gpsLocation);
-        delete testFixture;
-    }
-
     void testAsync_getterCallReturnsProviderRuntimeException() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallback<std::int32_t>* callback = new MockCallback<std::int32_t>();
 
@@ -291,7 +262,7 @@ public:
     }
 
     void testSync_getterCallReturnsProviderRuntimeException() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         exceptions::ProviderRuntimeException expected("getterCallReturnsProviderRuntimeExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
@@ -311,7 +282,7 @@ public:
     }
 
     void testAsync_getterCallReturnsMethodInvocationException() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallback<std::int32_t>* callback = new MockCallback<std::int32_t>();
 
@@ -334,7 +305,7 @@ public:
     }
 
     void testSync_getterCallReturnsMethodInvocationException() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         exceptions::MethodInvocationException expected("getterCallReturnsMethodInvocationExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
@@ -354,7 +325,7 @@ public:
     }
 
     void testAsync_setterCallReturnsProviderRuntimeException() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallback<void>* callback = new MockCallback<void>();
 
@@ -379,7 +350,7 @@ public:
     }
 
     void testSync_setterCallReturnsProviderRuntimeException() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         exceptions::ProviderRuntimeException expected("setterCallReturnsProviderRuntimeExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
@@ -399,7 +370,7 @@ public:
     }
 
     void testAsync_setterCallReturnsMethodInvocationException() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallback<void>* callback = new MockCallback<void>();
 
@@ -423,7 +394,7 @@ public:
         delete callback;    }
 
     void testSync_setterCallReturnsMethodInvocationException() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         exceptions::MethodInvocationException expected("setterCallReturnsMethodInvocationExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
@@ -443,7 +414,7 @@ public:
     }
 
     void testAsync_methodCallReturnsProviderRuntimeException() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallback<void>* callback = new MockCallback<void>();
 
@@ -466,7 +437,7 @@ public:
     }
 
     void testSync_methodCallReturnsProviderRuntimeException() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         exceptions::ProviderRuntimeException expected("testSync_methodCallReturnsProviderRuntimeException-ERROR");
         setExpectedExceptionForSendRequestCall(expected);
@@ -484,7 +455,7 @@ public:
     }
 
     void testAsync_methodCallReturnsMethodInvocationException() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallback<void>* callback = new MockCallback<void>();
 
@@ -507,7 +478,7 @@ public:
     }
 
     void testSync_methodCallReturnsMethodInvocationException() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         exceptions::MethodInvocationException expected("testSync_methodCallReturnsMethodInvocationException-ERROR");
         setExpectedExceptionForSendRequestCall(expected);
@@ -526,7 +497,7 @@ public:
     }
 
     void testAsync_methodCallReturnsErrorEnum() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         using tests::testTypes::ErrorEnumBase;
         auto callback = std::make_shared<MockCallbackWithApplicationError<void, ErrorEnumBase::Enum>>();
@@ -555,7 +526,7 @@ public:
     }
 
     void testSync_methodCallReturnsErrorEnum() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         using tests::testTypes::ErrorEnumBase;
 
@@ -580,7 +551,7 @@ public:
     }
 
     void testAsync_methodCallReturnsExtendedErrorEnum() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
         using tests::test::MethodWithErrorEnumExtendedErrorEnum;
 
         auto callback = std::make_shared<MockCallbackWithApplicationError<void, MethodWithErrorEnumExtendedErrorEnum::Enum>>();
@@ -609,7 +580,7 @@ public:
     }
 
     void testSync_methodCallReturnsExtendedErrorEnum() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         using tests::test::MethodWithErrorEnumExtendedErrorEnum;
         MethodWithErrorEnumExtendedErrorEnum::Enum error = MethodWithErrorEnumExtendedErrorEnum::IMPLICIT_ERROR_TYPECOLLECTION;
@@ -633,7 +604,7 @@ public:
     }
 
     void testAsync_methodCallReturnsInlineErrorEnum() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         using tests::test::MethodWithImplicitErrorEnumErrorEnum;
 
@@ -663,7 +634,7 @@ public:
     }
 
     void testSync_methodCallReturnsInlineErrorEnum() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
 
         using tests::test::MethodWithImplicitErrorEnumErrorEnum;
 
@@ -688,7 +659,7 @@ public:
     }
 
     void testAsync_OperationWithNoArguments() {
-        asyncTestFixture = createFixture(false);
+        asyncTestFixture = createFixture();
 
         MockCallbackWithJoynrException<int>* callback = new MockCallbackWithJoynrException<int>();
 
@@ -701,7 +672,7 @@ public:
     }
 
     void testSync_OperationWithNoArguments() {
-        tests::Itest* testFixture = createFixture(false);
+        tests::Itest* testFixture = createFixture();
         setExpectationsForSendRequestCall("methodWithNoInputParameters")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackIntResult));
 
@@ -716,14 +687,14 @@ public:
     }
 
     void testSubscribeToAttribute() {
-        //EXPECT_CALL(*mockJoynrMessageSender,
+        //EXPECT_CALL(*mockMessageSender,
         //            sendSubscriptionRequest(_,_,_,_)).Times(1);
 
         std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     new MockGpsSubscriptionListener());
         //TODO uncomment once the connector has the correct signature!
         //vehicle::IGps* gpsFixture = createFixture(false);
-        //QtSubscriptionQos  subscriptionQos(100, 200, true, 80, 80);
+        //SubscriptionQos subscriptionQos(100, 200, true, 80, 80);
         //gpsFixture->subscribeToLocation(subscriptionListener, subscriptionQos);
         //delete gpsFixture;
     }
@@ -734,13 +705,11 @@ protected:
     CallBackActions callBackActions;
     MessagingQos qosSettings;
     MockDispatcher mockDispatcher;
-    MockMessaging mockMessagingStub;
+    MockMessagingStub mockMessagingStub;
     std::shared_ptr<IReplyCaller> callBack;
-    MockJoynrMessageSender* mockJoynrMessageSender;
+    std::shared_ptr<MockMessageSender> mockMessageSender;
     std::string proxyParticipantId;
     std::string providerParticipantId;
-    MockClientCache mockClientCache;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> endPointAddress;
     tests::Itest* asyncTestFixture;
     std::shared_ptr<exceptions::JoynrException> error;
 private:

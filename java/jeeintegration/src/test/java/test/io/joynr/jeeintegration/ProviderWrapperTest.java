@@ -3,7 +3,7 @@ package test.io.joynr.jeeintegration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Map;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Annotated;
@@ -43,17 +45,20 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Injector;
 import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.jeeintegration.JoynrJeeMessageMetaInfo;
 import io.joynr.jeeintegration.ProviderWrapper;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 import io.joynr.jeeintegration.multicast.SubscriptionPublisherProducer;
 import io.joynr.messaging.JoynrMessageCreator;
+import io.joynr.messaging.JoynrMessageMetaInfo;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.JoynrProvider;
@@ -78,8 +83,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ProviderWrapperTest {
 
     private static final String USERNAME = "messageCreatorId";
+    private static final Map<String, Serializable> expectedMessageContext = Maps.newHashMap();
 
     private static final AnnotationLiteral<io.joynr.jeeintegration.api.SubscriptionPublisher> SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL = new AnnotationLiteral<io.joynr.jeeintegration.api.SubscriptionPublisher>() {
+        private static final long serialVersionUID = 1L;
     };
 
     public static interface TestServiceProviderInterface extends SubscriptionPublisherInjection<SubscriptionPublisher> {
@@ -200,6 +207,9 @@ public class ProviderWrapperTest {
     private JoynrCallingPrincipal joynrCallingPincipal;
 
     @Mock
+    private JoynrJeeMessageMetaInfo joynrJeeMessageContext;
+
+    @Mock
     private SubscriptionPublisherProducer subscriptionPublisherProducer;
 
     @Test
@@ -224,8 +234,8 @@ public class ProviderWrapperTest {
         Object result = subject.invoke(proxy, method, new Object[0]);
         assertNotNull(result);
         assertTrue(result instanceof Promise);
-        assertTrue(((Promise) result).isRejected());
-        ((Promise) result).then(new PromiseListener() {
+        assertTrue(((Promise<?>) result).isRejected());
+        ((Promise<?>) result).then(new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
                 fail("Should never get here");
@@ -248,8 +258,8 @@ public class ProviderWrapperTest {
         Object result = subject.invoke(proxy, method, new Object[0]);
         assertNotNull(result);
         assertTrue(result instanceof Promise);
-        assertTrue(((Promise) result).isRejected());
-        ((Promise) result).then(new PromiseListener() {
+        assertTrue(((Promise<?>) result).isRejected());
+        ((Promise<?>) result).then(new PromiseListener() {
             @Override
             public void onFulfillment(Object... values) {
                 fail("Should never get here");
@@ -272,7 +282,7 @@ public class ProviderWrapperTest {
         Object result = subject.invoke(proxy, method, new Object[0]);
 
         assertTrue(result instanceof Promise);
-        Promise promise = (Promise) result;
+        Promise<?> promise = (Promise<?>) result;
         assertTrue(promise.isFulfilled());
         promise.then(new PromiseListener() {
             @Override
@@ -362,11 +372,22 @@ public class ProviderWrapperTest {
         verify(joynrCallingPincipal).setUsername(USERNAME);
     }
 
-    @SuppressWarnings("rawtypes")
+    @Test
+    public void testMessageContextCopied() throws Throwable {
+        ProviderWrapper subject = createSubject();
+        JoynrProvider proxy = createProxy(subject);
+
+        Method method = TestServiceProviderInterface.class.getMethod("testServiceMethodNoArgs");
+
+        subject.invoke(proxy, method, new Object[0]);
+
+        verify(joynrJeeMessageContext).setMessageContext(expectedMessageContext);
+    }
+
     private void assertPromiseEquals(Object result, Object value) {
-        assertTrue(((Promise) result).isFulfilled());
+        assertTrue(((Promise<?>) result).isFulfilled());
         Boolean[] ensureFulfilled = new Boolean[]{ false };
-        ((Promise) result).then(new PromiseListener() {
+        ((Promise<?>) result).then(new PromiseListener() {
 
             @Override
             public void onRejection(JoynrException error) {
@@ -400,6 +421,18 @@ public class ProviderWrapperTest {
         Bean<?> bean = mock(Bean.class);
         doReturn(TestServiceImpl.class).when(bean).getBeanClass();
         doReturn(new TestServiceImpl()).when(bean).create(null);
+
+        JoynrMessageMetaInfo joynrMessageContext = mock(JoynrMessageMetaInfo.class);
+        when(injector.getInstance(eq(JoynrMessageMetaInfo.class))).thenReturn(joynrMessageContext);
+        when(joynrMessageContext.getMessageContext()).thenReturn(expectedMessageContext);
+        Bean<?> joynrMessageContextBean = mock(Bean.class);
+        when(beanManager.getBeans(
+                JoynrJeeMessageMetaInfo.class)).
+                thenReturn(Sets.newHashSet(joynrMessageContextBean));
+        when(beanManager.getReference(
+                eq(joynrMessageContextBean),
+                eq(JoynrJeeMessageMetaInfo.class),
+                Mockito.any())).thenReturn(joynrJeeMessageContext);
 
         // Setup mock SubscriptionPublisherProducer instance in mock bean manager
         Bean subscriptionPublisherProducerBean = mock(Bean.class);

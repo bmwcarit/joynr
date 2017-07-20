@@ -3,7 +3,7 @@ package io.joynr.messaging.channel;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,53 +19,29 @@ package io.joynr.messaging.channel;
  * #L%
  */
 
-import static joynr.JoynrMessage.MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
-import static joynr.JoynrMessage.MESSAGE_TYPE_REQUEST;
-import static joynr.JoynrMessage.MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessaging;
-import io.joynr.messaging.JoynrMessageSerializer;
+import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.http.HttpMessageSender;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
 
-public class ChannelMessagingStub implements IMessaging {
+public class ChannelMessagingStub implements IMessagingStub {
+    private static final Logger LOG = LoggerFactory.getLogger(ChannelMessagingStub.class);
 
     private ChannelAddress address;
-    private JoynrMessageSerializer messageSerializer;
     private HttpMessageSender httpMessageSender;
-    private ChannelAddress replyToAddress;
 
-    public ChannelMessagingStub(ChannelAddress address,
-                                ChannelAddress replyToAddress,
-                                JoynrMessageSerializer messageSerializer,
-                                HttpMessageSender httpMessageSender) {
+    public ChannelMessagingStub(ChannelAddress address, HttpMessageSender httpMessageSender) {
         this.address = address;
-        this.replyToAddress = replyToAddress;
-        this.messageSerializer = messageSerializer;
         this.httpMessageSender = httpMessageSender;
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
-        setReplyTo(message);
-        String serializedMessage = messageSerializer.serialize(message);
-        transmit(serializedMessage, failureAction);
-    }
-
-    @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
-        httpMessageSender.sendMessage(address, serializedMessage, failureAction);
-    }
-
-    private void setReplyTo(JoynrMessage message) {
-        String type = message.getType();
-        if (type != null
-                && message.getReplyTo() == null
-                && (type.equals(MESSAGE_TYPE_REQUEST) || type.equals(MESSAGE_TYPE_SUBSCRIPTION_REQUEST) || type.equals(MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST))) {
-            message.setReplyTo(RoutingTypesUtil.toAddressString(replyToAddress));
-        }
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
+        LOG.debug(">>> OUTGOING >>> {}", message);
+        httpMessageSender.sendMessage(address, message.getSerializedMessage(), failureAction);
     }
 }

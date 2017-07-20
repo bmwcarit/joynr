@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 
 #include <string>
 
-#include "joynr/JoynrCommonExport.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr
@@ -39,15 +39,23 @@ namespace joynr
  *  - Calling principal: Identifies the entity which caused the provider call. This value
  *    equals the creator user id from the joynr message header field.
  */
-class JOYNRCOMMON_EXPORT CallContext
+class JOYNR_EXPORT CallContext
 {
 public:
+    CallContext() = default;
+    CallContext(CallContext&&) = default;
+    CallContext& operator=(CallContext&&) = default;
+    CallContext(const CallContext&) = default;
+    CallContext& operator=(const CallContext&) = default;
+
     /**
      * @brief setPrincipal sets the principal identifier of the
      * entity that caused the current call.
      * @param principal the new principal identifier
      */
     void setPrincipal(const std::string& principal);
+    void setPrincipal(std::string&& principal);
+
     /**
      * @brief getPrincipal gets the principal indentifier of the
      * entity that caused the current call

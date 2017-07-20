@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ var requirejsConfig = {
         "log4javascriptDependency" : "lib/log4javascriptNode",
         "global/WebSocket" : "global/WebSocketNode",
         "global/Mqtt" : "global/Mqtt",
+        "global/Smrf" : "global/SmrfNode",
         "joynr/Runtime" : "joynr/Runtime.websocket.libjoynr"
     }
 };

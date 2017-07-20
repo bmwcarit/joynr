@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@
 
 define([
     "joynr/messaging/channel/ChannelMessagingSkeleton",
-    "joynr/system/RoutingTypes/ChannelAddress"
-], function(ChannelMessagingSkeleton, ChannelAddress) {
+    "joynr/system/RoutingTypes/ChannelAddress",
+    "joynr/messaging/JoynrMessage"
+], function(ChannelMessagingSkeleton, ChannelAddress, JoynrMessage) {
 
     describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", function() {
 
@@ -69,25 +70,46 @@ define([
             done();
         });
 
-        it(
-                "event calls through to messageRouter",
-                function(done) {
-                    expect(messageRouterSpy.route).not.toHaveBeenCalled();
-                    channelMessagingSkeleton.receiveMessage(joynrMessage1);
-                    expect(messageRouterSpy.route).toHaveBeenCalledWith(joynrMessage1);
-                    expect(messageRouterSpy.addNextHop).not.toHaveBeenCalled();
-                    expect(messageRouterSpy.route.calls.count()).toBe(1);
-                    channelMessagingSkeleton.receiveMessage(joynrMessage2);
-                    expect(messageRouterSpy.route).toHaveBeenCalledWith(joynrMessage2);
-                    expect(messageRouterSpy.addNextHop).toHaveBeenCalled();
-                    expect(messageRouterSpy.addNextHop.calls.mostRecent().args[0]).toBe(
-                            joynrMessage2.from);
-                    expect(messageRouterSpy.addNextHop.calls.mostRecent().args[1].channelId).toBe(
-                            channelAddress.channelId);
-                    expect(messageRouterSpy.route.calls.count()).toBe(2);
-                    done();
-                });
+        it("event calls through to messageRouter", function(done) {
+            expect(messageRouterSpy.route).not.toHaveBeenCalled();
 
+            channelMessagingSkeleton.receiveMessage(joynrMessage1);
+            expect(messageRouterSpy.route).toHaveBeenCalledWith(joynrMessage1);
+            expect(messageRouterSpy.route.calls.count()).toBe(1);
+
+            channelMessagingSkeleton.receiveMessage(joynrMessage2);
+            expect(messageRouterSpy.route).toHaveBeenCalledWith(joynrMessage2);
+            expect(messageRouterSpy.route.calls.count()).toBe(2);
+
+            expect(messageRouterSpy.addNextHop).not.toHaveBeenCalled();
+            done();
+        });
+
+        function setsReceivedFromGlobal(message) {
+            messageRouterSpy.route.calls.reset();
+            expect(message.isReceivedFromGlobal).toEqual(false);
+            expect(messageRouterSpy.route).not.toHaveBeenCalled();
+            channelMessagingSkeleton.receiveMessage(message);
+            expect(messageRouterSpy.route).toHaveBeenCalledTimes(1);
+            expect(messageRouterSpy.route.calls.argsFor(0)[0].isReceivedFromGlobal).toEqual(true);
+        }
+
+        it("sets receivedFromGlobal", function() {
+            var requestMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            });
+            setsReceivedFromGlobal(requestMessage);
+
+            var multicastMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+            });
+            setsReceivedFromGlobal(multicastMessage);
+
+            var subscriptionRequestMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
+            });
+            setsReceivedFromGlobal(subscriptionRequestMessage);
+        });
     });
 
 });

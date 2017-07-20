@@ -5,7 +5,7 @@ import java.util.Arrays;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,9 @@ public class Reply implements JoynrMessageType {
         this.response = null;
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "response is just a data container and only accessed by trusted code.")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+                                                      value = "EI_EXPOSE_REP",
+                                                      justification = "response is just a data container and only accessed by trusted code.")
     public Object[] getResponse() {
         return response;
     }

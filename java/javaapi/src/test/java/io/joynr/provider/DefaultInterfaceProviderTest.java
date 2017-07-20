@@ -3,7 +3,7 @@ package io.joynr.provider;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class DefaultInterfaceProviderTest {
         fixture.addBroadcastFilter(new BroadcastFilterImpl("testFilter1"));
         Mockito.verify(subscriptionPublisher, Mockito.never()).addBroadcastFilter(Mockito.<BroadcastFilterImpl> any());
 
-        //after setting the subscription publisher, the queued broadcast filters should be forwarded 
+        //after setting the subscription publisher, the queued broadcast filters should be forwarded
         fixture.setSubscriptionPublisher(subscriptionPublisher);
         Mockito.verify(subscriptionPublisher, Mockito.times(1)).addBroadcastFilter(Mockito.<BroadcastFilterImpl> any());
 

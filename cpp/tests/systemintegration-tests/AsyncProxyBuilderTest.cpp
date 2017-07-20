@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #include <gmock/gmock.h>
 
 #include "tests/utils/MockObjects.h"
-#include "runtimes/cluster-controller-runtime/JoynrClusterControllerRuntime.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/tests/testProxy.h"
 
@@ -38,7 +38,7 @@ public:
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(100);
         auto integrationSettings = std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
-        Settings settings("test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings");
+        Settings settings("test-resources/MqttSystemIntegrationTest1.settings");
         Settings::merge(settings, *integrationSettings, false);
         runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(integrationSettings));
 
@@ -50,7 +50,7 @@ public:
         const bool deleteChannel = true;
         runtime->stop(deleteChannel);
         // Delete persisted files
-        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
@@ -72,7 +72,8 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
 
     runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
 
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>(domain);
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
 
     Semaphore onSuccessCalledSemaphore;
 
@@ -86,7 +87,6 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
     };
 
     testProxyBuilder->setMessagingQos(MessagingQos(50000))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->buildAsync(onSuccess, onFailure);
 
@@ -95,7 +95,8 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
 
 TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
 {
-    ProxyBuilder<tests::testProxy>* testProxyBuilder = runtime->createProxyBuilder<tests::testProxy>("unknownDomain");
+    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>("unknownDomain");
 
     Semaphore onErrorCalledSemaphore;
 
@@ -108,7 +109,6 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
     };
 
     testProxyBuilder->setMessagingQos(MessagingQos(50000))
-                    ->setCached(false)
                     ->setDiscoveryQos(discoveryQos)
                     ->buildAsync(onSuccess, onFailure);
 

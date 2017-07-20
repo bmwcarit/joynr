@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,6 @@ MessagingSettings::MessagingSettings(const MessagingSettings& other) : settings(
 const std::string& MessagingSettings::SETTING_BROKER_URL()
 {
     static const std::string value("messaging/broker-url");
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_BOUNCE_PROXY_URL()
-{
-    static const std::string value("messaging/bounceproxy-url");
     return value;
 }
 
@@ -93,27 +87,39 @@ const std::string& MessagingSettings::SETTING_CLIENT_CERTIFICATE_PASSWORD()
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_MQTT_KEEP_ALIVE_TIME()
+const std::string& MessagingSettings::SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS()
 {
-    static const std::string value("messaging/mqtt-keep-alive-time");
+    static const std::string value("messaging/mqtt-keep-alive-time-seconds");
     return value;
 }
 
-std::chrono::seconds MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME()
+std::chrono::seconds MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS()
 {
     static const std::chrono::seconds value(60);
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_MQTT_RECONNECT_SLEEP_TIME()
+const std::string& MessagingSettings::SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS()
 {
-    static const std::string value("messaging/mqtt-reconnect-sleep-time");
+    static const std::string value("messaging/mqtt-reconnect-delay-time-seconds");
     return value;
 }
 
-std::chrono::milliseconds MessagingSettings::DEFAULT_MQTT_RECONNECT_SLEEP_TIME()
+const std::string& MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()
+{
+    static const std::string value("messaging/mqtt-connection-timeout-ms");
+    return value;
+}
+
+std::chrono::milliseconds MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS()
 {
     static const std::chrono::milliseconds value(1000);
+    return value;
+}
+
+std::chrono::seconds MessagingSettings::DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS()
+{
+    static const std::chrono::seconds value(1);
     return value;
 }
 
@@ -151,17 +157,6 @@ const std::string& MessagingSettings::SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS
 {
     static const std::string value("messaging/discovery-entry-expiry-interval-ms");
     return value;
-}
-
-const std::string& MessagingSettings::SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS()
-{
-    static const std::string value("messaging/purge-expired-discovery-entries-interval-ms");
-    return value;
-}
-
-int MessagingSettings::DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS()
-{
-    return 60 * 60 * 1000; // 1 hour
 }
 
 const std::string& MessagingSettings::SETTING_LOCAL_PROXY_HOST()
@@ -238,8 +233,8 @@ const std::string& MessagingSettings::SETTING_LONGPOLL_TIMEOUT_MS()
 
 std::int64_t MessagingSettings::DEFAULT_LONGPOLL_TIMEOUT_MS()
 {
-    static const std::int64_t value(10 * 60 * 1000); // 10 minutes
-    return value;
+    // 10 minutes
+    return (10 * 60 * 100);
 }
 
 const std::string& MessagingSettings::SETTING_HTTP_CONNECT_TIMEOUT_MS()
@@ -250,8 +245,8 @@ const std::string& MessagingSettings::SETTING_HTTP_CONNECT_TIMEOUT_MS()
 
 std::int64_t MessagingSettings::DEFAULT_HTTP_CONNECT_TIMEOUT_MS()
 {
-    static const std::int64_t value(1 * 60 * 1000); // 1 minute
-    return value;
+    // 1 minute
+    return (1 * 60 * 1000);
 }
 
 const std::string& MessagingSettings::SETTING_BROKER_TIMEOUT_MS()
@@ -262,8 +257,8 @@ const std::string& MessagingSettings::SETTING_BROKER_TIMEOUT_MS()
 
 std::int64_t MessagingSettings::DEFAULT_BROKER_TIMEOUT_MS()
 {
-    static const std::int64_t value(20 * 1000); // 20 seconds
-    return value;
+    // 20 seconds
+    return (20 * 1000);
 }
 
 const std::string& MessagingSettings::SETTING_MAXIMUM_TTL_MS()
@@ -280,8 +275,8 @@ const std::string& MessagingSettings::SETTING_DISCOVERY_MESSAGES_TTL_MS()
 
 std::int64_t MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS()
 {
-    static const std::int64_t value(40 * 1000); // 40 seconds
-    return value;
+    // 40 seconds
+    return (40 * 1000);
 }
 
 const std::string& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
@@ -292,37 +287,24 @@ const std::string& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
 
 std::int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
 {
-    static const std::int64_t value(10 * 60 * 1000); // 10 minutes
-    return value;
+    // 10 minutes
+    return (10 * 60 * 1000);
 }
 
 std::uint64_t MessagingSettings::DEFAULT_TTL_UPLIFT_MS()
 {
-    static const std::uint64_t value(0);
-    return value;
+    return 0;
 }
 
 std::uint64_t MessagingSettings::DEFAULT_MAXIMUM_TTL_MS()
 {
-    static const std::uint64_t value(30UL * 24UL * 60UL * 60UL * 1000UL); // 30 days
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()
-{
-    static const std::string value("messaging/capabilities-freshness-update-interval-ms");
-    return value;
+    // 30 days
+    return (30UL * 24UL * 60UL * 60UL * 1000UL);
 }
 
 const std::string& MessagingSettings::SETTING_TTL_UPLIFT_MS()
 {
     static const std::string value("messaging/ttl-uplift-ms");
-    return value;
-}
-
-std::chrono::milliseconds MessagingSettings::DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()
-{
-    static const std::chrono::milliseconds value(1UL * 60UL * 60UL * 1000UL); // 1 hour
     return value;
 }
 
@@ -340,22 +322,6 @@ void MessagingSettings::setBrokerUrl(const BrokerUrl& brokerUrl)
 {
     std::string url = brokerUrl.getBrokerChannelsBaseUrl().toString();
     settings.set(SETTING_BROKER_URL(), url);
-}
-
-BrokerUrl MessagingSettings::getBounceProxyUrl() const
-{
-    return BrokerUrl(settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
-}
-
-std::string MessagingSettings::getBounceProxyUrlString() const
-{
-    return settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
-}
-
-void MessagingSettings::setBounceProxyUrl(const BrokerUrl& bounceProxyUrl)
-{
-    std::string url = bounceProxyUrl.getBrokerChannelsBaseUrl().toString();
-    settings.set(SETTING_BOUNCE_PROXY_URL(), url);
 }
 
 std::string MessagingSettings::getDiscoveryDirectoriesDomain() const
@@ -378,25 +344,33 @@ std::string MessagingSettings::getCapabilitiesDirectoryParticipantId() const
     return settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID());
 }
 
-std::chrono::seconds MessagingSettings::getMqttKeepAliveTime() const
+std::chrono::seconds MessagingSettings::getMqttKeepAliveTimeSeconds() const
 {
-    return std::chrono::seconds(settings.get<std::int64_t>(SETTING_MQTT_KEEP_ALIVE_TIME()));
+    return std::chrono::seconds(settings.get<std::int64_t>(SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS()));
 }
 
-void MessagingSettings::setMqttKeepAliveTime(std::chrono::seconds mqttKeepAliveTime)
+void MessagingSettings::setMqttKeepAliveTimeSeconds(std::chrono::seconds mqttKeepAliveTimeSeconds)
 {
-    settings.set(SETTING_MQTT_KEEP_ALIVE_TIME(), mqttKeepAliveTime.count());
+    settings.set(SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS(), mqttKeepAliveTimeSeconds.count());
 }
 
-std::chrono::milliseconds MessagingSettings::getMqttReconnectSleepTime() const
+std::chrono::seconds MessagingSettings::getMqttReconnectDelayTimeSeconds() const
+{
+    return std::chrono::seconds(
+            settings.get<std::int64_t>(SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS()));
+}
+
+void MessagingSettings::setMqttReconnectDelayTimeSeconds(
+        std::chrono::seconds mqttReconnectDelayTimeSeconds)
+{
+    settings.set(
+            SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS(), mqttReconnectDelayTimeSeconds.count());
+}
+
+std::chrono::milliseconds MessagingSettings::getMqttConnectionTimeoutMs() const
 {
     return std::chrono::milliseconds(
-            settings.get<std::int64_t>(SETTING_MQTT_RECONNECT_SLEEP_TIME()));
-}
-
-void MessagingSettings::setMqttReconnectSleepTime(std::chrono::milliseconds mqttReconnectSleepTime)
-{
-    settings.set(SETTING_MQTT_RECONNECT_SLEEP_TIME(), mqttReconnectSleepTime.count());
+            settings.get<std::int64_t>(SETTING_MQTT_CONNECTION_TIMEOUT_MS()));
 }
 
 std::int64_t MessagingSettings::getIndex() const
@@ -429,25 +403,14 @@ void MessagingSettings::setDeleteChannelRetryInterval(const int& retryInterval)
     settings.set(SETTING_DELETE_CHANNEL_RETRY_INTERVAL(), retryInterval);
 }
 
-int MessagingSettings::getDiscoveryEntryExpiryIntervalMs() const
+std::int64_t MessagingSettings::getDiscoveryEntryExpiryIntervalMs() const
 {
-    return settings.get<int>(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS());
+    return settings.get<std::int64_t>(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS());
 }
 
-void MessagingSettings::setDiscoveryEntryExpiryIntervalMs(int expiryIntervalMs)
+void MessagingSettings::setDiscoveryEntryExpiryIntervalMs(std::int64_t expiryIntervalMs)
 {
     settings.set(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS(), expiryIntervalMs);
-}
-
-int MessagingSettings::getPurgeExpiredDiscoveryEntriesIntervalMs() const
-{
-    return settings.get<int>(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
-}
-
-void MessagingSettings::setPurgeExpiredDiscoveryEntriesIntervalMs(int purgeExpiredEntriesIntervalMs)
-{
-    settings.set(
-            SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS(), purgeExpiredEntriesIntervalMs);
 }
 
 int MessagingSettings::getSendMsgRetryInterval() const
@@ -510,12 +473,12 @@ void MessagingSettings::setMessagingPropertiesPersistenceFilename(const std::str
     settings.set(SETTING_PERSISTENCE_FILENAME(), filename);
 }
 
-std::int64_t MessagingSettings::getLongPollTimeout() const
+std::int64_t MessagingSettings::getLongPollTimeoutMs() const
 {
     return settings.get<std::int64_t>(SETTING_LONGPOLL_TIMEOUT_MS());
 }
 
-void MessagingSettings::setLongPollTimeout(std::int64_t timeout_ms)
+void MessagingSettings::setLongPollTimeoutMs(std::int64_t timeout_ms)
 {
     settings.set(SETTING_LONGPOLL_TIMEOUT_MS(), timeout_ms);
 }
@@ -525,17 +488,17 @@ std::int64_t MessagingSettings::getHttpConnectTimeout() const
     return settings.get<std::int64_t>(SETTING_HTTP_CONNECT_TIMEOUT_MS());
 }
 
-void MessagingSettings::setHttpConnectTimeout(std::int64_t timeout_ms)
+void MessagingSettings::setHttpConnectTimeoutMs(std::int64_t timeout_ms)
 {
     settings.set(SETTING_HTTP_CONNECT_TIMEOUT_MS(), timeout_ms);
 }
 
-std::int64_t MessagingSettings::getBrokerTimeout() const
+std::int64_t MessagingSettings::getBrokerTimeoutMs() const
 {
     return settings.get<std::int64_t>(SETTING_BROKER_TIMEOUT_MS());
 }
 
-void MessagingSettings::setBrokerTimeout(std::int64_t timeout_ms)
+void MessagingSettings::setBrokerTimeoutMs(std::int64_t timeout_ms)
 {
     settings.set(SETTING_BROKER_TIMEOUT_MS(), timeout_ms);
 }
@@ -580,12 +543,6 @@ std::uint64_t MessagingSettings::getTtlUpliftMs() const
     return settings.get<std::uint64_t>(SETTING_TTL_UPLIFT_MS());
 }
 
-std::chrono::milliseconds MessagingSettings::getCapabilitiesFreshnessUpdateIntervalMs() const
-{
-    return std::chrono::milliseconds(
-            settings.get<std::uint64_t>(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()));
-}
-
 bool MessagingSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
@@ -601,16 +558,6 @@ void MessagingSettings::checkSettings()
         settings.set(SETTING_BROKER_URL(), brokerUrl);
     }
 
-    if (!settings.contains(SETTING_BOUNCE_PROXY_URL())) {
-        settings.set(SETTING_BOUNCE_PROXY_URL(), brokerUrl);
-    } else {
-        std::string bounceProxyUrl = settings.get<std::string>(SETTING_BOUNCE_PROXY_URL());
-        if (bounceProxyUrl.back() != '/') {
-            bounceProxyUrl.append("/");
-            settings.set(SETTING_BOUNCE_PROXY_URL(), bounceProxyUrl);
-        }
-    }
-
     assert(settings.contains(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
 
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_URL()));
@@ -623,12 +570,17 @@ void MessagingSettings::checkSettings()
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
     assert(settings.contains(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
 
-    if (!settings.contains(SETTING_MQTT_KEEP_ALIVE_TIME())) {
-        settings.set(SETTING_MQTT_KEEP_ALIVE_TIME(), DEFAULT_MQTT_KEEP_ALIVE_TIME().count());
+    if (!settings.contains(SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS())) {
+        settings.set(SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS(),
+                     DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS().count());
     }
-    if (!settings.contains(SETTING_MQTT_RECONNECT_SLEEP_TIME())) {
+    if (!settings.contains(SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS())) {
+        settings.set(SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS(),
+                     DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS().count());
+    }
+    if (!settings.contains(SETTING_MQTT_CONNECTION_TIMEOUT_MS())) {
         settings.set(
-                SETTING_MQTT_RECONNECT_SLEEP_TIME(), DEFAULT_MQTT_RECONNECT_SLEEP_TIME().count());
+                SETTING_MQTT_CONNECTION_TIMEOUT_MS(), DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
     }
     if (!settings.contains(SETTING_INDEX())) {
         settings.set(SETTING_INDEX(), 0);
@@ -654,14 +606,6 @@ void MessagingSettings::checkSettings()
     if (!settings.contains(SETTING_MAXIMUM_TTL_MS())) {
         setMaximumTtlMs(DEFAULT_MAXIMUM_TTL_MS());
     }
-    if (!settings.contains(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS())) {
-        settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
-                     DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS().count());
-    }
-    if (!settings.contains(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS())) {
-        setPurgeExpiredDiscoveryEntriesIntervalMs(
-                DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
-    }
     if (!settings.contains(SETTING_TTL_UPLIFT_MS())) {
         settings.set(SETTING_TTL_UPLIFT_MS(), DEFAULT_TTL_UPLIFT_MS());
     }
@@ -673,10 +617,6 @@ void MessagingSettings::printSettings() const
                     "SETTING: {} = {})",
                     SETTING_BROKER_URL(),
                     settings.get<std::string>(SETTING_BROKER_URL()));
-    JOYNR_LOG_DEBUG(logger,
-                    "SETTING: {} = {})",
-                    SETTING_BOUNCE_PROXY_URL(),
-                    settings.get<std::string>(SETTING_BOUNCE_PROXY_URL()));
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {} = {})",
                     SETTING_DISCOVERY_DIRECTORIES_DOMAIN(),
@@ -695,12 +635,12 @@ void MessagingSettings::printSettings() const
                     settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {}  = {})",
-                    SETTING_MQTT_KEEP_ALIVE_TIME(),
-                    settings.get<std::string>(SETTING_MQTT_KEEP_ALIVE_TIME()));
+                    SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS(),
+                    settings.get<std::string>(SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS()));
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {}  = {})",
-                    SETTING_MQTT_RECONNECT_SLEEP_TIME(),
-                    settings.get<std::string>(SETTING_MQTT_RECONNECT_SLEEP_TIME()));
+                    SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS(),
+                    settings.get<std::string>(SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS()));
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {}  = {})",
                     SETTING_INDEX(),
@@ -738,10 +678,7 @@ void MessagingSettings::printSettings() const
                     SETTING_DISCOVERY_MESSAGES_TTL_MS(),
                     settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()));
     JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_MAXIMUM_TTL_MS(), getMaximumTtlMs());
-    JOYNR_LOG_DEBUG(logger,
-                    "SETTING: {} = {})",
-                    SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
-                    getCapabilitiesFreshnessUpdateIntervalMs().count());
+    JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_TTL_UPLIFT_MS(), getTtlUpliftMs());
 }
 
 } // namespace joynr

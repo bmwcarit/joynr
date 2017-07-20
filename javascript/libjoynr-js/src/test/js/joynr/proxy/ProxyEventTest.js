@@ -1,10 +1,10 @@
-/*jslint es5: true */
+/*jslint es5: true, nomen: true */
 /*global fail: true */
 
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,11 @@ define([
     "joynr/proxy/ProxyEvent",
     "joynr/proxy/DiscoveryQos",
     "joynr/messaging/MessagingQos",
-    "joynr/proxy/OnChangeSubscriptionQos",
+    "joynr/proxy/MulticastSubscriptionQos",
+    "joynr/types/DiscoveryEntryWithMetaInfo",
+    "joynr/types/Version",
+    "joynr/types/ProviderQos",
+    "joynr/util/UtilInternal",
     "global/Promise",
     "global/WaitsFor"
 ], function(
@@ -36,8 +40,13 @@ define([
         ProxyEvent,
         DiscoveryQos,
         MessagingQos,
-        OnChangeSubscriptionQos,
-        Promise, waitsFor) {
+        MulticastSubscriptionQos,
+        DiscoveryEntryWithMetaInfo,
+        Version,
+        ProviderQos,
+        Util,
+        Promise,
+        waitsFor) {
 
     var asyncTimeout = 5000;
 
@@ -45,15 +54,11 @@ define([
 
         var weakSignal, broadcastWithoutFilterParameters;
         var subscriptionId;
-        var subscriptionQos = new OnChangeSubscriptionQos();
+        var subscriptionQos = new MulticastSubscriptionQos();
         var subscriptionManagerSpy;
-
-        var qosSettings = {
-            periodMs : 50,
-            expiryDateMs : 3,
-            alertAfterIntervalMs : 80,
-            publicationTtlMs : 100
-        };
+        var proxyParticipantId;
+        var providerDiscoveryEntry;
+        var broadcastName;
 
         function checkSpy(spy, errorExpected) {
 
@@ -67,9 +72,21 @@ define([
         }
 
         beforeEach(function(done) {
+            proxyParticipantId = "proxyParticipantId";
+            providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
+                providerVersion : new Version({majorVersion : 0, minorVersion : 23}),
+                domain : "testProviderDomain",
+                interfaceName : "interfaceName",
+                participantId : "providerParticipantId",
+                qos : new ProviderQos({}),
+                lastSeenDateMs : Date.now(),
+                expiryDateMs : Date.now() + 60000,
+                publicKeyId : "publicKeyId",
+                isLocal : true
+            });
             var fakeProxy = {
-                fromParticipantId : "proxyParticipantId",
-                toParticipantId : "providerParticipantId"
+                proxyParticipantId : proxyParticipantId,
+                providerDiscoveryEntry : providerDiscoveryEntry
             };
 
             subscriptionManagerSpy = jasmine.createSpyObj("subscriptionManager", [
@@ -81,13 +98,15 @@ define([
             subscriptionManagerSpy.registerBroadcastSubscription.and.returnValue(Promise.resolve(subscriptionId));
             subscriptionManagerSpy.unregisterSubscription.and.returnValue(Promise.resolve());
 
+            broadcastName = "weakSignal";
             weakSignal = new ProxyEvent(fakeProxy, {
-                broadcastName : "weakSignal",
+                broadcastName : broadcastName,
                 discoveryQos : new DiscoveryQos(),
                 messagingQos : new MessagingQos(),
                 dependencies : {
                     subscriptionManager : subscriptionManagerSpy
                 },
+                selective: true,
                 filterParameters: {
                     "a": "reservedForTypeInfo",
                     "b": "reservedForTypeInfo",
@@ -96,7 +115,7 @@ define([
             });
 
             broadcastWithoutFilterParameters = new ProxyEvent(fakeProxy, {
-                broadcastName : "weakSignal",
+                broadcastName : broadcastName,
                 discoveryQos : new DiscoveryQos(),
                 messagingQos : new MessagingQos(),
                 dependencies : {
@@ -130,6 +149,43 @@ define([
             done();
         });
 
+        it("subscribe calls subscriptionManager", function(done) {
+            var partitions = ["1", "2", "3"];
+            var onReceive = function(value) {};
+            var onError = function(value) {};
+            var onSubscribed = function(value) {};
+
+            var expectedPartitions = Util.extend([], partitions);
+            var expectedSubscriptionQos = new MulticastSubscriptionQos(Util.extendDeep({}, subscriptionQos));
+            var expectedDiscoveryEntry = Util.extendDeep({}, providerDiscoveryEntry);
+            expectedDiscoveryEntry.providerVersion = new Version(expectedDiscoveryEntry.providerVersion);
+            expectedDiscoveryEntry.qos = new ProviderQos(expectedDiscoveryEntry.qos);
+            expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(expectedDiscoveryEntry);
+
+            weakSignal.subscribe({
+                subscriptionQos : subscriptionQos,
+                partitions: partitions,
+                onReceive : onReceive,
+                onError : onError,
+                onSubscribed : onSubscribed
+            }).catch(fail);
+
+            expect(subscriptionManagerSpy.registerBroadcastSubscription).toHaveBeenCalled();
+            expect(subscriptionManagerSpy.registerBroadcastSubscription.calls.argsFor(0)[0].proxyId).toEqual(proxyParticipantId);
+            expect(subscriptionManagerSpy.registerBroadcastSubscription.calls.argsFor(0)[0].providerDiscoveryEntry).toEqual(expectedDiscoveryEntry);
+            expect(subscriptionManagerSpy.registerBroadcastSubscription.calls.argsFor(0)[0].broadcastName).toBe(broadcastName);
+            expect(subscriptionManagerSpy.registerBroadcastSubscription.calls.argsFor(0)[0].subscriptionQos).toEqual(jasmine.objectContaining({
+                _typeName: expectedSubscriptionQos._typeName,
+                expiryDateMs: expectedSubscriptionQos.expiryDateMs
+            }));
+            expect(subscriptionManagerSpy.registerBroadcastSubscription.calls.argsFor(0)[0].subscriptionId).toBeUndefined();
+            expect(subscriptionManagerSpy.registerBroadcastSubscription.calls.argsFor(0)[0].selective).toEqual(true);
+            expect(subscriptionManagerSpy.registerBroadcastSubscription.calls.argsFor(0)[0].partitions).toEqual(expectedPartitions);
+            expect(subscriptionManagerSpy.registerBroadcastSubscription.calls.argsFor(0)[0].onError).toBe(onError);
+            expect(subscriptionManagerSpy.registerBroadcastSubscription.calls.argsFor(0)[0].onSubscribed).toBe(onSubscribed);
+            done();
+        });
+
         it("subscribe provides a subscriptionId", function(done) {
             var spy = jasmine.createSpyObj("spy", [
                 "onFulfilled",
@@ -142,7 +198,7 @@ define([
 
             weakSignal.subscribe({
                 subscriptionQos : subscriptionQos,
-                receive : function(value) {}
+                onReceive : function(value) {}
             }).then(spy.onFulfilled).catch(spy.onRejected).then(function(passedId) {
                 expect(passedId).toBeDefined();
                 expect(typeof passedId === "string").toBeTruthy();

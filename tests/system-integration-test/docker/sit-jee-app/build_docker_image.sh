@@ -13,5 +13,5 @@ if [ -z "$(docker version 2>/dev/null)" ]; then
 fi
 
 docker build -t sit-jee-app:latest .
-docker images | grep '<none' | awk '{print $3}' | xargs docker rmi -f 2>/dev/null
+docker images --filter "dangling=true" -q | xargs docker rmi -f 2>/dev/null
 rm sit-jee-app.war

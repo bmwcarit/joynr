@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,14 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "JoynrTest.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/tests/TestBroadcastWithFilteringBroadcastFilter.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Future.h"
+
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -173,6 +174,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterSucces
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
+                1000, // publication ttl
                 minInterval_ms);  // minInterval_ms
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult =
@@ -227,6 +229,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) 
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 500000,   // validity_ms
+                1000, // publication ttl
                 minInterval_ms);  // minInterval_ms
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult =
@@ -257,7 +260,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) 
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
 }
 
-INSTANTIATE_TEST_CASE_P(Http,
+INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         End2EndSelectiveBroadcastTest,
         testing::Values(
             std::make_tuple(
@@ -267,12 +270,12 @@ INSTANTIATE_TEST_CASE_P(Http,
         )
 );
 
-INSTANTIATE_TEST_CASE_P(MqttWithHttpBackend,
+INSTANTIATE_TEST_CASE_P(Mqtt,
         End2EndSelectiveBroadcastTest,
         testing::Values(
             std::make_tuple(
-                "test-resources/MqttWithHttpBackendSystemIntegrationTest1.settings",
-                "test-resources/MqttWithHttpBackendSystemIntegrationTest2.settings"
+                "test-resources/MqttSystemIntegrationTest1.settings",
+                "test-resources/MqttSystemIntegrationTest2.settings"
             )
         )
 );

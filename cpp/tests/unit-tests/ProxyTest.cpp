@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,10 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/ConnectorFactory.h"
-#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/tests/TestWithoutVersionProxy.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "AbstractSyncAsyncTest.cpp"
 
 using ::testing::A;
@@ -52,9 +53,10 @@ public:
     {}
     void SetUp() override {
         AbstractSyncAsyncTest::SetUp();
-        mockInProcessConnectorFactory = new MockInProcessConnectorFactory();
-        JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(mockJoynrMessageSender, (SubscriptionManager*) nullptr);
-        mockConnectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, joynrMessagingConnectorFactory);
+        auto mockInProcessConnectorFactoryPtr = std::make_unique<MockInProcessConnectorFactory>();
+        mockInProcessConnectorFactory = mockInProcessConnectorFactoryPtr.get();
+        auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(mockMessageSender, nullptr);
+        mockConnectorFactory = new ConnectorFactory(std::move(mockInProcessConnectorFactoryPtr), std::move(joynrMessagingConnectorFactory));
     }
 
     void TearDown() override {
@@ -68,32 +70,33 @@ public:
             const std::string&, // receiver participant ID
             const MessagingQos&, // messaging QoS
             const Request&, // request object to send
-            std::shared_ptr<IReplyCaller> // reply caller to notify when reply is received
+            std::shared_ptr<IReplyCaller>, // reply caller to notify when reply is received
+            bool isLocalMessage
     )>& setExpectationsForSendRequestCall(std::string methodName) override {
         return EXPECT_CALL(
-                    *mockJoynrMessageSender,
+                    *mockMessageSender,
                     sendRequest(
                         _, // sender participant ID
                         Eq(providerParticipantId), // receiver participant ID
                         _, // messaging QoS
                         Property(&Request::getMethodName, Eq(methodName)), // request object to send
-                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()) // reply caller to notify when reply is received
+                        Property(&std::shared_ptr<IReplyCaller>::get,NotNull()), // reply caller to notify when reply is received
+                        _ // isLocalFlag
                     )
         );
     }
 
-    tests::testProxy* createFixture(bool cacheEnabled) override {
+    tests::testProxy* createFixture() override {
         EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
         tests::testProxy* proxy = new tests::testProxy(
-                    endPointAddress,
                     mockConnectorFactory,
-                    &mockClientCache,
                     "myDomain",
-                    MessagingQos(),
-                    cacheEnabled
-                    );
+                    MessagingQos());
         const bool useInProcessCommunication = false;
-        proxy->handleArbitrationFinished(providerParticipantId, useInProcessCommunication);
+        types::DiscoveryEntryWithMetaInfo discoveryEntry;
+        discoveryEntry.setParticipantId(providerParticipantId);
+        discoveryEntry.setIsLocal(true);
+        proxy->handleArbitrationFinished(discoveryEntry, useInProcessCommunication);
         return proxy;
     }
 
@@ -117,14 +120,6 @@ TEST_F(ProxyTest, sync_setAttributeNotCached) {
 
 TEST_F(ProxyTest, sync_getAttributeNotCached) {
     testSync_getAttributeNotCached();
-}
-
-TEST_F(ProxyTest, async_getAttributeCached) {
-    testAsync_getAttributeCached();
-}
-
-TEST_F(ProxyTest, sync_getAttributeCached) {
-    testSync_getAttributeCached();
 }
 
 TEST_F(ProxyTest, async_getterCallReturnsProviderRuntimeException) {
@@ -212,9 +207,9 @@ TEST_F(ProxyTest, subscribeToAttribute) {
 }
 
 TEST_F(ProxyTest, subscribeToBroadcastWithInvalidPartitionsReturnsError) {
-    tests::testProxy* testProxy = createFixture(false);
+    tests::testProxy* testProxy = createFixture();
     auto subscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>();
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
 
     EXPECT_CALL(*subscriptionListener, onError(A<const exceptions::JoynrRuntimeException&>()));
 

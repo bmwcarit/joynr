@@ -3,7 +3,7 @@ package io.joynr.provider;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,28 +19,23 @@ package io.joynr.provider;
  * #L%
  */
 
-import joynr.types.ProviderQos;
-
 public abstract class AbstractJoynrProvider implements JoynrProvider {
-    /**
-     * Provider quality of service settings
-     * @deprecated Will be removed by end of the year 2016. Use external ProviderQos as input for
-     * <code>io.joynr.runtime.JoynrRuntime#registerProvider(String, JoynrProvider, ProviderQos)}</code> instead.
-     */
-    @Deprecated
-    protected ProviderQos providerQos = new ProviderQos();
+    static ThreadLocal<CallContext> callContext = new ThreadLocal<CallContext>() {
+        @Override
+        protected CallContext initialValue() {
+            return new CallContext();
+        }
+    };
 
     public AbstractJoynrProvider() {
     }
 
-    /**
-     * @deprecated Will be removed by end of the year 2016. Use external ProviderQos as input for
-     * <code>io.joynr.runtime.JoynrRuntime#registerProvider(String, JoynrProvider, ProviderQos)}</code> instead.
-     * @return provider QoS that applies to this provider instance.
-     */
-    @Deprecated
-    public ProviderQos getProviderQos() {
-        return providerQos;
+    public CallContext getCallContext() {
+        return callContext.get();
+    }
+
+    public static void setCallContext(CallContext callContext) {
+        AbstractJoynrProvider.callContext.set(callContext);
     }
 
 }

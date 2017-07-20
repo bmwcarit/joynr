@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ namespace joynr
 {
 
 JoynrMessagingConnectorFactory::JoynrMessagingConnectorFactory(
-        IJoynrMessageSender* messageSender,
-        ISubscriptionManager* subscriptionManager)
+        std::shared_ptr<IMessageSender> messageSender,
+        std::shared_ptr<ISubscriptionManager> subscriptionManager)
         : messageSender(messageSender), subscriptionManager(subscriptionManager)
 {
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,11 +47,13 @@ public:
     virtual ~SubscriptionRequest() = default;
     bool operator==(const SubscriptionRequest& subscriptionRequest) const;
 
-    std::string getSubscriptionId() const;
+    const std::string& getSubscriptionId() const;
     void setSubscriptionId(const std::string& id);
+    void setSubscriptionId(std::string&& id);
 
-    std::string getSubscribeToName() const;
+    const std::string& getSubscribeToName() const;
     void setSubscribeToName(const std::string& subscribedToName);
+    void setSubscribeToName(std::string&& subscribedToName);
 
     std::string toString() const;
 

@@ -2,7 +2,7 @@ package io.joynr.generator.interfaces
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ import java.util.List;
 
 //The current generator is not able to check wether some of the imports are acutally necessary for this specific interface.
 //Therefore some imports migth be unused in this version of the interface.
-//To prevent warnings @SuppressWarnings("unused") is being used. 
+//To prevent warnings @SuppressWarnings("unused") is being used.
 //To prevent warnings about an unnecessary SuppressWarnings we have to import something that is not used. (e.g. TreeSet)
 import java.util.TreeSet;
 @SuppressWarnings("unused")

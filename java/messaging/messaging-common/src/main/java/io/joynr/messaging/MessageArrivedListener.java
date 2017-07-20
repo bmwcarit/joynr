@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ package io.joynr.messaging;
  * #L%
  */
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 public interface MessageArrivedListener {
 
-    public void messageArrived(JoynrMessage message);
+    public void messageArrived(ImmutableMessage message);
 
-    void error(JoynrMessage message, Throwable error);
+    void error(ImmutableMessage message, Throwable error);
 
 }

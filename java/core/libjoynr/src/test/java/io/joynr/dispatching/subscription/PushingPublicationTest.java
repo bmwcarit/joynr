@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.contains;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.runtime.ShutdownNotifier;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -89,6 +90,9 @@ public class PushingPublicationTest {
     @Mock
     private AttributePollInterpreter attributePollInterpreter;
 
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
+
     private ScheduledExecutorService cleanupScheduler = Executors.newSingleThreadScheduledExecutor();
 
     private SubscriptionRequest subscriptionRequest;
@@ -107,7 +111,9 @@ public class PushingPublicationTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        cleanupScheduler);
+                                                        cleanupScheduler,
+                                                        Mockito.mock(SubscriptionRequestStorage.class),
+                                                        shutdownNotifier);
         subscriptionId = "subscriptionId";
         proxyId = "proxyId";
         providerId = "providerId";
@@ -116,7 +122,7 @@ public class PushingPublicationTest {
 
         testSubscriptionPublisherImpl testSubscriptionPublisher = new testSubscriptionPublisherImpl();
         provider.setSubscriptionPublisher(testSubscriptionPublisher);
-        when(providerContainer.getRequestCaller()).thenReturn(new RequestCallerFactory().create(provider));
+        when(providerContainer.getProviderProxy()).thenReturn(new RequestCallerFactory().create(provider).getProxy());
         when(providerContainer.getSubscriptionPublisher()).thenReturn(testSubscriptionPublisher);
         setupMocks();
     }
@@ -143,8 +149,9 @@ public class PushingPublicationTest {
         Deferred<Integer> testAttributeDeferred = new Deferred<Integer>();
         testAttributeDeferred.resolve(testAttribute);
         Promise<Deferred<Integer>> testAttributePromise = new Promise<Deferred<Integer>>(testAttributeDeferred);
-        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
-                                                                                      any(Method.class));
+        Mockito.doReturn(testAttributePromise)
+               .when(attributePollInterpreter)
+               .execute(any(ProviderContainer.class), any(Method.class));
 
         doAnswer(new Answer<Object>() {
             @Override

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@
 
 INIT_LOGGER(AbstractRobustnessTest);
 
-TestInterfaceProxy* AbstractRobustnessTest::proxy = nullptr;
-ProxyBuilder<TestInterfaceProxy>* AbstractRobustnessTest::proxyBuilder = nullptr;
-JoynrRuntime* AbstractRobustnessTest::runtime = nullptr;
+std::unique_ptr<TestInterfaceProxy> AbstractRobustnessTest::proxy;
+std::unique_ptr<ProxyBuilder<TestInterfaceProxy>> AbstractRobustnessTest::proxyBuilder;
+std::unique_ptr<JoynrRuntime> AbstractRobustnessTest::runtime;
 std::string AbstractRobustnessTest::providerDomain = "joynr-robustness-test-domain";
 
 int main(int argc, char** argv)

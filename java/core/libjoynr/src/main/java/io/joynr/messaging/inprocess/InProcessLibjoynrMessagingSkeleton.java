@@ -1,11 +1,9 @@
 package io.joynr.messaging.inprocess;
 
-import com.google.inject.Inject;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +19,18 @@ import com.google.inject.Inject;
  * #L%
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.FailureAction;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 
 public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSkeleton {
 
+    private static final Logger LOG = LoggerFactory.getLogger(InProcessLibjoynrMessagingSkeleton.class);
     private final Dispatcher dispatcher;
 
     @Inject
@@ -35,21 +39,18 @@ public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSke
     }
 
     @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, FailureAction failureAction) {
+        LOG.trace("<<< INCOMING <<< {}", message);
+
         try {
-            transmit(message);
-        } catch (Exception exception) {
-            failureAction.execute(exception);
+            dispatcher.messageArrived(message);
+        } catch (Exception e) {
+            failureAction.execute(e);
         }
     }
 
     @Override
-    public void transmit(JoynrMessage message) {
-        dispatcher.messageArrived(message);
-    }
-
-    @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         throw new IllegalStateException("InProcessMessagingSkeleton does not handle serialized messages");
     }
 

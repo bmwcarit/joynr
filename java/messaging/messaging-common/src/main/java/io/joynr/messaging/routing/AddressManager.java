@@ -3,7 +3,7 @@ package io.joynr.messaging.routing;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.system.RoutingTypes.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,10 +96,10 @@ public class AddressManager {
      * @return the address to send the message to. Will not be null, because if an address can't be determined an exception is thrown.
      * @throws JoynrMessageNotSentException if no address can be determined / found for the given message.
      */
-    public Set<Address> getAddresses(JoynrMessage message) {
+    public Set<Address> getAddresses(ImmutableMessage message) {
         Set<Address> result = new HashSet<>();
-        String toParticipantId = message.getTo();
-        if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+        String toParticipantId = message.getRecipient();
+        if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
             handleMulticastMessage(message, result);
         } else if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
             Address address = routingTable.get(toParticipantId);
@@ -107,24 +109,37 @@ public class AddressManager {
         }
         logger.trace("Found the following addresses for {}: {}", new Object[]{ message, result });
         if (result.size() == 0) {
-            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                 throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
-                    + message);
+                        + message);
             } else {
-                throw new JoynrIllegalStateException("Unable to find address for participant with ID " + toParticipantId);
+                throw new JoynrIllegalStateException("Unable to find address for participant with ID "
+                        + toParticipantId);
             }
         }
         return result;
     }
 
-    private void handleMulticastMessage(JoynrMessage message, Set<Address> result) {
+    private void handleMulticastMessage(ImmutableMessage message, Set<Address> result) {
         if (!message.isReceivedFromGlobal() && multicastAddressCalculator != null) {
-            Address calculatedAddress = multicastAddressCalculator.calculate(message);
-            if (calculatedAddress != null) {
-                result.add(calculatedAddress);
+            String participantId = message.getSender();
+            // default: if no routing entry found, do not publish globally
+            boolean isGloballyVisible = false;
+            try {
+                isGloballyVisible = routingTable.getIsGloballyVisible(participantId);
+            } catch (JoynrRuntimeException e) {
+                // This should never happen
+                logger.error("No routing entry found for Mulicast Provider {}. "
+                        + "The message will not be published globally.", participantId);
+            }
+            if (isGloballyVisible) {
+                Address calculatedAddress = multicastAddressCalculator.calculate(message);
+                if (calculatedAddress != null) {
+                    result.add(calculatedAddress);
+                }
             }
         }
-        Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getTo());
+        Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getRecipient());
         for (String receiverParticipantId : receivers) {
             Address address = routingTable.get(receiverParticipantId);
             if (address != null) {

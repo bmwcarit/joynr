@@ -3,7 +3,7 @@ package io.joynr.messaging.channel;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,18 @@ package io.joynr.messaging.channel;
  */
 
 import com.google.inject.Inject;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
-import joynr.JoynrMessage;
-import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
+import joynr.ImmutableMessage;
+
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,45 +42,38 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
 
     private MessageReceiver messageReceiver;
 
+    private Set<JoynrMessageProcessor> messageProcessors;
+
     @Inject
-    public ChannelMessagingSkeleton(MessageRouter messageRouter, MessageReceiver messageReceiver) {
+    public ChannelMessagingSkeleton(MessageRouter messageRouter,
+                                    MessageReceiver messageReceiver,
+                                    Set<JoynrMessageProcessor> messageProcessors) {
         this.messageRouter = messageRouter;
         this.messageReceiver = messageReceiver;
+        this.messageProcessors = messageProcessors;
     }
 
-    @Override
-    public void transmit(JoynrMessage message, FailureAction failureAction) {
-        final String replyToChannelId = message.getHeaderValue(JoynrMessage.HEADER_NAME_REPLY_CHANNELID);
-        try {
-            if (JoynrMessage.MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-                message.setReceivedFromGlobal(true);
+    private void forwardMessage(ImmutableMessage message, FailureAction failureAction) {
+        if (messageProcessors != null) {
+            for (JoynrMessageProcessor processor : messageProcessors) {
+                message = processor.processIncoming(message);
             }
-            addRequestorToMessageRouter(message.getFrom(), replyToChannelId);
+        }
+
+        logger.debug("<<< INCOMING <<< {}", message);
+        try {
+            message.setReceivedFromGlobal(true);
             messageRouter.route(message);
-        } catch (JoynrSendBufferFullException | JoynrMessageNotSentException exception) {
-            logger.error("Error processing incoming message. Message will be dropped: {} ", message.getHeader(), exception);
+        } catch (Exception exception) {
+            logger.error("Error processing incoming message. Message will be dropped: {} ", exception);
             failureAction.execute(exception);
         }
     }
 
     @Override
-    public void transmit(String serializedMessage, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         // TODO Auto-generated method stub
 
-    }
-
-    private void addRequestorToMessageRouter(String requestorParticipantId, String replyToSerializedAddress) {
-        if (replyToSerializedAddress != null && !replyToSerializedAddress.isEmpty()) {
-            Address address;
-            address = RoutingTypesUtil.fromAddressString(replyToSerializedAddress);
-            messageRouter.addNextHop(requestorParticipantId, address);
-        } else {
-            /*
-             * TODO make sure that all requests (ie not one-way) also have replyTo
-             * set, otherwise log an error.
-             * Caution: the replyToChannelId is not set in case of local communication
-             */
-        }
     }
 
     @Override
@@ -88,8 +81,8 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
         messageReceiver.start(new MessageArrivedListener() {
 
             @Override
-            public void messageArrived(final JoynrMessage message) {
-                transmit(message, new FailureAction() {
+            public void messageArrived(final ImmutableMessage message) {
+                forwardMessage(message, new FailureAction() {
                     @Override
                     public void execute(Throwable error) {
                         logger.error("error processing incoming message: {} error: {}",
@@ -100,22 +93,23 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
             }
 
             @Override
-            public void error(JoynrMessage message, Throwable error) {
+            public void error(ImmutableMessage message, Throwable error) {
                 logger.error("error receiving incoming message: {} error: {}", message.getId(), error.getMessage());
             }
-        }, new ReceiverStatusListener() {
+        },
+                              new ReceiverStatusListener() {
 
-            @Override
-            public void receiverStarted() {
+                                  @Override
+                                  public void receiverStarted() {
 
-            }
+                                  }
 
-            @Override
-            public void receiverException(Throwable e) {
-                logger.error("error in long polling message receiver error: {}", e.getMessage());
-                shutdown();
-            }
-        });
+                                  @Override
+                                  public void receiverException(Throwable e) {
+                                      logger.error("error in long polling message receiver error: {}", e.getMessage());
+                                      shutdown();
+                                  }
+                              });
     }
 
     @Override

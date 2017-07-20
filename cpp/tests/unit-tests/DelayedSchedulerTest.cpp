@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,29 +17,24 @@
  * #L%
  */
 
-#include "gtest/gtest.h"
-
 #include <cstdint>
 #include <cassert>
+
+#include <gtest/gtest.h>
 
 #include "joynr/DelayedScheduler.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
 #include "joynr/SingleThreadedIOService.h"
-#include "tests/utils/TimeUtils.h"
-#include "utils/MockObjects.h"
 
+#include "tests/JoynrTest.h"
+#include "tests/utils/TimeUtils.h"
+#include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 
 using namespace ::testing;
 using ::testing::StrictMock;
-
-ACTION_P(ReleaseSemaphore, semaphore)
-{
-    semaphore->notify();
-}
-
 
 // Expected accuracy of the timer in milliseconds
 static const std::uint64_t timerAccuracy_ms = 15U;

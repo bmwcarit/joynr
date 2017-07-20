@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,36 +19,43 @@
 #ifndef WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H
 #define WEBSOCKETLIBJOYNRMESSAGINGSKELETON_H
 
-#include <string>
 #include <functional>
 #include <memory>
+#include <string>
 
-#include "joynr/PrivateCopyAssign.h"
+#include <smrf/ByteVector.h>
+
 #include "joynr/Logger.h"
-#include "joynr/IMessaging.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
 
-class MessageRouter;
+class IMessageRouter;
+class ImmutableMessage;
 
-class WebSocketLibJoynrMessagingSkeleton : public IMessaging
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
+
+class WebSocketLibJoynrMessagingSkeleton
 {
 public:
-    explicit WebSocketLibJoynrMessagingSkeleton(std::shared_ptr<MessageRouter> messageRouter);
+    explicit WebSocketLibJoynrMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter);
 
-    ~WebSocketLibJoynrMessagingSkeleton() override = default;
+    ~WebSocketLibJoynrMessagingSkeleton() = default;
 
-    void transmit(JoynrMessage& message,
-                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-            override;
+    void transmit(std::shared_ptr<ImmutableMessage> message,
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
-    void onTextMessageReceived(const std::string& message);
+    void onMessageReceived(smrf::ByteVector&& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketLibJoynrMessagingSkeleton);
     ADD_LOGGER(WebSocketLibJoynrMessagingSkeleton);
-    std::shared_ptr<MessageRouter> messageRouter;
+
+    std::weak_ptr<IMessageRouter> messageRouter;
 };
 
 } // namespace joynr

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,28 +19,30 @@
 
 #ifndef PROVIDERARBITRATOR_H
 #define PROVIDERARBITRATOR_H
+#include <atomic>
+#include <functional>
 #include <string>
+#include <thread>
 #include <unordered_set>
 #include <vector>
-#include <functional>
 
 #include "joynr/ArbitrationStrategyFunction.h"
-#include "joynr/PrivateCopyAssign.h"
+#include "joynr/DiscoveryQos.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/DiscoveryQos.h"
-#include "joynr/types/DiscoveryQos.h"
-#include "joynr/types/Version.h"
-#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/Version.h"
 
 namespace joynr
 {
 
 namespace system
 {
-class IDiscoverySync;
+class IDiscoveryAsync;
 } // namespace system
 
 /*
@@ -50,7 +52,7 @@ class JOYNR_EXPORT Arbitrator
 {
 
 public:
-    virtual ~Arbitrator() = default;
+    virtual ~Arbitrator();
 
     /*
      *  Creates a new Arbitrator object which blocks the arbitration finished
@@ -61,7 +63,7 @@ public:
     Arbitrator(const std::string& domain,
                const std::string& interfaceName,
                const joynr::types::Version& interfaceVersion,
-               joynr::system::IDiscoverySync& discoveryProxy,
+               std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
                const DiscoveryQos& discoveryQos,
                std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction);
 
@@ -69,7 +71,8 @@ public:
      *  Arbitrate until successful or until a timeout occurs
      */
     void startArbitration(
-            std::function<void(const std::string& participantId)> onSuccess,
+            std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& discoveryEntry)>
+                    onSuccess,
             std::function<void(const exceptions::DiscoveryException& exception)> onError);
 
 private:
@@ -81,9 +84,9 @@ private:
     virtual void attemptArbitration();
 
     virtual void receiveCapabilitiesLookupResults(
-            const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
+            const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& discoveryEntries);
 
-    joynr::system::IDiscoverySync& discoveryProxy;
+    std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     DiscoveryQos discoveryQos;
     joynr::types::DiscoveryQos systemDiscoveryQos;
     std::vector<std::string> domains;
@@ -92,12 +95,15 @@ private:
     std::unordered_set<joynr::types::Version> discoveredIncompatibleVersions;
     exceptions::DiscoveryException arbitrationError;
     std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction;
-    std::function<void(const std::string& participantId)> onSuccessCallback;
+    std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& discoveryEntry)>
+            onSuccessCallback;
     std::function<void(const exceptions::DiscoveryException& exception)> onErrorCallback;
 
     DISALLOW_COPY_AND_ASSIGN(Arbitrator);
-    std::string participantId;
     bool arbitrationFinished;
+    std::atomic<bool> arbitrationRunning;
+    std::atomic<bool> keepArbitrationRunning;
+    std::thread arbitrationThread;
     ADD_LOGGER(Arbitrator);
 };
 

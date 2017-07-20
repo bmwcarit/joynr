@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@
 #define DISCOVERYQOS_H
 
 #include <cstdint>
-#include <string>
 #include <map>
+#include <string>
 
 #include "joynr/JoynrExport.h"
 #include "joynr/types/CustomParameter.h"
@@ -45,7 +45,7 @@ public:
      * @param cacheMaxAgeMs The maximum age in milliseconds a cached entry will be considered for
      * discovery
      */
-    explicit DiscoveryQos(const std::int64_t& cacheMaxAgeMs);
+    explicit DiscoveryQos(std::int64_t cacheMaxAgeMs);
 
     /** @brief Destructor */
     virtual ~DiscoveryQos() = default;
@@ -66,7 +66,9 @@ public:
         LOCAL_ONLY = 2,
         /** only participants which match a keyword will be considered */
         KEYWORD = 3,
-        /** the participant with the highest priority will be selected */
+        /** the participant with the highest priority will be selected.
+            If multiple provider with the same highest priority are found,
+            one of these will be arbitrarly selected. */
         HIGHEST_PRIORITY = 4
     };
 
@@ -74,21 +76,13 @@ public:
      * @brief Gets the default timeout value
      * @return the default timeout value in milliseconds
      */
-    static std::int64_t& DEFAULT_DISCOVERYTIMEOUT_MS();
-
-    /**
-     * @deprecated
-     * @see DiscoveryQos#DEFAULT_DISCOVERYTIMEOUT_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use DEFAULT_DISCOVERYTIMEOUT_MS "
-                 "instead.")]] static std::int64_t&
-    DEFAULT_DISCOVERYTIMEOUT();
+    static std::int64_t DEFAULT_DISCOVERYTIMEOUT_MS();
 
     /**
      * @brief Gets the value signalling that no timeout has been selected
      * @return the value signalling that no timeout has been selected
      */
-    static std::int64_t& NO_TIMEOUT();
+    static std::int64_t NO_TIMEOUT();
 
     /**
      * @brief Gets the default arbitration strategy value
@@ -100,21 +94,13 @@ public:
      * @brief Gets the default maximum cache age value in milliseconds
      * @return the default maximum cache age value in milliseconds
      */
-    static std::int64_t& DEFAULT_CACHEMAXAGE_MS();
-
-    /**
-     * @deprecated
-     * @see DiscoveryQos#DEFAULT_CACHEMAXAGE_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use DEFAULT_CACHEMAXAGE_MS "
-                 "instead.")]] static std::int64_t&
-    DEFAULT_CACHEMAXAGE();
+    static std::int64_t DEFAULT_CACHEMAXAGE_MS();
 
     /**
      * @brief Gets the value signalling that no cache is to be used
      * @return the value signalling that no cache is to be used
      */
-    static std::int64_t& DO_NOT_USE_CACHE();
+    static std::int64_t DO_NOT_USE_CACHE();
 
     /**
      * @brief Gets the default discovery scope value
@@ -126,15 +112,7 @@ public:
      * @brief Gets the default retry interval value
      * @return the default retry interval value
      */
-    static std::int64_t& DEFAULT_RETRYINTERVAL_MS();
-
-    /**
-     * @deprecated
-     * @see DiscoveryQos#DEFAULT_RETRYINTERVAL_MS
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use DEFAULT_RETRYINTERVAL_MS "
-                 "instead.")]] static std::int64_t&
-    DEFAULT_RETRYINTERVAL();
+    static std::int64_t DEFAULT_RETRYINTERVAL_MS();
 
     /**
      * @brief Sets the arbitration strategy for the discovery process
@@ -173,14 +151,6 @@ public:
     void setDiscoveryTimeoutMs(std::int64_t discoveryTimeoutMs);
 
     /**
-     * @deprecated
-     * @see DiscoveryQos#setDiscoveryTimeoutMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use setDiscoveryTimeoutMs "
-                 "instead.")]] void
-    setDiscoveryTimeout(std::int64_t discoveryTimeout);
-
-    /**
      * @brief Gets the currently used discovery timeout value
      *
      * As soon as the discovery QoS is set on the proxy builder, discovery of suitable providers
@@ -190,15 +160,6 @@ public:
      * @return the duration used to discover matching providers
      */
     std::int64_t getDiscoveryTimeoutMs() const;
-
-    /**
-     * @deprecated
-     * @see DiscoveryQos#getDiscoveryTimeoutMs
-     */
-    [[deprecated(
-            "Will be removed by end of the year 2016. Use getDiscoveryTimeoutMs instead.")]] std::
-            int64_t
-            getDiscoveryTimeout() const;
 
     /**
      * @brief Allows to add special parameters to the DiscoveryQos which will be used
@@ -245,14 +206,6 @@ public:
     std::int64_t getCacheMaxAgeMs() const;
 
     /**
-     * @deprecated
-     * @see DiscoveryQos#getCacheMaxAgeMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use getCacheMaxAgeMs instead.")]] std::
-            int64_t
-            getCacheMaxAge() const;
-
-    /**
      * @brief Sets the maximum age value for cached values
      *
      * Provider entries in the global capabilities directory are cached locally. Discovery will
@@ -270,14 +223,7 @@ public:
      *       local capabilities directory a lookup in the global capabilitiesDirectory will
      *       take place.
      */
-    void setCacheMaxAgeMs(const std::int64_t& cacheMaxAgeMs);
-
-    /**
-     * @deprecated
-     * @see DiscoveryQos#setCacheMaxAgeMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use setCacheMaxAgeMs instead.")]] void
-    setCacheMaxAge(const std::int64_t& cacheMaxAge);
+    void setCacheMaxAgeMs(std::int64_t cacheMaxAgeMs);
 
     /**
      * @brief Find out whether arbitration will only consider providers that support onChange
@@ -335,14 +281,6 @@ public:
     std::int64_t getRetryIntervalMs() const;
 
     /**
-     * @deprecated
-     * @see DiscoveryQos#getRetryIntervalMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use getRetryIntervalMs instead.")]] std::
-            int64_t
-            getRetryInterval() const;
-
-    /**
      * @brief Determine the retry interval value (in milliseconds)
      *
      * The time interval (in milliseconds) between two arbitration retries. It is NOT ensured that
@@ -351,13 +289,6 @@ public:
      * @param retryIntervalMs the minimum interval between to arbitration retries
      */
     void setRetryIntervalMs(std::int64_t retryIntervalMs);
-
-    /**
-     * @deprecated
-     * @see DiscoveryQos#setRetryIntervalMs
-     */
-    [[deprecated("Will be removed by end of the year 2016. Use setRetryIntervalMs instead.")]] void
-    setRetryInterval(std::int64_t retryInterval);
 
     /*
      * Constants

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ MulticastPublication::MulticastPublication(BaseReply&& baseReply)
 {
 }
 
-std::string MulticastPublication::getMulticastId() const
+const std::string& MulticastPublication::getMulticastId() const
 {
     return multicastId;
 }
@@ -39,6 +39,11 @@ std::string MulticastPublication::getMulticastId() const
 void MulticastPublication::setMulticastId(const std::string& multicastId)
 {
     this->multicastId = multicastId;
+}
+
+void MulticastPublication::setMulticastId(std::string&& multicastId)
+{
+    this->multicastId = std::move(multicastId);
 }
 
 bool MulticastPublication::operator==(const MulticastPublication& other) const

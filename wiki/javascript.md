@@ -87,11 +87,21 @@ mechanism:
 The Javascript application must load and initialize the joynr runtime environment prior to calling
 any other Joynr API.
 
+At the end of the application lifetime, the joynr runtime must be shutdown in order to properly
+deallocate resources and end any background activity.
+
 ```javascript
 joynr.load(provisioning).then(function(loadedJoynr) {
     joynr = loadedJoynr;
 
     // build one or more proxies and optionally set up event handlers
+    ...
+    // main application code
+    ...
+    // shutdown the runtime at the end of the application's lifetime
+    joynr.shutdown().then(function() {
+        ...
+    });
 }).catch(function(error) {
     // error handling
 });
@@ -166,9 +176,9 @@ Example for setting up a ```DiscoveryQos``` object:
 var discoveryQos = new joynr.proxy.DiscoveryQos({
     discoveryTimeoutMs : 30000,
     discoveryRetryDelayMs : 1000,
-    arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
+    arbitrationStrategy : joynr.types.ArbitrationStrategyCollection.LastSeen,
     cacheMaxAgeMs : 0,
-    discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
+    discoveryScope : joynr.types.DiscoveryScope.LOCAL_THEN_GLOBAL,
     providerMustSupportOnChange : false,
     // additional parameters are used for arbitration strategy Keyword (key: "keyword")
     // or can be used for custom arbitration strategies
@@ -715,6 +725,9 @@ It is also possible to unregister that implementation again, e.g. on shutdown.
 While the implementation is registered, the provider will respond to any method calls from outside,
 can report any value changes via publications to subscribed consumers, and may fire broadcasts, as
 defined in the Franca interface.
+
+At the end of the application lifetime, the joynr runtime must be shutdown in order to properly
+deallocate resources and end any background activity.
 ```javascript
 $(function() {
     // for each <Interface> where a Provider should be registered for later
@@ -734,6 +747,11 @@ $(function() {
         ...
         // when application ends:
         // unregister <Interface>provider
+        ...
+        // shutdown the joynr runtime
+        joynr.shutdown().then(function() {
+            ...
+        });
     }).catch(function(error){
         if (error) {
             throw error;

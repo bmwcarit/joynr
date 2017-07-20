@@ -3,7 +3,7 @@ package io.joynr.messaging.inprocess;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,5 @@ public class InProcessMessagingStubFactory extends
     @Override
     protected InProcessMessagingStub createInternal(InProcessAddress address) {
         return new InProcessMessagingStub((address).getSkeleton());
-    }
-
-    @Override
-    public void shutdown() {
-        // nothing to do
     }
 }

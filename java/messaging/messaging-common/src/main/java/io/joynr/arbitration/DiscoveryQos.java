@@ -3,7 +3,7 @@ package io.joynr.arbitration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,13 +130,6 @@ public class DiscoveryQos {
         this.arbitrationStrategy = arbitrationStrategy;
         this.retryIntervalMs = DEFAULT_RETRYINTERVAL;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
-    }
-
-    @Deprecated
-    public DiscoveryQos(DiscoveryScope discoveryScope, long cacheMaxAge) {
-        this();
-        setCacheMaxAgeMs(cacheMaxAge);
-        this.discoveryScope = discoveryScope;
     }
 
     public DiscoveryQos(long discoveryTimeout,
@@ -319,65 +312,4 @@ public class DiscoveryQos {
     public Map<String, String> getCustomParameters() {
         return customParameters;
     }
-
-    /**
-     * @deprecated use getCacheMaxAgeMs() instead
-     * @return getCacheMaxAgeMs()
-     */
-    @Deprecated
-    public long getCacheMaxAge() {
-        return getCacheMaxAgeMs();
-    }
-
-    /**
-     * @deprecated use setCacheMaxAgeMs() instead
-     * @param cacheMaxAgeMs
-     *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the
-     *            local capabilities directory a lookup in the global capabilitiesDirectory will take place.
-     */
-    @Deprecated
-    public void setCacheMaxAge(long cacheMaxAgeMs) {
-        setCacheMaxAgeMs(cacheMaxAgeMs);
-    }
-
-    /**
-     * @deprecated use getDiscoveryTimeoutMs() instead
-     * @return getDiscoveryTimeoutMs()
-     */
-    @Deprecated
-    public long getDiscoveryTimeout() {
-        return getDiscoveryTimeoutMs();
-    }
-
-    /**
-     * @deprecated use setDiscoveryTimeoutMs() instead
-     * @param discoveryTimeoutMs
-     *            Sets the amount of time the arbitrator keeps trying to find a suitable provider. The arbitration
-     *            lookup might happen multiple times during this time span.
-     */
-    @Deprecated
-    public void setDiscoveryTimeout(long discoveryTimeoutMs) {
-        setDiscoveryTimeoutMs(discoveryTimeoutMs);
-    }
-
-    /**
-     * @deprecated use getRetryIntervalMs() instead
-     * @return getRetryIntervalMs()
-     */
-    @Deprecated
-    public long getRetryInterval() {
-        return getRetryIntervalMs();
-    }
-
-    /**
-     * @deprecated use setRetryIntervalMs() instead
-     * @param retryIntervalMs
-     *            The time to wait between discovery retries after encountering a discovery error. The actual delay may
-     *            be longer, as there is a system-wide minimum delay.
-     */
-    @Deprecated
-    public void setRetryInterval(long retryIntervalMs) {
-        setRetryIntervalMs(retryIntervalMs);
-    }
-
 }

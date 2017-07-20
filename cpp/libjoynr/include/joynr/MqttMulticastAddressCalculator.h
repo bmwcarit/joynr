@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@
 
 namespace joynr
 {
+
 namespace system
 {
 namespace RoutingTypes
@@ -37,23 +38,19 @@ class Address;
 } // RoutingTypes
 } // system
 
-class JoynrMessage;
-}
-
-namespace joynr
-{
-
 class MqttMulticastAddressCalculator : public IMulticastAddressCalculator
 {
 public:
     explicit MqttMulticastAddressCalculator(
-            std::shared_ptr<const system::RoutingTypes::MqttAddress> globalAddress);
+            std::shared_ptr<const system::RoutingTypes::MqttAddress> globalAddress,
+            const std::string& mqttMulticastTopicPrefix);
 
     std::shared_ptr<const system::RoutingTypes::Address> compute(
-            const JoynrMessage& message) override;
+            const ImmutableMessage& message) override;
 
 private:
     std::shared_ptr<const system::RoutingTypes::MqttAddress> globalAddress;
+    std::string mqttMulticastTopicPrefix;
 };
 
 } // namespace joynr

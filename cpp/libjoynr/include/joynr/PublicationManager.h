@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,30 +19,28 @@
 #ifndef PUBLICATIONMANAGER_H
 #define PUBLICATIONMANAGER_H
 
-#include <mutex>
-#include <memory>
-#include <vector>
 #include <map>
+#include <memory>
+#include <mutex>
 #include <string>
+#include <vector>
 
 #include <boost/optional.hpp>
 
-#include "joynr/SubscriptionPublication.h"
-#include "joynr/MulticastPublication.h"
-#include "joynr/SubscriptionRequestInformation.h"
-#include "joynr/BroadcastSubscriptionRequestInformation.h"
 #include "joynr/BroadcastFilterParameters.h"
-
-#include "joynr/PrivateCopyAssign.h"
+#include "joynr/BroadcastSubscriptionRequestInformation.h"
+#include "joynr/DelayedScheduler.h"
+#include "joynr/IMessageSender.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/ThreadPoolDelayedScheduler.h"
-#include "joynr/ReadWriteLock.h"
-#include "joynr/ThreadSafeMap.h"
-#include "joynr/SubscriptionReply.h"
-
 #include "joynr/MessagingQos.h"
-#include "joynr/IJoynrMessageSender.h"
+#include "joynr/MulticastPublication.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ReadWriteLock.h"
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionReply.h"
+#include "joynr/SubscriptionRequestInformation.h"
+#include "joynr/ThreadSafeMap.h"
 
 namespace boost
 {
@@ -82,7 +80,7 @@ class JOYNR_EXPORT PublicationManager
 {
 public:
     PublicationManager(boost::asio::io_service& ioService,
-                       IJoynrMessageSender* messageSender,
+                       IMessageSender* messageSender,
                        std::uint64_t ttlUplift = 0,
                        int maxThreads = 1);
     virtual ~PublicationManager();
@@ -214,7 +212,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
 
     // Used for multicast publication
-    IJoynrMessageSender* joynrMessageSender;
+    IMessageSender* messageSender;
 
     // A class that groups together the information needed for a publication
     class Publication;
@@ -282,19 +280,19 @@ private:
     void sendSubscriptionReply(IPublicationSender* publicationSender,
                                const std::string& fromParticipantId,
                                const std::string& toParticipantId,
-                               const std::int64_t& expiryDateMs,
+                               std::int64_t expiryDateMs,
                                const SubscriptionReply& subscriptionReply);
     void sendSubscriptionReply(IPublicationSender* publicationSender,
                                const std::string& fromParticipantId,
                                const std::string& toParticipantId,
-                               const std::int64_t& expiryDateMs,
+                               std::int64_t expiryDateMs,
                                const std::string& subscriptionId);
     void sendSubscriptionReply(IPublicationSender* publicationSender,
                                const std::string& fromParticipantId,
                                const std::string& toParticipantId,
-                               const std::int64_t& expiryDateMs,
+                               std::int64_t expiryDateMs,
                                const std::string& subscriptionId,
-                               const std::shared_ptr<exceptions::SubscriptionException>& error);
+                               std::shared_ptr<exceptions::SubscriptionException> error);
     bool publicationExists(const std::string& subscriptionId) const;
     void createPublishRunnable(const std::string& subscriptionId);
     void saveAttributeSubscriptionRequestsMap();
@@ -348,7 +346,7 @@ private:
 
     void addSubscriptionCleanupIfNecessary(std::shared_ptr<Publication> publication,
                                            std::shared_ptr<SubscriptionQos> qos,
-                                           std::string& subscriptionId);
+                                           const std::string& subscriptionId);
 
     void handleAttributeSubscriptionRequest(
             std::shared_ptr<SubscriptionRequestInformation> requestInfo,
@@ -416,17 +414,15 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
     JOYNR_LOG_DEBUG(logger, "attributeValueChanged for onChange subscription {}", subscriptionId);
 
     // See if the subscription is still valid
-    if (!publicationExists(subscriptionId)) {
+    std::shared_ptr<Publication> publication = publications.value(subscriptionId);
+    std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest =
+            subscriptionId2SubscriptionRequest.value(subscriptionId);
+    if (!publication || !subscriptionRequest) {
         JOYNR_LOG_ERROR(logger,
                         "attributeValueChanged called for non-existing subscription {}",
                         subscriptionId);
         return;
     }
-
-    std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2SubscriptionRequest.value(subscriptionId));
-
-    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -456,12 +452,11 @@ void PublicationManager::broadcastOccurred(const std::string& broadcastName,
                                            const Ts&... values)
 {
     MulticastPublication publication;
-    std::string multicastID =
-            util::createMulticastId(providerParticipantId, broadcastName, partitions);
-    publication.setMulticastId(multicastID);
+    publication.setMulticastId(
+            util::createMulticastId(providerParticipantId, broadcastName, partitions));
     publication.setResponse(values...);
     MessagingQos mQos;
-    joynrMessageSender->sendMulticast(providerParticipantId, publication, mQos);
+    messageSender->sendMulticast(providerParticipantId, publication, mQos);
 }
 
 template <typename... Ts>
@@ -472,17 +467,16 @@ void PublicationManager::broadcastOccurred(const std::string& subscriptionId, co
                     subscriptionId,
                     sizeof...(Ts));
 
+    std::shared_ptr<Publication> publication = publications.value(subscriptionId);
+    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest =
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
     // See if the subscription is still valid
-    if (!publicationExists(subscriptionId)) {
+    if (!publication || !subscriptionRequest) {
         JOYNR_LOG_ERROR(logger,
                         "broadcastOccurred called for non-existing subscription {}",
                         subscriptionId);
         return;
     }
-
-    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
-    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -525,17 +519,17 @@ void PublicationManager::selectiveBroadcastOccurred(
                     subscriptionId,
                     sizeof...(Ts));
 
+    std::shared_ptr<Publication> publication = publications.value(subscriptionId);
+    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest =
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
+
     // See if the subscription is still valid
-    if (!publicationExists(subscriptionId)) {
+    if (!publication || !subscriptionRequest) {
         JOYNR_LOG_ERROR(logger,
                         "broadcastOccurred called for non-existing subscription {}",
                         subscriptionId);
         return;
     }
-
-    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
-    std::shared_ptr<Publication> publication(publications.value(subscriptionId));
 
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
@@ -562,7 +556,7 @@ void PublicationManager::selectiveBroadcastOccurred(
                                 subscriptionId,
                                 timeUntilNextPublication);
             } else {
-                JOYNR_LOG_DEBUG(
+                JOYNR_LOG_WARN(
                         logger,
                         "Omitting broadcast publication for subscription {} because of error.",
                         subscriptionId);
@@ -579,8 +573,10 @@ bool PublicationManager::processFilterChain(
 {
     bool success = true;
 
-    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest(
-            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId));
+    std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest =
+            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
+
+    assert(subscriptionRequest);
 
     const boost::optional<BroadcastFilterParameters>& filterParameters =
             subscriptionRequest->getFilterParameters();

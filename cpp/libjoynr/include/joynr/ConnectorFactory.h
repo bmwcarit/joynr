@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,17 @@
  */
 #ifndef CONNECTORFACTORY_H
 #define CONNECTORFACTORY_H
-#include "joynr/PrivateCopyAssign.h"
 
-#include "joynr/JoynrExport.h"
-#include "joynr/Logger.h"
-#include "joynr/IClientCache.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/InProcessConnectorFactory.h"
-#include "joynr/JoynrMessagingConnectorFactory.h"
-
+#include <memory>
 #include <string>
+
+#include "joynr/InProcessConnectorFactory.h"
+#include "joynr/JoynrExport.h"
+#include "joynr/JoynrMessagingConnectorFactory.h"
+#include "joynr/Logger.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
@@ -37,30 +38,32 @@ class InProcessDispatcher;
 class JOYNR_EXPORT ConnectorFactory
 {
 public:
-    ConnectorFactory(InProcessConnectorFactory* inProcessConnectorFactory,
-                     JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory);
-    ~ConnectorFactory();
+    ConnectorFactory(
+            std::unique_ptr<InProcessConnectorFactory> inProcessConnectorFactory,
+            std::unique_ptr<JoynrMessagingConnectorFactory> joynrMessagingConnectorFactory);
+
+    virtual ~ConnectorFactory() = default;
+
     template <class T>
     std::unique_ptr<T> create(const std::string& domain,
                               const std::string proxyParticipantId,
-                              const std::string& providerParticipantId,
                               const MessagingQos& qosSettings,
-                              IClientCache* cache,
-                              bool cached,
-                              bool createInProcessConnector)
+                              bool createInProcessConnector,
+                              const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
     {
         if (createInProcessConnector) {
-            return inProcessConnectorFactory->create<T>(proxyParticipantId, providerParticipantId);
+            return inProcessConnectorFactory->create<T>(
+                    proxyParticipantId, providerDiscoveryEntry.getParticipantId());
         } else {
             return joynrMessagingConnectorFactory->create<T>(
-                    domain, proxyParticipantId, providerParticipantId, qosSettings, cache, cached);
+                    domain, proxyParticipantId, qosSettings, providerDiscoveryEntry);
         }
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ConnectorFactory);
-    InProcessConnectorFactory* inProcessConnectorFactory;
-    JoynrMessagingConnectorFactory* joynrMessagingConnectorFactory;
+    std::unique_ptr<InProcessConnectorFactory> inProcessConnectorFactory;
+    std::unique_ptr<JoynrMessagingConnectorFactory> joynrMessagingConnectorFactory;
     ADD_LOGGER(ConnectorFactory);
 };
 

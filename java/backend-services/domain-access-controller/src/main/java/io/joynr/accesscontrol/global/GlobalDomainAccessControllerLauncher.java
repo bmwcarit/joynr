@@ -3,7 +3,7 @@ package io.joynr.accesscontrol.global;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import java.util.Properties;
 
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
+import joynr.infrastructure.GlobalDomainRoleControllerAbstractProvider;
+import joynr.infrastructure.GlobalDomainAccessControlListEditorAbstractProvider;
 import joynr.types.ProviderQos;
 
 import com.google.inject.Inject;
@@ -37,6 +39,12 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
 
     @Inject
     private GlobalDomainAccessControllerAbstractProvider globalDomainAccessSyncProvider;
+
+    @Inject
+    private GlobalDomainRoleControllerAbstractProvider globalDomainRoleSyncProvider;
+
+    @Inject
+    private GlobalDomainAccessControlListEditorAbstractProvider globalDomainAccessControlListEditorSyncProvider;
 
     public static void main(String[] args) {
         GlobalDomainAccessControllerLauncher.start();
@@ -62,6 +70,8 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
 
         ProviderQos providerQos = new ProviderQos();
         runtime.registerProvider(localDomain, globalDomainAccessSyncProvider, providerQos);
+        runtime.registerProvider(localDomain, globalDomainRoleSyncProvider, providerQos);
+        runtime.registerProvider(localDomain, globalDomainAccessControlListEditorSyncProvider, providerQos);
     }
 
     @Override

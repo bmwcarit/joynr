@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,48 +20,36 @@ package io.joynr.integration;
  */
 
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertArrayEquals;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.servlet.ServletUtil;
-import joynr.OnChangeSubscriptionQos;
+import joynr.MulticastSubscriptionQos;
 import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProxy;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
+public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 
     private Properties mqttConfig;
-    private static Process mosquittoProcess;
-    private static int mqttBrokerPort;
-
-    @BeforeClass
-    public static void startBroker() throws Exception {
-        mqttBrokerPort = ServletUtil.findFreePort();
-        String path = System.getProperty("path") != null ? System.getProperty("path") : "";
-        ProcessBuilder processBuilder = new ProcessBuilder(path + "mosquitto", "-p", Integer.toString(mqttBrokerPort));
-        mosquittoProcess = processBuilder.start();
-    }
-
-    @AfterClass
-    public static void stopBroker() throws Exception {
-        mosquittoProcess.destroy();
-    }
+    private static int mqttBrokerPort = 1883;
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
@@ -69,17 +57,56 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
         mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
         // test is using 2 global address typs, so need to set one of them as primary
         mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+        mqttConfig.put(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://localhost:" + mqttBrokerPort);
+        mqttConfig.put(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://localhost:" + mqttBrokerPort);
+        mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
+        mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "replyto/");
+        mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
         joynrConfig.putAll(mqttConfig);
+        joynrConfig.putAll(baseTestConfig);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(modules);
         Module modulesWithRuntime = Modules.override(runtimeModule).with(new AtmosphereMessagingModule(),
-                                                                         new MqttPahoModule());
+                                                                         new MqttPahoModule(),
+                                                                         new AbstractModule() {
+
+                                                                             @Override
+                                                                             protected void configure() {
+                                                                                 bind(RawMessagingPreprocessor.class).toInstance(new RawMessagingPreprocessor() {
+
+                                                                                     @Override
+                                                                                     public byte[] process(byte[] rawMessage,
+                                                                                                           Map<String, Serializable> context) {
+                                                                                         return rawMessage;
+                                                                                     }
+                                                                                 });
+                                                                             }
+
+                                                                         });
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
 
         return application.getRuntime();
     }
 
-    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT * 1000)
+    public void testLargeByteArray() throws Exception {
+        testProxy proxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
+                                         .setMessagingQos(messagingQos)
+                                         .setDiscoveryQos(discoveryQos)
+                                         .build();
+
+        Byte[] largeByteArray = new Byte[1024 * 100];
+
+        for (int i = 0; i < largeByteArray.length; i++) {
+            largeByteArray[i] = (byte) (i % 256);
+        }
+
+        Byte[] returnValue = proxy.methodWithByteArray(largeByteArray);
+
+        assertArrayEquals(returnValue, largeByteArray);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT * 1000)
     public void testSimpleMulticast() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
         testProxy proxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
@@ -91,7 +118,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
             public void onReceive() {
                 semaphore.release();
             }
-        }, new OnChangeSubscriptionQos());
+        }, new MulticastSubscriptionQos());
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -103,20 +130,23 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testMulticastWithPartitions() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
-        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class).setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
+        testProxy testProxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
+                                             .setMessagingQos(messagingQos)
+                                             .setDiscoveryQos(discoveryQos)
+                                             .build();
         final List<String> errors = new ArrayList<>();
         testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
                 errors.add("On receive called on listener with no partitions.");
             }
-        }, new OnChangeSubscriptionQos());
+        }, new MulticastSubscriptionQos());
         testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
                 semaphore.release();
             }
-        }, new OnChangeSubscriptionQos(), "one", "two", "three");
+        }, new MulticastSubscriptionQos(), "one", "two", "three");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -141,13 +171,13 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
             public void onReceive() {
                 semaphore.release();
             }
-        }, new OnChangeSubscriptionQos(), "one", "*");
+        }, new MulticastSubscriptionQos(), "one", "*");
         testProxy.subscribeToEmptyBroadcastBroadcast(new testBroadcastInterface.EmptyBroadcastBroadcastAdapter() {
             @Override
             public void onReceive() {
                 errors.add("Received multicast on partition which wasn't published to: four/five/six");
             }
-        }, new OnChangeSubscriptionQos(), "four", "five", "six");
+        }, new MulticastSubscriptionQos(), "four", "five", "six");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -176,7 +206,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
             public void onReceive() {
                 semaphore.release();
             }
-        }, new OnChangeSubscriptionQos(), "one", "+", "three");
+        }, new MulticastSubscriptionQos(), "one", "+", "three");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);
@@ -205,7 +235,7 @@ public class MqttProviderProxyEnd2EndTest extends ProviderProxyEnd2EndTest {
             public void onReceive() {
                 semaphore.release();
             }
-        }, new OnChangeSubscriptionQos(), "one", "+");
+        }, new MulticastSubscriptionQos(), "one", "+");
 
         // wait to allow the subscription request to arrive at the provider
         Thread.sleep(500);

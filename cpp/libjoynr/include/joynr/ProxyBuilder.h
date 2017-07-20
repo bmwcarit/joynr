@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,22 +21,24 @@
 
 #include <cassert>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
-#include <functional>
 
-#include "joynr/MessagingQos.h"
-#include "joynr/ProxyFactory.h"
-#include "joynr/DiscoveryQos.h"
-#include "joynr/IRequestCallerDirectory.h"
 #include "joynr/Arbitrator.h"
 #include "joynr/ArbitratorFactory.h"
-#include "joynr/MessageRouter.h"
+#include "joynr/DiscoveryQos.h"
+#include "joynr/Future.h"
+#include "joynr/IMessageRouter.h"
+#include "joynr/IProxyBuilder.h"
+#include "joynr/IRequestCallerDirectory.h"
+#include "joynr/Logger.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ProxyFactory.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/IDiscovery.h"
-#include "joynr/Future.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/IProxyBuilder.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr
 {
@@ -59,21 +61,21 @@ public:
     /**
      * @brief Constructor
      * @param proxyFactory Pointer to proxy factory object
-     * @param discoveryProxy Reference to IDiscoverySync object
+     * @param discoveryProxy weak ptr to IDiscoverySync object
      * @param domain The provider domain
      * @param dispatcherAddress The address of the dispatcher
      * @param messageRouter A shared pointer to the message router object
      */
     ProxyBuilder(ProxyFactory& proxyFactory,
                  IRequestCallerDirectory* requestCallerDirectory,
-                 joynr::system::IDiscoverySync& discoveryProxy,
+                 std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
                  const std::string& domain,
                  std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
-                 std::shared_ptr<MessageRouter> messageRouter,
+                 std::shared_ptr<IMessageRouter> messageRouter,
                  std::uint64_t messagingMaximumTtlMs);
 
     /** Destructor */
-    ~ProxyBuilder() override;
+    ~ProxyBuilder() override = default;
 
     /**
      * @brief Build the proxy object
@@ -82,7 +84,7 @@ public:
      * is responsible for deletion.
      * @return The proxy object
      */
-    T* build() override;
+    std::unique_ptr<T> build() override;
 
     /**
      * @brief Build the proxy object asynchronously
@@ -94,13 +96,6 @@ public:
      */
     void buildAsync(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
                     std::function<void(const exceptions::DiscoveryException&)> onError) override;
-
-    /**
-     * @brief Sets whether the object is to be cached
-     * @param cached True, if the object is to be cached, false otherwise
-     * @return The ProxyBuilder object
-     */
-    ProxyBuilder* setCached(const bool cached) override;
 
     /**
      * @brief Sets the messaging qos settings
@@ -120,35 +115,35 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
     std::string domain;
-    bool cached;
     MessagingQos messagingQos;
     ProxyFactory& proxyFactory;
     IRequestCallerDirectory* requestCallerDirectory;
-    joynr::system::IDiscoverySync& discoveryProxy;
-    Arbitrator* arbitrator;
+    std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
+    std::unique_ptr<Arbitrator> arbitrator;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
-    std::shared_ptr<MessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> messageRouter;
     std::uint64_t messagingMaximumTtlMs;
     DiscoveryQos discoveryQos;
+
+    ADD_LOGGER(ProxyBuilder);
 };
 
 template <class T>
 ProxyBuilder<T>::ProxyBuilder(
         ProxyFactory& proxyFactory,
         IRequestCallerDirectory* requestCallerDirectory,
-        joynr::system::IDiscoverySync& discoveryProxy,
+        std::weak_ptr<system::IDiscoveryAsync> discoveryProxy,
         const std::string& domain,
         std::shared_ptr<const system::RoutingTypes::Address> dispatcherAddress,
-        std::shared_ptr<MessageRouter> messageRouter,
+        std::shared_ptr<IMessageRouter> messageRouter,
         std::uint64_t messagingMaximumTtlMs)
         : domain(domain),
-          cached(false),
           messagingQos(),
           proxyFactory(proxyFactory),
           requestCallerDirectory(requestCallerDirectory),
           discoveryProxy(discoveryProxy),
-          arbitrator(nullptr),
+          arbitrator(),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
           messagingMaximumTtlMs(messagingMaximumTtlMs),
@@ -157,22 +152,7 @@ ProxyBuilder<T>::ProxyBuilder(
 }
 
 template <class T>
-ProxyBuilder<T>::~ProxyBuilder()
-{
-    if (arbitrator != nullptr) {
-        // question: it is only safe to delete the arbitrator here, if the proxybuilder will not be
-        // deleted
-        // before all arbitrations are finished.
-        delete arbitrator;
-        arbitrator = nullptr;
-        // TODO delete arbitrator
-        // 1. delete arbitrator or
-        // 2. (if std::shared_ptr) delete arbitrator
-    }
-}
-
-template <class T>
-T* ProxyBuilder<T>::build()
+std::unique_ptr<T> ProxyBuilder<T>::build()
 {
     Future<std::unique_ptr<T>> proxyFuture;
 
@@ -188,7 +168,7 @@ T* ProxyBuilder<T>::build()
     std::unique_ptr<T> createdProxy;
     proxyFuture.get(createdProxy);
 
-    return createdProxy.release();
+    return createdProxy;
 }
 
 template <class T>
@@ -200,30 +180,34 @@ void ProxyBuilder<T>::buildAsync(
     arbitrator = ArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
 
-    auto arbitrationSucceeds = [this, onSuccess, onError](const std::string& participantId) {
-        if (participantId.empty()) {
+    auto arbitrationSucceeds =
+            [this, onSuccess, onError](const types::DiscoveryEntryWithMetaInfo& discoverEntry) {
+        if (discoverEntry.getParticipantId().empty()) {
             onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
                                                    "arbitrator but ParticipantId is empty"));
             return;
         }
 
-        bool useInProcessConnector = requestCallerDirectory->containsRequestCaller(participantId);
-        std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos, cached));
-        proxy->handleArbitrationFinished(participantId, useInProcessConnector);
+        JOYNR_LOG_DEBUG(logger,
+                        "DISCOVERY proxy created for provider participantId: {}, domain: [{}], "
+                        "interface: {}",
+                        discoverEntry.getParticipantId(),
+                        domain,
+                        T::INTERFACE_NAME());
 
-        messageRouter->addNextHop(proxy->getProxyParticipantId(), dispatcherAddress);
+        bool useInProcessConnector =
+                requestCallerDirectory->containsRequestCaller(discoverEntry.getParticipantId());
+        std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos));
+        proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
+
+        bool isGloballyVisible = !discoverEntry.getIsLocal();
+        messageRouter->addNextHop(
+                proxy->getProxyParticipantId(), dispatcherAddress, isGloballyVisible);
 
         onSuccess(std::move(proxy));
     };
 
     arbitrator->startArbitration(arbitrationSucceeds, onError);
-}
-
-template <class T>
-ProxyBuilder<T>* ProxyBuilder<T>::setCached(const bool cached)
-{
-    this->cached = cached;
-    return this;
 }
 
 template <class T>
@@ -247,6 +231,9 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     this->discoveryQos = discoveryQos;
     return this;
 }
+
+template <class T>
+INIT_LOGGER(ProxyBuilder<T>);
 
 } // namespace joynr
 #endif // PROXYBUILDER_H

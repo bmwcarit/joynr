@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.SetMultimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -63,6 +63,8 @@ import io.joynr.pubsub.publication.AttributeListener;
 import io.joynr.pubsub.publication.BroadcastFilter;
 import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.pubsub.publication.MulticastListener;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastPublication;
@@ -71,15 +73,17 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
+import joynr.UnicastSubscriptionQos;
 import joynr.exceptions.ProviderRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-public class PublicationManagerImpl implements PublicationManager, DirectoryListener<ProviderContainer> {
+public class PublicationManagerImpl implements PublicationManager, DirectoryListener<ProviderContainer>,
+        ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(PublicationManagerImpl.class);
     // Map ProviderId -> SubscriptionRequest
-    private final Multimap<String, PublicationInformation> queuedSubscriptionRequests;
+    private final SetMultimap<String, PublicationInformation> queuedSubscriptionRequests;
     // Map SubscriptionId -> SubscriptionRequest
     private final ConcurrentMap<String, PublicationInformation> subscriptionId2PublicationInformation;
     // Map SubscriptionId -> PublicationTimer
@@ -101,6 +105,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_TTL_UPLIFT_MS)
     private long ttlUpliftMs = 0;
+    private SubscriptionRequestStorage subscriptionRequestStorage;
 
     static class PublicationInformation {
         private String providerParticipantId;
@@ -141,8 +146,12 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
             return pubState;
         }
 
-        public SubscriptionQos getQos() {
-            return subscriptionRequest.getQos();
+        public UnicastSubscriptionQos getQos() {
+            if (subscriptionRequest.getQos() instanceof UnicastSubscriptionQos) {
+                return (UnicastSubscriptionQos) subscriptionRequest.getQos();
+            } else {
+                throw new IllegalArgumentException("Publication information should only be stored for unicast subscription requests");
+            }
         }
 
         @Override
@@ -175,11 +184,14 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     public PublicationManagerImpl(AttributePollInterpreter attributePollInterpreter,
                                   Dispatcher dispatcher,
                                   ProviderDirectory providerDirectory,
-                                  @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler) {
+                                  @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
+                                  SubscriptionRequestStorage subscriptionRequestStorage,
+                                  ShutdownNotifier shutdownNotifier) {
         super();
         this.dispatcher = dispatcher;
         this.providerDirectory = providerDirectory;
         this.cleanupScheduler = cleanupScheduler;
+        this.subscriptionRequestStorage = subscriptionRequestStorage;
         this.queuedSubscriptionRequests = HashMultimap.create();
         this.subscriptionId2PublicationInformation = Maps.newConcurrentMap();
         this.publicationTimers = Maps.newConcurrentMap();
@@ -189,7 +201,29 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         this.multicastListeners = Maps.newConcurrentMap();
         this.attributePollInterpreter = attributePollInterpreter;
         providerDirectory.addListener(this);
+        queueSavedSubscriptionRequests();
+        shutdownNotifier.registerForShutdown(this);
+    }
 
+    private void queueSavedSubscriptionRequests() {
+
+        SetMultimap<String, PersistedSubscriptionRequest> persistedSubscriptionRequests = subscriptionRequestStorage.getSavedSubscriptionRequests();
+        if (persistedSubscriptionRequests == null || persistedSubscriptionRequests.isEmpty()) {
+            return;
+        }
+
+        try {
+            for (String providerId : persistedSubscriptionRequests.keySet()) {
+                for (PersistedSubscriptionRequest persistedSubscriptionRequest : persistedSubscriptionRequests.get(providerId)) {
+                    addSubscriptionRequest(persistedSubscriptionRequest.getProxyParticipantId(),
+                                           providerId,
+                                           persistedSubscriptionRequest.getSubscriptonRequest());
+                    subscriptionRequestStorage.removeSubscriptionRequest(providerId, persistedSubscriptionRequest);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("unable to queue saved subscription requests: " + e.getMessage());
+        }
     }
 
     private void handleSubscriptionRequest(PublicationInformation publicationInformation,
@@ -200,7 +234,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
         MessagingQos messagingQos = createMessagingQos(subscriptionQos);
 
         try {
-            Method method = findGetterForAttributeName(providerContainer.getRequestCaller().getClass(),
+            Method method = findGetterForAttributeName(providerContainer.getProviderProxy().getClass(),
                                                        subscriptionRequest.getSubscribedToName());
 
             triggerPublication(publicationInformation, providerContainer, method);
@@ -276,7 +310,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                                     String providerParticipantId,
                                                     BroadcastSubscriptionRequest subscriptionRequest,
                                                     ProviderContainer providerContainer) {
-        logger.debug("adding broadcast publication: {}", subscriptionRequest);
+        logger.trace("adding broadcast publication: {}", subscriptionRequest);
 
         BroadcastListener broadcastListener = new BroadcastListenerImpl(subscriptionRequest.getSubscriptionId(), this);
         String broadcastName = subscriptionRequest.getSubscribedToName();
@@ -301,7 +335,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                                     String providerParticipantId,
                                                     MulticastSubscriptionRequest subscriptionRequest,
                                                     ProviderContainer providerContainer) {
-        logger.debug("Received multicast subscription request {} for provider with participant ID {}",
+        logger.trace("Received multicast subscription request {} for provider with participant ID {}",
                      subscriptionRequest,
                      providerParticipantId);
         dispatcher.sendSubscriptionReply(providerParticipantId,
@@ -340,7 +374,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
             }
 
             addSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
-            logger.debug("publication added: " + subscriptionRequest.toString());
+            logger.trace("publication added: " + subscriptionRequest.toString());
         } catch (SubscriptionException e) {
             sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
         }
@@ -372,7 +406,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
 
                 @Override
                 public void run() {
-                    logger.debug("Publication with Id {} expired...", subscriptionId);
+                    logger.trace("Publication with Id {} expired...", subscriptionId);
                     removePublication(subscriptionId);
                 }
 
@@ -384,10 +418,10 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     private void removePublicationIfItExists(SubscriptionRequest subscriptionRequest) {
         String subscriptionId = subscriptionRequest.getSubscriptionId();
         if (publicationExists(subscriptionId)) {
-            logger.debug("updating publication: {}", subscriptionRequest);
+            logger.trace("updating publication: {}", subscriptionRequest);
             removePublication(subscriptionId);
         } else {
-            logger.debug("adding publication: {}", subscriptionRequest);
+            logger.trace("adding publication: {}", subscriptionRequest);
         }
     }
 
@@ -427,13 +461,18 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     public void addSubscriptionRequest(String proxyParticipantId,
                                        String providerParticipantId,
                                        SubscriptionRequest subscriptionRequest) {
+
+        subscriptionRequestStorage.persistSubscriptionRequest(proxyParticipantId,
+                                                              providerParticipantId,
+                                                              subscriptionRequest);
+
         if (providerDirectory.contains(providerParticipantId)) {
             addSubscriptionRequest(proxyParticipantId,
                                    providerParticipantId,
                                    subscriptionRequest,
                                    providerDirectory.get(providerParticipantId));
         } else {
-            logger.debug("Adding subscription request for non existing provider to queue.");
+            logger.trace("Adding subscription request for non existing provider to queue.");
             PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
                                                                                        proxyParticipantId,
                                                                                        subscriptionRequest);
@@ -548,7 +587,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     private boolean isExpired(PublicationInformation publicationInformation) {
         SubscriptionQos subscriptionQos = publicationInformation.subscriptionRequest.getQos();
         long subscriptionEndDelay = getSubscriptionEndDelay(subscriptionQos);
-        logger.debug("ExpiryDate - System.currentTimeMillis: " + subscriptionEndDelay);
+        logger.trace("ExpiryDate - System.currentTimeMillis: " + subscriptionEndDelay);
         return (subscriptionEndDelay != SubscriptionQos.NO_EXPIRY_DATE && subscriptionEndDelay <= 0);
     }
 
@@ -592,12 +631,12 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                     sendPublication(publication, publicationInformation);
                 }
 
-                logger.debug("attribute changed for subscription id: {} sending publication if delay > minInterval.",
+                logger.trace("attribute changed for subscription id: {} sending publication if delay > minInterval.",
                              subscriptionId);
             }
 
         } else {
-            logger.error("subscription {} has expired but attributeValueChanged has been called", subscriptionId);
+            logger.trace("subscription {} has expired but attributeValueChanged has been called", subscriptionId);
         }
 
     }
@@ -613,9 +652,9 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                         - publicationInformation.getState().getTimeOfLastPublication()) {
                     sendPublication(prepareBroadcastPublication(Arrays.asList(values), subscriptionId),
                                     publicationInformation);
-                    logger.debug("event occured changed for subscription id: {} sending publication: ", subscriptionId);
+                    logger.trace("event occured changed for subscription id: {} sending publication: ", subscriptionId);
                 } else {
-                    logger.debug("Two subsequent broadcasts of event " + publicationInformation.getSubscribedToName()
+                    logger.trace("Two subsequent broadcasts of event " + publicationInformation.getSubscribedToName()
                             + " occured within minInterval of subscription with id "
                             + publicationInformation.getSubscriptionId()
                             + ". Event will not be sent to the subscribing client.");
@@ -623,7 +662,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
             }
 
         } else {
-            logger.error("subscription {} has expired but eventOccurred has been called", subscriptionId);
+            logger.trace("subscription {} has expired but eventOccurred has been called", subscriptionId);
         }
 
     }
@@ -737,14 +776,14 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
     @Override
     public void sendSubscriptionPublication(SubscriptionPublication publication,
                                             PublicationInformation publicationInformation)
-                                                    throws JoynrSendBufferFullException,
-                                                    JoynrMessageNotSentException,
-                                                    JsonGenerationException,
-                                                    JsonMappingException,
-                                                    IOException {
+                                                                                          throws JoynrSendBufferFullException,
+                                                                                          JoynrMessageNotSentException,
+                                                                                          JsonGenerationException,
+                                                                                          JsonMappingException,
+                                                                                          IOException {
         MessagingQos messagingQos = new MessagingQos();
         // TTL uplift will be done in JoynrMessageFactory
-        messagingQos.setTtl_ms(publicationInformation.subscriptionRequest.getQos().getPublicationTtlMs());
+        messagingQos.setTtl_ms(publicationInformation.getQos().getPublicationTtlMs());
         Set<String> toParticipantIds = new HashSet<>();
         toParticipantIds.add(publicationInformation.proxyParticipantId);
         dispatcher.sendSubscriptionPublication(publicationInformation.providerParticipantId,
@@ -759,7 +798,7 @@ public class PublicationManagerImpl implements PublicationManager, DirectoryList
                                   String multicastName,
                                   String[] partitions,
                                   Object... values) {
-        logger.debug("Multicast occurred for {} / {} / {} / {}",
+        logger.trace("Multicast occurred for {} / {} / {} / {}",
                      providerParticipantId,
                      multicastName,
                      Arrays.toString(partitions),

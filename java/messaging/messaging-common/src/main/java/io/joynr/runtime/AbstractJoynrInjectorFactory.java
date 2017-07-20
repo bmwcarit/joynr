@@ -3,7 +3,7 @@ package io.joynr.runtime;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2015 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public abstract class AbstractJoynrInjectorFactory extends InjectorFactory<Joynr
         Injector fullInjector = getInjector().createChildInjector(modules);
 
         String channelId = fullInjector.getInstance(Key.get(String.class, Names.named(MessagingPropertyKeys.CHANNELID)));
-        logger.debug("Application using channelId: " + channelId);
+        logger.info("Application using channelId: " + channelId);
 
         IApplication result = fullInjector.getInstance(IApplication.class);
         if (result instanceof JoynrApplication) {

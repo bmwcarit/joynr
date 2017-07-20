@@ -1,0 +1,456 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package infrastructure
+
+import infrastructure.* from "AccessControlGenericTypes.fidl"
+import infrastructure.* from "AccessControlTypes.fidl"
+
+<**
+	@description: This joynr internal interface provides write access to the
+		access and registration control entries of the Global Domain
+		Access Controller (GDAC).
+**>
+interface GlobalDomainAccessControlListEditor {
+	version {major 0 minor 1}
+
+	<**
+		@description: Returns a list of entries applying to domains the user
+			uid has role Master, i.e. the entries the user uid is allowed to
+			edit. Used by a Master ACL editor app.
+	**>
+	method getEditableMasterAccessControlEntries {
+		in {
+			String uid
+		}
+		out {
+			DacTypes.MasterAccessControlEntry[] masterAces
+		}
+	}
+
+	<**
+		@description: Updates an existing entry (according to primary key),
+			or adds a new entry if not already existent.
+	**>
+	method updateMasterAccessControlEntry {
+		in {
+			DacTypes.MasterAccessControlEntry updatedMasterAce
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Removes an existing entry (according to primary key).
+	**>
+	method removeMasterAccessControlEntry {
+		in {
+			String uid
+			String domain
+			String interfaceName
+			String operation
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Returns a list of entries applying to domains the user
+			uid has role Master, i.e. the entries the user uid is allowed to
+			edit. Used by an Master ACL editor app.
+	**>
+	method getEditableMediatorAccessControlEntries {
+		in {
+			String uid
+		}
+		out {
+			DacTypes.MasterAccessControlEntry[] mediatorAces
+		}
+	}
+
+	<**
+		@description: Updates an existing entry (according to primary key),
+			or adds a new entry if not already existent.
+	**>
+	method updateMediatorAccessControlEntry {
+		in {
+			DacTypes.MasterAccessControlEntry updatedMediatorAce
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Removes an existing entry (according to primary key).
+	**>
+	method removeMediatorAccessControlEntry {
+		in {
+			String uid
+			String domain
+			String interfaceName
+			String operation
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Returns a list of entries applying to domains the user
+			uid has role Owner, i.e. the entries the user uid is allowed to
+			edit. Used by an Owner ACL editor app.
+	**>
+	method getEditableOwnerAccessControlEntries {
+		in {
+			String uid
+		}
+		out {
+			DacTypes.OwnerAccessControlEntry[] ownerAces
+		}
+	}
+
+	<**
+		@description: Updates an existing entry (according to primary key),
+			or adds a new entry if not already existent.
+	**>
+	method updateOwnerAccessControlEntry {
+		in {
+			DacTypes.OwnerAccessControlEntry updatedOwnerAce
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Removes an existing entry (according to primary key).
+	**>
+	method removeOwnerAccessControlEntry {
+		in {
+			String uid
+			String domain
+			String interfaceName
+			String operation
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Returns a list of entries applying to domains the user
+			uid has role Master, i.e. the entries the user uid is allowed to
+			edit. Used by an Master RCL editor app.
+	**>
+	method getEditableMasterRegistrationControlEntries {
+		in {
+			String uid
+		}
+		out {
+			DacTypes.MasterRegistrationControlEntry[] masterRces
+		}
+	}
+
+	<**
+		@description: Updates an existing entry (according to primary key),
+			or adds a new entry if not already existent.
+	**>
+	method updateMasterRegistrationControlEntry {
+		in {
+			DacTypes.MasterRegistrationControlEntry updatedMasterRce
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Removes an existing entry (according to primary key).
+	**>
+	method removeMasterRegistrationControlEntry {
+		in {
+			String uid
+			String domain
+			String interfaceName
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Returns a list of entries applying to domains the user
+			uid has role Master, i.e. the entries the user uid is allowed to
+			edit. Used by a Master RCL editor app.
+	**>
+	method getEditableMediatorRegistrationControlEntries {
+		in {
+			String uid
+		}
+		out {
+			DacTypes.MasterRegistrationControlEntry[] mediatorRces
+		}
+	}
+
+	<**
+		@description: Updates an existing entry (according to primary key),
+			or adds a new entry if not already existent.
+	**>
+	method updateMediatorRegistrationControlEntry {
+		in {
+			DacTypes.MasterRegistrationControlEntry updatedMediatorRce
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Removes an existing entry (according to primary key).
+	**>
+	method removeMediatorRegistrationControlEntry {
+		in {
+			String uid
+			String domain
+			String interfaceName
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Returns a list of entries applying to domains the user
+			uid has role Owner, i.e. the entries the user uid is allowed to
+			edit. Used by an Owner RCL editor app.
+	**>
+	method getEditableOwnerRegistrationControlEntries {
+		in {
+			String uid
+		}
+		out {
+			DacTypes.OwnerRegistrationControlEntry[] ownerRces
+		}
+	}
+
+	<**
+		@description: Updates an existing entry (according to primary key),
+			or adds a new entry if not already existent.
+	**>
+	method updateOwnerRegistrationControlEntry {
+		in {
+			DacTypes.OwnerRegistrationControlEntry updatedOwnerRce
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Removes an existing entry (according to primary key).
+	**>
+	method removeOwnerRegistrationControlEntry {
+		in {
+			String uid
+			String domain
+			String interfaceName
+		}
+		out {
+			Boolean success
+		}
+	}
+}
+
+<**
+	@description: This joynr internal interface provides write access to the
+		access and registration control entries of the Local
+		Access Controller (LDAC).
+	@details: This interface is the same as GlobalDomainAccessControlListEditor
+		without the getEditable methods.
+**>
+interface AccessControlListEditor {
+	version {major 0 minor 1}
+
+	<**
+		@description: Updates an existing entry (according to primary key),
+			or adds a new entry if not already existent.
+	**>
+	method updateMasterAccessControlEntry {
+		in {
+			DacTypes.MasterAccessControlEntry updatedMasterAce
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Removes an existing entry (according to primary key).
+	**>
+	method removeMasterAccessControlEntry {
+		in {
+			String uid
+			String domain
+			String interfaceName
+			String operation
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Updates an existing entry (according to primary key),
+			or adds a new entry if not already existent.
+	**>
+	method updateMediatorAccessControlEntry {
+		in {
+			DacTypes.MasterAccessControlEntry updatedMediatorAce
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Removes an existing entry (according to primary key).
+	**>
+	method removeMediatorAccessControlEntry {
+		in {
+			String uid
+			String domain
+			String interfaceName
+			String operation
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Updates an existing entry (according to primary key),
+			or adds a new entry if not already existent.
+	**>
+	method updateOwnerAccessControlEntry {
+		in {
+			DacTypes.OwnerAccessControlEntry updatedOwnerAce
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Removes an existing entry (according to primary key).
+	**>
+	method removeOwnerAccessControlEntry {
+		in {
+			String uid
+			String domain
+			String interfaceName
+			String operation
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Updates an existing entry (according to primary key),
+			or adds a new entry if not already existent.
+	**>
+	method updateMasterRegistrationControlEntry {
+		in {
+			DacTypes.MasterRegistrationControlEntry updatedMasterRce
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Removes an existing entry (according to primary key).
+	**>
+	method removeMasterRegistrationControlEntry {
+		in {
+			String uid
+			String domain
+			String interfaceName
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Updates an existing entry (according to primary key),
+			or adds a new entry if not already existent.
+	**>
+	method updateMediatorRegistrationControlEntry {
+		in {
+			DacTypes.MasterRegistrationControlEntry updatedMediatorRce
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Removes an existing entry (according to primary key).
+	**>
+	method removeMediatorRegistrationControlEntry {
+		in {
+			String uid
+			String domain
+			String interfaceName
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Updates an existing entry (according to primary key),
+			or adds a new entry if not already existent.
+	**>
+	method updateOwnerRegistrationControlEntry {
+		in {
+			DacTypes.OwnerRegistrationControlEntry updatedOwnerRce
+		}
+		out {
+			Boolean success
+		}
+	}
+
+	<**
+		@description: Removes an existing entry (according to primary key).
+	**>
+	method removeOwnerRegistrationControlEntry {
+		in {
+			String uid
+			String domain
+			String interfaceName
+		}
+		out {
+			Boolean success
+		}
+	}
+}

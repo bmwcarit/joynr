@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@
 #include <gmock/gmock.h>
 
 #include "joynr/MulticastReceiverDirectory.h"
+
+using ::testing::Contains;
 
 class MulticastReceiverDirectoryTest : public testing::Test {
 public:
@@ -217,3 +219,18 @@ TEST_F(MulticastReceiverDirectoryTest, getReceiversWithWildCards)
     EXPECT_EQ(expectedReceivers, receivers);
 }
 
+TEST_F(MulticastReceiverDirectoryTest, getMulticastIds)
+{
+    const std::string multicastId2("part1/name1/a/b/c");
+    const std::string receiverId2("testReceiverId2");
+
+    EXPECT_TRUE(multicastReceiverDirectory.getMulticastIds().empty());
+
+    multicastReceiverDirectory.registerMulticastReceiver(multicastId, receiverId);
+    multicastReceiverDirectory.registerMulticastReceiver(multicastId2, receiverId2);
+
+    std::vector<std::string> multicastIds = multicastReceiverDirectory.getMulticastIds();
+
+    EXPECT_THAT(multicastIds, Contains(multicastId));
+    EXPECT_THAT(multicastIds, Contains(multicastId2));
+}

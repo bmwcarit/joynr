@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,10 @@
 #include "joynr/vehicle/GpsRequestInterpreter.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/IRequestInterpreter.h"
-#include "tests/utils/MockObjects.h"
-#include "utils/MockCallback.h"
 #include "joynr/exceptions/MethodInvocationException.h"
+
+#include "tests/utils/MockObjects.h"
+#include "tests/utils/MockCallback.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -252,10 +253,10 @@ TEST_F(RequestInterpreterTest, execute_callsNonExistingMethod) {
 }
 
 
-TEST(RequestInterpreterDeathTest, get_assertsUnknownInterface) {
+TEST_F(RequestInterpreterTest, getUnknownInterfaceReturnsNullptr) {
     InterfaceRegistrar& registrar = InterfaceRegistrar::instance();
 
-    ASSERT_DEATH(registrar.getRequestInterpreter("unknown interface"), "Assertion.*");
+    ASSERT_EQ(nullptr, registrar.getRequestInterpreter("unknown interface"));
 }
 
 

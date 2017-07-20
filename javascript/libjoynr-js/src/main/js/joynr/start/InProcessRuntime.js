@@ -3,7 +3,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ define(
             "joynr/messaging/mqtt/MqttMessagingStubFactory",
             "joynr/messaging/mqtt/MqttMessagingSkeleton",
             "joynr/system/RoutingTypes/MqttAddress",
-            "joynr/messaging/MessageReplyToAddressCalculator",
             "joynr/messaging/mqtt/SharedMqttClient",
             "joynr/messaging/mqtt/MqttMulticastAddressCalculator",
             "joynr/messaging/MessagingSkeletonFactory",
@@ -98,7 +97,6 @@ define(
                 MqttMessagingStubFactory,
                 MqttMessagingSkeleton,
                 MqttAddress,
-                MessageReplyToAddressCalculator,
                 SharedMqttClient,
                 MqttMulticastAddressCalculator,
                 MessagingSkeletonFactory,
@@ -205,18 +203,6 @@ define(
                  * @type CapabilitiesRegistrar
                  */
                 Object.defineProperty(this, "registration", {
-                    get : function() {
-                        return capabilitiesRegistrar;
-                    },
-                    enumerable : true
-                });
-
-                /**
-                 * @name InProcessRuntime#capabilities
-                 * @type CapabilitiesRegistrar
-                 * @deprecated capabilities will be removed by 01.01.2017. please use registration instead
-                 */
-                Object.defineProperty(this, "capabilities", {
                     get : function() {
                         return capabilitiesRegistrar;
                     },
@@ -346,13 +332,15 @@ define(
 
                             untypedCapabilities = provisioning.capabilities || [];
                             clusterControllerSettings = defaultClusterControllerSettings({
-                                bounceProxyBaseUrl: provisioning.bounceProxyBaseUrl
+                                bounceProxyBaseUrl: provisioning.bounceProxyBaseUrl,
+                                brokerUri: provisioning.brokerUri
                             });
                             var defaultClusterControllerCapabilities = clusterControllerSettings.capabilities || [];
 
                             untypedCapabilities = untypedCapabilities.concat(defaultClusterControllerCapabilities);
                             /*jslint nomen: true */// allow use of _typeName once
                             typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
+                            typeRegistry.addType(new MqttAddress()._typeName, MqttAddress, false);
                             /*jslint nomen: false */
                             typedCapabilities = [];
                             var errorMessage;
@@ -368,10 +356,10 @@ define(
 
                             communicationModule = new CommunicationModule();
 
-                            channelMessagingSender = new ChannelMessagingSender({
-                                communicationModule : communicationModule,
-                                channelQos : provisioning.channelQos
-                            });
+                            //channelMessagingSender = new ChannelMessagingSender({
+                            //    communicationModule : communicationModule,
+                            //    channelQos : provisioning.channelQos
+                            //});
 
                             messageQueueSettings = {};
                             if (provisioning.messaging !== undefined
@@ -380,27 +368,19 @@ define(
                                         provisioning.messaging.maxQueueSizeInKBytes;
                             }
 
-                            var channelMessageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
-                                //replyToAddress is provided later
-                            });
+                            //channelMessagingStubFactory = new ChannelMessagingStubFactory({
+                            //    myChannelId : channelId,
+                            //    channelMessagingSender : channelMessagingSender
+                            //});
 
-                            channelMessagingStubFactory = new ChannelMessagingStubFactory({
-                                myChannelId : channelId,
-                                channelMessagingSender : channelMessagingSender,
-                                messageReplyToAddressCalculator : channelMessageReplyToAddressCalculator
-                            });
-
-                            var mqttAddress = new MqttAddress({
+                            var globalClusterControllerAddress = new MqttAddress({
                                 brokerUri : provisioning.brokerUri,
                                 topic : channelId
                             });
-
-                            var mqttMessageReplyToAddressCalculator = new MessageReplyToAddressCalculator({
-                                replyToAddress : mqttAddress
-                            });
+                            var serializedGlobalClusterControllerAddress = JSON.stringify(globalClusterControllerAddress);
 
                             var mqttClient = new SharedMqttClient({
-                                address: mqttAddress,
+                                address: globalClusterControllerAddress,
                                 provisioning : provisioning.mqtt || {}
                             });
 
@@ -409,11 +389,10 @@ define(
                             var messagingStubFactories = {};
                             /*jslint nomen: true */
                             messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
-                            messagingStubFactories[ChannelAddress._typeName] = channelMessagingStubFactory;
+                            //messagingStubFactories[ChannelAddress._typeName] = channelMessagingStubFactory;
                             messagingStubFactories[MqttAddress._typeName] = new MqttMessagingStubFactory({
                                 client : mqttClient,
-                                address : mqttAddress,
-                                messageReplyToAddressCalculator : mqttMessageReplyToAddressCalculator
+                                address : globalClusterControllerAddress
                             });
                             /*jslint nomen: false */
 
@@ -429,17 +408,18 @@ define(
                                 messagingStubFactory : messagingStubFactory,
                                 messagingSkeletonFactory : messagingSkeletonFactory,
                                 multicastAddressCalculator : new MqttMulticastAddressCalculator({
-                                    globalAddress : mqttAddress
+                                    globalAddress : globalClusterControllerAddress
                                 }),
                                 messageQueue : new MessageQueue(messageQueueSettings)
                             });
+                            messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
 
-                            longPollingMessageReceiver = new LongPollingChannelMessageReceiver({
-                                persistency : persistency,
-                                bounceProxyUrl : bounceProxyBaseUrl + "/bounceproxy/",
-                                communicationModule : communicationModule,
-                                channelQos: provisioning.channelQos
-                            });
+                            //longPollingMessageReceiver = new LongPollingChannelMessageReceiver({
+                            //    persistency : persistency,
+                            //    bounceProxyUrl : bounceProxyBaseUrl + "/bounceproxy/",
+                            //    communicationModule : communicationModule,
+                            //    channelQos: provisioning.channelQos
+                            //});
 
                             // link up clustercontroller messaging to channel
                             clusterControllerChannelMessagingSkeleton =
@@ -448,30 +428,34 @@ define(
                                     });
 
                             mqttMessagingSkeleton = new MqttMessagingSkeleton({
-                                address: mqttAddress,
+                                address: globalClusterControllerAddress,
                                 client : mqttClient,
                                 messageRouter : messageRouter
                             });
 
-                            longPollingCreatePromise = longPollingMessageReceiver.create(channelId).then(
-                                    function(channelUrl) {
-                                        var channelAddress = new ChannelAddress({
-                                            channelId: channelId,
-                                            messagingEndpointUrl: channelUrl
-                                        });
+                            //longPollingCreatePromise = longPollingMessageReceiver.create(channelId).then(
+                            //        function(channelUrl) {
+                            //            var channelAddress = new ChannelAddress({
+                            //                channelId: channelId,
+                            //                messagingEndpointUrl: channelUrl
+                            //            });
 
-                                        mqttClient.onConnected().then(function() {
-                                            capabilityDiscovery.globalAddressReady(mqttAddress);
-                                            channelMessageReplyToAddressCalculator.setReplyToAddress(channelAddress);
-                                            channelMessagingStubFactory.globalAddressReady(channelAddress);
-                                            return null;
-                                        });
+                            //            mqttClient.onConnected().then(function() {
+                            //                capabilityDiscovery.globalAddressReady(globalClusterControllerAddress);
+                            //                channelMessagingStubFactory.globalAddressReady(channelAddress);
+                            //                return null;
+                            //            });
 
-                                        longPollingMessageReceiver
-                                                .start(clusterControllerChannelMessagingSkeleton.receiveMessage);
-                                        channelMessagingSender.start();
-                                        return null;
-                                    });
+                            //            longPollingMessageReceiver
+                            //                    .start(clusterControllerChannelMessagingSkeleton.receiveMessage);
+                            //            channelMessagingSender.start();
+                            //            return null;
+                            //        });
+                            mqttClient.onConnected().then(function() {
+                                    capabilityDiscovery.globalAddressReady(globalClusterControllerAddress);
+                                    //channelMessagingStubFactory.globalAddressReady(channelAddress);
+                                    return null;
+                            });
 
                             // link up clustercontroller messaging to dispatcher
                             clusterControllerMessagingSkeleton = new InProcessMessagingSkeleton();
@@ -493,14 +477,11 @@ define(
                             libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                             libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
-                            var messagingSkeletons = {};
-                            /*jslint nomen: true */
-                            messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
-                            messagingSkeletons[ChannelAddress._typeName] = clusterControllerChannelMessagingSkeleton;
-                            messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
-                            /*jslint nomen: false */
-                            messagingSkeletonFactory.setSkeletons(messagingSkeletons);
-
+                            messagingSkeletonFactory.setSkeletons({
+                                InProcessAddress : libjoynrMessagingSkeleton,
+                                //ChannelAddress : clusterControllerChannelMessagingSkeleton,
+                                MqttAddress : mqttMessagingSkeleton
+                            });
                             requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                             subscriptionManager = new SubscriptionManager(dispatcher);
                             publicationManager =
@@ -616,28 +597,28 @@ define(
 
                             LongTimer.clearInterval(freshnessIntervalId);
 
-                            longPollingCreatePromise.then(function() {
-                                return longPollingMessageReceiver.clear(channelId)
-                                .then(function() {
-                                    // stop LongPolling
-                                    longPollingMessageReceiver.stop();
-                                }).catch(function(error) {
-                                    var errorString = "error clearing long poll channel: "
-                                        + error;
-                                    log.error(errorString);
-                                    // stop LongPolling
-                                    longPollingMessageReceiver.stop();
-                                    throw new Error(errorString);
-                                });
-                            });
+                            //longPollingCreatePromise.then(function() {
+                            //    return longPollingMessageReceiver.clear(channelId)
+                            //    .then(function() {
+                            //        // stop LongPolling
+                            //        longPollingMessageReceiver.stop();
+                            //    }).catch(function(error) {
+                            //        var errorString = "error clearing long poll channel: "
+                            //            + error;
+                            //        log.error(errorString);
+                            //        // stop LongPolling
+                            //        longPollingMessageReceiver.stop();
+                            //        throw new Error(errorString);
+                            //    });
+                            //});
 
                             if (mqttMessagingSkeleton !== undefined) {
                                 mqttMessagingSkeleton.shutdown();
                             }
 
-                            if (channelMessagingSender !== undefined) {
-                                channelMessagingSender.shutdown();
-                            }
+                            //if (channelMessagingSender !== undefined) {
+                            //    channelMessagingSender.shutdown();
+                            //}
 
                             if (capabilitiesRegistrar !== undefined) {
                                 capabilitiesRegistrar.shutdown();

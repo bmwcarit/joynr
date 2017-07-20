@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ MulticastReceiverDirectory::~MulticastReceiverDirectory()
 void MulticastReceiverDirectory::registerMulticastReceiver(const std::string& multicastId,
                                                            const std::string& receiverId)
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_TRACE(logger,
                     "register multicast receiver: multicastId={}, receiverId={}",
                     multicastId,
                     receiverId);
@@ -45,7 +45,7 @@ void MulticastReceiverDirectory::registerMulticastReceiver(const std::string& mu
 bool MulticastReceiverDirectory::unregisterMulticastReceiver(const std::string& multicastId,
                                                              const std::string& receiverId)
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_TRACE(logger,
                     "unregister multicast receiver: multicastId={}, receiverId={}",
                     multicastId,
                     receiverId);
@@ -54,12 +54,12 @@ bool MulticastReceiverDirectory::unregisterMulticastReceiver(const std::string& 
         MulticastMatcher matcher(multicastId);
         std::unordered_set<std::string>& receivers = multicastReceivers[matcher];
         receivers.erase(receiverId);
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_TRACE(logger,
                         "removed multicast receiver: multicastId={}, receiverId={}",
                         multicastId,
                         receiverId);
         if (receivers.empty()) {
-            JOYNR_LOG_DEBUG(logger, "removed last multicast receiver: multicastId={}", multicastId);
+            JOYNR_LOG_TRACE(logger, "removed last multicast receiver: multicastId={}", multicastId);
             multicastReceivers.erase(matcher);
         }
         return true;
@@ -70,17 +70,28 @@ bool MulticastReceiverDirectory::unregisterMulticastReceiver(const std::string& 
 std::unordered_set<std::string> MulticastReceiverDirectory::getReceivers(
         const std::string& multicastId)
 {
-    JOYNR_LOG_DEBUG(logger, "get multicast receivers: multicastId={}", multicastId);
+    JOYNR_LOG_TRACE(logger, "get multicast receivers: multicastId={}", multicastId);
     std::lock_guard<std::recursive_mutex> lock(mutex);
 
     std::unordered_set<std::string> foundReceivers;
-    for (const std::pair<MulticastMatcher, std::unordered_set<std::string>>& pair :
-         multicastReceivers) {
-        if (pair.first.doesMatch(multicastId)) {
-            foundReceivers.insert(pair.second.cbegin(), pair.second.cend());
+    for (const auto& entry : multicastReceivers) {
+        if (entry.first.doesMatch(multicastId)) {
+            foundReceivers.insert(entry.second.cbegin(), entry.second.cend());
         }
     }
     return foundReceivers;
+}
+
+std::vector<std::string> MulticastReceiverDirectory::getMulticastIds() const
+{
+    std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::vector<std::string> multicastIds;
+
+    for (const auto& multicastReceiver : multicastReceivers) {
+        multicastIds.push_back(multicastReceiver.first.multicastId);
+    }
+
+    return multicastIds;
 }
 
 bool MulticastReceiverDirectory::contains(const std::string& multicastId)
@@ -94,7 +105,7 @@ bool MulticastReceiverDirectory::contains(const std::string& multicastId,
                                           const std::string& receiverId)
 {
     std::lock_guard<std::recursive_mutex> lock(mutex);
-    auto receivers = getReceivers(multicastId);
+    const auto& receivers = getReceivers(multicastId);
     return receivers.find(receiverId) != receivers.cend();
 }
 

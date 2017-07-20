@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,8 @@ require.config({
         "global/WaitsFor": "../test-classes/global/WaitsFor",
         "Date" : "../test-classes/global/Date",
         "joynr/tests": "../test-classes/joynr/tests",
+        "joynr/types/TestTypes": "../test-classes/joynr/types/TestTypes",
+        "joynr/types/TestTypesWithoutVersion": "../test-classes/joynr/types/TestTypesWithoutVersion",
         "joynr/provisioning": "../test-classes/joynr/provisioning",
         "joynr/vehicle": "../test-classes/joynr/vehicle",
         "joynr/datatypes": "../test-classes/joynr/datatypes",

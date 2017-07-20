@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,13 @@
  * limitations under the License.
  * #L%
  */
+
 #include "InProcessMessagingStubFactory.h"
+
+#include <cassert>
+
+#include "InProcessMessagingStub.h"
 #include "joynr/InProcessMessagingAddress.h"
-#include "common/in-process/InProcessMessagingStub.h"
 
 namespace joynr
 {
@@ -30,19 +34,20 @@ InProcessMessagingStubFactory::InProcessMessagingStubFactory()
 bool InProcessMessagingStubFactory::canCreate(
         const joynr::system::RoutingTypes::Address& destAddress)
 {
-    return dynamic_cast<const InProcessMessagingAddress*>(&destAddress);
+    return dynamic_cast<const InProcessMessagingAddress*>(&destAddress) != nullptr;
 }
 
-std::shared_ptr<IMessaging> InProcessMessagingStubFactory::create(
+std::shared_ptr<IMessagingStub> InProcessMessagingStubFactory::create(
         const joynr::system::RoutingTypes::Address& destAddress)
 {
     const InProcessMessagingAddress* inprocessAddress =
             dynamic_cast<const InProcessMessagingAddress*>(&destAddress);
+    assert(inprocessAddress);
     return std::make_shared<InProcessMessagingStub>(inprocessAddress->getSkeleton());
 }
 
 void InProcessMessagingStubFactory::registerOnMessagingStubClosedCallback(
-        std::function<void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+        std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address>
                                    destinationAddress)> onMessagingStubClosedCallback)
 {
     std::ignore = onMessagingStubClosedCallback;

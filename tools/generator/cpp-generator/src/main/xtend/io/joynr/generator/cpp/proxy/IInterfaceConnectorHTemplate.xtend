@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,6 @@ class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionCallback.h"
-#include "joynr/IConnector.h"
 #include <memory>
 
 namespace joynr {
@@ -58,6 +57,7 @@ namespace joynr {
 	class ISubscriptionCallback;
 	class SubscriptionQos;
 	class OnChangeSubscriptionQos;
+	class MulticastSubscriptionQos;
 } // namespace joynr
 
 «getNamespaceStarter(francaIntf)»
@@ -78,7 +78,7 @@ public:
 	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, true)»
 };
 
-class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«interfaceName», public joynr::IConnector, virtual public I«interfaceName»Subscription{
+class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«interfaceName», virtual public I«interfaceName»Subscription{
 
 public:
 	~I«interfaceName»Connector() override = default;

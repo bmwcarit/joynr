@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.joynrmessaging
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,10 +59,11 @@ class InterfaceJoynrMessagingConnectorHTemplate extends InterfaceTemplate{
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/SubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
 
 namespace joynr {
 	class MessagingQos;
-	class IJoynrMessageSender;
+	class IMessageSender;
 	class ISubscriptionManager;
 	«IF !francaIntf.attributes.empty»
 		class SubscriptionRequest;
@@ -75,6 +76,11 @@ namespace joynr {
 	«ENDIF»
 	template <class ... Ts> class Future;
 	template <typename... Ts> class ISubscriptionListener;
+
+namespace types
+{
+	class DiscoveryEntryWithMetaInfo;
+} // namespace types
 
 namespace exceptions
 {
@@ -123,10 +129,11 @@ private:
 		 */
 		std::shared_ptr<joynr::Future<std::string>> subscribeTo«broadcastName.toFirstUpper»Broadcast(
 				std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 				«IF broadcast.selective»
+					std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 					BroadcastSubscriptionRequest& subscriptionRequest);
 				«ELSE»
+					std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
 					std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest,
 					const std::vector<std::string>& partitions);
 				«ENDIF»
@@ -140,24 +147,14 @@ public:
 	 * @param proxyParticipantId The participant id of the proxy
 	 * @param providerParticipantId The participant id of the provider
 	 * @param qosSettings The quality of service settings
-	 * @param cache Pointer to the client cache instance
-	 * @param cached True, if entries are cached, false otherwise
 	 */
 	«interfaceName»JoynrMessagingConnector(
-		joynr::IJoynrMessageSender* messageSender,
-		joynr::ISubscriptionManager* subscriptionManager,
+		std::shared_ptr<joynr::IMessageSender> messageSender,
+		std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager,
 		const std::string& domain,
 		const std::string& proxyParticipantId,
-		const std::string& providerParticipantId,
 		const joynr::MessagingQos &qosSettings,
-		joynr::IClientCache *cache,
-		bool cached);
-
-	/**
-	 * @brief Checks whether cluster controller is used
-	 * @return true, if cluster controller is used
-	 */
-	bool usesClusterController() const override;
+		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryInfo);
 
 	/** @brief Destructor */
 	~«interfaceName»JoynrMessagingConnector() override = default;

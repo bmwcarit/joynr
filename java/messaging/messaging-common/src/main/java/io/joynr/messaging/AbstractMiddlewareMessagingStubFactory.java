@@ -7,7 +7,7 @@ import java.util.Map;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,13 @@ import java.util.Map;
 
 import joynr.system.RoutingTypes.Address;
 
-abstract public class AbstractMiddlewareMessagingStubFactory<S extends IMessaging, A extends Address> {
+abstract public class AbstractMiddlewareMessagingStubFactory<S extends IMessagingStub, A extends Address> {
 
     private Map<A, S> stubMap = new HashMap<>();
 
-    protected abstract  S createInternal(A address);
+    protected abstract S createInternal(A address);
 
-    public synchronized IMessaging create(A address) {
+    public synchronized IMessagingStub create(A address) {
         if (!stubMap.containsKey(address)) {
             stubMap.put(address, createInternal(address));
         }
@@ -41,6 +41,4 @@ abstract public class AbstractMiddlewareMessagingStubFactory<S extends IMessagin
     protected Collection<S> getAllMessagingStubs() {
         return stubMap.values();
     }
-
-    public abstract void shutdown();
 }

@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import java.util.concurrent.Future;
 import com.google.common.util.concurrent.Futures;
 import com.google.inject.Singleton;
 
-import joynr.JoynrMessage;
-
 /**
  * A Dummy implementation that does not perform any backend communication
  *
@@ -37,10 +35,6 @@ public class NoBackendMessagingReceiver implements MessageReceiver {
     @Override
     public String getChannelId() {
         return "null";
-    }
-
-    public void receiveMessage(JoynrMessage message) {
-        throw new UnsupportedOperationException("The NoBackendMessagingSenderReceiver cannot receive messages");
     }
 
     @Override

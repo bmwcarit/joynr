@@ -3,7 +3,7 @@ package io.joynr.proxy.invocation;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,7 +108,9 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
         return getSubscriptionName();
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "BroadcastSubscribeInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+                                                      value = "EI_EXPOSE_REP",
+                                                      justification = "BroadcastSubscribeInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
     public Class<?>[] getOutParameterTypes() {
         return outParameterTypes;
     }

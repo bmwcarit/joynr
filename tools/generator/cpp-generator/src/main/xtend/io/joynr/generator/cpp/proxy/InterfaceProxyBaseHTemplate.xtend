@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.proxy
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,12 +47,19 @@ class InterfaceProxyBaseHTemplate extends InterfaceTemplate {
 «FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
-#include "joynr/system/RoutingTypes/Address.h"
 #include <memory>
 
 «getDllExportIncludeStatement()»
 #include "joynr/ProxyBase.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName»Connector.h"
+
+namespace joynr
+{
+namespace types
+{
+	class DiscoveryEntryWithMetaInfo;
+} // namespace types
+} // namespace joynr
 
 «getNamespaceStarter(francaIntf)»
 /**
@@ -64,20 +71,14 @@ class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, vi
 public:
 	/**
 	 * @brief Parameterized constructor
-	 * @param messagingAddress The address
 	 * @param connectorFactory The connector factory
-	 * @param cache The client cache
 	 * @param domain The provider domain
 	 * @param qosSettings The quality of service settings
-	 * @param cached True, if cached, false otherwise
 	 */
 	«className»(
-			std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress,
 			joynr::ConnectorFactory* connectorFactory,
-			joynr::IClientCache* cache,
 			const std::string& domain,
-			const joynr::MessagingQos& qosSettings,
-			bool cached
+			const joynr::MessagingQos& qosSettings
 	);
 
 	/**
@@ -86,15 +87,13 @@ public:
 	 * @param connection The kind of connection
 	 */
 	void handleArbitrationFinished(
-			const std::string &participantId,
+			const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
 			bool useInProcessConnector
 	) override;
 
 	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, false)»
 
 protected:
-	/** @brief The joynr messaging address */
-	std::shared_ptr<const joynr::system::RoutingTypes::Address> messagingAddress;
 	/** @brief The kind of connector */
 	std::unique_ptr<I«interfaceName»Connector> connector;
 

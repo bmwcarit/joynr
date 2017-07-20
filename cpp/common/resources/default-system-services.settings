@@ -1,6 +1,0 @@
-[system.services]
-domain=io.joynr.system
-cc-routingprovider-authenticationtoken=CC.RoutingProvider.AuthenticationToken
-cc-routingprovider-participantid=CC.RoutingProvider.ParticipantId
-cc-discoveryprovider-authenticationtoken=CC.DiscoveryProvider.AuthenticationToken
-cc-discoveryprovider-participantid=CC.DiscoveryProvider.ParticipantId

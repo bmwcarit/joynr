@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public:
         JOYNR_LOG_DEBUG(
                 logger, "register messaging skeleton for address type {}", typeIndex.name());
         std::lock_guard<std::recursive_mutex> lock(mutex);
-        multicastSkeletons[typeIndex] = skeleton;
+        multicastSkeletons[typeIndex] = std::move(skeleton);
     }
 
     template <class T,

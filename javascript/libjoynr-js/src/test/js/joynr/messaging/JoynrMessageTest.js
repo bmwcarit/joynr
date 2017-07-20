@@ -2,7 +2,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ define([ "joynr/messaging/JoynrMessage"
             expect(joynrMessage._typeName).toEqual("joynr.JoynrMessage");
             /*jslint newcap: false, nomen: false */
             expect(joynrMessage.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST);
+            expect(joynrMessage.compress).toEqual(false);
             done();
         });
 
@@ -140,6 +141,26 @@ define([ "joynr/messaging/JoynrMessage"
             expect(joynrMessage.isReceivedFromGlobal).toBe(false);
             joynrMessage.setReceivedFromGlobal(true);
             expect(joynrMessage.isReceivedFromGlobal).toBe(true);
+        });
+
+        it("allows to change isLocalMessage", function() {
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                payload : "hello"
+            });
+            expect(joynrMessage.isLocalMessage).toBe(false);
+            joynrMessage.setIsLocalMessage(true);
+            expect(joynrMessage.isLocalMessage).toBe(true);
+        });
+
+        it("allows to change compress", function() {
+            var joynrMessage = new JoynrMessage({
+                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+                payload : "hello"
+            });
+            expect(joynrMessage.compress).toBe(false);
+            joynrMessage.setCompress(true);
+            expect(joynrMessage.compress).toBe(true);
         });
 
         it("has comfort functions for setting values", function() {

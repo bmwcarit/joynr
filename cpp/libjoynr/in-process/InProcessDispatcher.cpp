@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@
 
 #include <cassert>
 #include <tuple>
+
 #include <boost/asio/io_service.hpp>
 
 #include "joynr/MessagingQos.h"
-#include "joynr/JoynrMessage.h"
 
 namespace joynr
 {
@@ -68,7 +68,7 @@ void InProcessDispatcher::removeRequestCaller(const std::string& participantId)
     requestCallerDirectory.remove(participantId);
 }
 
-void InProcessDispatcher::receive(const JoynrMessage& message)
+void InProcessDispatcher::receive(std::shared_ptr<ImmutableMessage> message)
 {
     std::ignore = message;
     JOYNR_LOG_FATAL(logger, "Not implemented");
@@ -86,7 +86,8 @@ bool InProcessDispatcher::containsRequestCaller(const std::string& participantId
     return requestCallerDirectory.contains(participantId);
 }
 
-void InProcessDispatcher::registerSubscriptionManager(ISubscriptionManager* subscriptionManager)
+void InProcessDispatcher::registerSubscriptionManager(
+        std::shared_ptr<ISubscriptionManager> subscriptionManager)
 {
     this->subscriptionManager = subscriptionManager;
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,8 +55,9 @@ public:
 
     void setQos(std::shared_ptr<SubscriptionQos> qos) override;
 
-    std::string getMulticastId() const;
+    const std::string& getMulticastId() const;
     void setMulticastId(const std::string& id);
+    void setMulticastId(std::string&& id);
 
     template <typename Archive>
     void serialize(Archive& archive)

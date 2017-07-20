@@ -6,7 +6,7 @@ package io.joynr.jeeintegration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.types.ProviderQos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,22 +59,22 @@ public class JoynrIntegrationBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(JoynrIntegrationBean.class);
 
-    @Inject
     private BeanManager beanManager;
 
-    @Inject
     private JoynrRuntimeFactory joynrRuntimeFactory;
 
-    @Inject
     private ServiceProviderDiscovery serviceProviderDiscovery;
 
     private Set<Object> registeredProviders = new HashSet<>();
 
     private JoynrRuntime joynrRuntime;
 
+    private boolean deregisterOnShutdown = false;
+
     public JoynrIntegrationBean() {
     }
 
+    @Inject
     public JoynrIntegrationBean(BeanManager beanManager,
                                 JoynrRuntimeFactory joynrRuntimeFactory,
                                 ServiceProviderDiscovery serviceProviderDiscovery) {
@@ -112,6 +113,9 @@ public class JoynrIntegrationBean {
                     break;
                 }
             }
+            if (providerQos == null) {
+                providerQos = new ProviderQos();
+            }
             runtime.registerProvider(getDomainForProvider(beanClass), provider, providerQos);
             registeredProviders.add(provider);
         }
@@ -129,27 +133,31 @@ public class JoynrIntegrationBean {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked", "serial" })
-	private Set<ProviderQosFactory> getProviderQosFactories() {
-		Set<Bean<?>> providerQosFactoryBeans = beanManager.getBeans(ProviderQosFactory.class,
-																	new AnnotationLiteral<Any>() {
-																	});
-		Set<ProviderQosFactory> providerQosFactories = new HashSet<>();
-		for (Bean providerQosFactoryBean : providerQosFactoryBeans) {
-			ProviderQosFactory factory = (ProviderQosFactory) providerQosFactoryBean.create(beanManager.createCreationalContext(providerQosFactoryBean));
-			providerQosFactories.add(factory);
-		}
-		return providerQosFactories;
-	}
+    private Set<ProviderQosFactory> getProviderQosFactories() {
+        Set<Bean<?>> providerQosFactoryBeans = beanManager.getBeans(ProviderQosFactory.class,
+                                                                    new AnnotationLiteral<Any>() {
+                                                                    });
+        Set<ProviderQosFactory> providerQosFactories = new HashSet<>();
+        for (Bean providerQosFactoryBean : providerQosFactoryBeans) {
+            ProviderQosFactory factory = (ProviderQosFactory) providerQosFactoryBean.create(beanManager.createCreationalContext(providerQosFactoryBean));
+            providerQosFactories.add(factory);
+        }
+        return providerQosFactories;
+    }
 
     @PreDestroy
     public void destroy() {
-        for (Object provider : registeredProviders) {
-            try {
-                joynrRuntime.unregisterProvider(joynrRuntimeFactory.getLocalDomain(), provider);
-            } catch (Exception e) {
-                LOG.error("Error unregistering provider", e);
+        if (deregisterOnShutdown) {
+            for (Object provider : registeredProviders) {
+                try {
+                    joynrRuntime.unregisterProvider(joynrRuntimeFactory.getLocalDomain(), provider);
+                } catch (Exception e) {
+                    LOG.error("Error unregistering provider", e);
+                }
             }
         }
+        ShutdownNotifier shutdownNotifier = getJoynrInjector().getInstance(ShutdownNotifier.class);
+        shutdownNotifier.shutdown();
     }
 
     /**

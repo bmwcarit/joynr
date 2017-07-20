@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,12 @@ typeCollection testTypes {
 	enumeration TestEnumExtended extends TestEnum {
 		THREE = 3
 		FOUR = 4
+	}
+
+	enumeration TestEnumWithoutValues {
+		ALPHA
+		BETA
+		GAMMA
 	}
 
 	struct ComplexTestType {
@@ -181,6 +187,18 @@ interface test {
 
 	attribute TypeDefForPrimitive[] typeDefForPrimitiveArray
 
+	method echoCallingPrincipal {
+		out {
+			String callingPrincipal
+		}
+	}
+
+	method fireAndForgetMethod fireAndForget {
+	    in {
+	        String input
+	    }
+	}
+
 	method addNumbers {
 		in {
 			Int32 first
@@ -207,6 +225,15 @@ interface test {
 	method methodWithNoInputParameters {
 		out {
 			Int32 result
+		}
+	}
+
+	method methodWithStrings{
+		in {
+			String input
+		}
+		out {
+			String result
 		}
 	}
 
@@ -244,6 +271,27 @@ interface test {
 			Int32 intIn
 			String stringIn
 			testTypes.ComplexTestType complexTestTypeIn
+		}
+	}
+
+	method methodFireAndForgetWithEnumWithValues fireAndForget {
+		in {
+			testTypes.TestEnum enumIn
+		}
+	}
+
+	method methodFireAndForgetWithEnumWithoutValues fireAndForget {
+		in {
+			testTypes.TestEnumWithoutValues enumIn
+		}
+	}
+
+	method methodWithEnumWithoutValues {
+		in {
+			testTypes.TestEnumWithoutValues enumIn
+		}
+		out {
+			testTypes.TestEnumWithoutValues enumOut
 		}
 	}
 

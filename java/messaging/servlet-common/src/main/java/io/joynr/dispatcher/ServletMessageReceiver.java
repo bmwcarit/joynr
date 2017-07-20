@@ -3,7 +3,7 @@ package io.joynr.dispatcher;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@ package io.joynr.dispatcher;
  * #L%
  */
 
-import joynr.JoynrMessage;
+import joynr.ImmutableMessage;
 import io.joynr.messaging.MessageReceiver;
 
 public interface ServletMessageReceiver extends MessageReceiver {
 
     boolean switchToLongPolling();
 
-    void receive(JoynrMessage message);
+    void receive(ImmutableMessage message);
 
-    void onError(JoynrMessage message, Throwable error);
+    void onError(ImmutableMessage message, Throwable error);
 }

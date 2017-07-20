@@ -3,7 +3,7 @@ package io.joynr.messaging;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ package io.joynr.messaging;
 import io.joynr.context.JoynrMessageScoped;
 
 /**
- * A container object for the {@link joynr.JoynrMessage#getCreatorUserId() message creator ID} scoped to the
+ * A container object for the {@link joynr.ImmutableMessage#getCreatorUserId() message creator ID} scoped to the
  * {@link JoynrMessageScoped processing of a joynr message}.
  */
 @JoynrMessageScoped

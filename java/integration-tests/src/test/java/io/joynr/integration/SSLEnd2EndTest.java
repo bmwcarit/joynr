@@ -3,7 +3,7 @@ package io.joynr.integration;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,9 +47,7 @@ public class SSLEnd2EndTest extends AbstractSSLEnd2EndTest {
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
-        DummyJoynrApplication application = (DummyJoynrApplication)
-                new JoynrInjectorFactory(joynrConfig, modules)
-                        .createApplication(DummyJoynrApplication.class);
+        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig, modules).createApplication(DummyJoynrApplication.class);
 
         dummyApplications.add(application);
         return application.getRuntime();

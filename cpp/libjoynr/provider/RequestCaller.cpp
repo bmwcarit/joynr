@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
  * #L%
  */
 #include "joynr/RequestCaller.h"
-#include "iostream"
+
+#include "joynr/IJoynrProvider.h"
 
 namespace joynr
 {
@@ -26,9 +27,37 @@ RequestCaller::RequestCaller(const std::string& interfaceName) : interfaceName(i
 {
 }
 
-std::string RequestCaller::getInterfaceName()
+RequestCaller::RequestCaller(std::string&& interfaceName) : interfaceName(std::move(interfaceName))
+{
+}
+
+const std::string& RequestCaller::getInterfaceName() const
 {
     return interfaceName;
+}
+
+void RequestCaller::registerAttributeListener(const std::string& attributeName,
+                                              SubscriptionAttributeListener* attributeListener)
+{
+    getProvider()->registerAttributeListener(attributeName, attributeListener);
+}
+
+void RequestCaller::unregisterAttributeListener(const std::string& attributeName,
+                                                SubscriptionAttributeListener* attributeListener)
+{
+    getProvider()->unregisterAttributeListener(attributeName, attributeListener);
+}
+
+void RequestCaller::registerBroadcastListener(const std::string& broadcastName,
+                                              UnicastBroadcastListener* broadcastListener)
+{
+    getProvider()->registerBroadcastListener(broadcastName, broadcastListener);
+}
+
+void RequestCaller::unregisterBroadcastListener(const std::string& broadcastName,
+                                                UnicastBroadcastListener* broadcastListener)
+{
+    getProvider()->unregisterBroadcastListener(broadcastName, broadcastListener);
 }
 
 } // namespace joynr

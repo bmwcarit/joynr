@@ -3,7 +3,7 @@ package io.joynr.dispatching;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,15 +28,16 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 public interface Dispatcher extends MessageArrivedListener {
     public void sendSubscriptionRequest(String fromParticipantId,
-                                        Set<String> toParticipantId,
+                                        Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                         SubscriptionRequest subscriptionRequest,
                                         MessagingQos qosSettings);
 
     public void sendSubscriptionStop(String fromParticipantId,
-                                     Set<String> toParticipantId,
+                                     Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                      SubscriptionStop subscriptionStop,
                                      MessagingQos qosSettings);
 
@@ -51,9 +52,4 @@ public interface Dispatcher extends MessageArrivedListener {
                                MessagingQos qosSettings);
 
     void sendMulticast(String fromParticipantId, MulticastPublication multicastPublication, MessagingQos messagingQos);
-
-    /**
-     * @param clear indicates whether the channel should be closed
-     */
-    public void shutdown(boolean clear);
 }

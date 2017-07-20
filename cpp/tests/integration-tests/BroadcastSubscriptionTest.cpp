@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,16 @@
  * #L%
  */
 #include <memory>
-#include "joynr/PrivateCopyAssign.h"
+#include <string>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "joynr/MessageRouter.h"
-#include "joynr/JoynrMessage.h"
-#include "joynr/JoynrMessageSender.h"
-#include "joynr/JoynrMessageFactory.h"
+
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/MessageSender.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/SubscriptionPublication.h"
@@ -31,22 +34,17 @@
 #include "joynr/Reply.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/tests/testRequestInterpreter.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include <string>
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/Future.h"
 
+#include "tests/JoynrTest.h"
+#include "tests/utils/MockObjects.h"
+
 using namespace ::testing;
-
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
 
 /**
   * Is an integration test. Tests from Dispatcher -> SubscriptionListener and RequestCaller
@@ -64,8 +62,8 @@ public:
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         messageFactory(),
-        messageSender(mockMessageRouter),
-        dispatcher(&messageSender, singleThreadIOService.getIOService()),
+        messageSender(std::make_shared<MessageSender>(mockMessageRouter)),
+        dispatcher(messageSender, singleThreadIOService.getIOService()),
         subscriptionManager(nullptr)
     {
         singleThreadIOService.start();
@@ -74,7 +72,7 @@ public:
     void SetUp(){
         //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        subscriptionManager = new SubscriptionManager(singleThreadIOService.getIOService(), mockMessageRouter);
+        subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadIOService.getIOService(), mockMessageRouter);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
     }
@@ -93,10 +91,10 @@ protected:
     std::string providerParticipantId;
     std::string proxyParticipantId;
 
-    JoynrMessageFactory messageFactory;
-    JoynrMessageSender messageSender;
+    MutableMessageFactory messageFactory;
+    std::shared_ptr<MessageSender> messageSender;
     Dispatcher dispatcher;
-    SubscriptionManager * subscriptionManager;
+    std::shared_ptr<SubscriptionManager> subscriptionManager;
 private:
     DISALLOW_COPY_AND_ASSIGN(BroadcastSubscriptionTest);
 };
@@ -117,6 +115,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
     std::string subscribeToName = "locationUpdate";
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 80, // validity_ms
+                1000, // publication ttl
                 100 // minInterval_ms
     );
 
@@ -128,7 +127,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -138,13 +137,13 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider
-    JoynrMessage msg = messageFactory.createSubscriptionPublication(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
                 providerParticipantId,
                 proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
@@ -167,6 +166,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
     std::string subscribeToName = "locationUpdateWithSpeed";
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                 80, // validity_ms
+                1000, // publication ttl
                 100 // minInterval_ms
     );
 
@@ -178,7 +178,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback= std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation, double>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -188,13 +188,13 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
                 subscriptionQos,
                 subscriptionRequest);
     // incoming publication from the provider
-    JoynrMessage msg = messageFactory.createSubscriptionPublication(
+    MutableMessage mutableMessage = messageFactory.createSubscriptionPublication(
                 providerParticipantId,
                 proxyParticipantId,
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(msg);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,12 @@ namespace exceptions
 /**
  * @brief Util class to transforms between Variant and joynr exceptions.
  */
-class JOYNRCOMMON_EXPORT JoynrExceptionUtil
+class JOYNR_EXPORT JoynrExceptionUtil
 {
 public:
     static void throwJoynrException(const exceptions::JoynrException& error)
     {
-        std::string typeName = error.getTypeName();
+        const std::string& typeName = error.getTypeName();
         if (typeName == exceptions::JoynrRuntimeException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::JoynrRuntimeException&>(
                     const_cast<exceptions::JoynrException&>(error));
@@ -69,9 +69,8 @@ public:
             throw dynamic_cast<exceptions::JoynrDelayMessageException&>(
                     const_cast<exceptions::JoynrException&>(error));
         } else {
-            std::string message = error.getMessage();
             throw exceptions::JoynrRuntimeException("Unknown exception: " + error.getTypeName() +
-                                                    ": " + message);
+                                                    ": " + error.getMessage());
         }
     }
 };

@@ -3,7 +3,7 @@ package io.joynr.dispatching.subscription;
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,14 +47,14 @@ public class AttributePollInterpreter {
         String interfaceName = providerContainer.getInterfaceName();
         Object returnValueFromProvider = null;
         try {
-            returnValueFromProvider = method.invoke(providerContainer.getRequestCaller());
+            returnValueFromProvider = method.invoke(providerContainer.getProviderProxy());
         } catch (IllegalAccessException e) {
             String message = String.format("Method \"%s\" is not accessible on \"%s\" provider (exception: \"%s\").",
                                            method.getName(),
                                            interfaceName,
                                            e.toString());
             logger.error(message, e);
-            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(providerContainer.getRequestCaller().getClass(),
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(providerContainer.getProviderProxy().getClass(),
                                                                      JoynrVersion.class);
             throw new MethodInvocationException(message, new Version(joynrVersion.major(), joynrVersion.minor()));
         } catch (IllegalArgumentException e) {
@@ -63,7 +63,7 @@ public class AttributePollInterpreter {
                                            method.getName(),
                                            e.toString());
             logger.error(message, e);
-            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(providerContainer.getRequestCaller().getClass(),
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(providerContainer.getProviderProxy().getClass(),
                                                                      JoynrVersion.class);
             throw new MethodInvocationException(message, new Version(joynrVersion.major(), joynrVersion.minor()));
         } catch (InvocationTargetException e) {
@@ -80,7 +80,7 @@ public class AttributePollInterpreter {
                                            interfaceName,
                                            e.toString());
             logger.error(message, e);
-            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(providerContainer.getRequestCaller().getClass(),
+            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(providerContainer.getProviderProxy().getClass(),
                                                                      JoynrVersion.class);
             throw new MethodInvocationException(message, new Version(joynrVersion.major(), joynrVersion.minor()));
         }

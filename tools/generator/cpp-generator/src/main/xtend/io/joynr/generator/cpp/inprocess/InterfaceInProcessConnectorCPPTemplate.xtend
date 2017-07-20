@@ -2,7 +2,7 @@ package io.joynr.generator.cpp.inprocess
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2016 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 	#include "joynr/BroadcastSubscriptionRequest.h"
 «ENDIF»
 «IF !francaIntf.broadcasts.filter[!selective].empty»
+	#include "joynr/MulticastSubscriptionQos.h"
 	#include "joynr/MulticastSubscriptionRequest.h"
 «ENDIF»
 
@@ -106,10 +107,6 @@ INIT_LOGGER(«className»);
 	inProcessPublicationSender(inProcessPublicationSender),
 	securityManager(securityManager)
 {
-}
-
-bool «className»::usesClusterController() const{
-	return false;
 }
 
 «FOR attribute : getAttributes(francaIntf)»
@@ -261,7 +258,7 @@ bool «className»::usesClusterController() const{
 				// Visual C++ requires a return value
 				return std::make_shared<Future<std::string>>();
 			«ELSE»
-				JOYNR_LOG_DEBUG(logger, "Subscribing to «attributeName».");
+				JOYNR_LOG_TRACE(logger, "Subscribing to «attributeName».");
 				assert(subscriptionManager != nullptr);
 				std::string attributeName("«attributeName»");
 				auto future = std::make_shared<Future<std::string>>();
@@ -274,7 +271,7 @@ bool «className»::usesClusterController() const{
 						subscriptionListener,
 						subscriptionQos,
 						subscriptionRequest);
-				JOYNR_LOG_DEBUG(logger, "Registered subscription: {}", subscriptionRequest.toString());
+				JOYNR_LOG_TRACE(logger, "Registered subscription: {}", subscriptionRequest.toString());
 				assert(address);
 				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(caller);
@@ -305,12 +302,12 @@ bool «className»::usesClusterController() const{
 				JOYNR_LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
 			«ELSE»
-				JOYNR_LOG_DEBUG(logger, "Unsubscribing. Id={}", subscriptionId);
+				JOYNR_LOG_TRACE(logger, "Unsubscribing. Id={}", subscriptionId);
 				assert(publicationManager != nullptr);
-				JOYNR_LOG_DEBUG(logger, "Stopping publications by publication manager.");
+				JOYNR_LOG_TRACE(logger, "Stopping publications by publication manager.");
 				publicationManager->stopPublication(subscriptionId);
 				assert(subscriptionManager != nullptr);
-				JOYNR_LOG_DEBUG(logger, "Unregistering attribute subscription.");
+				JOYNR_LOG_TRACE(logger, "Unregistering attribute subscription.");
 				subscriptionManager->unregisterSubscription(subscriptionId);
 			«ENDIF»
 		}
@@ -389,7 +386,7 @@ bool «className»::usesClusterController() const{
 	«val broadcastName = broadcast.joynrName»
 
 	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
-		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
+		JOYNR_LOG_TRACE(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != nullptr);
 		«IF broadcast.selective»
 			joynr::BroadcastSubscriptionRequest subscriptionRequest;
@@ -430,15 +427,16 @@ bool «className»::usesClusterController() const{
 
 	std::shared_ptr<joynr::Future<std::string>> «className»::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnTypes» > > subscriptionListener,
-			std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
 			«IF broadcast.selective»
-				joynr::BroadcastSubscriptionRequest& subscriptionRequest
+				std::shared_ptr<joynr::OnChangeSubscriptionQos> subscriptionQos,
+				BroadcastSubscriptionRequest& subscriptionRequest
 			«ELSE»
+				std::shared_ptr<joynr::MulticastSubscriptionQos> subscriptionQos,
 				std::shared_ptr<MulticastSubscriptionRequest> subscriptionRequest,
-				const std::vector<std::string>& partitions«
-			»«ENDIF»
+				const std::vector<std::string>& partitions
+			«ENDIF»
 	) {
-		JOYNR_LOG_DEBUG(logger, "Subscribing to «broadcastName».");
+		JOYNR_LOG_TRACE(logger, "Subscribing to «broadcastName».");
 		assert(subscriptionManager != nullptr);
 		std::string broadcastName("«broadcastName»");
 
@@ -454,7 +452,7 @@ bool «className»::usesClusterController() const{
 						subscriptionListener,
 						subscriptionQos,
 						subscriptionRequest);
-			JOYNR_LOG_DEBUG(
+			JOYNR_LOG_TRACE(
 					logger,
 					"Registered broadcast subscription: {}",
 					subscriptionRequest.toString());
@@ -488,7 +486,7 @@ bool «className»::usesClusterController() const{
 			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager);
 			std::function<void()> onSuccess =
 					[this, subscriptionRequest] () {
-						JOYNR_LOG_DEBUG(
+						JOYNR_LOG_TRACE(
 								logger,
 								"Registered broadcast subscription: {}",
 								subscriptionRequest->toString());
@@ -530,12 +528,12 @@ bool «className»::usesClusterController() const{
 	}
 
 	«produceUnsubscribeFromBroadcastSignature(broadcast, className)» {
-		JOYNR_LOG_DEBUG(logger, "Unsubscribing broadcast. Id={}", subscriptionId);
+		JOYNR_LOG_TRACE(logger, "Unsubscribing broadcast. Id={}", subscriptionId);
 		assert(publicationManager != nullptr);
-		JOYNR_LOG_DEBUG(logger, "Stopping publications by publication manager.");
+		JOYNR_LOG_TRACE(logger, "Stopping publications by publication manager.");
 		publicationManager->stopPublication(subscriptionId);
 		assert(subscriptionManager != nullptr);
-		JOYNR_LOG_DEBUG(logger, "Unregistering broadcast subscription.");
+		JOYNR_LOG_TRACE(logger, "Unregistering broadcast subscription.");
 		subscriptionManager->unregisterSubscription(subscriptionId);
 	}
 «ENDFOR»
