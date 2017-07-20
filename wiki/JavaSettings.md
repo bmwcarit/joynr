@@ -340,7 +340,7 @@ disconnects without using TCP/IP mechanisms. A value of 0 disables the "keep ali
 * **OPTIONAL**
 * **Type**: int
 * **User property**: `joynr.messaging.mqtt.keepalivetimersec`
-* **Default value**: `60`
+* **Default value**: `30`
 
 ### `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC`
 Sets the connection timeout measured in seconds. This value states how long a client will wait until
@@ -350,7 +350,7 @@ the network connection is established successfully or fails.
 * **OPTIONAL**
 * **Type**: int
 * **User property**: `joynr.messaging.mqtt.connectiontimeoutsec`
-* **Default value**: `30`
+* **Default value**: `60`
 
 ### `PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS`
 Sets the maximum time for an action to complete (measured in milliseconds) before the control is returned
