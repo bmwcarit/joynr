@@ -398,7 +398,7 @@
 		<xtext.version>2.8.4</xtext.version>
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
-		<slf4j.version>1.7.21</slf4j.version>
+		<slf4j.version>1.7.25</slf4j.version>
 		<smrf.version>0.2.0</smrf.version>
 	</properties>
 
