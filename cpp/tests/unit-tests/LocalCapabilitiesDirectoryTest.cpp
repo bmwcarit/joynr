@@ -61,8 +61,9 @@ public:
               mockMessageRouter(singleThreadedIOService.getIOService()),
               clusterControllerId("clusterControllerId"),
               localCapabilitiesDirectory(),
-              lastSeenDateMs(0),
-              expiryDateMs(0),
+              lastSeenDateMs(std::chrono::duration_cast<std::chrono::milliseconds>(
+                                 std::chrono::system_clock::now().time_since_epoch()).count()),
+              expiryDateMs(lastSeenDateMs + 60 * 60 * 1000), // lastSeen + 1h
               dummyParticipantId1(),
               dummyParticipantId2(),
               callback(),
