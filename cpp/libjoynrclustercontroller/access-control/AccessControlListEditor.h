@@ -43,8 +43,7 @@ public:
     void updateMasterAccessControlEntry(
             const joynr::infrastructure::DacTypes::MasterAccessControlEntry& updatedMasterAce,
             std::function<void(const bool& success)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-            final override;
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void removeMasterAccessControlEntry(
             const std::string& uid,
@@ -52,14 +51,12 @@ public:
             const std::string& interfaceName,
             const std::string& operation,
             std::function<void(const bool& success)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-            final override;
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void updateMediatorAccessControlEntry(
             const joynr::infrastructure::DacTypes::MasterAccessControlEntry& updatedMediatorAce,
             std::function<void(const bool& success)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-            final override;
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void removeMediatorAccessControlEntry(
             const std::string& uid,
@@ -67,14 +64,12 @@ public:
             const std::string& interfaceName,
             const std::string& operation,
             std::function<void(const bool& success)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-            final override;
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void updateOwnerAccessControlEntry(
             const joynr::infrastructure::DacTypes::OwnerAccessControlEntry& updatedOwnerAce,
             std::function<void(const bool& success)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-            final override;
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void removeOwnerAccessControlEntry(
             const std::string& uid,
@@ -82,51 +77,44 @@ public:
             const std::string& interfaceName,
             const std::string& operation,
             std::function<void(const bool& success)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-            final override;
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void updateMasterRegistrationControlEntry(
             const joynr::infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMasterRce,
             std::function<void(const bool& success)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-            final override;
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void removeMasterRegistrationControlEntry(
             const std::string& uid,
             const std::string& domain,
             const std::string& interfaceName,
             std::function<void(const bool& success)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-            final override;
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void updateMediatorRegistrationControlEntry(
             const joynr::infrastructure::DacTypes::MasterRegistrationControlEntry&
                     updatedMediatorRce,
             std::function<void(const bool& success)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-            final override;
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void removeMediatorRegistrationControlEntry(
             const std::string& uid,
             const std::string& domain,
             const std::string& interfaceName,
             std::function<void(const bool& success)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-            final override;
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void updateOwnerRegistrationControlEntry(
             const joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry& updatedOwnerRce,
             std::function<void(const bool& success)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-            final override;
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     void removeOwnerRegistrationControlEntry(
             const std::string& uid,
             const std::string& domain,
             const std::string& interfaceName,
             std::function<void(const bool& success)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-            final override;
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AccessControlListEditor);

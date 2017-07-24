@@ -81,8 +81,7 @@ public:
     void saveRoutingTable();
     void loadRoutingTable(std::string fileName);
 
-    void route(std::shared_ptr<ImmutableMessage> message,
-               std::uint32_t tryCount = 0) final override;
+    void route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) final;
 
     friend class MessageRunnable;
     friend class ConsumerPermissionCallback;
