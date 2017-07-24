@@ -137,7 +137,7 @@ protected:
     void sendMessages(const std::string& destinationPartId,
                       std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
-    void sendMessages(std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+    void sendMessages(std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
 
     void addToRoutingTable(std::string participantId,
                            bool isGloballyVisible,
