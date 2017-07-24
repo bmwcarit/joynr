@@ -377,6 +377,16 @@ void MosquittoConnection::on_message(const mosquitto_message* message)
     }
 
     std::uint8_t* data = static_cast<std::uint8_t*>(message->payload);
+
+    // convert address of data into integral type
+    std::uintptr_t integralAddress = reinterpret_cast<std::uintptr_t>(data);
+    const bool overflow =
+            joynr::util::isAdditionOnPointerSafe(integralAddress, message->payloadlen);
+    if (overflow) {
+        JOYNR_LOG_ERROR(logger, "Discarding received message, since there is an overflow.");
+        return;
+    }
+
     smrf::ByteVector rawMessage(data, data + message->payloadlen);
     onMessageReceived(std::move(rawMessage));
 }

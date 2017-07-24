@@ -178,6 +178,11 @@ std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePo
             .count();
 }
 
+bool isAdditionOnPointerSafe(std::uintptr_t address, int payloadLength)
+{
+    return address + payloadLength < address;
+}
+
 } // namespace util
 
 } // namespace joynr
