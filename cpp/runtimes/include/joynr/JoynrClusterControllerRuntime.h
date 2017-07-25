@@ -61,7 +61,7 @@ class IDispatcher;
 class InProcessPublicationSender;
 class InProcessMessagingSkeleton;
 class HttpMessagingSkeleton;
-class MqttMessagingSkeleton;
+class IMqttMessagingSkeleton;
 class MulticastMessagingSkeletonDirectory;
 class IPlatformSecurityManager;
 class Settings;
@@ -150,7 +150,7 @@ protected:
     std::shared_ptr<MosquittoConnection> mosquittoConnection;
     std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver;
     std::shared_ptr<ITransportMessageSender> mqttMessageSender;
-    std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
+    std::shared_ptr<IMqttMessagingSkeleton> mqttMessagingSkeleton;
 
     std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
     InProcessPublicationSender* inProcessPublicationSender;
