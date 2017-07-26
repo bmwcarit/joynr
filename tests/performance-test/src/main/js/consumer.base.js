@@ -36,6 +36,7 @@ var consumerBase = {
         if (consumerBase.echoProxy === undefined) {
             console.log("Using domain " + options.domain);
             console.error("Performing " + options.numRuns + " runs");
+            error ("test runs: " + options.testRuns);
             var viaClusterController = options.viacc == 'true';
             console.log("Via cluster-contoller: " + viaClusterController);
             var provisioning = testbase.provisioning_common;
@@ -90,8 +91,8 @@ var consumerBase = {
         var EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");
         var EchoProviderImpl = require("./EchoProviderImpl.js");
         var echoProvider = joynr.providerBuilder.build(
-                EchoProvider,
-                EchoProviderImpl.implementation);
+        EchoProvider,
+        EchoProviderImpl.implementation);
 
         joynr.registration.registerProvider(options.domain, echoProvider, providerQos).then(function() {
             log("provider registered successfully");
@@ -99,29 +100,65 @@ var consumerBase = {
             log("error registering provider: " + error.toString());
         });
     },
-    executeBenchmark : function(benchmarkName, benchmark, numRuns) {
-        var numRuns = numRuns ? numRuns : options.numRuns;
-        console.log("call " + benchmarkName +" " + numRuns + " times");
-        startTime = Date.now();
-        var promises = [];
 
-        for (var i = 1; i <= numRuns; i++) {
-            promises.push(benchmark(i));
-        }
+    executeBenchmark: function(benchmarkName, benchmarkData, benchmark){
+        var numRuns = benchmarkData.length;
+        log("call " + benchmarkName +" " + numRuns + " times");
+        PerformanceUtilities.forceGC();
+        var startTime = Date.now();
 
-        return Promise.all(promises).then(function() {
-            console.log("all the numRuns were executed");
+        return Promise.map(benchmarkData, function(data){
+            return benchmark(data);
+        }).then(function(){
+            log("all the numRuns were executed");
             var elapsedTimeMs = Date.now() - startTime;
 
-            error(benchmarkName + " took " + elapsedTimeMs + " ms. " + numRuns / (elapsedTimeMs / 1000) + " msgs/s");
-            return null;
+            error(benchmarkName + " runs: " + numRuns +" took " + elapsedTimeMs + " ms. " + numRuns / (elapsedTimeMs / 1000) + " msgs/s");
+            return elapsedTimeMs;
+        });
+    },
+
+    excecuteMultipleBenchmarks : function(benchmarkName, generateBenchmarkData, benchmark) {
+        var numRuns = options.numRuns;
+        var testRuns = options.testRuns ? Number.parseInt(options.testRuns) : 1;
+        var totalRuns = numRuns * testRuns;
+        var totalTime = 0;
+        var testIndex = 0;
+        var dummyArray = new Array(testRuns);
+        var runsTime = [];
+        return Promise.map(dummyArray, function(){
+            var data = [];
+            for (var j = 0; j < numRuns; j++){
+                data.push(generateBenchmarkData(j));
+            }
+            testIndex++;
+            var name = benchmarkName +" Test: "+ testIndex;
+            return consumerBase.executeBenchmark(name, data, benchmark )
+            .then(function(time){
+                totalTime += time;
+                runsTime.push(time);
+            });
+        }, { concurrency: 1})
+        .then(function () {
+            var averageTime = totalRuns /(totalTime/1000);
+            var variance = 0;
+            runsTime.map(function(time){
+                return numRuns/(time/1000);
+            }).forEach(function (time) {
+                variance+= Math.pow(time-averageTime,2);
+            });
+            variance/=runsTime.length;
+            var deviation = Math.sqrt(variance);
+            error("the total runtime was: " + totalTime + " runs: " + totalRuns + " msgs/s: " + averageTime + " +/- " + deviation);
         });
     },
     echoString : function() {
-        var testProcedure = function(i) {
-            var args = {
+        var generateData = function(i) {
+            return {
                 data : PerformanceUtilities.createString(options.stringLength-2, "x") + "-" + i
             };
+        };
+        var testProcedure = function(args) {
             return consumerBase.echoProxy.echoString(args).then(function(returnValues) {
                 if (args.data !== returnValues.responseData) {
                     throw new Error("Echo " + JSON.stringify(returnValues.responseData) + " does not match input data: " + JSON.stringify(args.data));
@@ -129,11 +166,11 @@ var consumerBase = {
                 return returnValues;
             });
         }
-        return consumerBase.executeBenchmark("echoString", testProcedure);
+        return consumerBase.excecuteMultipleBenchmarks("echoString", generateData, testProcedure);
     },
     echoComplexStruct : function() {
-        var testProcedure = function(i) {
-            var args = {
+        var generateData = function(i){
+            return {
                 data : new ComplexStruct({
                     num32 : PerformanceUtilities.createRandomNumber(100000),
                     num64 : PerformanceUtilities.createRandomNumber(1000000),
@@ -141,30 +178,36 @@ var consumerBase = {
                     str : PerformanceUtilities.createString(options.stringLength-2, "x") + "-" + i
                 })
             };
+        };
+        var testProcedure = function(args) {
             return consumerBase.echoProxy.echoComplexStruct(args).then(function(returnValues) {
                 if (args.data.num32 !== returnValues.responseData.num32 ||
-                    args.data.num64 !== returnValues.responseData.num64 ||
-                    args.data.data.length !== returnValues.responseData.data.length ||
-                    args.data.str.length !== returnValues.responseData.str.length) {
+                args.data.num64 !== returnValues.responseData.num64 ||
+                args.data.data.length !== returnValues.responseData.data.length ||
+                args.data.str.length !== returnValues.responseData.str.length) {
                     throw new Error("Echo " + JSON.stringify(returnValues.responseData) + " does not match input data: " + JSON.stringify(args.data));
                 }
                 return returnValues;
             });
         }
-        return consumerBase.executeBenchmark("echoComplexStruct", testProcedure);
+        return consumerBase.excecuteMultipleBenchmarks("echoComplexStruct", generateData, testProcedure);
     },
     echoByteArray : function(byteArraySizeFactor) {
-        var byteArraySizeFactor = byteArraySizeFactor ? byteArraySizeFactor : 1;
+        byteArraySizeFactor = byteArraySizeFactor || 1;
         var byteArraySize = byteArraySizeFactor * options.byteArrayLength;
-        var testProcedure = function(i) {
-            var args = {
+        var generateData = function(i){
+            var args =  {
                 data : PerformanceUtilities.createByteArray(byteArraySize, 1)
             };
             var firstElement = i % 128;
             args.data[0] = firstElement;
-            return consumerBase.echoProxy.echoByteArray(args).then(function(returnValues) {
+            return args;
+        };
+        var testProcedure = function(args) {
+            return consumerBase.echoProxy.echoByteArray(args).then(function(returnValues, i) {
+                var firstElement = args.data[0];
                 if (args.data.length !== returnValues.responseData.length ||
-                    firstElement !== returnValues.responseData[0]) {
+                firstElement !== returnValues.responseData[0]) {
                     throw new Error("Echo " + JSON.stringify(returnValues.responseData) + " does not match input data: " + JSON.stringify(args.data));
                 }
 
@@ -177,7 +220,7 @@ var consumerBase = {
         if (byteArraySizeFactor > 1) {
             numRuns = numRuns / (Math.sqrt(byteArraySizeFactor));
         }
-        return consumerBase.executeBenchmark("echoByteArray " + byteArraySize, testProcedure, numRuns);
+        return consumerBase.excecuteMultipleBenchmarks("echoByteArray " + byteArraySize, generateData, testProcedure, numRuns);
     },
     echoByteArrayWithSizeTimesK : function() {
         if (options.skipByteArraySizeTimesK === undefined || options.skipByteArraySizeTimesK === true) {
