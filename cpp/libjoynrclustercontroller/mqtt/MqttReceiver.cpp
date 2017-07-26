@@ -18,8 +18,6 @@
  */
 #include "libjoynrclustercontroller/mqtt/MqttReceiver.h"
 
-#include <chrono>
-
 #include "joynr/MessagingSettings.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
