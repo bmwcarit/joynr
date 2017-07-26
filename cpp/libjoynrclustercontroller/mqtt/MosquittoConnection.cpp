@@ -80,10 +80,22 @@ MosquittoConnection::~MosquittoConnection()
 void MosquittoConnection::on_disconnect(int rc)
 {
     setReadyToSend(false);
+    if (!isConnected) {
+        // In case we didn't connect yet
+        JOYNR_LOG_ERROR(logger,
+                        "Not yet connected to tcp://{}:{}, error: {}",
+                        host,
+                        port,
+                        mosqpp::strerror(rc));
+        return;
+    }
+
+    // There was indeed a disconnect...set connect to false
     isConnected = false;
 
     if (rc == 0) {
         JOYNR_LOG_DEBUG(logger, "Disconnected from tcp://{}:{}", host, port);
+        stopLoop();
     } else {
         JOYNR_LOG_ERROR(logger,
                         "Unexpectedly disconnected from tcp://{}:{}, error: {}",
@@ -91,9 +103,7 @@ void MosquittoConnection::on_disconnect(int rc)
                         port,
                         mosqpp::strerror(rc));
         reconnect();
-        return;
     }
-    stopLoop();
 }
 
 void MosquittoConnection::on_log(int level, const char* str)
