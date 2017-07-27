@@ -102,11 +102,11 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     std::string participantId = runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
-    std::unique_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
+    std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
             runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::unique_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
+    std::shared_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -135,11 +135,11 @@ TEST_P(End2EndRPCTest, call_void_operation)
     std::string participantId = runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy = testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -165,11 +165,11 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy = testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setDiscoveryQos(discoveryQos)
             ->build();

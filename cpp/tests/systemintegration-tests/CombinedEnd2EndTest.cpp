@@ -116,7 +116,7 @@ TEST_P(CombinedEnd2EndTest, surviveDestructionOfRuntime)
 
     // consumer for testinterface
     {
-        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+        std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
                 runtime2->createProxyBuilder<tests::testProxy>(domainName);
         std::uint64_t qosRoundTripTTL = 40000;
 
@@ -149,7 +149,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
     // consumer for testinterface
     // Testing Lists
     {
-        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+        std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
                 runtime2->createProxyBuilder<tests::testProxy>(domainName);
         std::uint64_t qosRoundTripTTL = 40000;
 
@@ -419,7 +419,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
     // Testing TTL
     {
         // create a proxy with very short TTL and expect no returning replies.
-        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+        std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
                 runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
         std::uint64_t qosRoundTripTTL = 1;
@@ -434,7 +434,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
 
     // TESTING Attribute getter of an array of a nested struct
     {
-        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+        std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
                 runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
         std::uint64_t qosRoundTripTTL = 40000;
@@ -462,7 +462,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
     // structs, ...)
     {
         using namespace joynr::types::TestTypes;
-        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+        std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
                 runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
         std::uint64_t qosRoundTripTTL = 40000;
@@ -556,7 +556,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
 
     // Testing operation overloading
     {
-        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+        std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
                 runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
         std::uint64_t qosRoundTripTTL = 40000;
@@ -604,7 +604,7 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
     // before the register has finished.
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
     std::uint64_t qosRoundTripTTL = 40000;
@@ -661,7 +661,7 @@ TEST_P(CombinedEnd2EndTest, callFireAndForgetMethod)
     // before the register has finished.
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
     std::uint64_t qosRoundTripTTL = 40000;
@@ -703,7 +703,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     // before the register has finished.
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
     std::uint64_t qosRoundTripTTL = 40000;
@@ -786,7 +786,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute)
     // before the register has finished.
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> proxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> proxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
     std::uint64_t qosRoundTripTTL = 40000;
@@ -825,7 +825,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain)
     std::string nonexistentDomain(std::string("non-existent-").append(uuid));
 
     // Create a proxy to a non-existent domain
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(nonexistentDomain);
     DiscoveryQos discoveryQosOtherTimeout;
     discoveryQosOtherTimeout.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -902,7 +902,7 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
     // before the register has finished. See Joynr 805 for details
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
     std::uint64_t qosRoundTripTTL = 40000;
@@ -959,7 +959,7 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
                                                           // could occour before the register has
                                                           // finished.
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
     std::uint64_t qosRoundTripTTL = 40000;
@@ -985,7 +985,7 @@ std::unique_ptr<tests::testProxy> createTestProxy(JoynrRuntime& runtime,
                                                   const std::string& domainName,
                                                   const joynr::DiscoveryQos& discoveryQos)
 {
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime.createProxyBuilder<tests::testProxy>(domainName);
 
     std::uint64_t qosRoundTripTTL = 40000;
@@ -1074,7 +1074,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
     std::uint64_t qosRoundTripTTL = 20000;
@@ -1112,7 +1112,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(2550));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
     std::uint64_t qosRoundTripTTL = 20000;

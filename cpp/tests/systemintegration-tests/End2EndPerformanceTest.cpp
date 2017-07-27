@@ -108,7 +108,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -117,7 +117,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     std::int64_t qosRoundTripTTL = 50000;
 
     // Send a message and expect to get a result
-    std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy = testProxyBuilder
                      ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                      ->setDiscoveryQos(discoveryQos)
                      ->build();

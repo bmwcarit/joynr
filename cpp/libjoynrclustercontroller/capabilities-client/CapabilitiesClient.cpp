@@ -133,7 +133,7 @@ void CapabilitiesClient::touch(
             clusterControllerId, std::move(onSuccess), std::move(onError));
 }
 
-void CapabilitiesClient::setProxyBuilder(std::unique_ptr<
+void CapabilitiesClient::setProxyBuilder(std::shared_ptr<
         IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> inCapabilitiesProxyBuilder)
 {
     assert(inCapabilitiesProxyBuilder);

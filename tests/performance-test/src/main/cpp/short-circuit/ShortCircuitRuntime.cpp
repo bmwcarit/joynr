@@ -41,6 +41,7 @@ namespace joynr
 ShortCircuitRuntime::ShortCircuitRuntime()
 {
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
+    requestCallerDirectory = std::make_shared<DummyRequestCallerDirectory>();
 
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
 

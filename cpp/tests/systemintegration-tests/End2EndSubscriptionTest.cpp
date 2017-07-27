@@ -144,7 +144,7 @@ protected:
     }
 
     std::unique_ptr<tests::testProxy> buildProxy() {
-        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder
+        std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder
                 = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);

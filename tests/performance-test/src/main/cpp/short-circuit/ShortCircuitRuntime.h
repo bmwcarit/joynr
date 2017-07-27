@@ -168,9 +168,9 @@ public:
     }
 
     template <class TIntfProxy>
-    std::unique_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
+    std::shared_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
-        return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
+        return std::make_shared<ProxyBuilder<TIntfProxy>>(*proxyFactory,
                                                           requestCallerDirectory,
                                                           discoveryProxy,
                                                           domain,

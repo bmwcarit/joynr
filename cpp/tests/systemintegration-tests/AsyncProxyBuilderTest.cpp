@@ -72,7 +72,7 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
 
     std::string participantId = runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     Semaphore onSuccessCalledSemaphore;
@@ -96,7 +96,7 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
 
 TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
 {
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>("unknownDomain");
 
     Semaphore onErrorCalledSemaphore;

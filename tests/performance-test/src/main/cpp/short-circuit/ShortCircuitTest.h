@@ -48,7 +48,7 @@ struct ShortCircuitTest : public PerformanceTest
         echoProviderQos.setSupportsOnChangeSubscriptions(true);
         runtime.registerProvider<tests::performance::EchoProvider>(
                 domainName, echoProvider, echoProviderQos);
-        std::unique_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder =
+        std::shared_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder =
                 runtime.createProxyBuilder<tests::performance::EchoProxy>(domainName);
         echoProxy = proxyBuilder->setDiscoveryQos(joynr::DiscoveryQos())->build();
     }

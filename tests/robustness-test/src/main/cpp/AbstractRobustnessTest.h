@@ -184,7 +184,7 @@ protected:
     }
 
     static std::unique_ptr<TestInterfaceProxy> proxy;
-    static std::unique_ptr<ProxyBuilder<TestInterfaceProxy>> proxyBuilder;
+    static std::shared_ptr<ProxyBuilder<TestInterfaceProxy>> proxyBuilder;
     static std::shared_ptr<JoynrRuntime> runtime;
     static std::string providerDomain;
 

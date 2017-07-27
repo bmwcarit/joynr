@@ -215,14 +215,14 @@ public:
      * @return A proxy builder object that can be used to create proxies.
      */
     template <class TIntfProxy>
-    std::unique_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
+    std::shared_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
         if (!proxyFactory) {
             throw exceptions::JoynrRuntimeException(
                     "Exception in JoynrRuntime: Cannot perform arbitration as"
                     "runtime is not yet fully initialized.");
         }
-        return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
+        return std::make_shared<ProxyBuilder<TIntfProxy>>(*proxyFactory,
                                                           requestCallerDirectory,
                                                           discoveryProxy,
                                                           domain,

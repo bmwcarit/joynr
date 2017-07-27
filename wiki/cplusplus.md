@@ -121,7 +121,7 @@ As a prerequisite, the **provider** and **consumer domain** need to be defined a
     // setup providerDomain, pathToMessagingSettings, and optionally pathToMessagingSettings
     std::shared_ptr<JoynrRuntime> runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
-    std::unique_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
+    std::shared_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 ```
 
@@ -283,7 +283,7 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
 
     // setup discoveryQos, messagingQos attributes
 
-    std::unique_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
+    std::shared_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 
     try {
@@ -733,7 +733,6 @@ proxy->unsubscribeFrom<Attribute>(subscriptionTo<Attribute>Id);
 proxy->unsubscribeFrom<Broadcast>Broadcast(subscriptionTo<Broadcast>Id);
 
 delete proxy;
-delete proxyBuilder;
 ```
 
 # Building a C++ Provider application

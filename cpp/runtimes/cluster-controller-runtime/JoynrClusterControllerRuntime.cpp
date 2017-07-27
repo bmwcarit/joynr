@@ -560,7 +560,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     discoveryQos.addCustomParameter(
             "fixedParticipantId", messagingSettings.getCapabilitiesDirectoryParticipantId());
 
-    std::unique_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
+    std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
             capabilitiesProxyBuilder =
                     createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
                             messagingSettings.getDiscoveryDirectoriesDomain());
@@ -715,7 +715,7 @@ std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterC
             isGloballyVisible);
 
     // create GlobalDomainAccessController proxy
-    std::unique_ptr<ProxyBuilder<infrastructure::GlobalDomainAccessControllerProxy>>
+    std::shared_ptr<ProxyBuilder<infrastructure::GlobalDomainAccessControllerProxy>>
             globalDomainAccessControllerProxyBuilder =
                     createProxyBuilder<infrastructure::GlobalDomainAccessControllerProxy>(
                             messagingSettings.getDiscoveryDirectoriesDomain());

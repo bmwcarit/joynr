@@ -104,7 +104,7 @@ public:
                        nullptr) override;
 
     void setProxyBuilder(
-            std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
+            std::shared_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
                     capabilitiesProxyBuilder) override;
 
 private:
@@ -114,7 +114,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
 
     std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> defaultCapabilitiesProxy;
-    std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
+    std::shared_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
             capabilitiesProxyBuilder;
     ADD_LOGGER(CapabilitiesClient);
 };

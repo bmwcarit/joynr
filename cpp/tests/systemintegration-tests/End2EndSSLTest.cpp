@@ -106,14 +106,14 @@ TEST_P(End2EndSSLTest, localconnection_call_rpc_method_and_get_expected_result)
     runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
 
     // Build a proxy
-    std::unique_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
+    std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
             libJoynrRuntime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(3000);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::unique_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
+    std::shared_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setDiscoveryQos(discoveryQos)
             ->build();

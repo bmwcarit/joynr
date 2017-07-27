@@ -3,6 +3,7 @@
 ## API relevant changes
 * **[C++, API]** Ease implementation of SubscriptionListener for empty broadcasts.
 * **[C++, API]** createJoynrRuntime*(...) APIs now return shared_ptr instead of unique_ptr
+* **[C++, API]** createProxyBuilder*(...) APIs now return shared_ptr instead of unique_ptr
 
 ## Other changes
 * **[C++]** joynr accepts files which have size at most 2 GB.

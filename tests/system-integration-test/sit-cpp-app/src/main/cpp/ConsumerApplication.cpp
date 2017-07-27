@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
     std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToSettings);
 
     // Create proxy builder
-    std::unique_ptr<ProxyBuilder<test::SystemIntegrationTestProxy>> proxyBuilder =
+    std::shared_ptr<ProxyBuilder<test::SystemIntegrationTestProxy>> proxyBuilder =
             runtime->createProxyBuilder<test::SystemIntegrationTestProxy>(providerDomain);
 
     // Find the provider with the highest priority set in ProviderQos
