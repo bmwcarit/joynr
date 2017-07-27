@@ -54,7 +54,7 @@ class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
     std::string settingsFilenameMqtt;
     std::string settingsFilenameHttp;
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     joynr::types::Localisation::GpsLocation gpsLocation;
     std::shared_ptr<MockTransportMessageReceiver> mockHttpMessageReceiver;
     std::shared_ptr<MockTransportMessageSender> mockHttpMessageSender;
@@ -117,7 +117,7 @@ public:
         EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(1);
 
-        runtime = std::make_unique<JoynrClusterControllerRuntime>(
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(settingsFilenameMqtt),
                     mockHttpMessageReceiver,
                     mockHttpMessageSender,
@@ -132,7 +132,7 @@ public:
         EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
                 .Times(0);
 
-        runtime = std::make_unique<JoynrClusterControllerRuntime>(
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(settingsFilenameHttp),
                     mockHttpMessageReceiver,
                     mockHttpMessageSender,

@@ -47,6 +47,7 @@ class SingleThreadedIOService;
  * used to register / unregister providers and create proxy builders
  */
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntime
+        : public std::enable_shared_from_this<JoynrRuntime>
 {
 public:
     /**
@@ -236,7 +237,7 @@ public:
      * @param pathToMessagingSettings
      * @return pointer to a JoynrRuntime instance
      */
-    static std::unique_ptr<JoynrRuntime> createRuntime(
+    static std::shared_ptr<JoynrRuntime> createRuntime(
             const std::string& pathToLibjoynrSettings,
             const std::string& pathToMessagingSettings = "");
 
@@ -245,7 +246,7 @@ public:
      * @param settings settings object
      * @return pointer to a JoynrRuntime instance
      */
-    static std::unique_ptr<JoynrRuntime> createRuntime(std::unique_ptr<Settings> settings);
+    static std::shared_ptr<JoynrRuntime> createRuntime(std::unique_ptr<Settings> settings);
 
     /**
      * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
@@ -254,10 +255,10 @@ public:
      * @param onSuccess Is called when the runtime is available for use
      * @param onError Is called when an error occurs
      * @param pathToMessagingSettings
-     * @return unique_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
+     * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
      * onSuccess is called
      */
-    static std::unique_ptr<JoynrRuntime> createRuntimeAsync(
+    static std::shared_ptr<JoynrRuntime> createRuntimeAsync(
             const std::string& pathToLibjoynrSettings,
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
@@ -269,10 +270,10 @@ public:
      * @param settings settings object
      * @param onSuccess Is called when the runtime is available for use
      * @param onError Is called when an error occurs
-     * @return unique_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
+     * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
      * onSuccess is called
      */
-    static std::unique_ptr<JoynrRuntime> createRuntimeAsync(
+    static std::shared_ptr<JoynrRuntime> createRuntimeAsync(
             std::unique_ptr<Settings> settings,
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& exception)> onError);

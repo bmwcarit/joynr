@@ -43,14 +43,14 @@ using namespace joynr;
 class End2EndRPCTest : public TestWithParam< std::string >{
 public:
     std::string domain;
-    JoynrClusterControllerRuntime* runtime;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     std::shared_ptr<vehicle::GpsProvider> gpsProvider;
 
     End2EndRPCTest() :
         domain(),
-        runtime(nullptr)
+        runtime()
     {
-        runtime = new JoynrClusterControllerRuntime(
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(GetParam())
         );
         domain = "cppEnd2EndRPCTest_Domain_" + util::createUuid();
@@ -77,9 +77,7 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(550));
     }
 
-    ~End2EndRPCTest(){
-        delete runtime;
-    }
+    ~End2EndRPCTest() = default;
 protected:
 
     joynr::DiscoveryQos discoveryQos;

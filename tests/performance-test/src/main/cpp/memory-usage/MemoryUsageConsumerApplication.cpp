@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
 
     // Initialise the joynr runtime
     std::string pathToMessagingSettings(dir + "/resources/memory-usage-consumer.settings");
-    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
     std::unique_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder =

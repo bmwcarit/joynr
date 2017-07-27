@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 
     // Initialize the joynr runtime
     std::string pathToLibJoynrSettings(dir + "/resources/robustness-test-provider.settings");
-    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToLibJoynrSettings);
+    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToLibJoynrSettings);
 
     // create provider instance
     std::shared_ptr<joynr::RobustnessTestProvider> provider(new joynr::RobustnessTestProvider());

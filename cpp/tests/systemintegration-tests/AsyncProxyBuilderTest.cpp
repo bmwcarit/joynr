@@ -57,7 +57,7 @@ public:
     }
 
 protected:
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     DiscoveryQos discoveryQos;
 };
 

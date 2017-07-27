@@ -111,7 +111,7 @@ protected:
     std::unique_ptr<Settings> settings;
     std::string routingDomain;
     std::string routingProviderParticipantId;
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
     std::shared_ptr<MockTransportMessageSender> mockMessageSender;

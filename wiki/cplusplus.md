@@ -119,7 +119,7 @@ As a prerequisite, the **provider** and **consumer domain** need to be defined a
 
 ```cpp
     // setup providerDomain, pathToMessagingSettings, and optionally pathToMessagingSettings
-    std::unique_ptr<JoynrRuntime> runtime =
+    std::shared_ptr<JoynrRuntime> runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
     std::unique_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
@@ -138,7 +138,7 @@ asynchronously:
         // Process the error here
     };
 
-    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntimeAsync(
+    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntimeAsync(
         pathToLibJoynrSettings,
         onSuccess,
         onError,
@@ -734,7 +734,6 @@ proxy->unsubscribeFrom<Broadcast>Broadcast(subscriptionTo<Broadcast>Id);
 
 delete proxy;
 delete proxyBuilder;
-delete runtime;
 ```
 
 # Building a C++ Provider application
@@ -780,7 +779,7 @@ main(int argc, char** argv)
 
 ```cpp
     // setup pathToLibJoynrSettings, and optionally pathToMessagingSettings
-    std::unique_ptr<JoynrRuntime> runtime =
+    std::shared_ptr<JoynrRuntime> runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
 ```
 

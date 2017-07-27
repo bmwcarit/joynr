@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
                 boost::filesystem::system_complete(appFilename).parent_path().string();
         std::string pathToSettings(appDirectory + "/resources/performancetest-provider.settings");
 
-        std::unique_ptr<JoynrRuntime> runtime(JoynrRuntime::createRuntime(pathToSettings));
+        std::shared_ptr<JoynrRuntime> runtime(JoynrRuntime::createRuntime(pathToSettings));
         std::shared_ptr<PerformanceTestEchoProvider> provider =
                 std::make_shared<PerformanceTestEchoProvider>();
 

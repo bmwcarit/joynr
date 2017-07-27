@@ -57,7 +57,7 @@ public:
     using ComplexStruct = joynr::tests::performance::Types::ComplexStruct;
 
 public:
-    PerformanceConsumer(std::unique_ptr<JoynrRuntime> joynrRuntime,
+    PerformanceConsumer(std::shared_ptr<JoynrRuntime> joynrRuntime,
                         std::size_t messageCount,
                         std::size_t stringLength,
                         std::size_t byteArraySize,
@@ -178,7 +178,7 @@ protected:
     std::size_t byteArraySize;
 
 private:
-    std::unique_ptr<JoynrRuntime> runtime;
+    std::shared_ptr<JoynrRuntime> runtime;
     std::uint64_t ttl = 600000;
 };
 

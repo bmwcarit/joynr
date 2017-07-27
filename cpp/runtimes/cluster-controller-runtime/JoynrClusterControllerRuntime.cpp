@@ -157,7 +157,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
     initializeAllDependencies();
 }
 
-std::unique_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
+std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
         std::size_t argc,
         char* argv[])
 {
@@ -939,11 +939,11 @@ void JoynrClusterControllerRuntime::runForever()
     lifetimeSemaphore.wait();
 }
 
-std::unique_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
+std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
         std::unique_ptr<Settings> settings,
         const std::string& discoveryEntriesFile)
 {
-    auto runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(settings));
+    auto runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings));
 
     assert(runtime->localCapabilitiesDirectory);
     runtime->localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);

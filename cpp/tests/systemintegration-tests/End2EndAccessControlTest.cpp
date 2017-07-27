@@ -95,8 +95,8 @@ public:
     }
 
 protected:
-    std::unique_ptr<JoynrRuntime> runtimeAcON;
-    std::unique_ptr<JoynrRuntime> runtimeAcOFF;
+    std::shared_ptr<JoynrRuntime> runtimeAcON;
+    std::shared_ptr<JoynrRuntime> runtimeAcOFF;
 
     std::shared_ptr<MockTestProvider> testProvider;
     std::unique_ptr<tests::testProxy> testProxy;

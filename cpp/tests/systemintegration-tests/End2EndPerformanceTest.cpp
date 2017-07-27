@@ -45,8 +45,8 @@ using namespace joynr;
 class End2EndPerformanceTest : public TestWithParam< std::tuple<std::string, std::string> > {
 public:
     ADD_LOGGER(End2EndPerformanceTest);
-    JoynrClusterControllerRuntime* runtime1;
-    JoynrClusterControllerRuntime* runtime2;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
     std::unique_ptr<Settings> settings1;
     std::unique_ptr<Settings> settings2;
     std::string baseUuid;
@@ -54,8 +54,8 @@ public:
     std::string domain;
 
     End2EndPerformanceTest() :
-        runtime1(nullptr),
-        runtime2(nullptr),
+        runtime1(),
+        runtime2(),
         settings1(std::make_unique<Settings>(std::get<0>(GetParam()))),
         settings2(std::make_unique<Settings>(std::get<1>(GetParam()))),
         baseUuid(util::createUuid()),
@@ -65,10 +65,10 @@ public:
 
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
-        runtime1 = new JoynrClusterControllerRuntime(std::move(settings1));
+        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings1));
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings2, false);
-        runtime2 = new JoynrClusterControllerRuntime(std::move(settings2));
+        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings2));
     }
 
     void SetUp() {
@@ -88,10 +88,7 @@ public:
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
-    ~End2EndPerformanceTest(){
-        delete runtime1;
-        delete runtime2;
-    }
+    ~End2EndPerformanceTest() = default;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(End2EndPerformanceTest);

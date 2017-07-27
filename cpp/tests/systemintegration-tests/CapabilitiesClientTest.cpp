@@ -43,7 +43,7 @@ static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystem
 class CapabilitiesClientTest : public TestWithParam< std::string > {
 public:
     ADD_LOGGER(CapabilitiesClientTest);
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     std::unique_ptr<Settings> settings;
     MessagingSettings messagingSettings;
 
@@ -57,7 +57,7 @@ public:
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
-        runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(settings));
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings));
     }
 
     void SetUp() {

@@ -85,8 +85,8 @@ public:
 
 protected:
     std::string domain;
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
-    std::unique_ptr<TestLibJoynrWebSocketRuntime> libJoynrRuntime;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<TestLibJoynrWebSocketRuntime> libJoynrRuntime;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(End2EndSSLTest);

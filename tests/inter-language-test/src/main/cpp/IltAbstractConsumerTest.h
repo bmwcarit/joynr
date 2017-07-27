@@ -99,7 +99,7 @@ protected:
     static std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy> testInterfaceProxy;
     static std::unique_ptr<joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>>
             proxyBuilder;
-    static std::unique_ptr<joynr::JoynrRuntime> runtime;
+    static std::shared_ptr<joynr::JoynrRuntime> runtime;
     static std::string providerDomain;
     static std::string programName;
 
@@ -129,7 +129,7 @@ std::unique_ptr<ProxyBuilder<interlanguagetest::TestInterfaceProxy>>
         IltAbstractConsumerTest<T>::proxyBuilder;
 
 template <typename T>
-std::unique_ptr<JoynrRuntime> IltAbstractConsumerTest<T>::runtime;
+std::shared_ptr<JoynrRuntime> IltAbstractConsumerTest<T>::runtime;
 
 template <typename T>
 std::string IltAbstractConsumerTest<T>::providerDomain = "joynr-inter-language-test-domain";

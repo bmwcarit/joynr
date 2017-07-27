@@ -94,8 +94,8 @@ protected:
         runtime.registerProvider<tests::testProvider>(testDomain, testProvider, providerQos);
     }
 
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime1;
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime2;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
     const std::string testDomain;
     DiscoveryQos discoveryQos;
     MessagingQos messagingQos;

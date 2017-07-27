@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
                 boost::filesystem::system_complete(appFilename).parent_path().string();
         std::string pathToSettings(appDirectory + "/resources/performancetest-consumer.settings");
 
-        std::unique_ptr<joynr::JoynrRuntime> runtime =
+        std::shared_ptr<joynr::JoynrRuntime> runtime =
                 joynr::JoynrRuntime::createRuntime(pathToSettings);
         std::unique_ptr<joynr::IPerformanceConsumer> consumer;
 
