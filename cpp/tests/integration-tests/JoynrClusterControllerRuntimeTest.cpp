@@ -241,7 +241,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
-    std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setDiscoveryQos(discoveryQos)
             ->build());
@@ -292,7 +292,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
 
-    std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setDiscoveryQos(discoveryQos)
             ->build());
@@ -347,7 +347,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     discoveryQos.setDiscoveryTimeoutMs(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
-    std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setDiscoveryQos(discoveryQos)
             ->build());
@@ -413,7 +413,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     discoveryQos.setDiscoveryTimeoutMs(50);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
-    std::unique_ptr<tests::testProxy> testProxy(testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
             ->setDiscoveryQos(discoveryQos)
             ->build());

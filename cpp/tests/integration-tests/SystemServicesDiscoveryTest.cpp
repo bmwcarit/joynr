@@ -48,7 +48,7 @@ public:
     std::shared_ptr<ITransportMessageSender> mockMessageSenderMqtt;
     DiscoveryQos discoveryQos;
     std::shared_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder;
-    std::unique_ptr<joynr::system::DiscoveryProxy> discoveryProxy;
+    std::shared_ptr<joynr::system::DiscoveryProxy> discoveryProxy;
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
     std::string publicKeyId;

@@ -108,12 +108,12 @@ public:
                     capabilitiesProxyBuilder) override;
 
 private:
-    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>
     getGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl);
 
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
 
-    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> defaultCapabilitiesProxy;
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> defaultCapabilitiesProxy;
     std::shared_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
             capabilitiesProxyBuilder;
     ADD_LOGGER(CapabilitiesClient);

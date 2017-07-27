@@ -692,7 +692,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
     localCapabilitiesDirectory->setAccessController(std::move(util::as_weak_ptr(accessController)));
 }
 
-std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterControllerRuntime::
+std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterControllerRuntime::
         createGlobalDomainAccessControllerProxy()
 {
     // Provision global domain access controller in MessageRouter

@@ -143,7 +143,7 @@ protected:
         return testProvider;
     }
 
-    std::unique_ptr<tests::testProxy> buildProxy() {
+    std::shared_ptr<tests::testProxy> buildProxy() {
         std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder
                 = runtime2->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
@@ -153,7 +153,7 @@ protected:
 
         std::int64_t qosRoundTripTTL = 500;
 
-        std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
+        std::shared_ptr<tests::testProxy> testProxy = testProxyBuilder
                 ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                 ->setDiscoveryQos(discoveryQos)
                 ->build();
@@ -180,7 +180,7 @@ protected:
 
         (*testProvider.*setAttribute)(expectedValue, [](){}, [](const joynr::exceptions::ProviderRuntimeException&) {});
 
-        std::unique_ptr<tests::testProxy> testProxy = buildProxy();
+        std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
         std::int64_t minInterval_ms = 50;
         auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
@@ -216,7 +216,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionRegistration) {
     testProvider->setTestAttribute(42, [](){}, [](const joynr::exceptions::ProviderRuntimeException& error) {
         ADD_FAILURE() << "exception from setTestAttribute: " << error.getMessage(); });
 
-    std::unique_ptr<tests::testProxy> testProxy = buildProxy();
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
@@ -252,7 +252,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate) {
     testProvider->setTestAttribute(42, [](){}, [](const joynr::exceptions::ProviderRuntimeException& error) {
         ADD_FAILURE() << "exception from setTestAttribute: " << error.getMessage(); });
 
-    std::unique_ptr<tests::testProxy> testProxy = buildProxy();
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
     std::int64_t minInterval_ms = 50;
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
@@ -292,7 +292,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute) {
     tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
 
     testOneShotAttributeSubscription(expectedTestEnum,
-                                 [this](std::unique_ptr<tests::testProxy>& testProxy,
+                                 [this](std::shared_ptr<tests::testProxy>& testProxy,
                                     std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener,
                                     std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos,
                                     std::string& subscriptionId) {
@@ -300,7 +300,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute) {
                                         testProxy->subscribeToEnumAttribute(subscriptionListener, subscriptionQos);
                                     JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToAttributeWait, subscriptionId));
                                  },
-                                 [](std::unique_ptr<tests::testProxy>& testProxy,
+                                 [](std::shared_ptr<tests::testProxy>& testProxy,
                                     std::string& subscriptionId) {
                                      testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
                                  },
@@ -312,7 +312,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute) {
     joynr::ByteBuffer expectedByteBuffer {0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0};
 
     testOneShotAttributeSubscription(expectedByteBuffer,
-                                 [this](std::unique_ptr<tests::testProxy>& testProxy,
+                                 [this](std::shared_ptr<tests::testProxy>& testProxy,
                                     std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> subscriptionListener,
                                     std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos,
                                     std::string& subscriptionId) {
@@ -320,7 +320,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute) {
                                         testProxy->subscribeToByteBufferAttribute(subscriptionListener, subscriptionQos);
                                     JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToAttributeWait, subscriptionId));
                                  },
-                                 [](std::unique_ptr<tests::testProxy>& testProxy,
+                                 [](std::shared_ptr<tests::testProxy>& testProxy,
                                     std::string& subscriptionId) {
                                      testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
                                  },

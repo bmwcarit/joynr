@@ -171,7 +171,7 @@ protected:
     }
 
     std::size_t messageCount;
-    std::unique_ptr<EchoProxy> echoProxy;
+    std::shared_ptr<EchoProxy> echoProxy;
     std::vector<ClockResolution> durationVector;
 
     std::size_t stringLength;

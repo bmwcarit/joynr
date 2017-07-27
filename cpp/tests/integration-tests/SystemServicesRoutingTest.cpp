@@ -117,7 +117,7 @@ protected:
     std::shared_ptr<MockTransportMessageSender> mockMessageSender;
     DiscoveryQos discoveryQos;
     std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder;
-    std::unique_ptr<joynr::system::RoutingProxy> routingProxy;
+    std::shared_ptr<joynr::system::RoutingProxy> routingProxy;
     std::string participantId;
     bool isGloballyVisible;
 

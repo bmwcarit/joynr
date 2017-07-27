@@ -96,7 +96,7 @@ protected:
         }
     }
 
-    static std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy> testInterfaceProxy;
+    static std::shared_ptr<joynr::interlanguagetest::TestInterfaceProxy> testInterfaceProxy;
     static std::shared_ptr<joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>>
             proxyBuilder;
     static std::shared_ptr<joynr::JoynrRuntime> runtime;
@@ -121,7 +121,7 @@ template <typename T>
 INIT_LOGGER(IltAbstractConsumerTest<T>);
 
 template <typename T>
-std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy>
+std::shared_ptr<joynr::interlanguagetest::TestInterfaceProxy>
         IltAbstractConsumerTest<T>::testInterfaceProxy;
 
 template <typename T>

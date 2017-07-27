@@ -94,7 +94,7 @@ void LibJoynrMessageRouter::setParentAddress(
     addProvisionedNextHop(parentParticipantId, this->parentAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
 }
 
-void LibJoynrMessageRouter::setParentRouter(std::unique_ptr<system::RoutingProxy> parentRouter)
+void LibJoynrMessageRouter::setParentRouter(std::shared_ptr<system::RoutingProxy> parentRouter)
 {
     assert(parentAddress);
     this->parentRouter = std::move(parentRouter);

@@ -134,7 +134,7 @@ TEST_F(LocalDiscoveryTest, testLocalLookup) {
         runtime1->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain)
     );
 
-    std::unique_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
+    std::shared_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
        ->setMessagingQos(messagingQos)
        ->setDiscoveryQos(discoveryQos)
        ->build());
@@ -149,7 +149,7 @@ TEST_F(LocalDiscoveryTest, testGloballLookup) {
         runtime2->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain)
     );
 
-    std::unique_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
+    std::shared_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
        ->setMessagingQos(messagingQos)
        ->setDiscoveryQos(discoveryQos)
        ->build());
@@ -172,7 +172,7 @@ TEST_F(LocalDiscoveryTest, testAsyncRegistration)
         runtime2->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain)
     );
 
-    std::unique_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
+    std::shared_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
        ->setMessagingQos(messagingQos)
        ->setDiscoveryQos(discoveryQos)
        ->build());

@@ -110,6 +110,6 @@ private:
     std::uint64_t runs;
     ShortCircuitRuntime runtime;
     std::shared_ptr<PerformanceTestEchoProvider> echoProvider;
-    std::unique_ptr<tests::performance::EchoProxy> echoProxy;
+    std::shared_ptr<tests::performance::EchoProxy> echoProxy;
     std::string domainName = "short-circuit";
 };

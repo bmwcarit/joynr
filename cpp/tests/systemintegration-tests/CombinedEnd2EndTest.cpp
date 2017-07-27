@@ -124,7 +124,7 @@ TEST_P(CombinedEnd2EndTest, surviveDestructionOfRuntime)
         runtime2 = nullptr;
 
         // try to build a proxy, it must not run into SIGSEGV
-        EXPECT_THROW(std::unique_ptr<tests::testProxy> testProxy(
+        EXPECT_THROW(std::shared_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
                     ->build()),
@@ -154,7 +154,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
-        std::unique_ptr<tests::testProxy> testProxy(
+        std::shared_ptr<tests::testProxy> testProxy(
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setDiscoveryQos(discoveryQos)
                         ->build());
@@ -423,7 +423,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
                 runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
         std::uint64_t qosRoundTripTTL = 1;
-        std::unique_ptr<tests::testProxy> testProxy(
+        std::shared_ptr<tests::testProxy> testProxy(
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setDiscoveryQos(discoveryQos)
                         ->build());
@@ -440,7 +440,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
-        std::unique_ptr<tests::testProxy> testProxy(
+        std::shared_ptr<tests::testProxy> testProxy(
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setDiscoveryQos(discoveryQos)
                         ->build());
@@ -468,7 +468,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
-        std::unique_ptr<tests::testProxy> testProxy =
+        std::shared_ptr<tests::testProxy> testProxy =
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setDiscoveryQos(discoveryQos)
                         ->build();
@@ -562,7 +562,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         std::uint64_t qosRoundTripTTL = 40000;
 
         // Send a message and expect to get a result
-        std::unique_ptr<tests::testProxy> testProxy =
+        std::shared_ptr<tests::testProxy> testProxy =
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setDiscoveryQos(discoveryQos)
                         ->build();
@@ -610,7 +610,7 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
     std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
-    std::unique_ptr<tests::testProxy> testProxy(
+    std::shared_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
@@ -667,7 +667,7 @@ TEST_P(CombinedEnd2EndTest, callFireAndForgetMethod)
     std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
-    std::unique_ptr<tests::testProxy> testProxy(
+    std::shared_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
@@ -709,7 +709,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
-    std::unique_ptr<tests::testProxy> testProxy(
+    std::shared_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
@@ -792,7 +792,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute)
     std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
-    std::unique_ptr<tests::testProxy> testProxy(
+    std::shared_ptr<tests::testProxy> testProxy(
             proxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
@@ -843,7 +843,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain)
     // Expect an ArbitrationException
     try {
         // Send a message and expect to get a result
-        std::unique_ptr<tests::testProxy> testProxy(
+        std::shared_ptr<tests::testProxy> testProxy(
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setDiscoveryQos(discoveryQosOtherTimeout)
                         ->build());
@@ -908,7 +908,7 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
     std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
-    std::unique_ptr<tests::testProxy> gpsProxy(
+    std::shared_ptr<tests::testProxy> gpsProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
@@ -965,7 +965,7 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
     std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
-    std::unique_ptr<tests::testProxy> testProxy(
+    std::shared_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
@@ -981,7 +981,7 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
     runtime1->unregisterProvider(participantId);
 }
 
-std::unique_ptr<tests::testProxy> createTestProxy(JoynrRuntime& runtime,
+std::shared_ptr<tests::testProxy> createTestProxy(JoynrRuntime& runtime,
                                                   const std::string& domainName,
                                                   const joynr::DiscoveryQos& discoveryQos)
 {
@@ -991,7 +991,7 @@ std::unique_ptr<tests::testProxy> createTestProxy(JoynrRuntime& runtime,
     std::uint64_t qosRoundTripTTL = 40000;
 
     // Send a message and expect to get a result
-    std::unique_ptr<tests::testProxy> testProxy(
+    std::shared_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
@@ -1080,7 +1080,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation)
     std::uint64_t qosRoundTripTTL = 20000;
 
     // Send a message and expect to get a result
-    std::unique_ptr<tests::testProxy> testProxy(
+    std::shared_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
@@ -1118,7 +1118,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
     std::uint64_t qosRoundTripTTL = 20000;
 
     // Send a message and expect to get a result
-    std::unique_ptr<tests::testProxy> testProxy(
+    std::shared_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
                     ->build());

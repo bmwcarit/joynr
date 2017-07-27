@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     // Build a proxy to communicate with the provider
-    std::unique_ptr<test::SystemIntegrationTestProxy> proxy(
+    std::shared_ptr<test::SystemIntegrationTestProxy> proxy(
             proxyBuilder->setMessagingQos(MessagingQos())->setDiscoveryQos(discoveryQos)->build());
 
     bool success = true;

@@ -77,7 +77,7 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
 
     Semaphore onSuccessCalledSemaphore;
 
-    auto onSuccess = [&onSuccessCalledSemaphore](std::unique_ptr<tests::testProxy> proxy) {
+    auto onSuccess = [&onSuccessCalledSemaphore](std::shared_ptr<tests::testProxy> proxy) {
         onSuccessCalledSemaphore.notify();
         EXPECT_NE(nullptr, proxy);
     };
@@ -101,7 +101,7 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
 
     Semaphore onErrorCalledSemaphore;
 
-    auto onSuccess = [](std::unique_ptr<tests::testProxy>) {
+    auto onSuccess = [](std::shared_ptr<tests::testProxy>) {
         FAIL();
     };
 

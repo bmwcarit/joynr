@@ -49,7 +49,7 @@ public:
      * is responsible for deletion.
      * @return The proxy object
      */
-    virtual std::unique_ptr<T> build() = 0;
+    virtual std::shared_ptr<T> build() = 0;
 
     /**
      * @brief Build the proxy object asynchronously
@@ -59,7 +59,7 @@ public:
      * @param onError: Will be invoked when the proxy could not be created. An exception, which
      * describes the error, is passed as the parameter.
      */
-    virtual void buildAsync(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
+    virtual void buildAsync(std::function<void(std::shared_ptr<T> proxy)> onSuccess,
                             std::function<void(const exceptions::DiscoveryException&)> onError) = 0;
 
     /**

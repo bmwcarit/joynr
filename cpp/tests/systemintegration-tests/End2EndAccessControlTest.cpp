@@ -99,7 +99,7 @@ protected:
     std::shared_ptr<JoynrRuntime> runtimeAcOFF;
 
     std::shared_ptr<MockTestProvider> testProvider;
-    std::unique_ptr<tests::testProxy> testProxy;
+    std::shared_ptr<tests::testProxy> testProxy;
 
     std::string domain;
     std::string providerParticipantId;

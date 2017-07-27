@@ -173,7 +173,7 @@ protected:
 
 private:
     void createWsCCMessagingSkeletons();
-    std::unique_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
+    std::shared_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
     createGlobalDomainAccessControllerProxy();
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);

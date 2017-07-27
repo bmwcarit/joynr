@@ -287,7 +287,7 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 
     try {
-        std::unique_ptr<<Package>::<Interface>Proxy> proxy = proxyBuilder->setMessagingQos(messagingQos)
+        std::shared_ptr<<Package>::<Interface>Proxy> proxy = proxyBuilder->setMessagingQos(messagingQos)
             ->setCached(false) // optional
             ->setDiscoveryQos(discoveryQos) // optional
             ->build();
@@ -302,7 +302,7 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
 Use the buildAsync method of ProxyBuilder to create a proxy asynchronously:
 
 ```cpp
-    auto onSuccess = [](std::unique_ptr<<Package>::<Interface>Proxy> proxy) {
+    auto onSuccess = [](std::shared_ptr<<Package>::<Interface>Proxy> proxy) {
         // Process the created proxy here
     }
 
@@ -731,8 +731,6 @@ proxy->unsubscribeFrom<Attribute>(subscriptionTo<Attribute>Id);
 
 // for each broadcast subscribed to
 proxy->unsubscribeFrom<Broadcast>Broadcast(subscriptionTo<Broadcast>Id);
-
-delete proxy;
 ```
 
 # Building a C++ Provider application
