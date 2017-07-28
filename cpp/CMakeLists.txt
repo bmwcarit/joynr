@@ -169,6 +169,14 @@ option(
     "Use DBUS and CommonAPI to communicate between libjoynr and cluster-controller?"
     OFF
 )
+
+option(
+    USE_PLATFORM_MOCOCRW
+    "Resolve dependency to MOCOCRW from the system?"
+    ON
+)
+message(STATUS "option USE_PLATFORM_MOCOCRW=" ${USE_PLATFORM_MOCOCRW})
+
 message(STATUS "option USE_DBUS_COMMONAPI_COMMUNICATION=" ${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 option(
@@ -214,10 +222,10 @@ include(AddClangFormat)
 # Following dependencies must be installed by the user beforehand because they either
 # use a shared object or are included through joynr header files into the user's code.
 set (CHECK_DLT (JOYNR_ENABLE_DLT_LOGGING AND USE_PLATFORM_DLT OR NOT JOYNR_ENABLE_DLT_LOGGING))
-if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND USE_PLATFORM_MOSQUITTO AND USE_PLATFORM_SMRF))
+if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND USE_PLATFORM_MOSQUITTO AND USE_PLATFORM_SMRF AND USE_PLATFORM_MOCOCRW))
     set(codeMsg "message(FATAL_ERROR \"Install target is not available as long as external platform")
     set(codeMsg "${codeMsg} dependencies are used. For more information see USE_PLATFORM_SPDLOG,")
-    set(codeMsg "${codeMsg} USE_PLATFORM_DLT, USE_PLATFORM_MOSQUITTO and USE_PLATFORM_SMRF.\")")
+    set(codeMsg "${codeMsg} USE_PLATFORM_DLT, USE_PLATFORM_MOSQUITTO and USE_PLATFORM_SMRF and USE_PLATFORM_MOCOCRW.\")")
     install(CODE "${codeMsg}")
 endif()
 
@@ -871,6 +879,9 @@ get_target_property(JoynrConfig_MOSQUITTO_INCLUDE_DIRS mosquitto::mosquitto INTE
 get_target_property(JoynrConfig_MOSQUITTO_LIBRARIES mosquitto::mosquitto IMPORTED_LOCATION)
 get_target_property(JoynrConfig_SMRF_INCLUDE_DIRS smrf::smrf INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(JoynrConfig_SMRF_LIBRARIES smrf::smrf IMPORTED_LOCATION)
+get_target_property(JoynrConfig_MOCOCRW_INCLUDE_DIRS mococrw::mococrw INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(JoynrConfig_MOCOCRW_LIBRARIES mococrw::mococrw IMPORTED_LOCATION)
+
 
 set(JoynrConfig_RESOLVE_DEPENDENCIES)
 
@@ -900,6 +911,12 @@ else(USE_PLATFORM_SMRF)
     FillJoynrConfigDependencies("ExternalProjectSmrf")
 endif(USE_PLATFORM_SMRF)
 
+if(USE_PLATFORM_MOCOCRW)
+    FillJoynrConfigDependencies("PlatformMococrw")
+else(USE_PLATFORM_MOCOCRW)
+    FillJoynrConfigDependencies("ExternalProjectMococrw")
+endif(USE_PLATFORM_MOCOCRW)
+
 if(JOYNR_ENABLE_DLT_LOGGING)
 if(USE_PLATFORM_DLT)
     FillJoynrConfigDependencies("PlatformDltlog")
@@ -920,6 +937,7 @@ file(
         "CMake/CheckMosquittoImportTargets.cmake"
         "CMake/CheckDltImportTargets.cmake"
         "CMake/CheckSMRFImportTargets.cmake"
+        "CMake/CheckMOCOCRWImportTargets.cmake"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
 # ... for the install tree
@@ -971,6 +989,7 @@ install(
         "CMake/CheckMosquittoImportTargets.cmake"
         "CMake/CheckDltImportTargets.cmake"
         "CMake/CheckSMRFImportTargets.cmake"
+        "CMake/CheckMOCOCRWImportTargets.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}"
 )
 
