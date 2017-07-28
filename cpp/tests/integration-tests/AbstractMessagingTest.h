@@ -121,7 +121,7 @@ public:
         // - *MessagingStub.transmit (IMessaging)
         // - MessageSender.send
 
-        MockDispatcher mockDispatcher;
+        std::shared_ptr<MockDispatcher> mockDispatcher = std::make_shared<MockDispatcher>();
         // InProcessMessagingSkeleton should receive the message
         EXPECT_CALL(*inProcessMessagingSkeleton, transmit(_,_))
                 .Times(0);
@@ -130,12 +130,12 @@ public:
         EXPECT_CALL(*mockMessageSender, sendMessage(_,_,_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-        EXPECT_CALL(mockDispatcher, addReplyCaller(_,_,_))
+        EXPECT_CALL(*mockDispatcher, addReplyCaller(_,_,_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         MessageSender messageSender(messageRouter);
         std::shared_ptr<IReplyCaller> replyCaller;
-        messageSender.registerDispatcher(&mockDispatcher);
+        messageSender.registerDispatcher(mockDispatcher);
 
         // local messages
         const bool isGloballyVisible = false;

@@ -171,7 +171,7 @@ public:
     std::unique_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
         return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
-                                                          &requestCallerDirectory,
+                                                          requestCallerDirectory,
                                                           discoveryProxy,
                                                           domain,
                                                           dispatcherAddress,
@@ -184,8 +184,8 @@ private:
     std::shared_ptr<IMessageRouter> messageRouter;
     std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     std::shared_ptr<IMessageSender> messageSender;
-    IDispatcher* joynrDispatcher;
-    IDispatcher* inProcessDispatcher;
+    std::shared_ptr<IDispatcher> joynrDispatcher;
+    std::shared_ptr<IDispatcher> inProcessDispatcher;
     std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
     std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
     PublicationManager* publicationManager;
@@ -195,7 +195,7 @@ private:
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
     std::uint64_t maximumTtlMs;
-    DummyRequestCallerDirectory requestCallerDirectory;
+    std::shared_ptr<DummyRequestCallerDirectory> requestCallerDirectory;
 };
 
 } // namespace joynr

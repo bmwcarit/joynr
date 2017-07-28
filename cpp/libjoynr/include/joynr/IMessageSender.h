@@ -73,7 +73,7 @@ public:
     /*
      * registers Dispatcher. See above comment why this is necessary.
      */
-    virtual void registerDispatcher(IDispatcher* dispatcher) = 0;
+    virtual void registerDispatcher(std::shared_ptr<IDispatcher> dispatcher) = 0;
 
     /*
      * Prepares and sends a request message (such as issued by a Proxy)

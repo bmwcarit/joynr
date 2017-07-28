@@ -38,7 +38,7 @@ using namespace joynr;
 class CapabilitiesRegistrarTest : public ::testing::Test {
 public:
     CapabilitiesRegistrarTest() :
-            mockDispatcher(nullptr),
+            mockDispatcher(),
             dispatcherAddress(),
             mockParticipantIdStorage(new MockParticipantIdStorage()),
             mockDiscovery(),
@@ -56,8 +56,8 @@ public:
     }
 
     void SetUp(){
-        std::vector<IDispatcher*> dispatcherList;
-        mockDispatcher = new MockDispatcher();
+        std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
+        mockDispatcher = std::make_shared<MockDispatcher>();
         dispatcherList.push_back(mockDispatcher);
 
         const std::string globalAddress = "testGlobalAddressString";
@@ -75,13 +75,12 @@ public:
 
     void TearDown(){
         delete capabilitiesRegistrar;
-        delete mockDispatcher;
         delete mockMessageSender;
     }
 
 protected:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrarTest);
-    MockDispatcher* mockDispatcher;
+    std::shared_ptr<MockDispatcher> mockDispatcher;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MockParticipantIdStorage> mockParticipantIdStorage;
     MockDiscovery mockDiscovery;
@@ -261,8 +260,8 @@ TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
 }
 
 TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapability){
-    MockDispatcher* mockDispatcher1 = new MockDispatcher();
-    MockDispatcher* mockDispatcher2 = new MockDispatcher();
+    std::shared_ptr<MockDispatcher> mockDispatcher1 = std::make_shared<MockDispatcher>();
+    std::shared_ptr<MockDispatcher> mockDispatcher2 = std::make_shared<MockDispatcher>();
     types::ProviderQos testQos;
     testQos.setPriority(100);
 
@@ -314,14 +313,11 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
     future.get();
 
     EXPECT_EQ(expectedParticipantId, participantId);
-
-    delete mockDispatcher1;
-    delete mockDispatcher2;
 }
 
 TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
-    MockDispatcher* mockDispatcher1 = new MockDispatcher();
-    MockDispatcher* mockDispatcher2 = new MockDispatcher();
+    std::shared_ptr<MockDispatcher> mockDispatcher1 = std::make_shared<MockDispatcher>();
+    std::shared_ptr<MockDispatcher> mockDispatcher2 = std::make_shared<MockDispatcher>();
     types::ProviderQos testQos;
     testQos.setPriority(100);
 
@@ -375,7 +371,4 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     future.get();
 
     EXPECT_EQ(expectedParticipantId, participantId);
-
-    delete mockDispatcher1;
-    delete mockDispatcher2;
 }

@@ -29,7 +29,7 @@ InProcessConnectorFactory::InProcessConnectorFactory(
         ISubscriptionManager* subscriptionManager,
         PublicationManager* publicationManager,
         InProcessPublicationSender* inProcessPublicationSender,
-        IRequestCallerDirectory* requestCallerDirectory)
+        std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory)
         : subscriptionManager(subscriptionManager),
           publicationManager(publicationManager),
           inProcessPublicationSender(inProcessPublicationSender),

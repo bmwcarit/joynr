@@ -51,9 +51,9 @@ void MessageSender::setReplyToAddress(const std::string& replyToAddress)
     this->replyToAddress = replyToAddress;
 }
 
-void MessageSender::registerDispatcher(IDispatcher* dispatcher)
+void MessageSender::registerDispatcher(std::shared_ptr<IDispatcher> dispatcher)
 {
-    this->dispatcher = dispatcher;
+    this->dispatcher = std::move(dispatcher);
 }
 
 void MessageSender::sendRequest(const std::string& senderParticipantId,

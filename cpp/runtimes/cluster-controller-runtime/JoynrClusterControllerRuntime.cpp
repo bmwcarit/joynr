@@ -116,8 +116,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver,
         std::shared_ptr<ITransportMessageSender> mqttMessageSender)
         : JoynrRuntime(*settings),
-          joynrDispatcher(nullptr),
-          inProcessDispatcher(nullptr),
+          joynrDispatcher(),
+          inProcessDispatcher(),
           subscriptionManager(nullptr),
           messageSender(nullptr),
           localCapabilitiesDirectory(nullptr),
@@ -259,7 +259,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             std::make_unique<DummyPlatformSecurityManager>();
 
     // CAREFUL: the factory creates an old style dispatcher, not the new one!
-    inProcessDispatcher = new InProcessDispatcher(singleThreadIOService->getIOService());
+    inProcessDispatcher =
+            std::make_shared<InProcessDispatcher>(singleThreadIOService->getIOService());
     /* CC */
     // create the messaging stub factory
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
@@ -383,7 +384,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     assert(ccMessageRouter);
     messageSender =
             std::make_shared<MessageSender>(ccMessageRouter, messagingSettings.getTtlUpliftMs());
-    joynrDispatcher = new Dispatcher(messageSender, singleThreadIOService->getIOService());
+    joynrDispatcher =
+            std::make_shared<Dispatcher>(messageSender, singleThreadIOService->getIOService());
     messageSender->registerDispatcher(joynrDispatcher);
     messageSender->setReplyToAddress(globalClusterControllerAddress);
 
@@ -483,7 +485,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
             subscriptionManager.get(),
             publicationManager,
             inProcessPublicationSender,
-            dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
+            std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher));
     auto joynrMessagingConnectorFactory =
             std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
 
@@ -500,7 +502,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     auto provisionedDiscoveryEntries = getProvisionedEntries();
     discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(provisionedDiscoveryEntries);
-    requestCallerDirectory = dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher);
+    requestCallerDirectory =
+            std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher);
 
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient =
             std::make_shared<CapabilitiesClient>();
@@ -873,11 +876,10 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     if (joynrDispatcher != nullptr) {
         joynrDispatcher->shutdown();
         JOYNR_LOG_TRACE(logger, "joynrDispatcher");
-        delete joynrDispatcher;
+        joynrDispatcher.reset();
     }
 
-    delete inProcessDispatcher;
-    inProcessDispatcher = nullptr;
+    inProcessDispatcher.reset();
 
     delete inProcessPublicationSender;
     inProcessPublicationSender = nullptr;

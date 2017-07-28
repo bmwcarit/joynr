@@ -80,7 +80,7 @@ public:
     /*
       * registers Dispatcher. See above comment why this is necessary.
       */
-    void registerDispatcher(IDispatcher* dispatcher) override;
+    void registerDispatcher(std::shared_ptr<IDispatcher> dispatcher) override;
 
     void sendRequest(const std::string& senderParticipantId,
                      const std::string& receiverParticipantId,
@@ -143,7 +143,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageSender);
-    IDispatcher* dispatcher;
+    std::shared_ptr<IDispatcher> dispatcher;
     std::shared_ptr<IMessageRouter> messageRouter;
     MutableMessageFactory messageFactory;
     std::string replyToAddress;

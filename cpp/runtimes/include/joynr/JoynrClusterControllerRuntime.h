@@ -129,8 +129,8 @@ protected:
 
     std::shared_ptr<IMessageRouter> getMessageRouter() final;
 
-    IDispatcher* joynrDispatcher;
-    IDispatcher* inProcessDispatcher;
+    std::shared_ptr<IDispatcher> joynrDispatcher;
+    std::shared_ptr<IDispatcher> inProcessDispatcher;
 
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::shared_ptr<IMessageSender> messageSender;
@@ -148,7 +148,7 @@ protected:
     std::shared_ptr<ITransportMessageSender> mqttMessageSender;
     std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
 
-    std::vector<IDispatcher*> dispatcherList;
+    std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
     InProcessPublicationSender* inProcessPublicationSender;
 
     std::unique_ptr<Settings> settings;

@@ -310,7 +310,7 @@ protected:
     /** @brief Factory for creating proxy instances */
     std::unique_ptr<ProxyFactory> proxyFactory;
     /** Is forwarded to proxy builder objects. They use it to identify in-process providers **/
-    IRequestCallerDirectory* requestCallerDirectory;
+    std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
     /** @brief Creates and persists participant id */
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     /** @brief Class that handles provider registration/deregistration */
