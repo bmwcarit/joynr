@@ -142,7 +142,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
@@ -576,6 +576,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         EXPECT_EQ(derivedStructResult, "DerivedStruct");
         EXPECT_EQ(anotherDerivedStructResult, "AnotherDerivedStruct");
     }
+    runtime1->unregisterProvider(participantId);
 }
 
 TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
@@ -597,7 +598,7 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -633,6 +634,7 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
 
     testProxy->unsubscribeFromLocation(subscriptionId);
+    runtime1->unregisterProvider(participantId);
 }
 
 TEST_P(CombinedEnd2EndTest, callFireAndForgetMethod)
@@ -653,7 +655,7 @@ TEST_P(CombinedEnd2EndTest, callFireAndForgetMethod)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -673,6 +675,7 @@ TEST_P(CombinedEnd2EndTest, callFireAndForgetMethod)
     testProxy->methodFireAndForget(expectedIntParam, expectedStringParam, expectedComplexParam);
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    runtime1->unregisterProvider(participantId);
 }
 
 TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
@@ -694,7 +697,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished.
@@ -754,6 +757,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    runtime1->unregisterProvider(participantId);
 }
 
 TEST_P(CombinedEnd2EndTest, subscribeToListAttribute)
@@ -891,7 +895,7 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     // This wait is necessary, because registerProvider is async, and a lookup could occur
     // before the register has finished. See Joynr 805 for details
@@ -929,6 +933,7 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
+    runtime1->unregisterProvider(participantId);
 }
 
 TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
@@ -945,7 +950,7 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::seconds(1)); // This wait is necessary, because
                                                           // registerProvider is async, and a lookup
@@ -971,6 +976,7 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
 
     std::shared_ptr<Future<int>> gpsFuture2(testProxy->addNumbersAsync(1, 2, 3));
     gpsFuture2->wait(1000);
+    runtime1->unregisterProvider(participantId);
 }
 
 std::unique_ptr<tests::testProxy> createTestProxy(JoynrRuntime& runtime,
@@ -1062,7 +1068,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+    std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -1088,6 +1094,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation)
     // Wait for the operation to finish and check for a successful callback
     future->wait();
     ASSERT_EQ(StatusCodeEnum::SUCCESS, future->getStatus());
+    runtime1->unregisterProvider(participantId);
 }
 
 TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)

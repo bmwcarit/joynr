@@ -106,7 +106,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     providerQos.setPriority(2);
     auto testProvider = std::make_shared<MockTestProvider>();
 
-    runtime1->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
+    std::string participantId = runtime1->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
@@ -151,6 +151,9 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     //check if all Requests were successful
     EXPECT_EQ(numberOfRequests, successfulRequests);
     JOYNR_LOG_INFO(logger, "Required Time for 1000 Requests: {}",(stopTime - startTime));
+
+    runtime1->unregisterProvider(participantId);
+
     // to silence unused-variable compiler warnings
     std::ignore = startTime;
     std::ignore = stopTime;

@@ -100,7 +100,7 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
+    std::string participantId = runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     std::unique_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
@@ -119,6 +119,7 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     EXPECT_EQ(expectedValue, actualValue);
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    runtime->unregisterProvider(participantId);
 }
 
 TEST_P(End2EndRPCTest, call_void_operation)
@@ -132,7 +133,7 @@ TEST_P(End2EndRPCTest, call_void_operation)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
+    std::string participantId = runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
     std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
@@ -147,6 +148,7 @@ TEST_P(End2EndRPCTest, call_void_operation)
 //    EXPECT_EQ(expectedValue, gpsFuture->getValue());
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    runtime->unregisterProvider(participantId);
 }
 
 // tests in process subscription
@@ -160,7 +162,7 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
+    std::string participantId = runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
@@ -191,6 +193,7 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    runtime->unregisterProvider(participantId);
 }
 
 INSTANTIATE_TEST_CASE_P(Http,

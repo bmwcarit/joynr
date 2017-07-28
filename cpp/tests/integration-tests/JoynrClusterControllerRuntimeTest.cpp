@@ -254,6 +254,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
     joynr::types::Localisation::GpsLocation actualValue;
     future->get(actualValue);
     EXPECT_EQ(gpsLocation, actualValue);
+    runtime->unregisterProvider(participantId);
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArguments)
@@ -304,6 +305,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
     int actualValue;
     future->get(actualValue);
     EXPECT_EQ(sum, actualValue);
+    runtime->unregisterProvider(participantId);
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
@@ -369,6 +371,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider) {
     });
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     testProxy->unsubscribeFromLocation(subscriptionId);
+    runtime->unregisterProvider(participantId);
 }
 
 
@@ -440,4 +443,5 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider) {
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
+    runtime->unregisterProvider(participantId);
 }

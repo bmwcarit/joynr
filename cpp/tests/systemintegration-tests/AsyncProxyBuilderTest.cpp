@@ -70,7 +70,7 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
     providerQos.setPriority(2);
     providerQos.setScope(types::ProviderScope::LOCAL);
 
-    runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
+    std::string participantId = runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
 
     std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
@@ -91,6 +91,7 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
                     ->buildAsync(onSuccess, onFailure);
 
     EXPECT_TRUE(onSuccessCalledSemaphore.waitFor(std::chrono::seconds(10)));
+    runtime->unregisterProvider(participantId);
 }
 
 TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
