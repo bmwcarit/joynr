@@ -74,6 +74,10 @@ void ClusterControllerSettings::checkSettings()
                      DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS().count());
     }
 
+    if (!settings.contains(SETTING_MQTT_TLS_ENABLED())) {
+        settings.set(SETTING_MQTT_TLS_ENABLED(), DEFAULT_MQTT_TLS_ENABLED());
+    }
+
     if (!settings.contains(SETTING_ACCESS_CONTROL_ENABLE())) {
         setEnableAccessController(DEFAULT_ENABLE_ACCESS_CONTROLLER());
     } else if (enableAccessController() && !getUseOnlyLDAS()) {
@@ -175,6 +179,12 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_UNICAST_TOPIC_PREFIX(
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_MQTT_TLS_ENABLED()
+{
+    static const std::string value("cluster-controller/mqtt-tls-enabled");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME()
 {
     static const std::string value("cluster-controller/mqtt-certificate-authority-pem-filename");
@@ -222,6 +232,11 @@ const std::string& ClusterControllerSettings::DEFAULT_MQTT_CLIENT_ID_PREFIX()
 {
     static const std::string value("joynr");
     return value;
+}
+
+bool ClusterControllerSettings::DEFAULT_MQTT_TLS_ENABLED()
+{
+    return false;
 }
 
 const std::string& ClusterControllerSettings::DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX()
@@ -378,10 +393,14 @@ std::string ClusterControllerSettings::getMqttPrivateKeyPemFilename() const
     return settings.get<std::string>(SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
 }
 
+void ClusterControllerSettings::setMqttTlsEnabled(bool enabled)
+{
+    settings.set<bool>(SETTING_MQTT_TLS_ENABLED(), enabled);
+}
+
 bool ClusterControllerSettings::isMqttTlsEnabled() const
 {
-    return isMqttCertificateAuthorityPemFilenameSet() && isMqttCertificatePemFilenameSet() &&
-           isMqttPrivateKeyPemFilenameSet();
+    return settings.get<bool>(SETTING_MQTT_TLS_ENABLED());
 }
 
 const std::string& ClusterControllerSettings::
@@ -501,6 +520,8 @@ void ClusterControllerSettings::printSettings() const
     } else {
         JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_WS_PORT());
     }
+
+    JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_MQTT_TLS_ENABLED(), isMqttTlsEnabled());
 
     if (isMqttCertificateAuthorityPemFilenameSet()) {
         JOYNR_LOG_DEBUG(logger,
