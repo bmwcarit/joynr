@@ -1,11 +1,18 @@
 # joynr 0.28.0
 
-
 ## API relevant changes
 * **[C++, API]** Ease implementation of SubscriptionListener for empty broadcasts.
 
 ## Other changes
 * **[C++]** joynr accepts files which have size at most 2 GB.
+
+# joynr 0.27.4
+
+## API relevant changes
+none
+
+## Other changes
+* **[C++]** Fixed crash which can occur when a queued message cannot be routed due to expired timeout.
 
 # joynr 0.27.3
 

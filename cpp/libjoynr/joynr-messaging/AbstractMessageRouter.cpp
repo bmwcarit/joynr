@@ -315,7 +315,15 @@ void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
 {
     while (auto nextImmutableMessage =
                    transportNotAvailableQueue->getNextMessageFor(transportStatus)) {
-        route(nextImmutableMessage->getContent());
+        std::shared_ptr<ImmutableMessage> message = nextImmutableMessage->getContent();
+        try {
+            route(message);
+        } catch (const exceptions::JoynrRuntimeException& e) {
+            JOYNR_LOG_DEBUG(logger,
+                            "could not route queued message '{}' due to '{}'",
+                            message->toLogMessage(),
+                            e.getMessage());
+        }
     }
 }
 
