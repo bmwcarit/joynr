@@ -1,3 +1,12 @@
+# joynr 0.27.4
+
+## API relevant changes
+none
+
+## Other changes
+* **[C++]** Fixed crash which can occur when a queued message cannot be routed due to expired timeout.
+
+
 # joynr 0.27.3
 
 ## API relevant changes
