@@ -31,13 +31,13 @@ var options = PerformanceUtilities.getCommandLineOptionsOrDefaults(process.env);
 var timeout = 600000;
 
 var consumerBase = {
-    echoProxy: undefined,
+    echoProxy : undefined,
     initialize: function() {
         if (consumerBase.echoProxy === undefined) {
             console.log("Using domain " + options.domain);
             console.error("Performing " + options.numRuns + " runs");
             error ("test runs: " + options.testRuns);
-            var viaClusterController = options.viacc == 'true';
+            var viaClusterController = options.viacc == "true";
             console.log("Via cluster-contoller: " + viaClusterController);
             var provisioning = testbase.provisioning_common;
             if (viaClusterController) {
@@ -60,12 +60,12 @@ var consumerBase = {
                 return loadedJoynr;
             }).then(function(loadedJoynr) {
                 var messagingQos = new loadedJoynr.messaging.MessagingQos({
-                    ttl : timeout
+                    ttl: timeout
                 });
                 var EchoProxy = require("../generated-javascript/joynr/tests/performance/EchoProxy.js");
                 return loadedJoynr.proxyBuilder.build(EchoProxy, {
-                    domain : options.domain,
-                    messagingQos : messagingQos
+                    domain      : options.domain,
+                    messagingQos: messagingQos
                 });
             }).then(function(echoProxy) {
                 consumerBase.echoProxy = echoProxy;
@@ -77,33 +77,31 @@ var consumerBase = {
             return Promise.resolve();
         }
     },
-    shutdown : function() {
+    shutdown: function() {
         return joynr.shutdown();
     },
-    registerProvider : function() {
+    registerProvider: function() {
         var providerQos = new joynr.types.ProviderQos({
-            customParameters : [],
-            priority : Date.now(),
-            scope : joynr.types.ProviderScope.LOCAL,
-            supportsOnChangeSubscriptions : true
+            customParameters             : [],
+            priority                     : Date.now(),
+            scope                        : joynr.types.ProviderScope.LOCAL,
+            supportsOnChangeSubscriptions: true
         });
 
         var EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");
         var EchoProviderImpl = require("./EchoProviderImpl.js");
-        var echoProvider = joynr.providerBuilder.build(
-        EchoProvider,
-        EchoProviderImpl.implementation);
+        var echoProvider = joynr.providerBuilder.build( EchoProvider, EchoProviderImpl.implementation);
 
         joynr.registration.registerProvider(options.domain, echoProvider, providerQos).then(function() {
             log("provider registered successfully");
-        }).catch(function(error) {
-            log("error registering provider: " + error.toString());
+        }).catch(function(e) {
+            error("error registering provider: " + e.toString());
         });
     },
 
     executeBenchmark: function(benchmarkName, benchmarkData, benchmark){
         var numRuns = benchmarkData.length;
-        log("call " + benchmarkName +" " + numRuns + " times");
+        log("call " + benchmarkName + " " + numRuns + " times");
         PerformanceUtilities.forceGC();
         var startTime = Date.now();
 
@@ -113,12 +111,12 @@ var consumerBase = {
             log("all the numRuns were executed");
             var elapsedTimeMs = Date.now() - startTime;
 
-            error(benchmarkName + " runs: " + numRuns +" took " + elapsedTimeMs + " ms. " + numRuns / (elapsedTimeMs / 1000) + " msgs/s");
+            error(benchmarkName + " runs: " + numRuns + " took " + elapsedTimeMs + " ms. " + numRuns / (elapsedTimeMs / 1000) + " msgs/s");
             return elapsedTimeMs;
         });
     },
 
-    excecuteMultipleBenchmarks : function(benchmarkName, generateBenchmarkData, benchmark) {
+    excecuteMultipleBenchmarks: function(benchmarkName, generateBenchmarkData, benchmark) {
         var numRuns = options.numRuns;
         var testRuns = options.testRuns ? Number.parseInt(options.testRuns) : 1;
         var totalRuns = numRuns * testRuns;
@@ -132,30 +130,30 @@ var consumerBase = {
                 data.push(generateBenchmarkData(j));
             }
             testIndex++;
-            var name = benchmarkName +" Test: "+ testIndex;
+            var name = benchmarkName + " Test: " + testIndex;
             return consumerBase.executeBenchmark(name, data, benchmark )
-            .then(function(time){
-                totalTime += time;
-                runsTime.push(time);
+                .then(function(time){
+                    totalTime += time;
+                    runsTime.push(time);
+                });
+        }, { concurrency: 1 })
+            .then(function () {
+                var averageTime = totalRuns / (totalTime / 1000);
+                var variance = 0;
+                runsTime.map(function(time){
+                    return numRuns / (time / 1000);
+                }).forEach(function (time) {
+                    variance += Math.pow(time - averageTime, 2);
+                });
+                variance /= runsTime.length;
+                var deviation = Math.sqrt(variance);
+                error("the total runtime was: " + totalTime + " runs: " + totalRuns + " msgs/s: " + averageTime + " +/- " + deviation);
             });
-        }, { concurrency: 1})
-        .then(function () {
-            var averageTime = totalRuns /(totalTime/1000);
-            var variance = 0;
-            runsTime.map(function(time){
-                return numRuns/(time/1000);
-            }).forEach(function (time) {
-                variance+= Math.pow(time-averageTime,2);
-            });
-            variance/=runsTime.length;
-            var deviation = Math.sqrt(variance);
-            error("the total runtime was: " + totalTime + " runs: " + totalRuns + " msgs/s: " + averageTime + " +/- " + deviation);
-        });
     },
-    echoString : function() {
+    echoString: function() {
         var generateData = function(i) {
             return {
-                data : PerformanceUtilities.createString(options.stringLength-2, "x") + "-" + i
+                data: PerformanceUtilities.createString(options.stringLength - 2, "x") + "-" + i
             };
         };
         var testProcedure = function(args) {
@@ -165,17 +163,17 @@ var consumerBase = {
                 }
                 return returnValues;
             });
-        }
+        };
         return consumerBase.excecuteMultipleBenchmarks("echoString", generateData, testProcedure);
     },
-    echoComplexStruct : function() {
+    echoComplexStruct: function() {
         var generateData = function(i){
             return {
-                data : new ComplexStruct({
-                    num32 : PerformanceUtilities.createRandomNumber(100000),
-                    num64 : PerformanceUtilities.createRandomNumber(1000000),
+                data: new ComplexStruct({
+                    num32: PerformanceUtilities.createRandomNumber(100000),
+                    num64: PerformanceUtilities.createRandomNumber(1000000),
                     data : PerformanceUtilities.createByteArray(options.byteArrayLength, 1),
-                    str : PerformanceUtilities.createString(options.stringLength-2, "x") + "-" + i
+                    str  : PerformanceUtilities.createString(options.stringLength - 2, "x") + "-" + i
                 })
             };
         };
@@ -189,15 +187,15 @@ var consumerBase = {
                 }
                 return returnValues;
             });
-        }
+        };
         return consumerBase.excecuteMultipleBenchmarks("echoComplexStruct", generateData, testProcedure);
     },
-    echoByteArray : function(byteArraySizeFactor) {
+    echoByteArray: function(byteArraySizeFactor) {
         byteArraySizeFactor = byteArraySizeFactor || 1;
         var byteArraySize = byteArraySizeFactor * options.byteArrayLength;
         var generateData = function(i){
-            var args =  {
-                data : PerformanceUtilities.createByteArray(byteArraySize, 1)
+            var args = {
+                data: PerformanceUtilities.createByteArray(byteArraySize, 1)
             };
             var firstElement = i % 128;
             args.data[0] = firstElement;
@@ -213,16 +211,16 @@ var consumerBase = {
 
                 return returnValues;
             });
-        }
+        };
         // the larger this byteArraySizeFactor is, the longer this test takes
         // in order to mitigate that, we scale the numer of runs by byteArraySizeFactor
         var numRuns = options.numRuns;
         if (byteArraySizeFactor > 1) {
-            numRuns = numRuns / (Math.sqrt(byteArraySizeFactor));
+            numRuns = numRuns / Math.sqrt(byteArraySizeFactor);
         }
         return consumerBase.excecuteMultipleBenchmarks("echoByteArray " + byteArraySize, generateData, testProcedure, numRuns);
     },
-    echoByteArrayWithSizeTimesK : function() {
+    echoByteArrayWithSizeTimesK: function() {
         if (options.skipByteArraySizeTimesK === undefined || options.skipByteArraySizeTimesK === true) {
             consumerBase.echoByteArray(1000);
         }

@@ -44,7 +44,7 @@ PerformanceUtilities.forceGC = function(){
     if (global.gc){
         global.gc();
     } else {
-        console.error('no gc hook! (Start node with --expose-gc  -> use npm run startconsumer)');
+        console.error("no gc hook! (Start node with --expose-gc  -> use npm run startconsumer)");
     }
 };
 
@@ -57,15 +57,15 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         skipByteArraySizeTimesK, testRuns;
 
     testRuns = environment.testRuns || 1;
-    domain = environment.domain || 'test_domain';
+    domain = environment.domain || "test_domain";
     stringLength = environment.stringlength || 10;
     byteArrayLength = environment.bytearraylength || 100;
     numRuns = environment.runs || 10000;
     timeout = environment.timeout || 3600000;
-    viacc = environment.viacc || 'true';
-    brokerUri = environment.brokerUri || 'tcp://localhost:1883';
-    bounceProxyBaseUrl = environment.bounceProxyBaseUrl || 'http://localhost:8080';
-    cchost = environment.cchost || 'localhost';
+    viacc = environment.viacc || "true";
+    brokerUri = environment.brokerUri || "tcp://localhost:1883";
+    bounceProxyBaseUrl = environment.bounceProxyBaseUrl || "http://localhost:8080";
+    cchost = environment.cchost || "localhost";
     ccport = environment.ccport || 4242;
 
     if (environment.skipByteArraySizeTimesK !== undefined) {
