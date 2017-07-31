@@ -57,7 +57,7 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         skipByteArraySizeTimesK, testRuns;
 
     testRuns = environment.testRuns || 1;
-    domain = environment.domain || "test_domain";
+    domain = environment.domain || "performance_test_domain";
     stringLength = environment.stringlength || 10;
     byteArrayLength = environment.bytearraylength || 100;
     numRuns = environment.runs || 10000;
