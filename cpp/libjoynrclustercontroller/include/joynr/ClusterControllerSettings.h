@@ -39,6 +39,7 @@ public:
     static const std::string& SETTING_MQTT_CLIENT_ID_PREFIX();
     static const std::string& SETTING_MQTT_TLS_ENABLED();
     static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME();
+    static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH();
     static const std::string& SETTING_MQTT_CERTIFICATE_PEM_FILENAME();
     static const std::string& SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME();
     static const std::string& SETTING_MQTT_MULTICAST_TOPIC_PREFIX();
@@ -96,6 +97,9 @@ public:
 
     bool isMqttCertificateAuthorityPemFilenameSet() const;
     std::string getMqttCertificateAuthorityPemFilename() const;
+
+    bool isMqttCertificateAuthorityCertificateFolderPathSet() const;
+    std::string getMqttCertificateAuthorityCertificateFolderPath() const;
 
     bool isMqttCertificatePemFilenameSet() const;
     std::string getMqttCertificatePemFilename() const;

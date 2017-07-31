@@ -191,6 +191,14 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_CERTIFICATE_AUTHORITY
     return value;
 }
 
+const std::string& ClusterControllerSettings::
+        SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH()
+{
+    static const std::string value(
+            "cluster-controller/mqtt-certificate-authority-certificate-folder-path");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::SETTING_MQTT_CERTIFICATE_PEM_FILENAME()
 {
     static const std::string value("cluster-controller/mqtt-certificate-pem-filename");
@@ -373,6 +381,16 @@ std::string ClusterControllerSettings::getMqttCertificateAuthorityPemFilename() 
     return settings.get<std::string>(SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
 }
 
+bool ClusterControllerSettings::isMqttCertificateAuthorityCertificateFolderPathSet() const
+{
+    return settings.contains(SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
+}
+
+std::string ClusterControllerSettings::getMqttCertificateAuthorityCertificateFolderPath() const
+{
+    return settings.get<std::string>(SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
+}
+
 bool ClusterControllerSettings::isMqttCertificatePemFilenameSet() const
 {
     return settings.contains(SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
@@ -532,6 +550,17 @@ void ClusterControllerSettings::printSettings() const
         JOYNR_LOG_DEBUG(logger,
                         "SETTING: {}  = NOT SET",
                         SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
+    }
+
+    if (isMqttCertificateAuthorityCertificateFolderPathSet()) {
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = {}",
+                        SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH(),
+                        getMqttCertificateAuthorityCertificateFolderPath());
+    } else {
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = NOT SET",
+                        SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
     }
 
     if (isMqttCertificatePemFilenameSet()) {

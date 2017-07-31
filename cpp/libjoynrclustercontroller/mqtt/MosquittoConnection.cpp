@@ -53,8 +53,24 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
     mosqpp::lib_init();
 
     if (ccSettings.isMqttTlsEnabled()) {
-        int rc = tls_set(ccSettings.getMqttCertificateAuthorityPemFilename().c_str(),
-                         NULL,
+        const std::string mqttCertificateAuthorityPemFilename =
+                ccSettings.getMqttCertificateAuthorityPemFilename();
+        const std::string mqttCertificateAuthorityCertificateFolderPath =
+                ccSettings.getMqttCertificateAuthorityCertificateFolderPath();
+
+        const char* mqttCertificateAuthorityPemFilename_cstr = nullptr;
+        if (!mqttCertificateAuthorityPemFilename.empty()) {
+            mqttCertificateAuthorityPemFilename_cstr = mqttCertificateAuthorityPemFilename.c_str();
+        }
+
+        const char* mqttCertificateAuthorityCertificateFolderPath_cstr = nullptr;
+        if (!mqttCertificateAuthorityCertificateFolderPath.empty()) {
+            mqttCertificateAuthorityCertificateFolderPath_cstr =
+                    mqttCertificateAuthorityCertificateFolderPath.c_str();
+        }
+
+        int rc = tls_set(mqttCertificateAuthorityPemFilename_cstr,
+                         mqttCertificateAuthorityCertificateFolderPath_cstr,
                          ccSettings.getMqttCertificatePemFilename().c_str(),
                          ccSettings.getMqttPrivateKeyPemFilename().c_str());
 
