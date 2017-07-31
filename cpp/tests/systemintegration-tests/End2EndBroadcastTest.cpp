@@ -139,8 +139,7 @@ protected:
                         {"partition0", "*"}
                 );
 
-        std::string subscriptionId1;
-        std::string subscriptionId2;
+        std::string subscriptionId1, subscriptionId2;
 
         subscriptionIdFuture1->get(5000, subscriptionId1);
         subscriptionIdFuture2->get(5000, subscriptionId2);
@@ -170,15 +169,21 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
         [this](
             tests::testProxy* testProxy,
             std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener,
-            std::shared_ptr<MulticastSubscriptionQos> subscriptionQos
+            std::shared_ptr<MulticastSubscriptionQos> subscriptionQos,
+            std::string& subscriptionId
         ) {
             std::shared_ptr<Future<std::string>> subscriptionIdFuture =
                     testProxy->subscribeToBroadcastWithEnumOutputBroadcast(
                         subscriptionListener,
                         subscriptionQos
                     );
-            std::string subscriptionId;
             JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
+        },
+        [this](
+            tests::testProxy* testProxy,
+            std::string& subscriptionId
+        ) {
+            testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
         },
         &tests::testProvider::fireBroadcastWithEnumOutput,
         "broadcastWithEnumOutput"
@@ -196,15 +201,21 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter) {
         [this](
             tests::testProxy* testProxy,
             std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> subscriptionListener,
-            std::shared_ptr<MulticastSubscriptionQos> subscriptionQos
+            std::shared_ptr<MulticastSubscriptionQos> subscriptionQos,
+            std::string& subscriptionId
         ) {
             std::shared_ptr<Future<std::string>> subscriptionIdFuture =
                     testProxy->subscribeToBroadcastWithByteBufferParameterBroadcast(
                         subscriptionListener,
                         subscriptionQos
                     );
-            std::string subscriptionId;
             JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
+        },
+        [this](
+            tests::testProxy* testProxy,
+            std::string& subscriptionId
+        ) {
+            testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
         },
         &tests::testProvider::fireBroadcastWithByteBufferParameter,
         "broadcastWithByteBufferParameter"
@@ -262,6 +273,7 @@ TEST_P(End2EndBroadcastTest, updateBroadcastSubscription) {
 
     // make sure the fireLocationUpdate is received by the second listener
     ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice) {
@@ -292,14 +304,15 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice) {
         subscriptionQos
     );
 
-    // update subscription, new listener
+    // second subscription
     std::shared_ptr<Future<std::string>> future2 = testProxy->subscribeToLocationUpdateBroadcast(
         mockSubscriptionListener2,
         subscriptionQos
     );
 
-    JOYNR_ASSERT_NO_THROW(future->wait(5000));
-    JOYNR_ASSERT_NO_THROW(future2->wait(5000));
+    std::string subscriptionId1, subscriptionId2;
+    JOYNR_ASSERT_NO_THROW(future->get(5000, subscriptionId1));
+    JOYNR_ASSERT_NO_THROW(future2->get(5000, subscriptionId2));
 
     testProvider->fireLocationUpdate(gpsLocation2);
 
@@ -307,6 +320,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice) {
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     // make sure the fireLocationUpdate is received by the second listener
     ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId1));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId2));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
@@ -346,6 +361,7 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput) {
 
     //ensure to wait long enough before ending
     std::this_thread::sleep_for(std::chrono::seconds(3));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
@@ -389,6 +405,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput) {
 
     //ensure to wait long enough before ending
     std::this_thread::sleep_for(std::chrono::seconds(3));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId));
 }
 
 TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration) {
@@ -429,6 +446,7 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration) {
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionIdFromFuture));
 }
 
 TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
@@ -481,6 +499,7 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate) {
     EXPECT_EQ(updateSubscriptionIdFromListener, updateSubscriptionIdFromFuture);
     // subscription id from update is the same as the original subscription id
     EXPECT_EQ(initialSubscriptionIdFromListener, updateSubscriptionIdFromListener);
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(initialSubscriptionIdFromListener));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
@@ -530,6 +549,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput) {
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromEmptyBroadcastBroadcast(subscriptionId));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
@@ -588,6 +608,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput) {
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateWithSpeedBroadcast(subscriptionId));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
@@ -618,11 +639,11 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     std::shared_ptr<joynr::Future<std::string>> subscriptionAttributeResult = testProxy->subscribeToLocation(
                 mockListenerAttribute,
                 subscriptionQosAttribute);
-    std::string subscriptionId;
+    std::string subscriptionIdAttribute;
     // Wait until the provider sends back a subscriptionReply, i.e. the subscription is
     // established successful
 
-    JOYNR_EXPECT_NO_THROW(subscriptionAttributeResult->get(subscribeToAttributeWait, subscriptionId));
+    JOYNR_EXPECT_NO_THROW(subscriptionAttributeResult->get(subscribeToAttributeWait, subscriptionIdAttribute));
 
     auto subscriptionQosBroadcast = std::make_shared<MulticastSubscriptionQos>(500000);
     std::shared_ptr<joynr::Future<std::string>> subscriptionBroadcastResult = testProxy->subscribeToLocationBroadcast(
@@ -630,7 +651,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
                 subscriptionQosBroadcast);
     // Wait until the provider sends back a subscriptionReply, i.e. the subscription is
     // established successful
-    JOYNR_EXPECT_NO_THROW(subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionId));
+    std::string subscriptionIdBroadcast;
+    JOYNR_EXPECT_NO_THROW(subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionIdBroadcast));
 
     // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
     std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -648,6 +670,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
 
     // Ensure to wait enough before ending
     std::this_thread::sleep_for(std::chrono::seconds(3));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocation(subscriptionIdAttribute));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationBroadcast(subscriptionIdBroadcast));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
@@ -693,8 +717,9 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
                 partitions2
     );
 
-    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->wait(subscribeToBroadcastWait));
-    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->wait(subscribeToBroadcastWait));
+    std::string subscriptionId1, subscriptionId2;
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->get(subscribeToBroadcastWait, subscriptionId1));
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->get(subscribeToBroadcastWait, subscriptionId2));
 
     // fire broadcast without partitions (should not be received by any subscriber)
     testProvider->fireLocationUpdate(gpsLocation2);
@@ -717,6 +742,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
 
     EXPECT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
     EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId1));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId2));
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards) {
@@ -810,8 +837,9 @@ TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnS
                 partitions
     );
 
-    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->wait(subscribeToBroadcastWait));
-    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->wait(subscribeToBroadcastWait));
+    std::string subscriptionId1, subscriptionId2;
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->get(subscribeToBroadcastWait, subscriptionId1));
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->get(subscribeToBroadcastWait, subscriptionId2));
 
     // Each proxy will receive a message exactly one time
     EXPECT_CALL(*mockSubscriptionListener1, onReceive(_))
@@ -827,6 +855,8 @@ TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnS
     const std::int64_t receiveBroadcastWait = 2000;
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
     EXPECT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
+    JOYNR_ASSERT_NO_THROW(testProxy1->unsubscribeFromLocationUpdateBroadcast(subscriptionId1));
+    JOYNR_ASSERT_NO_THROW(testProxy2->unsubscribeFromLocationUpdateBroadcast(subscriptionId2));
 }
 
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,

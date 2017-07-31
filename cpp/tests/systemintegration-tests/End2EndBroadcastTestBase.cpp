@@ -302,9 +302,10 @@ protected:
         return testProxy;
     }
 
-    template <typename FireBroadcast, typename SubscribeTo, typename T>
+    template <typename FireBroadcast, typename SubscribeTo, typename UnsubscribeFrom, typename T>
     void testOneShotBroadcastSubscription(const T& expectedValue,
                                           SubscribeTo subscribeTo,
+                                          UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
                                           const std::string& broadcastName) {
         MockSubscriptionListenerOneType<T>* mockListener =
@@ -318,14 +319,16 @@ protected:
                         mockListener);
         testOneShotBroadcastSubscription(subscriptionListener,
                                          subscribeTo,
+                                         unsubscribeFrom,
                                          fireBroadcast,
                                          broadcastName,
                                          expectedValue);
     }
 
-    template <typename FireBroadcast, typename SubscribeTo, typename ...T>
+    template <typename FireBroadcast, typename SubscribeTo, typename UnsubscribeFrom, typename ...T>
     void testOneShotBroadcastSubscription(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
                                           SubscribeTo subscribeTo,
+                                          UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
                                           const std::string& broadcastName,
                                           T... expectedValues) {
@@ -337,12 +340,14 @@ protected:
         auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
         subscriptionQos->setValidityMs(500000);
 
-        subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos);
+        std::string subscriptionId;
+        subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos, subscriptionId);
 
         (*testProvider.*fireBroadcast)(expectedValues..., partitions);
 
         // Wait for a subscription message to arrive
         ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+        unsubscribeFrom(testProxy.get(), subscriptionId);
     }
 
     template <typename BroadcastFilter>
@@ -359,9 +364,10 @@ protected:
         std::ignore = filter;
     }
 
-    template <typename FireBroadcast, typename SubscribeTo, typename BroadcastFilterPtr, typename ...T>
+    template <typename FireBroadcast, typename SubscribeTo, typename UnsubscribeFrom, typename BroadcastFilterPtr, typename ...T>
     void testOneShotBroadcastSubscriptionWithFiltering(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
                                           SubscribeTo subscribeTo,
+                                          UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
                                           const std::string& broadcastName,
                                           BroadcastFilterPtr filter,
@@ -372,17 +378,19 @@ protected:
         std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
         std::int64_t minInterval_ms = 50;
+        std::string subscriptionId;
         auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                     500000,   // validity_ms
                     1000,     // publication ttl
                     minInterval_ms);  // minInterval_ms
 
-        subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos);
+        subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos, subscriptionId);
 
         (*testProvider.*fireBroadcast)(expectedValues...);
 
         // Wait for a subscription message to arrive
         ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+        unsubscribeFrom(testProxy.get(), subscriptionId);
     }
 };
 

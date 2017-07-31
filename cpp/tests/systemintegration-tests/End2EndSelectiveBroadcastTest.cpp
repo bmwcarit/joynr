@@ -121,7 +121,8 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToBroadcastWithFiltering) {
                 joynr::types::TestTypes::TEverythingStruct,
                 std::vector<joynr::types::TestTypes::TEverythingStruct>
             >> subscriptionListener,
-            std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos
+            std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos,
+            std::string& subscriptionId
         ) {
             joynr::tests::TestBroadcastWithFilteringBroadcastFilterParameters filterParameters;
             std::shared_ptr<Future<std::string>> subscriptionIdFuture =
@@ -129,8 +130,13 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToBroadcastWithFiltering) {
                         filterParameters,
                         subscriptionListener,
                         subscriptionQos);
-            std::string subscriptionId;
             JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
+        },
+        [this](
+            tests::testProxy* testProxy,
+            std::string& subscriptionId
+        ) {
+            testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
         },
         &tests::testProvider::fireBroadcastWithFiltering,
         "broadcastWithFiltering",
@@ -209,6 +215,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterSucces
 
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    JOYNR_EXPECT_NO_THROW(testProxy->unsubscribeFromLocationUpdateSelectiveBroadcast(subscriptionId));
 }
 
 TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) {
@@ -258,6 +265,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail) 
 
     //ensure to wait for the minInterval_ms before ending
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+    JOYNR_EXPECT_NO_THROW(testProxy->unsubscribeFromLocationUpdateSelectiveBroadcast(subscriptionId));
 }
 
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,

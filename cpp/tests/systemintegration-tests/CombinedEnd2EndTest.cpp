@@ -757,6 +757,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(20)));
+    JOYNR_ASSERT_NO_THROW({ testProxy->unsubscribeFromLocation(subscriptionId); });
     runtime1->unregisterProvider(participantId);
 }
 
@@ -933,6 +934,7 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(10)));
+    JOYNR_ASSERT_NO_THROW({ gpsProxy->unsubscribeFromLocation(subscriptionId); });
     runtime1->unregisterProvider(participantId);
 }
 

@@ -66,7 +66,6 @@ public:
         registerProviderWait(1000),
         subscribeToAttributeWait(2000),
         providerParticipantId()
-
     {
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
@@ -164,9 +163,10 @@ protected:
         return std::move(testProxy);
     }
 
-    template <typename ChangeAttribute, typename SubscribeTo, typename T>
+    template <typename ChangeAttribute, typename SubscribeTo, typename UnsubscribeFrom, typename T>
     void testOneShotAttributeSubscription(const T& expectedValue,
                                           SubscribeTo subscribeTo,
+                                          UnsubscribeFrom unsubscribeFrom,
                                           ChangeAttribute setAttribute,
                                           const std::string& attributeName) {
         MockSubscriptionListenerOneType<T>* mockListener =
@@ -191,11 +191,13 @@ protected:
                     1000,     // publication ttl
                     minInterval_ms);  // minInterval_ms
 
-        subscribeTo(testProxy, subscriptionListener, subscriptionQos);
+        std::string subscriptionId;
+        subscribeTo(testProxy, subscriptionListener, subscriptionQos, subscriptionId);
         waitForAttributeSubscriptionArrivedAtProvider(testProvider, attributeName);
 
         // Wait for a subscription message to arrive
         EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+        unsubscribeFrom(testProxy, subscriptionId);
     }
 };
 
@@ -234,6 +236,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionRegistration) {
     );
     EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
+    JOYNR_EXPECT_NO_THROW(testProxy->unsubscribeFromTestAttribute(subscriptionIdFromFuture));
 }
 
 TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate) {
@@ -285,16 +288,24 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate) {
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
     // subscription id from update is the same as the original subscription id
     EXPECT_EQ(subscriptionId, subscriptionIdFromFuture);
+    JOYNR_EXPECT_NO_THROW(testProxy->unsubscribeFromTestAttribute(subscriptionId));
 }
 
 TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute) {
     tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
 
     testOneShotAttributeSubscription(expectedTestEnum,
-                                 [](std::unique_ptr<tests::testProxy>& testProxy,
+                                 [this](std::unique_ptr<tests::testProxy>& testProxy,
                                     std::shared_ptr<ISubscriptionListener<tests::testTypes::TestEnum::Enum>> subscriptionListener,
-                                    std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos) {
-                                    testProxy->subscribeToEnumAttribute(subscriptionListener, subscriptionQos);
+                                    std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos,
+                                    std::string& subscriptionId) {
+                                    std::shared_ptr<Future<std::string>> subscriptionIdFuture =
+                                        testProxy->subscribeToEnumAttribute(subscriptionListener, subscriptionQos);
+                                    JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToAttributeWait, subscriptionId));
+                                 },
+                                 [](std::unique_ptr<tests::testProxy>& testProxy,
+                                    std::string& subscriptionId) {
+                                     testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
                                  },
                                  &tests::testProvider::setEnumAttribute,
                                  "enumAttribute");
@@ -304,10 +315,17 @@ TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute) {
     joynr::ByteBuffer expectedByteBuffer {0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0};
 
     testOneShotAttributeSubscription(expectedByteBuffer,
-                                 [](std::unique_ptr<tests::testProxy>& testProxy,
+                                 [this](std::unique_ptr<tests::testProxy>& testProxy,
                                     std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> subscriptionListener,
-                                    std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos) {
-                                    testProxy->subscribeToByteBufferAttribute(subscriptionListener, subscriptionQos);
+                                    std::shared_ptr<OnChangeSubscriptionQos> subscriptionQos,
+                                    std::string& subscriptionId) {
+                                    std::shared_ptr<Future<std::string>> subscriptionIdFuture =
+                                        testProxy->subscribeToByteBufferAttribute(subscriptionListener, subscriptionQos);
+                                    JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToAttributeWait, subscriptionId));
+                                 },
+                                 [](std::unique_ptr<tests::testProxy>& testProxy,
+                                    std::string& subscriptionId) {
+                                     testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
                                  },
                                  &tests::testProvider::setByteBufferAttribute,
                                  "byteBufferAttribute");

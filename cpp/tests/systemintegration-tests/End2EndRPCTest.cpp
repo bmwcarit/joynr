@@ -33,6 +33,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "tests/JoynrTest.h"
 
 using namespace ::testing;
 
@@ -189,10 +190,13 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
                 200, // maxInterval_ms
                 1000 // alertInterval_ms
     );
-    testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    std::string subscriptionId;
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionId));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocation(subscriptionId));
     runtime->unregisterProvider(participantId);
 }
 
