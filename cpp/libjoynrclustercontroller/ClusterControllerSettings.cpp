@@ -78,6 +78,31 @@ void ClusterControllerSettings::checkSettings()
         settings.set(SETTING_MQTT_TLS_ENABLED(), DEFAULT_MQTT_TLS_ENABLED());
     }
 
+    if (isMqttTlsEnabled()) {
+        if (!isMqttCertificateAuthorityCertificateFolderPathSet() &&
+            !isMqttCertificateAuthorityPemFilenameSet()) {
+            JOYNR_LOG_ERROR(
+                    logger,
+                    "MQTT TLS is enabled but no CA certificate filename or folder was provided");
+        }
+
+        if (!isMqttCertificatePemFilenameSet()) {
+            JOYNR_LOG_ERROR(
+                    logger,
+                    "MQTT TLS is enabled but no mqtt certificate PEM filename was provided");
+        }
+
+        if (!isMqttPrivateKeyPemFilenameSet()) {
+            JOYNR_LOG_ERROR(
+                    logger, "MQTT TLS is enabled but no private key PEM filename was provided");
+        }
+    } else if (isMqttCertificateAuthorityCertificateFolderPathSet() ||
+               isMqttCertificateAuthorityPemFilenameSet() || isMqttCertificatePemFilenameSet() ||
+               isMqttPrivateKeyPemFilenameSet()) {
+        JOYNR_LOG_WARN(
+                logger, "MQTT TLS is disabled but at least one MQTT TLS property was configured");
+    }
+
     if (!settings.contains(SETTING_ACCESS_CONTROL_ENABLE())) {
         setEnableAccessController(DEFAULT_ENABLE_ACCESS_CONTROLLER());
     } else if (enableAccessController() && !getUseOnlyLDAS()) {
