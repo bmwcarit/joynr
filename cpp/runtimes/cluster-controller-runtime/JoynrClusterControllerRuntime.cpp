@@ -402,7 +402,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
       */
     if (doHttpMessaging) {
         if (!httpMessageReceiverSupplied) {
-            httpMessagingSkeleton = std::make_shared<HttpMessagingSkeleton>(*ccMessageRouter);
+            httpMessagingSkeleton = std::make_shared<HttpMessagingSkeleton>(ccMessageRouter);
             httpMessageReceiver->registerReceiveCallback([&](smrf::ByteVector&& msg) {
                 httpMessagingSkeleton->onMessageReceived(std::move(msg));
             });
