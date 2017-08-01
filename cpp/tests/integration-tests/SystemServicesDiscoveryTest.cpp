@@ -58,7 +58,7 @@ public:
         settings(std::make_unique<Settings>(settingsFilename)),
         discoveryDomain(),
         discoveryProviderParticipantId(),
-        runtime(nullptr),
+        runtime(),
         mockMessageReceiverHttp(std::make_shared<MockTransportMessageReceiver>()),
         mockMessageReceiverMqtt(std::make_shared<MockTransportMessageReceiver>()),
         mockMessageSenderMqtt(std::make_shared<MockTransportMessageSender>()),
@@ -97,7 +97,7 @@ public:
 
         //runtime can only be created, after MockCommunicationManager has been told to return
         //a channelId for getReceiveChannelId.
-        runtime = std::make_unique<JoynrClusterControllerRuntime>(
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(
                 std::move(settings),
                 mockMessageReceiverHttp,
                 nullptr,
@@ -108,6 +108,7 @@ public:
     }
 
     ~SystemServicesDiscoveryTest(){
+        runtime->unregisterDiscoveryProvider();
         runtime->deleteChannel();
         runtime->stopExternalCommunication();
         std::remove(settingsFilename.c_str());
