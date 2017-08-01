@@ -19,6 +19,7 @@
 #include "joynr/ClusterControllerSettings.h"
 
 #include "joynr/Logger.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/Settings.h"
 
 namespace joynr
@@ -81,20 +82,24 @@ void ClusterControllerSettings::checkSettings()
     if (isMqttTlsEnabled()) {
         if (!isMqttCertificateAuthorityCertificateFolderPathSet() &&
             !isMqttCertificateAuthorityPemFilenameSet()) {
-            JOYNR_LOG_ERROR(
-                    logger,
-                    "MQTT TLS is enabled but no CA certificate filename or folder was provided");
+            const std::string message =
+                    "MQTT TLS is enabled but no CA certificate filename or folder was provided";
+            JOYNR_LOG_ERROR(logger, message);
+            throw joynr::exceptions::JoynrConfigurationException(message);
         }
 
         if (!isMqttCertificatePemFilenameSet()) {
-            JOYNR_LOG_ERROR(
-                    logger,
-                    "MQTT TLS is enabled but no mqtt certificate PEM filename was provided");
+            const std::string message =
+                    "MQTT TLS is enabled but no mqtt certificate PEM filename was provided";
+            JOYNR_LOG_ERROR(logger, message);
+            throw joynr::exceptions::JoynrConfigurationException(message);
         }
 
         if (!isMqttPrivateKeyPemFilenameSet()) {
-            JOYNR_LOG_ERROR(
-                    logger, "MQTT TLS is enabled but no private key PEM filename was provided");
+            const std::string message =
+                    "MQTT TLS is enabled but no private key PEM filename was provided";
+            JOYNR_LOG_ERROR(logger, message);
+            throw joynr::exceptions::JoynrConfigurationException(message);
         }
     } else if (isMqttCertificateAuthorityCertificateFolderPathSet() ||
                isMqttCertificateAuthorityPemFilenameSet() || isMqttCertificatePemFilenameSet() ||

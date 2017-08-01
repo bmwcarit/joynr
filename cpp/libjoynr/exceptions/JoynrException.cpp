@@ -37,6 +37,12 @@ const std::string& JoynrRuntimeException::TYPE_NAME()
     return TYPE_NAME;
 }
 
+const std::string& JoynrConfigurationException::TYPE_NAME()
+{
+    static const std::string TYPE_NAME = "io.joynr.exceptions.JoynrConfigurationException";
+    return TYPE_NAME;
+}
+
 const std::string& JoynrTimeOutException::TYPE_NAME()
 {
     static const std::string TYPE_NAME = "io.joynr.exceptions.JoynrTimeOutException";
@@ -125,6 +131,21 @@ const std::string& JoynrRuntimeException::getTypeName() const
 JoynrRuntimeException* JoynrRuntimeException::clone() const
 {
     return new JoynrRuntimeException(const_cast<JoynrRuntimeException&>(*this));
+}
+
+JoynrConfigurationException::JoynrConfigurationException(const std::string& message) noexcept
+        : JoynrRuntimeException(message)
+{
+}
+
+const std::string& JoynrConfigurationException::getTypeName() const
+{
+    return JoynrConfigurationException::TYPE_NAME();
+}
+
+JoynrConfigurationException* JoynrConfigurationException::clone() const
+{
+    return new JoynrConfigurationException(getMessage());
 }
 
 JoynrTimeOutException::JoynrTimeOutException(const std::string& message) noexcept

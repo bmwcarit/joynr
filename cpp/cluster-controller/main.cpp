@@ -78,8 +78,15 @@ int main(int argc, char* argv[])
     printVersionToStdOut();
 
     // create the cluster controller runtime
-    std::shared_ptr<joynr::JoynrClusterControllerRuntime> clusterControllerRuntime =
-            joynr::JoynrClusterControllerRuntime::create(argc, argv);
+    std::shared_ptr<joynr::JoynrClusterControllerRuntime> clusterControllerRuntime;
+
+    try {
+        clusterControllerRuntime = joynr::JoynrClusterControllerRuntime::create(argc, argv);
+    } catch (const joynr::exceptions::JoynrConfigurationException& exception) {
+        JOYNR_LOG_FATAL(logger, "Configuration exception: {}", exception.getMessage());
+        return 1;
+    }
+
     if (!clusterControllerRuntime) {
         printUsage(logger, programName);
         return 1;
