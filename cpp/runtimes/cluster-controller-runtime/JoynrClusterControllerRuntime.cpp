@@ -431,7 +431,7 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
     if (doMqttMessaging) {
         if (!mqttMessagingIsRunning) {
             mqttMessagingSkeleton = std::make_shared<MqttMessagingSkeleton>(
-                    *ccMessageRouter,
+                    ccMessageRouter,
                     std::static_pointer_cast<MqttReceiver>(mqttMessageReceiver),
                     clusterControllerSettings.getMqttMulticastTopicPrefix(),
                     messagingSettings.getTtlUpliftMs());
