@@ -114,6 +114,11 @@ public:
     void registerMessageNotificationProvider();
     void registerAccessControlListEditorProvider();
 
+    void unregisterRoutingProvider();
+    void unregisterDiscoveryProvider();
+    void unregisterMessageNotificationProvider();
+    void unregisterAccessControlListEditorProvider();
+
     /*
      * Inject predefined capabilities stored in a JSON file.
      */
@@ -189,6 +194,10 @@ private:
     Semaphore lifetimeSemaphore;
 
     std::shared_ptr<joynr::AccessController> accessController;
+    std::string routingProviderParticipantId;
+    std::string discoveryProviderParticipantId;
+    std::string messageNotificationProviderParticipantId;
+    std::string accessControlListEditorProviderParticipantId;
 };
 
 } // namespace joynr

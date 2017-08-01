@@ -152,7 +152,11 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           ccMessageRouter(nullptr),
           aclEditor(nullptr),
           lifetimeSemaphore(0),
-          accessController(nullptr)
+          accessController(nullptr),
+          routingProviderParticipantId(),
+          discoveryProviderParticipantId(),
+          messageNotificationProviderParticipantId(),
+          accessControlListEditorProviderParticipantId()
 {
     initializeAllDependencies();
 }
@@ -790,7 +794,7 @@ void JoynrClusterControllerRuntime::registerRoutingProvider()
     routingProviderQos.setPriority(1);
     routingProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
     routingProviderQos.setSupportsOnChangeSubscriptions(false);
-    registerProvider(domain, routingProvider, routingProviderQos);
+    routingProviderParticipantId = registerProvider(domain, routingProvider, routingProviderQos);
 }
 
 void JoynrClusterControllerRuntime::registerDiscoveryProvider()
@@ -808,7 +812,8 @@ void JoynrClusterControllerRuntime::registerDiscoveryProvider()
     discoveryProviderQos.setPriority(1);
     discoveryProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
     discoveryProviderQos.setSupportsOnChangeSubscriptions(false);
-    registerProvider(domain, discoveryProvider, discoveryProviderQos);
+    discoveryProviderParticipantId =
+            registerProvider(domain, discoveryProvider, discoveryProviderQos);
 }
 
 void JoynrClusterControllerRuntime::registerMessageNotificationProvider()
@@ -827,7 +832,8 @@ void JoynrClusterControllerRuntime::registerMessageNotificationProvider()
     messageNotificationProviderQos.setPriority(1);
     messageNotificationProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
     messageNotificationProviderQos.setSupportsOnChangeSubscriptions(false);
-    registerProvider(domain, messageNotificationProvider, messageNotificationProviderQos);
+    messageNotificationProviderParticipantId =
+            registerProvider(domain, messageNotificationProvider, messageNotificationProviderQos);
 }
 
 void JoynrClusterControllerRuntime::registerAccessControlListEditorProvider()
@@ -851,7 +857,30 @@ void JoynrClusterControllerRuntime::registerAccessControlListEditorProvider()
     aclEditorProviderQos.setPriority(1);
     aclEditorProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
     aclEditorProviderQos.setSupportsOnChangeSubscriptions(false);
-    registerProvider(domain, aclEditorProvider, aclEditorProviderQos);
+    accessControlListEditorProviderParticipantId =
+            registerProvider(domain, aclEditorProvider, aclEditorProviderQos);
+}
+
+void JoynrClusterControllerRuntime::unregisterAccessControlListEditorProvider()
+{
+#ifdef JOYNR_ENABLE_ACCESS_CONTROL
+    unregisterProvider(accessControlListEditorProviderParticipantId);
+#endif
+}
+
+void JoynrClusterControllerRuntime::unregisterMessageNotificationProvider()
+{
+    unregisterProvider(messageNotificationProviderParticipantId);
+}
+
+void JoynrClusterControllerRuntime::unregisterRoutingProvider()
+{
+    unregisterProvider(routingProviderParticipantId);
+}
+
+void JoynrClusterControllerRuntime::unregisterDiscoveryProvider()
+{
+    unregisterProvider(discoveryProviderParticipantId);
 }
 
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
@@ -966,6 +995,12 @@ void JoynrClusterControllerRuntime::start()
 
 void JoynrClusterControllerRuntime::stop(bool deleteChannel)
 {
+#ifdef JOYNR_ENABLE_ACCESS_CONTROL
+    unregisterAccessControlListEditorProvider();
+#endif // JOYNR_ENABLE_ACCESS_CONTROL
+    unregisterMessageNotificationProvider();
+    unregisterDiscoveryProvider();
+    unregisterRoutingProvider();
     if (deleteChannel) {
         this->deleteChannel();
     }
