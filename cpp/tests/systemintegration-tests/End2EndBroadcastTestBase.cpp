@@ -117,8 +117,8 @@ public:
 
 class End2EndBroadcastTestBase : public TestWithParam< std::tuple<std::string, std::string> > {
 public:
-    JoynrClusterControllerRuntime* runtime1;
-    JoynrClusterControllerRuntime* runtime2;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
     std::unique_ptr<Settings> settings1;
     std::unique_ptr<Settings> settings2;
     MessagingSettings messagingSettings1;
@@ -139,8 +139,8 @@ public:
     joynr::types::Localisation::GpsLocation gpsLocation4;
 
     End2EndBroadcastTestBase() :
-        runtime1(nullptr),
-        runtime2(nullptr),
+        runtime1(),
+        runtime2(),
         settings1(std::make_unique<Settings>(std::get<0>(GetParam()))),
         settings2(std::make_unique<Settings>(std::get<1>(GetParam()))),
         messagingSettings1(*settings1),
@@ -203,11 +203,13 @@ public:
 
         Settings::merge(integration1Settings, *settings1, false);
 
-        runtime1 = new JoynrClusterControllerRuntime(std::move(settings1));
+        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings1));
+        runtime1->init();
 
         Settings::merge(integration2Settings, *settings2, false);
 
-        runtime2 = new JoynrClusterControllerRuntime(std::move(settings2));
+        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings2));
+        runtime2->init();
 
         filterParameters.setCountry("Germany");
         filterParameters.setStartTime("4.00 pm");
@@ -236,8 +238,8 @@ public:
     }
 
     ~End2EndBroadcastTestBase(){
-        delete runtime1;
-        delete runtime2;
+        runtime1.reset();
+        runtime2.reset();
         // because the destructor of PublicationManager persists the active subscriptions
         // the persistence files have to be removed after calling delete runtime
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
@@ -259,10 +261,10 @@ protected:
     }
 
     std::shared_ptr<MyTestProvider> registerProvider() {
-        return registerProvider(*runtime1);
+        return registerProvider(runtime1);
     }
 
-    std::shared_ptr<MyTestProvider> registerProvider(JoynrClusterControllerRuntime& runtime) {
+    std::shared_ptr<MyTestProvider> registerProvider(std::shared_ptr<JoynrClusterControllerRuntime> runtime) {
         auto testProvider = std::make_shared<MyTestProvider>();
         types::ProviderQos providerQos;
         std::chrono::milliseconds millisSinceEpoch =
@@ -271,7 +273,7 @@ protected:
         providerQos.setPriority(millisSinceEpoch.count());
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
         providerQos.setSupportsOnChangeSubscriptions(true);
-        providerParticipantId = runtime.registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+        providerParticipantId = runtime->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
         // This wait is necessary, because registerProvider is async, and a lookup could occur
         // before the register has finished.
@@ -281,12 +283,12 @@ protected:
     }
 
     std::shared_ptr<tests::testProxy> buildProxy() {
-        return buildProxy(*runtime2);
+        return buildProxy(runtime2);
     }
 
-    std::shared_ptr<tests::testProxy> buildProxy(JoynrClusterControllerRuntime& runtime) {
+    std::shared_ptr<tests::testProxy> buildProxy(std::shared_ptr<JoynrClusterControllerRuntime> runtime) {
         std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder
-                = runtime.createProxyBuilder<tests::testProxy>(domainName);
+                = runtime->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(3000);

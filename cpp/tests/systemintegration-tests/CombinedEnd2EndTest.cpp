@@ -58,8 +58,8 @@ static const std::string messagingPropertiesPersistenceFileName2(
 INIT_LOGGER(CombinedEnd2EndTest);
 
 CombinedEnd2EndTest::CombinedEnd2EndTest()
-        : runtime1(nullptr),
-          runtime2(nullptr),
+        : runtime1(),
+          runtime2(),
           messagingSettingsFile1(std::get<0>(GetParam())),
           messagingSettingsFile2(std::get<1>(GetParam())),
           settings1(messagingSettingsFile1),
@@ -121,7 +121,7 @@ TEST_P(CombinedEnd2EndTest, surviveDestructionOfRuntime)
         std::uint64_t qosRoundTripTTL = 40000;
 
         // destroy runtime
-        runtime2 = nullptr;
+        runtime2.reset();
 
         // try to build a proxy, it must not run into SIGSEGV
         EXPECT_THROW(std::shared_ptr<tests::testProxy> testProxy(

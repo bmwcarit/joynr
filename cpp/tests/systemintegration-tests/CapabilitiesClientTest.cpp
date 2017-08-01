@@ -48,7 +48,7 @@ public:
     MessagingSettings messagingSettings;
 
     CapabilitiesClientTest() :
-        runtime(nullptr),
+        runtime(),
         settings(std::make_unique<Settings>(GetParam())),
         messagingSettings(*settings)
     {

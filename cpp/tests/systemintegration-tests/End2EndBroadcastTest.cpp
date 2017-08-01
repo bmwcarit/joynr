@@ -751,8 +751,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
 
-    std::shared_ptr<MyTestProvider> testProvider = registerProvider(*runtime1);
-    std::shared_ptr<tests::testProxy> testProxy = buildProxy(*runtime2);
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider(runtime1);
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy(runtime2);
 
     testMulticastWithWildcards(testProvider, testProxy);
 }
@@ -762,8 +762,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_InProcess) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
 
-    std::shared_ptr<MyTestProvider> testProvider = registerProvider(*runtime1);
-    std::shared_ptr<tests::testProxy> testProxy = buildProxy(*runtime1);
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider(runtime1);
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy(runtime1);
 
     testMulticastWithWildcards(testProvider, testProxy);
 }
@@ -773,9 +773,9 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxies) {
         FAIL() << "multicast subscription via HTTP not implemented";
     }
 
-    std::shared_ptr<MyTestProvider> testProvider = registerProvider(*runtime1);
-    std::shared_ptr<tests::testProxy> testProxy1 = buildProxy(*runtime2);
-    std::shared_ptr<tests::testProxy> testProxy2 = buildProxy(*runtime2);
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider(runtime1);
+    std::shared_ptr<tests::testProxy> testProxy1 = buildProxy(runtime2);
+    std::shared_ptr<tests::testProxy> testProxy2 = buildProxy(runtime2);
 
     testMulticastWithWildcardsAndTwoProxies(testProvider, testProxy1, testProxy2);
 }
@@ -785,9 +785,9 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxiesInProce
         FAIL() << "multicast subscription via HTTP not implemented";
     }
 
-    std::shared_ptr<MyTestProvider> testProvider = registerProvider(*runtime1);
-    std::shared_ptr<tests::testProxy> testProxy1 = buildProxy(*runtime1);
-    std::shared_ptr<tests::testProxy> testProxy2 = buildProxy(*runtime1);
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider(runtime1);
+    std::shared_ptr<tests::testProxy> testProxy1 = buildProxy(runtime1);
+    std::shared_ptr<tests::testProxy> testProxy2 = buildProxy(runtime1);
 
     testMulticastWithWildcardsAndTwoProxies(testProvider, testProxy1, testProxy2);
 }
