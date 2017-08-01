@@ -31,6 +31,7 @@ namespace joynr
 {
 
 class ConnectorFactory;
+class JoynrRuntime;
 
 class JOYNR_EXPORT ProxyBase : public std::enable_shared_from_this<ProxyBase>
 {
@@ -47,6 +48,7 @@ public:
      * it is needed in proxy builder to register the next hop on message router.
      */
     const std::string& getProxyParticipantId() const;
+    void setJoynrRuntime(std::weak_ptr<JoynrRuntime> runtime);
 
 protected:
     DISALLOW_COPY_AND_ASSIGN(ProxyBase);
@@ -59,6 +61,7 @@ protected:
             const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry,
             bool useInProcessConnector);
 
+    std::weak_ptr<JoynrRuntime> runtime;
     ConnectorFactory* connectorFactory;
     std::string domain;
     MessagingQos qosSettings;

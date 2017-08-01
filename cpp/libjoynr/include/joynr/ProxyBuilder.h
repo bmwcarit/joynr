@@ -128,6 +128,7 @@ private:
     std::shared_ptr<IMessageRouter> messageRouter;
     std::uint64_t messagingMaximumTtlMs;
     DiscoveryQos discoveryQos;
+    static const std::string runtimeAlreadyDestroyed;
 
     ADD_LOGGER(ProxyBuilder);
 };
@@ -157,8 +158,16 @@ ProxyBuilder<T>::ProxyBuilder(
 }
 
 template <class T>
+const std::string ProxyBuilder<T>::runtimeAlreadyDestroyed =
+        "required runtime has been already destroyed";
+
+template <class T>
 std::shared_ptr<T> ProxyBuilder<T>::build()
 {
+    auto runtimeSharedPtr = runtime.lock();
+    if (runtimeSharedPtr == nullptr) {
+        throw exceptions::DiscoveryException(runtimeAlreadyDestroyed);
+    }
     Future<std::shared_ptr<T>> proxyFuture;
 
     auto onSuccess =
@@ -181,12 +190,22 @@ void ProxyBuilder<T>::buildAsync(
         std::function<void(std::shared_ptr<T> proxy)> onSuccess,
         std::function<void(const exceptions::DiscoveryException& exception)> onError)
 {
+    auto runtimeSharedPtr = runtime.lock();
+    if (runtimeSharedPtr == nullptr) {
+        throw exceptions::DiscoveryException(runtimeAlreadyDestroyed);
+    }
     joynr::types::Version interfaceVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
     arbitrator = ArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
 
     auto arbitrationSucceeds =
             [this, onSuccess, onError](const types::DiscoveryEntryWithMetaInfo& discoverEntry) {
+        auto runtimeSharedPtr = runtime.lock();
+        if (runtimeSharedPtr == nullptr) {
+            onError(exceptions::DiscoveryException(runtimeAlreadyDestroyed));
+            return;
+        }
+
         if (discoverEntry.getParticipantId().empty()) {
             onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
                                                    "arbitrator but ParticipantId is empty"));
@@ -202,7 +221,8 @@ void ProxyBuilder<T>::buildAsync(
 
         bool useInProcessConnector =
                 requestCallerDirectory->containsRequestCaller(discoverEntry.getParticipantId());
-        std::shared_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos));
+        std::shared_ptr<T> proxy =
+                proxyFactory.createProxy<T>(runtimeSharedPtr, domain, messagingQos);
         proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
 
         bool isGloballyVisible = !discoverEntry.getIsLocal();
