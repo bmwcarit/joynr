@@ -44,6 +44,7 @@ namespace joynr
 {
 
 class ICapabilities;
+class JoynrRuntime;
 
 /**
  * @brief Class to build a proxy object for the given interface T.
@@ -66,7 +67,8 @@ public:
      * @param dispatcherAddress The address of the dispatcher
      * @param messageRouter A shared pointer to the message router object
      */
-    ProxyBuilder(ProxyFactory& proxyFactory,
+    ProxyBuilder(std::weak_ptr<JoynrRuntime> runtime,
+                 ProxyFactory& proxyFactory,
                  std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory,
                  std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
                  const std::string& domain,
@@ -114,6 +116,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
+    std::weak_ptr<JoynrRuntime> runtime;
     std::string domain;
     MessagingQos messagingQos;
     ProxyFactory& proxyFactory;
@@ -131,6 +134,7 @@ private:
 
 template <class T>
 ProxyBuilder<T>::ProxyBuilder(
+        std::weak_ptr<JoynrRuntime> runtime,
         ProxyFactory& proxyFactory,
         std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory,
         std::weak_ptr<system::IDiscoveryAsync> discoveryProxy,
@@ -138,7 +142,8 @@ ProxyBuilder<T>::ProxyBuilder(
         std::shared_ptr<const system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<IMessageRouter> messageRouter,
         std::uint64_t messagingMaximumTtlMs)
-        : domain(domain),
+        : runtime(std::move(runtime)),
+          domain(domain),
           messagingQos(),
           proxyFactory(proxyFactory),
           requestCallerDirectory(requestCallerDirectory),

@@ -33,12 +33,14 @@
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
+#include "joynr/Settings.h"
 #include "libjoynrclustercontroller/include/joynr/CcMessageRouter.h"
 
 namespace joynr
 {
 
-ShortCircuitRuntime::ShortCircuitRuntime()
+ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings)
+        : JoynrRuntime(*settings)
 {
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
     requestCallerDirectory = std::make_shared<DummyRequestCallerDirectory>();

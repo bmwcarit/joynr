@@ -137,10 +137,10 @@ public:
 /**
  * @brief Very reduced Runtime which uses DummyDiscovery as the discovery proxy.
  */
-class ShortCircuitRuntime
+class ShortCircuitRuntime : public JoynrRuntime
 {
 public:
-    ShortCircuitRuntime();
+    ShortCircuitRuntime(std::unique_ptr<Settings> settings);
 
     template <class TIntfProvider>
     std::string registerProvider(const std::string& domain,
@@ -170,13 +170,19 @@ public:
     template <class TIntfProxy>
     std::shared_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
-        return std::make_shared<ProxyBuilder<TIntfProxy>>(*proxyFactory,
+        return std::make_shared<ProxyBuilder<TIntfProxy>>(shared_from_this(),
+                                                          *proxyFactory,
                                                           requestCallerDirectory,
                                                           discoveryProxy,
                                                           domain,
                                                           dispatcherAddress,
                                                           messageRouter,
                                                           maximumTtlMs);
+    }
+
+    std::shared_ptr<IMessageRouter> getMessageRouter()
+    {
+        return messageRouter;
     }
 
 private:
