@@ -53,6 +53,7 @@ public:
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(GetParam())
         );
+        runtime->init();
         domain = "cppEnd2EndRPCTest_Domain_" + util::createUuid();
 
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);

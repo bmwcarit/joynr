@@ -113,11 +113,11 @@ public:
     void registerDiscoveryProvider();
     void registerMessageNotificationProvider();
     void registerAccessControlListEditorProvider();
-
     void unregisterRoutingProvider();
     void unregisterDiscoveryProvider();
     void unregisterMessageNotificationProvider();
     void unregisterAccessControlListEditorProvider();
+    void init();
 
     /*
      * Inject predefined capabilities stored in a JSON file.
@@ -126,7 +126,6 @@ public:
 
 protected:
     void importMessageRouterFromFile();
-    void initializeAllDependencies();
     void importPersistedLocalCapabilitiesDirectory();
 
     std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> getProvisionedEntries()

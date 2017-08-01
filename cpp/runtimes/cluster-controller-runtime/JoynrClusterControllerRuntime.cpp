@@ -158,7 +158,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           messageNotificationProviderParticipantId(),
           accessControlListEditorProviderParticipantId()
 {
-    initializeAllDependencies();
 }
 
 std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
@@ -207,7 +206,7 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
     return create(std::move(settings), discoveryEntriesFile);
 }
 
-void JoynrClusterControllerRuntime::initializeAllDependencies()
+void JoynrClusterControllerRuntime::init()
 {
     /**
       * libjoynr side skeleton & dispatcher
@@ -973,7 +972,7 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
         const std::string& discoveryEntriesFile)
 {
     auto runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings));
-
+    runtime->init();
     assert(runtime->localCapabilitiesDirectory);
     runtime->localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);
     runtime->start();

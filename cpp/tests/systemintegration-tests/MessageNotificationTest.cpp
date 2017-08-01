@@ -51,6 +51,7 @@ public:
         semaphore()
     {
         clusterControllerRuntime = std::make_shared<JoynrClusterControllerRuntime>(std::make_unique<Settings>(settingsPath));
+        clusterControllerRuntime->init();
         clusterControllerRuntime->start();
 
         libjoynrProviderRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"));

@@ -83,6 +83,7 @@ public:
                 mockMessageReceiverMqtt,
                 mockMessageSender);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
+        runtime->init();
         runtime->registerRoutingProvider();
     }
 

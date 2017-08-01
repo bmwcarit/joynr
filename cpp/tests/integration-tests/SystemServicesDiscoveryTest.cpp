@@ -104,6 +104,7 @@ public:
                 mockMessageReceiverMqtt,
                 mockMessageSenderMqtt);
         // discovery provider is normally registered in JoynrClusterControllerRuntime::create
+        runtime->init();
         runtime->registerDiscoveryProvider();
     }
 

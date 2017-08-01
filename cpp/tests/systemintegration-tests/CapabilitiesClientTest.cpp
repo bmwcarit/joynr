@@ -58,6 +58,7 @@ public:
         Settings::merge(libjoynrSettings, *settings, false);
 
         runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings));
+        runtime->init();
     }
 
     void SetUp() {

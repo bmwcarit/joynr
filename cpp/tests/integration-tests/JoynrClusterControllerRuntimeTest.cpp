@@ -124,6 +124,7 @@ public:
                     mockMqttMessageReceiver,
                     mockMqttMessageSender
         );
+        runtime->init();
     }
 
     void createRuntimeHttp() {
@@ -139,6 +140,7 @@ public:
                     mockMqttMessageReceiver,
                     mockMqttMessageSender
         );
+        runtime->init();
     }
 
     void startExternalCommunicationDoesNotThrow();
