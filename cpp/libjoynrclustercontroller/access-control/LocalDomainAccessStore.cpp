@@ -501,4 +501,12 @@ void LocalDomainAccessStore::persistToFile() const
     }
 }
 
+bool LocalDomainAccessStore::endsWithWildcard(const std::string& value) const
+{
+    if (value.empty()) {
+        return false;
+    }
+    return value.back() == *joynr::access_control::WILDCARD;
+}
+
 } // namespace joynr

@@ -734,6 +734,8 @@ public:
 private:
     ADD_LOGGER(LocalDomainAccessStore);
     void persistToFile() const;
+    bool endsWithWildcard(const std::string& value) const;
+
     std::string persistenceFileName;
 
     using MasterAccessControlTable =
