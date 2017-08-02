@@ -7,6 +7,7 @@ npm install
 In order to run the end-to-end test, do the following:
 
 1. make sure that a cluster controller is running and is accessible via WebSockets
+    (make sure you use a release build cluster controller: otherwise it will be much slower)
 2. start a provider:
    npm run-script startprovider --performance-test:domain=<DOMAIN> [--performance-test:cc:host=<CLUSTER_CONTROLLER_HOST> --performance-test:cc:port=<CLUSTER_CONTROLLER_PORT>]
 3.a. start the javascript consumer test
