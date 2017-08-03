@@ -55,7 +55,7 @@ class ICapabilities;
  * arbitration is done.
  */
 template <class T>
-class ProxyBuilder : public IProxyBuilder<T>
+class ProxyBuilder : public IProxyBuilder<T>, public std::enable_shared_from_this<ProxyBuilder<T>>
 {
 public:
     /**
