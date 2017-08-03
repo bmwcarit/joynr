@@ -24,35 +24,46 @@
 #include "joynr/MutableMessage.h"
 #include "joynr/DispatcherUtils.h"
 
+#include "tests/utils/MockObjects.h"
+
+using namespace ::testing;
 using namespace joynr;
 
-TEST(ImmutableMessageTest, isReceivedFromGlobal)
+class ImmutableMessageTest : public ::testing::Test {
+public:
+    ImmutableMessageTest() {
+        mutableMessage.setSender("sender");
+        mutableMessage.setRecipient("recipient");
+        mutableMessage.setExpiryDate(DispatcherUtils::convertTtlToAbsoluteTime(1234567));
+        mutableMessage.setReplyTo("replyTo");
+        mutableMessage.setEffort("effort");
+        mutableMessage.setPayload("payload");
+    }
+
+protected:
+    MutableMessage mutableMessage;
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(ImmutableMessageTest);
+};
+
+TEST_F(ImmutableMessageTest, TestIsReceivedFromGlobalInMutableMessage)
 {
-    MutableMessage mutableMessage;    
     auto immutableMessage = mutableMessage.getImmutableMessage();
     const bool expectedValue = true;
     immutableMessage->setReceivedFromGlobal(expectedValue);
     EXPECT_EQ(immutableMessage->isReceivedFromGlobal(), expectedValue);
 }
 
-TEST(MutableMessageTest, isLocal)
+TEST_F(ImmutableMessageTest, TestIsLocalInMutableMessage)
 {
-    MutableMessage message;
     const bool expectedValue = true;
-    message.setLocalMessage(expectedValue);
-    EXPECT_EQ(message.isLocalMessage(), expectedValue);
+    mutableMessage.setLocalMessage(expectedValue);
+    EXPECT_EQ(mutableMessage.isLocalMessage(), expectedValue);
 }
 
-TEST(MessageTest, roundtrip)
+TEST_F(ImmutableMessageTest, TestMessageRoundtripInMutableMessage)
 {
-    MutableMessage mutableMessage;
-    mutableMessage.setSender("sender");
-    mutableMessage.setRecipient("recipient");
-    mutableMessage.setExpiryDate(DispatcherUtils::convertTtlToAbsoluteTime(1234567));
-    mutableMessage.setReplyTo("replyTo");
-    mutableMessage.setEffort("effort");
-    mutableMessage.setPayload("payload");
-
     auto immutableMessage = mutableMessage.getImmutableMessage();
 
     EXPECT_EQ(mutableMessage.getSender(), immutableMessage->getSender());
