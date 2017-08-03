@@ -76,6 +76,8 @@ public:
 
     std::size_t getMessageSize() const;
 
+    smrf::ByteArrayView getSignature() const;
+
     /**
      * @brief Check whether receivedFromGlobal is set (default: false).
      * ReceivedFromGlobal indicates whether a multicast message is originating from the current

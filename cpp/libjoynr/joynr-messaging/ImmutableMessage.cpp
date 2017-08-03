@@ -139,6 +139,11 @@ std::size_t ImmutableMessage::getMessageSize() const
     return messageDeserializer.getMessageSize();
 }
 
+smrf::ByteArrayView ImmutableMessage::getSignature() const
+{
+    return messageDeserializer.getSignature();
+}
+
 bool ImmutableMessage::isReceivedFromGlobal() const
 {
     return receivedFromGlobal;
