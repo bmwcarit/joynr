@@ -32,7 +32,7 @@ namespace joynr
 
 class ConnectorFactory;
 
-class JOYNR_EXPORT ProxyBase
+class JOYNR_EXPORT ProxyBase : public std::enable_shared_from_this<ProxyBase>
 {
 
 public:
