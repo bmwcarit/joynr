@@ -218,7 +218,7 @@ private:
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     std::weak_ptr<IAccessController> accessController;
-    std::string multicastReceveiverDirectoryFilename;
+    std::string multicastReceiverDirectoryFilename;
     const std::string globalClusterControllerAddress;
     std::shared_ptr<CcMessageNotificationProvider> messageNotificationProvider;
 };

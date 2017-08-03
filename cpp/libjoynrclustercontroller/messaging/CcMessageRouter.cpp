@@ -134,7 +134,7 @@ CcMessageRouter::CcMessageRouter(
           multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           securityManager(std::move(securityManager)),
           accessController(),
-          multicastReceveiverDirectoryFilename(),
+          multicastReceiverDirectoryFilename(),
           globalClusterControllerAddress(globalClusterControllerAddress),
           messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>())
 {
@@ -153,14 +153,14 @@ void CcMessageRouter::setAccessController(std::weak_ptr<IAccessController> acces
 
 void CcMessageRouter::saveMulticastReceiverDirectory() const
 {
-    if (multicastReceveiverDirectoryFilename.empty()) {
+    if (multicastReceiverDirectoryFilename.empty()) {
         JOYNR_LOG_INFO(logger, "Did not save multicast receiver directory: No filename specified");
         return;
     }
 
     try {
         joynr::util::saveStringToFile(
-                multicastReceveiverDirectoryFilename,
+                multicastReceiverDirectoryFilename,
                 joynr::serializer::serializeToJson(multicastReceiverDirectory));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_INFO(logger, ex.what());
@@ -169,12 +169,12 @@ void CcMessageRouter::saveMulticastReceiverDirectory() const
 
 void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
 {
-    multicastReceveiverDirectoryFilename = std::move(filename);
+    multicastReceiverDirectoryFilename = std::move(filename);
 
     try {
         joynr::serializer::deserializeFromJson(
                 multicastReceiverDirectory,
-                joynr::util::loadStringFromFile(multicastReceveiverDirectoryFilename));
+                joynr::util::loadStringFromFile(multicastReceiverDirectoryFilename));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
         return;
