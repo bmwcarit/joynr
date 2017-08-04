@@ -34,7 +34,7 @@
     "bluebird" : "3.3.5",
     "promise": ">=7.1.1",
     "smrf-native": "0.2.0",
-    "wscpp" : "0.2.3"
+    "wscpp" : "0.2.4"
   },
   "engines": {
     "node": ">=0.10.40",
