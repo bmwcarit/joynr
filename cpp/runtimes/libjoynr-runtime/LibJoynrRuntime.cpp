@@ -74,6 +74,9 @@ LibJoynrRuntime::~LibJoynrRuntime()
     if (publicationManager) {
         publicationManager->shutdown();
     }
+    if (subscriptionManager) {
+        subscriptionManager->shutdown();
+    }
     if (libjoynrSettings) {
         delete libjoynrSettings;
         libjoynrSettings = nullptr;
