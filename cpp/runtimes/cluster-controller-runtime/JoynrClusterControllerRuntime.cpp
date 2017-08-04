@@ -888,6 +888,7 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 
     ccMessageRouter->shutdown();
     inProcessDispatcher->shutdown();
+    publicationManager->shutdown();
 
     // synchronously stop the underlying boost::asio::io_service
     // this ensures all asynchronous operations are stopped now

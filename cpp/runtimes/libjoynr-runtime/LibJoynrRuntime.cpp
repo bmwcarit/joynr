@@ -71,6 +71,9 @@ LibJoynrRuntime::~LibJoynrRuntime()
         joynrDispatcher->shutdown();
         joynrDispatcher.reset();
     }
+    if (publicationManager) {
+        publicationManager->shutdown();
+    }
     if (libjoynrSettings) {
         delete libjoynrSettings;
         libjoynrSettings = nullptr;
