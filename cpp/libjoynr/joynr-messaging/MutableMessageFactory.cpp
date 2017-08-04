@@ -23,6 +23,7 @@
 
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/IKeychain.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/Message.h"
 #include "joynr/MessagingQos.h"
@@ -43,9 +44,11 @@ namespace joynr
 
 INIT_LOGGER(MutableMessageFactory);
 
-MutableMessageFactory::MutableMessageFactory(std::uint64_t ttlUpliftMs)
+MutableMessageFactory::MutableMessageFactory(std::uint64_t ttlUpliftMs,
+                                             std::shared_ptr<IKeychain> keyChain)
         : securityManager(std::make_unique<DummyPlatformSecurityManager>()),
-          ttlUpliftMs(ttlUpliftMs)
+          ttlUpliftMs(ttlUpliftMs),
+          keyChain(std::move(keyChain))
 {
 }
 

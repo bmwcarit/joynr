@@ -26,6 +26,7 @@
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageSender.h"
 #include "joynr/Dispatcher.h"
+#include "joynr/IKeychain.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
@@ -38,7 +39,8 @@
 namespace joynr
 {
 
-ShortCircuitRuntime::ShortCircuitRuntime()
+ShortCircuitRuntime::ShortCircuitRuntime(std::shared_ptr<IKeychain> keyChain)
+        : keyChain(std::move(keyChain))
 {
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
 
@@ -58,7 +60,7 @@ ShortCircuitRuntime::ShortCircuitRuntime()
                                                       std::move(addressCalculator),
                                                       globalClusterControllerAddress);
 
-    messageSender = std::make_shared<MessageSender>(messageRouter);
+    messageSender = std::make_shared<MessageSender>(messageRouter, keyChain);
     joynrDispatcher = new Dispatcher(messageSender, singleThreadedIOService.getIOService());
     messageSender->registerDispatcher(joynrDispatcher);
 

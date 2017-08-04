@@ -34,6 +34,7 @@
 namespace joynr
 {
 
+class IKeychain;
 class IMessageSender;
 class InProcessMessagingSkeleton;
 class Settings;
@@ -140,7 +141,7 @@ public:
 class ShortCircuitRuntime
 {
 public:
-    ShortCircuitRuntime();
+    ShortCircuitRuntime(std::shared_ptr<IKeychain> keyChain = nullptr);
 
     template <class TIntfProvider>
     std::string registerProvider(const std::string& domain,
@@ -196,6 +197,7 @@ private:
     std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
     std::uint64_t maximumTtlMs;
     DummyRequestCallerDirectory requestCallerDirectory;
+    std::shared_ptr<IKeychain> keyChain;
 };
 
 } // namespace joynr

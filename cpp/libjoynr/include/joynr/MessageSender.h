@@ -34,6 +34,7 @@ namespace joynr
 class IMessageRouter;
 class IReplyCaller;
 class IDispatcher;
+class IKeychain;
 class Request;
 class Reply;
 class MessagingQos;
@@ -71,7 +72,9 @@ class SubscriptionPublication;
 class JOYNR_EXPORT MessageSender : public IMessageSender
 {
 public:
-    MessageSender(std::shared_ptr<IMessageRouter> messagingRouter, std::uint64_t ttlUpliftMs = 0);
+    MessageSender(std::shared_ptr<IMessageRouter> messagingRouter,
+                  std::shared_ptr<IKeychain> keyChain,
+                  std::uint64_t ttlUpliftMs = 0);
 
     ~MessageSender() override = default;
 

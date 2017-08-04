@@ -75,9 +75,8 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         std::shared_ptr<IKeychain> keyChain)
 {
-    std::ignore = keyChain;
-
     auto runtime = std::make_unique<LibJoynrWebSocketRuntime>(std::move(settings));
+    runtime->keyChain = std::move(keyChain);
     runtime->connect(std::move(onSuccess), std::move(onError));
     // this is necessary for gcc 4.9
     return std::move(runtime);

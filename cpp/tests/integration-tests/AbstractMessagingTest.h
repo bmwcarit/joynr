@@ -133,7 +133,7 @@ public:
         EXPECT_CALL(mockDispatcher, addReplyCaller(_,_,_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-        MessageSender messageSender(messageRouter);
+        MessageSender messageSender(messageRouter, nullptr);
         std::shared_ptr<IReplyCaller> replyCaller;
         messageSender.registerDispatcher(&mockDispatcher);
 

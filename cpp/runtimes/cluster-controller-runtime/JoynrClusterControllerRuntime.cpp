@@ -385,8 +385,8 @@ void JoynrClusterControllerRuntime::initializeAllDependencies()
 
     /* LibJoynr */
     assert(ccMessageRouter);
-    messageSender =
-            std::make_shared<MessageSender>(ccMessageRouter, messagingSettings.getTtlUpliftMs());
+    messageSender = std::make_shared<MessageSender>(
+            ccMessageRouter, keyChain, messagingSettings.getTtlUpliftMs());
     joynrDispatcher = new Dispatcher(messageSender, singleThreadIOService->getIOService());
     messageSender->registerDispatcher(joynrDispatcher);
     messageSender->setReplyToAddress(globalClusterControllerAddress);

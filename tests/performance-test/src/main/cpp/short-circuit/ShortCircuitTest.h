@@ -34,7 +34,7 @@ struct ShortCircuitTest : public PerformanceTest
 {
     using ByteArray = std::vector<std::int8_t>;
 
-    ShortCircuitTest(std::uint64_t runs) : runs(runs)
+    ShortCircuitTest(std::uint64_t runs) : runs(runs), runtime()
     {
         echoProvider = std::make_shared<PerformanceTestEchoProvider>();
         // default uses a priority that is the current time,

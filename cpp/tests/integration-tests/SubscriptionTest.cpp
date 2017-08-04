@@ -71,7 +71,7 @@ public:
         proxyParticipantId("proxyParticipantId"),
         requestReplyId("requestReplyId"),
         messageFactory(),
-        messageSender(std::make_shared<MessageSender>(mockMessageRouter)),
+        messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
         dispatcher(messageSender, singleThreadedIOService.getIOService()),
         subscriptionManager(nullptr),
         provider(new MockTestProvider),
