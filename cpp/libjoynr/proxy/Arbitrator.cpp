@@ -68,7 +68,12 @@ Arbitrator::~Arbitrator()
     keepArbitrationRunning = false;
 
     if (arbitrationThread.joinable()) {
-        arbitrationThread.join();
+        // do not cause an abort waiting for ourselves
+        if (std::this_thread::get_id() == arbitrationThread.get_id()) {
+            arbitrationThread.detach();
+        } else {
+            arbitrationThread.join();
+        }
     }
 }
 
