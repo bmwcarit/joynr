@@ -30,6 +30,7 @@ namespace joynr
 MutableMessage::MutableMessage()
         : sender(),
           recipient(),
+          keyChain(nullptr),
           expiryDate(),
           type(),
           id(util::createUuid()),
@@ -73,6 +74,14 @@ std::unique_ptr<ImmutableMessage> MutableMessage::getImmutableMessage() const
     smrf::ByteArrayView payloadView(
             reinterpret_cast<smrf::Byte*>(const_cast<char*>(payload.data())), payload.size());
     messageSerializer.setBody(payloadView);
+
+    if (keyChain) {
+        std::string ownerIdStr = keyChain->getOwnerId();
+        smrf::ByteVector ownerIdSignature(ownerIdStr.begin(), ownerIdStr.end());
+        auto ownersigningCallback =
+                [ownerIdSignature](const smrf::ByteArrayView&) { return ownerIdSignature; };
+        messageSerializer.setCustomSigningCallback(ownersigningCallback);
+    }
 
     const bool verifyInput = false;
     return std::make_unique<ImmutableMessage>(messageSerializer.serialize(), verifyInput);
@@ -237,6 +246,11 @@ void MutableMessage::setSender(std::string&& sender)
 void MutableMessage::setSender(const std::string& sender)
 {
     this->sender = sender;
+}
+
+void MutableMessage::setKeychain(std::shared_ptr<IKeychain> keyChain)
+{
+    this->keyChain = std::move(keyChain);
 }
 
 void MutableMessage::setReplyTo(std::string&& replyTo)

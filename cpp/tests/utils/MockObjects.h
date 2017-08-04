@@ -48,6 +48,7 @@
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 #include "joynr/IClusterControllerSignalHandler.h"
 #include "joynr/IDispatcher.h"
+#include "joynr/IKeychain.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStub.h"
@@ -290,6 +291,14 @@ public:
     MOCK_METHOD1(receive, void(std::shared_ptr<joynr::ImmutableMessage> message));
     MOCK_METHOD1(registerSubscriptionManager, void(std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager));
     MOCK_METHOD1(registerPublicationManager,void(joynr::PublicationManager* publicationManager));
+};
+
+class MockKeychain : public joynr::IKeychain {
+public:
+    MOCK_CONST_METHOD0(getTlsCertificate, std::shared_ptr<const mococrw::X509Certificate>());
+    MOCK_CONST_METHOD0(getTlsKey, std::shared_ptr<const mococrw::AsymmetricPrivateKey>());
+    MOCK_CONST_METHOD0(getTlsRootCertificate, std::shared_ptr<const mococrw::X509Certificate>());
+    MOCK_CONST_METHOD0(getOwnerId, std::string());
 };
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {

@@ -206,6 +206,7 @@ void MutableMessageFactory::initMsg(MutableMessage& msg,
     }
     msg.setSender(senderParticipantId);
     msg.setRecipient(receiverParticipantId);
+    msg.setKeychain(keyChain);
 
     for (const auto& it : qos.getCustomMessageHeaders()) {
         msg.setCustomHeader(it.first, it.second);
