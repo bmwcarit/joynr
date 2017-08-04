@@ -385,7 +385,7 @@ public:
 
     MOCK_METHOD1(
             registerDispatcher,
-            void(std::shared_ptr<joynr::IDispatcher> dispatcher)
+            void(std::weak_ptr<joynr::IDispatcher> dispatcher)
     );
 
     MOCK_METHOD6(

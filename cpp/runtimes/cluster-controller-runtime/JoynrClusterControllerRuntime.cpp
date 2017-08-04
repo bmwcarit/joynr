@@ -898,10 +898,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 
     multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
 
-    if (messageSender) {
-        messageSender->registerDispatcher(nullptr);
-    }
-
     if (joynrDispatcher != nullptr) {
         joynrDispatcher->shutdown();
         JOYNR_LOG_TRACE(logger, "joynrDispatcher");

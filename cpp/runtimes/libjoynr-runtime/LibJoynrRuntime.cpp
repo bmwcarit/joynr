@@ -63,10 +63,6 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
 
 LibJoynrRuntime::~LibJoynrRuntime()
 {
-    if (messageSender) {
-        messageSender->registerDispatcher(nullptr);
-    }
-
     if (inProcessDispatcher) {
         inProcessDispatcher->shutdown();
         inProcessDispatcher.reset();

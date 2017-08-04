@@ -39,7 +39,7 @@ INIT_LOGGER(MessageSender);
 
 MessageSender::MessageSender(std::shared_ptr<IMessageRouter> messageRouter,
                              std::uint64_t ttlUpliftMs)
-        : dispatcher(nullptr),
+        : dispatcher(),
           messageRouter(std::move(messageRouter)),
           messageFactory(ttlUpliftMs),
           replyToAddress()
@@ -51,7 +51,7 @@ void MessageSender::setReplyToAddress(const std::string& replyToAddress)
     this->replyToAddress = replyToAddress;
 }
 
-void MessageSender::registerDispatcher(std::shared_ptr<IDispatcher> dispatcher)
+void MessageSender::registerDispatcher(std::weak_ptr<IDispatcher> dispatcher)
 {
     this->dispatcher = std::move(dispatcher);
 }
@@ -63,7 +63,8 @@ void MessageSender::sendRequest(const std::string& senderParticipantId,
                                 std::shared_ptr<IReplyCaller> callback,
                                 bool isLocalMessage)
 {
-    if (dispatcher == nullptr) {
+    auto dispatcherSharedPtr = dispatcher.lock();
+    if (dispatcherSharedPtr == nullptr) {
         JOYNR_LOG_ERROR(logger,
                         "Sending a request failed. Dispatcher is null. Probably a proxy "
                         "was used after the runtime was deleted.");
@@ -72,7 +73,7 @@ void MessageSender::sendRequest(const std::string& senderParticipantId,
 
     MutableMessage message = messageFactory.createRequest(
             senderParticipantId, receiverParticipantId, qos, request, isLocalMessage);
-    dispatcher->addReplyCaller(request.getRequestReplyId(), std::move(callback), qos);
+    dispatcherSharedPtr->addReplyCaller(request.getRequestReplyId(), std::move(callback), qos);
 
     if (!message.isLocalMessage()) {
         message.setReplyTo(replyToAddress);
