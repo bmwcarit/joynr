@@ -886,6 +886,12 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
     JOYNR_LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
 
+    if (wsCcMessagingSkeleton) {
+        wsCcMessagingSkeleton->shutdown();
+    }
+    if (wsTLSCcMessagingSkeleton) {
+        wsTLSCcMessagingSkeleton->shutdown();
+    }
     ccMessageRouter->shutdown();
     inProcessDispatcher->shutdown();
     publicationManager->shutdown();
