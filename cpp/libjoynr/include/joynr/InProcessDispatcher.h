@@ -73,6 +73,8 @@ public:
 
     bool containsRequestCaller(const std::string& participantId) override;
 
+    void shutdown() override;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessDispatcher);
     RequestCallerDirectory requestCallerDirectory;

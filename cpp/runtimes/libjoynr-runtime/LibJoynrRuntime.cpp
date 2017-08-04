@@ -68,10 +68,12 @@ LibJoynrRuntime::~LibJoynrRuntime()
     }
 
     if (inProcessDispatcher) {
+        inProcessDispatcher->shutdown();
         delete inProcessDispatcher;
         inProcessDispatcher = nullptr;
     }
     if (joynrDispatcher) {
+        joynrDispatcher->shutdown();
         delete joynrDispatcher;
         joynrDispatcher = nullptr;
     }

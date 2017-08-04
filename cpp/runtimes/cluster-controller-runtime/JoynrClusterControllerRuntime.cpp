@@ -855,6 +855,8 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
     JOYNR_LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
 
+    inProcessDispatcher->shutdown();
+
     // synchronously stop the underlying boost::asio::io_service
     // this ensures all asynchronous operations are stopped now
     // which allows a safe shutdown
@@ -869,6 +871,7 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     }
 
     if (joynrDispatcher != nullptr) {
+        joynrDispatcher->shutdown();
         JOYNR_LOG_TRACE(logger, "joynrDispatcher");
         delete joynrDispatcher;
     }

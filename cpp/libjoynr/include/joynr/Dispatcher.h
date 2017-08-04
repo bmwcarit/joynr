@@ -74,6 +74,8 @@ public:
 
     void registerPublicationManager(PublicationManager* publicationManager) override;
 
+    void shutdown() override;
+
 private:
     void handleRequestReceived(const ImmutableMessage& message);
     void handleOneWayRequestReceived(const ImmutableMessage& message);

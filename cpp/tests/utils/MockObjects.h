@@ -290,6 +290,7 @@ public:
     MOCK_METHOD1(receive, void(std::shared_ptr<joynr::ImmutableMessage> message));
     MOCK_METHOD1(registerSubscriptionManager, void(std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager));
     MOCK_METHOD1(registerPublicationManager,void(joynr::PublicationManager* publicationManager));
+    MOCK_METHOD0(shutdown, void ());
 };
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
