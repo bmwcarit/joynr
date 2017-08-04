@@ -78,6 +78,12 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
     scheduleFreshnessUpdate();
 }
 
+void LocalCapabilitiesDirectory::shutdown()
+{
+    checkExpiredDiscoveryEntriesTimer.cancel();
+    freshnessUpdateTimer.cancel();
+}
+
 void LocalCapabilitiesDirectory::scheduleFreshnessUpdate()
 {
     boost::system::error_code timerError = boost::system::error_code();
