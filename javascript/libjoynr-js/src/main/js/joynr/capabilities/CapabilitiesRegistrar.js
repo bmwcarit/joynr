@@ -210,12 +210,14 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                         lastSeenDateMs : Date.now()
                     }));
 
+                    function registerProviderFinished() {
+                        return participantId;
+                    }
+
                     return Promise.all([
                         messageRouterPromise,
                         discoveryStubPromise
-                    ]).then(function() {
-                        return participantId;
-                    });
+                    ]).then(registerProviderFinished);
                 };
 
         /**

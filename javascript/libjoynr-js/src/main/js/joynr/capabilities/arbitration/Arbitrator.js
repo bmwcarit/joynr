@@ -93,83 +93,93 @@ define(
              * @returns {Object} a Promise/A+ object, that will provide an array of discovered capabilities
              */
             function discoverCapabilities(
+            capabilityDiscoveryStub,
+            domains,
+            interfaceName,
+            applicationDiscoveryQos,
+            proxyVersion,
+            deferred) {
+
+                function discoveryCapabilitiesRetry() {
+                    delete deferred.discoveryRetryTimer;
+                    discoverCapabilities(
                     capabilityDiscoveryStub,
                     domains,
                     interfaceName,
                     applicationDiscoveryQos,
                     proxyVersion,
-                    deferred) {
+                    deferred);
+                }
+
                 function retryCapabilityDiscovery (errorMsg) {
                     // retry discovery in discoveryRetryDelayMs ms
                     if (errorMsg) {
                         deferred.errorMsg = errorMsg;
                     }
-                    deferred.discoveryRetryTimer = LongTimer.setTimeout(function discoveryCapabilitiesRetry() {
-                        delete deferred.discoveryRetryTimer;
-                        discoverCapabilities(
-                                capabilityDiscoveryStub,
-                                domains,
-                                interfaceName,
-                                applicationDiscoveryQos,
-                                proxyVersion,
-                                deferred);
-                    }, applicationDiscoveryQos.discoveryRetryDelayMs);
+                    deferred.discoveryRetryTimer = LongTimer.setTimeout(discoveryCapabilitiesRetry,
+                    applicationDiscoveryQos.discoveryRetryDelayMs);
+                }
+
+
+                function capabilitiesDiscovered(discoveredCaps) {
+                    // filter caps according to chosen arbitration strategy
+                    var arbitratedCaps =
+                    applicationDiscoveryQos.arbitrationStrategy(discoveredCaps);
+                    var versionCompatibleArbitratedCaps = [];
+                    var i;
+                    // if deferred is still pending => discoveryTimeoutMs is not expired yet
+                    if (deferred.pending) {
+                        // if there are caps found
+                        deferred.incompatibleVersionsFound = [];
+                        var providerVersion;
+
+                        var addtoListIfNotExisting = function(list, providerVersion) {
+                            var j;
+                            for (j = 0; j < list.length; ++j) {
+                                if (list[j].majorVersion === providerVersion.majorVersion &&
+                                    list[j].minorVersion === providerVersion.minorVersion) {
+                                    return;
+                                }
+                            }
+                            list.push(providerVersion);
+                        };
+
+                        for (i = 0; i < arbitratedCaps.length; i++) {
+                            providerVersion = arbitratedCaps[i].providerVersion;
+                            if (providerVersion.majorVersion === proxyVersion.majorVersion &&
+                                providerVersion.minorVersion >= proxyVersion.minorVersion &&
+                                checkSupportsOnChangeSubscriptions(arbitratedCaps[i], applicationDiscoveryQos.providerMustSupportOnChange)) {
+                                versionCompatibleArbitratedCaps.push(arbitratedCaps[i]);
+                            } else {
+                                addtoListIfNotExisting(deferred.incompatibleVersionsFound, providerVersion);
+                            }
+                        }
+                        if (versionCompatibleArbitratedCaps.length > 0) {
+                            // report the discovered & arbitrated caps
+                            deferred.pending = false;
+                            deferred.resolve(versionCompatibleArbitratedCaps);
+                        } else {
+                            retryCapabilityDiscovery();
+                        }
+                    }
+                    return null;
+                }
+
+                function capabilitiesDiscoveredError(error){
+                    if (deferred.pending) {
+                        retryCapabilityDiscovery(error.message);
+                    }
                 }
 
                 // discover caps from local capabilities directory
                 capabilityDiscoveryStub.lookup(domains, interfaceName, new DiscoveryQos({
-                    discoveryScope : applicationDiscoveryQos.discoveryScope,
-                    cacheMaxAge : applicationDiscoveryQos.cacheMaxAgeMs,
-                    discoveryTimeout : applicationDiscoveryQos.discoveryTimeoutMs,
-                    providerMustSupportOnChange : applicationDiscoveryQos.providerMustSupportOnChange
-                })).then(
-                    function(discoveredCaps) {
-                        // filter caps according to chosen arbitration strategy
-                        var arbitratedCaps =
-                                applicationDiscoveryQos.arbitrationStrategy(discoveredCaps);
-                        var versionCompatibleArbitratedCaps = [];
-                        var i;
-                        // if deferred is still pending => discoveryTimeoutMs is not expired yet
-                        if (deferred.pending) {
-                            // if there are caps found
-                            deferred.incompatibleVersionsFound = [];
-                            var providerVersion;
-
-                            var addtoListIfNotExisting = function(list, providerVersion) {
-                                var j;
-                                for (j = 0; j < list.length; ++j) {
-                                    if (list[j].majorVersion === providerVersion.majorVersion &&
-                                        list[j].minorVersion === providerVersion.minorVersion) {
-                                        return;
-                                    }
-                                }
-                                list.push(providerVersion);
-                            };
-
-                            for (i = 0; i < arbitratedCaps.length; i++) {
-                                providerVersion = arbitratedCaps[i].providerVersion;
-                                if (providerVersion.majorVersion === proxyVersion.majorVersion &&
-                                    providerVersion.minorVersion >= proxyVersion.minorVersion &&
-                                    checkSupportsOnChangeSubscriptions(arbitratedCaps[i], applicationDiscoveryQos.providerMustSupportOnChange)) {
-                                    versionCompatibleArbitratedCaps.push(arbitratedCaps[i]);
-                                } else {
-                                    addtoListIfNotExisting(deferred.incompatibleVersionsFound, providerVersion);
-                                }
-                            }
-                            if (versionCompatibleArbitratedCaps.length > 0) {
-                                // report the discovered & arbitrated caps
-                                deferred.pending = false;
-                                deferred.resolve(versionCompatibleArbitratedCaps);
-                            } else {
-                                retryCapabilityDiscovery();
-                            }
-                        }
-                        return null;
-                }).catch(function(error) {
-                    if (deferred.pending) {
-                        retryCapabilityDiscovery(error.message);
-                    }
-                });
+                    discoveryScope             : applicationDiscoveryQos.discoveryScope,
+                    cacheMaxAge                : applicationDiscoveryQos.cacheMaxAgeMs,
+                    discoveryTimeout           : applicationDiscoveryQos.discoveryTimeoutMs,
+                    providerMustSupportOnChange: applicationDiscoveryQos.providerMustSupportOnChange
+                }))
+                .then(capabilitiesDiscovered)
+                .catch(capabilitiesDiscoveredError);
             }
 
             /**
@@ -212,112 +222,112 @@ define(
                  * @returns {Object} a A+ Promise object, that will provide asynchronously an array of arbitrated capabilities
                  */
                 this.startArbitration =
-                        function startArbitration(settings) {
-                            settings = Util.extendDeep({}, settings);
-                            return new Promise(
-                                    function(resolve, reject) {
-                                        if (!isReady()) {
-                                            reject(new Error("Arbitrator is already shut down"));
-                                            return;
-                                        }
-                                        arbitrationId++;
-                                        var deferred = {
-                                            id : arbitrationId,
-                                            resolve : resolve,
-                                            reject : reject,
-                                            incompatibleVersionsFound : [],
-                                            pending : true
-                                        };
-                                        if (settings.staticArbitration && staticCapabilities) {
-                                            discoverStaticCapabilities(
-                                                    staticCapabilities,
-                                                    settings.domains,
-                                                    settings.interfaceName,
-                                                    settings.discoveryQos,
-                                                    settings.proxyVersion,
-                                                    deferred);
-                                        } else {
-                                            pendingArbitrations[deferred.id] = deferred;
-                                            deferred.discoveryTimeoutMsId =
-                                                    LongTimer
-                                                            .setTimeout(
-                                                                    function discoveryCapabilitiesTimeOut() {
-                                                                        deferred.pending = false;
-                                                                        delete pendingArbitrations[deferred.id];
+                    function startArbitration(settings) {
+                        settings = Util.extendDeep({}, settings);
 
-                                                                        if (deferred.incompatibleVersionsFound.length > 0) {
-                                                                            var message =
-                                                                                "no compatible provider found within discovery timeout for domains \""
-                                                                                    + JSON.stringify(settings.domains)
-                                                                                    + "\", interface \""
-                                                                                    + settings.interfaceName
-                                                                                    + "\" with discoveryQos \""
-                                                                                    + JSON.stringify(settings.discoveryQos)
-                                                                                    + "\"";
-                                                                            reject(new NoCompatibleProviderFoundException({
-                                                                                detailMessage: message,
-                                                                                discoveredVersions: deferred.incompatibleVersionsFound,
-                                                                                interfaceName: settings.interfaceName
-                                                                            }));
-                                                                        } else {
-                                                                            reject(new DiscoveryException({ detailMessage:
-                                                                                "no provider found within discovery timeout for domains \""
-                                                                                    + JSON.stringify(settings.domains)
-                                                                                    + "\", interface \""
-                                                                                    + settings.interfaceName
-                                                                                    + "\" with discoveryQos \""
-                                                                                    + JSON.stringify(settings.discoveryQos)
-                                                                                    + "\""
-                                                                                    + (deferred.errorMsg !== undefined ? (". Error: " + deferred.errorMsg) : "")}));
-                                                                        }
-                                                                    },
-                                                                    settings.discoveryQos.discoveryTimeoutMs);
-                                            var resolveWrapper = function(args) {
-                                                LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
-                                                delete pendingArbitrations[deferred.id];
-                                                resolve(args);
-                                            };
-                                            var rejectWrapper = function(args) {
-                                                LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
-                                                delete pendingArbitrations[deferred.id];
-                                                reject(args);
-                                            };
-                                            deferred.resolve = resolveWrapper;
-                                            deferred.reject = rejectWrapper;
-                                            discoverCapabilities(
-                                                    capabilityDiscoveryStub,
-                                                    settings.domains,
-                                                    settings.interfaceName,
-                                                    settings.discoveryQos,
-                                                    settings.proxyVersion,
-                                                    deferred);
-                                        }
-                                    });
-                        };
+                        function arbitrationResolver(resolve, reject){
 
-                        /**
-                         * Shutdown the Arbitrator
-                         *
-                         * @function
-                         * @name Arbitrator#shutdown
-                         */
-                        this.shutdown = function shutdown() {
-                            var id;
-                            for (id in pendingArbitrations) {
-                                if (pendingArbitrations.hasOwnProperty(id)) {
-                                    var pendingArbitration = pendingArbitrations[id];
-                                    if (pendingArbitration.discoveryTimeoutMsId !== undefined) {
-                                        LongTimer.clearTimeout(pendingArbitration.discoveryTimeoutMsId);
-                                    }
-                                    if (pendingArbitration.discoveryRetryTimer !== undefined) {
-                                        LongTimer.clearTimeout(pendingArbitration.discoveryRetryTimer);
-                                    }
-                                    pendingArbitration.reject(new Error("Arbitration is already shut down"));
+                            if (!isReady()) {
+                                reject(new Error("Arbitrator is already shut down"));
+                                return;
+                            }
+                            arbitrationId++;
+                            var deferred = {
+                                id                       : arbitrationId,
+                                resolve                  : resolve,
+                                reject                   : reject,
+                                incompatibleVersionsFound: [],
+                                pending                  : true
+                            };
+
+                            function discoveryCapabilitiesTimeOutHandler() {
+                                deferred.pending = false;
+                                delete pendingArbitrations[deferred.id];
+
+                                if (deferred.incompatibleVersionsFound.length > 0) {
+                                    var message =
+                                    "no compatible provider found within discovery timeout for domains \""
+                                    + JSON.stringify(settings.domains)
+                                    + "\", interface \""
+                                    + settings.interfaceName
+                                    + "\" with discoveryQos \""
+                                    + JSON.stringify(settings.discoveryQos)
+                                    + "\"";
+                                    reject(new NoCompatibleProviderFoundException({
+                                        detailMessage     : message,
+                                        discoveredVersions: deferred.incompatibleVersionsFound,
+                                        interfaceName     : settings.interfaceName
+                                    }));
+                                } else {
+                                    reject(new DiscoveryException({ detailMessage:
+                                    "no provider found within discovery timeout for domains \""
+                                    + JSON.stringify(settings.domains)
+                                    + "\", interface \""
+                                    + settings.interfaceName
+                                    + "\" with discoveryQos \""
+                                    + JSON.stringify(settings.discoveryQos)
+                                    + "\""
+                                    + (deferred.errorMsg !== undefined ? ". Error: " + deferred.errorMsg : "") }));
                                 }
                             }
-                            pendingArbitrations = {};
-                            started = false;
-                        };
+
+                            if (settings.staticArbitration && staticCapabilities) {
+                                discoverStaticCapabilities(
+                                staticCapabilities,
+                                settings.domains,
+                                settings.interfaceName,
+                                settings.discoveryQos,
+                                settings.proxyVersion,
+                                deferred);
+                            } else {
+                                pendingArbitrations[deferred.id] = deferred;
+                                deferred.discoveryTimeoutMsId =
+                                LongTimer.setTimeout(discoveryCapabilitiesTimeOutHandler,
+                                settings.discoveryQos.discoveryTimeoutMs);
+                                var resolveWrapper = function(args) {
+                                    LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
+                                    delete pendingArbitrations[deferred.id];
+                                    resolve(args);
+                                };
+                                var rejectWrapper = function(args) {
+                                    LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
+                                    delete pendingArbitrations[deferred.id];
+                                    reject(args);
+                                };
+                                deferred.resolve = resolveWrapper;
+                                deferred.reject = rejectWrapper;
+                                discoverCapabilities(
+                                    capabilityDiscoveryStub, settings.domains, settings.interfaceName,
+                                    settings.discoveryQos, settings.proxyVersion, deferred);
+                            }
+                        }
+
+                        return new Promise(arbitrationResolver);
+                    };
+
+                    /**
+                     * Shutdown the Arbitrator
+                     *
+                     * @function
+                     * @name Arbitrator#shutdown
+                     */
+                    this.shutdown = function shutdown() {
+                        var id;
+                        for (id in pendingArbitrations) {
+                            if (pendingArbitrations.hasOwnProperty(id)) {
+                                var pendingArbitration = pendingArbitrations[id];
+                                if (pendingArbitration.discoveryTimeoutMsId !== undefined) {
+                                    LongTimer.clearTimeout(pendingArbitration.discoveryTimeoutMsId);
+                                }
+                                if (pendingArbitration.discoveryRetryTimer !== undefined) {
+                                    LongTimer.clearTimeout(pendingArbitration.discoveryRetryTimer);
+                                }
+                                pendingArbitration.reject(new Error("Arbitration is already shut down"));
+                            }
+                        }
+                        pendingArbitrations = {};
+                        started = false;
+                    };
             }
 
             return Arbitrator;
