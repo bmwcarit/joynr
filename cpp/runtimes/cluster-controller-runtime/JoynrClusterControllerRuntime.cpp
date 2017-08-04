@@ -886,6 +886,7 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
     JOYNR_LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
 
+    ccMessageRouter->shutdown();
     inProcessDispatcher->shutdown();
 
     // synchronously stop the underlying boost::asio::io_service

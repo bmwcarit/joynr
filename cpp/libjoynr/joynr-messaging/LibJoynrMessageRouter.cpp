@@ -82,6 +82,7 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
 
 void LibJoynrMessageRouter::shutdown()
 {
+    AbstractMessageRouter::shutdown();
     parentRouter.reset();
     parentAddress.reset();
 }
