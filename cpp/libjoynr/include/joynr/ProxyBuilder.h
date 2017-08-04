@@ -198,8 +198,9 @@ void ProxyBuilder<T>::buildAsync(
     arbitrator = ArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
 
-    auto arbitrationSucceeds =
-            [this, onSuccess, onError](const types::DiscoveryEntryWithMetaInfo& discoverEntry) {
+    std::shared_ptr<ProxyBuilder<T>> thisSharedPtr = this->shared_from_this();
+    auto arbitrationSucceeds = [thisSharedPtr, this, onSuccess, onError](
+            const types::DiscoveryEntryWithMetaInfo& discoverEntry) {
         auto runtimeSharedPtr = runtime.lock();
         if (runtimeSharedPtr == nullptr) {
             onError(exceptions::DiscoveryException(runtimeAlreadyDestroyed));
