@@ -87,9 +87,12 @@ define(
                     ttl = message.expiryDate - Date.now();
                     // some browsers do not support negative timeout times.
                     ttl = ttl > 0 ? ttl : 0;
-                    LongTimer.setTimeout(function() {
+
+                    function removeMessageTimeout() {
                         removeExpiredMessage(message);
-                    }, ttl);
+                    }
+
+                    LongTimer.setTimeout(removeMessageTimeout, ttl);
                 }
 
                 /**
