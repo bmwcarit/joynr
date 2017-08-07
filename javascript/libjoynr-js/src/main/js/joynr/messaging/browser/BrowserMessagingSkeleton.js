@@ -42,7 +42,7 @@ define("joynr/messaging/browser/BrowserMessagingSkeleton", [
 
         var receiverCallbacks = [];
 
-        settings.webMessagingSkeleton.registerListener(function(message) {
+        function webMessagingSkeletonListener(message) {
             if (message !== undefined) {
                 var joynrMessage = new JoynrMessage(message);
 
@@ -52,7 +52,9 @@ define("joynr/messaging/browser/BrowserMessagingSkeleton", [
                     + JSONSerializer.stringify(message)
                     + "\" could not be processed");
             }
-        });
+        }
+
+        settings.webMessagingSkeleton.registerListener(webMessagingSkeletonListener);
 
         /**
          * Registers the listener function
