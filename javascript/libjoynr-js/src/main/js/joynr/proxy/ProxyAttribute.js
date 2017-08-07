@@ -115,15 +115,17 @@ define(
                                     settings.messagingQos,
                                     requestSettings.messagingQos);
 
+                    function sendRequestOnSuccess(response) {
+                        return Typing.augmentTypes(response[0], typeRegistry, attributeType);
+                    }
+
                     // return promise to caller
                     return settings.dependencies.requestReplyManager.sendRequest({
                         toDiscoveryEntry : parent.providerDiscoveryEntry,
                         from : parent.proxyParticipantId,
                         messagingQos : messagingQos,
                         request : request
-                    }).then(function(response) {
-                        return Typing.augmentTypes(response[0], typeRegistry, attributeType);
-                    });
+                    }).then(sendRequestOnSuccess);
                 }
 
                 /**

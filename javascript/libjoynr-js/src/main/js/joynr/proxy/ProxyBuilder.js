@@ -57,15 +57,15 @@ define("joynr/proxy/ProxyBuilder", [
         LoggerFactory) {
 
     var proxyElementTypes = {
-        ProxyAttributeNotifyReadWrite : ProxyAttributeNotifyReadWrite,
-        ProxyAttributeNotifyRead : ProxyAttributeNotifyRead,
-        ProxyAttributeNotifyWrite : ProxyAttributeNotifyWrite,
-        ProxyAttributeNotify : ProxyAttributeNotify,
-        ProxyAttributeReadWrite : ProxyAttributeReadWrite,
-        ProxyAttributeRead : ProxyAttributeRead,
-        ProxyAttributeWrite : ProxyAttributeWrite,
-        ProxyOperation : ProxyOperation,
-        ProxyEvent : ProxyEvent
+        ProxyAttributeNotifyReadWrite: ProxyAttributeNotifyReadWrite,
+        ProxyAttributeNotifyRead     : ProxyAttributeNotifyRead,
+        ProxyAttributeNotifyWrite    : ProxyAttributeNotifyWrite,
+        ProxyAttributeNotify         : ProxyAttributeNotify,
+        ProxyAttributeReadWrite      : ProxyAttributeReadWrite,
+        ProxyAttributeRead           : ProxyAttributeRead,
+        ProxyAttributeWrite          : ProxyAttributeWrite,
+        ProxyOperation               : ProxyOperation,
+        ProxyEvent                   : ProxyEvent
     };
     var typeRegistry = TypeRegistrySingleton.getInstance();
 
@@ -135,104 +135,93 @@ define("joynr/proxy/ProxyBuilder", [
          *            if arbitrator was not provided
          */
         this.build =
-                function build(ProxyConstructor, settings) {
-                    // augment Qos objects if they're missing
-                    settings.discoveryQos = new DiscoveryQos(settings.discoveryQos);
-                    settings.messagingQos = new MessagingQos(settings.messagingQos);
+            function build(ProxyConstructor, settings) {
+                // augment Qos objects if they're missing
+                settings.discoveryQos = new DiscoveryQos(settings.discoveryQos);
+                settings.messagingQos = new MessagingQos(settings.messagingQos);
 
-                    // check if objects are there and of correct type
-                    Typing.checkProperty(settings, "Object", "settings");
-                    Typing.checkProperty(settings.domain, "String", "settings.domain");
-                    Typing
-                            .checkProperty(
-                                    settings.discoveryQos,
-                                    DiscoveryQos,
-                                    "settings.discoveryQos");
-                    Typing
-                            .checkProperty(
-                                    settings.messagingQos,
-                                    MessagingQos,
-                                    "settings.messagingQos");
+                // check if objects are there and of correct type
+                Typing.checkProperty(settings, "Object", "settings");
+                Typing.checkProperty(settings.domain, "String", "settings.domain");
+                Typing.checkProperty( settings.discoveryQos, DiscoveryQos, "settings.discoveryQos");
+                Typing.checkProperty( settings.messagingQos, MessagingQos, "settings.messagingQos");
 
-                    if (!arbitrator) {
-                        throw new Error("value 'arbitrator' is undefined");
+                if (!arbitrator) {
+                    throw new Error("value 'arbitrator' is undefined");
+                }
+
+                settings.dependencies = proxyDependencies;
+                settings.proxyElementTypes = proxyElementTypes;
+                var proxy = new ProxyConstructor(settings);
+                proxy.domain = settings.domain;
+                proxy.proxyParticipantId =
+                    "proxy"
+                        + "."
+                        + settings.domain
+                        + "."
+                        + proxy.interfaceName
+                        + "."
+                        + uuid();
+                proxy.messagingQos = settings.messagingQos;
+
+                var datatypePromises = ProxyConstructor.getUsedDatatypes().map(
+                    function(datatype) {
+                        return typeRegistry.getTypeRegisteredPromise( datatype, typeRegisteredTimeout_ms);
+                    });
+
+                function dataTypePromisesOnSuccess() {
+                    var proxyVersion = new Version({
+                        majorVersion: proxy.constructor.MAJOR_VERSION,
+                        minorVersion: proxy.constructor.MINOR_VERSION
+                    });
+                    return arbitrator.startArbitration({
+                        domains: [proxy.domain
+                        ],
+                        interfaceName    : proxy.interfaceName,
+                        discoveryQos     : settings.discoveryQos,
+                        staticArbitration: settings.staticArbitration,
+                        proxyVersion     : proxyVersion
+                    });
+                }
+
+                function startArbitrationOnSuccess(arbitratedCaps) {
+                    if (settings.loggingContext !== undefined) {
+                        dependencies.loggingManager.setLoggingContext(
+                        proxy.proxyParticipantId,
+                        settings.loggingContext);
+                    }
+                    var isGloballyVisible = false;
+                    if (arbitratedCaps && arbitratedCaps.length > 0) {
+                        proxy.providerDiscoveryEntry =
+                        arbitratedCaps[0];
+                        if (!arbitratedCaps[0].isLocal) {
+                            isGloballyVisible = true;
+                        }
                     }
 
-                    settings.dependencies = proxyDependencies;
-                    settings.proxyElementTypes = proxyElementTypes;
-                    var proxy = new ProxyConstructor(settings);
-                    proxy.domain = settings.domain;
-                    proxy.proxyParticipantId =
-                            "proxy"
-                                + "."
-                                + settings.domain
-                                + "."
-                                + proxy.interfaceName
-                                + "."
-                                + uuid();
-                    proxy.messagingQos = settings.messagingQos;
+                    dependencies.messageRouter.addNextHop(
+                    proxy.proxyParticipantId, dependencies.libjoynrMessagingAddress, isGloballyVisible)
+                    .catch(function(error){
+                        log.debug("Exception occured while registering the address for interface "
+                        + proxy.interfaceName + ", domain " + proxy.domain
+                        + ", proxyParticipantId " + proxy.proxyParticipantId
+                        + " to message router");
+                    });
+                    dependencies.messageRouter.setToKnown(proxy.providerDiscoveryEntry.participantId);
 
-                    var datatypePromises =
-                            ProxyConstructor.getUsedDatatypes().map(
-                                    function(datatype) {
-                                        return typeRegistry.getTypeRegisteredPromise(
-                                                datatype,
-                                                typeRegisteredTimeout_ms);
-                                    });
+                    var freeze = settings.freeze === undefined || settings.freeze;
+                    if (freeze) {
+                        // make proxy object immutable and return asynchronously
+                        proxy = Object.freeze(proxy);
+                    }
 
-                    return Promise.all(datatypePromises).then(
-                            function() {
-                                var proxyVersion = new Version({
-                                    majorVersion : proxy.constructor.MAJOR_VERSION,
-                                    minorVersion : proxy.constructor.MINOR_VERSION
-                                });
-                                return arbitrator.startArbitration({
-                                    domains : [ proxy.domain
-                                    ],
-                                    interfaceName : proxy.interfaceName,
-                                    discoveryQos : settings.discoveryQos,
-                                    staticArbitration : settings.staticArbitration,
-                                    proxyVersion : proxyVersion
-                                }).then(
-                                        function(arbitratedCaps) {
-                                            if (settings.loggingContext !== undefined) {
-                                                dependencies.loggingManager.setLoggingContext(
-                                                        proxy.proxyParticipantId,
-                                                        settings.loggingContext);
-                                            }
-                                            var isGloballyVisible = false;
-                                            if (arbitratedCaps && arbitratedCaps.length > 0) {
-                                                proxy.providerDiscoveryEntry =
-                                                        arbitratedCaps[0];
-                                                if (!arbitratedCaps[0].isLocal) {
-                                                    isGloballyVisible = true;
-                                                }
-                                            }
+                    return proxy;
+                }
 
-                                            dependencies.messageRouter.addNextHop(
-                                                    proxy.proxyParticipantId,
-                                                    dependencies.libjoynrMessagingAddress,
-                                                    isGloballyVisible).catch(function(error){
-                                                        log.debug("Exception occured while registering the address for interface "
-                                                                + proxy.interfaceName + ", domain " + proxy.domain
-                                                                + ", proxyParticipantId " + proxy.proxyParticipantId
-                                                                + " to message router");
-                                                    });
-                                            dependencies.messageRouter
-                                                    .setToKnown(proxy.providerDiscoveryEntry.participantId);
-
-                                            var freeze =
-                                                    settings.freeze === undefined
-                                                        || settings.freeze;
-                                            if (freeze) {
-                                                // make proxy object immutable and return asynchronously
-                                                proxy = Object.freeze(proxy);
-                                            }
-
-                                            return proxy;
-                                        });
-                            });
-                };
+                return Promise.all(datatypePromises)
+                .then(dataTypePromisesOnSuccess)
+                .then(startArbitrationOnSuccess);
+            };
     }
 
     return ProxyBuilder;
