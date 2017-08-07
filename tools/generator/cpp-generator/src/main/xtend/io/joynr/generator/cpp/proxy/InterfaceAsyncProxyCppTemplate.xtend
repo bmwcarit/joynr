@@ -75,10 +75,19 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 
 		«produceAsyncGetterSignature(attribute, asyncClassName)»
 		{
-			if (connector==nullptr){
-				«val errorMsg = "proxy cannot invoke " + getAttribute + ", because the communication end partner is not (yet) known"»
-				JOYNR_LOG_WARN(logger, "«errorMsg»");
-				auto error = std::make_shared<exceptions::JoynrRuntimeException>("«errorMsg»");
+			auto runtimeSharedPtr = runtime.lock();
+			if (!runtimeSharedPtr || (connector==nullptr)) {
+				std::string errorText;
+				if (!runtimeSharedPtr) {
+					«val errorMsgRuntime = "proxy cannot invoke " + getAttribute + " because the required runtime has been already destroyed."»
+					errorText = "«errorMsgRuntime»";
+				}
+				else {
+					«val errorMsg = "proxy cannot invoke " + getAttribute + ", because the communication end partner is not (yet) known"»
+					errorText = "«errorMsg»";
+				}
+				JOYNR_LOG_WARN(logger, errorText);
+				auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
 				if (onError) {
 					onError(*error);
 				}
@@ -99,10 +108,19 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 		 */
 		«produceAsyncSetterSignature(attribute, asyncClassName)»
 		{
-			if (connector==nullptr){
-				«val errorMsg = "proxy cannot invoke " + setAttribute + ", because the communication end partner is not (yet) known"»
-				JOYNR_LOG_WARN(logger, "«errorMsg»");
-				auto error = std::make_shared<exceptions::JoynrRuntimeException>("«errorMsg»");
+			auto runtimeSharedPtr = runtime.lock();
+			if (!runtimeSharedPtr || (connector==nullptr)) {
+				std::string errorText;
+				if (!runtimeSharedPtr) {
+					«val errorMsgRuntime = "proxy cannot invoke " + setAttribute + " because the required runtime has been already destroyed."»
+					errorText = "«errorMsgRuntime»";
+				}
+				else {
+					«val errorMsg = "proxy cannot invoke " + setAttribute + ", because the communication end partner is not (yet) known"»
+					errorText = "«errorMsg»";
+				}
+				JOYNR_LOG_WARN(logger, errorText);
+				auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
 				if (onError) {
 					onError(*error);
 				}
@@ -110,7 +128,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 				future->onError(error);
 				return future;
 			}
-			else{
+			else {
 				return connector->«setAttribute»Async(«attributeName», std::move(onSuccess), std::move(onError));
 			}
 		}
@@ -127,10 +145,19 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 		 */
 		«produceAsyncMethodSignature(francaIntf, method, asyncClassName)»
 		{
-			if (connector==nullptr){
-				«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
-				JOYNR_LOG_WARN(logger, "«errorMsg»");
-				auto error = std::make_shared<exceptions::JoynrRuntimeException>("«errorMsg»");
+			auto runtimeSharedPtr = runtime.lock();
+			if (!runtimeSharedPtr || (connector==nullptr)) {
+				std::string errorText;
+				if (!runtimeSharedPtr) {
+					«val errorMsgRuntime = "proxy cannot invoke " + methodName + " because the required runtime has been already destroyed."»
+					errorText = "«errorMsgRuntime»";
+				}
+				else {
+					«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
+					errorText = "«errorMsg»";
+				}
+				JOYNR_LOG_WARN(logger, errorText);
+				auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
 				if (onRuntimeError) {
 					onRuntimeError(*error);
 				}
