@@ -102,7 +102,6 @@ var consumerBase = {
     executeBenchmark: function(benchmarkName, benchmarkData, benchmark){
         var numRuns = benchmarkData.length;
         log("call " + benchmarkName + " " + numRuns + " times");
-        PerformanceUtilities.forceGC();
         var startTime = Date.now();
 
         return Promise.map(benchmarkData, function(data){
@@ -117,6 +116,7 @@ var consumerBase = {
     },
 
     excecuteMultipleBenchmarks: function(benchmarkName, generateBenchmarkData, benchmark) {
+        PerformanceUtilities.forceGC();
         var numRuns = options.numRuns;
         var testRuns = options.testRuns ? Number.parseInt(options.testRuns) : 1;
         var totalRuns = numRuns * testRuns;
