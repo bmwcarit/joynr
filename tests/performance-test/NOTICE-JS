@@ -38,13 +38,12 @@ This project has following dependencies:
    │  │  │  └─ minimist (1.2.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/minimist/package.json
    │  │  ├─ concat-stream (1.6.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/concat-stream/package.json
    │  │  │  ├─ inherits (2.0.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/inherits/package.json
-   │  │  │  ├─ readable-stream (2.2.9) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/readable-stream/package.json
-   │  │  │  │  ├─ buffer-shims (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/buffer-shims/package.json
+   │  │  │  ├─ readable-stream (2.3.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/readable-stream/package.json
    │  │  │  │  ├─ core-util-is (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/core-util-is/package.json
    │  │  │  │  ├─ isarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/isarray/package.json
    │  │  │  │  ├─ process-nextick-args (1.0.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/process-nextick-args/package.json
-   │  │  │  │  ├─ string_decoder (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/string_decoder/package.json
-   │  │  │  │  │  └─ safe-buffer (5.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/safe-buffer/package.json
+   │  │  │  │  ├─ safe-buffer (5.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/safe-buffer/package.json
+   │  │  │  │  ├─ string_decoder (1.0.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/string_decoder/package.json
    │  │  │  │  └─ util-deprecate (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/util-deprecate/package.json
    │  │  │  └─ typedarray (0.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/typedarray/package.json
    │  │  ├─ end-of-stream (1.4.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/end-of-stream/package.json
@@ -58,8 +57,8 @@ This project has following dependencies:
    │  │  │     │  ├─ fs.realpath (1.0.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/fs.realpath/package.json
    │  │  │     │  ├─ inflight (1.0.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/inflight/package.json
    │  │  │     │  ├─ minimatch (3.0.4) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/minimatch/package.json
-   │  │  │     │  │  └─ brace-expansion (1.1.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/brace-expansion/package.json
-   │  │  │     │  │     ├─ balanced-match (0.4.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/balanced-match/package.json
+   │  │  │     │  │  └─ brace-expansion (1.1.8) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/brace-expansion/package.json
+   │  │  │     │  │     ├─ balanced-match (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/balanced-match/package.json
    │  │  │     │  │     └─ concat-map (0.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/concat-map/package.json
    │  │  │     │  └─ path-is-absolute (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/path-is-absolute/package.json
    │  │  │     ├─ glob-parent (3.1.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/glob-parent/package.json
@@ -69,12 +68,10 @@ This project has following dependencies:
    │  │  │     ├─ is-negated-glob (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-negated-glob/package.json
    │  │  │     ├─ ordered-read-streams (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/ordered-read-streams/package.json
    │  │  │     ├─ pumpify (1.3.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/pumpify/package.json
-   │  │  │     │  ├─ duplexify (3.5.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/duplexify/package.json
-   │  │  │     │  │  ├─ end-of-stream (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/duplexify ~ end-of-stream/package.json
-   │  │  │     │  │  │  └─ once (1.3.3) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/duplexify ~ once/package.json
+   │  │  │     │  ├─ duplexify (3.5.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/duplexify/package.json
    │  │  │     │  │  └─ stream-shift (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/stream-shift/package.json
    │  │  │     │  └─ pump (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/pump/package.json
-   │  │  │     ├─ remove-trailing-separator (1.0.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/remove-trailing-separator/package.json
+   │  │  │     ├─ remove-trailing-separator (1.0.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/remove-trailing-separator/package.json
    │  │  │     ├─ to-absolute-glob (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/to-absolute-glob/package.json
    │  │  │     │  ├─ extend-shallow (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/extend-shallow/package.json
    │  │  │     │  │  └─ is-extendable (0.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-extendable/package.json
@@ -89,7 +86,7 @@ This project has following dependencies:
    │  │  │        └─ through2-filter (2.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/through2-filter/package.json
    │  │  │           └─ through2 (2.0.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/through2/package.json
    │  │  │              └─ xtend (4.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/xtend/package.json
-   │  │  ├─ mqtt-packet (5.3.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt-packet/package.json
+   │  │  ├─ mqtt-packet (5.4.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt-packet/package.json
    │  │  │  └─ bl (1.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bl/package.json
    │  │  ├─ reinterval (1.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/reinterval/package.json
    │  │  ├─ split2 (2.1.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/split2/package.json
@@ -99,8 +96,8 @@ This project has following dependencies:
    │  │     ├─ graceful-fs (4.1.11) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/graceful-fs/package.json
    │  │     ├─ imurmurhash (0.1.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/imurmurhash/package.json
    │  │     └─ slide (1.1.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/slide/package.json
-   │  ├─ promise (7.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/promise/package.json
-   │  │  └─ asap (2.0.5) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/asap/package.json
+   │  ├─ promise (8.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/promise/package.json
+   │  │  └─ asap (2.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/asap/package.json
    │  ├─ requirejs (2.1.22) ── BSD (https://github.com/jrburke/r.js/blob/master/LICENSE), MIT (https://github.com/jrburke/r.js/blob/master/LICENSE) ── node_modules/requirejs/package.json
    │  ├─ smrf-native (0.2.0) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/smrf-native/package.json
    │  │  ├─ bindings (1.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bindings/package.json
@@ -112,12 +109,12 @@ This project has following dependencies:
    │  │     │  └─ rimraf (2.6.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/rimraf/package.json
    │  │     ├─ nopt (3.0.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/nopt/package.json
    │  │     │  └─ abbrev (1.1.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/abbrev/package.json
-   │  │     ├─ npmlog (4.1.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/npmlog/package.json
+   │  │     ├─ npmlog (4.1.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/npmlog/package.json
    │  │     │  ├─ are-we-there-yet (1.1.4) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/are-we-there-yet/package.json
    │  │     │  │  └─ delegates (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/delegates/package.json
    │  │     │  ├─ console-control-strings (1.1.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/console-control-strings/package.json
    │  │     │  ├─ gauge (2.7.4) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/gauge/package.json
-   │  │     │  │  ├─ aproba (1.1.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/aproba/package.json
+   │  │     │  │  ├─ aproba (1.1.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/aproba/package.json
    │  │     │  │  ├─ has-unicode (2.0.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/has-unicode/package.json
    │  │     │  │  ├─ object-assign (4.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/object-assign/package.json
    │  │     │  │  ├─ signal-exit (3.0.2) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/signal-exit/package.json
@@ -141,8 +138,8 @@ This project has following dependencies:
    │  │     │  ├─ forever-agent (0.6.1) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/forever-agent/package.json
    │  │     │  ├─ form-data (2.1.4) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/form-data/package.json
    │  │     │  │  ├─ asynckit (0.4.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/asynckit/package.json
-   │  │     │  │  └─ mime-types (2.1.15) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mime-types/package.json
-   │  │     │  │     └─ mime-db (1.27.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mime-db/package.json
+   │  │     │  │  └─ mime-types (2.1.16) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mime-types/package.json
+   │  │     │  │     └─ mime-db (1.29.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mime-db/package.json
    │  │     │  ├─ har-validator (4.2.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/har-validator/package.json
    │  │     │  │  ├─ ajv (4.11.8) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/ajv/package.json
    │  │     │  │  │  └─ co (4.6.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/co/package.json
@@ -154,12 +151,13 @@ This project has following dependencies:
    │  │     │  │  └─ sntp (1.0.9) ── BSD (http://github.com/hueniverse/sntp/raw/master/LICENSE) ── node_modules/sntp/package.json
    │  │     │  ├─ http-signature (1.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/http-signature/package.json
    │  │     │  │  ├─ assert-plus (0.2.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/assert-plus/package.json
-   │  │     │  │  ├─ jsprim (1.4.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jsprim/package.json
+   │  │     │  │  ├─ jsprim (1.4.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jsprim/package.json
    │  │     │  │  │  ├─ assert-plus (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jsprim ~ assert-plus/package.json
-   │  │     │  │  │  ├─ extsprintf (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/extsprintf/LICENSE
+   │  │     │  │  │  ├─ extsprintf (1.3.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/extsprintf/package.json
    │  │     │  │  │  ├─ json-schema (0.2.3) ── AFLv2.1 (http://trac.dojotoolkit.org/browser/dojo/trunk/LICENSE#L43), BSD (http://trac.dojotoolkit.org/browser/dojo/trunk/LICENSE#L13) ── node_modules/json-schema/package.json
-   │  │     │  │  │  └─ verror (1.3.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/verror/LICENSE
-   │  │     │  │  └─ sshpk (1.13.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/sshpk/package.json
+   │  │     │  │  │  └─ verror (1.10.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/verror/package.json
+   │  │     │  │  │     └─ assert-plus (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/verror ~ assert-plus/package.json
+   │  │     │  │  └─ sshpk (1.13.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/sshpk/package.json
    │  │     │  │     ├─ asn1 (0.2.3) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/asn1/package.json
    │  │     │  │     ├─ assert-plus (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/sshpk ~ assert-plus/package.json
    │  │     │  │     ├─ bcrypt-pbkdf (1.0.1) ── BSD 3-clause "New" or "Revised" License (http://www.opensource.org/licenses/BSD-3-Clause) ── node_modules/bcrypt-pbkdf/package.json
@@ -168,9 +166,8 @@ This project has following dependencies:
    │  │     │  │     │  └─ assert-plus (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/dashdash ~ assert-plus/package.json
    │  │     │  │     ├─ ecc-jsbn (0.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/ecc-jsbn/package.json
    │  │     │  │     │  └─ jsbn (0.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jsbn/package.json
-   │  │     │  │     ├─ getpass (0.1.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/getpass/package.json
-   │  │     │  │     │  └─ assert-plus (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/getpass ~ assert-plus/package.json
-   │  │     │  │     └─ jodid25519 (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/jodid25519/package.json
+   │  │     │  │     └─ getpass (0.1.7) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/getpass/package.json
+   │  │     │  │        └─ assert-plus (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/getpass ~ assert-plus/package.json
    │  │     │  ├─ is-typedarray (1.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-typedarray/package.json
    │  │     │  ├─ isstream (0.1.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/isstream/package.json
    │  │     │  ├─ json-stringify-safe (5.0.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/json-stringify-safe/package.json
@@ -181,11 +178,11 @@ This project has following dependencies:
    │  │     │  ├─ tough-cookie (2.3.2) ── BSD 3-clause "New" or "Revised" License (http://www.opensource.org/licenses/BSD-3-Clause) ── node_modules/tough-cookie/package.json
    │  │     │  │  └─ punycode (1.4.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/punycode/package.json
    │  │     │  ├─ tunnel-agent (0.6.0) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/tunnel-agent/package.json
-   │  │     │  └─ uuid (3.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/uuid/package.json
+   │  │     │  └─ uuid (3.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/uuid/package.json
    │  │     ├─ semver (5.3.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/semver/package.json
    │  │     ├─ tar (2.2.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/tar/package.json
    │  │     │  └─ block-stream (0.0.9) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/block-stream/package.json
-   │  │     └─ which (1.2.14) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/which/package.json
+   │  │     └─ which (1.3.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/which/package.json
    │  │        └─ isexe (2.0.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/isexe/package.json
    │  └─ wscpp (0.2.4) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/wscpp/package.json
    └─ mqtt (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt/package.json
