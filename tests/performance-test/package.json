@@ -16,8 +16,8 @@
   },
   "config": {
     "domain": "performance_test_domain",
-    "runs": 15000,
-    "testRuns": 10,
+    "runs": 1000,
+    "testRuns": 100,
     "stringlength": 10,
     "bytearraylength": 100,
     "timeout": 3600000,

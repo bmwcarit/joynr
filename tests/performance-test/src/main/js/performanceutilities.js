@@ -56,11 +56,11 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
     var bounceProxyBaseUrl, domain, stringLength, byteArrayLength, numRuns, timeout, brokerUri, viacc, cchost, ccport,
         skipByteArraySizeTimesK, testRuns;
 
-    testRuns = environment.testRuns || 1;
+    testRuns = environment.testRuns || 100;
     domain = environment.domain || "performance_test_domain";
     stringLength = environment.stringlength || 10;
     byteArrayLength = environment.bytearraylength || 100;
-    numRuns = environment.runs || 10000;
+    numRuns = environment.runs || 1000;
     timeout = environment.timeout || 3600000;
     viacc = environment.viacc || "true";
     brokerUri = environment.brokerUri || "tcp://localhost:1883";
