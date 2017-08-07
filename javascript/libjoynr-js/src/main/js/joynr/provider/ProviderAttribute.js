@@ -112,11 +112,13 @@ define(
                                 // call getter function with the same arguments as this function
                                 value = privateGetterFunc();
 
+                                function toArray(returnValue) {
+                                    return [ returnValue
+                                    ];
+                                }
+
                                 if (Util.isPromise(value)) {
-                                    return value.then(function(returnValue) {
-                                        return [ returnValue
-                                        ];
-                                    });
+                                    return value.then(toArray);
                                 }
                                 return [ value
                                 ];
