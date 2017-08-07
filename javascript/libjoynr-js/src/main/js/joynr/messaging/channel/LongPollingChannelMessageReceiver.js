@@ -74,9 +74,9 @@ define(
                 var communicationModule = settings.communicationModule;
                 var log = LoggerFactory.getLogger("joynr.messaging.LongPollingChannelMessageReceiver");
                 var bounceProxyChannelBaseUrl = settings.bounceProxyUrl + "channels/";
-                var channelCreationTimeout_ms = settings.channelQos && settings.channelQos.creationTimeout_ms ? settings.channelQos.creationTimeout_ms : 1000*60*60*24; // default: 1 day
+                var channelCreationTimeout_ms = settings.channelQos && settings.channelQos.creationTimeout_ms ? settings.channelQos.creationTimeout_ms : 1000 * 60 * 60 * 24; // default: 1 day
 
-                var channelCreationRetryDelay_ms = settings.channelQos && settings.channelQos.creationRetryDelay_ms ? settings.channelQos.creationRetryDelay_ms : 1000*30; // default: 30s
+                var channelCreationRetryDelay_ms = settings.channelQos && settings.channelQos.creationRetryDelay_ms ? settings.channelQos.creationRetryDelay_ms : 1000 * 30; // default: 30s
                 var createChannelTimestamp;
                 /**
                  * Retrieve the receiverId for the given channelId
@@ -116,32 +116,39 @@ define(
                  * @returns {Object} a promise object for async event handling
                  */
                 this.clear =
-                        function clear() {
-                            log.debug("clearing channel with id " + channelId + " and url " + channelUrl);
-                            return communicationModule.createXMLHTTPRequest({
-                                type : "DELETE",
-                                url : channelUrl,
-                                timeout : channelOpMessagingQos.ttl
-                            }).then(function() {
-                                return;
-                            }).catch(function(xhr, errorType) {
-                                var errorString =
-                                        "error while deleting channel on bounce proxy: "
-                                            + errorType
-                                            + (xhr.statusText ? (", " + xhr.statusText) : "")
-                                            + (xhr.status === 0 ? "" : (", HTTP" + xhr.status))
-                                            + (xhr.responseText ? (", " + xhr.responseText) : "");
-                                log.error(
-                                        "error while deleting channel on bounce proxy",
-                                        JSON.stringify(DiagnosticTags.forChannel({
-                                            channelId : channelId,
-                                            channelUrl : channelUrl,
-                                            status : xhr.status,
-                                            responseText : xhr.responseText
-                                        })));
-                                throw new Error(errorString);
-                            });
-                        };
+                    function clear() {
+
+                        function createXMLHTTPRequestOnError(xhr, errorType) {
+                            var errorString =
+                            "error while deleting channel on bounce proxy: "
+                            + errorType
+                            + (xhr.statusText ? ", " + xhr.statusText : "")
+                            + (xhr.status === 0 ? "" : ", HTTP" + xhr.status)
+                            + (xhr.responseText ? ", " + xhr.responseText : "");
+                            log.error(
+                            "error while deleting channel on bounce proxy",
+                            JSON.stringify(DiagnosticTags.forChannel({
+                                channelId   : channelId,
+                                channelUrl  : channelUrl,
+                                status      : xhr.status,
+                                responseText: xhr.responseText
+                            })));
+                            throw new Error(errorString);
+                        }
+
+                        function returnUndefined() {
+                            return;
+                        }
+
+                        log.debug("clearing channel with id " + channelId + " and url " + channelUrl);
+                        return communicationModule.createXMLHTTPRequest({
+                            type   : "DELETE",
+                            url    : channelUrl,
+                            timeout: channelOpMessagingQos.ttl
+                        })
+                        .then(returnUndefined) // required for some tests no idea why
+                        .catch(createXMLHTTPRequestOnError);
+                    };
 
                 /**
                  * Start long polling. Side effect: first makes sure that the channel exists on the bounceproxy
@@ -155,40 +162,40 @@ define(
                  *            onError callback used to inform about errors occurred during message recieve
                  */
                 this.start =
-                        function start(onMessageCallback, onError) {
-                            var pollRequest;
-                            var receiverId = getReceiverId(channelId);
+                    function start(onMessageCallback, onError) {
+                        var pollRequest;
+                        var receiverId = getReceiverId(channelId);
 
-                            communicationModule.atmosphere.unsubscribeUrl(channelUrl);
+                        communicationModule.atmosphere.unsubscribeUrl(channelUrl);
 
-                            pollRequest = {
-                                url : channelUrl,
-                                transport : "long-polling",
-                                contentType : "application/json",
-                                timeout : 30000,
-                                enableXDR : false,
-                                enableProtocol : false,
-                                readResponseHeaders : false,
-                                attachHeadersAsQueryString : false,
-                                dropAtmosphereHeaders : true,
-                                dropHeaders : false,
-                                logLevel : "debug",
-                                headers : {
-                                    "X-Atmosphere-tracking-id" : receiverId
-                                }
+                        pollRequest = {
+                            url                       : channelUrl,
+                            transport                 : "long-polling",
+                            contentType               : "application/json",
+                            timeout                   : 30000,
+                            enableXDR                 : false,
+                            enableProtocol            : false,
+                            readResponseHeaders       : false,
+                            attachHeadersAsQueryString: false,
+                            dropAtmosphereHeaders     : true,
+                            dropHeaders               : false,
+                            logLevel                  : "debug",
+                            headers                   : {
+                                "X-Atmosphere-tracking-id": receiverId
+                            }
 
-                            };
+                        };
 
-                            // Called whenever one or more new
-                            // messages are received
-                            // from the bounceproxy.
-                            pollRequest.onMessage =
-                                    function onMessage(response) {
-                                        var detectedTransport = response.transport, data, jsonParser, joynrMessage;
+                        // Called whenever one or more new
+                        // messages are received
+                        // from the bounceproxy.
+                        pollRequest.onMessage =
+                            function onMessage(response) {
+                                var detectedTransport = response.transport, data, jsonParser, joynrMessage;
 
-                                        try {
-                                            if (response.status === 200) {
-                                                data = response.responseBody;
+                                try {
+                                    if (response.status === 200) {
+                                        data = response.responseBody;
 
                                                 if (data.length > 0) {
                                                     jsonParser = new JsonParser(data);
@@ -196,39 +203,39 @@ define(
                                                         // pass the message on
                                                         joynrMessage = new JoynrMessage(jsonParser.next);
 
-                                                        log
-                                                                .info(
-                                                                        "received message with id " + joynrMessage.msgId + ": ",
-                                                                        JSON
-                                                                                .stringify(DiagnosticTags
-                                                                                        .forJoynrMessage(joynrMessage)));
-                                                        onMessageCallback(joynrMessage);
-                                                    }
-                                                }
-                                            }
-                                        } catch (e) {
-                                            log.debug("Exception while processing message: "
-                                                + e.message);
-                                            if (onError) {
-                                                onError(e);
+                                                log
+                                                        .info(
+                                                                "received message with id " + joynrMessage.msgId + ": ",
+                                                                JSON
+                                                                        .stringify(DiagnosticTags
+                                                                                .forJoynrMessage(joynrMessage)));
+                                                onMessageCallback(joynrMessage);
                                             }
                                         }
-                                    };
-
-                            pollRequest.onError = function(response) {
-                                log.debug("Encountered atmosphere error :" + response.error);
-                                if (onError) {
-                                    onError(response.error);
+                                    }
+                                } catch (e) {
+                                    log.debug("Exception while processing message: "
+                                        + e.message);
+                                    if (onError) {
+                                        onError(e);
+                                    }
                                 }
                             };
 
-                            communicationModule.atmosphere.subscribe(pollRequest);
-
-                            log.debug("starting to listen on channel with id "
-                                + channelId
-                                + " and url "
-                                + channelUrl);
+                        pollRequest.onError = function(response) {
+                            log.debug("Encountered atmosphere error :" + response.error);
+                            if (onError) {
+                                onError(response.error);
+                            }
                         };
+
+                        communicationModule.atmosphere.subscribe(pollRequest);
+
+                        log.debug("starting to listen on channel with id "
+                            + channelId
+                            + " and url "
+                            + channelUrl);
+                    };
 
                 var callCreate = function callCreate(){
                     var createChannelUrl =
@@ -236,14 +243,8 @@ define(
                         + "?ccid="
                         + encodeURIComponent(channelId);
                     var receiverId = getReceiverId(channelId);
-                    return communicationModule.createXMLHTTPRequest({
-                        type : "POST",
-                        url : createChannelUrl,
-                        headers : {
-                            "X-Atmosphere-tracking-id" : receiverId
-                        },
-                        timeout : channelOpMessagingQos.ttl
-                    }).then(function(xhr) {
+
+                    function callCreateOnSuccess(xhr) {
                         channelUrl = xhr.getResponseHeader("Location");
 
                         if (!channelUrl) {
@@ -251,34 +252,46 @@ define(
                         }
 
                         log.debug("created channel with id "
-                                + channelId
-                                + " and url "
-                                + channelUrl);
+                        + channelId
+                        + " and url "
+                        + channelUrl);
 
                         return channelUrl;
-                    });
+                    }
+
+                    return communicationModule.createXMLHTTPRequest({ // TODO: check why headers ist not an array
+                        type   : "POST",
+                        url    : createChannelUrl,
+                        headers: {
+                            "X-Atmosphere-tracking-id": receiverId
+                        },
+                        timeout: channelOpMessagingQos.ttl
+                    })
+                    .then(callCreateOnSuccess);
                 };
 
                 function logChannelCreationError(xhr){
-                    log.error(
-                            "error while creating channel on bounce proxy",
-                            {
-                                channelId : channelId,
-                                channelUrl : channelUrl,
-                                status : xhr.status,
-                                responseText : xhr.responseText
-                            });
+                    log.error( "error while creating channel on bounce proxy",
+                        {
+                            channelId   : channelId,
+                            channelUrl  : channelUrl,
+                            status      : xhr.status,
+                            responseText: xhr.responseText
+                        });
                 }
 
                 var createInternal = function createInternal(resolve, reject) {
-                    callCreate().then(resolve).catch(function(xhr, errorType) {
+
+                    function createInternalOnError(xhr, errorType) {
                         logChannelCreationError(xhr);
                         if (createChannelTimestamp + channelCreationTimeout_ms <= Date.now()) {
                             reject(new Error("Error creating channel"));
                         } else {
                             LongTimer.setTimeout(createInternal, channelCreationRetryDelay_ms, resolve, reject);
                         }
-                    });
+                    }
+
+                    callCreate().then(resolve).catch(createInternalOnError);
                 };
 
                 /**
@@ -297,16 +310,21 @@ define(
                     }
                     channelId = theChannelId;
                     createChannelTimestamp = Date.now();
-                    return callCreate().catch(function(xhr, errorType) {
+
+                    function channelCreationRetryHandler(resolve, reject) {
+                        LongTimer.setTimeout(createInternal, channelCreationRetryDelay_ms, resolve, reject);
+                    }
+
+                    function callCreateOnError(xhr, errorType) {
                         logChannelCreationError(xhr);
                         if (createChannelTimestamp + channelCreationTimeout_ms <= Date.now()) {
                             throw new Error("Error creating channel");
                         } else {
-                            return new Promise(function(resolve, reject) {
-                                LongTimer.setTimeout(createInternal, channelCreationRetryDelay_ms, resolve, reject);
-                            });
+                            return new Promise(channelCreationRetryHandler);
                         }
-                    });
+                    }
+
+                    return callCreate().catch(callCreateOnError);
                 };
 
                 /**
