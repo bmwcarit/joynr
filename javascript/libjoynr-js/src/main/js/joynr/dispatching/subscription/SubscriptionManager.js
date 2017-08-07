@@ -144,7 +144,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 if (subscriptionListener.onError) {
                     var publicationMissedException = new PublicationMissedException({
                         detailMessage : "alertAfterIntervalMs period exceeded without receiving publication",
-                        subscriptionId : subscriptionId
+                        subscriptionId: subscriptionId
                     });
                     subscriptionListener.onError(publicationMissedException);
                 }
@@ -156,13 +156,14 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             } else {
                 delay_ms = alertAfterIntervalMs - timeSinceLastPublication;
             }
-            if (!subscriptionEnds(subscriptionId, delay_ms)) {
 
+            function checkPublicationDelay() {
+                checkPublication(subscriptionId, alertAfterIntervalMs);
+            }
+
+            if (!subscriptionEnds(subscriptionId, delay_ms)) {
                 // log.debug("Rescheduling checkPublication with delay: " + delay_ms);
-                publicationCheckTimerIds[subscriptionId] =
-                        LongTimer.setTimeout(function checkPublicationDelay() {
-                            checkPublication(subscriptionId, alertAfterIntervalMs);
-                        }, delay_ms);
+                publicationCheckTimerIds[subscriptionId] = LongTimer.setTimeout(checkPublicationDelay, delay_ms);
             }
         }
 
@@ -198,14 +199,14 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 };
             }
             subscriptionListeners[subscriptionRequest.subscriptionId] = new SubscriptionListener({
-                onReceive : onReceiveWrapper,
-                onError : settings.onError,
-                onSubscribed : settings.onSubscribed
+                onReceive   : onReceiveWrapper,
+                onError     : settings.onError,
+                onSubscribed: settings.onSubscribed
             });
             var subscriptionInfo = Util.extend({
-                proxyId : settings.proxyId,
-                providerDiscoveryEntry : settings.providerDiscoveryEntry,
-                lastPublicationTime_ms : 0
+                proxyId               : settings.proxyId,
+                providerDiscoveryEntry: settings.providerDiscoveryEntry,
+                lastPublicationTime_ms: 0
             }, subscriptionRequest);
 
             subscriptionInfos[subscriptionRequest.subscriptionId] = subscriptionInfo;
@@ -225,13 +226,13 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         }
 
         function removeRequestFromMulticastSubscribers(multicastId, subscriptionId) {
-            var i,multicastIdPattern, subscribers;
+            var i, multicastIdPattern, subscribers;
             for (multicastIdPattern in multicastSubscribers) {
                 if (multicastSubscribers.hasOwnProperty(multicastIdPattern)) {
                     subscribers = multicastSubscribers[multicastIdPattern];
-                    for(i=0;i<subscribers.length;i++) {
+                    for (i = 0;i < subscribers.length;i++) {
                         if (subscribers[i] === subscriptionId) {
-                            subscribers.splice(i,1);
+                            subscribers.splice(i, 1);
                             if (subscribers.length === 0) {
                                 delete multicastSubscribers[multicastIdPattern];
                             }
@@ -298,70 +299,74 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *          an error upon failure
          */
         this.registerSubscription =
-                function registerSubscription(settings) {
-                    return new Promise(function(resolve, reject) {
-                        if (!isReady()) {
-                            reject(new Error("SubscriptionManager is already shut down"));
-                        }
-                        var subscriptionId = settings.subscriptionId || uuid();
-                        // log.debug("Registering Subscription Id " + subscriptionId);
+            function registerSubscription(settings) {
+                function registerSubstriptionResolver(resolve, reject) {
+                    if (!isReady()) {
+                        reject(new Error("SubscriptionManager is already shut down"));
+                    }
+                    var subscriptionId = settings.subscriptionId || uuid();
+                    // log.debug("Registering Subscription Id " + subscriptionId);
 
-                        if (settings.attributeName === undefined) {
-                            reject(new Error("Error: attributeName not provided in call to registerSubscription, settings = " + JSON.stringify(settings)));
-                            return;
-                        }
-                        if (settings.attributeType === undefined) {
-                            reject(new Error("Error: attributeType not provided in call to registerSubscription, settings = " + JSON.stringify(settings)));
-                            return;
-                        }
+                    if (settings.attributeName === undefined) {
+                        reject(new Error("Error: attributeName not provided in call to registerSubscription, settings = " + JSON.stringify(settings)));
+                        return;
+                    }
+                    if (settings.attributeType === undefined) {
+                        reject(new Error("Error: attributeType not provided in call to registerSubscription, settings = " + JSON.stringify(settings)));
+                        return;
+                    }
 
-                        if (settings.onError === undefined){
-                            log.warn("Warning: subscription for attribute \"" + settings.attributeName + "\" has been done without error callback function. You will not be informed about missed publications. Please specify the \"onError\" parameter while subscribing!");
-                        }
-                        if (settings.onReceive === undefined){
-                            log.warn("Warning: subscription for attribute \"" + settings.attributeName + "\" has been done without receive callback function. You will not be informed about incoming publications. Please specify the \"onReceive\" parameter while subscribing!");
-                        }
-                        var subscriptionRequest = new SubscriptionRequest({
-                            subscriptionId : subscriptionId,
-                            subscribedToName : settings.attributeName,
-                            qos : settings.qos
-                        });
-
-                        var messagingQos = new MessagingQos({
-                            ttl : calculateTtl(subscriptionRequest.qos)
-                        });
-
-                        subscriptionReplyCallers[subscriptionId] = {
-                            resolve : resolve,
-                            reject : reject
-                        };
-
-                        storeSubscriptionRequest(settings, subscriptionRequest);
-
-                        dispatcher.sendSubscriptionRequest({
-                            from : settings.proxyId,
-                            toDiscoveryEntry : settings.providerDiscoveryEntry,
-                            messagingQos : messagingQos,
-                            subscriptionRequest : subscriptionRequest
-                        }).catch(function(error) {
-                            cleanupSubscription(subscriptionId);
-                            if (settings.onError) {
-                                settings.onError(error);
-                            }
-                            reject(error);
-                            return;
-                        });
+                    if (settings.onError === undefined){
+                        log.warn("Warning: subscription for attribute \"" + settings.attributeName + "\" has been done without error callback function. You will not be informed about missed publications. Please specify the \"onError\" parameter while subscribing!");
+                    }
+                    if (settings.onReceive === undefined){
+                        log.warn("Warning: subscription for attribute \"" + settings.attributeName + "\" has been done without receive callback function. You will not be informed about incoming publications. Please specify the \"onReceive\" parameter while subscribing!");
+                    }
+                    var subscriptionRequest = new SubscriptionRequest({
+                        subscriptionId  : subscriptionId,
+                        subscribedToName: settings.attributeName,
+                        qos             : settings.qos
                     });
-                };
+
+                    var messagingQos = new MessagingQos({
+                        ttl: calculateTtl(subscriptionRequest.qos)
+                    });
+
+                    subscriptionReplyCallers[subscriptionId] = {
+                        resolve: resolve,
+                        reject : reject
+                    };
+
+                    storeSubscriptionRequest(settings, subscriptionRequest);
+
+                    function sendSubscriptionRequestCatcher(error) {
+                        cleanupSubscription(subscriptionId);
+                        if (settings.onError) {
+                            settings.onError(error);
+                        }
+                        reject(error);
+                        return;
+                    }
+
+                    dispatcher.sendSubscriptionRequest({
+                        from               : settings.proxyId,
+                        toDiscoveryEntry   : settings.providerDiscoveryEntry,
+                        messagingQos       : messagingQos,
+                        subscriptionRequest: subscriptionRequest
+                    }).catch(sendSubscriptionRequestCatcher);
+                }
+
+                return new Promise(registerSubstriptionResolver);
+            };
 
         function addRequestToMulticastSubscribers(multicastId, subscriptionId) {
-            var i,subscribers;
+            var i, subscribers;
             var multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
             if (multicastSubscribers[multicastIdPattern] === undefined) {
                 multicastSubscribers[multicastIdPattern] = [];
             }
             subscribers = multicastSubscribers[multicastIdPattern];
-            for(i=0;i<subscribers.length;i++) {
+            for (i = 0;i < subscribers.length;i++) {
                 if (subscribers[i] === subscriptionId) {
                     return;
                 }
@@ -373,17 +378,17 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             var i, request;
             if (parameters.selective) {
                 request = new BroadcastSubscriptionRequest({
-                    subscriptionId : parameters.subscriptionId || uuid(),
-                    subscribedToName : parameters.broadcastName,
-                    qos : parameters.subscriptionQos,
-                    filterParameters : parameters.filterParameters
+                    subscriptionId  : parameters.subscriptionId || uuid(),
+                    subscribedToName: parameters.broadcastName,
+                    qos             : parameters.subscriptionQos,
+                    filterParameters: parameters.filterParameters
                 });
             } else {
                 request = new MulticastSubscriptionRequest({
-                    multicastId : SubscriptionUtil.createMulticastId(parameters.providerDiscoveryEntry.participantId, parameters.broadcastName, parameters.partitions),
-                    subscriptionId : parameters.subscriptionId || uuid(),
-                    subscribedToName : parameters.broadcastName,
-                    qos : parameters.subscriptionQos
+                    multicastId     : SubscriptionUtil.createMulticastId(parameters.providerDiscoveryEntry.participantId, parameters.broadcastName, parameters.partitions),
+                    subscriptionId  : parameters.subscriptionId || uuid(),
+                    subscribedToName: parameters.broadcastName,
+                    qos             : parameters.subscriptionQos
                 });
                 addRequestToMulticastSubscribers(request.multicastId, request.subscriptionId);
             }
@@ -428,7 +433,7 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
         this.registerBroadcastSubscription = function(parameters) {
             var messagingQos;
 
-            return new Promise(function(resolve, reject) {
+            function registerBroadcastSubscriptionResolver(resolve, reject) {
                 if (!isReady()) {
                     reject(new Error("SubscriptionManager is already shut down"));
                 }
@@ -436,30 +441,34 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
                 var subscriptionRequest = createBroadcastSubscriptionRequest(parameters);
 
                 messagingQos = new MessagingQos({
-                    ttl : calculateTtl(subscriptionRequest.qos)
+                    ttl: calculateTtl(subscriptionRequest.qos)
                 });
 
                 subscriptionReplyCallers[subscriptionRequest.subscriptionId] = {
-                    resolve : resolve,
+                    resolve: resolve,
                     reject : reject
                 };
 
                 storeSubscriptionRequest(parameters, subscriptionRequest);
 
-                dispatcher.sendBroadcastSubscriptionRequest({
-                    from : parameters.proxyId,
-                    toDiscoveryEntry : parameters.providerDiscoveryEntry,
-                    messagingQos : messagingQos,
-                    subscriptionRequest : subscriptionRequest
-                }).catch(function(error) {
+                function sendBroadcastSubscriptionRequestOnError(error) {
                     cleanupSubscription(subscriptionRequest.subscriptionId);
                     if (parameters.onError) {
                         parameters.onError(error);
                     }
                     reject(error);
                     return;
-                });
-            });
+                }
+
+                dispatcher.sendBroadcastSubscriptionRequest({
+                    from               : parameters.proxyId,
+                    toDiscoveryEntry   : parameters.providerDiscoveryEntry,
+                    messagingQos       : messagingQos,
+                    subscriptionRequest: subscriptionRequest
+                }).catch(sendBroadcastSubscriptionRequestOnError);
+            }
+
+            return new Promise(registerBroadcastSubscriptionResolver);
         };
 
         /**
@@ -473,9 +482,8 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             var subscriptionListener = subscriptionListeners[subscriptionReply.subscriptionId];
 
             if (subscriptionReplyCaller === undefined && subscriptionListener === undefined) {
-                log
-                        .error("error handling subscription reply, because subscriptionReplyCaller and subscriptionListener could not be found: "
-                            + JSONSerializer.stringify(subscriptionReply, undefined, 4));
+                log.error("error handling subscription reply, because subscriptionReplyCaller and subscriptionListener could not be found: "
+                   + JSONSerializer.stringify(subscriptionReply, undefined, 4));
                 return;
             }
 
@@ -518,14 +526,14 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            {MulticastPublication} incoming multicast publication
          */
         this.handleMulticastPublication = function handleMulticastPublication(publication) {
-            var i,multicastIdPattern, subscribers, subscribersFound = false;
+            var i, multicastIdPattern, subscribers, subscribersFound = false;
             for (multicastIdPattern in multicastSubscribers) {
                 if (multicastSubscribers.hasOwnProperty(multicastIdPattern)) {
-                    if(publication.multicastId.match(new RegExp(multicastIdPattern)) !== null) {
+                    if (publication.multicastId.match(new RegExp(multicastIdPattern)) !== null) {
                         subscribers = multicastSubscribers[multicastIdPattern];
                         if (subscribers !== undefined) {
                             subscribersFound = true;
-                            for (i=0;i<subscribers.length;i++) {
+                            for (i = 0;i < subscribers.length;i++) {
                                 var subscriptionListener = subscriptionListeners[subscribers[i]];
                                 if (publication.error) {
                                     if (subscriptionListener.onError) {
@@ -560,29 +568,29 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
          *            {SubscriptionPublication} incoming publication
          */
         this.handlePublication =
-                function handlePublication(publication) {
-                    if (subscriptionInfos[publication.subscriptionId] === undefined) {
-                        throw new Error("Publication cannot be handled, as no subscription with "
-                                + "subscriptionId " + publication.subscriptionId + " is known.");
+            function handlePublication(publication) {
+                if (subscriptionInfos[publication.subscriptionId] === undefined) {
+                    throw new Error("Publication cannot be handled, as no subscription with "
+                            + "subscriptionId " + publication.subscriptionId + " is known.");
+                }
+                setLastPublicationTime(publication.subscriptionId, Date.now());
+                var subscriptionListener = subscriptionListeners[publication.subscriptionId];
+                if (publication.error) {
+                    if (subscriptionListener.onError) {
+                        subscriptionListener.onError(publication.error);
+                    } else {
+                        log.debug("subscriptionListener with Id \"" + publication.subscriptionId
+                        + "\" has no onError callback. Skipping error publication");
                     }
-                    setLastPublicationTime(publication.subscriptionId, Date.now());
-                    var subscriptionListener = subscriptionListeners[publication.subscriptionId];
-                    if (publication.error) {
-                        if (subscriptionListener.onError) {
-                            subscriptionListener.onError(publication.error);
-                        } else {
-                            log.debug("subscriptionListener with Id \"" + publication.subscriptionId
-                            + "\" has no onError callback. Skipping error publication");
-                        }
-                    } else if (publication.response) {
-                        if (subscriptionListener.onReceive) {
-                            subscriptionListener.onReceive(publication.response);
-                        } else {
-                            log.debug("subscriptionListener with Id \"" + publication.subscriptionId
-                            + "\" has no onReceive callback. Skipping publication");
-                        }
+                } else if (publication.response) {
+                    if (subscriptionListener.onReceive) {
+                        subscriptionListener.onReceive(publication.response);
+                    } else {
+                        log.debug("subscriptionListener with Id \"" + publication.subscriptionId
+                        + "\" has no onReceive callback. Skipping publication");
                     }
-                };
+                }
+            };
 
         /**
          * @name SubscriptionManager#unregisterSubscription
@@ -609,24 +617,24 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
             }
 
             var subscriptionStop = new SubscriptionStop({
-                subscriptionId : settings.subscriptionId
+                subscriptionId: settings.subscriptionId
             });
 
             var promise;
             if (subscriptionInfo.multicastId !== undefined) {
                 promise = dispatcher.sendMulticastSubscriptionStop({
-                    from : subscriptionInfo.proxyId,
-                    toDiscoveryEntry : subscriptionInfo.providerDiscoveryEntry,
-                    messagingQos : settings.messagingQos,
-                    multicastId : subscriptionInfo.multicastId,
-                    subscriptionStop : subscriptionStop
+                    from            : subscriptionInfo.proxyId,
+                    toDiscoveryEntry: subscriptionInfo.providerDiscoveryEntry,
+                    messagingQos    : settings.messagingQos,
+                    multicastId     : subscriptionInfo.multicastId,
+                    subscriptionStop: subscriptionStop
                 });
             } else {
                 promise = dispatcher.sendSubscriptionStop({
-                    from : subscriptionInfo.proxyId,
-                    toDiscoveryEntry : subscriptionInfo.providerDiscoveryEntry,
-                    messagingQos : settings.messagingQos,
-                    subscriptionStop : subscriptionStop
+                    from            : subscriptionInfo.proxyId,
+                    toDiscoveryEntry: subscriptionInfo.providerDiscoveryEntry,
+                    messagingQos    : settings.messagingQos,
+                    subscriptionStop: subscriptionStop
                 });
             }
 
