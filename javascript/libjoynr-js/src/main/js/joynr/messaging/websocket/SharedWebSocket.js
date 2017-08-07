@@ -53,7 +53,7 @@ define(
              *            libjoynr
              */
             function initializeConnection(websocket, localAddress) {
-                websocket.send(WebSocket.encodeString(JSON.stringify(localAddress)), {binary: true});
+                websocket.send(WebSocket.encodeString(JSON.stringify(localAddress)), { binary: true });
             }
 
             /**
@@ -67,7 +67,7 @@ define(
                 while (queuedMessages.length) {
                     queued = queuedMessages.shift();
                     try {
-                        websocket.send(WebSocket.marshalJoynrMessage(queued.message), {binary: true});
+                        websocket.send(WebSocket.marshalJoynrMessage(queued.message), { binary: true });
                         queued.resolve();
                         // Error is thrown if the socket is no longer open
                     } catch (e) {
@@ -79,28 +79,31 @@ define(
             }
 
             function sendMessage(websocket, joynrMessage, queuedMessages) {
-                return new Promise(function(resolve, reject){
+
+                function sendMessageResolver(resolve, reject){
                     if (websocket.readyState === WebSocket.OPEN) {
                         try {
-                            websocket.send(WebSocket.marshalJoynrMessage(joynrMessage), {binary: true});
+                            websocket.send(WebSocket.marshalJoynrMessage(joynrMessage), { binary: true });
                             resolve();
                             // Error is thrown if the socket is no longer open, so requeue to the front
                         } catch (e) {
                             // add the message back to the front of the queue
                             queuedMessages.unshift({
-                                message : joynrMessage,
-                                resolve : resolve
+                                message: joynrMessage,
+                                resolve: resolve
                             });
                             throw e;
                         }
                     } else {
                         // push new messages onto the back of the queue
                         queuedMessages.push({
-                            message : joynrMessage,
-                            resolve : resolve
+                            message: joynrMessage,
+                            resolve: resolve
                         });
                     }
-                });
+                }
+
+                return new Promise(sendMessageResolver);
             }
 
             /**
@@ -203,9 +206,12 @@ define(
                          *            joynrMessage the joynr message to transmit
                          */
                         this.send = function send(joynrMessage) {
-                            return sendMessage(websocket, joynrMessage, queuedMessages).catch(function(e1) {
-                                    resetConnection();
-                                });
+
+                            function sendMessageOnError(e1) {
+                                resetConnection();
+                            }
+
+                            return sendMessage(websocket, joynrMessage, queuedMessages).catch(sendMessageOnError);
                         };
 
                         /**
@@ -227,7 +233,7 @@ define(
                         // the same API as WebSocket but have a setter function called when
                         // the attribute is set.
                         Object.defineProperty(this, "onmessage", {
-                            set : function(newCallback) {
+                            set: function(newCallback) {
                                 if (typeof newCallback === "function") {
                                     onmessageCallback = function(data) {
                                         WebSocket.unmarshalJoynrMessage(data, newCallback);
@@ -239,11 +245,11 @@ define(
                                                 + typeof newCallback);
                                 }
                             },
-                            get : function() {
+                            get: function() {
                                 return onmessageCallback;
                             },
-                            enumerable : false,
-                            configurable : false
+                            enumerable  : false,
+                            configurable: false
                         });
 
                     };
