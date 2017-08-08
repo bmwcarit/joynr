@@ -33,7 +33,7 @@
     "mqtt" : "2.0.1",
     "bluebird" : "3.3.5",
     "promise": ">=7.1.1",
-    "smrf-native": "0.2.0",
+    "smrf-native": "0.2.1",
     "wscpp" : "0.2.4"
   },
   "engines": {
