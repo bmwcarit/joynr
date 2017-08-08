@@ -54,13 +54,14 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 
 «getNamespaceStarter(francaIntf)»
 «asyncClassName»::«asyncClassName»(
+		std::weak_ptr<joynr::JoynrRuntime> runtime,
 		joynr::ConnectorFactory* connectorFactory,
 		const std::string &domain,
 		const joynr::MessagingQos &qosSettings
 ) :
-	joynr::ProxyBase(connectorFactory, domain, qosSettings),
-	«className»Base(connectorFactory, domain, qosSettings)«IF hasFireAndForgetMethods(francaIntf)»,
-	«interfaceName»FireAndForgetProxy(connectorFactory, domain, qosSettings)«ENDIF»
+	joynr::ProxyBase(runtime, connectorFactory, domain, qosSettings),
+	«className»Base(runtime, connectorFactory, domain, qosSettings)«IF hasFireAndForgetMethods(francaIntf)»,
+	«interfaceName»FireAndForgetProxy(runtime, connectorFactory, domain, qosSettings)«ENDIF»
 {
 }
 

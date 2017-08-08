@@ -51,12 +51,13 @@ class InterfaceFireAndForgetProxyCppTemplate extends InterfaceTemplate {
 
 «getNamespaceStarter(francaIntf)»
 «fireAndForgetClassName»::«fireAndForgetClassName»(
+		std::weak_ptr<joynr::JoynrRuntime> runtime,
 		joynr::ConnectorFactory* connectorFactory,
 		const std::string &domain,
 		const joynr::MessagingQos &qosSettings
 ) :
-		joynr::ProxyBase(connectorFactory, domain, qosSettings),
-		«className»Base(connectorFactory, domain, qosSettings)
+		joynr::ProxyBase(runtime, connectorFactory, domain, qosSettings),
+		«className»Base(runtime, connectorFactory, domain, qosSettings)
 {
 }
 
