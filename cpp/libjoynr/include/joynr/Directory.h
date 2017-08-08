@@ -26,7 +26,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <boost/system/error_code.hpp>
+#include <boost/asio/error.hpp>
 
 #include "joynr/IReplyCaller.h"
 #include "joynr/ITimeoutListener.h"
@@ -163,7 +163,7 @@ public:
             timerIt->second.asyncWait([keyId, this](const boost::system::error_code& errorCode) {
                 if (!errorCode) {
                     this->removeAfterTimeout<T>(keyId);
-                } else if (errorCode != boost::system::errc::operation_canceled) {
+                } else if (errorCode != boost::asio::error::operation_aborted) {
                     JOYNR_LOG_TRACE(this->logger,
                                     "Timer removal of entry from directory failed : {}",
                                     errorCode.message());
