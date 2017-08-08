@@ -69,27 +69,28 @@ define(
                 var replyCallers = {};
                 var started = true;
 
+                var CLEANUP_CYCLE_INTERVAL = 1000;
+
+                var cleanupInterval = setInterval(function(){
+                    var currentTime = Date.now();
+                    var id;
+                    for (id in replyCallers) {
+                        if (replyCallers.hasOwnProperty(id)){
+                            var caller = replyCallers[id];
+                            if (caller.expiresAt <= currentTime) {
+                                caller.reject(new Error("Request with id \"" + id + "\" failed: ttl expired"));
+                                delete replyCallers[id];
+                            }
+                        }
+
+                    }
+                }, CLEANUP_CYCLE_INTERVAL);
+
+
                 function checkIfReady() {
                     if (!started) {
                         throw new Error("RequestReplyManager is already shut down");
                     }
-                }
-
-                /**
-                 * deletes stored reply caller object correctly
-                 *
-                 * @name RequestReplyManager#deleteReplyCaller
-                 * @function
-                 *
-                 * @param {String}
-                 *            requestReplyId
-                 */
-                function deleteReplyCaller(requestReplyId) {
-                    var replyCaller = replyCallers[requestReplyId];
-                    if (replyCaller && replyCaller.replyCallMissedTimer !== undefined) {
-                        LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
-                    }
-                    delete replyCallers[requestReplyId];
                 }
 
                 /**
@@ -120,7 +121,7 @@ define(
                         // resolve will be called upon successful response
 
                         function requestErrorCatcher(error){
-                            deleteReplyCaller(settings.request.requestReplyId);
+                            delete replyCallers[settings.request.requestReplyId];
                             reject(error);
                         }
 
@@ -195,19 +196,10 @@ define(
                  */
                 this.addReplyCaller = function addReplyCaller(requestReplyId, replyCaller, ttl_ms) {
 
-                    function replyCallMissed() {
-                        var replyCaller = replyCallers[requestReplyId]; // TODO why shadow ????
-                        if (replyCaller === undefined) {
-                            return;
-                        }
-                        replyCaller.reject(new Error("Request with id \"" + requestReplyId + "\" failed: ttl expired"));
-                        delete replyCallers[requestReplyId];
-                    }
-
-                    checkIfReady();
-                    replyCallers[requestReplyId] = replyCaller;
-                    replyCaller.replyCallMissedTimer = LongTimer.setTimeout(replyCallMissed, ttl_ms);
-                };
+                        checkIfReady();
+                        replyCaller.expiresAt = Date.now() + ttl_ms;
+                        replyCallers[requestReplyId] = replyCaller;
+                    };
 
                 /**
                  * The function removeRequestCaller is called when a provider no longer wishes to
@@ -472,9 +464,7 @@ define(
                                 } else {
                                     replyCaller.resolve(reply.response);
                                 }
-                                if (replyCaller.replyCallMissedTimer !== undefined) {
-                                    LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
-                                }
+
                                 delete replyCallers[reply.requestReplyId];
                             } catch (e) {
                                 log.error("exception thrown during handling reply "
@@ -491,14 +481,13 @@ define(
                  * @name RequestReplyManager#shutdown
                  */
                 this.shutdown = function shutdown() {
+                    clearInterval(cleanupInterval);
+
                     var requestReplyId;
                     for (requestReplyId in replyCallers) {
                         if (replyCallers.hasOwnProperty(requestReplyId)) {
                             var replyCaller = replyCallers[requestReplyId];
                             if (replyCaller) {
-                                if (replyCaller.replyCallMissedTimer !== undefined) {
-                                    LongTimer.clearTimeout(replyCaller.replyCallMissedTimer);
-                                }
                                 replyCaller.reject(new Error("RequestReplyManager is already shut down"));
                             }
                         }

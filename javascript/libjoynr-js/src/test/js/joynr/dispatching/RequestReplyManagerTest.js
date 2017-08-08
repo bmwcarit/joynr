@@ -62,6 +62,7 @@ define(
                         var requestReplyManager;
                         var typeRegistry;
                         var ttl_ms = 50;
+                        var toleranceMs = 1500; // at least 1000 since that's the cleanup interval
                         var requestReplyId = "requestReplyId";
                         var testResponse = [ "testResponse"
                         ];
@@ -165,6 +166,10 @@ define(
                                     "test.ComplexTypeWithComplexAndSimpleProperties",
                                     ComplexTypeWithComplexAndSimpleProperties);
                             requestReplyManager = new RequestReplyManager(dispatcherSpy, typeRegistry);
+                        });
+
+                        afterEach(function () {
+                            requestReplyManager.shutdown();
                         });
 
                         it("is instantiable", function(done) {
@@ -387,6 +392,8 @@ define(
                                 "reject"
                             ]);
 
+                            var timeout = toleranceMs + ttl_ms;
+
                             requestReplyManager.addReplyCaller(
                                 requestReplyId,
                                 replyCallerSpy,
@@ -396,7 +403,7 @@ define(
                             waitsFor(function() {
                                 return replyCallerSpy.resolve.calls.count() > 0
                                     || replyCallerSpy.reject.calls.count() > 0;
-                            }, "reject or fulfill to be called", ttl_ms * 2).then(function() {
+                            }, "reject or fulfill to be called", timeout).then(function() {
                                 expect(replyCallerSpy.resolve).toHaveBeenCalled();
                                 expect(replyCallerSpy.resolve).toHaveBeenCalledWith(testResponse);
                                 expect(replyCallerSpy.reject).not.toHaveBeenCalled();
@@ -413,6 +420,8 @@ define(
                                         "reject"
                                     ]);
 
+                                    var timeout = toleranceMs + ttl_ms;
+
                                     requestReplyManager.addReplyCaller(
                                         "requestReplyId",
                                         replyCallerSpy,
@@ -420,15 +429,15 @@ define(
 
                                     waitsFor(function() {
                                         return replyCallerSpy.resolve.calls.count() > 0
-                                            || replyCallerSpy.reject.calls.count() > 0;
-                                    }, "reject or fulfill to be called", ttl_ms * 2).then(function() {
+                                        || replyCallerSpy.reject.calls.count() > 0;
+                                    }, "reject or fulfill to be called", timeout).then(function() {
                                         expect(replyCallerSpy.resolve).not.toHaveBeenCalled();
                                         expect(replyCallerSpy.reject).toHaveBeenCalled();
                                         done();
                                         return null;
                                     }).catch(fail);
 
-                                });
+                        });
 
                         function testHandleReplyWithExpectedType(params, promiseChain) {
                             var replyCallerSpy = jasmine.createSpyObj("deferred", [
