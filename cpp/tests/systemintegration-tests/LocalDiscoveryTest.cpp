@@ -113,15 +113,16 @@ class LocalDiscoveryTestTestProxy : public tests::testProxy
 public:
 
     LocalDiscoveryTestTestProxy(
+        std::weak_ptr<joynr::JoynrRuntime> runtime,
         joynr::ConnectorFactory* connectorFactory,
         const std::string& domain,
         const joynr::MessagingQos& qosSettings) :
-            joynr::ProxyBase(connectorFactory, domain, qosSettings),
-            testProxyBase(connectorFactory, domain, qosSettings),
-            testFireAndForgetProxy(connectorFactory, domain, qosSettings),
-            testSyncProxy(connectorFactory, domain, qosSettings),
-            testAsyncProxy(connectorFactory, domain, qosSettings),
-            testProxy(connectorFactory, domain, qosSettings)
+            joynr::ProxyBase(runtime, connectorFactory, domain, qosSettings),
+            testProxyBase(runtime, connectorFactory, domain, qosSettings),
+            testFireAndForgetProxy(runtime, connectorFactory, domain, qosSettings),
+            testSyncProxy(runtime, connectorFactory, domain, qosSettings),
+            testAsyncProxy(runtime, connectorFactory, domain, qosSettings),
+            testProxy(runtime, connectorFactory, domain, qosSettings)
     {
 
     }

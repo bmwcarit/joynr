@@ -48,6 +48,7 @@
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 #include "joynr/IClusterControllerSignalHandler.h"
 #include "joynr/IDispatcher.h"
+#include "joynr/IMessageRouter.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStub.h"
@@ -61,6 +62,7 @@
 #include "joynr/ITransportMessageReceiver.h"
 #include "joynr/ITransportMessageSender.h"
 #include "joynr/IWebSocketSendInterface.h"
+#include "joynr/JoynrRuntime.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
@@ -123,6 +125,16 @@ using ::testing::Return;
 // Disable compiler warnings.
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #pragma GCC diagnostic ignored "-Wreorder"
+
+class MockJoynrRuntime : public joynr::JoynrRuntime
+{
+public:
+    MockJoynrRuntime(joynr::Settings& settings) : joynr::JoynrRuntime(settings) {
+    }
+    MockJoynrRuntime(std::unique_ptr<joynr::Settings> settings) : joynr::JoynrRuntime(*settings) {
+    }
+    MOCK_METHOD0(getMessageRouter, std::shared_ptr<joynr::IMessageRouter>());
+};
 
 template<typename T>
 class MockProxyBuilder : public joynr::IProxyBuilder<T>
@@ -680,24 +692,29 @@ public:
 
 class MockRoutingProxy : public virtual joynr::system::RoutingProxy {
 public:
-    MockRoutingProxy() :
+    MockRoutingProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
         RoutingProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         ProxyBase(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         RoutingProxyBase(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         RoutingSyncProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         RoutingAsyncProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos())
@@ -1010,24 +1027,29 @@ public:
 
 class MockGlobalDomainAccessControllerProxy : public virtual joynr::infrastructure::GlobalDomainAccessControllerProxy {
 public:
-    MockGlobalDomainAccessControllerProxy() :
+    MockGlobalDomainAccessControllerProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
         GlobalDomainAccessControllerProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         ProxyBase(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainAccessControllerProxyBase(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainAccessControllerSyncProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainAccessControllerAsyncProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos())
@@ -1186,24 +1208,29 @@ public:
 
 class MockGlobalDomainRoleControllerProxy : public virtual joynr::infrastructure::GlobalDomainRoleControllerProxy {
 public:
-    MockGlobalDomainRoleControllerProxy() :
+    MockGlobalDomainRoleControllerProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
         GlobalDomainRoleControllerProxy(
+                runtime,
                 nullptr,
                   "domain",
                 joynr::MessagingQos()),
         ProxyBase(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainRoleControllerProxyBase(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainRoleControllerSyncProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainRoleControllerAsyncProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos())
