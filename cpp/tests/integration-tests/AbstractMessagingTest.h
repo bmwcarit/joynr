@@ -121,7 +121,7 @@ public:
         // - *MessagingStub.transmit (IMessaging)
         // - MessageSender.send
 
-        std::shared_ptr<MockDispatcher> mockDispatcher = std::make_shared<MockDispatcher>();
+        auto mockDispatcher = std::make_shared<MockDispatcher>();
         // InProcessMessagingSkeleton should receive the message
         EXPECT_CALL(*inProcessMessagingSkeleton, transmit(_,_))
                 .Times(0);

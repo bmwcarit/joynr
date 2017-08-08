@@ -260,8 +260,8 @@ TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
 }
 
 TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapability){
-    std::shared_ptr<MockDispatcher> mockDispatcher1 = std::make_shared<MockDispatcher>();
-    std::shared_ptr<MockDispatcher> mockDispatcher2 = std::make_shared<MockDispatcher>();
+    auto mockDispatcher1 = std::make_shared<MockDispatcher>();
+    auto mockDispatcher2 = std::make_shared<MockDispatcher>();
     types::ProviderQos testQos;
     testQos.setPriority(100);
 
@@ -316,8 +316,8 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
 }
 
 TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
-    std::shared_ptr<MockDispatcher> mockDispatcher1 = std::make_shared<MockDispatcher>();
-    std::shared_ptr<MockDispatcher> mockDispatcher2 = std::make_shared<MockDispatcher>();
+    auto mockDispatcher1 = std::make_shared<MockDispatcher>();
+    auto mockDispatcher2 = std::make_shared<MockDispatcher>();
     types::ProviderQos testQos;
     testQos.setPriority(100);
 
