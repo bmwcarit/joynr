@@ -28,10 +28,11 @@ class JoynrRuntime;
 
 INIT_LOGGER(ProxyBase);
 
-ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
+ProxyBase::ProxyBase(std::weak_ptr<JoynrRuntime> runtime,
+                     ConnectorFactory* connectorFactory,
                      const std::string& domain,
                      const MessagingQos& qosSettings)
-        : runtime(),
+        : runtime(std::move(runtime)),
           connectorFactory(connectorFactory),
           domain(domain),
           qosSettings(qosSettings),
@@ -52,11 +53,6 @@ void ProxyBase::handleArbitrationFinished(
 const std::string& ProxyBase::getProxyParticipantId() const
 {
     return this->proxyParticipantId;
-}
-
-void ProxyBase::setJoynrRuntime(std::weak_ptr<JoynrRuntime> runtime)
-{
-    this->runtime = std::move(runtime);
 }
 
 } // namespace joynr

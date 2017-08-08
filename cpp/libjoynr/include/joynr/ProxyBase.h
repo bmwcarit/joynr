@@ -37,7 +37,8 @@ class JOYNR_EXPORT ProxyBase : public std::enable_shared_from_this<ProxyBase>
 {
 
 public:
-    ProxyBase(ConnectorFactory* connectorFactory,
+    ProxyBase(std::weak_ptr<JoynrRuntime> runtime,
+              ConnectorFactory* connectorFactory,
               const std::string& domain,
               const MessagingQos& qosSettings);
     virtual ~ProxyBase() = default;
@@ -48,7 +49,6 @@ public:
      * it is needed in proxy builder to register the next hop on message router.
      */
     const std::string& getProxyParticipantId() const;
-    void setJoynrRuntime(std::weak_ptr<JoynrRuntime> runtime);
 
 protected:
     DISALLOW_COPY_AND_ASSIGN(ProxyBase);

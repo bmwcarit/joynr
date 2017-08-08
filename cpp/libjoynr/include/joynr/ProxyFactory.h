@@ -44,8 +44,7 @@ public:
                                    const std::string& domain,
                                    const MessagingQos& qosSettings)
     {
-        auto proxy = std::make_shared<T>(connectorFactory.get(), domain, qosSettings);
-        proxy->setJoynrRuntime(std::move(runtime));
+        auto proxy = std::make_shared<T>(runtime, connectorFactory.get(), domain, qosSettings);
         return proxy;
     }
 
