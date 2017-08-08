@@ -862,9 +862,7 @@ void JoynrClusterControllerRuntime::registerAccessControlListEditorProvider()
 
 void JoynrClusterControllerRuntime::unregisterAccessControlListEditorProvider()
 {
-#ifdef JOYNR_ENABLE_ACCESS_CONTROL
     unregisterProvider(accessControlListEditorProviderParticipantId);
-#endif
 }
 
 void JoynrClusterControllerRuntime::unregisterMessageNotificationProvider()
