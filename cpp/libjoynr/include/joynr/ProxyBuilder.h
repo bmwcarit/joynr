@@ -199,8 +199,17 @@ void ProxyBuilder<T>::buildAsync(
             domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
 
     std::shared_ptr<ProxyBuilder<T>> thisSharedPtr = this->shared_from_this();
-    auto arbitrationSucceeds = [thisSharedPtr, this, onSuccess, onError](
-            const types::DiscoveryEntryWithMetaInfo& discoverEntry) {
+    auto arbitrationSucceeds =
+            [ thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr), this, onSuccess, onError ](
+                    const types::DiscoveryEntryWithMetaInfo& discoverEntry)
+    {
+        // need to make sure own instance still exists before
+        // accesssing internal inherited member runtime
+        auto proxyBuilderSharedPtr = thisWeakPtr.lock();
+        if (proxyBuilderSharedPtr == nullptr) {
+            onError(exceptions::DiscoveryException(runtimeAlreadyDestroyed));
+            return;
+        }
         auto runtimeSharedPtr = runtime.lock();
         if (runtimeSharedPtr == nullptr) {
             onError(exceptions::DiscoveryException(runtimeAlreadyDestroyed));
