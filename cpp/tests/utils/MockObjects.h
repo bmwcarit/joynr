@@ -42,6 +42,7 @@
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/DelayedScheduler.h"
+#include "joynr/Dispatcher.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
@@ -185,7 +186,7 @@ public:
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:
-    MockInProcessMessagingSkeleton() : InProcessMessagingSkeleton(nullptr){}
+    MockInProcessMessagingSkeleton(std::weak_ptr<joynr::IDispatcher> dispatcher) : InProcessMessagingSkeleton(dispatcher){}
     MOCK_METHOD2(transmit, void(std::shared_ptr<joynr::ImmutableMessage> message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
 };
 
