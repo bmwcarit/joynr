@@ -7,6 +7,8 @@
 * **[C++]** joynr accepts files which have size at most 2 GB.
 * **[Java, Properties]** Changed default values of joynr.messaging.mqtt.keepalivetimersec (new value: 30s) and
  joynr.messaging.mqtt.connectiontimeoutsec (new value: 60s)
+* **[JS]** Updated wscpp version to 0.2.4
+* **[C++, Java, JS]** Updated smrf version ot 0.2.1
 
 # joynr 0.27.4
 
