@@ -24,8 +24,9 @@
 
 namespace mococrw
 {
-class AsymmetricPrivateKey;
+class AsymmetricKeypair;
 class X509Certificate;
+using AsymmetricPrivateKey = AsymmetricKeypair;
 } // namespace mococrw
 
 namespace joynr
