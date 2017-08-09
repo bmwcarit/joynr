@@ -53,10 +53,10 @@ public:
         clusterControllerRuntime = std::make_unique<JoynrClusterControllerRuntime>(std::make_unique<Settings>(settingsPath));
         clusterControllerRuntime->start();
 
-        libjoynrProviderRuntime = std::make_unique<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"));
+        libjoynrProviderRuntime = std::make_unique<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"), nullptr);
         EXPECT_TRUE(libjoynrProviderRuntime->connect(std::chrono::milliseconds(2000)));
 
-        libjoynrProxyRuntime = std::make_unique<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration2.settings"));
+        libjoynrProxyRuntime = std::make_unique<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration2.settings"), nullptr);
         EXPECT_TRUE(libjoynrProxyRuntime->connect(std::chrono::milliseconds(2000)));
     }
 

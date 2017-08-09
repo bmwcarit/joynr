@@ -57,7 +57,7 @@ public:
         runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(ccSettings));
 
         auto libJoynrSettings = std::make_unique<Settings>(std::get<1>(GetParam()));
-        libJoynrRuntime = std::make_unique<TestLibJoynrWebSocketRuntime>(std::move(libJoynrSettings));
+        libJoynrRuntime = std::make_unique<TestLibJoynrWebSocketRuntime>(std::move(libJoynrSettings), nullptr);
 
         std::string uuid = util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;

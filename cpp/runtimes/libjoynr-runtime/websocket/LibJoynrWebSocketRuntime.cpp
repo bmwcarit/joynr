@@ -25,6 +25,7 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/IKeychain.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketPpClientNonTLS.h"
@@ -35,13 +36,14 @@ namespace joynr
 
 INIT_LOGGER(LibJoynrWebSocketRuntime);
 
-LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings)
+LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings,
+                                                   std::shared_ptr<IKeychain> keyChain)
         : LibJoynrRuntime(std::move(settings)),
           wsSettings(*this->settings),
           websocket(nullptr),
           initializationMsg()
 {
-    createWebsocketClient();
+    createWebsocketClient(keyChain);
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
@@ -129,8 +131,10 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
     websocket->send(smrf::ByteArrayView(rawMessage), onFailure);
 }
 
-void LibJoynrWebSocketRuntime::createWebsocketClient()
+void LibJoynrWebSocketRuntime::createWebsocketClient(std::shared_ptr<IKeychain> keyChain)
 {
+    std::ignore = keyChain;
+
     system::RoutingTypes::WebSocketAddress webSocketAddress =
             wsSettings.createClusterControllerMessagingAddress();
 
