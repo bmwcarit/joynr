@@ -727,6 +727,12 @@ get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_
 
 message(STATUS "variable muesli_INCLUDE_DIRECTORIES= ${muesli_INCLUDE_DIRECTORIES}")
 
+if (USE_PLATFORM_MOCOCRW)
+    find_package(MoCOCrW 0.1.0 REQUIRED CONFIG)
+else(USE_PLATFORM_MOCOCRW)
+    message(ERROR "Retrieving mococrw from an external source is not supported yet.")
+endif(USE_PLATFORM_MOCOCRW)
+
 if (USE_PLATFORM_SMRF)
     find_package(smrf 0.2.0 REQUIRED CONFIG)
 else(USE_PLATFORM_SMRF)
