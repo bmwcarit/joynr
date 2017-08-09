@@ -54,7 +54,7 @@ PerformanceUtilities.forceGC = function(){
  */
 PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
     var bounceProxyBaseUrl, domain, stringLength, byteArrayLength, numRuns, timeout, brokerUri, viacc, cchost, ccport,
-        skipByteArraySizeTimesK, testRuns;
+        skipByteArraySizeTimesK, testRuns, measureMemory;
 
     testRuns = environment.testRuns || 100;
     domain = environment.domain || "performance_test_domain";
@@ -67,6 +67,7 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
     bounceProxyBaseUrl = environment.bounceProxyBaseUrl || "http://localhost:8080";
     cchost = environment.cchost || "localhost";
     ccport = environment.ccport || 4242;
+    measureMemory = environment.measureMemory || "true";
 
     if (environment.skipByteArraySizeTimesK !== undefined) {
         skipByteArraySizeTimesK = environment.skipByteArraySizeTimesK;
@@ -86,7 +87,8 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         cchost                 : cchost,
         ccport                 : ccport,
         bounceProxyBaseUrl     : bounceProxyBaseUrl,
-        skipByteArraySizeTimesK: skipByteArraySizeTimesK
+        skipByteArraySizeTimesK: skipByteArraySizeTimesK,
+        measureMemory          : measureMemory
     };
 };
 

@@ -51,6 +51,7 @@ var consumerBase = {
                 joynr.selectRuntime("inprocess");
             }
             provisioning.logging.configuration.loggers.root.level = "error";
+
             return joynr.load(provisioning).then(function(loadedJoynr) {
                 joynr = loadedJoynr;
                 log("joynr started");
@@ -77,6 +78,7 @@ var consumerBase = {
             return Promise.resolve();
         }
     },
+
     shutdown: function() {
         return joynr.shutdown();
     },
@@ -124,6 +126,19 @@ var consumerBase = {
         var testIndex = 0;
         var dummyArray = new Array(testRuns);
         var runsTime = [];
+        var measureMemory = options.measureMemory == "true";
+        var memInterval;
+        var memSum = 0;
+        var memTests = 0;
+
+        if (measureMemory){
+            memInterval = setInterval(function () {
+                var memoryUsage = process.memoryUsage();
+                memSum += memoryUsage.rss;
+                memTests++;
+            }, 1000);
+        }
+
         return Promise.map(dummyArray, function(){
             var data = [];
             for (var j = 0; j < numRuns; j++){
@@ -148,6 +163,13 @@ var consumerBase = {
                 variance /= runsTime.length;
                 var deviation = Math.sqrt(variance);
                 error("the total runtime was: " + totalTime + " runs: " + totalRuns + " msgs/s: " + averageTime + " +/- " + deviation);
+
+                if (measureMemory){
+                    var memav = memSum / memTests;
+                    var mb = (memav / 1048576.0).toFixed(2);
+                    error("test used on average: " + mb + " MB memory");
+                    clearInterval(memInterval);
+                }
             });
     },
     echoString: function() {
@@ -166,6 +188,7 @@ var consumerBase = {
         };
         return consumerBase.excecuteMultipleBenchmarks("echoString", generateData, testProcedure);
     },
+
     echoComplexStruct: function() {
         var generateData = function(i){
             return {
