@@ -907,7 +907,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 
     if (joynrDispatcher != nullptr) {
         joynrDispatcher->shutdown();
-        JOYNR_LOG_TRACE(logger, "joynrDispatcher");
         joynrDispatcher.reset();
     }
 
