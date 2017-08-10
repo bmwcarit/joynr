@@ -70,8 +70,8 @@ var consumerBase = {
             }).then(function(echoProxy) {
                 consumerBase.echoProxy = echoProxy;
                 return null;
-            }).catch(function(error) {
-                throw error;
+            }).catch(function(e) {
+                throw e;
             });
         } else {
             return Promise.resolve();
