@@ -79,14 +79,16 @@ void «className»::handleArbitrationFinished(
 	«produceUnsubscribeFromAttributeSignature(attribute, className)»
 	{
 		auto runtimeSharedPtr = runtime.lock();
-		if (!runtimeSharedPtr) {
-			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
-					 because the required runtime has been already destroyed.");
-			return;
-		} else {
-			JOYNR_LOG_WARN(logger, "proxy cannot subscribe to «className».«attributeName», \
-					 because the communication end partner is not (yet) known");
-			return;
+		if (!runtimeSharedPtr || !connector) {
+			if (!runtimeSharedPtr) {
+				JOYNR_LOG_WARN(logger, "proxy cannot unsubscribe from «className».«attributeName», \
+						 because the required runtime has been already destroyed.");
+				return;
+			} else {
+				JOYNR_LOG_WARN(logger, "proxy cannot unsubscribe from «className».«attributeName», \
+						 because the communication end partner is not (yet) known");
+				return;
+			}
 		}
 		connector->unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 	}
