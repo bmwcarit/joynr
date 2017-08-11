@@ -90,21 +90,21 @@ public:
     ~SystemServicesRoutingTest(){
         runtime->deleteChannel();
         runtime->stopExternalCommunication();
+        runtime.reset();
+
         std::remove(settingsFilename.c_str());
+
+        // Delete persisted files
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
     void SetUp(){
         participantId = util::createUuid();
         isGloballyVisible = true;
         routingProxyBuilder = runtime->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
-    }
-
-    void TearDown(){
-        // Delete persisted files
-        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
 protected:
