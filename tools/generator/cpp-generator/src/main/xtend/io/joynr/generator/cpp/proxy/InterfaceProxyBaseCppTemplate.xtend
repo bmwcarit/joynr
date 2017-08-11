@@ -81,12 +81,12 @@ void «className»::handleArbitrationFinished(
 		auto runtimeSharedPtr = runtime.lock();
 		if (!runtimeSharedPtr || !connector) {
 			if (!runtimeSharedPtr) {
-				JOYNR_LOG_WARN(logger, "proxy cannot unsubscribe from «className».«attributeName», \
-						 because the required runtime has been already destroyed.");
+				JOYNR_LOG_WARN(logger, "proxy cannot unsubscribe from «className».«attributeName», "
+						 "because the required runtime has been already destroyed.");
 				return;
 			} else {
-				JOYNR_LOG_WARN(logger, "proxy cannot unsubscribe from «className».«attributeName», \
-						 because the communication end partner is not (yet) known");
+				JOYNR_LOG_WARN(logger, "proxy cannot unsubscribe from «className».«attributeName», "
+						 "because the communication end partner is not (yet) known");
 				return;
 			}
 		}
@@ -98,11 +98,11 @@ void «className»::handleArbitrationFinished(
 		if (!runtimeSharedPtr || !connector) {
 			std::string errorMsg;
 			if (!runtimeSharedPtr) {
-				errorMsg = "proxy cannot subscribe to «className».«attributeName», \
-						because the required runtime has been already destroyed.";
+				errorMsg = "proxy cannot subscribe to «className».«attributeName», "
+						"because the required runtime has been already destroyed.";
 			} else {
-				errorMsg = "proxy cannot subscribe to «className».«attributeName», \
-						because the communication end partner is not (yet) known";
+				errorMsg = "proxy cannot subscribe to «className».«attributeName», "
+						"because the communication end partner is not (yet) known";
 			}
 			JOYNR_LOG_WARN(logger, errorMsg);
 			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
@@ -122,11 +122,11 @@ void «className»::handleArbitrationFinished(
 		if (!runtimeSharedPtr || !connector) {
 			std::string errorMsg;
 			if (!runtimeSharedPtr) {
-				errorMsg = "proxy cannot subscribe to «className».«attributeName», \
-						 because the required runtime has been already destroyed.";
+				errorMsg = "proxy cannot subscribe to «className».«attributeName», "
+						 "because the required runtime has been already destroyed.";
 			} else {
-				errorMsg = "proxy cannot subscribe to «className».«attributeName», \
-						 because the communication end partner is not (yet) known";
+				errorMsg = "proxy cannot subscribe to «className».«attributeName», "
+						 "because the communication end partner is not (yet) known";
 			}
 			JOYNR_LOG_WARN(logger, errorMsg);
 			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
@@ -148,13 +148,13 @@ void «className»::handleArbitrationFinished(
 	{
 		auto runtimeSharedPtr = runtime.lock();
 		if (!runtimeSharedPtr) {
-			JOYNR_LOG_WARN(logger, "proxy cannot unsubscribe from «className».«broadcastName» broadcast, \
-					 because the required runtime has been already destroyed.");
+			JOYNR_LOG_WARN(logger, "proxy cannot unsubscribe from «className».«broadcastName» broadcast, "
+					 "because the required runtime has been already destroyed.");
 			return;
 		}
 		if (!connector){
-			JOYNR_LOG_WARN(logger, "proxy cannot unsubscribe from «className».«broadcastName» broadcast, \
-					 because the communication end partner is not (yet) known");
+			JOYNR_LOG_WARN(logger, "proxy cannot unsubscribe from «className».«broadcastName» broadcast, "
+					 "because the communication end partner is not (yet) known");
 			return;
 		}
 		connector->unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
@@ -164,8 +164,8 @@ void «className»::handleArbitrationFinished(
 		std::string errorMsg;
 		auto runtimeSharedPtr = runtime.lock();
 		if (!runtimeSharedPtr) {
-			errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, \
-					 because the required runtime has been already destroyed.";
+			errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, "
+					 "because the required runtime has been already destroyed.";
 			JOYNR_LOG_WARN(logger, errorMsg);
 			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
 			auto future = std::make_shared<Future<std::string>>();
@@ -174,8 +174,8 @@ void «className»::handleArbitrationFinished(
 			return future;
 		}
 		if (!connector){
-			errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, \
-				because the communication end partner is not (yet) known";
+			errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, "
+				"because the communication end partner is not (yet) known";
 		}
 
 		«IF !broadcast.selective»
@@ -212,8 +212,8 @@ void «className»::handleArbitrationFinished(
 		std::string errorMsg;
 		auto runtimeSharedPtr = runtime.lock();
 		if (!runtimeSharedPtr) {
-			errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, \
-					 because the required runtime has been already destroyed.";
+			errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, "
+					 "because the required runtime has been already destroyed.";
 			JOYNR_LOG_WARN(logger, errorMsg);
 			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorMsg);
 			auto future = std::make_shared<Future<std::string>>();
@@ -222,8 +222,8 @@ void «className»::handleArbitrationFinished(
 			return future;
 		}
 		if (!connector){
-			errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, \
-				because the communication end partner is not (yet) known";
+			errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, "
+				"because the communication end partner is not (yet) known";
 		}
 
 		«IF !broadcast.selective»
