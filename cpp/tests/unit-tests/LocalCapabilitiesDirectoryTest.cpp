@@ -605,39 +605,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
                                     defaultOnError);
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, registerCapabilitiesMultipleTimesDoesNotDuplicate)
-{
-    types::ProviderQos qos;
-    int exceptionCounter = 0;
-    // simulate capabilities client cannot connect to global directory
-    EXPECT_CALL(*capabilitiesClient, add(_, _, _)).Times(3).WillRepeatedly(
-            InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
-
-    for (int i = 0; i < 3; i++) {
-        try {
-            joynr::types::DiscoveryEntry entry(defaultProviderVersion,
-                                               DOMAIN_1_NAME,
-                                               INTERFACE_1_NAME,
-                                               dummyParticipantId1,
-                                               qos,
-                                               lastSeenDateMs,
-                                               expiryDateMs,
-                                               PUBLIC_KEY_ID);
-            localCapabilitiesDirectory->add(entry,
-                                            defaultOnSuccess,
-                                            defaultOnError);
-        } catch (const exceptions::JoynrException& e) {
-            std::ignore = e;
-            exceptionCounter++;
-        }
-    }
-
-    EXPECT_EQ(3, exceptionCounter);
-    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
-    std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(100);
-    EXPECT_EQ(1, capabilities.size());
-}
-
 TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
 {
     types::ProviderQos qos;
@@ -1655,13 +1622,13 @@ std::tuple<bool,bool> const LCDWithAC_UseCases[] = {
 INSTANTIATE_TEST_CASE_P(
   WithAC, LocalCapabilitiesDirectoryACTest, ::testing::ValuesIn(LCDWithAC_UseCases));
 
-class LocalCapabilitiesDirectoryPurgeTest
+class LocalCapabilitiesDirectoryWithProviderScope
         : public LocalCapabilitiesDirectoryTest,
           public ::testing::WithParamInterface<types::ProviderScope::Enum>
 {
 };
 
-TEST_P(LocalCapabilitiesDirectoryPurgeTest, purgeTimedOutEntries)
+TEST_P(LocalCapabilitiesDirectoryWithProviderScope, purgeTimedOutEntries)
 {
     types::ProviderQos providerQos;
     providerQos.setScope(GetParam());
@@ -1698,7 +1665,57 @@ TEST_P(LocalCapabilitiesDirectoryPurgeTest, purgeTimedOutEntries)
     callback->clearResults();
 }
 
-INSTANTIATE_TEST_CASE_P(PurgeTimedoutEntries,
-                        LocalCapabilitiesDirectoryPurgeTest,
+TEST_P(LocalCapabilitiesDirectoryWithProviderScope, registerCapabilitiesMultipleTimesDoesNotDuplicate)
+{
+    types::ProviderQos providerQos;
+    providerQos.setScope(GetParam());
+
+    const int numberOfDuplicatedEntriesToAdd = 3;
+
+    int exceptionCounter = 0;
+    const bool testingGlobalScope = GetParam() == types::ProviderScope::GLOBAL;
+    if(testingGlobalScope) {
+        // simulate capabilities client cannot connect to global directory
+        EXPECT_CALL(*capabilitiesClient, add(_, _, _))
+                .Times(numberOfDuplicatedEntriesToAdd)
+                .WillRepeatedly(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
+    }
+
+    for (int i = 0; i < numberOfDuplicatedEntriesToAdd; ++i) {
+        // change expiryDate and lastSeen so that entries are not exactly equal
+        lastSeenDateMs++;
+        expiryDateMs++;
+
+        joynr::types::DiscoveryEntry entry(defaultProviderVersion,
+                                           DOMAIN_1_NAME,
+                                           INTERFACE_1_NAME,
+                                           dummyParticipantId1,
+                                           providerQos,
+                                           lastSeenDateMs,
+                                           expiryDateMs,
+                                           PUBLIC_KEY_ID);
+        try {
+            localCapabilitiesDirectory->add(entry,
+                                            defaultOnSuccess,
+                                            defaultOnError);
+        } catch (const exceptions::JoynrException& e) {
+            std::ignore = e;
+            exceptionCounter++;
+        }
+    }
+
+    if(testingGlobalScope) {
+        EXPECT_EQ(numberOfDuplicatedEntriesToAdd, exceptionCounter);
+    }
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+    std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(100);
+
+    // we do expect only one entry from the lookup
+    EXPECT_EQ(1, capabilities.size());
+}
+
+INSTANTIATE_TEST_CASE_P(changeProviderScope,
+                        LocalCapabilitiesDirectoryWithProviderScope,
                         ::testing::Values(types::ProviderScope::LOCAL,
                                           types::ProviderScope::GLOBAL));
