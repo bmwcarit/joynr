@@ -133,8 +133,6 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
 
 void LibJoynrWebSocketRuntime::createWebsocketClient(std::shared_ptr<IKeychain> keyChain)
 {
-    std::ignore = keyChain;
-
     system::RoutingTypes::WebSocketAddress webSocketAddress =
             wsSettings.createClusterControllerMessagingAddress();
 
@@ -143,22 +141,9 @@ void LibJoynrWebSocketRuntime::createWebsocketClient(std::shared_ptr<IKeychain> 
     std::string privateKeyPemFilename = wsSettings.getPrivateKeyPemFilename();
 
     if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS) {
-        if (checkAndLogCryptoFileExistence(certificateAuthorityPemFilename,
-                                           certificatePemFilename,
-                                           privateKeyPemFilename,
-                                           logger)) {
-            JOYNR_LOG_INFO(logger, "Using TLS connection");
-            websocket =
-                    std::make_shared<WebSocketPpClientTLS>(wsSettings,
-                                                           singleThreadIOService->getIOService(),
-                                                           certificateAuthorityPemFilename,
-                                                           certificatePemFilename,
-                                                           privateKeyPemFilename);
-        } else {
-            throw exceptions::JoynrRuntimeException(
-                    "Settings property 'cluster-controller-messaging-url' uses TLS "
-                    "but not all TLS properties were configured");
-        }
+        JOYNR_LOG_INFO(logger, "Using TLS connection");
+        websocket = std::make_shared<WebSocketPpClientTLS>(
+                wsSettings, singleThreadIOService->getIOService(), keyChain);
     } else if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WS) {
         JOYNR_LOG_INFO(logger, "Using non-TLS connection");
         websocket = std::make_shared<WebSocketPpClientNonTLS>(

@@ -19,29 +19,43 @@
 
 #include "WebSocketPpClientTLS.h"
 
+#include <mococrw/x509.h>
+#include <mococrw/key.h>
+
+#include "joynr/IKeychain.h"
+
 namespace joynr
 {
 WebSocketPpClientTLS::WebSocketPpClientTLS(const WebSocketSettings& wsSettings,
                                            boost::asio::io_service& ioService,
-                                           const std::string& caPemFile,
-                                           const std::string& certPemFile,
-                                           const std::string& privateKeyPemFile)
+                                           std::shared_ptr<joynr::IKeychain> keyChain)
         : WebSocketPpClient<websocketpp::config::asio_tls_client>(wsSettings, ioService)
 {
-    endpoint.set_tls_init_handler([this, caPemFile, certPemFile, privateKeyPemFile](
-                                          ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
-        std::ignore = hdl;
-        return createSSLContext(caPemFile, certPemFile, privateKeyPemFile, logger);
-    });
+    endpoint.set_tls_init_handler(
+            [this, keyChain](ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
+                std::ignore = hdl;
+                return createSSLContext(keyChain, logger);
+            });
 }
 
 std::shared_ptr<WebSocketPpClientTLS::SSLContext> WebSocketPpClientTLS::createSSLContext(
-        const std::string& caPemFile,
-        const std::string& certPemFile,
-        const std::string& privateKeyPemFile,
+        std::shared_ptr<joynr::IKeychain> keyChain,
         Logger& logger)
 {
     std::shared_ptr<SSLContext> sslContext;
+
+    const std::string password = "";
+    const std::string certificatePem = keyChain->getTlsCertificate()->toPEM();
+    const std::string privateKeyPem = keyChain->getTlsKey()->privateKeyToPem(password);
+    const std::string certificateAuthorityCertificatePem =
+            keyChain->getTlsRootCertificate()->toPEM();
+
+    const boost::asio::const_buffer certificatePemBuffer(
+            certificatePem.data(), certificatePem.length());
+    const boost::asio::const_buffer privateKeyPemBuffer(
+            privateKeyPem.data(), privateKeyPem.length());
+    const boost::asio::const_buffer certificateAuthorityCertificatePemBuffer(
+            certificateAuthorityCertificatePem.data(), certificateAuthorityCertificatePem.length());
 
     try {
         sslContext = std::make_shared<SSLContext>(SSLContext::tlsv12);
@@ -52,9 +66,9 @@ std::shared_ptr<WebSocketPpClientTLS::SSLContext> WebSocketPpClientTLS::createSS
                                 SSLContext::no_sslv3 | SSLContext::no_tlsv1 |
                                 SSLContext::no_tlsv1_1 | SSLContext::no_compression);
 
-        sslContext->load_verify_file(caPemFile);
-        sslContext->use_certificate_file(certPemFile, SSLContext::pem);
-        sslContext->use_private_key_file(privateKeyPemFile, SSLContext::pem);
+        sslContext->add_certificate_authority(certificateAuthorityCertificatePemBuffer);
+        sslContext->use_private_key(privateKeyPemBuffer, WebSocketPpClientTLS::SSLContext::pem);
+        sslContext->use_certificate(certificatePemBuffer, WebSocketPpClientTLS::SSLContext::pem);
     } catch (boost::system::system_error& e) {
         JOYNR_LOG_ERROR(logger, "Failed to initialize TLS session {}", e.what());
         return nullptr;

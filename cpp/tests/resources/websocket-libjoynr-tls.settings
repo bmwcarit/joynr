@@ -1,5 +1,2 @@
 [websocket]
-certificate-authority-pem-filename=/data/ssl-data/certs/ca.cert.pem
-certificate-pem-filename=/data/ssl-data/certs/client.cert.pem
-private-key-pem-filename=/data/ssl-data/private/client.key.pem
 cluster-controller-messaging-url=wss://localhost:4243

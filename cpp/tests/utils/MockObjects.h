@@ -35,6 +35,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <mococrw/key.h>
+#include <mococrw/x509.h>
+
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/AbstractMessageRouter.h"
 #include "joynr/BrokerUrl.h"
@@ -91,6 +94,7 @@
 #include "joynr/vehicle/GpsProvider.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
 #include "joynr/WebSocketSettings.h"
+#include "joynr/IKeychain.h"
 
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/websocket/IWebSocketPpClient.h"
@@ -141,6 +145,15 @@ public:
     MOCK_METHOD0_T(build, std::unique_ptr<T>());
     MOCK_METHOD2_T(buildAsync, void(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
                                     std::function<void(const joynr::exceptions::DiscoveryException&)>));
+};
+
+class MockKeyChain : public joynr::IKeychain
+{
+public:
+    MOCK_CONST_METHOD0(getTlsCertificate, std::shared_ptr<const mococrw::X509Certificate>());
+    MOCK_CONST_METHOD0(getTlsKey, std::shared_ptr<const mococrw::AsymmetricPrivateKey>());
+    MOCK_CONST_METHOD0(getTlsRootCertificate, std::shared_ptr<const mococrw::X509Certificate>());
+    MOCK_CONST_METHOD0(getOwnerId, std::string());
 };
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
