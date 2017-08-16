@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
 
 // Register app at the dlt-daemon for logging
 #ifdef JOYNR_ENABLE_DLT_LOGGING
-    DLT_REGISTER_APP("JOYT", argv[0]);
+    DLT_REGISTER_APP("JYRC", argv[0]);
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
     // Get a logger
