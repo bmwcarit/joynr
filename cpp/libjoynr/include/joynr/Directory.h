@@ -26,7 +26,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <boost/system/error_code.hpp>
+#include <boost/asio/error.hpp>
 
 #include "joynr/IReplyCaller.h"
 #include "joynr/ITimeoutListener.h"
@@ -76,13 +76,19 @@ public:
               timeoutTimerMap(),
               mutex(),
               ioService(ioService),
-              saveFilterFunction(std::move(fun))
+              saveFilterFunction(std::move(fun)),
+              isShutdown(false)
     {
         std::ignore = directoryName;
     }
 
     Directory(const std::string& directoryName, boost::asio::io_service& ioService)
-            : callbackMap(), timeoutTimerMap(), mutex(), ioService(ioService), saveFilterFunction()
+            : callbackMap(),
+              timeoutTimerMap(),
+              mutex(),
+              ioService(ioService),
+              saveFilterFunction(),
+              isShutdown(false)
     {
         std::ignore = directoryName;
     }
@@ -133,6 +139,11 @@ public:
         {
             std::lock_guard<std::mutex> lock(mutex);
 
+            if (isShutdown) {
+                JOYNR_LOG_TRACE(logger, "add failed: already shutdown");
+                return;
+            }
+
             // An existing entry shall be overwritten by the new entry.
             // When we use unordered_map::emplace, we must remove the
             // existing entry first.
@@ -152,7 +163,7 @@ public:
             timerIt->second.asyncWait([keyId, this](const boost::system::error_code& errorCode) {
                 if (!errorCode) {
                     this->removeAfterTimeout<T>(keyId);
-                } else if (errorCode != boost::system::errc::operation_canceled) {
+                } else if (errorCode != boost::asio::error::operation_aborted) {
                     JOYNR_LOG_TRACE(this->logger,
                                     "Timer removal of entry from directory failed : {}",
                                     errorCode.message());
@@ -172,6 +183,13 @@ public:
 
         callbackMap.erase(keyId);
         timeoutTimerMap.erase(keyId);
+    }
+
+    void shutdown()
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        isShutdown = true;
+        timeoutTimerMap.clear();
     }
 
     template <typename Archive>
@@ -237,6 +255,7 @@ private:
     std::mutex mutex;
     boost::asio::io_service& ioService;
     SaveFilterFunction saveFilterFunction;
+    bool isShutdown;
 };
 
 template <typename Key, typename T>

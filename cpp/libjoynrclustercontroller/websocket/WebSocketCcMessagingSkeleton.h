@@ -52,6 +52,7 @@ public:
     virtual void transmit(
             std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
+    virtual void shutdown() = 0;
 };
 
 /**
@@ -109,7 +110,9 @@ public:
     /**
      * @brief Destructor
      */
-    ~WebSocketCcMessagingSkeleton() override
+    ~WebSocketCcMessagingSkeleton() override = default;
+
+    void shutdown() override
     {
         websocketpp::lib::error_code shutdownError;
         endpoint.stop_listening(shutdownError);

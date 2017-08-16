@@ -30,6 +30,8 @@
 #include "joynr/vehicle/GpsProxy.h"
 
 #include "tests/utils/MockObjects.h"
+#include "joynr/LibjoynrSettings.h"
+#include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using ::testing::Return;
 
@@ -69,6 +71,8 @@ TEST_F(ProxyIntegrationTest, proxyInitialisation)
     MessagingQos messagingQos;
 
     EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-    auto proxy =  std::make_unique<vehicle::GpsProxy>(connectorFactory, domain, messagingQos);
+    auto settings = std::make_unique<Settings>();
+    auto runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
+    auto proxy =  std::make_unique<vehicle::GpsProxy>(runtime, connectorFactory, domain, messagingQos);
     ASSERT_TRUE(proxy != nullptr);
 }

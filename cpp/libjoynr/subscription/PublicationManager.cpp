@@ -125,6 +125,11 @@ PublicationManager::~PublicationManager()
     }
 }
 
+void PublicationManager::shutdown()
+{
+    delayedScheduler->shutdown();
+}
+
 PublicationManager::PublicationManager(boost::asio::io_service& ioService,
                                        IMessageSender* messageSender,
                                        std::uint64_t ttlUplift,

@@ -84,7 +84,7 @@ public:
      * Sets the global access controller proxy. If ACEs/RCEs shall be retrieved from the backend
      * this method must be called before the LocalDomainAccessController is used for the first time.
      */
-    void setGlobalDomainAccessControllerProxy(std::unique_ptr<
+    void setGlobalDomainAccessControllerProxy(std::shared_ptr<
             infrastructure::GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy);
 
     /**
@@ -550,7 +550,7 @@ private:
 
     std::unordered_map<std::string, RceSubscription> rceSubscriptions;
 
-    std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy>
+    std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
             globalDomainAccessControllerProxy;
     std::shared_ptr<infrastructure::GlobalDomainAccessControlListEditorProxy>
             globalDomainAccessControlListEditorProxy;

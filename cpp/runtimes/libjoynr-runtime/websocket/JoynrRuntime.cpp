@@ -26,7 +26,7 @@
 namespace joynr
 {
 
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
         const std::string& pathToLibjoynrSettings,
         const std::string& pathToMessagingSettings)
 {
@@ -34,7 +34,7 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
     return createRuntime(createSettings(pathToLibjoynrSettings, pathToMessagingSettings));
 }
 
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
 {
     Future<void> runtimeFuture;
 
@@ -51,7 +51,7 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settin
     return runtime;
 }
 
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         const std::string& pathToLibjoynrSettings,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
@@ -62,12 +62,12 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
                               std::move(onError));
 }
 
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::unique_ptr<Settings> settings,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError)
 {
-    auto runtime = std::make_unique<LibJoynrWebSocketRuntime>(std::move(settings));
+    auto runtime = std::make_shared<LibJoynrWebSocketRuntime>(std::move(settings));
     runtime->connect(std::move(onSuccess), std::move(onError));
     // this is necessary for gcc 4.9
     return std::move(runtime);

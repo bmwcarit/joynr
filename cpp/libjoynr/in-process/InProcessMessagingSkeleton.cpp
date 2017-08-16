@@ -23,7 +23,7 @@
 namespace joynr
 {
 
-InProcessMessagingSkeleton::InProcessMessagingSkeleton(IDispatcher* dispatcher)
+InProcessMessagingSkeleton::InProcessMessagingSkeleton(std::shared_ptr<IDispatcher> dispatcher)
         : dispatcher(dispatcher)
 {
 }

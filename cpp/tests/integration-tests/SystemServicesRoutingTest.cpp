@@ -83,13 +83,22 @@ public:
                 mockMessageReceiverMqtt,
                 mockMessageSender);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
+        runtime->init();
         runtime->registerRoutingProvider();
     }
 
     ~SystemServicesRoutingTest(){
         runtime->deleteChannel();
         runtime->stopExternalCommunication();
+        runtime.reset();
+
         std::remove(settingsFilename.c_str());
+
+        // Delete persisted files
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
     void SetUp(){
@@ -98,26 +107,18 @@ public:
         routingProxyBuilder = runtime->createProxyBuilder<joynr::system::RoutingProxy>(routingDomain);
     }
 
-    void TearDown(){
-        // Delete persisted files
-        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
-    }
-
 protected:
     std::string settingsFilename;
     std::unique_ptr<Settings> settings;
     std::string routingDomain;
     std::string routingProviderParticipantId;
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
     std::shared_ptr<MockTransportMessageSender> mockMessageSender;
     DiscoveryQos discoveryQos;
-    std::unique_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder;
-    std::unique_ptr<joynr::system::RoutingProxy> routingProxy;
+    std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder;
+    std::shared_ptr<joynr::system::RoutingProxy> routingProxy;
     std::string participantId;
     bool isGloballyVisible;
 

@@ -44,6 +44,7 @@ namespace joynr
 {
 
 class ICapabilities;
+class JoynrRuntime;
 
 /**
  * @brief Class to build a proxy object for the given interface T.
@@ -55,7 +56,7 @@ class ICapabilities;
  * arbitration is done.
  */
 template <class T>
-class ProxyBuilder : public IProxyBuilder<T>
+class ProxyBuilder : public IProxyBuilder<T>, public std::enable_shared_from_this<ProxyBuilder<T>>
 {
 public:
     /**
@@ -66,8 +67,9 @@ public:
      * @param dispatcherAddress The address of the dispatcher
      * @param messageRouter A shared pointer to the message router object
      */
-    ProxyBuilder(ProxyFactory& proxyFactory,
-                 IRequestCallerDirectory* requestCallerDirectory,
+    ProxyBuilder(std::weak_ptr<JoynrRuntime> runtime,
+                 ProxyFactory& proxyFactory,
+                 std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory,
                  std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
                  const std::string& domain,
                  std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
@@ -84,7 +86,7 @@ public:
      * is responsible for deletion.
      * @return The proxy object
      */
-    std::unique_ptr<T> build() override;
+    std::shared_ptr<T> build() override;
 
     /**
      * @brief Build the proxy object asynchronously
@@ -94,7 +96,7 @@ public:
      * @param onError: Will be invoked when the proxy could not be created. An exception, which
      * describes the error, is passed as the parameter.
      */
-    void buildAsync(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
+    void buildAsync(std::function<void(std::shared_ptr<T> proxy)> onSuccess,
                     std::function<void(const exceptions::DiscoveryException&)> onError) override;
 
     /**
@@ -114,10 +116,11 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
+    std::weak_ptr<JoynrRuntime> runtime;
     std::string domain;
     MessagingQos messagingQos;
     ProxyFactory& proxyFactory;
-    IRequestCallerDirectory* requestCallerDirectory;
+    std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
     std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     std::unique_ptr<Arbitrator> arbitrator;
 
@@ -125,20 +128,23 @@ private:
     std::shared_ptr<IMessageRouter> messageRouter;
     std::uint64_t messagingMaximumTtlMs;
     DiscoveryQos discoveryQos;
+    static const std::string runtimeAlreadyDestroyed;
 
     ADD_LOGGER(ProxyBuilder);
 };
 
 template <class T>
 ProxyBuilder<T>::ProxyBuilder(
+        std::weak_ptr<JoynrRuntime> runtime,
         ProxyFactory& proxyFactory,
-        IRequestCallerDirectory* requestCallerDirectory,
+        std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory,
         std::weak_ptr<system::IDiscoveryAsync> discoveryProxy,
         const std::string& domain,
         std::shared_ptr<const system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<IMessageRouter> messageRouter,
         std::uint64_t messagingMaximumTtlMs)
-        : domain(domain),
+        : runtime(std::move(runtime)),
+          domain(domain),
           messagingQos(),
           proxyFactory(proxyFactory),
           requestCallerDirectory(requestCallerDirectory),
@@ -152,12 +158,20 @@ ProxyBuilder<T>::ProxyBuilder(
 }
 
 template <class T>
-std::unique_ptr<T> ProxyBuilder<T>::build()
+const std::string ProxyBuilder<T>::runtimeAlreadyDestroyed =
+        "required runtime has been already destroyed";
+
+template <class T>
+std::shared_ptr<T> ProxyBuilder<T>::build()
 {
-    Future<std::unique_ptr<T>> proxyFuture;
+    auto runtimeSharedPtr = runtime.lock();
+    if (runtimeSharedPtr == nullptr) {
+        throw exceptions::DiscoveryException(runtimeAlreadyDestroyed);
+    }
+    Future<std::shared_ptr<T>> proxyFuture;
 
     auto onSuccess =
-            [&proxyFuture](std::unique_ptr<T> proxy) { proxyFuture.onSuccess(std::move(proxy)); };
+            [&proxyFuture](std::shared_ptr<T> proxy) { proxyFuture.onSuccess(std::move(proxy)); };
 
     auto onError = [&proxyFuture](const exceptions::DiscoveryException& exception) {
         proxyFuture.onError(std::make_shared<exceptions::DiscoveryException>(exception));
@@ -165,7 +179,7 @@ std::unique_ptr<T> ProxyBuilder<T>::build()
 
     buildAsync(onSuccess, onError);
 
-    std::unique_ptr<T> createdProxy;
+    std::shared_ptr<T> createdProxy;
     proxyFuture.get(createdProxy);
 
     return createdProxy;
@@ -173,15 +187,35 @@ std::unique_ptr<T> ProxyBuilder<T>::build()
 
 template <class T>
 void ProxyBuilder<T>::buildAsync(
-        std::function<void(std::unique_ptr<T> proxy)> onSuccess,
+        std::function<void(std::shared_ptr<T> proxy)> onSuccess,
         std::function<void(const exceptions::DiscoveryException& exception)> onError)
 {
+    auto runtimeSharedPtr = runtime.lock();
+    if (runtimeSharedPtr == nullptr) {
+        throw exceptions::DiscoveryException(runtimeAlreadyDestroyed);
+    }
     joynr::types::Version interfaceVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
     arbitrator = ArbitratorFactory::createArbitrator(
             domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
 
+    std::shared_ptr<ProxyBuilder<T>> thisSharedPtr = this->shared_from_this();
     auto arbitrationSucceeds =
-            [this, onSuccess, onError](const types::DiscoveryEntryWithMetaInfo& discoverEntry) {
+            [ thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr), this, onSuccess, onError ](
+                    const types::DiscoveryEntryWithMetaInfo& discoverEntry)
+    {
+        // need to make sure own instance still exists before
+        // accesssing internal inherited member runtime
+        auto proxyBuilderSharedPtr = thisWeakPtr.lock();
+        if (proxyBuilderSharedPtr == nullptr) {
+            onError(exceptions::DiscoveryException(runtimeAlreadyDestroyed));
+            return;
+        }
+        auto runtimeSharedPtr = runtime.lock();
+        if (runtimeSharedPtr == nullptr) {
+            onError(exceptions::DiscoveryException(runtimeAlreadyDestroyed));
+            return;
+        }
+
         if (discoverEntry.getParticipantId().empty()) {
             onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
                                                    "arbitrator but ParticipantId is empty"));
@@ -197,7 +231,8 @@ void ProxyBuilder<T>::buildAsync(
 
         bool useInProcessConnector =
                 requestCallerDirectory->containsRequestCaller(discoverEntry.getParticipantId());
-        std::unique_ptr<T> proxy(proxyFactory.createProxy<T>(domain, messagingQos));
+        std::shared_ptr<T> proxy =
+                proxyFactory.createProxy<T>(runtimeSharedPtr, domain, messagingQos);
         proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
 
         bool isGloballyVisible = !discoverEntry.getIsLocal();

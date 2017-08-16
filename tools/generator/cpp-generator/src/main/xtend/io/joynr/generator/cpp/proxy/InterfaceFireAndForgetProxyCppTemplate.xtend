@@ -51,12 +51,13 @@ class InterfaceFireAndForgetProxyCppTemplate extends InterfaceTemplate {
 
 «getNamespaceStarter(francaIntf)»
 «fireAndForgetClassName»::«fireAndForgetClassName»(
+		std::weak_ptr<joynr::JoynrRuntime> runtime,
 		joynr::ConnectorFactory* connectorFactory,
 		const std::string &domain,
 		const joynr::MessagingQos &qosSettings
 ) :
-		joynr::ProxyBase(connectorFactory, domain, qosSettings),
-		«className»Base(connectorFactory, domain, qosSettings)
+		joynr::ProxyBase(runtime, connectorFactory, domain, qosSettings),
+		«className»Base(runtime, connectorFactory, domain, qosSettings)
 {
 }
 
@@ -69,11 +70,20 @@ class InterfaceFireAndForgetProxyCppTemplate extends InterfaceTemplate {
 	 */
 	«produceFireAndForgetMethodSignature(method, fireAndForgetClassName)»
 	{
-		if (connector==nullptr){
-			«val errorMsg = "proxy cannot invoke " + methodName + " because the communication end partner is not (yet) known"»
-			JOYNR_LOG_WARN(logger, "«errorMsg»");
-				exceptions::JoynrRuntimeException error("«errorMsg»");
-				throw error;
+		auto runtimeSharedPtr = runtime.lock();
+		if (!runtimeSharedPtr || (connector==nullptr)) {
+			std::string errorMsg;
+			if (!runtimeSharedPtr) {
+				«val errorMsgRuntime = "proxy cannot invoke " + methodName + " because the required runtime has been already destroyed."»
+				errorMsg = "«errorMsgRuntime»";
+			}
+			else {
+				«val errorMsgCommunication = "proxy cannot invoke " + methodName + " because the communication end partner is not (yet) known"»
+				errorMsg = "«errorMsgCommunication»";
+			}
+			JOYNR_LOG_WARN(logger, errorMsg);
+			exceptions::JoynrRuntimeException error(errorMsg);
+			throw error;
 		}
 		else{
 			return connector->«methodName»(«outputUntypedParamList»«IF method.outputParameters.size > 0 && method.inputParameters.size > 0», «ENDIF»«params»);

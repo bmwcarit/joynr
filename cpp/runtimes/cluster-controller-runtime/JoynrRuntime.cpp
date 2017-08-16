@@ -23,7 +23,7 @@
 
 namespace joynr
 {
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
         const std::string& pathToLibjoynrSettings,
         const std::string& pathToMessagingSettings)
 {
@@ -34,18 +34,18 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
     return createRuntime(std::move(settings));
 }
 
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings)
 {
     return JoynrClusterControllerRuntime::create(std::move(settings));
 }
 
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         const std::string& pathToLibjoynrSettings,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         const std::string& pathToMessagingSettings)
 {
-    std::unique_ptr<JoynrRuntime> runtime;
+    std::shared_ptr<JoynrRuntime> runtime;
 
     try {
         runtime = createRuntime(pathToLibjoynrSettings, pathToMessagingSettings);
@@ -56,12 +56,12 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
     return runtime;
 }
 
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::unique_ptr<Settings> settings,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError)
 {
-    std::unique_ptr<JoynrRuntime> runtime;
+    std::shared_ptr<JoynrRuntime> runtime;
     try {
         runtime = createRuntime(std::move(settings));
         onSuccess();

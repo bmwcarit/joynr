@@ -168,10 +168,10 @@ int main(int argc, char* argv[])
     // Initialise the JOYn runtime
     std::string pathToMessagingSettings(dir + "/resources/radio-app-consumer.settings");
 
-    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
-    std::unique_ptr<ProxyBuilder<vehicle::RadioProxy>> proxyBuilder =
+    std::shared_ptr<ProxyBuilder<vehicle::RadioProxy>> proxyBuilder =
             runtime->createProxyBuilder<vehicle::RadioProxy>(providerDomain);
 
     // Messaging Quality of service
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     // Build a proxy
-    std::unique_ptr<vehicle::RadioProxy> proxy =
+    std::shared_ptr<vehicle::RadioProxy> proxy =
             proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))
                     ->setDiscoveryQos(discoveryQos)
                     ->build();

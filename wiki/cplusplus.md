@@ -119,9 +119,9 @@ As a prerequisite, the **provider** and **consumer domain** need to be defined a
 
 ```cpp
     // setup providerDomain, pathToMessagingSettings, and optionally pathToMessagingSettings
-    std::unique_ptr<JoynrRuntime> runtime =
+    std::shared_ptr<JoynrRuntime> runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
-    std::unique_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
+    std::shared_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 ```
 
@@ -138,7 +138,7 @@ asynchronously:
         // Process the error here
     };
 
-    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntimeAsync(
+    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntimeAsync(
         pathToLibJoynrSettings,
         onSuccess,
         onError,
@@ -283,11 +283,11 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
 
     // setup discoveryQos, messagingQos attributes
 
-    std::unique_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
+    std::shared_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 
     try {
-        std::unique_ptr<<Package>::<Interface>Proxy> proxy = proxyBuilder->setMessagingQos(messagingQos)
+        std::shared_ptr<<Package>::<Interface>Proxy> proxy = proxyBuilder->setMessagingQos(messagingQos)
             ->setCached(false) // optional
             ->setDiscoveryQos(discoveryQos) // optional
             ->build();
@@ -302,7 +302,7 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
 Use the buildAsync method of ProxyBuilder to create a proxy asynchronously:
 
 ```cpp
-    auto onSuccess = [](std::unique_ptr<<Package>::<Interface>Proxy> proxy) {
+    auto onSuccess = [](std::shared_ptr<<Package>::<Interface>Proxy> proxy) {
         // Process the created proxy here
     }
 
@@ -731,10 +731,6 @@ proxy->unsubscribeFrom<Attribute>(subscriptionTo<Attribute>Id);
 
 // for each broadcast subscribed to
 proxy->unsubscribeFrom<Broadcast>Broadcast(subscriptionTo<Broadcast>Id);
-
-delete proxy;
-delete proxyBuilder;
-delete runtime;
 ```
 
 # Building a C++ Provider application
@@ -780,7 +776,7 @@ main(int argc, char** argv)
 
 ```cpp
     // setup pathToLibJoynrSettings, and optionally pathToMessagingSettings
-    std::unique_ptr<JoynrRuntime> runtime =
+    std::shared_ptr<JoynrRuntime> runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
 ```
 

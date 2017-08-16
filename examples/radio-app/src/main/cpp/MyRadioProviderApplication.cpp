@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
     // Initialise the JOYn runtime
     std::string pathToMessagingSettings(dir + "/resources/radio-app-provider.settings");
     std::string pathToLibJoynrSettings(dir + "/resources/radio-app-provider.libjoynr.settings");
-    std::unique_ptr<JoynrRuntime> runtime =
+    std::shared_ptr<JoynrRuntime> runtime =
             JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings);
 
     // create provider instance

@@ -96,10 +96,10 @@ protected:
         }
     }
 
-    static std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy> testInterfaceProxy;
-    static std::unique_ptr<joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>>
+    static std::shared_ptr<joynr::interlanguagetest::TestInterfaceProxy> testInterfaceProxy;
+    static std::shared_ptr<joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>>
             proxyBuilder;
-    static std::unique_ptr<joynr::JoynrRuntime> runtime;
+    static std::shared_ptr<joynr::JoynrRuntime> runtime;
     static std::string providerDomain;
     static std::string programName;
 
@@ -121,15 +121,15 @@ template <typename T>
 INIT_LOGGER(IltAbstractConsumerTest<T>);
 
 template <typename T>
-std::unique_ptr<joynr::interlanguagetest::TestInterfaceProxy>
+std::shared_ptr<joynr::interlanguagetest::TestInterfaceProxy>
         IltAbstractConsumerTest<T>::testInterfaceProxy;
 
 template <typename T>
-std::unique_ptr<ProxyBuilder<interlanguagetest::TestInterfaceProxy>>
+std::shared_ptr<ProxyBuilder<interlanguagetest::TestInterfaceProxy>>
         IltAbstractConsumerTest<T>::proxyBuilder;
 
 template <typename T>
-std::unique_ptr<JoynrRuntime> IltAbstractConsumerTest<T>::runtime;
+std::shared_ptr<JoynrRuntime> IltAbstractConsumerTest<T>::runtime;
 
 template <typename T>
 std::string IltAbstractConsumerTest<T>::providerDomain = "joynr-inter-language-test-domain";

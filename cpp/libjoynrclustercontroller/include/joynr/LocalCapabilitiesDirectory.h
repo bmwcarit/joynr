@@ -84,6 +84,8 @@ public:
 
     ~LocalCapabilitiesDirectory() override;
 
+    void shutdown();
+
     /*
      * Remove all capabilities associated to participantId.
      */

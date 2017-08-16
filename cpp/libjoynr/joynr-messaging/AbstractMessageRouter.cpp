@@ -73,6 +73,13 @@ AbstractMessageRouter::AbstractMessageRouter(
 
 AbstractMessageRouter::~AbstractMessageRouter()
 {
+    // make sure this gets called in any case,
+    // even if we might have called shutdown before manually
+    shutdown();
+}
+
+void AbstractMessageRouter::shutdown()
+{
     messageQueueCleanerTimer.cancel();
     messageScheduler.shutdown();
 }

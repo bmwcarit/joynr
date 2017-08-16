@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
     // not used
     // std::string pathToLibJoynrSettings(dir.toStdString() +
     // "/resources/test-app-provider.libjoynr.settings");
-    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // create provider instance
     std::shared_ptr<IltProvider> provider(new IltProvider());

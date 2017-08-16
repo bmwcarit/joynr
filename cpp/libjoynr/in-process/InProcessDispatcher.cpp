@@ -97,4 +97,10 @@ void InProcessDispatcher::registerPublicationManager(PublicationManager* publica
     this->publicationManager = publicationManager;
 }
 
+void InProcessDispatcher::shutdown()
+{
+    requestCallerDirectory.shutdown();
+    replyCallerDirectory.shutdown();
+}
+
 } // namespace joynr

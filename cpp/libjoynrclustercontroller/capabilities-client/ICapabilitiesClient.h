@@ -67,7 +67,7 @@ public:
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError) = 0;
 
     virtual void setProxyBuilder(
-            std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
+            std::shared_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
                     capabilitiesProxyBuilder) = 0;
 };
 
