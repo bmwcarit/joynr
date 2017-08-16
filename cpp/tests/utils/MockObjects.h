@@ -310,6 +310,7 @@ public:
     MOCK_METHOD1(create, std::shared_ptr<joynr::IMessagingStub>(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
     MOCK_METHOD1(remove, void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
     MOCK_METHOD1(contains, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
+    MOCK_METHOD0(shutdown, void ());
 };
 
 class MockMessageRouter : public joynr::IMessageRouter {

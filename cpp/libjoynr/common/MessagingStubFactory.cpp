@@ -68,4 +68,9 @@ void MessagingStubFactory::registerStubFactory(
     this->factoryList.push_back(std::move(factory));
 }
 
+void MessagingStubFactory::shutdown()
+{
+    factoryList.clear();
+}
+
 } // namespace joynr

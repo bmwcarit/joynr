@@ -82,6 +82,9 @@ void AbstractMessageRouter::shutdown()
 {
     messageQueueCleanerTimer.cancel();
     messageScheduler.shutdown();
+    if (messagingStubFactory) {
+        messagingStubFactory->shutdown();
+    }
 }
 
 void AbstractMessageRouter::addProvisionedNextHop(

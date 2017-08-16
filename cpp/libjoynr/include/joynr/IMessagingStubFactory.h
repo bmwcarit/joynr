@@ -44,6 +44,7 @@ public:
                                 destinationAddress) = 0;
     virtual bool contains(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
                                   destinationAddress) = 0;
+    virtual void shutdown() = 0;
 };
 
 } // namespace joynr
