@@ -491,6 +491,30 @@ global cached discovery entries.
 * **User property**: `joynr.cc.discovery.entry.cache.cleanup.interval`
 * **Default value**: `60`
 
+### `PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS`
+When a proxy is built, the max. duration of the arbitration process can be limited
+by setting the discoveryTimeoutMs attribute of a DiscoveryQos object that is
+then passed to the proxy builder. If no discovery timeout is specified this way,
+the default value will be read from this property.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.discovery.defaultTimeoutMs`
+* **Unit**: milliseconds
+* **Default value**: `30000`
+
+### `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS`
+If a proxy is built and the corresponding provider cannot be found immediately,
+the lookup on the capabilities directory will be repeated after a certain time interval.
+The length of this interval can be specified by setting the retryIntervalMs attribute
+of a DiscoveryQos object that is then passed to the proxy builder. If no retry
+interval is specified this way, the default value will be read from this property.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.discovery.defaultRetryIntervalMs`
+* **Unit**: milliseconds
+* **Default value**: `2000`
 
 ## JEE Integration
 
