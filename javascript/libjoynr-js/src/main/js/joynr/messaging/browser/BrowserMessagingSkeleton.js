@@ -1,3 +1,5 @@
+/*jslint es5: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -40,13 +42,14 @@ define("joynr/messaging/browser/BrowserMessagingSkeleton", [
                         Object,
                         "settings.webMessagingSkeleton");
 
-        var receiverCallbacks = [];
+        var that = this;
+        this.receiverCallbacks = [];
 
         function webMessagingSkeletonListener(message) {
             if (message !== undefined) {
                 var joynrMessage = new JoynrMessage(message);
 
-                Util.fire(receiverCallbacks, joynrMessage);
+                Util.fire(that.receiverCallbacks, joynrMessage);
             } else {
                 log.warn("message with content \""
                     + JSONSerializer.stringify(message)
@@ -56,33 +59,33 @@ define("joynr/messaging/browser/BrowserMessagingSkeleton", [
 
         settings.webMessagingSkeleton.registerListener(webMessagingSkeletonListener);
 
-        /**
-         * Registers the listener function
-         *
-         * @function BrowserMessagingSkeleton#registerListener
-         *
-         * @param {Function} listener a listener function that should be added and should receive messages
-         */
-        this.registerListener = function(listener) {
-            Typing.checkProperty(listener, "Function", "listener");
-
-            receiverCallbacks.push(listener);
-        };
-
-        /**
-         * Unregisters the listener function
-         *
-         * @function BrowserMessagingSkeleton#unregisterListener
-         *
-         * @param {Function} listener the listener function that should re removed and shouldn't receive messages any more
-         */
-        this.unregisterListener = function(listener) {
-            Typing.checkProperty(listener, "Function", "listener");
-
-            Util.removeElementFromArray(receiverCallbacks, listener);
-        };
-
     }
+
+    /**
+     * Registers the listener function
+     *
+     * @function BrowserMessagingSkeleton#registerListener
+     *
+     * @param {Function} listener a listener function that should be added and should receive messages
+     */
+    BrowserMessagingSkeleton.prototype.registerListener = function(listener) {
+        Typing.checkProperty(listener, "Function", "listener");
+
+        this.receiverCallbacks.push(listener);
+    };
+
+    /**
+     * Unregisters the listener function
+     *
+     * @function BrowserMessagingSkeleton#unregisterListener
+     *
+     * @param {Function} listener the listener function that should re removed and shouldn't receive messages any more
+     */
+    BrowserMessagingSkeleton.prototype.unregisterListener = function(listener) {
+        Typing.checkProperty(listener, "Function", "listener");
+
+        Util.removeElementFromArray(this.receiverCallbacks, listener);
+    };
 
     return BrowserMessagingSkeleton;
 

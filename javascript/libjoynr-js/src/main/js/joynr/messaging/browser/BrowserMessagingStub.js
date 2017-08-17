@@ -1,3 +1,5 @@
+/*jslint es5: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -29,20 +31,22 @@ define("joynr/messaging/browser/BrowserMessagingStub", [ "joynr/util/Typing"
      * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
      */
     function BrowserMessagingStub(settings) {
-        /**
-         * @name BrowserMessagingStub#transmit
-         * @function
-         *
-         * @param {JoynrMessage} joynrMessage the joynr message to transmit
-         */
-        this.transmit = function transmit(joynrMessage) {
-            return settings.webMessagingStub.transmit({
-                windowId : settings.windowId,
-                message : joynrMessage
-            });
-        };
+
+        this._settings = settings;
 
     }
+    /**
+     * @name BrowserMessagingStub#transmit
+     * @function
+     *
+     * @param {JoynrMessage} joynrMessage the joynr message to transmit
+     */
+    BrowserMessagingStub.prototype.transmit = function transmit(joynrMessage) {
+        return this._settings.webMessagingStub.transmit({
+            windowId : this._settings.windowId,
+            message : joynrMessage
+        });
+    };
 
     return BrowserMessagingStub;
 

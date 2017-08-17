@@ -1,3 +1,5 @@
+/*jslint es5: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -36,19 +38,21 @@ define("joynr/messaging/browser/BrowserMessagingStubFactory", [
                 "WebMessagingStub",
                 "settings.webMessagingStub");
 
-        /**
-         * @name BrowserMessagingStubFactory#build
-         * @function
-         *
-         * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
-         */
-        this.build = function build(address) {
-            return new BrowserMessagingStub({
-                windowId : address.windowId,
-                webMessagingStub : settings.webMessagingStub
-            });
-        };
+        this._settings = settings;
     }
+
+    /**
+     * @name BrowserMessagingStubFactory#build
+     * @function
+     *
+     * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
+     */
+    BrowserMessagingStubFactory.prototype.build = function build(address) {
+        return new BrowserMessagingStub({
+            windowId : address.windowId,
+            webMessagingStub : this._settings.webMessagingStub
+        });
+    };
 
     return BrowserMessagingStubFactory;
 
