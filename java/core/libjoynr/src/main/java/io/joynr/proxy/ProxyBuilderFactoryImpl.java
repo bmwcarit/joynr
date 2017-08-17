@@ -34,14 +34,20 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
     private final DiscoveryAsync localDiscoveryAggregator;
     private final ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
     private final long maxMessagingTtl;
+    private final long defaultDiscoveryTimeoutMs;
+    private final long defaultDiscoveryRetryIntervalMs;
 
     @Inject
     public ProxyBuilderFactoryImpl(DiscoveryAsync localDiscoveryAggregator,
                                    ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS) long maxMessagingTtl) {
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS) long maxMessagingTtl,
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS) long defaultDiscoveryTimeoutMs,
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_RETRY_INTERVAL_MS) long defaultDiscoveryRetryIntervalMs) {
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
         this.maxMessagingTtl = maxMessagingTtl;
+        this.defaultDiscoveryTimeoutMs = defaultDiscoveryTimeoutMs;
+        this.defaultDiscoveryRetryIntervalMs = defaultDiscoveryRetryIntervalMs;
     }
 
     @Override
@@ -55,6 +61,8 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
                                              domains,
                                              interfaceClass,
                                              proxyInvocationHandlerFactory,
-                                             maxMessagingTtl);
+                                             maxMessagingTtl,
+                                             defaultDiscoveryTimeoutMs,
+                                             defaultDiscoveryRetryIntervalMs);
     }
 }

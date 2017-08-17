@@ -31,9 +31,9 @@ import com.google.common.collect.Maps;
 
 public class DiscoveryQos {
     public static final DiscoveryQos NO_FILTER;
+    public static final long NO_VALUE = -1L;
 
     private long discoveryTimeoutMs;
-    private static final long DEFAULT_DISCOVERYTIMEOUT = 30000;
 
     private ArbitrationStrategy arbitrationStrategy;
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
@@ -47,7 +47,6 @@ public class DiscoveryQos {
     private static final boolean DEFAULT_PROVIDERMUSTSUPPORTONCHANGE = false;
 
     private long retryIntervalMs;
-    private static final long DEFAULT_RETRYINTERVAL = 1000L;
 
     private DiscoveryScope discoveryScope;
     private static final DiscoveryScope DEFAULT_DISCOVERYSCOPE = DiscoveryScope.LOCAL_AND_GLOBAL;
@@ -63,11 +62,11 @@ public class DiscoveryQos {
     }
 
     public DiscoveryQos() {
-        this.discoveryTimeoutMs = DEFAULT_DISCOVERYTIMEOUT;
+        this.discoveryTimeoutMs = NO_VALUE;
         this.arbitrationStrategy = DEFAULT_ARBITRATIONSTRATEGY;
         this.cacheMaxAgeMs = DEFAULT_CACHEMAXAGE;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
-        this.retryIntervalMs = DEFAULT_RETRYINTERVAL;
+        this.retryIntervalMs = NO_VALUE;
         this.discoveryScope = DEFAULT_DISCOVERYSCOPE;
     }
 
@@ -128,7 +127,7 @@ public class DiscoveryQos {
         this.discoveryScope = discoveryScope;
         this.discoveryTimeoutMs = discoveryTimeout;
         this.arbitrationStrategy = arbitrationStrategy;
-        this.retryIntervalMs = DEFAULT_RETRYINTERVAL;
+        this.retryIntervalMs = NO_VALUE;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
 
@@ -142,7 +141,7 @@ public class DiscoveryQos {
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;
         this.cacheMaxAgeMs = cacheMaxAge;
         this.discoveryScope = discoveryScope;
-        this.retryIntervalMs = DEFAULT_RETRYINTERVAL;
+        this.retryIntervalMs = NO_VALUE;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
 
