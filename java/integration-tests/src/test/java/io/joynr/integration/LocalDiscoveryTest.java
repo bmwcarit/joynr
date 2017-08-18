@@ -55,8 +55,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Module;
-import com.google.inject.TypeLiteral;
-import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
@@ -74,7 +72,6 @@ import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.ConnectorFactory;
@@ -93,7 +90,6 @@ import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.SystemServicesSettings;
 import io.joynr.util.VersionUtil;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.tests.testProxy;
 import joynr.types.DiscoveryEntry;
@@ -219,8 +215,6 @@ public class LocalDiscoveryTest {
                                                            System.currentTimeMillis() + 100000,
                                                            "publicKeyId");
         discoveryEntries.add(discoveryEntry);
-        Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
-                                                                                                                              discoveryEntries);
 
         when(localDiscoveryEntryStoreMock.lookup(any(String[].class), eq(interfaceName))).thenReturn(discoveryEntries);
 
@@ -317,8 +311,6 @@ public class LocalDiscoveryTest {
         discoveryEntries.add(discoveryEntry);
         globalDiscoveryEntries.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
                                                                                        new MqttAddress()));
-        Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(false,
-                                                                                                                              discoveryEntries);
 
         when(globalDiscoveryEntryCacheMock.lookup(any(String[].class), eq(interfaceName), anyLong())).thenReturn(new HashSet<DiscoveryEntry>());
         Mockito.doAnswer(new Answer<Object>() {
