@@ -89,7 +89,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     private DiscoveryEntryStore localDiscoveryEntryStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
     private DiscoveryEntryStore globalDiscoveryEntryCache;
-    private static final long DEFAULT_DISCOVERYTIMEOUT = 30000;
 
     private MessageRouter messageRouter;
 
@@ -633,7 +632,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
         };
         DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
-        lookup(domains, interfaceName, new DiscoveryQos(DEFAULT_DISCOVERYTIMEOUT,
+        lookup(domains, interfaceName, new DiscoveryQos(discoveryQos.getDiscoveryTimeout(),
                                                         ArbitrationStrategy.NotSet,
                                                         discoveryQos.getCacheMaxAge(),
                                                         discoveryScope), callback);
