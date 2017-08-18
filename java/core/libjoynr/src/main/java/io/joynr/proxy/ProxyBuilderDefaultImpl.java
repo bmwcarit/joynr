@@ -84,14 +84,9 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.domains = domains;
-        discoveryQos = new DiscoveryQos();
-        applyDefaultValues(discoveryQos);
 
-        arbitrator = ArbitratorFactory.create(domains,
-                                              interfaceName,
-                                              interfaceVersion,
-                                              discoveryQos,
-                                              localDiscoveryAggregator);
+        setDiscoveryQos(new DiscoveryQos());
+
         messagingQos = new MessagingQos();
         buildCalled = false;
 
@@ -126,6 +121,14 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
      */
     @Override
     public ProxyBuilder<T> setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
+        if (discoveryQos.getDiscoveryTimeoutMs() < 0 && discoveryQos.getDiscoveryTimeoutMs() != DiscoveryQos.NO_VALUE) {
+            throw new DiscoveryException("Discovery timeout cannot be less than zero");
+        }
+
+        if (discoveryQos.getRetryIntervalMs() < 0 && discoveryQos.getRetryIntervalMs() != DiscoveryQos.NO_VALUE) {
+            throw new DiscoveryException("Discovery retry interval cannot be less than zero");
+        }
+
         applyDefaultValues(discoveryQos);
         this.discoveryQos = discoveryQos;
         // TODO which interfaceName should be used here?
