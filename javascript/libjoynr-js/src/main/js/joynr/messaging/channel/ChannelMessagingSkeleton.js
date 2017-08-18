@@ -1,3 +1,5 @@
+/*jslint es5: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -25,6 +27,8 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
     "joynr/messaging/JoynrMessage"
 ], function(Typing, LoggerFactory, DiagnosticTags, JoynrException, JoynrMessage) {
 
+    var log = LoggerFactory.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
+
     /**
      * @name ChannelMessagingSkeleton
      * @constructor
@@ -33,39 +37,38 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
      *            receiveFunction
      */
     function ChannelMessagingSkeleton(settings) {
-        var log = LoggerFactory.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
 
         Typing.checkProperty(settings, "Object", "settings");
         if (settings.messageRouter === undefined) {
             throw new Error("messageRouter is undefined");
         }
 
-        var messageRouter = settings.messageRouter;
-
-        /**
-         * Lets all listeners receive a message
-         *
-         * @name ChannelMessagingSkeleton#receiveMessage
-         * @function
-         *
-         * @param {JoynrMessage} joynrMessage
-         */
-        this.receiveMessage =
-                function receiveMessage(joynrMessage) {
-                    joynrMessage = new JoynrMessage(joynrMessage);
-                    joynrMessage.setReceivedFromGlobal(true);
-                    try {
-                        messageRouter.route(joynrMessage);
-                    } catch (e) {
-                        log.error("unable to process message: "
-                            + e
-                            + (e instanceof JoynrException ? " " + e.detailMessage : "")
-                            + " \nmessge: "
-                            + DiagnosticTags.forJoynrMessage(joynrMessage));
-                    }
-                };
+        this._messageRouter = settings.messageRouter;
 
     }
+
+    /**
+     * Lets all listeners receive a message
+     *
+     * @name ChannelMessagingSkeleton#receiveMessage
+     * @function
+     *
+     * @param {JoynrMessage} joynrMessage
+     */
+    ChannelMessagingSkeleton.prototype.receiveMessage =
+            function receiveMessage(joynrMessage) {
+                joynrMessage = new JoynrMessage(joynrMessage);
+                joynrMessage.setReceivedFromGlobal(true);
+                try {
+                    this._messageRouter.route(joynrMessage);
+                } catch (e) {
+                    log.error("unable to process message: "
+                        + e
+                        + (e instanceof JoynrException ? " " + e.detailMessage : "")
+                        + " \nmessage: "
+                        + DiagnosticTags.forJoynrMessage(joynrMessage));
+                }
+            };
 
     return ChannelMessagingSkeleton;
 
