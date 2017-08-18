@@ -194,7 +194,7 @@ private:
     std::shared_ptr<IDispatcher> inProcessDispatcher;
     std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
     std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
-    PublicationManager* publicationManager;
+    std::shared_ptr<PublicationManager> publicationManager;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::unique_ptr<InProcessPublicationSender> inProcessPublicationSender;
     std::unique_ptr<ProxyFactory> proxyFactory;

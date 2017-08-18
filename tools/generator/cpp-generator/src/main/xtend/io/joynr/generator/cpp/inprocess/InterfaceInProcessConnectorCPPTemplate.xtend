@@ -92,7 +92,7 @@ INIT_LOGGER(«className»);
 
 «className»::«className»(
 			joynr::ISubscriptionManager* subscriptionManager,
-			joynr::PublicationManager* publicationManager,
+			std::weak_ptr<joynr::PublicationManager> publicationManager,
 			joynr::InProcessPublicationSender* inProcessPublicationSender,
 			std::shared_ptr<joynr::IPlatformSecurityManager> securityManager,
 			const std::string& proxyParticipantId,
@@ -103,7 +103,7 @@ INIT_LOGGER(«className»);
 	providerParticipantId(providerParticipantId),
 	address(address),
 	subscriptionManager(subscriptionManager),
-	publicationManager(publicationManager),
+	publicationManager(std::move(publicationManager)),
 	inProcessPublicationSender(inProcessPublicationSender),
 	securityManager(securityManager)
 {
@@ -280,16 +280,21 @@ INIT_LOGGER(«className»);
 				joynr::CallContext callContext;
 				callContext.setPrincipal(securityManager->getCurrentProcessUserId());
 
-				if(!requestCaller) {
-					assert(publicationManager != nullptr);
-					/**
-					* Provider not registered yet
-					* Dispatcher will call publicationManger->restore when a new provider is added to activate
-					* subscriptions for that provider
-					*/
-					publicationManager->add(proxyParticipantId, providerParticipantId, subscriptionRequest);
+				auto publicationManagerSharedPtr = publicationManager.lock();
+				if (publicationManagerSharedPtr) {
+					if(!requestCaller) {
+						/**
+						* Provider not registered yet
+						* Dispatcher will call publicationManger->restore when a new provider is added to activate
+						* subscriptions for that provider
+						*/
+						publicationManagerSharedPtr->add(proxyParticipantId, providerParticipantId, subscriptionRequest);
+					} else {
+						publicationManagerSharedPtr->add(proxyParticipantId, providerParticipantId, caller, subscriptionRequest, inProcessPublicationSender);
+					}
 				} else {
-					publicationManager->add(proxyParticipantId, providerParticipantId, caller, subscriptionRequest, inProcessPublicationSender);
+					JOYNR_LOG_FATAL(logger, "Subscribing to attribute name «interfaceName».«attributeName» failed, because PublicationManager is not available");
+					assert(false);
 				}
 				return future;
 			«ENDIF»
@@ -303,9 +308,14 @@ INIT_LOGGER(«className»);
 				assert(false);
 			«ELSE»
 				JOYNR_LOG_TRACE(logger, "Unsubscribing. Id={}", subscriptionId);
-				assert(publicationManager != nullptr);
-				JOYNR_LOG_TRACE(logger, "Stopping publications by publication manager.");
-				publicationManager->stopPublication(subscriptionId);
+				auto publicationManagerSharedPtr = publicationManager.lock();
+				if (publicationManagerSharedPtr) {
+					JOYNR_LOG_TRACE(logger, "Stopping publications by publication manager.");
+					publicationManagerSharedPtr->stopPublication(subscriptionId);
+				} else {
+					JOYNR_LOG_FATAL(logger, "Unsubscribing from attribute name: «interfaceName».«attributeName» failed, because PublicationManager is not available");
+					assert(false);
+				}
 				assert(subscriptionManager != nullptr);
 				JOYNR_LOG_TRACE(logger, "Unregistering attribute subscription.");
 				subscriptionManager->unregisterSubscription(subscriptionId);
@@ -458,80 +468,104 @@ INIT_LOGGER(«className»);
 					subscriptionRequest.toString());
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 			assert(caller);
-			assert(publicationManager != nullptr);
-			std::shared_ptr<«interfaceName»RequestCaller> requestCaller =
-					std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+			auto publicationManagerSharedPtr = publicationManager.lock();
+			if (publicationManagerSharedPtr) {
+				std::shared_ptr<«interfaceName»RequestCaller> requestCaller =
+						std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
 
-			if(!requestCaller) {
-				/**
-				* Provider not registered yet
-				* Dispatcher will call publicationManger->restore when a new provider
-				* is added to activate subscriptions for that provider
-				*/
-				publicationManager->add(
-						proxyParticipantId,
-						providerParticipantId,
-						subscriptionRequest);
-			} else {
-				publicationManager->add(
+				if(!requestCaller) {
+					/**
+					* Provider not registered yet
+					* Dispatcher will call publicationManger->restore when a new provider
+					* is added to activate subscriptions for that provider
+					*/
+					publicationManagerSharedPtr->add(
 							proxyParticipantId,
 							providerParticipantId,
-							caller,
-							subscriptionRequest,
-							inProcessPublicationSender);
+							subscriptionRequest);
+				} else {
+					publicationManagerSharedPtr->add(
+								proxyParticipantId,
+								providerParticipantId,
+								caller,
+								subscriptionRequest,
+								inProcessPublicationSender);
+				}
+			} else {
+				JOYNR_LOG_FATAL(logger, "Subscribing to selective broadcast name «interfaceName».«broadcastName» failed, because PublicationManager is not available");
+				assert(false);
 			}
 		«ELSE»
 			auto subscriptionCallback = std::make_shared<
 				joynr::MulticastSubscriptionCallback<«returnTypes»>
 			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager);
-			std::function<void()> onSuccess =
-					[this, subscriptionRequest] () {
-						JOYNR_LOG_TRACE(
-								logger,
-								"Registered broadcast subscription: {}",
-								subscriptionRequest->toString());
-						publicationManager->add(
-									proxyParticipantId,
-									providerParticipantId,
-									*subscriptionRequest,
-									inProcessPublicationSender);
-					};
+			auto publicationManagerSharedPtr = publicationManager.lock();
+			if (publicationManagerSharedPtr) {
+				std::function<void()> onSuccess =
+						[this, subscriptionRequest] () {
+							auto publicationManagerSharedPtr = publicationManager.lock();
+							if (publicationManagerSharedPtr) {
+								JOYNR_LOG_TRACE(
+										logger,
+										"Registered broadcast subscription: {}",
+										subscriptionRequest->toString());
+								publicationManagerSharedPtr->add(
+											proxyParticipantId,
+											providerParticipantId,
+											*subscriptionRequest,
+											inProcessPublicationSender);
+							} else {
+								JOYNR_LOG_FATAL(
+										logger,
+										"Registering broadcast subscription {} failed, because PublicationManager is not available",
+										subscriptionRequest->toString());
+							}
+						};
 
-			std::string subscriptionId = subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId();
-			std::function<void(const exceptions::ProviderRuntimeException& error)> onError =
-				[this, subscriptionListener, subscriptionId]
-				(const exceptions::ProviderRuntimeException& error) {
-					std::string message = "Could not register subscription to" \
-							" «broadcastName»." \
-							" Error from subscription manager: "
-							+ error.getMessage();
-					JOYNR_LOG_ERROR(logger, message);
-					exceptions::SubscriptionException subscriptionException(
-							message,
-							subscriptionId);
-					subscriptionListener->onError(subscriptionException);
-					subscriptionManager->unregisterSubscription(subscriptionId);
-				};
-			subscriptionManager->registerSubscription(
-							broadcastName,
-							proxyParticipantId,
-							providerParticipantId,
-							partitions,
-							subscriptionCallback,
-							subscriptionListener,
-							subscriptionQos,
-							*subscriptionRequest,
-							std::move(onSuccess),
-							std::move(onError));
+				std::string subscriptionId = subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId();
+				std::function<void(const exceptions::ProviderRuntimeException& error)> onError =
+					[this, subscriptionListener, subscriptionId]
+					(const exceptions::ProviderRuntimeException& error) {
+						std::string message = "Could not register subscription to" \
+								" «broadcastName»." \
+								" Error from subscription manager: "
+								+ error.getMessage();
+						JOYNR_LOG_ERROR(logger, message);
+						exceptions::SubscriptionException subscriptionException(
+								message,
+								subscriptionId);
+						subscriptionListener->onError(subscriptionException);
+						subscriptionManager->unregisterSubscription(subscriptionId);
+					};
+				subscriptionManager->registerSubscription(
+								broadcastName,
+								proxyParticipantId,
+								providerParticipantId,
+								partitions,
+								subscriptionCallback,
+								subscriptionListener,
+								subscriptionQos,
+								*subscriptionRequest,
+								std::move(onSuccess),
+								std::move(onError));
+			} else {
+				JOYNR_LOG_FATAL(logger, "Subscribing to broadcast name «interfaceName».«broadcastName» failed, because PublicationManager is not available");
+				assert(false);
+			}
 		«ENDIF»
 		return future;
 	}
 
 	«produceUnsubscribeFromBroadcastSignature(broadcast, className)» {
 		JOYNR_LOG_TRACE(logger, "Unsubscribing broadcast. Id={}", subscriptionId);
-		assert(publicationManager != nullptr);
-		JOYNR_LOG_TRACE(logger, "Stopping publications by publication manager.");
-		publicationManager->stopPublication(subscriptionId);
+		auto publicationManagerSharedPtr = publicationManager.lock();
+		if (publicationManagerSharedPtr) {
+			JOYNR_LOG_TRACE(logger, "Stopping publications by publication manager.");
+			publicationManagerSharedPtr->stopPublication(subscriptionId);
+		} else {
+			JOYNR_LOG_FATAL(logger, "Unsubscribing from broadcast Id={} failed because PublicationManager is not available", subscriptionId);
+			assert(false);
+		}
 		assert(subscriptionManager != nullptr);
 		JOYNR_LOG_TRACE(logger, "Unregistering broadcast subscription.");
 		subscriptionManager->unregisterSubscription(subscriptionId);

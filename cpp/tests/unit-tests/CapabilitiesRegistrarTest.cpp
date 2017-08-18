@@ -50,7 +50,7 @@ public:
             mockMessageRouter(new MockMessageRouter(singleThreadedIOService.getIOService())),
             expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION),
             mockMessageSender(new MockMessageSender()),
-            pubManager(singleThreadedIOService.getIOService(), mockMessageSender)
+            pubManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), mockMessageSender))
     {
         singleThreadedIOService.start();
     }
@@ -92,7 +92,7 @@ protected:
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     const types::Version expectedProviderVersion;
     IMessageSender* mockMessageSender;
-    PublicationManager pubManager;
+    std::shared_ptr<PublicationManager> pubManager;
 };
 
 TEST_F(CapabilitiesRegistrarTest, add){

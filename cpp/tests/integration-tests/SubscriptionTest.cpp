@@ -75,6 +75,7 @@ public:
         dispatcher(messageSender, singleThreadedIOService.getIOService()),
         subscriptionManager(nullptr),
         provider(new MockTestProvider),
+        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender.get())),
         requestCaller(new joynr::tests::testRequestCaller(provider)),
         isLocalMessage(true)
     {
@@ -84,7 +85,6 @@ public:
     void SetUp(){
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored subscriptions
         subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadedIOService.getIOService(), mockMessageRouter);
-        publicationManager = new PublicationManager(singleThreadedIOService.getIOService(), messageSender.get());
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
@@ -113,7 +113,7 @@ protected:
     Dispatcher dispatcher;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::shared_ptr<MockTestProvider> provider;
-    PublicationManager* publicationManager;
+    std::shared_ptr<PublicationManager> publicationManager;
     std::shared_ptr<joynr::tests::testRequestCaller> requestCaller;
     const bool isLocalMessage;
 private:

@@ -331,7 +331,7 @@ protected:
      * @brief Publication manager receives subscription requests and prepares publications
      * which are send back to the subscription manager.
      */
-    PublicationManager* publicationManager;
+    std::shared_ptr<PublicationManager> publicationManager;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);

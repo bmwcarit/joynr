@@ -46,7 +46,7 @@ class JOYNR_EXPORT InProcessConnectorFactory
 {
 public:
     InProcessConnectorFactory(ISubscriptionManager* subscriptionManager,
-                              PublicationManager* publicationManager,
+                              std::weak_ptr<PublicationManager> publicationManager,
                               InProcessPublicationSender* inProcessPublicationSender,
                               std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory);
 
@@ -80,7 +80,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessConnectorFactory);
     ISubscriptionManager* subscriptionManager;
-    PublicationManager* publicationManager;
+    std::weak_ptr<PublicationManager> publicationManager;
     InProcessPublicationSender* inProcessPublicationSender;
     std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
     std::shared_ptr<IPlatformSecurityManager> securityManager;

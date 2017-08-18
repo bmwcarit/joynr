@@ -51,7 +51,7 @@ public:
         subscriptionId("subscriptionId"),
         mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
         messageSender(new MessageSender(mockMessageRouter)),
-        publicationManager(singleThreadedIOService.getIOService(), messageSender),
+        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender)),
         publicationSender(),
         request(),
         subscriptionBroadcastListener(subscriptionId, publicationManager),
@@ -83,7 +83,7 @@ public:
                     "locationUpdateSelective",
                     &subscriptionBroadcastListener);
 
-        publicationManager.add(
+        publicationManager->add(
                     proxyParticipantId,
                     providerParticipantId,
                     requestCaller,
@@ -111,7 +111,7 @@ protected:
     std::string subscriptionId;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     IMessageSender* messageSender;
-    PublicationManager publicationManager;
+    std::shared_ptr<PublicationManager> publicationManager;
     MockPublicationSender publicationSender;
     BroadcastSubscriptionRequest request;
     UnicastBroadcastListener subscriptionBroadcastListener;

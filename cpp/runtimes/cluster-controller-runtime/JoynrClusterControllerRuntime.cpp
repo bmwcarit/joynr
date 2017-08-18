@@ -470,9 +470,9 @@ void JoynrClusterControllerRuntime::init()
       * libJoynr side
       *
       */
-    publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
-                                                messageSender.get(),
-                                                messagingSettings.getTtlUpliftMs());
+    publicationManager = std::make_shared<PublicationManager>(singleThreadIOService->getIOService(),
+                                                              messageSender.get(),
+                                                              messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings.getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
@@ -545,7 +545,7 @@ void JoynrClusterControllerRuntime::init()
             dispatcherAddress,
             ccMessageRouter,
             messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
-            *publicationManager,
+            publicationManager,
             globalClusterControllerAddress);
 
     joynrDispatcher->registerPublicationManager(publicationManager);

@@ -43,8 +43,8 @@ public:
      * broadcasts.
      */
     MulticastBroadcastListener(const std::string& providerParticipantId,
-                               PublicationManager& publicationManager)
-            : AbstractBroadcastListener(publicationManager),
+                               std::weak_ptr<PublicationManager> publicationManager)
+            : AbstractBroadcastListener(std::move(publicationManager)),
               providerParticipantId(providerParticipantId)
     {
     }
@@ -82,8 +82,10 @@ void MulticastBroadcastListener::broadcastOccurred(const std::string& broadcastN
                                                    const std::vector<std::string>& partitions,
                                                    const Ts&... values)
 {
-    publicationManager.broadcastOccurred(
-            broadcastName, providerParticipantId, partitions, values...);
+    if (auto publicationManagerSharedPtr = publicationManager.lock()) {
+        publicationManagerSharedPtr->broadcastOccurred(
+                broadcastName, providerParticipantId, partitions, values...);
+    }
 }
 
 } // namespace joynr

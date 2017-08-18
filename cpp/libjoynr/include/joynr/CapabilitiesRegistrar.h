@@ -56,7 +56,7 @@ public:
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
             std::shared_ptr<IMessageRouter> messageRouter,
             std::int64_t defaultExpiryIntervalMs,
-            PublicationManager& publicationManager,
+            std::weak_ptr<PublicationManager> publicationManager,
             const std::string& globalAddress);
 
     template <class T>
@@ -156,7 +156,7 @@ private:
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<IMessageRouter> messageRouter;
     std::int64_t defaultExpiryIntervalMs;
-    PublicationManager& publicationManager;
+    std::weak_ptr<PublicationManager> publicationManager;
     const std::string globalAddress;
     ADD_LOGGER(CapabilitiesRegistrar);
 };

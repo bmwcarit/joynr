@@ -61,7 +61,8 @@ class PublicationManager::PublisherRunnable : public Runnable
 {
 public:
     ~PublisherRunnable() override = default;
-    PublisherRunnable(PublicationManager& publicationManager, const std::string& subscriptionId);
+    PublisherRunnable(std::weak_ptr<PublicationManager> publicationManager,
+                      const std::string& subscriptionId);
 
     void shutdown() override;
 
@@ -70,7 +71,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublisherRunnable);
-    PublicationManager& publicationManager;
+    std::weak_ptr<PublicationManager> publicationManager;
     std::string subscriptionId;
 };
 
@@ -78,7 +79,7 @@ class PublicationManager::PublicationEndRunnable : public Runnable
 {
 public:
     ~PublicationEndRunnable() override = default;
-    PublicationEndRunnable(PublicationManager& publicationManager,
+    PublicationEndRunnable(std::weak_ptr<PublicationManager> publicationManager,
                            const std::string& subscriptionId);
 
     void shutdown() override;
@@ -88,7 +89,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationEndRunnable);
-    PublicationManager& publicationManager;
+    std::weak_ptr<PublicationManager> publicationManager;
     std::string subscriptionId;
 };
 
@@ -240,9 +241,9 @@ void PublicationManager::addSubscriptionCleanupIfNecessary(std::shared_ptr<Publi
         } else {
             publicationEndDelay = qos->getExpiryDateMs() + ttlUplift - now;
         }
-        publication->publicationEndRunnableHandle =
-                delayedScheduler->schedule(new PublicationEndRunnable(*this, subscriptionId),
-                                           std::chrono::milliseconds(publicationEndDelay));
+        publication->publicationEndRunnableHandle = delayedScheduler->schedule(
+                new PublicationEndRunnable(shared_from_this(), subscriptionId),
+                std::chrono::milliseconds(publicationEndDelay));
         JOYNR_LOG_TRACE(logger, "publication will end in {}  ms", publicationEndDelay);
     }
 }
@@ -292,7 +293,7 @@ void PublicationManager::handleAttributeSubscriptionRequest(
                                   qos->getExpiryDateMs(),
                                   subscriptionId);
             // sent at least once the current value
-            delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId));
+            delayedScheduler->schedule(new PublisherRunnable(shared_from_this(), subscriptionId));
         } else {
             JOYNR_LOG_WARN(logger, "publication end is in the past");
             std::int64_t expiryDateMs =
@@ -342,7 +343,7 @@ void PublicationManager::addBroadcastPublication(
 
     // Create a broadcast listener to listen for broadcast events
     UnicastBroadcastListener* broadcastListener =
-            new UnicastBroadcastListener(subscriptionId, *this);
+            new UnicastBroadcastListener(subscriptionId, shared_from_this());
 
     // Register the broadcast listener
     std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
@@ -909,8 +910,9 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
 
                 std::int64_t delayUntilNextPublication = publicationInterval - timeSinceLast;
                 assert(delayUntilNextPublication >= 0);
-                delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
-                                           std::chrono::milliseconds(delayUntilNextPublication));
+                delayedScheduler->schedule(
+                        new PublisherRunnable(shared_from_this(), subscriptionId),
+                        std::chrono::milliseconds(delayUntilNextPublication));
                 return;
             }
         }
@@ -942,8 +944,9 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
             if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
                 JOYNR_LOG_TRACE(
                         logger, "rescheduling runnable with delay: {}", publicationInterval);
-                delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
-                                           std::chrono::milliseconds(publicationInterval));
+                delayedScheduler->schedule(
+                        new PublisherRunnable(shared_from_this(), subscriptionId),
+                        std::chrono::milliseconds(publicationInterval));
             }
         };
 
@@ -961,8 +964,9 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
             if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
                 JOYNR_LOG_TRACE(
                         logger, "rescheduling runnable with delay: {}", publicationInterval);
-                delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
-                                           std::chrono::milliseconds(publicationInterval));
+                delayedScheduler->schedule(
+                        new PublisherRunnable(shared_from_this(), subscriptionId),
+                        std::chrono::milliseconds(publicationInterval));
             }
         };
 
@@ -1021,7 +1025,7 @@ void PublicationManager::reschedulePublication(const std::string& subscriptionId
         if (!util::vectorContains(currentScheduledPublications, subscriptionId)) {
             JOYNR_LOG_TRACE(logger, "rescheduling runnable with delay: {}", nextPublication);
             currentScheduledPublications.push_back(subscriptionId);
-            delayedScheduler->schedule(new PublisherRunnable(*this, subscriptionId),
+            delayedScheduler->schedule(new PublisherRunnable(shared_from_this(), subscriptionId),
                                        std::chrono::milliseconds(nextPublication));
         }
     }
@@ -1043,9 +1047,12 @@ PublicationManager::Publication::Publication(IPublicationSender* publicationSend
 
 //------ PublicationManager::PublisherRunnable ---------------------------------
 
-PublicationManager::PublisherRunnable::PublisherRunnable(PublicationManager& publicationManager,
-                                                         const std::string& subscriptionId)
-        : Runnable(true), publicationManager(publicationManager), subscriptionId(subscriptionId)
+PublicationManager::PublisherRunnable::PublisherRunnable(
+        std::weak_ptr<PublicationManager> publicationManager,
+        const std::string& subscriptionId)
+        : Runnable(true),
+          publicationManager(std::move(publicationManager)),
+          subscriptionId(subscriptionId)
 {
 }
 
@@ -1055,13 +1062,15 @@ void PublicationManager::PublisherRunnable::shutdown()
 
 void PublicationManager::PublisherRunnable::run()
 {
-    publicationManager.pollSubscription(subscriptionId);
+    if (auto publicationManagerSharedPtr = publicationManager.lock()) {
+        publicationManagerSharedPtr->pollSubscription(subscriptionId);
+    }
 }
 
 //------ PublicationManager::PublicationEndRunnable ----------------------------
 
 PublicationManager::PublicationEndRunnable::PublicationEndRunnable(
-        PublicationManager& publicationManager,
+        std::weak_ptr<PublicationManager> publicationManager,
         const std::string& subscriptionId)
         : Runnable(true), publicationManager(publicationManager), subscriptionId(subscriptionId)
 {
@@ -1073,13 +1082,15 @@ void PublicationManager::PublicationEndRunnable::shutdown()
 
 void PublicationManager::PublicationEndRunnable::run()
 {
-    std::shared_ptr<Publication> publication =
-            publicationManager.publications.value(subscriptionId);
-    publicationManager.removePublication(subscriptionId);
+    if (auto publicationManagerSharedPtr = publicationManager.lock()) {
+        std::shared_ptr<Publication> publication =
+                publicationManagerSharedPtr->publications.value(subscriptionId);
+        publicationManagerSharedPtr->removePublication(subscriptionId);
 
-    if (publication) {
-        std::lock_guard<std::recursive_mutex> lock((publication->mutex));
-        publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
+        if (publication) {
+            std::lock_guard<std::recursive_mutex> lock((publication->mutex));
+            publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
+        }
     }
 }
 

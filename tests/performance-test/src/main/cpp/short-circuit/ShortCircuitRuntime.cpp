@@ -69,8 +69,8 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings)
     dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager =
-            new PublicationManager(singleThreadedIOService.getIOService(), messageSender.get());
+    publicationManager = std::make_shared<PublicationManager>(
+            singleThreadedIOService.getIOService(), messageSender.get());
     subscriptionManager = std::make_shared<SubscriptionManager>(
             singleThreadedIOService.getIOService(), messageRouter);
     inProcessDispatcher =
@@ -106,7 +106,7 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings)
                                                     dispatcherAddress,
                                                     messageRouter,
                                                     std::numeric_limits<std::int64_t>::max(),
-                                                    *publicationManager,
+                                                    publicationManager,
                                                     globalClusterControllerAddress);
 
     maximumTtlMs = std::chrono::milliseconds(std::chrono::hours(24) * 30).count();

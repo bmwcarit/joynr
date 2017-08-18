@@ -55,7 +55,7 @@ Dispatcher::Dispatcher(std::shared_ptr<IMessageSender> messageSender,
         : messageSender(std::move(messageSender)),
           requestCallerDirectory("Dispatcher-RequestCallerDirectory", ioService),
           replyCallerDirectory("Dispatcher-ReplyCallerDirectory", ioService),
-          publicationManager(nullptr),
+          publicationManager(),
           subscriptionManager(nullptr),
           handleReceivedMessageThreadPool(std::make_shared<ThreadPool>("Dispatcher", maxThreads)),
           subscriptionHandlingMutex()
@@ -67,8 +67,6 @@ Dispatcher::~Dispatcher()
 {
     JOYNR_LOG_TRACE(logger, "Destructing Dispatcher");
     handleReceivedMessageThreadPool->shutdown();
-    delete publicationManager;
-    publicationManager = nullptr;
     JOYNR_LOG_TRACE(logger, "Destructing finished");
 }
 
@@ -79,10 +77,11 @@ void Dispatcher::addRequestCaller(const std::string& participantId,
     JOYNR_LOG_TRACE(logger, "addRequestCaller id= {}", participantId);
     requestCallerDirectory.add(participantId, requestCaller);
 
-    if (publicationManager != nullptr) {
+    if (auto publicationManagerSharedPtr = publicationManager.lock()) {
         // publication manager queues received subscription requests, that are
         // received before the corresponding request caller is added
-        publicationManager->restore(participantId, std::move(requestCaller), messageSender.get());
+        publicationManagerSharedPtr->restore(
+                participantId, std::move(requestCaller), messageSender.get());
     } else {
         JOYNR_LOG_WARN(logger, "No publication manager available!");
     }
@@ -95,7 +94,9 @@ void Dispatcher::removeRequestCaller(const std::string& participantId)
     // TODO if a provider is removed, all publication runnables are stopped
     // the subscription request is deleted,
     // Q: Should it be restored once the provider is registered again?
-    publicationManager->removeAllSubscriptions(participantId);
+    if (auto publicationManagerSharedPtr = publicationManager.lock()) {
+        publicationManagerSharedPtr->removeAllSubscriptions(participantId);
+    }
     requestCallerDirectory.remove(participantId);
 }
 
@@ -286,7 +287,14 @@ void Dispatcher::handleSubscriptionRequestReceived(const ImmutableMessage& messa
     // Make sure that noone is registering a Caller at the moment, because a racing condition could
     // occour.
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
-    assert(publicationManager != nullptr);
+    auto publicationManagerSharedPtr = publicationManager.lock();
+    if (!publicationManagerSharedPtr) {
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to handle subscription request object from: {} - no publication "
+                        "manager available",
+                        message.toLogMessage());
+        return;
+    }
 
     const std::string& receiverId = message.getRecipient();
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
@@ -308,20 +316,28 @@ void Dispatcher::handleSubscriptionRequestReceived(const ImmutableMessage& messa
         // Dispatcher will call publicationManger->restore when a new provider is added to
         // activate
         // subscriptions for that provider
-        publicationManager->add(message.getSender(), message.getRecipient(), subscriptionRequest);
+        publicationManagerSharedPtr->add(
+                message.getSender(), message.getRecipient(), subscriptionRequest);
     } else {
-        publicationManager->add(message.getSender(),
-                                message.getRecipient(),
-                                std::move(caller),
-                                subscriptionRequest,
-                                messageSender.get());
+        publicationManagerSharedPtr->add(message.getSender(),
+                                         message.getRecipient(),
+                                         std::move(caller),
+                                         subscriptionRequest,
+                                         messageSender.get());
     }
 }
 
 void Dispatcher::handleMulticastSubscriptionRequestReceived(const ImmutableMessage& message)
 {
     JOYNR_LOG_TRACE(logger, "Starting handleMulticastSubscriptionRequestReceived");
-    assert(publicationManager != nullptr);
+    auto publicationManagerSharedPtr = publicationManager.lock();
+    if (!publicationManagerSharedPtr) {
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to handle multicast subscription request object from: {} - no "
+                        "publication manager available",
+                        message.toLogMessage());
+        return;
+    }
 
     // PublicationManager is responsible for deleting SubscriptionRequests
     MulticastSubscriptionRequest subscriptionRequest;
@@ -330,13 +346,13 @@ void Dispatcher::handleMulticastSubscriptionRequestReceived(const ImmutableMessa
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_ERROR(
                 logger,
-                "Unable to deserialize broadcast subscription request object from: {} - error: {}",
+                "Unable to deserialize multicast subscription request object from: {} - error: {}",
                 message.toLogMessage(),
                 e.what());
         return;
     }
 
-    publicationManager->add(
+    publicationManagerSharedPtr->add(
             message.getSender(), message.getRecipient(), subscriptionRequest, messageSender.get());
 }
 
@@ -346,7 +362,14 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const ImmutableMessa
     // Make sure that noone is registering a Caller at the moment, because a racing condition could
     // occour.
     std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
-    assert(publicationManager != nullptr);
+    auto publicationManagerSharedPtr = publicationManager.lock();
+    if (!publicationManagerSharedPtr) {
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to handle broadcast subscription request object from: {} - no "
+                        "publication manager available",
+                        message.toLogMessage());
+        return;
+    }
 
     const std::string& receiverId = message.getRecipient();
     std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
@@ -369,13 +392,14 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const ImmutableMessa
         // Dispatcher will call publicationManger->restore when a new provider is added to
         // activate
         // subscriptions for that provider
-        publicationManager->add(message.getSender(), message.getRecipient(), subscriptionRequest);
+        publicationManagerSharedPtr->add(
+                message.getSender(), message.getRecipient(), subscriptionRequest);
     } else {
-        publicationManager->add(message.getSender(),
-                                message.getRecipient(),
-                                std::move(caller),
-                                subscriptionRequest,
-                                messageSender.get());
+        publicationManagerSharedPtr->add(message.getSender(),
+                                         message.getRecipient(),
+                                         std::move(caller),
+                                         subscriptionRequest,
+                                         messageSender.get());
     }
 }
 
@@ -384,7 +408,6 @@ void Dispatcher::handleSubscriptionStopReceived(const ImmutableMessage& message)
     JOYNR_LOG_TRACE(logger, "handleSubscriptionStopReceived");
 
     SubscriptionStop subscriptionStop;
-
     try {
         joynr::serializer::deserializeFromJson(subscriptionStop, message.getUnencryptedBody());
     } catch (const std::invalid_argument& e) {
@@ -394,8 +417,15 @@ void Dispatcher::handleSubscriptionStopReceived(const ImmutableMessage& message)
                         e.what());
         return;
     }
-    assert(publicationManager != nullptr);
-    publicationManager->stopPublication(subscriptionStop.getSubscriptionId());
+    auto publicationManagerSharedPtr = publicationManager.lock();
+    if (!publicationManagerSharedPtr) {
+        JOYNR_LOG_ERROR(logger,
+                        "Unable to handle subscription stop object from: {} - no publication "
+                        "manager available",
+                        message.toLogMessage());
+        return;
+    }
+    publicationManagerSharedPtr->stopPublication(subscriptionStop.getSubscriptionId());
 }
 
 void Dispatcher::handleSubscriptionReplyReceived(const ImmutableMessage& message)
@@ -501,9 +531,9 @@ void Dispatcher::registerSubscriptionManager(
     this->subscriptionManager = std::move(subscriptionManager);
 }
 
-void Dispatcher::registerPublicationManager(PublicationManager* publicationManager)
+void Dispatcher::registerPublicationManager(std::weak_ptr<PublicationManager> publicationManager)
 {
-    this->publicationManager = publicationManager;
+    this->publicationManager = std::move(publicationManager);
 }
 
 void Dispatcher::shutdown()

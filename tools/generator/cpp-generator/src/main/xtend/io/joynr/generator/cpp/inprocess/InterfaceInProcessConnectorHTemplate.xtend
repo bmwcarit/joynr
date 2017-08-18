@@ -126,7 +126,7 @@ public:
 	 */
 	«interfaceName»InProcessConnector(
 				joynr::ISubscriptionManager* subscriptionManager,
-				joynr::PublicationManager* publicationManager,
+				std::weak_ptr<joynr::PublicationManager> publicationManager,
 				joynr::InProcessPublicationSender* inProcessPublicationSender,
 				std::shared_ptr<joynr::IPlatformSecurityManager> securityManager,
 				const std::string& proxyParticipantId,
@@ -151,7 +151,7 @@ private:
 	std::string providerParticipantId;
 	std::shared_ptr<joynr::InProcessAddress> address;
 	joynr::ISubscriptionManager* subscriptionManager;
-	joynr::PublicationManager* publicationManager;
+	std::weak_ptr<joynr::PublicationManager> publicationManager;
 	joynr::InProcessPublicationSender* inProcessPublicationSender;
 	std::shared_ptr<joynr::IPlatformSecurityManager> securityManager;
 };

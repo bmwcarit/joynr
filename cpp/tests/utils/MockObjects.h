@@ -286,7 +286,7 @@ class MockInProcessConnectorFactory : public joynr::InProcessConnectorFactory {
 public:
 
     MockInProcessConnectorFactory()
-        : InProcessConnectorFactory(nullptr,nullptr,nullptr,nullptr) {
+        : InProcessConnectorFactory(nullptr,std::weak_ptr<joynr::PublicationManager>(),nullptr,nullptr) {
     }
 
     MOCK_METHOD1(canBeCreated, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address> address));
@@ -302,7 +302,7 @@ public:
     MOCK_METHOD1(removeRequestCaller, void(const std::string& participantId));
     MOCK_METHOD1(receive, void(std::shared_ptr<joynr::ImmutableMessage> message));
     MOCK_METHOD1(registerSubscriptionManager, void(std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager));
-    MOCK_METHOD1(registerPublicationManager,void(joynr::PublicationManager* publicationManager));
+    MOCK_METHOD1(registerPublicationManager,void(std::weak_ptr<joynr::PublicationManager> publicationManager));
     MOCK_METHOD0(shutdown, void ());
 };
 

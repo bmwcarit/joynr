@@ -76,7 +76,7 @@ class SubscriptionQos;
   * Responsible for deleting SubscriptionRequests and PublicationStates (the runnable notifies the
   * SubscriptionManager when it terminates - this triggeres the delete).
   */
-class JOYNR_EXPORT PublicationManager
+class JOYNR_EXPORT PublicationManager : public std::enable_shared_from_this<PublicationManager>
 {
 public:
     PublicationManager(boost::asio::io_service& ioService,
