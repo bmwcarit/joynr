@@ -516,6 +516,16 @@ interval is specified this way, the default value will be read from this propert
 * **Unit**: milliseconds
 * **Default value**: `2000`
 
+### `PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS`
+If a provider is registered, its expiry date will be set to 'now + N'. N is
+the value of this property.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.discovery.provider.defaultexpirytimems`
+* **Unit**: milliseconds
+* **Default value**: `86400000 (24 hours)`
+
 ## JEE Integration
 
 These properties are defined as constants in the
