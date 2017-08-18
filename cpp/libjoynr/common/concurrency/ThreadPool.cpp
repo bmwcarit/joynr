@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <functional>
+#include <set>
 
 #include "joynr/Runnable.h"
 
@@ -48,7 +49,9 @@ ThreadPool::ThreadPool(const std::string& /*name*/, std::uint8_t numberOfThreads
 
 ThreadPool::~ThreadPool()
 {
-    shutdown();
+    if (keepRunning) {
+        shutdown();
+    }
     assert(keepRunning == false);
     assert(threads.empty());
 }
@@ -68,15 +71,25 @@ void ThreadPool::shutdown()
         }
     }
 
+    std::set<Runnable*>::size_type maxRunning = 0;
     for (auto thread = threads.begin(); thread != threads.end(); ++thread) {
-        if (thread->joinable()) {
+        // do not cause an abort waiting for ourselves
+        if (std::this_thread::get_id() == thread->get_id()) {
+            thread->detach();
+            maxRunning = 1;
+        } else if (thread->joinable()) {
             thread->join();
         }
     }
     threads.clear();
 
-    // Runnables should be cleaned in the thread loop
-    assert(currentlyRunning.size() == 0);
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        // Runnables should be cleaned in the thread loop
+        // except for the thread that runs this code in case
+        // it was part of the ThreadPool
+        assert(currentlyRunning.size() <= maxRunning);
+    }
 }
 
 bool ThreadPool::isRunning()
