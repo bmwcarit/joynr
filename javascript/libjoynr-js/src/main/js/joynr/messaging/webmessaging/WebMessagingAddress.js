@@ -1,3 +1,5 @@
+/*jslint es5: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -30,6 +32,7 @@ define("joynr/messaging/webmessaging/WebMessagingAddress", [ "joynr/util/Typing"
         Typing.checkProperty(settings, "Object", "settings");
         Typing.checkProperty(settings.window, "Object", "settings.window");
         Typing.checkProperty(settings.origin, "String", "settings.origin");
+        this._settings = settings;
 
         /**
          * @name WebMessagingAddress#getWindow
@@ -37,8 +40,8 @@ define("joynr/messaging/webmessaging/WebMessagingAddress", [ "joynr/util/Typing"
          *
          * @returns {Window} the windows that should be addressed
          */
-        this.getWindow = function getWindow() {
-            return settings.window;
+        WebMessagingAddress.prototype.getWindow = function getWindow() {
+            return this._settings.window;
         };
 
         /**
@@ -48,8 +51,8 @@ define("joynr/messaging/webmessaging/WebMessagingAddress", [ "joynr/util/Typing"
          * @returns {String} the origin of the window that should be addressed
          * @see WebMessagingAddress#getWindow
          */
-        this.getOrigin = function getOrigin() {
-            return settings.origin;
+        WebMessagingAddress.prototype.getOrigin = function getOrigin() {
+            return this._settings.origin;
         };
     }
 

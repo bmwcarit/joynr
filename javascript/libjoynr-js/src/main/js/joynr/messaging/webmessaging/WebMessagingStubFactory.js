@@ -1,3 +1,5 @@
+/*jslint es5: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -29,19 +31,20 @@ define(
              */
             function WebMessagingStubFactory() {
 
-                /**
-                 * @name WebMessagingStubFactory#build
-                 * @function
-                 *
-                 * @param {WebMessagingAddress} address the address to generate a messaging stub for
-                 */
-                this.build = function build(address) {
-                    return new WebMessagingStub({
-                        window : address.getWindow(),
-                        origin : address.getOrigin()
-                    });
-                };
             }
+
+            /**
+             * @name WebMessagingStubFactory#build
+             * @function
+             *
+             * @param {WebMessagingAddress} address the address to generate a messaging stub for
+             */
+            WebMessagingStubFactory.prototype.build = function build(address) {
+                return new WebMessagingStub({
+                    window : address.getWindow(),
+                    origin : address.getOrigin()
+                });
+            };
 
             return WebMessagingStubFactory;
 
