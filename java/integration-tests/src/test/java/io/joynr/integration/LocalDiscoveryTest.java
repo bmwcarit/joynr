@@ -170,6 +170,8 @@ public class LocalDiscoveryTest {
     @Captor
     private ArgumentCaptor<Set<DiscoveryEntryWithMetaInfo>> discoveryEntryWithMetaInfoArgumentCaptor;
 
+    private final long defaultDiscoveryRetryIntervalMs = 2000L;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -183,7 +185,8 @@ public class LocalDiscoveryTest {
                                                                                                              globalCapabilitiesDirectoryClientMock,
                                                                                                              expiredDiscoveryEntryCacheCleanerMock,
                                                                                                              3600000,
-                                                                                                             capabilitiesFreshnessUpdateExecutorMock);
+                                                                                                             capabilitiesFreshnessUpdateExecutorMock,
+                                                                                                             defaultDiscoveryRetryIntervalMs);
 
         Module testModule = Modules.override(new CCInProcessRuntimeModule()).with(new TestGlobalAddressModule(),
                                                                                   new AbstractModule() {

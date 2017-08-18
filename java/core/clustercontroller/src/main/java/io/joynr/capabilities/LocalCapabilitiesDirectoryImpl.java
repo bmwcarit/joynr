@@ -48,6 +48,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.DeferredVoid;
@@ -89,6 +90,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     private DiscoveryEntryStore localDiscoveryEntryStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
     private DiscoveryEntryStore globalDiscoveryEntryCache;
+    private final long defaultDiscoveryRetryInterval;
 
     private MessageRouter messageRouter;
 
@@ -127,9 +129,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient,
                                           ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleaner,
                                           @Named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS) long freshnessUpdateIntervalMs,
-                                          @Named(JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS) ScheduledExecutorService freshnessUpdateScheduler) {
+                                          @Named(JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS) ScheduledExecutorService freshnessUpdateScheduler,
+                                          @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_RETRY_INTERVAL_MS) long defaultDiscoveryRetryInterval) {
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
+        this.defaultDiscoveryRetryInterval = defaultDiscoveryRetryInterval;
         this.messageRouter = messageRouter;
         this.localDiscoveryEntryStore = localDiscoveryEntryStore;
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
@@ -633,6 +637,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         };
         DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
         lookup(domains, interfaceName, new DiscoveryQos(discoveryQos.getDiscoveryTimeout(),
+                                                        defaultDiscoveryRetryInterval,
                                                         ArbitrationStrategy.NotSet,
                                                         discoveryQos.getCacheMaxAge(),
                                                         discoveryScope), callback);
