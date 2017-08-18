@@ -1,3 +1,4 @@
+/*jslint es5: true, nomen: true */
 /*
  * #%L
  * %%
@@ -26,7 +27,7 @@ define("joynr/messaging/inprocess/InProcessMessagingStub", [], function() {
      * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton to send the joynr messages to
      */
     function InProcessMessagingStub(inProcessMessagingSkeleton) {
-        this.inProcessMessagingSkeleton = inProcessMessagingSkeleton;
+        this._inProcessMessagingSkeleton = inProcessMessagingSkeleton;
     }
 
     /**
@@ -37,7 +38,7 @@ define("joynr/messaging/inprocess/InProcessMessagingStub", [], function() {
      * @returns {Object} A+ promise object
      */
     InProcessMessagingStub.prototype.transmit = function transmit(joynrMessage) {
-        return this.inProcessMessagingSkeleton.receiveMessage(joynrMessage);
+        return this._inProcessMessagingSkeleton.receiveMessage(joynrMessage);
     };
     return InProcessMessagingStub;
 

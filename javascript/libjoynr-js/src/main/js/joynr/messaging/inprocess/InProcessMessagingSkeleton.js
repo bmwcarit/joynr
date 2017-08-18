@@ -1,3 +1,4 @@
+/*jslint es5: true, nomen: true */
 /*
  * #%L
  * %%
@@ -24,31 +25,32 @@ define("joynr/messaging/inprocess/InProcessMessagingSkeleton", [], function() {
      * @constructor
      */
     function InProcessMessagingSkeleton() {
-        var onReceive;
 
-        /**
-         * @name InProcessMessagingSkeleton#receiveMessage
-         * @function
-         *
-         * @param {JoynrMessage} joynrMessage
-         * @returns {Object} A+ promise object
-         */
-        this.receiveMessage = function receiveMessage(joynrMessage) {
-            return onReceive(joynrMessage);
-        };
-
-        /**
-         * A setter for the callback function that will receive the incoming messages
-         *
-         * @name InProcessMessagingSkeleton#registerListener
-         * @function
-         *
-         * @param {Function} newOnReceive the function that is called with the incoming JoynrMessage
-         */
-        this.registerListener = function registerListener(newOnReceive) {
-            onReceive = newOnReceive;
-        };
     }
+
+    /**
+     * @name InProcessMessagingSkeleton#receiveMessage
+     * @function
+     *
+     * @param {JoynrMessage} joynrMessage
+     * @returns {Object} A+ promise object
+     */
+    InProcessMessagingSkeleton.prototype.receiveMessage = function receiveMessage(joynrMessage) {
+        return this._onReceive(joynrMessage);
+    };
+
+    /**
+     * A setter for the callback function that will receive the incoming messages
+     *
+     * @name InProcessMessagingSkeleton#registerListener
+     * @function
+     *
+     * @param {Function} newOnReceive the function that is called with the incoming JoynrMessage
+     */
+    InProcessMessagingSkeleton.prototype.registerListener =
+            function registerListener(newOnReceive) {
+                this._onReceive = newOnReceive;
+            };
 
     return InProcessMessagingSkeleton;
 

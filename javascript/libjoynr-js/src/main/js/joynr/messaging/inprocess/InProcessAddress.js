@@ -1,4 +1,4 @@
-/*jslint nomen:true */
+/*jslint es5: true, nomen: true */
 /*
  * #%L
  * %%
@@ -27,31 +27,19 @@ define("joynr/messaging/inprocess/InProcessAddress", [], function() {
      * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton that should be addressed in process
      */
     function InProcessAddress(inProcessMessagingSkeleton) {
+        this._inProcessMessagingSkeleton = inProcessMessagingSkeleton;
 
         /**
          * @name InProcessAddress#_typeName
          * @type String
          * @readonly
          */
-        /*jslint nomen: true */
         Object.defineProperty(this, "_typeName", {
             configurable : false,
             writable : false,
             enumerable : false,
             value : InProcessAddress._typeName
         });
-        /*jslint nomen: false */
-
-        /**
-         * The receive function from the corresponding local messaging receiver
-         * @name InProcessAddress#getSkeleton
-         * @function
-         *
-         * @returns {InProcessMessagingSkeleton} the skeleton that should be addressed
-         */
-        this.getSkeleton = function getSkeleton() {
-            return inProcessMessagingSkeleton;
-        };
     }
 
     /**
@@ -66,7 +54,7 @@ define("joynr/messaging/inprocess/InProcessAddress", [], function() {
         value : "joynr.system.RoutingTypes.InProcessAddress"
     });
 
-    Object.defineProperty(InProcessAddress.prototype, 'equals', {
+    Object.defineProperty(InProcessAddress.prototype, "equals", {
         enumerable : false,
         configurable : false,
         writable : false,
@@ -88,6 +76,18 @@ define("joynr/messaging/inprocess/InProcessAddress", [], function() {
             return true;
         }
     });
+
+    /**
+     * The receive function from the corresponding local messaging receiver
+     * @name InProcessAddress#getSkeleton
+     * @function
+     *
+     * @returns {InProcessMessagingSkeleton} the skeleton that should be addressed
+     */
+    InProcessAddress.prototype.getSkeleton = function getSkeleton() {
+        return this._inProcessMessagingSkeleton;
+    };
+
     return InProcessAddress;
 
 });

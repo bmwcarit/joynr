@@ -29,16 +29,17 @@ define(
              */
             function InProcessMessagingStubFactory() {
 
-                /**
-                 * @name InProcessMessagingStubFactory#build
-                 * @function
-                 *
-                 * @param {InProcessAddress} address the address to generate a messaging stub for
-                 */
-                this.build = function build(address) {
-                    return new InProcessMessagingStub(address.getSkeleton());
-                };
             }
+
+            /**
+             * @name InProcessMessagingStubFactory#build
+             * @function
+             *
+             * @param {InProcessAddress} address the address to generate a messaging stub for
+             */
+            InProcessMessagingStubFactory.prototype.build = function build(address) {
+                return new InProcessMessagingStub(address.getSkeleton());
+            };
 
             return InProcessMessagingStubFactory;
 
