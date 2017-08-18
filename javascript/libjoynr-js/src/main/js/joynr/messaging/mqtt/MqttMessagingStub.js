@@ -1,3 +1,5 @@
+/*jslint es5: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -23,6 +25,7 @@ define("joynr/messaging/mqtt/MqttMessagingStub", [
     "joynr/system/LoggerFactory"
 ], function(JoynrMessage, JSONSerializer, LoggerFactory) {
 
+    var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
     /**
      * @name MqttMessagingStub
      * @constructor
@@ -32,25 +35,24 @@ define("joynr/messaging/mqtt/MqttMessagingStub", [
      * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
      */
     function MqttMessagingStub(settings) {
-        var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
-
-        /**
-         * @name MqttMessagingStub#transmit
-         * @function
-         *
-         * @param {Object|JoynrMessage} message the message to transmit
-         */
-        this.transmit = function transmit(message) {
-            log.debug("transmit message: \"" + JSONSerializer.stringify(message) + "\"");
-            var topic = settings.address.topic;
-            if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
-                topic += MqttMessagingStub.PRIORITY_LOW + message.to;
-            }
-
-            return settings.client.send(topic, message);
-        };
-
+        this._settings = settings;
     }
+
+    /**
+     * @name MqttMessagingStub#transmit
+     * @function
+     *
+     * @param {Object|JoynrMessage} message the message to transmit
+     */
+    MqttMessagingStub.prototype.transmit = function transmit(message) {
+        log.debug("transmit message: \"" + JSONSerializer.stringify(message) + "\"");
+        var topic = this._settings.address.topic;
+        if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
+            topic += MqttMessagingStub.PRIORITY_LOW + message.to;
+        }
+
+        return this._settings.client.send(topic, message);
+    };
 
     MqttMessagingStub.PRIORITY_LOW = "/low/";
 
