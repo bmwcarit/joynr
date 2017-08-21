@@ -1,3 +1,5 @@
+/*jslint es5: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -30,44 +32,46 @@ define(
              * @param {Address} settings.replyToAddress the address the reply should be send to
              */
             function MessageReplyToAddressCalculator(settings) {
-                var replyToAddress;
-
-                var checkForExistingReplyToAddress =
-                        function() {
-                            if (replyToAddress === undefined) {
-                                throw new Error(
-                                        "MessageReplyToAddressCalculator: replyToAddress not specified!");
-                            }
-                        };
-
-                /**
-                 * Helper function allowing to share the serialized reply to address with the calculator after object creation
-                 */
-                this.setReplyToAddress = function(serializedAddress) {
-                    replyToAddress = serializedAddress;
-                    if (replyToAddress !== undefined) {
-                        //disable check implementation
-                        checkForExistingReplyToAddress = function() {};
-                    }
-                };
-
-                this.setReplyTo =
-                        function(message) {
-                            var type = message.type;
-                            if ((type !== undefined)
-                                && (message.replyChannelId === undefined)
-                                && ((type === JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST)
-                                    || (type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST)
-                                    || (type === JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) || (type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST))) {
-                                checkForExistingReplyToAddress();
-                                message.replyChannelId = replyToAddress;
-                            }
-                        };
+                this._replyToAddress = undefined;
+                this._checkExistingReplyAddress = true;
 
                 if (settings.replyToAddress !== undefined) {
                     this.setReplyToAddress(settings.replyToAddress);
                 }
             }
+
+            MessageReplyToAddressCalculator.prototype._checkForExistingReplyToAddress =
+                    function() {
+                        if (this._checkExistingReplyAddress && this._replyToAddress === undefined) {
+                            throw new Error(
+                                    "MessageReplyToAddressCalculator: replyToAddress not specified!");
+                        }
+                    };
+
+            /**
+             * Helper function allowing to share the serialized reply to address with the calculator after object creation
+             */
+            MessageReplyToAddressCalculator.prototype.setReplyToAddress =
+                    function(serializedAddress) {
+                        this._replyToAddress = serializedAddress;
+                        if (this._replyToAddress !== undefined) {
+                            //disable check implementation
+                            this._checkExistingReplyAddress = false;
+                        }
+                    };
+
+            MessageReplyToAddressCalculator.prototype.setReplyTo =
+                    function(message) {
+                        var type = message.type;
+                        if ((type !== undefined)
+                            && (message.replyChannelId === undefined)
+                            && ((type === JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST)
+                                || (type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST)
+                                || (type === JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST) || (type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST))) {
+                            this._checkForExistingReplyToAddress();
+                            message.replyChannelId = this._replyToAddress;
+                        }
+                    };
 
             return MessageReplyToAddressCalculator;
 
