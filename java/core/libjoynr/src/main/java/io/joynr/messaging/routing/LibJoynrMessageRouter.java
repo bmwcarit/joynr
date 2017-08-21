@@ -33,6 +33,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.ImmutableMessage;
 import joynr.exceptions.ProviderRuntimeException;
@@ -86,7 +87,8 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
                                  MessagingSkeletonFactory messagingSkeletonFactory,
                                  AddressManager addressManager,
                                  MulticastReceiverRegistry multicastReceiverRegistry,
-                                 BoundedDelayQueue<DelayableImmutableMessage> messageQueue) {
+                                 BoundedDelayQueue<DelayableImmutableMessage> messageQueue,
+                                 ShutdownNotifier shutdownNotifier) {
         // CHECKSTYLE:ON
         super(routingTable,
               scheduler,
@@ -98,7 +100,8 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
               messagingSkeletonFactory,
               addressManager,
               multicastReceiverRegistry,
-              messageQueue);
+              messageQueue,
+              shutdownNotifier);
         this.incomingAddress = incomingAddress;
     }
 
@@ -216,10 +219,5 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
      */
     public void setIncomingAddress(Address incomingAddress) {
         this.incomingAddress = incomingAddress;
-    }
-
-    @Override
-    protected boolean shutdownScheduler() {
-        return true;
     }
 }

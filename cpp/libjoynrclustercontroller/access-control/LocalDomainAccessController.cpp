@@ -213,7 +213,7 @@ private:
 //--- LocalDomainAccessController ----------------------------------------------
 
 LocalDomainAccessController::LocalDomainAccessController(
-        std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore,
+        std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore,
         bool useOnlyLocalDomainAccessStore)
         : accessControlAlgorithm(),
           dreSubscriptions(),
@@ -247,7 +247,7 @@ LocalDomainAccessController::LocalDomainAccessController(
 }
 
 void LocalDomainAccessController::setGlobalDomainAccessControllerProxy(
-        std::unique_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
+        std::shared_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
 {
     this->globalDomainAccessControllerProxy = std::move(globalDomainAccessControllerProxy);
 

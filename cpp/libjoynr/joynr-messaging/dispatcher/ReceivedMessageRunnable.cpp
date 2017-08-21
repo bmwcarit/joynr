@@ -20,8 +20,8 @@
 
 #include <cassert>
 
+#include "joynr/CallContextStorage.h"
 #include "joynr/Dispatcher.h"
-#include "libjoynr/common/CallContextStorage.h"
 #include "joynr/Message.h"
 #include "joynr/ImmutableMessage.h"
 

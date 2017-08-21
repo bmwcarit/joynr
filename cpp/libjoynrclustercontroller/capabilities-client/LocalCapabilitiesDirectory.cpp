@@ -25,11 +25,14 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/asio/io_service.hpp>
 
+#include "joynr/access-control/IAccessController.h"
+
 #include "joynr/CapabilityUtils.h"
+#include "joynr/CallContextStorage.h"
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/IMessageRouter.h"
-#include "joynr/LibjoynrSettings.h"
 #include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -37,6 +40,7 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/Util.h"
+
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 
 namespace joynr
@@ -45,15 +49,14 @@ namespace joynr
 INIT_LOGGER(LocalCapabilitiesDirectory);
 
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
-        MessagingSettings& messagingSettings,
+        ClusterControllerSettings& clusterControllerSettings,
         std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
         const std::string& localAddress,
         IMessageRouter& messageRouter,
-        LibjoynrSettings& libjoynrSettings,
         boost::asio::io_service& ioService,
         const std::string clusterControllerId)
         : joynr::system::DiscoveryAbstractProvider(),
-          messagingSettings(messagingSettings),
+          clusterControllerSettings(clusterControllerSettings),
           capabilitiesClient(std::move(capabilitiesClientPtr)),
           localAddress(localAddress),
           cacheLock(),
@@ -65,8 +68,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           registeredGlobalCapabilities(),
           messageRouter(messageRouter),
           observers(),
-          libJoynrSettings(libjoynrSettings),
           pendingLookups(),
+          accessController(),
           checkExpiredDiscoveryEntriesTimer(ioService),
           freshnessUpdateTimer(ioService),
           clusterControllerId(clusterControllerId)
@@ -75,11 +78,17 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
     scheduleFreshnessUpdate();
 }
 
+void LocalCapabilitiesDirectory::shutdown()
+{
+    checkExpiredDiscoveryEntriesTimer.cancel();
+    freshnessUpdateTimer.cancel();
+}
+
 void LocalCapabilitiesDirectory::scheduleFreshnessUpdate()
 {
     boost::system::error_code timerError = boost::system::error_code();
     freshnessUpdateTimer.expires_from_now(
-            messagingSettings.getCapabilitiesFreshnessUpdateIntervalMs(), timerError);
+            clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs(), timerError);
     if (timerError) {
         JOYNR_LOG_ERROR(logger,
                         "Error from freshness update timer: {}: {}",
@@ -129,7 +138,7 @@ void LocalCapabilitiesDirectory::cleanCaches()
     cleanCache(zero);
 }
 
-void LocalCapabilitiesDirectory::add(const types::DiscoveryEntry& discoveryEntry)
+void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discoveryEntry)
 {
     const bool isGloballyVisible = isGlobal(discoveryEntry);
 
@@ -576,9 +585,39 @@ void LocalCapabilitiesDirectory::add(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::ignore = onError;
-    add(discoveryEntry);
-    onSuccess();
+    if (hasProviderPermission(discoveryEntry)) {
+        addInternal(discoveryEntry);
+        onSuccess();
+        return;
+    }
+    onError(joynr::exceptions::ProviderRuntimeException(
+            "Provider does not have permissions to register domain/interface."));
+}
+
+bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEntry& discoveryEntry)
+{
+    if (!clusterControllerSettings.enableAccessController()) {
+        return true;
+    }
+
+    if (auto gotAccessController = accessController.lock()) {
+        const CallContext& callContext = CallContextStorage::get();
+        const std::string& ownerId = callContext.getPrincipal();
+        return gotAccessController->hasProviderPermission(
+                ownerId,
+                infrastructure::DacTypes::TrustLevel::HIGH,
+                discoveryEntry.getDomain(),
+                discoveryEntry.getInterfaceName());
+    }
+
+    // return false in case AC ptr and setting do not match
+    return false;
+}
+
+void LocalCapabilitiesDirectory::setAccessController(
+        std::weak_ptr<IAccessController> accessController)
+{
+    this->accessController = std::move(accessController);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -658,7 +697,7 @@ void LocalCapabilitiesDirectory::removeProviderRegistrationObserver(
 void LocalCapabilitiesDirectory::updatePersistedFile()
 {
     saveLocalCapabilitiesToFile(
-            libJoynrSettings.getLocalCapabilitiesDirectoryPersistenceFilename());
+            clusterControllerSettings.getLocalCapabilitiesDirectoryPersistenceFilename());
 }
 
 void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& fileName)
@@ -691,7 +730,7 @@ std::string LocalCapabilitiesDirectory::serializeLocalCapabilitiesToJson() const
 void LocalCapabilitiesDirectory::loadPersistedFile()
 {
     const std::string persistencyFile =
-            libJoynrSettings.getLocalCapabilitiesDirectoryPersistenceFilename();
+            clusterControllerSettings.getLocalCapabilitiesDirectoryPersistenceFilename();
     std::string jsonString;
     try {
         jsonString = joynr::util::loadStringFromFile(persistencyFile);
@@ -852,7 +891,7 @@ bool LocalCapabilitiesDirectory::isGlobal(const types::DiscoveryEntry& discovery
 void LocalCapabilitiesDirectory::scheduleCleanupTimer()
 {
     boost::system::error_code timerError;
-    auto intervalMs = messagingSettings.getPurgeExpiredDiscoveryEntriesIntervalMs();
+    auto intervalMs = clusterControllerSettings.getPurgeExpiredDiscoveryEntriesIntervalMs();
     checkExpiredDiscoveryEntriesTimer.expires_from_now(
             std::chrono::milliseconds(intervalMs), timerError);
     if (timerError) {

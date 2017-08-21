@@ -48,7 +48,7 @@ public:
      * @brief toString
      * @return
      */
-    std::string toString();
+    std::string toString() const;
 
 private:
     std::vector<std::string> queryItems;
@@ -197,7 +197,7 @@ public:
      * @brief toString
      * @return
      */
-    std::string toString();
+    std::string toString() const;
 
 private:
     std::string protocol;

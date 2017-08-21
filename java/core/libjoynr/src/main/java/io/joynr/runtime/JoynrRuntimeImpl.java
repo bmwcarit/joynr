@@ -36,15 +36,10 @@ import com.google.inject.name.Named;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.ProviderDirectory;
-import io.joynr.dispatching.RequestReplyManager;
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
-import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.AddressOperation;
-import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
@@ -65,14 +60,14 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     @Inject
     private CapabilitiesRegistrar capabilitiesRegistrar;
-    @Inject
-    private RequestReplyManager requestReplyManager;
-    @Inject
-    private PublicationManager publicationManager;
+
     private Dispatcher dispatcher;
 
     @Inject
     public ObjectMapper objectMapper;
+
+    @Inject
+    ShutdownNotifier shutdownNotifier;
 
     @Inject
     @Named(JOYNR_SCHEDULER_CLEANUP)
@@ -80,20 +75,11 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     private final ProxyBuilderFactory proxyBuilderFactory;
 
-    protected final ProviderDirectory requestCallerDirectory;
-    protected final ReplyCallerDirectory replyCallerDirectory;
-
-    private MessagingStubFactory messagingStubFactory;
-    private MessagingSkeletonFactory messagingSkeletonFactory;
-
     // CHECKSTYLE:OFF
     @Inject
     public JoynrRuntimeImpl(ObjectMapper objectMapper,
                             ProxyBuilderFactory proxyBuilderFactory,
-                            ProviderDirectory requestCallerDirectory,
-                            ReplyCallerDirectory replyCallerDirectory,
                             Dispatcher dispatcher,
-                            MessagingStubFactory messagingStubFactory,
                             MessagingSkeletonFactory messagingSkeletonFactory,
                             LocalDiscoveryAggregator localDiscoveryAggregator,
                             RoutingTable routingTable,
@@ -101,12 +87,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                             @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress) {
         // CHECKSTYLE:ON
-        this.requestCallerDirectory = requestCallerDirectory;
-        this.replyCallerDirectory = replyCallerDirectory;
         this.dispatcher = dispatcher;
         this.objectMapper = objectMapper;
-        this.messagingStubFactory = messagingStubFactory;
-        this.messagingSkeletonFactory = messagingSkeletonFactory;
 
         Reflections reflections = new Reflections("joynr");
         Set<Class<? extends JoynrType>> subClasses = reflections.getSubTypesOf(JoynrType.class);
@@ -181,41 +163,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     @Override
     public void shutdown(boolean clear) {
         logger.info("SHUTTING DOWN runtime");
-        //TODO: this will be inverted, with elements needing shutdown registering themselves
-        try {
-            messagingSkeletonFactory.shutdown();
-        } catch (Exception e) {
-            logger.error("error shutting down skeletons: {}", e.getMessage());
-        }
-        try {
-            capabilitiesRegistrar.shutdown(clear);
-        } catch (Exception e) {
-            logger.error("error clearing capabiltities while shutting down: {}", e.getMessage());
-        }
-        try {
-            requestReplyManager.shutdown();
-        } catch (Exception e) {
-            logger.error("error shutting down requestReplyManager: {}", e.getMessage());
-        }
-        try {
-            publicationManager.shutdown();
-        } catch (Exception e) {
-            logger.error("error shutting down publicationManager: {}", e.getMessage());
-        }
-        try {
-            dispatcher.shutdown(clear);
-        } catch (Exception e) {
-            logger.error("error shutting down dispatcher: {}", e.getMessage());
-        }
-        try {
-            messagingStubFactory.shutdown();
-        } catch (Exception e) {
-            logger.error("error shutting down messagingStubFactory: {}", e.getMessage());
-        }
-        try {
-            cleanupScheduler.shutdownNow();
-        } catch (Exception e) {
-            logger.error("error shutting down queue cleanup scheduler: {}", e.getMessage());
-        }
+        shutdownNotifier.shutdown();
     }
 }

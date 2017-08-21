@@ -76,6 +76,7 @@ public:
 	 * @param qosSettings The quality of service settings
 	 */
 	«className»(
+			std::weak_ptr<joynr::JoynrRuntime> runtime,
 			joynr::ConnectorFactory* connectorFactory,
 			const std::string& domain,
 			const joynr::MessagingQos& qosSettings

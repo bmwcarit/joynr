@@ -19,10 +19,11 @@
 #ifndef CLUSTERCONTROLLERSETTINGS_H
 #define CLUSTERCONTROLLERSETTINGS_H
 
+#include <chrono>
+#include <string>
+
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-
-#include <string>
 
 namespace joynr
 {
@@ -32,14 +33,19 @@ class Settings;
 class JOYNR_EXPORT ClusterControllerSettings
 {
 public:
+    static const std::string& SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
+    static const std::string& SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
     static const std::string& SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
     static const std::string& SETTING_MQTT_CLIENT_ID_PREFIX();
+    static const std::string& SETTING_MQTT_TLS_ENABLED();
     static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME();
+    static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH();
     static const std::string& SETTING_MQTT_CERTIFICATE_PEM_FILENAME();
     static const std::string& SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME();
     static const std::string& SETTING_MQTT_MULTICAST_TOPIC_PREFIX();
     static const std::string& SETTING_MQTT_UNICAST_TOPIC_PREFIX();
     static const std::string& SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
+    static const std::string& SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
     static const std::string& SETTING_WS_TLS_PORT();
     static const std::string& SETTING_WS_PORT();
     static const std::string& SETTING_USE_ONLY_LDAS();
@@ -49,12 +55,16 @@ public:
     static const std::string&
     SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID();
 
+    static std::chrono::milliseconds DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME();
+    static const std::string& DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_MQTT_CLIENT_ID_PREFIX();
+    static bool DEFAULT_MQTT_TLS_ENABLED();
     static const std::string& DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX();
     static const std::string& DEFAULT_MQTT_UNICAST_TOPIC_PREFIX();
     static const std::string& DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
+    static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
     static bool DEFAULT_ENABLE_ACCESS_CONTROLLER();
     static bool DEFAULT_USE_ONLY_LDAS();
 
@@ -88,12 +98,16 @@ public:
     bool isMqttCertificateAuthorityPemFilenameSet() const;
     std::string getMqttCertificateAuthorityPemFilename() const;
 
+    bool isMqttCertificateAuthorityCertificateFolderPathSet() const;
+    std::string getMqttCertificateAuthorityCertificateFolderPath() const;
+
     bool isMqttCertificatePemFilenameSet() const;
     std::string getMqttCertificatePemFilename() const;
 
     bool isMqttPrivateKeyPemFilenameSet() const;
     std::string getMqttPrivateKeyPemFilename() const;
 
+    void setMqttTlsEnabled(bool enabled);
     bool isMqttTlsEnabled() const;
 
     std::string getLocalDomainAccessStorePersistenceFilename() const;
@@ -107,6 +121,16 @@ public:
 
     bool getUseOnlyLDAS() const;
     void setUseOnlyLDAS(bool useLDASonly);
+
+    std::string getLocalCapabilitiesDirectoryPersistenceFilename() const;
+    void setLocalCapabilitiesDirectoryPersistenceFilename(const std::string& filename);
+
+    int getPurgeExpiredDiscoveryEntriesIntervalMs() const;
+    void setPurgeExpiredDiscoveryEntriesIntervalMs(int purgeExpiredEntriesIntervalMs);
+
+    std::chrono::milliseconds getCapabilitiesFreshnessUpdateIntervalMs() const;
+    void setCapabilitiesFreshnessUpdateIntervalMs(
+            std::chrono::milliseconds capabilitiesFreshnessUpdateIntervalMs);
 
     void printSettings() const;
 

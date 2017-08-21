@@ -76,7 +76,7 @@ public:
     };
 
     explicit LocalDomainAccessController(
-            std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore,
+            std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore,
             bool useOnlyLocalDomainAccessStore);
     virtual ~LocalDomainAccessController() = default;
 
@@ -84,7 +84,7 @@ public:
      * Sets the global access controller proxy. If ACEs/RCEs shall be retrieved from the backend
      * this method must be called before the LocalDomainAccessController is used for the first time.
      */
-    void setGlobalDomainAccessControllerProxy(std::unique_ptr<
+    void setGlobalDomainAccessControllerProxy(std::shared_ptr<
             infrastructure::GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy);
 
     /**
@@ -112,9 +112,9 @@ public:
      * @param role The domain that is being accessed
      * @return Returns true, if user uid has role role for domain domain.
      */
-    bool hasRole(const std::string& userId,
-                 const std::string& domain,
-                 infrastructure::DacTypes::Role::Enum role);
+    virtual bool hasRole(const std::string& userId,
+                         const std::string& domain,
+                         infrastructure::DacTypes::Role::Enum role);
 
     /**
       * Get consumer permission to access an interface
@@ -550,13 +550,13 @@ private:
 
     std::unordered_map<std::string, RceSubscription> rceSubscriptions;
 
-    std::unique_ptr<infrastructure::GlobalDomainAccessControllerProxy>
+    std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
             globalDomainAccessControllerProxy;
     std::shared_ptr<infrastructure::GlobalDomainAccessControlListEditorProxy>
             globalDomainAccessControlListEditorProxy;
     std::shared_ptr<infrastructure::GlobalDomainRoleControllerProxy>
             globalDomainRoleControllerProxy;
-    std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore;
+    std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore;
     bool useOnlyLocalDomainAccessStore;
 
     ADD_LOGGER(LocalDomainAccessController);

@@ -38,6 +38,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.ProviderContainer;
+import io.joynr.runtime.ShutdownNotifier;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -89,6 +90,9 @@ public class PublicationTimersTest {
     @Mock
     private SubscriptionTestsProviderImpl provider;
 
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
+
     @Before
     public void setUp() {
         requestCaller = new RequestCallerFactory().create(new DefaulttestProvider());
@@ -123,7 +127,8 @@ public class PublicationTimersTest {
                                                                            dispatcher,
                                                                            providerDirectory,
                                                                            cleanupScheduler,
-                                                                           Mockito.mock(SubscriptionRequestStorage.class));
+                                                                           Mockito.mock(SubscriptionRequestStorage.class),
+                                                                           shutdownNotifier);
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
         when(providerDirectory.contains(eq(providerId))).thenReturn(true);

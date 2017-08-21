@@ -172,7 +172,7 @@ TEST_F(DirectoryTest, useStdStringKeys)
     ASSERT_FALSE(directory.contains(key));
 }
 
-TEST_F(DirectoryTest, lookupNonExisingKeys)
+TEST_F(DirectoryTest, lookupNonExistingKeys)
 {
     ASSERT_TRUE(nullptr == directory.lookup("__THIS__KEY__DOES__NOT__EXIST__"));
 }

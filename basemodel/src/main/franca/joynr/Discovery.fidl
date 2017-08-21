@@ -33,44 +33,44 @@ interface Discovery {
 	version {major 0 minor 1}
 
 	<** @description: Adds a provider to the joynr discovery. **>
-    method add {
-        in {
+	method add {
+		in {
 			<** @description: the new DiscoveryEntry to be added **>
-            DiscoveryEntry discoveryEntry
-        }
-    }
+			DiscoveryEntry discoveryEntry
+		}
+	}
 
 	<**
 		@description: Looks up a providers in the joynr discovery that match
 			the requested QoS.
 		@param: qos [not implemented yet] the minimum QoS the provider must offer
 	**>
-    method lookup {
-        in {
+	method lookup {
+		in {
 			<** @description: the domain to search for provider **>
 			String[] domains
 			<** @description: the interface the provider must implement **>
 			String interfaceName
 			<** @description: the QoS used for the lookup **>
-            DiscoveryQos discoveryQos
-        }
-        out {
+			DiscoveryQos discoveryQos
+		}
+		out {
 			<** @description: a list of matching providers **>
-            DiscoveryEntryWithMetaInfo[] result
-        }
-    }
+			DiscoveryEntryWithMetaInfo[] result
+		}
+	}
 
 	<** @description: Looks up a specific provider in the joynr discovery. **>
-    method lookup {
-        in {
+	method lookup {
+		in {
 			<** @description: the participant ID of the provider to look up **>
-            String participantId
-        }
-        out {
+			String participantId
+		}
+		out {
 			<** @description: the provider matching the participant ID **>
-            DiscoveryEntryWithMetaInfo result
-        }
-    }
+			DiscoveryEntryWithMetaInfo result
+		}
+	}
 
 	<** @description: Removes a provider from joynr discovery. **>
 	method remove {

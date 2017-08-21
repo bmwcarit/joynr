@@ -268,7 +268,7 @@ void Url::parseUrl(const std::string& text)
     validate();
 }
 
-std::string Url::toString()
+std::string Url::toString() const
 {
     std::stringstream stringBuilder;
     stringBuilder << protocol << "://";
@@ -336,7 +336,7 @@ void UrlQuery::addQueryItem(const std::string& itemName, const std::string& item
     queryItems.push_back(queryItem);
 }
 
-std::string UrlQuery::toString()
+std::string UrlQuery::toString() const
 {
     if (queryItems.empty()) {
         return "";

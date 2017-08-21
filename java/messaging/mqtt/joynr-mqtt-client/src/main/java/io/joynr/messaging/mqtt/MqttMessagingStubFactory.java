@@ -37,9 +37,4 @@ public class MqttMessagingStubFactory extends AbstractMiddlewareMessagingStubFac
     protected MqttMessagingStub createInternal(MqttAddress address) {
         return new MqttMessagingStub(address, mqttClient);
     }
-
-    @Override
-    public void shutdown() {
-        // nothing to do. MqttClient is shutdown by the skeleton
-    }
 }

@@ -91,6 +91,7 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                                    clientId,
                                                    new MemoryPersistence(),
                                                    scheduledExecutorService);
+            logger.info("Creating MQTT Paho client using MQTT client ID: {}", clientId);
             pahoClient = new MqttPahoClient(mqttClient,
                                             reconnectSleepMs,
                                             keepAliveTimerSec,

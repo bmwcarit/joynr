@@ -37,7 +37,7 @@ bool BroadcastSubscriptionRequestInformation::operator==(
            SubscriptionInformation::operator==(subscriptionRequestInformation);
 }
 
-std::string BroadcastSubscriptionRequestInformation::toString()
+std::string BroadcastSubscriptionRequestInformation::toString() const
 {
     return joynr::serializer::serializeToJson(*this);
 }

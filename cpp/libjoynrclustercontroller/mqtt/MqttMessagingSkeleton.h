@@ -50,7 +50,7 @@ public:
      */
     static std::string translateMulticastWildcard(std::string multicastId);
 
-    MqttMessagingSkeleton(IMessageRouter& messageRouter,
+    MqttMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter,
                           std::shared_ptr<MqttReceiver> mqttReceiver,
                           const std::string& multicastTopicPrefix,
                           std::uint64_t ttlUplift = 0);
@@ -69,7 +69,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingSkeleton);
     ADD_LOGGER(MqttMessagingSkeleton);
 
-    IMessageRouter& messageRouter;
+    std::weak_ptr<IMessageRouter> messageRouter;
     std::shared_ptr<MqttReceiver> mqttReceiver;
 
     std::uint64_t ttlUplift;

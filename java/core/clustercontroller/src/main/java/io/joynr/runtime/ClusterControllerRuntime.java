@@ -11,8 +11,6 @@ import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.ProviderDirectory;
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.messaging.MessagingSkeletonFactory;
 
 /*
@@ -34,7 +32,6 @@ import io.joynr.messaging.MessagingSkeletonFactory;
  * #L%
  */
 
-import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.system.RoutingProvider;
@@ -51,10 +48,7 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
     @Inject
     public ClusterControllerRuntime(ObjectMapper objectMapper,
                                     ProxyBuilderFactory proxyBuilderFactory,
-                                    ProviderDirectory providerDirectory,
-                                    ReplyCallerDirectory replyCallerDirectory,
                                     Dispatcher dispatcher,
-                                    MessagingStubFactory messagingStubFactory,
                                     MessagingSkeletonFactory messagingSkeletonFactory,
                                     LocalDiscoveryAggregator localDiscoveryAggregator,
                                     RoutingTable routingTable,
@@ -66,10 +60,7 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                     RoutingProvider routingProvider) {
         super(objectMapper,
               proxyBuilderFactory,
-              providerDirectory,
-              replyCallerDirectory,
               dispatcher,
-              messagingStubFactory,
               messagingSkeletonFactory,
               localDiscoveryAggregator,
               routingTable,

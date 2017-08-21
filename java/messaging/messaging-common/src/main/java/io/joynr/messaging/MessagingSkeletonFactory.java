@@ -33,10 +33,12 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.system.RoutingTypes.Address;
 
 @Singleton
-public class MessagingSkeletonFactory {
+public class MessagingSkeletonFactory implements ShutdownListener {
 
     private static final Logger logger = LoggerFactory.getLogger(MessagingSkeletonFactory.class);
 
@@ -59,9 +61,11 @@ public class MessagingSkeletonFactory {
      */
     @Inject
     public MessagingSkeletonFactory(@Named(MIDDLEWARE_MESSAGING_SKELETONS) Map<Class<? extends Address>, IMessagingSkeleton> messagingSkeletons,
-                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler) {
+                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
+                                    ShutdownNotifier shutdownNotifier) {
         this.messagingSkeletons = messagingSkeletons;
         this.scheduler = scheduler;
+        shutdownNotifier.registerForShutdown(this);
     }
 
     public void start() {
@@ -82,6 +86,7 @@ public class MessagingSkeletonFactory {
         }
     }
 
+    @Override
     public void shutdown() {
         for (IMessagingSkeleton messagingSkeleton : messagingSkeletons.values()) {
             messagingSkeleton.shutdown();

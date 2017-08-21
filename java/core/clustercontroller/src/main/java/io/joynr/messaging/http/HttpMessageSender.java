@@ -31,6 +31,8 @@ import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.http.operation.HttpConstants;
 import io.joynr.messaging.http.operation.HttpPost;
 import io.joynr.messaging.http.operation.HttpRequestFactory;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.system.RoutingTypes.ChannelAddress;
 
 import java.io.IOException;
@@ -55,7 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class HttpMessageSender {
+public class HttpMessageSender implements ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(HttpMessageSender.class);
     private static final int DELAY_RECEIVER_NOT_STARTED_MS = 100;
     private static final String RECEIVER_NOT_STARTED_REASON = "cannot send until receiver is started";
@@ -68,13 +70,16 @@ public class HttpMessageSender {
     private MessageReceiver messageReceiver;
 
     @Inject
+    // CHECKSTYLE:OFF
     public HttpMessageSender(MessageReceiver messageReceiver,
                              CloseableHttpClient httpclient,
                              HttpRequestFactory httpRequestFactory,
                              HttpConstants httpConstants,
                              RequestConfig defaultRequestConfig,
                              ObjectMapper objectMapper,
-                             UrlResolver urlResolver) {
+                             UrlResolver urlResolver,
+                             ShutdownNotifier shutdownNotifier) {
+        // CHECKSTYLE:ON
         this.messageReceiver = messageReceiver;
         this.httpclient = httpclient;
         this.httpRequestFactory = httpRequestFactory;
@@ -82,6 +87,7 @@ public class HttpMessageSender {
         this.defaultRequestConfig = defaultRequestConfig;
         this.objectMapper = objectMapper;
         this.urlResolver = urlResolver;
+        shutdownNotifier.registerForShutdown(this);
     }
 
     public void sendMessage(ChannelAddress address, byte[] serializedMessage, FailureAction failureAction) {
@@ -165,6 +171,7 @@ public class HttpMessageSender {
         }
     }
 
+    @Override
     public void shutdown() {
         try {
             httpclient.close();

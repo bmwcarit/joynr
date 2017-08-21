@@ -113,7 +113,7 @@ interface GlobalCapabilitiesDirectory{
 		in {
 			<**
 				@description: The participant Id which identifies the provider that shall be removed
-            from the backend.
+				from the backend.
 			**>
 			String participantId
 		}

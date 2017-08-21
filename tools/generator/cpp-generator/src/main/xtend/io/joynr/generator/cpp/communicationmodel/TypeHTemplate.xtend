@@ -232,7 +232,7 @@ public:
 	{
 	«IF isPolymorphic(type)»
 		if (typeid(*this) != typeid(other)) {
-	        return false;
+			return false;
 		}
 	«ENDIF»
 		return this->equalsInternal(other, maxUlps);

@@ -41,11 +41,11 @@ public:
     DelayedRunnable(std::unique_ptr<Runnable> delayedRunnable,
                     boost::asio::io_service& ioService,
                     std::chrono::milliseconds delayMs,
-                    std::function<void(const boost::system::error_code&)> timerExpiredCallback)
+                    std::function<void(const boost::system::error_code&)>&& timerExpiredCallback)
             : timer(ioService), runnable(std::move(delayedRunnable))
     {
         timer.expiresFromNow(delayMs);
-        timer.asyncWait(timerExpiredCallback);
+        timer.asyncWait(std::move(timerExpiredCallback));
     }
 
     ~DelayedRunnable()

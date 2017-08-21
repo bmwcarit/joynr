@@ -30,8 +30,8 @@ namespace joynr
 
 INIT_LOGGER(HttpMessagingSkeleton);
 
-HttpMessagingSkeleton::HttpMessagingSkeleton(IMessageRouter& messageRouter)
-        : messageRouter(messageRouter)
+HttpMessagingSkeleton::HttpMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter)
+        : messageRouter(std::move(messageRouter))
 {
 }
 
@@ -42,7 +42,14 @@ void HttpMessagingSkeleton::transmit(
     message->setReceivedFromGlobal(true);
 
     try {
-        messageRouter.route(std::move(message));
+        if (auto messageRouterSharedPtr = messageRouter.lock()) {
+            messageRouterSharedPtr->route(std::move(message));
+        } else {
+            std::string errorMessage(
+                    "unable to transmit message because messageRouter unavailable: " +
+                    message->toLogMessage());
+            onFailure(exceptions::JoynrMessageNotSentException(std::move(errorMessage)));
+        }
     } catch (exceptions::JoynrRuntimeException& e) {
         onFailure(e);
     }

@@ -300,11 +300,6 @@ public class DispatcherImpl implements Dispatcher {
     }
 
     @Override
-    public void shutdown(boolean clear) {
-        logger.info("SHUTTING DOWN DispatcherImpl");
-    }
-
-    @Override
     public void error(ImmutableMessage message, Throwable error) {
         if (message == null) {
             logger.error("error: ", error);

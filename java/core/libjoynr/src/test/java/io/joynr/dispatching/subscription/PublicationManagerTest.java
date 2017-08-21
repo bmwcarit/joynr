@@ -60,6 +60,7 @@ import io.joynr.provider.Promise;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.BroadcastFilter;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastPublication;
@@ -122,6 +123,9 @@ public class PublicationManagerTest {
     @Mock
     private ProviderContainer providerContainer;
 
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
+
     String valueToPublish = "valuePublished";
 
     @Before
@@ -135,7 +139,8 @@ public class PublicationManagerTest {
                                                         dispatcher,
                                                         providerDirectory,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class));
+                                                        Mockito.mock(SubscriptionRequestStorage.class),
+                                                        shutdownNotifier);
 
         requestCaller = new RequestCallerFactory().create(provider);
         when(providerContainer.getProviderProxy()).thenReturn(requestCaller.getProxy());
@@ -171,7 +176,8 @@ public class PublicationManagerTest {
                                                                            dispatcher,
                                                                            requestCallerDirectory,
                                                                            cleanupScheduler,
-                                                                           Mockito.mock(SubscriptionRequestStorage.class));
+                                                                           Mockito.mock(SubscriptionRequestStorage.class),
+                                                                           shutdownNotifier);
 
         when(requestCallerDirectory.get(eq(providerId))).thenReturn(providerContainer);
         when(requestCallerDirectory.contains(eq(providerId))).thenReturn(true);
@@ -226,7 +232,8 @@ public class PublicationManagerTest {
                                                                            dispatcher,
                                                                            providerDirectory,
                                                                            cleanupScheduler,
-                                                                           Mockito.mock(SubscriptionRequestStorage.class));
+                                                                           Mockito.mock(SubscriptionRequestStorage.class),
+                                                                           shutdownNotifier);
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
         when(providerDirectory.contains(eq(providerId))).thenReturn(true);
@@ -279,7 +286,8 @@ public class PublicationManagerTest {
                                                                            dispatcher,
                                                                            providerDirectory,
                                                                            cleanupScheduler,
-                                                                           Mockito.mock(SubscriptionRequestStorage.class));
+                                                                           Mockito.mock(SubscriptionRequestStorage.class),
+                                                                           shutdownNotifier);
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
         when(providerDirectory.contains(eq(providerId))).thenReturn(true);
@@ -506,7 +514,8 @@ public class PublicationManagerTest {
                                                         dispatcher,
                                                         providerDirectory,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class));
+                                                        Mockito.mock(SubscriptionRequestStorage.class),
+                                                        shutdownNotifier);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -556,7 +565,8 @@ public class PublicationManagerTest {
                                                         dispatcher,
                                                         providerDirectory,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class));
+                                                        Mockito.mock(SubscriptionRequestStorage.class),
+                                                        shutdownNotifier);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -615,7 +625,8 @@ public class PublicationManagerTest {
                                                         dispatcher,
                                                         providerDirectory,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class));
+                                                        Mockito.mock(SubscriptionRequestStorage.class),
+                                                        shutdownNotifier);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -667,7 +678,8 @@ public class PublicationManagerTest {
                                                         dispatcher,
                                                         providerDirectory,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class));
+                                                        Mockito.mock(SubscriptionRequestStorage.class),
+                                                        shutdownNotifier);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -715,7 +727,8 @@ public class PublicationManagerTest {
                                                         dispatcher,
                                                         providerDirectory,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class));
+                                                        Mockito.mock(SubscriptionRequestStorage.class),
+                                                        shutdownNotifier);
         int period = 200;
         int testLengthMax = 3000;
         long validityMs = testLengthMax;
@@ -796,7 +809,8 @@ public class PublicationManagerTest {
                                                         dispatcher,
                                                         myProviderDirectory,
                                                         cleanupScheduler,
-                                                        fileSubscriptionRequestStorage);
+                                                        fileSubscriptionRequestStorage,
+                                                        shutdownNotifier);
 
         publicationManager.addSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest);
         assertEquals(1, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
@@ -810,7 +824,8 @@ public class PublicationManagerTest {
                                                         dispatcher,
                                                         myProviderDirectory,
                                                         cleanupScheduler,
-                                                        fileSubscriptionRequestStorage);
+                                                        fileSubscriptionRequestStorage,
+                                                        shutdownNotifier);
 
         // when the provider is registered, persisted subscription requests should be activated
         myProviderDirectory.add(providerParticipantId, providerContainer);
@@ -831,7 +846,8 @@ public class PublicationManagerTest {
                                                         dispatcher,
                                                         myProviderDirectory,
                                                         cleanupScheduler,
-                                                        fileSubscriptionRequestStorage);
+                                                        fileSubscriptionRequestStorage,
+                                                        shutdownNotifier);
         verifyNoMoreInteractions(dispatcher);
         fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
         assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());

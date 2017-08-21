@@ -40,6 +40,7 @@ import io.joynr.messaging.routing.BoundedDelayQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 
@@ -79,6 +80,9 @@ public class JeeMessageRouterTest {
     @Mock
     BoundedDelayQueue<DelayableImmutableMessage> messageQueue;
 
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
+
     @Test
     public void testScheduleMessage() throws InterruptedException {
         Address address = new Address();
@@ -100,7 +104,8 @@ public class JeeMessageRouterTest {
                                                         multicastReceiverRegistry,
                                                         null,
                                                         false,
-                                                        messageQueue);
+                                                        messageQueue,
+                                                        shutdownNotifier);
 
         subject.route(message);
 
@@ -110,4 +115,25 @@ public class JeeMessageRouterTest {
         assertTrue(passedDelaybleMessage.getValue().getDelay(TimeUnit.MILLISECONDS) <= 0);
 
     }
+
+    @Test
+    public void testShutdown() throws InterruptedException {
+        JeeMessageRouter subject = new JeeMessageRouter(routingTable,
+                                                        scheduler,
+                                                        1000L,
+                                                        10,
+                                                        routingTableGracePeriodMs,
+                                                        routingTableCleanupIntervalMs,
+                                                        messagingStubFactory,
+                                                        messagingSkeletonFactory,
+                                                        addressManager,
+                                                        multicastReceiverRegistry,
+                                                        null,
+                                                        false,
+                                                        messageQueue,
+                                                        shutdownNotifier);
+
+        verify(shutdownNotifier).registerForShutdown(subject);
+    }
+
 }

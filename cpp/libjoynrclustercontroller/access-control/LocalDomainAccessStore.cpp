@@ -149,7 +149,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterA
     JOYNR_LOG_TRACE(
             logger, "execute: entering getEditableMasterAccessControlEntry with uId {}", userId);
 
-    return getEditableAccessControlEntries(masterAccessTable, userId, Role::MASTER);
+    return getEntries(masterAccessTable, userId, Role::MASTER);
 }
 
 boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAccessControlEntry(
@@ -207,7 +207,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
     JOYNR_LOG_TRACE(logger, "execute: entering getEditableMediatorAces with uId {}", userId);
 
     // Get all the Mediator ACEs for the domains where the user is master
-    return getEditableAccessControlEntries(mediatorAccessTable, userId, Role::MASTER);
+    return getEntries(mediatorAccessTable, userId, Role::MASTER);
 }
 
 boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntry(
@@ -288,7 +288,7 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAcc
     JOYNR_LOG_TRACE(logger, "execute: entering getEditableOwnerAces with uId {}", userId);
 
     // Get all the Owner ACEs for the domains owned by the user
-    return getEditableAccessControlEntries(ownerAccessTable, userId, Role::OWNER);
+    return getEntries(ownerAccessTable, userId, Role::OWNER);
 }
 
 boost::optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessControlEntry(
@@ -362,7 +362,7 @@ std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomai
     JOYNR_LOG_TRACE(
             logger, "execute: entering getEditableMasterRegistrationControlEntry with uid {}", uid);
 
-    return getEditableRegistrationControlEntries(masterRegistrationTable, uid, Role::MASTER);
+    return getEntries(masterRegistrationTable, uid, Role::MASTER);
 }
 
 boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
@@ -406,7 +406,7 @@ std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomai
                     "execute: entering getEditableMeditatorRegistrationControlEntry with uid {}",
                     uid);
 
-    return getEditableRegistrationControlEntries(mediatorRegistrationTable, uid, Role::MASTER);
+    return getEntries(mediatorRegistrationTable, uid, Role::MASTER);
 }
 
 boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
@@ -450,7 +450,7 @@ std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry> LocalDomain
     JOYNR_LOG_TRACE(
             logger, "execute: entering getEditableOwnerRegistrationControlEntry with uid {}", uid);
 
-    return getEditableRegistrationControlEntries(ownerRegistrationTable, uid, Role::MASTER);
+    return getEntries(ownerRegistrationTable, uid, Role::OWNER);
 }
 
 boost::optional<OwnerRegistrationControlEntry> LocalDomainAccessStore::

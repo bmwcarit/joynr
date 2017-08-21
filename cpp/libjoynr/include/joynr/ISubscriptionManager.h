@@ -156,6 +156,8 @@ public:
     virtual std::forward_list<std::shared_ptr<ISubscriptionListenerBase>>
     getMulticastSubscriptionListeners(const std::string& multicastId) = 0;
 
+    virtual void shutdown() = 0;
+
     /**
      * @brief Converts the expiry date of a subscription into a TTL.
      * @param subscriptionQos the subscription QoS defining the subscription.

@@ -44,6 +44,7 @@ import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.BoundedDelayQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingProxy;
@@ -76,6 +77,8 @@ public class LibJoynrMessageRouterTest {
     private MulticastReceiverRegistry multicastReceiverRegistry;
     @Mock
     private ImmutableMessage message;
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
 
     private BoundedDelayQueue<DelayableImmutableMessage> messageQueue = new BoundedDelayQueue<>(10);
     private LibJoynrMessageRouter messageRouter;
@@ -112,7 +115,8 @@ public class LibJoynrMessageRouterTest {
                                                   messagingSkeletonFactory,
                                                   addressManager,
                                                   multicastReceiverRegistry,
-                                                  messageQueue);
+                                                  messageQueue,
+                                                  shutdownNotifier);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
     }
 

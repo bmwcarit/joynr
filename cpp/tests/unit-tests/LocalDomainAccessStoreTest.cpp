@@ -325,3 +325,34 @@ TEST_F(LocalDomainAccessStoreTest, restoreFromPersistenceFile) {
     }
 }
 
+TEST_F(LocalDomainAccessStoreTest, doesNotContainOnlyWildcardOperations) {
+
+    // add a wildcard and a non-wildcard operation
+    expectedOwnerAccessControlEntry.setOperation(access_control::WILDCARD);
+    localDomainAccessStore.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
+    expectedOwnerAccessControlEntry.setOperation(TEST_OPERATION1);
+    localDomainAccessStore.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
+
+    // still return false
+    EXPECT_FALSE(localDomainAccessStore.onlyWildcardOperations(TEST_USER1,
+                                                               TEST_DOMAIN1,
+                                                               TEST_INTERFACE1));
+}
+
+TEST_F(LocalDomainAccessStoreTest, containsOnlyWildcardOperations) {
+    // Test on empty access store
+    EXPECT_TRUE(localDomainAccessStore.onlyWildcardOperations(TEST_USER1,
+                                                TEST_DOMAIN1,
+                                                TEST_INTERFACE1));
+
+    // add entries with wildcard operation
+    expectedOwnerAccessControlEntry.setOperation(access_control::WILDCARD);
+    expectedMasterAccessControlEntry.setOperation(access_control::WILDCARD);
+    localDomainAccessStore.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
+    localDomainAccessStore.updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
+
+    // still return true
+    EXPECT_TRUE(localDomainAccessStore.onlyWildcardOperations(TEST_USER1,
+                                                              TEST_DOMAIN1,
+                                                              TEST_INTERFACE1));
+}

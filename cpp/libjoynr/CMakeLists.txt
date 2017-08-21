@@ -52,6 +52,7 @@ set(
     JoynrLib_TARGET_LIBRARIES
     Boost::system
     Boost::thread
+    Boost::filesystem
     smrf::smrf
 )
 
@@ -107,7 +108,6 @@ file(GLOB_RECURSE JoynrLib_GENERATED_SOURCES
 )
 
 set(JoynrLib_PRIVATE_HEADERS
-    "common/CallContextStorage.h"
     "in-process/InProcessMessagingSkeleton.h"
     "in-process/InProcessMessagingStubFactory.h"
     "in-process/InProcessMessagingStub.h"
@@ -178,7 +178,7 @@ set(JoynrLib_SOURCES
     "in-process/InProcessConnectorFactory.cpp"
     "in-process/InProcessDispatcher.cpp"
     "in-process/InProcessMessagingAddress.cpp"
-    "in-process/InProcessMessagingSkeleton.cpp"    
+    "in-process/InProcessMessagingSkeleton.cpp"
     "in-process/InProcessMessagingStub.cpp"
     "in-process/InProcessMessagingStubFactory.cpp"
     "in-process/InProcessPublicationSender.cpp"
@@ -192,12 +192,13 @@ set(JoynrLib_SOURCES
     "joynr-messaging/ImmutableMessage.cpp"
     "joynr-messaging/JoynrMessagingConnectorFactory.cpp"
     "joynr-messaging/LibJoynrMessageRouter.cpp"
-    "joynr-messaging/MessageSender.cpp"    
+    "joynr-messaging/MessageSender.cpp"
     "joynr-messaging/MessagingSettings.cpp"
     "joynr-messaging/MqttMulticastAddressCalculator.cpp"
     "joynr-messaging/MulticastMatcher.cpp"
     "joynr-messaging/MutableMessage.cpp"
-    "joynr-messaging/MutableMessageFactory.cpp"    
+    "joynr-messaging/MutableMessageFactory.cpp"
+    "joynr-messaging/RoutingTable.cpp"
     "joynr-messaging/WebSocketMulticastAddressCalculator.cpp"
     "LibjoynrSettings.cpp"
     "provider/AbstractJoynrProvider.cpp"
@@ -304,7 +305,7 @@ if(JOYNR_ENABLE_DLT_LOGGING)
         Joynr
         PUBLIC
         JOYNR_ENABLE_DLT_LOGGING)
-    
+
     target_include_directories(
         Joynr
         SYSTEM PUBLIC
@@ -361,7 +362,7 @@ install(
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    # this will flatten directory hierarchy of headder files
+    # this will flatten directory hierarchy of header files
     # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 

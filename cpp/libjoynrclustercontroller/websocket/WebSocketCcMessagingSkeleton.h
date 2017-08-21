@@ -52,6 +52,7 @@ public:
     virtual void transmit(
             std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
+    virtual void shutdown() = 0;
 };
 
 /**
@@ -109,7 +110,9 @@ public:
     /**
      * @brief Destructor
      */
-    ~WebSocketCcMessagingSkeleton() override
+    ~WebSocketCcMessagingSkeleton() override = default;
+
+    void shutdown() override
     {
         websocketpp::lib::error_code shutdownError;
         endpoint.stop_listening(shutdownError);
@@ -178,7 +181,7 @@ private:
                             "received initialization message from websocket client: {}",
                             initMessage);
             // register client with messaging stub factory
-            joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
+            std::shared_ptr<joynr::system::RoutingTypes::WebSocketClientAddress> clientAddress;
             try {
                 joynr::serializer::deserializeFromJson(clientAddress, initMessage);
             } catch (const std::invalid_argument& e) {
@@ -194,7 +197,7 @@ private:
             auto sender = std::make_shared<WebSocketPpSender<Server>>(endpoint);
             sender->setConnectionHandle(hdl);
 
-            messagingStubFactory->addClient(clientAddress, std::move(sender));
+            messagingStubFactory->addClient(*clientAddress, std::move(sender));
 
             typename Server::connection_ptr connection = endpoint.get_con_from_hdl(hdl);
             connection->set_message_handler(
@@ -204,8 +207,10 @@ private:
                               std::placeholders::_2));
             {
                 std::unique_lock<std::mutex> lock(clientsMutex);
-                clients[hdl] = std::move(clientAddress);
+                clients[hdl] = *clientAddress;
             }
+
+            messageRouter->sendMessages(clientAddress);
         } else {
             JOYNR_LOG_ERROR(
                     logger, "received an initial message with wrong format: \"{}\"", initMessage);

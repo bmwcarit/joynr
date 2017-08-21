@@ -41,6 +41,4 @@ abstract public class AbstractMiddlewareMessagingStubFactory<S extends IMessagin
     protected Collection<S> getAllMessagingStubs() {
         return stubMap.values();
     }
-
-    public abstract void shutdown();
 }

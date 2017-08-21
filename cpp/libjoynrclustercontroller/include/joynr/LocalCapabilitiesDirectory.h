@@ -54,9 +54,9 @@ class io_service;
 
 namespace joynr
 {
-
+class IAccessController;
 class ICapabilitiesClient;
-class LibjoynrSettings;
+class ClusterControllerSettings;
 class IMessageRouter;
 
 /**
@@ -75,35 +75,37 @@ class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
 {
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
-    LocalCapabilitiesDirectory(MessagingSettings& messagingSettings,
+    LocalCapabilitiesDirectory(ClusterControllerSettings& messagingSettings,
                                std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
                                const std::string& localAddress,
                                IMessageRouter& messageRouter,
-                               LibjoynrSettings& libJoynrSettings,
                                boost::asio::io_service& ioService,
                                const std::string clusterControllerId);
 
     ~LocalCapabilitiesDirectory() override;
 
-    void add(const joynr::types::DiscoveryEntry& entry);
+    void shutdown();
 
-    virtual void remove(const std::string& participantId);
+    /*
+     * Remove all capabilities associated to participantId.
+     */
+    void remove(const std::string& participantId);
 
     /*
      * Returns a list of capabilitiess matching the given domain and interfaceName,
      * this is an asynchronous request, must supply a callback.
      */
-    virtual void lookup(const std::vector<std::string>& domains,
-                        const std::string& interfaceName,
-                        std::shared_ptr<ILocalCapabilitiesCallback> callback,
-                        const joynr::types::DiscoveryQos& discoveryQos);
+    void lookup(const std::vector<std::string>& domains,
+                const std::string& interfaceName,
+                std::shared_ptr<ILocalCapabilitiesCallback> callback,
+                const joynr::types::DiscoveryQos& discoveryQos);
 
     /*
      * Returns a capability entry for a given participant ID or an empty list
      * if it cannot be found.
      */
-    virtual void lookup(const std::string& participantId,
-                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
+    void lookup(const std::string& participantId,
+                std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     /*
       * Returns a list of locally cached capabilitiy entries. This method is used
@@ -193,9 +195,15 @@ public:
      */
     bool hasPendingLookups();
 
+    /*
+     * Set AccessController so that registration of providers can be checked.
+     */
+    void setAccessController(std::weak_ptr<IAccessController> accessController);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
-    MessagingSettings& messagingSettings;
+    ClusterControllerSettings& clusterControllerSettings; // to retrieve info about persistency
+
     void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
                               std::vector<types::DiscoveryEntry>&& cachedLocalCapabilies,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
@@ -244,10 +252,10 @@ private:
     IMessageRouter& messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
 
-    LibjoynrSettings& libJoynrSettings; // to retrieve info about persistency
-
     std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
             pendingLookups;
+
+    std::weak_ptr<IAccessController> accessController;
 
     boost::asio::steady_timer checkExpiredDiscoveryEntriesTimer;
 
@@ -271,6 +279,9 @@ private:
                         const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
     void callPendingLookups(const InterfaceAddress& interfaceAddress);
     bool isGlobal(const types::DiscoveryEntry& discoveryEntry) const;
+
+    void addInternal(const joynr::types::DiscoveryEntry& entry);
+    bool hasProviderPermission(const types::DiscoveryEntry& discoveryEntry);
 };
 
 class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback

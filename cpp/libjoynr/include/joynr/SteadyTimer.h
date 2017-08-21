@@ -45,7 +45,7 @@ public:
     ~SteadyTimer();
     void cancel();
     void expiresFromNow(std::chrono::milliseconds duration);
-    void asyncWait(std::function<void(const boost::system::error_code&)> callback);
+    void asyncWait(std::function<void(const boost::system::error_code&)>&& callback);
 
 private:
     std::unique_ptr<AsioSteadyTimer> steady_timer;

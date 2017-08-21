@@ -22,20 +22,20 @@ import joynr.messaging.types.* from "Types.fidl"
 
 interface IMessaging {
 
-    version {
-        major 0
-        minor 1
-    }
+	version {
+		major 0
+		minor 1
+	}
 
-    method transmit {
-        in {
-            JoynrMessage message
-        }
-    }
+	method transmit {
+		in {
+			JoynrMessage message
+		}
+	}
 
-    struct JoynrMessage {
-        String type
-        Types.JoynrMessageHeader header
-        String payload
-    }
+	struct JoynrMessage {
+		String type
+		Types.JoynrMessageHeader header
+		String payload
+	}
 }

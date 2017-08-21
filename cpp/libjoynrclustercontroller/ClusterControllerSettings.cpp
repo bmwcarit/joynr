@@ -19,6 +19,7 @@
 #include "joynr/ClusterControllerSettings.h"
 
 #include "joynr/Logger.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/Settings.h"
 
 namespace joynr
@@ -39,6 +40,12 @@ void ClusterControllerSettings::checkSettings()
         setMulticastReceiverDirectoryPersistenceFilename(
                 DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME());
     }
+
+    if (!settings.contains(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME())) {
+        setLocalCapabilitiesDirectoryPersistenceFilename(
+                DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME());
+    }
+
     if (!settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX())) {
         setMqttClientIdPrefix(DEFAULT_MQTT_CLIENT_ID_PREFIX());
     }
@@ -56,6 +63,49 @@ void ClusterControllerSettings::checkSettings()
 
     if (!settings.contains(SETTING_USE_ONLY_LDAS())) {
         setUseOnlyLDAS(DEFAULT_USE_ONLY_LDAS());
+    }
+
+    if (!settings.contains(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS())) {
+        setPurgeExpiredDiscoveryEntriesIntervalMs(
+                DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
+    }
+
+    if (!settings.contains(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS())) {
+        settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
+                     DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS().count());
+    }
+
+    if (!settings.contains(SETTING_MQTT_TLS_ENABLED())) {
+        settings.set(SETTING_MQTT_TLS_ENABLED(), DEFAULT_MQTT_TLS_ENABLED());
+    }
+
+    if (isMqttTlsEnabled()) {
+        if (!isMqttCertificateAuthorityCertificateFolderPathSet() &&
+            !isMqttCertificateAuthorityPemFilenameSet()) {
+            const std::string message =
+                    "MQTT TLS is enabled but no CA certificate filename or folder was provided";
+            JOYNR_LOG_ERROR(logger, message);
+            throw joynr::exceptions::JoynrConfigurationException(message);
+        }
+
+        if (!isMqttCertificatePemFilenameSet()) {
+            const std::string message =
+                    "MQTT TLS is enabled but no mqtt certificate PEM filename was provided";
+            JOYNR_LOG_ERROR(logger, message);
+            throw joynr::exceptions::JoynrConfigurationException(message);
+        }
+
+        if (!isMqttPrivateKeyPemFilenameSet()) {
+            const std::string message =
+                    "MQTT TLS is enabled but no private key PEM filename was provided";
+            JOYNR_LOG_ERROR(logger, message);
+            throw joynr::exceptions::JoynrConfigurationException(message);
+        }
+    } else if (isMqttCertificateAuthorityCertificateFolderPathSet() ||
+               isMqttCertificateAuthorityPemFilenameSet() || isMqttCertificatePemFilenameSet() ||
+               isMqttPrivateKeyPemFilenameSet()) {
+        JOYNR_LOG_WARN(
+                logger, "MQTT TLS is disabled but at least one MQTT TLS property was configured");
     }
 
     if (!settings.contains(SETTING_ACCESS_CONTROL_ENABLE())) {
@@ -79,6 +129,20 @@ void ClusterControllerSettings::checkSettings()
                             SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID());
         }
     }
+}
+
+const std::string& ClusterControllerSettings::
+        SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
+{
+    static const std::string value("lib-joynr/local-capabilities-directory-persistence-file");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::
+        DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
+{
+    static const std::string value("LocalCapabilitiesDirectory.persist");
+    return value;
 }
 
 const std::string& ClusterControllerSettings::
@@ -145,9 +209,23 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_UNICAST_TOPIC_PREFIX(
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_MQTT_TLS_ENABLED()
+{
+    static const std::string value("cluster-controller/mqtt-tls-enabled");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME()
 {
     static const std::string value("cluster-controller/mqtt-certificate-authority-pem-filename");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::
+        SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH()
+{
+    static const std::string value(
+            "cluster-controller/mqtt-certificate-authority-certificate-folder-path");
     return value;
 }
 
@@ -163,10 +241,40 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_PRIVATE_KEY_PEM_FILEN
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS()
+{
+    static const std::string value(
+            "cluster-controller/purge-expired-discovery-entries-interval-ms");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()
+{
+    static const std::string value("cluster-controller/capabilities-freshness-update-interval-ms");
+    return value;
+}
+
+int ClusterControllerSettings::DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS()
+{
+    return 60 * 60 * 1000; // 1 hour
+}
+
+std::chrono::milliseconds ClusterControllerSettings::
+        DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()
+{
+    static const std::chrono::milliseconds value(1UL * 60UL * 60UL * 1000UL); // 1 hour
+    return value;
+}
+
 const std::string& ClusterControllerSettings::DEFAULT_MQTT_CLIENT_ID_PREFIX()
 {
     static const std::string value("joynr");
     return value;
+}
+
+bool ClusterControllerSettings::DEFAULT_MQTT_TLS_ENABLED()
+{
+    return false;
 }
 
 const std::string& ClusterControllerSettings::DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX()
@@ -250,6 +358,18 @@ bool ClusterControllerSettings::isMqttClientIdPrefixSet() const
     return settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX());
 }
 
+int ClusterControllerSettings::getPurgeExpiredDiscoveryEntriesIntervalMs() const
+{
+    return settings.get<int>(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
+}
+
+void ClusterControllerSettings::setPurgeExpiredDiscoveryEntriesIntervalMs(
+        int purgeExpiredEntriesIntervalMs)
+{
+    settings.set(
+            SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS(), purgeExpiredEntriesIntervalMs);
+}
+
 std::string ClusterControllerSettings::getMqttClientIdPrefix() const
 {
     return settings.get<std::string>(SETTING_MQTT_CLIENT_ID_PREFIX());
@@ -291,6 +411,16 @@ std::string ClusterControllerSettings::getMqttCertificateAuthorityPemFilename() 
     return settings.get<std::string>(SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
 }
 
+bool ClusterControllerSettings::isMqttCertificateAuthorityCertificateFolderPathSet() const
+{
+    return settings.contains(SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
+}
+
+std::string ClusterControllerSettings::getMqttCertificateAuthorityCertificateFolderPath() const
+{
+    return settings.get<std::string>(SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
+}
+
 bool ClusterControllerSettings::isMqttCertificatePemFilenameSet() const
 {
     return settings.contains(SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
@@ -311,10 +441,14 @@ std::string ClusterControllerSettings::getMqttPrivateKeyPemFilename() const
     return settings.get<std::string>(SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
 }
 
+void ClusterControllerSettings::setMqttTlsEnabled(bool enabled)
+{
+    settings.set<bool>(SETTING_MQTT_TLS_ENABLED(), enabled);
+}
+
 bool ClusterControllerSettings::isMqttTlsEnabled() const
 {
-    return isMqttCertificateAuthorityPemFilenameSet() && isMqttCertificatePemFilenameSet() &&
-           isMqttPrivateKeyPemFilenameSet();
+    return settings.get<bool>(SETTING_MQTT_TLS_ENABLED());
 }
 
 const std::string& ClusterControllerSettings::
@@ -373,12 +507,42 @@ void ClusterControllerSettings::setUseOnlyLDAS(bool useOnlyLDAS)
     settings.set(SETTING_USE_ONLY_LDAS(), useOnlyLDAS);
 }
 
+std::string ClusterControllerSettings::getLocalCapabilitiesDirectoryPersistenceFilename() const
+{
+    return settings.get<std::string>(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME());
+}
+
+void ClusterControllerSettings::setLocalCapabilitiesDirectoryPersistenceFilename(
+        const std::string& filename)
+{
+    settings.set(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(), filename);
+}
+
+std::chrono::milliseconds ClusterControllerSettings::getCapabilitiesFreshnessUpdateIntervalMs()
+        const
+{
+    return std::chrono::milliseconds(
+            settings.get<std::uint64_t>(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()));
+}
+
+void ClusterControllerSettings::setCapabilitiesFreshnessUpdateIntervalMs(
+        std::chrono::milliseconds capabilitiesFreshnessUpdateIntervalMs)
+{
+    return settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
+                        capabilitiesFreshnessUpdateIntervalMs.count());
+}
+
 void ClusterControllerSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger,
                     "SETTING: {}  = {}",
                     SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME(),
                     getMulticastReceiverDirectoryPersistenceFilename());
+
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(),
+                    getLocalCapabilitiesDirectoryPersistenceFilename());
 
     JOYNR_LOG_DEBUG(
             logger, "SETTING: {}  = {}", SETTING_MQTT_CLIENT_ID_PREFIX(), getMqttClientIdPrefix());
@@ -405,6 +569,8 @@ void ClusterControllerSettings::printSettings() const
         JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_WS_PORT());
     }
 
+    JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_MQTT_TLS_ENABLED(), isMqttTlsEnabled());
+
     if (isMqttCertificateAuthorityPemFilenameSet()) {
         JOYNR_LOG_DEBUG(logger,
                         "SETTING: {}  = {}",
@@ -414,6 +580,17 @@ void ClusterControllerSettings::printSettings() const
         JOYNR_LOG_DEBUG(logger,
                         "SETTING: {}  = NOT SET",
                         SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
+    }
+
+    if (isMqttCertificateAuthorityCertificateFolderPathSet()) {
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = {}",
+                        SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH(),
+                        getMqttCertificateAuthorityCertificateFolderPath());
+    } else {
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = NOT SET",
+                        SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
     }
 
     if (isMqttCertificatePemFilenameSet()) {
@@ -445,6 +622,10 @@ void ClusterControllerSettings::printSettings() const
                     "SETTING: {}  = {})",
                     SETTING_ACCESS_CONTROL_ENABLE(),
                     settings.get<std::string>(SETTING_ACCESS_CONTROL_ENABLE()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {} = {})",
+                    SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
+                    getCapabilitiesFreshnessUpdateIntervalMs().count());
     if (settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE())) {
         JOYNR_LOG_DEBUG(logger,
                         "SETTING: {}  = {})",

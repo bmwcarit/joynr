@@ -1,3 +1,18 @@
+# joynr 0.28.0
+
+## API relevant changes
+* **[C++, API]** Ease implementation of SubscriptionListener for empty broadcasts.
+* **[C++, API]** createJoynrRuntime*(...) APIs now return shared_ptr instead of unique_ptr
+* **[C++, API]** createProxyBuilder*(...) APIs now return shared_ptr instead of unique_ptr
+* **[C++, API]** proxyBuilder->build*(...) APIs now return shared_ptr instead of unique_ptr
+
+## Other changes
+* **[C++]** joynr accepts files which have size at most 2 GB.
+* **[Java, Properties]** Changed default values of joynr.messaging.mqtt.keepalivetimersec (new value: 30s) and
+ joynr.messaging.mqtt.connectiontimeoutsec (new value: 60s)
+* **[JS]** Updated wscpp version to 0.2.4
+* **[C++, Java, JS]** Updated smrf version ot 0.2.1
+
 # joynr 0.27.4
 
 ## API relevant changes
@@ -5,7 +20,6 @@ none
 
 ## Other changes
 * **[C++]** Fixed crash which can occur when a queued message cannot be routed due to expired timeout.
-
 
 # joynr 0.27.3
 

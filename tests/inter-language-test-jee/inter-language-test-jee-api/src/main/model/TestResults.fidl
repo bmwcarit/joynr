@@ -19,32 +19,32 @@
 package testresults
 
 typeCollection {
-    struct TestCaseFailure {
-        String message
-        String type
-        String text
-    }
+	struct TestCaseFailure {
+		String message
+		String type
+		String text
+	}
 
-    struct TestCaseResult {
-        String name
-        String classname
-        String time
-        String status
-        TestCaseFailure failure
-        String systemOut
-    }
+	struct TestCaseResult {
+		String name
+		String classname
+		String time
+		String status
+		TestCaseFailure failure
+		String systemOut
+	}
 
-    struct TestSuiteResult {
-        String name
-        String time
-        UInt32 tests
-        UInt32 errors
-        UInt32 skipped
-        UInt32 failures
-        TestCaseResult[] testCaseResults
-    }
+	struct TestSuiteResult {
+		String name
+		String time
+		UInt32 tests
+		UInt32 errors
+		UInt32 skipped
+		UInt32 failures
+		TestCaseResult[] testCaseResults
+	}
 
-    struct TestResult {
-        TestSuiteResult[] testSuiteResults
-    }
+	struct TestResult {
+		TestSuiteResult[] testSuiteResults
+	}
 }

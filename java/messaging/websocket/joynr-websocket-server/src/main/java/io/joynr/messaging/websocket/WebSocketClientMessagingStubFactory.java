@@ -46,9 +46,4 @@ public class WebSocketClientMessagingStubFactory extends
         JoynrWebSocketEndpoint webSocketServer = webSocketEndpointFactory.create(serverAddress);
         return new WebSocketMessagingStub(address, webSocketServer);
     }
-
-    @Override
-    public void shutdown() {
-        // Nothing to do. Skeleton shuts down the client
-    }
 }

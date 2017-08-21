@@ -29,12 +29,6 @@ import com.google.inject.name.Named;
 
 @Singleton
 public class ConfigurableMessagingSettings implements MessagingSettings {
-    // public static final String PROPERTY_JOYNR_MESSAGING_CHANNELID = "joynr.messaging.channelId"; //NOT USUALLY SET BY
-    // THE APPLICATION!
-    // public static final String PROPERTY_JOYNR_MESSAGING_CAPABILITIESDIRECTORYURL =
-    // "joynr.messaging.capabilitiesDirectoryUrl";
-    // public static final String PROPERTY_BOUNCE_PROXY_URL = "joynr.messaging.bounceProxyUrl";
-
     public static final String PROPERTY_CC_CONNECTION_TYPE = "joynr.messaging.cc.connectiontype";
 
     public static final String PROPERTY_ARBITRATION_MINIMUMRETRYDELAY = "joynr.arbitration.minimumretrydelay";

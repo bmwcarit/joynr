@@ -53,7 +53,7 @@ public:
     bool operator==(
             const BroadcastSubscriptionRequestInformation& subscriptionRequestInformation) const;
 
-    std::string toString();
+    std::string toString() const;
 
     template <typename Archive>
     void serialize(Archive& archive)

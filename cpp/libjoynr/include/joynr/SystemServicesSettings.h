@@ -40,6 +40,7 @@ public:
     static const std::string& SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID();
     static const std::string& SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID();
     static const std::string& SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID();
+    static const std::string& SETTING_CC_ACCESSCONTROLLISTEDITORPROVIDER_PARTICIPANTID();
 
     static const std::string& DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME();
 
@@ -51,6 +52,8 @@ public:
     void setCcDiscoveryProviderParticipantId(const std::string& participantId);
     std::string getCcMessageNotificationProviderParticipantId() const;
     void setCcMessageNotificationProviderParticipantId(const std::string& participantId);
+    std::string getCcAccessControlListEditorProviderParticipantId() const;
+    void setCcAccessControlListEditorProviderParticipantId(const std::string& participantId);
 
     bool contains(const std::string& key) const;
 

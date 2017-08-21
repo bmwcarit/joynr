@@ -48,7 +48,7 @@ public:
     InProcessConnectorFactory(ISubscriptionManager* subscriptionManager,
                               PublicationManager* publicationManager,
                               InProcessPublicationSender* inProcessPublicationSender,
-                              IRequestCallerDirectory* requestCallerDirectory);
+                              std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory);
 
     virtual ~InProcessConnectorFactory() = default;
 
@@ -82,7 +82,7 @@ private:
     ISubscriptionManager* subscriptionManager;
     PublicationManager* publicationManager;
     InProcessPublicationSender* inProcessPublicationSender;
-    IRequestCallerDirectory* requestCallerDirectory;
+    std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
     std::shared_ptr<IPlatformSecurityManager> securityManager;
     ADD_LOGGER(InProcessConnectorFactory);
 };

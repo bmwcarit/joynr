@@ -40,8 +40,8 @@ public:
         auto integrationSettings = std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
         Settings settings("test-resources/MqttSystemIntegrationTest1.settings");
         Settings::merge(settings, *integrationSettings, false);
-        runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(integrationSettings));
-
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(integrationSettings));
+        runtime->init();
         runtime->start();
     }
 
@@ -50,14 +50,14 @@ public:
         const bool deleteChannel = true;
         runtime->stop(deleteChannel);
         // Delete persisted files
-        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
 protected:
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     DiscoveryQos discoveryQos;
 };
 
@@ -70,14 +70,14 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
     providerQos.setPriority(2);
     providerQos.setScope(types::ProviderScope::LOCAL);
 
-    runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
+    std::string participantId = runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     Semaphore onSuccessCalledSemaphore;
 
-    auto onSuccess = [&onSuccessCalledSemaphore](std::unique_ptr<tests::testProxy> proxy) {
+    auto onSuccess = [&onSuccessCalledSemaphore](std::shared_ptr<tests::testProxy> proxy) {
         onSuccessCalledSemaphore.notify();
         EXPECT_NE(nullptr, proxy);
     };
@@ -91,16 +91,17 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
                     ->buildAsync(onSuccess, onFailure);
 
     EXPECT_TRUE(onSuccessCalledSemaphore.waitFor(std::chrono::seconds(10)));
+    runtime->unregisterProvider(participantId);
 }
 
 TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
 {
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>("unknownDomain");
 
     Semaphore onErrorCalledSemaphore;
 
-    auto onSuccess = [](std::unique_ptr<tests::testProxy>) {
+    auto onSuccess = [](std::shared_ptr<tests::testProxy>) {
         FAIL();
     };
 

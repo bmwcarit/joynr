@@ -19,9 +19,9 @@
 package unittest
 
 interface IntegerTypeUsed  {
-    method testMethod {
-        in {
-            Integer(-10, 1000) testParam
-        }
-    }
+	method testMethod {
+		in {
+			Integer(-10, 1000) testParam
+		}
+	}
 }

@@ -38,11 +38,4 @@ public interface CapabilitiesRegistrar {
     Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos);
 
     void unregisterProvider(String domain, Object provider);
-
-    /**
-     * Shuts down the local capabilities directory and all used thread pools.
-     * @param unregisterAllRegisteredCapabilities if set to true, all added capabilities that are not removed up to
-     * this point, will be removed automatically
-     */
-    void shutdown(boolean unregisterAllRegisteredCapabilities);
 }

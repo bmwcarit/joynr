@@ -42,10 +42,8 @@ import com.google.inject.Injector;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
-import io.joynr.messaging.MessagingSkeletonFactory;
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.types.ProviderQos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,14 +156,8 @@ public class JoynrIntegrationBean {
                 }
             }
         }
-
-        MessageRouter messageRouter = getJoynrInjector().getInstance(MessageRouter.class);
-        messageRouter.shutdown();
-
-        MessagingStubFactory messagingStubFactory = getJoynrInjector().getInstance(MessagingStubFactory.class);
-        MessagingSkeletonFactory messagingSkeletonFactory = getJoynrInjector().getInstance(MessagingSkeletonFactory.class);
-        messagingSkeletonFactory.shutdown();
-        messagingStubFactory.shutdown();
+        ShutdownNotifier shutdownNotifier = getJoynrInjector().getInstance(ShutdownNotifier.class);
+        shutdownNotifier.shutdown();
     }
 
     /**

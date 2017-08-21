@@ -34,9 +34,7 @@ SteadyTimer::SteadyTimer(boost::asio::io_service& io_service)
 {
 }
 
-SteadyTimer::~SteadyTimer()
-{
-}
+SteadyTimer::~SteadyTimer() = default;
 
 void SteadyTimer::cancel()
 {
@@ -48,9 +46,9 @@ void SteadyTimer::expiresFromNow(std::chrono::milliseconds duration)
     steady_timer->expires_from_now(duration);
 }
 
-void SteadyTimer::asyncWait(std::function<void(const boost::system::error_code&)> callback)
+void SteadyTimer::asyncWait(std::function<void(const boost::system::error_code&)>&& callback)
 {
-    steady_timer->async_wait(callback);
+    steady_timer->async_wait(std::move(callback));
 }
 
 } // namespace joynr

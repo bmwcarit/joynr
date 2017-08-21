@@ -29,6 +29,7 @@
 #include <boost/asio/io_service.hpp>
 
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/CallContextStorage.h"
 #include "joynr/DelayedScheduler.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/IPublicationSender.h"
@@ -50,7 +51,6 @@
 #include "joynr/exceptions/JoynrExceptionUtil.h"
 #include "joynr/exceptions/SubscriptionException.h"
 #include "joynr/serializer/Serializer.h"
-#include "libjoynr/common/CallContextStorage.h"
 
 namespace joynr
 {
@@ -123,6 +123,11 @@ PublicationManager::~PublicationManager()
         auto broadcastRequest = subscriptionId2BroadcastSubscriptionRequest.begin();
         removeBroadcastPublication((broadcastRequest->second)->getSubscriptionId(), false);
     }
+}
+
+void PublicationManager::shutdown()
+{
+    delayedScheduler->shutdown();
 }
 
 PublicationManager::PublicationManager(boost::asio::io_service& ioService,
@@ -634,19 +639,19 @@ void PublicationManager::saveSubscriptionRequestsMap(const Map& map,
         return;
     }
 
-    std::unordered_map<std::string, typename Map::mapped_type> mapToBeSerialized;
+    std::vector<typename Map::mapped_type> subscriptionVector(map.size());
 
-    auto fun = [&mapToBeSerialized](auto&& map) {
+    auto callback = [&subscriptionVector](auto&& map) {
         for (auto&& entry : map) {
-            auto&& mtype = entry.second;
-            mapToBeSerialized.insert({mtype->getProviderId(), mtype});
+            subscriptionVector.push_back(entry.second);
         }
     };
-    map.applyReadFun(fun);
+
+    map.applyReadFun(callback);
 
     try {
         joynr::util::saveStringToFile(
-                storageFilename, joynr::serializer::serializeToJson(mapToBeSerialized));
+                storageFilename, joynr::serializer::serializeToJson(subscriptionVector));
     } catch (const std::invalid_argument& ex) {
         JOYNR_LOG_ERROR(logger, "serializing subscription map to JSON failed: {}", ex.what());
     } catch (const std::runtime_error& ex) {
@@ -660,7 +665,6 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
         std::mutex& queueMutex,
         std::multimap<std::string, std::shared_ptr<RequestInformationType>>& queuedSubscriptions)
 {
-
     static_assert(std::is_base_of<SubscriptionRequest, RequestInformationType>::value,
                   "loadSavedSubscriptionRequestsMap can only be used for subclasses of "
                   "SubscriptionRequest");
@@ -678,24 +682,17 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
 
     std::lock_guard<std::mutex> queueLocker(queueMutex);
 
-    // Deserialize the JSON into the multimap of subscription requests
-    joynr::serializer::deserializeFromJson(queuedSubscriptions, jsonString);
+    // Deserialize the JSON into the array of subscription requests
+    std::vector<std::shared_ptr<RequestInformationType>> subscriptionVector;
+    joynr::serializer::deserializeFromJson(subscriptionVector, jsonString);
 
     // Loop through the saved subscriptions
 
-    auto it = queuedSubscriptions.begin();
-    const auto end = queuedSubscriptions.end();
-
-    while (it != end) {
-        std::shared_ptr<RequestInformationType> requestInfo = it->second;
+    for (auto& requestInfo : subscriptionVector) {
         if (isSubscriptionExpired(requestInfo->getQos())) {
-            JOYNR_LOG_TRACE(logger,
-                            "Removing subscription Request: {}  : {}",
-                            it->first,
-                            requestInfo->toString());
-            it = queuedSubscriptions.erase(it);
+            JOYNR_LOG_TRACE(logger, "Removing subscription Request: {}", requestInfo->toString());
         } else {
-            ++it;
+            queuedSubscriptions.emplace(requestInfo->getProviderId(), std::move(requestInfo));
         }
     }
 }

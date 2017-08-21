@@ -31,6 +31,7 @@ namespace joynr
 {
 
 class MessagingQos;
+class JoynrRuntime;
 
 class JOYNR_EXPORT ProxyFactory
 {
@@ -39,9 +40,12 @@ public:
 
     // Create a proxy of type T
     template <class T>
-    T* createProxy(const std::string& domain, const MessagingQos& qosSettings)
+    std::shared_ptr<T> createProxy(std::shared_ptr<JoynrRuntime> runtime,
+                                   const std::string& domain,
+                                   const MessagingQos& qosSettings)
     {
-        return new T(connectorFactory.get(), domain, qosSettings);
+        auto proxy = std::make_shared<T>(runtime, connectorFactory.get(), domain, qosSettings);
+        return proxy;
     }
 
 private:

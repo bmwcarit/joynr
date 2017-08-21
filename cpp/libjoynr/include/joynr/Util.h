@@ -64,6 +64,20 @@ std::string extractParticipantIdFromMulticastId(const std::string& multicastId);
 
 void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards = false);
 
+/**
+ * @brief check potential overflow which could happen when adding an offset to the address
+ * @param address the memory address of the pointer
+ * @param offset the offset to be added to the address
+ * @return true if an overflow happens, false otherwise
+ */
+bool isAdditionOnPointerSafe(std::uintptr_t address, int offset);
+
+/**
+ * @brief converts an attribute name to its getter function
+ * @param attributeName name of the attribute; MUST NOT be an empty string!
+ * @return name of getter function;
+ * if the input value is 'foo' this method returns 'getFoo'
+ */
 std::string attributeGetterFromName(const std::string& attributeName);
 
 /*

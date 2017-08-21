@@ -124,12 +124,12 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
     }
 
     private void forwardMessage(ImmutableMessage message, FailureAction failureAction) {
+        message.setReceivedFromGlobal(true);
         LOG.debug("<<< INCOMING <<< {}", message);
         try {
-            message.setReceivedFromGlobal(true);
             messageRouter.route(message);
         } catch (Exception e) {
-            LOG.error("Error processing incoming message. Message will be dropped: {} ", e);
+            LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
             failureAction.execute(e);
         }
     }
@@ -151,7 +151,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
 
             forwardMessage(message, failureAction);
         } catch (UnsuppportedVersionException | EncodingException e) {
-            LOG.error("Message: \"{}\", could not be serialized, exception: {}", serializedMessage, e.getMessage());
+            LOG.error("Message: \"{}\", could not be deserialized, exception: {}", serializedMessage, e.getMessage());
             failureAction.execute(e);
         }
     }

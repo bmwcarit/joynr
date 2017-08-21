@@ -138,22 +138,4 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         localDiscoveryAggregator.remove(callback, participantId);
         providerDirectory.remove(participantId);
     }
-
-    @Override
-    public void shutdown(boolean unregisterAllRegisteredCapabilities) {
-        /* save added capabilities to unregister at shutdown ?
-        if(unregisterAllRegisteredCapabilities) {
-            for (Map.Entry<String, JoynrProvider> entry : registeredLocalProviders.entrySet()) {
-                String domain = entry.getKey();
-                JoynrProvider joynrProvider = entry.getValue();
-                unregisterProvider(domain, joynrProvider);
-            }
-        }
-        registeredLocalProviders.clear();
-         */
-        if (unregisterAllRegisteredCapabilities) {
-            logger.warn("unregisterAllRegisteredCapabilities is not implemented!");
-        }
-    }
-
 }

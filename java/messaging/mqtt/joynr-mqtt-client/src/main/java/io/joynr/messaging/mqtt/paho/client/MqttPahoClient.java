@@ -249,6 +249,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void connectionLost(Throwable error) {
+        logger.debug("connectionLost: {}", error.getMessage());
+
         if (error instanceof MqttException) {
             MqttException mqttError = (MqttException) error;
             int reason = mqttError.getReasonCode();

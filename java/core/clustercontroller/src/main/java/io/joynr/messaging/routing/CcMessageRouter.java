@@ -33,6 +33,7 @@ import io.joynr.accesscontrol.HasConsumerPermissionCallback;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.ImmutableMessage;
 
 public class CcMessageRouter extends AbstractMessageRouter {
@@ -55,7 +56,8 @@ public class CcMessageRouter extends AbstractMessageRouter {
                            MulticastReceiverRegistry multicastReceiverRegistry,
                            AccessController accessController,
                            @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl,
-                           BoundedDelayQueue<DelayableImmutableMessage> messageQueue) {
+                           BoundedDelayQueue<DelayableImmutableMessage> messageQueue,
+                           ShutdownNotifier shutdownNotifier) {
         super(routingTable,
               scheduler,
               sendMsgRetryIntervalMs,
@@ -66,7 +68,8 @@ public class CcMessageRouter extends AbstractMessageRouter {
               messagingSkeletonFactory,
               addressManager,
               multicastReceiverRegistry,
-              messageQueue);
+              messageQueue,
+              shutdownNotifier);
 
         this.accessController = accessController;
         this.enableAccessControl = enableAccessControl;
@@ -91,10 +94,5 @@ public class CcMessageRouter extends AbstractMessageRouter {
         } else {
             super.route(message);
         }
-    }
-
-    @Override
-    protected boolean shutdownScheduler() {
-        return true;
     }
 }

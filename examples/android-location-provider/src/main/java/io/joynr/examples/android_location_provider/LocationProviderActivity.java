@@ -85,8 +85,8 @@ public class LocationProviderActivity extends Activity {
             URI clusterControllerUrl = new URI(backendHost);
             webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST,
                                         clusterControllerUrl.getHost());
-            webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, ""
-                    + clusterControllerUrl.getPort());
+            webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT,
+                                        "" + clusterControllerUrl.getPort());
             webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL,
                                         clusterControllerUrl.getScheme());
             webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");

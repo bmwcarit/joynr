@@ -166,7 +166,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
     // Get the permission for given operation
     Permission::Enum permission =
-            owningAccessController.localDomainAccessController.getConsumerPermission(
+            owningAccessController.localDomainAccessController->getConsumerPermission(
                     message->getCreator(), domain, interfaceName, operation, trustlevel);
 
     bool hasPermission = convertToBool(permission);
@@ -204,7 +204,8 @@ class AccessController::ProviderRegistrationObserver
         : public LocalCapabilitiesDirectory::IProviderRegistrationObserver
 {
 public:
-    explicit ProviderRegistrationObserver(LocalDomainAccessController& localDomainAccessController)
+    explicit ProviderRegistrationObserver(
+            std::shared_ptr<LocalDomainAccessController> localDomainAccessController)
             : localDomainAccessController(localDomainAccessController)
     {
     }
@@ -216,28 +217,29 @@ public:
 
     void onProviderRemove(const DiscoveryEntry& discoveryEntry) override
     {
-        localDomainAccessController.unregisterProvider(
+        localDomainAccessController->unregisterProvider(
                 discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
     }
 
 private:
-    LocalDomainAccessController& localDomainAccessController;
+    std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
 };
 
-AccessController::AccessController(LocalCapabilitiesDirectory& localCapabilitiesDirectory,
-                                   LocalDomainAccessController& localDomainAccessController)
+AccessController::AccessController(
+        std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
+        std::shared_ptr<LocalDomainAccessController> localDomainAccessController)
         : localCapabilitiesDirectory(localCapabilitiesDirectory),
           localDomainAccessController(localDomainAccessController),
           providerRegistrationObserver(
                   std::make_shared<ProviderRegistrationObserver>(localDomainAccessController)),
           whitelistParticipantIds()
 {
-    localCapabilitiesDirectory.addProviderRegistrationObserver(providerRegistrationObserver);
+    localCapabilitiesDirectory->addProviderRegistrationObserver(providerRegistrationObserver);
 }
 
 AccessController::~AccessController()
 {
-    localCapabilitiesDirectory.removeProviderRegistrationObserver(providerRegistrationObserver);
+    localCapabilitiesDirectory->removeProviderRegistrationObserver(providerRegistrationObserver);
 }
 
 void AccessController::addParticipantToWhitelist(const std::string& participantId)
@@ -294,8 +296,9 @@ void AccessController::hasConsumerPermission(
 
         // Try to determine permission without expensive message deserialization
         // For now TrustLevel::HIGH is assumed.
+
         const std::string& msgCreatorUid = message->getCreator();
-        localDomainAccessController.getConsumerPermission(
+        localDomainAccessController->getConsumerPermission(
                 msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
     };
 
@@ -304,7 +307,7 @@ void AccessController::hasConsumerPermission(
         std::ignore = exception;
         callback->hasConsumerPermission(false);
     };
-    localCapabilitiesDirectory.lookup(
+    localCapabilitiesDirectory->lookup(
             message->getRecipient(), lookupSuccessCallback, lookupErrorCallback);
 }
 
@@ -313,10 +316,8 @@ bool AccessController::hasProviderPermission(const std::string& userId,
                                              const std::string& domain,
                                              const std::string& interfaceName)
 {
-    return (localDomainAccessController.getProviderPermission(
-                    userId, domain, interfaceName, trustLevel) == Permission::Enum::YES)
-                   ? true
-                   : false;
+    return localDomainAccessController->getProviderPermission(
+                   userId, domain, interfaceName, trustLevel) == Permission::Enum::YES;
 }
 
 } // namespace joynr

@@ -41,9 +41,4 @@ public class ChannelMessagingStubFactory extends
         ChannelMessagingStub messagingStub = new ChannelMessagingStub(address, httpMessageSender);
         return messagingStub;
     }
-
-    @Override
-    public void shutdown() {
-        httpMessageSender.shutdown();
-    }
 }

@@ -100,7 +100,6 @@ private:
 
     void on_disconnect(int rc) final;
     void on_log(int level, const char* str) final;
-    void on_error() final;
     void on_connect(int rc) final;
     void on_message(const mosquitto_message* message) final;
     void on_publish(int mid) final;

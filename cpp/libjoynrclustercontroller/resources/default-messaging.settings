@@ -15,10 +15,6 @@ ttl-uplift-ms=0
 # discoverable anymore. # 86400000 = 1 day in millisecond.
 discovery-entry-expiry-interval-ms=86400000
 
-# The interval at which the caches are checked for discovery entries which have
-# expired, and all those found will be removed.
-purge-expired-discovery-entries-interval-ms=3600000
-
 broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@/
 
 discovery-directories-domain=io.joynr

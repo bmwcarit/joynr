@@ -50,7 +50,7 @@ public:
     LocalDiscoveryAggregator(std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo>
                                      provisionedDiscoveryEntries);
 
-    void setDiscoveryProxy(std::unique_ptr<IDiscoveryAsync> discoveryProxy);
+    void setDiscoveryProxy(std::shared_ptr<IDiscoveryAsync> discoveryProxy);
 
     // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<void>> addAsync(
@@ -88,7 +88,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregator);
 
-    std::unique_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
+    std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> provisionedDiscoveryEntries;
 };
 } // namespace joynr

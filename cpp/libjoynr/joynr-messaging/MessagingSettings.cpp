@@ -159,17 +159,6 @@ const std::string& MessagingSettings::SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS()
-{
-    static const std::string value("messaging/purge-expired-discovery-entries-interval-ms");
-    return value;
-}
-
-int MessagingSettings::DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS()
-{
-    return 60 * 60 * 1000; // 1 hour
-}
-
 const std::string& MessagingSettings::SETTING_LOCAL_PROXY_HOST()
 {
     static const std::string value("messaging/local-proxy-host");
@@ -313,21 +302,9 @@ std::uint64_t MessagingSettings::DEFAULT_MAXIMUM_TTL_MS()
     return (30UL * 24UL * 60UL * 60UL * 1000UL);
 }
 
-const std::string& MessagingSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()
-{
-    static const std::string value("messaging/capabilities-freshness-update-interval-ms");
-    return value;
-}
-
 const std::string& MessagingSettings::SETTING_TTL_UPLIFT_MS()
 {
     static const std::string value("messaging/ttl-uplift-ms");
-    return value;
-}
-
-std::chrono::milliseconds MessagingSettings::DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()
-{
-    static const std::chrono::milliseconds value(1UL * 60UL * 60UL * 1000UL); // 1 hour
     return value;
 }
 
@@ -434,17 +411,6 @@ std::int64_t MessagingSettings::getDiscoveryEntryExpiryIntervalMs() const
 void MessagingSettings::setDiscoveryEntryExpiryIntervalMs(std::int64_t expiryIntervalMs)
 {
     settings.set(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS(), expiryIntervalMs);
-}
-
-int MessagingSettings::getPurgeExpiredDiscoveryEntriesIntervalMs() const
-{
-    return settings.get<int>(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
-}
-
-void MessagingSettings::setPurgeExpiredDiscoveryEntriesIntervalMs(int purgeExpiredEntriesIntervalMs)
-{
-    settings.set(
-            SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS(), purgeExpiredEntriesIntervalMs);
 }
 
 int MessagingSettings::getSendMsgRetryInterval() const
@@ -577,12 +543,6 @@ std::uint64_t MessagingSettings::getTtlUpliftMs() const
     return settings.get<std::uint64_t>(SETTING_TTL_UPLIFT_MS());
 }
 
-std::chrono::milliseconds MessagingSettings::getCapabilitiesFreshnessUpdateIntervalMs() const
-{
-    return std::chrono::milliseconds(
-            settings.get<std::uint64_t>(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()));
-}
-
 bool MessagingSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
@@ -645,14 +605,6 @@ void MessagingSettings::checkSettings()
     }
     if (!settings.contains(SETTING_MAXIMUM_TTL_MS())) {
         setMaximumTtlMs(DEFAULT_MAXIMUM_TTL_MS());
-    }
-    if (!settings.contains(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS())) {
-        settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
-                     DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS().count());
-    }
-    if (!settings.contains(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS())) {
-        setPurgeExpiredDiscoveryEntriesIntervalMs(
-                DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
     }
     if (!settings.contains(SETTING_TTL_UPLIFT_MS())) {
         settings.set(SETTING_TTL_UPLIFT_MS(), DEFAULT_TTL_UPLIFT_MS());
@@ -727,10 +679,6 @@ void MessagingSettings::printSettings() const
                     settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()));
     JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_MAXIMUM_TTL_MS(), getMaximumTtlMs());
     JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_TTL_UPLIFT_MS(), getTtlUpliftMs());
-    JOYNR_LOG_DEBUG(logger,
-                    "SETTING: {} = {})",
-                    SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
-                    getCapabilitiesFreshnessUpdateIntervalMs().count());
 }
 
 } // namespace joynr

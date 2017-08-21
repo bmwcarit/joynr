@@ -28,6 +28,8 @@
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/LibjoynrSettings.h"
+#include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;
@@ -40,10 +42,20 @@ using namespace joynr;
 class LibJoynrMessageRouterTest : public MessageRouterTest<LibJoynrMessageRouter> {
 public:
     LibJoynrMessageRouterTest() = default;
+
+    void SetUp() {
+        auto settings = std::make_unique<Settings>();
+        runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
+    }
+
+    void TearDown() {
+        runtime.reset();
+    }
 protected:
     void testAddNextHopCallsRoutingProxyCorrectly(const bool isGloballyVisible,
                           std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress);
     const bool isGloballyVisible = false;
+    std::shared_ptr<MockJoynrRuntime> runtime;
 };
 
 TEST_F(LibJoynrMessageRouterTest, routeMulticastMessageFromLocalProvider_multicastMsgIsSentToAllMulticastReceivers) {
@@ -56,7 +68,7 @@ TEST_F(LibJoynrMessageRouterTest, routeMulticastMessageFromLocalProvider_multica
     messageRouter->addProvisionedNextHop(providerParticipantId, localTransport, isGloballyVisible);
     messageRouter->addProvisionedNextHop(subscriberParticipantId1, inProcessSubscriberAddress, isGloballyVisible);
 
-    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
     ON_CALL(
         *mockRoutingProxy,
         addMulticastReceiverAsync(_,_,_,_,_)
@@ -93,7 +105,7 @@ TEST_F(LibJoynrMessageRouterTest, routeMulticastMessageFromLocalProvider_multica
 }
 
 TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouterIfProviderAddressNotAvailable) {
-    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
 
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
@@ -154,7 +166,7 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouterIfProvid
 }
 
 TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiver_CallsParentRouter) {
-    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
     auto mockRoutingProxyRef = mockRoutingProxy.get();
 
     messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
@@ -184,7 +196,7 @@ TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiver_CallsParentRouter) {
 }
 
 TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiverOfInProcessProvider_callsParentRouter) {
-    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
     auto mockRoutingProxyRef = mockRoutingProxy.get();
 
     messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
@@ -224,7 +236,7 @@ TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiverOfInProcessProvider_cal
 }
 
 TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouter) {
-    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
     auto mockRoutingProxyRef = mockRoutingProxy.get();
 
     messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
@@ -247,7 +259,7 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouter) {
 }
 
 TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForWebSocketProvider_callsParentRouter) {
-    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
     auto mockRoutingProxyRef = mockRoutingProxy.get();
 
     messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
@@ -280,7 +292,7 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForWebSocketProvider_calls
 }
 
 TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForInProcessProvider_callsParentRouter) {
-    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
     auto mockRoutingProxyRef = mockRoutingProxy.get();
 
     messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
@@ -317,7 +329,7 @@ void LibJoynrMessageRouterTest::testAddNextHopCallsRoutingProxyCorrectly(const b
                       std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress)
 {
     const std::string providerParticipantId("providerParticipantId");
-    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>();
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
     const std::string proxyParticipantId = mockRoutingProxy->getProxyParticipantId();
 
     {

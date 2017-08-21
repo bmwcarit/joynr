@@ -43,12 +43,12 @@ static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystem
 class CapabilitiesClientTest : public TestWithParam< std::string > {
 public:
     ADD_LOGGER(CapabilitiesClientTest);
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     std::unique_ptr<Settings> settings;
     MessagingSettings messagingSettings;
 
     CapabilitiesClientTest() :
-        runtime(nullptr),
+        runtime(),
         settings(std::make_unique<Settings>(GetParam())),
         messagingSettings(*settings)
     {
@@ -57,7 +57,8 @@ public:
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
-        runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(settings));
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings));
+        runtime->init();
     }
 
     void SetUp() {
@@ -68,7 +69,7 @@ public:
         bool deleteChannel = true;
         runtime->stop(deleteChannel);
         // Delete persisted files
-        std::remove(LibjoynrSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
@@ -82,7 +83,7 @@ private:
 INIT_LOGGER(CapabilitiesClientTest);
 
 TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
-    std::unique_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> capabilitiesProxyBuilder =
+    std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> capabilitiesProxyBuilder =
             runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
                 messagingSettings.getDiscoveryDirectoriesDomain()
             );

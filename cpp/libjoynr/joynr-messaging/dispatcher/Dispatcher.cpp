@@ -505,4 +505,10 @@ void Dispatcher::registerPublicationManager(PublicationManager* publicationManag
     this->publicationManager = publicationManager;
 }
 
+void Dispatcher::shutdown()
+{
+    replyCallerDirectory.shutdown();
+    requestCallerDirectory.shutdown();
+}
+
 } // namespace joynr

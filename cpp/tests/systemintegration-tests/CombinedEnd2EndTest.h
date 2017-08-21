@@ -45,8 +45,8 @@ public:
 
     void SetUp() override;
     void TearDown() override;
-    std::unique_ptr<joynr::JoynrRuntime> runtime1;
-    std::unique_ptr<joynr::JoynrRuntime> runtime2;
+    std::shared_ptr<joynr::JoynrRuntime> runtime1;
+    std::shared_ptr<joynr::JoynrRuntime> runtime2;
     std::string registeredSubscriptionId;
     std::string messagingSettingsFile1;
     std::string messagingSettingsFile2;
