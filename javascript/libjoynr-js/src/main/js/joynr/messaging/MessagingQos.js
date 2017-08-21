@@ -1,3 +1,5 @@
+/*jslint es5: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -120,51 +122,51 @@ define(
                     throw new Error("compress may only contain a boolean");
                 }
 
-                /**
-                 *
-                 * @param {String} key
-                 *            may contain ascii alphanumeric or hyphen.
-                 * @param {String} value
-                 *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
-                 *            dot, star, forward slash and back slash.
-                 */
-                function checkKeyAndValue(key, value) {
-                    var keyPattern = /^[a-zA-Z0-9\-]*$/;
-                    var valuePattern = /^[a-zA-Z0-9 ;:,+&\?\-\.\*\/\\]*$/;
-                    var keyOk = keyPattern.test(key);
-                    var valueOk = valuePattern.test(value);
-                    if (!keyOk) {
-                        throw new Error(
-                                "custom header key may only contain alphanumeric characters");
-                    }
-                    if (!valueOk) {
-                        throw new Error(
-                                "custom header value contains illegal character. See JSDoc for allowed characters");
-                    }
-                    return true;
-                }
-
-                /**
-                 * @name MessagingQos#putCustomHeader
-                 * @function
-                 *
-                 * @param {String} key
-                 *            may contain ascii alphanumeric or hyphen.
-                 * @param {String} value
-                 *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
-                 *            dot, star, forward slash and back slash.
-                 * @returns {JoynrMessage}
-                 */
-                Object.defineProperty(this, "putCustomMessageHeader", {
-                    enumerable : false,
-                    configurable : false,
-                    writable : false,
-                    value : function(key, value) {
-                        checkKeyAndValue(key, value);
-                        this.customHeaders[key] = value;
-                    }
-                });
             }
+
+            /**
+             *
+             * @param {String} key
+             *            may contain ascii alphanumeric or hyphen.
+             * @param {String} value
+             *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
+             *            dot, star, forward slash and back slash.
+             */
+            function checkKeyAndValue(key, value) {
+                var keyPattern = /^[a-zA-Z0-9\-]*$/;
+                var valuePattern = /^[a-zA-Z0-9 ;:,+&\?\-\.\*\/\\]*$/;
+                var keyOk = keyPattern.test(key);
+                var valueOk = valuePattern.test(value);
+                if (!keyOk) {
+                    throw new Error("custom header key may only contain alphanumeric characters");
+                }
+                if (!valueOk) {
+                    throw new Error(
+                            "custom header value contains illegal character. See JSDoc for allowed characters");
+                }
+                return true;
+            }
+
+            /**
+             * @name MessagingQos#putCustomHeader
+             * @function
+             *
+             * @param {String} key
+             *            may contain ascii alphanumeric or hyphen.
+             * @param {String} value
+             *            may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
+             *            dot, star, forward slash and back slash.
+             * @returns {JoynrMessage}
+             */
+            Object.defineProperty(MessagingQos.prototype, "putCustomMessageHeader", {
+                enumerable : false,
+                configurable : false,
+                writable : false,
+                value : function(key, value) {
+                    checkKeyAndValue(key, value);
+                    this.customHeaders[key] = value;
+                }
+            });
 
             /**
              * @name MessagingQos.DEFAULT_TTL
