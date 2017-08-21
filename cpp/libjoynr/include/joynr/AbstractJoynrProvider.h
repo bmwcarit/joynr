@@ -61,16 +61,18 @@ public:
      * @param attributeListener The listener object containing the callbacks for publications and
      * failures
      */
-    void registerAttributeListener(const std::string& attributeName,
-                                   SubscriptionAttributeListener* attributeListener) override;
+    void registerAttributeListener(
+            const std::string& attributeName,
+            std::shared_ptr<SubscriptionAttributeListener> attributeListener) override;
 
     /**
      * @brief Unregister and delete an attribute listener
      * @param attributeName The name of the attribute for which publications shall be stopped
      * @param attributeListener The listener object to be unregisterd
      */
-    void unregisterAttributeListener(const std::string& attributeName,
-                                     SubscriptionAttributeListener* attributeListener) override;
+    void unregisterAttributeListener(
+            const std::string& attributeName,
+            std::shared_ptr<SubscriptionAttributeListener> attributeListener) override;
 
     /**
      * @brief Register a listener for unicast broadcasts
@@ -112,11 +114,11 @@ protected:
         ReadLocker locker(lockAttributeListeners);
 
         if (attributeListeners.find(attributeName) != attributeListeners.cend()) {
-            std::vector<SubscriptionAttributeListener*>& listeners =
+            std::vector<std::shared_ptr<SubscriptionAttributeListener>>& listeners =
                     attributeListeners[attributeName];
 
             // Inform all the attribute listeners for this attribute
-            for (SubscriptionAttributeListener* listener : listeners) {
+            for (std::shared_ptr<SubscriptionAttributeListener> listener : listeners) {
                 listener->attributeValueChanged(value);
             }
         }
@@ -182,7 +184,8 @@ private:
     ReadWriteLock lockAttributeListeners;
     ReadWriteLock lockBroadcastListeners;
     ReadWriteLock lockSelectiveBroadcastListeners;
-    std::map<std::string, std::vector<SubscriptionAttributeListener*>> attributeListeners;
+    std::map<std::string, std::vector<std::shared_ptr<SubscriptionAttributeListener>>>
+            attributeListeners;
     std::map<std::string, std::vector<std::shared_ptr<UnicastBroadcastListener>>>
             selectiveBroadcastListeners;
     std::vector<std::shared_ptr<MulticastBroadcastListener>> broadcastListeners;

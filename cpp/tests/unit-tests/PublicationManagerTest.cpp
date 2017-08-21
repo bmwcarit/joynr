@@ -271,7 +271,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
 
     // Expect a call to set up the on change subscription
     std::string attributeName = "Location";
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
     EXPECT_CALL(
                 *requestCaller,
                 registerAttributeListener(attributeName,_)
@@ -342,7 +342,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
 
     EXPECT_CALL(*requestCaller,registerAttributeListener(attributeName, _))
             .Times(1)
@@ -413,7 +413,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
 
     EXPECT_CALL(*requestCaller,registerAttributeListener(attributeName, _))
             .Times(1)
@@ -469,7 +469,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
 
     SubscriptionRequest subscriptionRequest;
 
@@ -590,7 +590,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
 
     SubscriptionRequest subscriptionRequest;
 
@@ -682,7 +682,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
 
     SubscriptionRequest subscriptionRequest;
 
@@ -1078,7 +1078,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
 
     EXPECT_CALL(*requestCaller,registerAttributeListener(attributeName, _))
             .Times(1)

@@ -47,15 +47,17 @@ public:
      * @param attributeListener The listener object containing the callbacks for publications and
      * failures
      */
-    virtual void registerAttributeListener(const std::string& attributeName,
-                                           SubscriptionAttributeListener* attributeListener) = 0;
+    virtual void registerAttributeListener(
+            const std::string& attributeName,
+            std::shared_ptr<SubscriptionAttributeListener> attributeListener) = 0;
     /**
      * @brief Unregister and delete an attribute listener
      * @param attributeName The name of the attribute for which publications shall be stopped
      * @param attributeListener The listener object to be unregisterd
      */
-    virtual void unregisterAttributeListener(const std::string& attributeName,
-                                             SubscriptionAttributeListener* attributeListener) = 0;
+    virtual void unregisterAttributeListener(
+            const std::string& attributeName,
+            std::shared_ptr<SubscriptionAttributeListener> attributeListener) = 0;
 
     /**
      * @brief Register a listener for unicast broadcasts

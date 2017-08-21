@@ -401,7 +401,7 @@ public:
     std::int64_t timeOfLastPublication;
     IPublicationSender* sender;
     std::shared_ptr<RequestCaller> requestCaller;
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
     std::shared_ptr<UnicastBroadcastListener> broadcastListener;
     std::recursive_mutex mutex;
     DelayedScheduler::RunnableHandle publicationEndRunnableHandle;

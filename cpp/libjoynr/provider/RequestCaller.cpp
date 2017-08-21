@@ -36,16 +36,18 @@ const std::string& RequestCaller::getInterfaceName() const
     return interfaceName;
 }
 
-void RequestCaller::registerAttributeListener(const std::string& attributeName,
-                                              SubscriptionAttributeListener* attributeListener)
+void RequestCaller::registerAttributeListener(
+        const std::string& attributeName,
+        std::shared_ptr<SubscriptionAttributeListener> attributeListener)
 {
-    getProvider()->registerAttributeListener(attributeName, attributeListener);
+    getProvider()->registerAttributeListener(attributeName, std::move(attributeListener));
 }
 
-void RequestCaller::unregisterAttributeListener(const std::string& attributeName,
-                                                SubscriptionAttributeListener* attributeListener)
+void RequestCaller::unregisterAttributeListener(
+        const std::string& attributeName,
+        std::shared_ptr<SubscriptionAttributeListener> attributeListener)
 {
-    getProvider()->unregisterAttributeListener(attributeName, attributeListener);
+    getProvider()->unregisterAttributeListener(attributeName, std::move(attributeListener));
 }
 
 void RequestCaller::registerBroadcastListener(

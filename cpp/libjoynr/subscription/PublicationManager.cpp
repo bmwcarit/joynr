@@ -320,15 +320,15 @@ void PublicationManager::addOnChangePublication(
         JOYNR_LOG_TRACE(logger, "adding onChange subscription: {}", subscriptionId);
 
         // Create an attribute listener to listen for onChange events
-        SubscriptionAttributeListener* attributeListener =
-                new SubscriptionAttributeListener(subscriptionId, *this);
+        std::shared_ptr<SubscriptionAttributeListener> attributeListener =
+                std::make_shared<SubscriptionAttributeListener>(subscriptionId, shared_from_this());
 
         // Register the attribute listener
         std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
         requestCaller->registerAttributeListener(request->getSubscribeToName(), attributeListener);
 
         // Make note of the attribute listener so that it can be unregistered
-        publication->attributeListener = attributeListener;
+        publication->attributeListener = std::move(attributeListener);
     }
 }
 
