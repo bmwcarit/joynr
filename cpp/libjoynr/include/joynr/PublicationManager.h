@@ -402,7 +402,7 @@ public:
     IPublicationSender* sender;
     std::shared_ptr<RequestCaller> requestCaller;
     SubscriptionAttributeListener* attributeListener;
-    UnicastBroadcastListener* broadcastListener;
+    std::shared_ptr<UnicastBroadcastListener> broadcastListener;
     std::recursive_mutex mutex;
     DelayedScheduler::RunnableHandle publicationEndRunnableHandle;
 

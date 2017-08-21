@@ -342,15 +342,15 @@ void PublicationManager::addBroadcastPublication(
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
 
     // Create a broadcast listener to listen for broadcast events
-    UnicastBroadcastListener* broadcastListener =
-            new UnicastBroadcastListener(subscriptionId, shared_from_this());
+    std::shared_ptr<UnicastBroadcastListener> broadcastListener =
+            std::make_shared<UnicastBroadcastListener>(subscriptionId, shared_from_this());
 
     // Register the broadcast listener
     std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
     requestCaller->registerBroadcastListener(request->getSubscribeToName(), broadcastListener);
 
     // Make note of the attribute listener so that it can be unregistered
-    publication->broadcastListener = broadcastListener;
+    publication->broadcastListener = std::move(broadcastListener);
 }
 
 void PublicationManager::add(const std::string& proxyParticipantId,

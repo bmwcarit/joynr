@@ -54,8 +54,8 @@ public:
         publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender)),
         publicationSender(),
         request(),
-        subscriptionBroadcastListener(subscriptionId, publicationManager),
-        multicastBroadcastListener(providerParticipantId, publicationManager),
+        subscriptionBroadcastListener(std::make_shared<UnicastBroadcastListener>(subscriptionId, publicationManager)),
+        multicastBroadcastListener(std::make_shared<MulticastBroadcastListener>(providerParticipantId, publicationManager)),
         provider(std::make_shared<MockTestProvider>()),
         requestCaller(std::make_shared<testRequestCaller>(provider)),
         filter1(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
@@ -87,7 +87,7 @@ public:
 
         requestCaller->registerBroadcastListener(
                     "locationUpdateSelective",
-                    &subscriptionBroadcastListener);
+                    subscriptionBroadcastListener);
 
         publicationManager->add(
                     proxyParticipantId,
@@ -96,7 +96,7 @@ public:
                     request,
                     &publicationSender);
 
-        provider->registerBroadcastListener(&multicastBroadcastListener);
+        provider->registerBroadcastListener(multicastBroadcastListener);
         provider->addBroadcastFilter(filter1);
         provider->addBroadcastFilter(filter2);
     }
@@ -120,8 +120,8 @@ protected:
     std::shared_ptr<PublicationManager> publicationManager;
     MockPublicationSender publicationSender;
     BroadcastSubscriptionRequest request;
-    UnicastBroadcastListener subscriptionBroadcastListener;
-    MulticastBroadcastListener multicastBroadcastListener;
+    std::shared_ptr<UnicastBroadcastListener> subscriptionBroadcastListener;
+    std::shared_ptr<MulticastBroadcastListener> multicastBroadcastListener;
 
     std::shared_ptr<MockTestProvider> provider;
     std::shared_ptr<RequestCaller> requestCaller;

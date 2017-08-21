@@ -139,7 +139,7 @@ public:
         joynr::tests::testAbstractProvider::listOfStringsChanged(listOfStrings);
     }
 
-    void registerBroadcastListener(joynr::MulticastBroadcastListener* broadcastListener) override
+    void registerBroadcastListener(std::shared_ptr<joynr::MulticastBroadcastListener> broadcastListener) override
     {
         joynr::tests::testAbstractProvider::registerBroadcastListener(broadcastListener);
     }

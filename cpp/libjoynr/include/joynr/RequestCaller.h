@@ -49,10 +49,12 @@ public:
                                              SubscriptionAttributeListener* attributeListener);
 
     // Get and set the broadcast listeners listening on the provider
-    virtual void registerBroadcastListener(const std::string& broadcastName,
-                                           UnicastBroadcastListener* broadcastListener);
-    virtual void unregisterBroadcastListener(const std::string& broadcastName,
-                                             UnicastBroadcastListener* broadcastListener);
+    virtual void registerBroadcastListener(
+            const std::string& broadcastName,
+            std::shared_ptr<UnicastBroadcastListener> broadcastListener);
+    virtual void unregisterBroadcastListener(
+            const std::string& broadcastName,
+            std::shared_ptr<UnicastBroadcastListener> broadcastListener);
 
     virtual types::Version getProviderVersion() = 0;
 

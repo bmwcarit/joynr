@@ -63,15 +63,17 @@ public:
      * @param broadcastListener The listener object containing the callbacks for publications and
      * failures
      */
-    virtual void registerBroadcastListener(const std::string& broadcastName,
-                                           UnicastBroadcastListener* broadcastListener) = 0;
+    virtual void registerBroadcastListener(
+            const std::string& broadcastName,
+            std::shared_ptr<UnicastBroadcastListener> broadcastListener) = 0;
 
     /**
      * @brief Register a listener for multicast broadcasts
      * @param broadcastListener The listener object containing the callbacks for publications and
      * failures
      */
-    virtual void registerBroadcastListener(MulticastBroadcastListener* broadcastListener) = 0;
+    virtual void registerBroadcastListener(
+            std::shared_ptr<MulticastBroadcastListener> broadcastListener) = 0;
 
     /**
      * @brief Unregister and delete a broadcast listener
@@ -79,8 +81,9 @@ public:
      * @param broadcastListener The listener object containing the callbacks for publications and
      * failures
      */
-    virtual void unregisterBroadcastListener(const std::string& broadcastName,
-                                             UnicastBroadcastListener* broadcastListener) = 0;
+    virtual void unregisterBroadcastListener(
+            const std::string& broadcastName,
+            std::shared_ptr<UnicastBroadcastListener> broadcastListener) = 0;
 
     /**
      * @brief Gets the interface name

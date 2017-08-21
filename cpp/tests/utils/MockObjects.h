@@ -931,9 +931,9 @@ public:
     }
 
     MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
-    MOCK_METHOD2(registerBroadcastListener, void(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener));
+    MOCK_METHOD2(registerBroadcastListener, void(const std::string& broadcastName, std::shared_ptr<joynr::UnicastBroadcastListener> broadcastListener));
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
-    MOCK_METHOD2(unregisterBroadcastListener, void(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener));
+    MOCK_METHOD2(unregisterBroadcastListener, void(const std::string& broadcastName, std::shared_ptr<joynr::UnicastBroadcastListener> broadcastListener));
 
     std::string providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
 

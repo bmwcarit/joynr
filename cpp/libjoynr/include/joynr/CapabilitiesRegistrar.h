@@ -77,7 +77,7 @@ public:
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
 
         provider->registerBroadcastListener(
-                new MulticastBroadcastListener(participantId, publicationManager));
+                std::make_shared<MulticastBroadcastListener>(participantId, publicationManager));
 
         for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
             // TODO will the provider be registered at all dispatchers or

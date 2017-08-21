@@ -48,16 +48,18 @@ void RequestCaller::unregisterAttributeListener(const std::string& attributeName
     getProvider()->unregisterAttributeListener(attributeName, attributeListener);
 }
 
-void RequestCaller::registerBroadcastListener(const std::string& broadcastName,
-                                              UnicastBroadcastListener* broadcastListener)
+void RequestCaller::registerBroadcastListener(
+        const std::string& broadcastName,
+        std::shared_ptr<UnicastBroadcastListener> broadcastListener)
 {
-    getProvider()->registerBroadcastListener(broadcastName, broadcastListener);
+    getProvider()->registerBroadcastListener(broadcastName, std::move(broadcastListener));
 }
 
-void RequestCaller::unregisterBroadcastListener(const std::string& broadcastName,
-                                                UnicastBroadcastListener* broadcastListener)
+void RequestCaller::unregisterBroadcastListener(
+        const std::string& broadcastName,
+        std::shared_ptr<UnicastBroadcastListener> broadcastListener)
 {
-    getProvider()->unregisterBroadcastListener(broadcastName, broadcastListener);
+    getProvider()->unregisterBroadcastListener(broadcastName, std::move(broadcastListener));
 }
 
 } // namespace joynr

@@ -774,9 +774,9 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     // The broacast will fire this value
     joynr::types::Localisation::GpsLocation broadcastValue;
 
-    // Expect calls to register an unregister an broadcast listener
+    // Expect calls to register and unregister an broadcast listener
     std::string broadcastName("Location");
-    UnicastBroadcastListener* broadcastListener;
+    std::shared_ptr<UnicastBroadcastListener> broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filterParameters;
@@ -893,7 +893,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
-    UnicastBroadcastListener* broadcastListener;
+    std::shared_ptr<UnicastBroadcastListener> broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filterParameters;
@@ -979,7 +979,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
-    UnicastBroadcastListener* broadcastListener;
+    std::shared_ptr<UnicastBroadcastListener> broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filterParameters;
