@@ -1,3 +1,12 @@
+# joynr 0.29.0
+
+## API relevant changes
+
+## Other changes
+* **[Java]** Introduced new properties: PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS and
+  PROPERTY_DISCOVERY_RETRY_INTERVAL_MS. See the [Java Configuration Reference](JavaSettings.md)
+  for more details.
+
 # joynr 0.28.0
 
 ## API relevant changes
@@ -12,9 +21,6 @@
  joynr.messaging.mqtt.connectiontimeoutsec (new value: 60s)
 * **[JS]** Updated wscpp version to 0.2.4
 * **[C++, Java, JS]** Updated smrf version ot 0.2.1
-* **[Java]** Introduced new properties: PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS and
-  PROPERTY_DISCOVERY_RETRY_INTERVAL_MS. See the [Java Configuration Reference](JavaSettings.md)
-  for more details.
 
 # joynr 0.27.4
 
