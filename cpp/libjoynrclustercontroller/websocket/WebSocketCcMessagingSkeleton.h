@@ -231,7 +231,7 @@ private:
             return;
         }
 
-        JOYNR_LOG_DEBUG(logger, "<<<< INCOMING <<<< {}", immutableMessage->toLogMessage());
+        JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
 
         auto onFailure = [messageId = immutableMessage->getId()](
                 const exceptions::JoynrRuntimeException& e)
