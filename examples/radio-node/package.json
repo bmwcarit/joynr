@@ -1,12 +1,12 @@
 {
   "name": "radio-node",
-  "version": "0.28.0",
+  "version": "0.28.1",
   "license": "Apache-2.0",
   "description": "simple app to demonstrate usage of joynr",
   "main": "src/main/js/radioConsumer.js",
   "private": true,
   "dependencies": {
-     "joynr" : ">=0.28.0",
+     "joynr" : ">=0.28.1",
      "node-localstorage": "1.3.0"
   },
   "config": {

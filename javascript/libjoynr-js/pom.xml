@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.28.0</version>
+		<version>0.28.1</version>
 	</parent>
 
 	<properties>
