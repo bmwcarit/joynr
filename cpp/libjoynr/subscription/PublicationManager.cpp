@@ -480,28 +480,32 @@ void PublicationManager::removeAllSubscriptions(const std::string& providerId)
     JOYNR_LOG_TRACE(logger, "Removing all subscriptions for provider id= {}", providerId);
 
     // Build lists of subscriptionIds to remove
-    std::string subscriptionId;
-
     std::vector<std::string> publicationsToRemove;
     {
-        for (auto& requestInfo : subscriptionId2SubscriptionRequest) {
-            subscriptionId = requestInfo.second->getSubscriptionId();
+        auto callback = [&publicationsToRemove, &providerId](auto&& map) {
+            for (auto&& requestInfo : map) {
+                std::string subscriptionId = requestInfo.second->getSubscriptionId();
 
-            if ((requestInfo.second)->getProviderId() == providerId) {
-                publicationsToRemove.push_back(subscriptionId);
+                if ((requestInfo.second)->getProviderId() == providerId) {
+                    publicationsToRemove.push_back(subscriptionId);
+                }
             }
-        }
+        };
+        subscriptionId2SubscriptionRequest.applyReadFun(callback);
     }
 
     std::vector<std::string> broadcastsToRemove;
     {
-        for (auto& requestInfo : subscriptionId2BroadcastSubscriptionRequest) {
-            subscriptionId = requestInfo.second->getSubscriptionId();
+        auto callback = [&broadcastsToRemove, &providerId](auto&& map) {
+            for (auto& requestInfo : map) {
+                std::string subscriptionId = requestInfo.second->getSubscriptionId();
 
-            if ((requestInfo.second)->getProviderId() == providerId) {
-                broadcastsToRemove.push_back(subscriptionId);
+                if ((requestInfo.second)->getProviderId() == providerId) {
+                    broadcastsToRemove.push_back(subscriptionId);
+                }
             }
-        }
+        };
+        subscriptionId2BroadcastSubscriptionRequest.applyReadFun(callback);
     }
 
     // Remove each publication
