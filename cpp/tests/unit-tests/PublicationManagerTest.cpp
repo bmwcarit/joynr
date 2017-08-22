@@ -68,6 +68,11 @@ public:
         singleThreadedIOService.start();
     }
 
+    ~PublicationManagerTest()
+    {
+        singleThreadedIOService.stop();
+    }
+
     void TearDown(){
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored broadcastsubscriptions
@@ -149,6 +154,7 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     JOYNR_LOG_DEBUG(logger, "adding request");
     publicationManager->add(senderId, receiverId, requestCaller,subscriptionRequest, &mockPublicationSender);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    publicationManager->shutdown();
 }
 
 
@@ -194,6 +200,7 @@ TEST_F(PublicationManagerTest, stop_publications) {
     std::this_thread::sleep_for(std::chrono::milliseconds(80));
     publicationManager->stopPublication(subscriptionRequest.getSubscriptionId());
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, remove_all_publications) {
@@ -232,6 +239,7 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
     std::this_thread::sleep_for(std::chrono::milliseconds(80));
     publicationManager->removeAllSubscriptions(receiverId);
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, add_onChangeSubscription) {
@@ -302,6 +310,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     attributeListener->attributeValueChanged(std::move(attributeValue));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
@@ -371,7 +380,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
 
     // Wait for the subscription to finish
     std::this_thread::sleep_for(std::chrono::milliseconds(700));
-
+    publicationManager->shutdown();
 }
 
 
@@ -441,7 +450,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
 
     // Wait for the subscription to finish
     std::this_thread::sleep_for(std::chrono::milliseconds(700));
-
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
@@ -566,6 +575,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 500));
 
     // now, we should got 2 publications on mockPublicationSender2
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_withGreaterExpiryDate) {
@@ -655,6 +665,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     // wait for the subscription to finish
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + testRelExpiryDate));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_withLowerExpiryDate) {
@@ -747,6 +758,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     // wait for the async publication, which shouldn't arrive
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
@@ -866,6 +878,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     // Wait for the subscription to finish
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_withGreaterExpiryDate) {
@@ -951,6 +964,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     // wait for the async publication
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     //now, two publications should be noticed, even if the original subscription is expired
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_withLowerExpiryDate) {
@@ -1040,6 +1054,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     // now, no new publication should be received, even if the expiry date of the original request hasn't been expired
     // -> one publication expected
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
@@ -1094,6 +1109,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
 
     // Wait for the subscription to expire
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, restorePersistedAttributeSubscriptions) {
@@ -1131,6 +1147,7 @@ TEST_F(PublicationManagerTest, restorePersistedAttributeSubscriptions) {
         publicationManager->loadSavedAttributeSubscriptionRequestsMap(attributeSubscriptionsPersistenceFilename);
         publicationManager->add(senderId, receiverId, subscriptionRequest);
         publicationManager->add(senderId, receiverId, subscriptionRequest2);
+        publicationManager->shutdown();
     }
 
     auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
@@ -1161,6 +1178,7 @@ TEST_F(PublicationManagerTest, restorePersistedAttributeSubscriptions) {
     publicationManager->attributeValueChanged(subscriptionRequest2.getSubscriptionId(), attributeValue2);
 
     std::remove(attributeSubscriptionsPersistenceFilename.c_str());
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, restorePersistedBroadcastSubscriptions) {
@@ -1189,6 +1207,7 @@ TEST_F(PublicationManagerTest, restorePersistedBroadcastSubscriptions) {
         publicationManager->loadSavedBroadcastSubscriptionRequestsMap(broadcastSubscriptionsPersistenceFilename);
         publicationManager->add(broadcastSenderId, broadcastReceiverId, broadcastSubscriptionRequest);
         publicationManager->add(broadcastSenderId2, broadcastReceiverId, broadcastSubscriptionRequest2);
+        publicationManager->shutdown();
     }
 
     auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
@@ -1207,6 +1226,7 @@ TEST_F(PublicationManagerTest, restorePersistedBroadcastSubscriptions) {
     publicationManager->broadcastOccurred(broadcastSubscriptionId2);
 
     std::remove(broadcastSubscriptionsPersistenceFilename.c_str());
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSender) {
@@ -1260,6 +1280,7 @@ TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSende
     // wait for the async publication
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
     //now, two publications should be noticed, even if the original subscription is expired
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSender) {
@@ -1314,6 +1335,7 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
     // wait for the async publication
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
     //now, two publications should be noticed, even if the original subscription is expired
+    publicationManager->shutdown();
 }
 
 void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(SubscriptionRequest& subscriptionRequest)
@@ -1350,6 +1372,7 @@ void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(Subsc
     publicationManager->removeAllSubscriptions(providerId);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, attribute_sendSubscriptionReplyOnSuccessfulRegistration) {
@@ -1424,6 +1447,7 @@ void PublicationManagerTest::sendSubscriptionExceptionOnExpiredRegistration(Subs
     publicationManager->removeAllSubscriptions(providerId);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, attribute_sendSubscriptionExceptionOnExpiredSubscriptionRequest) {
@@ -1473,4 +1497,5 @@ TEST_F(PublicationManagerTest, attribute_provideCallContextWhenPollingAttribute)
 
     EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(1000)));
     EXPECT_EQ(expectedCallContext, CallContextStorage::get());
+    publicationManager->shutdown();
 }

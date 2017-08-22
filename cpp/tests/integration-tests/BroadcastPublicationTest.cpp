@@ -64,6 +64,12 @@ public:
         singleThreadedIOService.start();
     }
 
+    ~BroadcastPublicationTest()
+    {
+        publicationManager->shutdown();
+        singleThreadedIOService.stop();
+    }
+
     void SetUp(){
         //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());

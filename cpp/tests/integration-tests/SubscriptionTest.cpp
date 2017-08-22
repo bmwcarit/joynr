@@ -90,6 +90,12 @@ public:
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
     }
 
+    ~SubscriptionTest()
+    {
+        publicationManager->shutdown();
+        singleThreadedIOService.stop();
+    }
+
 protected:
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;

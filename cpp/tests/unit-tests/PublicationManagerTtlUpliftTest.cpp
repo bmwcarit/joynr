@@ -85,6 +85,7 @@ public:
     }
 
     ~PublicationManagerTtlUpliftTest() {
+        singleThreadedIOService.stop();
         //remove stored subscriptions;
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         //remove stored broadcastsubscriptions
@@ -303,6 +304,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithoutTtlUplif
 
     expectNoMoreSubscriptionPublications(mockPublicationSender,
                                          triggerPublication);
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithoutTtlUplift) {
@@ -341,6 +343,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithoutTtlUplif
 
     expectNoMoreSubscriptionPublications(mockPublicationSender,
                                          triggerPublication);
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUplift) {
@@ -378,6 +381,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUplift) 
                                   triggerPublication);
 
     expectNoMoreSubscriptionPublications(mockPublicationSender, triggerPublication);
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUplift) {
@@ -415,6 +419,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUplift) 
                                   triggerPublication);
 
     expectNoMoreSubscriptionPublications(mockPublicationSender, triggerPublication);
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWithNoExpiryDate) {
@@ -452,6 +457,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWi
 
     expectAdditionalSubscriptionPublication(proxyId, providerId, mockPublicationSender,
                                                            expectedPublicationTtlMs, triggerPublication);
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWithNoExpiryDate) {
@@ -489,6 +495,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWi
 
     expectAdditionalSubscriptionPublication(proxyId, providerId, mockPublicationSender,
                                                            expectedPublicationTtlMs, triggerPublication);
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testAttributeSubscriptionWithTtlUpliftWithLargeExpiryDate) {
@@ -528,6 +535,7 @@ TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testAttributeSubscriptionWithTt
 
     expectAdditionalSubscriptionPublication(proxyId, providerId, mockPublicationSender,
                                                            expectedPublicationTtlMs, triggerPublication);
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testBroadcastSubscriptionWithTtlUpliftWithLargeExpiryDate) {
@@ -567,4 +575,5 @@ TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testBroadcastSubscriptionWithTt
 
     expectAdditionalSubscriptionPublication(proxyId, providerId, mockPublicationSender,
                                                            expectedPublicationTtlMs, triggerPublication);
+    publicationManager->shutdown();
 }

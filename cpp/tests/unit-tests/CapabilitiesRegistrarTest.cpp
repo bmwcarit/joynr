@@ -55,6 +55,15 @@ public:
         singleThreadedIOService.start();
     }
 
+    ~CapabilitiesRegistrarTest()
+    {
+        delete capabilitiesRegistrar;
+        pubManager->shutdown();
+        singleThreadedIOService.stop();
+        pubManager.reset();
+        delete mockMessageSender;
+    }
+
     void SetUp(){
         std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
         mockDispatcher = std::make_shared<MockDispatcher>();
@@ -71,11 +80,6 @@ public:
                     pubManager,
                     globalAddress
         );
-    }
-
-    void TearDown(){
-        delete capabilitiesRegistrar;
-        delete mockMessageSender;
     }
 
 protected:
