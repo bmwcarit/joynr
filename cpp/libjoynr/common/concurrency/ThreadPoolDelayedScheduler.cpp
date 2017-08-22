@@ -22,6 +22,8 @@
 #include <functional>
 
 #include <boost/asio/io_service.hpp>
+#include "joynr/Runnable.h"
+#include "joynr/ThreadPool.h"
 
 namespace joynr
 {
@@ -30,22 +32,29 @@ ThreadPoolDelayedScheduler::ThreadPoolDelayedScheduler(std::uint8_t numberOfThre
                                                        const std::string& name,
                                                        boost::asio::io_service& ioService,
                                                        std::chrono::milliseconds defaultDelayMs)
-        : DelayedScheduler(std::bind(&ThreadPool::execute, &threadPool, std::placeholders::_1),
-                           ioService,
-                           defaultDelayMs),
-          threadPool(name, numberOfThreads)
+        : DelayedScheduler(
+                  std::bind(&ThreadPoolDelayedScheduler::execute, this, std::placeholders::_1),
+                  ioService,
+                  defaultDelayMs),
+          threadPool(std::make_shared<ThreadPool>(name, numberOfThreads))
 {
+    threadPool->init();
 }
 
 ThreadPoolDelayedScheduler::~ThreadPoolDelayedScheduler()
 {
-    assert(!threadPool.isRunning());
+    assert(!threadPool->isRunning());
+}
+
+void ThreadPoolDelayedScheduler::execute(Runnable* runnable)
+{
+    threadPool->execute(runnable);
 }
 
 void ThreadPoolDelayedScheduler::shutdown()
 {
     DelayedScheduler::shutdown();
-    threadPool.shutdown();
+    threadPool->shutdown();
 }
 
 } // namespace joynr

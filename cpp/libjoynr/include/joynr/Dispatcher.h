@@ -95,7 +95,7 @@ private:
     ReplyCallerDirectory replyCallerDirectory;
     PublicationManager* publicationManager;
     std::shared_ptr<ISubscriptionManager> subscriptionManager;
-    ThreadPool handleReceivedMessageThreadPool;
+    std::shared_ptr<ThreadPool> handleReceivedMessageThreadPool;
     ADD_LOGGER(Dispatcher);
     std::mutex subscriptionHandlingMutex;
 

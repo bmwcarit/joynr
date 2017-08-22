@@ -32,14 +32,15 @@ using ::testing::StrictMock;
 
 TEST(ThreadPoolTest, startAndShutdownWithoutWork)
 {
-    ThreadPool pool("ThreadPoolTest", 10);
-
-    pool.shutdown();
+    std::shared_ptr<ThreadPool> pool = std::make_shared<ThreadPool>("ThreadPoolTest", 10);
+    pool->init();
+    pool->shutdown();
 }
 
 TEST(ThreadPoolTest, startAndShutdown_callDtorOfRunnablesCorrect)
 {
-    ThreadPool pool("ThreadPoolTest", 1);
+    std::shared_ptr<ThreadPool> pool = std::make_shared<ThreadPool>("ThreadPoolTest", 1);
+    pool->init();
 
     // Dtor should be called after execution has finished
     StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
@@ -48,15 +49,15 @@ TEST(ThreadPoolTest, startAndShutdown_callDtorOfRunnablesCorrect)
     StrictMock<MockRunnable> runnable2(false);
 
     EXPECT_CALL(runnable2, run()).Times(1);
-    pool.execute(&runnable2);
+    pool->execute(&runnable2);
 
     EXPECT_CALL(*runnable1, run()).Times(1);
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
-    pool.execute(runnable1);
+    pool->execute(runnable1);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
-    pool.shutdown();
+    pool->shutdown();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(3));
 
@@ -65,54 +66,57 @@ TEST(ThreadPoolTest, startAndShutdown_callDtorOfRunnablesCorrect)
 
 TEST(ThreadPoolTest, callDtorOfRunnabeAfterWorkHasDone)
 {
-    ThreadPool pool("ThreadPoolTest", 1);
+    std::shared_ptr<ThreadPool> pool = std::make_shared<ThreadPool>("ThreadPoolTest", 1);
+    pool->init();
 
     StrictMock<MockRunnable>* runnable1 = new StrictMock<MockRunnable>(true);
 
     EXPECT_CALL(*runnable1, run()).Times(1);
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
 
-    pool.execute(runnable1);
+    pool->execute(runnable1);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    pool.shutdown();
+    pool->shutdown();
 }
 
 TEST(ThreadPoolTest, testEndlessRunningRunnableToQuitWithShutdownCall)
 {
-    ThreadPool pool("ThreadPoolTest", 1);
+    std::shared_ptr<ThreadPool> pool = std::make_shared<ThreadPool>("ThreadPoolTest", 1);
+    pool->init();
 
     StrictMock<MockRunnableBlocking> runnable1;
 
     EXPECT_CALL(runnable1, runEntry()).Times(1);
-    pool.execute(&runnable1);
+    pool->execute(&runnable1);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     EXPECT_CALL(runnable1, shutdownCalled()).Times(1);
     EXPECT_CALL(runnable1, runExit()).Times(1);
-    pool.shutdown();
+    pool->shutdown();
 
     EXPECT_CALL(runnable1, dtorCalled()).Times(1);
 }
 
 TEST(ThreadPoolTest, shutdownThreadPoolWhileRunnableIsInQueue)
 {
-    ThreadPool pool("ThreadPoolTest", 1);
+    std::shared_ptr<ThreadPool> pool = std::make_shared<ThreadPool>("ThreadPoolTest", 1);
+    pool->init();
 
     StrictMock<MockRunnableBlocking> runnable1;
     StrictMock<MockRunnableBlocking> runnable2;
 
     EXPECT_CALL(runnable1, runEntry()).Times(1);
-    pool.execute(&runnable1);
-    pool.execute(&runnable2);
+    pool->execute(&runnable1);
+    pool->execute(&runnable2);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
     EXPECT_CALL(runnable1, shutdownCalled()).Times(1);
     EXPECT_CALL(runnable1, runExit()).Times(1);
-    pool.shutdown();
+    pool->shutdown();
 
     EXPECT_CALL(runnable2, dtorCalled()).Times(1);
     EXPECT_CALL(runnable1, dtorCalled()).Times(1);
@@ -120,14 +124,15 @@ TEST(ThreadPoolTest, shutdownThreadPoolWhileRunnableIsInQueue)
 
 TEST(ThreadPoolTest, finishWorkWhileAnotherRunnableIsInTheQueue)
 {
-    ThreadPool pool("ThreadPoolTest", 1);
+    std::shared_ptr<ThreadPool> pool = std::make_shared<ThreadPool>("ThreadPoolTest", 1);
+    pool->init();
 
     StrictMock<MockRunnableBlocking> runnable1;
     StrictMock<MockRunnableBlocking> runnable2;
 
     EXPECT_CALL(runnable1, runEntry()).Times(1);
-    pool.execute(&runnable1);
-    pool.execute(&runnable2);
+    pool->execute(&runnable1);
+    pool->execute(&runnable2);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
@@ -140,7 +145,7 @@ TEST(ThreadPoolTest, finishWorkWhileAnotherRunnableIsInTheQueue)
 
     EXPECT_CALL(runnable2, shutdownCalled()).Times(1);
     EXPECT_CALL(runnable2, runExit()).Times(1);
-    pool.shutdown();
+    pool->shutdown();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 

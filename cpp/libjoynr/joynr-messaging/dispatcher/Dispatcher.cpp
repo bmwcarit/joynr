@@ -57,15 +57,16 @@ Dispatcher::Dispatcher(std::shared_ptr<IMessageSender> messageSender,
           replyCallerDirectory("Dispatcher-ReplyCallerDirectory", ioService),
           publicationManager(nullptr),
           subscriptionManager(nullptr),
-          handleReceivedMessageThreadPool("Dispatcher", maxThreads),
+          handleReceivedMessageThreadPool(std::make_shared<ThreadPool>("Dispatcher", maxThreads)),
           subscriptionHandlingMutex()
 {
+    handleReceivedMessageThreadPool->init();
 }
 
 Dispatcher::~Dispatcher()
 {
     JOYNR_LOG_TRACE(logger, "Destructing Dispatcher");
-    handleReceivedMessageThreadPool.shutdown();
+    handleReceivedMessageThreadPool->shutdown();
     delete publicationManager;
     publicationManager = nullptr;
     JOYNR_LOG_TRACE(logger, "Destructing finished");
@@ -120,7 +121,7 @@ void Dispatcher::receive(std::shared_ptr<ImmutableMessage> message)
     assert(!message->isEncrypted());
     ReceivedMessageRunnable* receivedMessageRunnable =
             new ReceivedMessageRunnable(std::move(message), *this);
-    handleReceivedMessageThreadPool.execute(receivedMessageRunnable);
+    handleReceivedMessageThreadPool->execute(receivedMessageRunnable);
 }
 
 void Dispatcher::handleRequestReceived(const ImmutableMessage& message)

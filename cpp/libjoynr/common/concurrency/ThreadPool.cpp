@@ -30,10 +30,19 @@ namespace joynr
 INIT_LOGGER(ThreadPool);
 
 ThreadPool::ThreadPool(const std::string& /*name*/, std::uint8_t numberOfThreads)
-        : threads(), scheduler(), keepRunning(true), currentlyRunning(), mutex()
+        : threads(),
+          scheduler(),
+          keepRunning(true),
+          currentlyRunning(),
+          mutex(),
+          numberOfThreads(numberOfThreads)
+{
+}
+
+void ThreadPool::init()
 {
     for (std::uint8_t i = 0; i < numberOfThreads; ++i) {
-        threads.emplace_back(std::bind(&ThreadPool::threadLifecycle, this));
+        threads.emplace_back(std::bind(&ThreadPool::threadLifecycle, this, shared_from_this()));
     }
 
 #if 0 // This is not working in g_SystemIntegrationTests
@@ -102,11 +111,11 @@ void ThreadPool::execute(Runnable* runnable)
     scheduler.add(runnable);
 }
 
-void ThreadPool::threadLifecycle()
+void ThreadPool::threadLifecycle(std::shared_ptr<ThreadPool> thisSharedPtr)
 {
     JOYNR_LOG_TRACE(logger, "Thread enters lifecycle");
 
-    while (keepRunning) {
+    while (thisSharedPtr->keepRunning) {
 
         JOYNR_LOG_TRACE(logger, "Thread is waiting");
         // Take a runnable
@@ -118,15 +127,15 @@ void ThreadPool::threadLifecycle()
 
             // Add runnable to the queue of currently running context
             {
-                std::lock_guard<std::mutex> lock(mutex);
-                if (!keepRunning) {
+                std::lock_guard<std::mutex> lock(thisSharedPtr->mutex);
+                if (!thisSharedPtr->keepRunning) {
                     // Call Dtor of runnable if needed
                     if (runnable->isDeleteOnExit()) {
                         delete runnable;
                     }
                     break;
                 }
-                currentlyRunning.insert(runnable);
+                thisSharedPtr->currentlyRunning.insert(runnable);
             }
 
             // Run the runnable
@@ -135,8 +144,8 @@ void ThreadPool::threadLifecycle()
             JOYNR_LOG_TRACE(logger, "Thread finished work");
 
             {
-                std::lock_guard<std::mutex> lock(mutex);
-                currentlyRunning.erase(runnable);
+                std::lock_guard<std::mutex> lock(thisSharedPtr->mutex);
+                thisSharedPtr->currentlyRunning.erase(runnable);
             }
 
             // Call Dtor of runnable if needed
