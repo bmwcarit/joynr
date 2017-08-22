@@ -66,7 +66,8 @@ module.exports = function(config) {
 
     // list of files to exclude
     exclude: [
-            'test-classes/joynr/**/*Test.js'
+        'test-classes/joynr/**/*Test.js',
+        'test-classes/global/**/*Test.js'
     ],
 
 

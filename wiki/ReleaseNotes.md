@@ -1,4 +1,11 @@
-# joynr 0.28.0
+# joynr 0.28.1
+
+## API relevant changes
+
+## Other changes
+* **[JS]** Changed node node-localstorage to node-persist to avoid too long filenames
+
+# joynr 0.28.0gll
 
 ## API relevant changes
 * **[C++, API]** Ease implementation of SubscriptionListener for empty broadcasts.
