@@ -196,7 +196,7 @@ public:
         onSuccess(discoveryEntryList);
     }
 
-    void fakeLookupWithTwoResults(
+    void fakeLookupByParticipantIdWithResults(
             const std::string& participantId,
             std::function<void(const std::vector<types::GlobalDiscoveryEntry>& discoveryEntries)>
                     onSuccess,
@@ -208,15 +208,6 @@ public:
         discoveryEntryList.push_back(types::GlobalDiscoveryEntry(defaultProviderVersion,
                                                                  DOMAIN_1_NAME,
                                                                  INTERFACE_1_NAME,
-                                                                 participantId,
-                                                                 qos,
-                                                                 LASTSEEN_MS,
-                                                                 EXPIRYDATE_MS,
-                                                                 PUBLIC_KEY_ID,
-                                                                 EXTERNAL_ADDRESS));
-        discoveryEntryList.push_back(types::GlobalDiscoveryEntry(defaultProviderVersion,
-                                                                 DOMAIN_2_NAME,
-                                                                 INTERFACE_2_NAME,
                                                                  participantId,
                                                                  qos,
                                                                  LASTSEEN_MS,
@@ -465,11 +456,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
                            const std::vector<types::GlobalDiscoveryEntry>& discoveryEntries)>>(),
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(1)
-            .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
+            .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupByParticipantIdWithResults));
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(TIMEOUT);
-    EXPECT_EQ(2, capabilities.size());
+    EXPECT_EQ(1, capabilities.size());
     callback->clearResults();
     EXPECT_CALL(
             *capabilitiesClient,
@@ -480,7 +471,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
             .Times(0);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     capabilities = callback->getResults(TIMEOUT);
-    EXPECT_EQ(2, capabilities.size());
+    EXPECT_EQ(1, capabilities.size());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsNoCapability)
@@ -532,7 +523,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
     EXPECT_TRUE(interfaceAddress2Found);
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries)
+TEST_F(LocalCapabilitiesDirectoryTest, clearRemovesEntries)
 {
 
     EXPECT_CALL(
@@ -542,13 +533,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries)
                            const std::vector<types::GlobalDiscoveryEntry>& discoveryEntries)>>(),
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(1)
-            .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
+            .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupByParticipantIdWithResults));
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    // this should remove all entries in the cache
-    localCapabilitiesDirectory->cleanCache(std::chrono::milliseconds(100));
+    // remove all entries in the cache
+    localCapabilitiesDirectory->clear();
     // retrieving capabilities will force a call to the backend as the cache is empty
     EXPECT_CALL(
             *capabilitiesClient,
@@ -824,7 +814,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
     callback->clearResults();
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
-    localCapabilitiesDirectory->cleanCache(std::chrono::milliseconds::zero());
+    localCapabilitiesDirectory->clear();
 
     discoveryQos.setCacheMaxAge(4000);
     localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
