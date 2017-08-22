@@ -131,7 +131,7 @@ void MutableMessage::setCustomHeader(const std::string& key, const std::string& 
 
 void MutableMessage::setCustomHeader(std::string&& key, std::string&& value)
 {
-    customHeaders.insert({std::move(key) + Message::CUSTOM_HEADER_PREFIX(), std::move(value)});
+    customHeaders.insert({Message::CUSTOM_HEADER_PREFIX() + std::move(key), std::move(value)});
 }
 
 void MutableMessage::setPrefixedCustomHeaders(
