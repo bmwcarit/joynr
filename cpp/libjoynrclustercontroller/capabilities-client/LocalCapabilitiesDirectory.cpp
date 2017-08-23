@@ -732,7 +732,14 @@ void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::str
     }
 
     std::vector<joynr::types::GlobalDiscoveryEntry> injectedGlobalCapabilities;
-    joynr::serializer::deserializeFromJson(injectedGlobalCapabilities, jsonString);
+    try {
+        joynr::serializer::deserializeFromJson(injectedGlobalCapabilities, jsonString);
+    } catch (const std::invalid_argument& e) {
+        std::string errorMessage("could not deserialize injected global capabilities from " +
+                                 jsonString + " - error: " + e.what());
+        JOYNR_LOG_FATAL(logger, errorMessage);
+        return;
+    }
 
     if (injectedGlobalCapabilities.empty()) {
         return;

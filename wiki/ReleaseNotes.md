@@ -7,6 +7,15 @@
   PROPERTY_DISCOVERY_RETRY_INTERVAL_MS. See the [Java Configuration Reference](JavaSettings.md)
   for more details.
 
+# joynr 0.28.1
+
+## API relevant changes
+none
+
+## Other changes
+* **[JS]** Changed node node-localstorage to node-persist to avoid too long filenames
+* **[C++]** LocalCapabilitiesDirectory does not store multiple entries for a single participantId
+
 # joynr 0.28.0
 
 ## API relevant changes
