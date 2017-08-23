@@ -1,3 +1,5 @@
+/*jslint es5: true, nomen: true */
+
 /*
  * #%L
  * %%
@@ -34,20 +36,21 @@ define("joynr/util/InProcessSkeleton", [], function() {
             // (e.g. var c = Constructor({..}))
             return new InProcessSkeleton(proxyObject);
         }
-
-        /**
-         * Getter for the proxy object
-         *
-         * @name InProcessSkeleton#getProxyObject
-         * @function
-         *
-         * @returns the proxy object this is the skeleton for
-         */
-        this.getProxyObject = function() {
-            return proxyObject;
-        };
+        this._proxyObject = proxyObject;
 
     }
+
+    /**
+     * Getter for the proxy object
+     *
+     * @name InProcessSkeleton#getProxyObject
+     * @function
+     *
+     * @returns the proxy object this is the skeleton for
+     */
+    InProcessSkeleton.prototype.getProxyObject = function() {
+        return this._proxyObject;
+    };
 
     return InProcessSkeleton;
 });
