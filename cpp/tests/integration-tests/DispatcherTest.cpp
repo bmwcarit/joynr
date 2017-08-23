@@ -191,6 +191,51 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
     EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
 }
 
+TEST_F(DispatcherTest, receive_customHeadersCopied) {
+    const std::string customHeaderKey = "custom-header-key";
+    const std::string customHeaderValue = "custom-value";
+
+    EXPECT_CALL(
+                *mockRequestCaller,
+                getLocationMock(
+                    A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
+                    A<std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>>()
+                )
+    ).WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
+
+    Request request;
+    request.setRequestReplyId(requestReplyId);
+    request.setMethodName("getLocation");
+
+    MutableMessage mutableMessage = messageFactory.createRequest(
+                proxyParticipantId,
+                providerParticipantId,
+                qos,
+                request,
+                isLocalMessage
+    );
+
+    mutableMessage.setCustomHeader(customHeaderKey, customHeaderValue);
+
+    std::unordered_map<std::string, std::string> prefixedCustomHeaders {{customHeaderKey, customHeaderValue}};
+
+    EXPECT_CALL(
+                *mockMessageRouter,
+                route(
+                    AllOf(
+                        MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
+                        ImmutableMessageHasPrefixedCustomHeaders(prefixedCustomHeaders)
+                    ),
+                    _
+                )
+    ).WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
+
+    dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
+    dispatcher.receive(mutableMessage.getImmutableMessage());
+
+    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
+}
+
 TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
     joynr::Semaphore semaphore(0);
 

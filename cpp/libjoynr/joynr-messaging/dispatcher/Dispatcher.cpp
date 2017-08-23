@@ -164,8 +164,8 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
     const std::string& requestReplyId = request.getRequestReplyId();
     JoynrTimePoint requestExpiryDate = message->getExpiryDate();
 
-    auto onSuccess =
-            [requestReplyId, requestExpiryDate, this, senderId, receiverId](Reply&& reply) mutable {
+    auto onSuccess = [requestReplyId, requestExpiryDate, this, senderId, receiverId, message](
+            Reply&& reply) mutable {
         JOYNR_LOG_TRACE(
                 logger, "Got reply from RequestInterpreter for requestReplyId {}", requestReplyId);
         reply.setRequestReplyId(std::move(requestReplyId));
@@ -178,11 +178,11 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                  senderId,   // sender of request is receiver of reply
                                  MessagingQos(ttl),
-                                 {},
+                                 message->getPrefixedCustomHeaders(),
                                  std::move(reply));
     };
 
-    auto onError = [requestReplyId, requestExpiryDate, this, senderId, receiverId](
+    auto onError = [requestReplyId, requestExpiryDate, this, senderId, receiverId, message](
             const std::shared_ptr<exceptions::JoynrException>& exception) mutable {
         JOYNR_LOG_WARN(logger,
                        "Got error reply from RequestInterpreter for requestReplyId {}",
@@ -197,7 +197,7 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                  senderId,   // sender of request is receiver of reply
                                  MessagingQos(ttl),
-                                 {},
+                                 message->getPrefixedCustomHeaders(),
                                  std::move(reply));
     };
     // execute request
