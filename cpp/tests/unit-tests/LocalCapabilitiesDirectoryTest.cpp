@@ -196,7 +196,7 @@ public:
         onSuccess(discoveryEntryList);
     }
 
-    void fakeLookupWithTwoResults(
+    void fakeLookupByParticipantIdWithResults(
             const std::string& participantId,
             std::function<void(const std::vector<types::GlobalDiscoveryEntry>& discoveryEntries)>
                     onSuccess,
@@ -208,15 +208,6 @@ public:
         discoveryEntryList.push_back(types::GlobalDiscoveryEntry(defaultProviderVersion,
                                                                  DOMAIN_1_NAME,
                                                                  INTERFACE_1_NAME,
-                                                                 participantId,
-                                                                 qos,
-                                                                 LASTSEEN_MS,
-                                                                 EXPIRYDATE_MS,
-                                                                 PUBLIC_KEY_ID,
-                                                                 EXTERNAL_ADDRESS));
-        discoveryEntryList.push_back(types::GlobalDiscoveryEntry(defaultProviderVersion,
-                                                                 DOMAIN_2_NAME,
-                                                                 INTERFACE_2_NAME,
                                                                  participantId,
                                                                  qos,
                                                                  LASTSEEN_MS,
@@ -465,11 +456,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
                            const std::vector<types::GlobalDiscoveryEntry>& discoveryEntries)>>(),
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(1)
-            .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
+            .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupByParticipantIdWithResults));
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(TIMEOUT);
-    EXPECT_EQ(2, capabilities.size());
+    EXPECT_EQ(1, capabilities.size());
     callback->clearResults();
     EXPECT_CALL(
             *capabilitiesClient,
@@ -480,7 +471,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
             .Times(0);
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
     capabilities = callback->getResults(TIMEOUT);
-    EXPECT_EQ(2, capabilities.size());
+    EXPECT_EQ(1, capabilities.size());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsNoCapability)
@@ -532,7 +523,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
     EXPECT_TRUE(interfaceAddress2Found);
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries)
+TEST_F(LocalCapabilitiesDirectoryTest, clearRemovesEntries)
 {
 
     EXPECT_CALL(
@@ -542,13 +533,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, cleanCacheRemovesOldEntries)
                            const std::vector<types::GlobalDiscoveryEntry>& discoveryEntries)>>(),
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(1)
-            .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithTwoResults));
+            .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupByParticipantIdWithResults));
 
     localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    // this should remove all entries in the cache
-    localCapabilitiesDirectory->cleanCache(std::chrono::milliseconds(100));
+    // remove all entries in the cache
+    localCapabilitiesDirectory->clear();
     // retrieving capabilities will force a call to the backend as the cache is empty
     EXPECT_CALL(
             *capabilitiesClient,
@@ -613,39 +603,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
     localCapabilitiesDirectory->add(entry2,
                                     defaultOnSuccess,
                                     defaultOnError);
-}
-
-TEST_F(LocalCapabilitiesDirectoryTest, registerCapabilitiesMultipleTimesDoesNotDuplicate)
-{
-    types::ProviderQos qos;
-    int exceptionCounter = 0;
-    // simulate capabilities client cannot connect to global directory
-    EXPECT_CALL(*capabilitiesClient, add(_, _, _)).Times(3).WillRepeatedly(
-            InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
-
-    for (int i = 0; i < 3; i++) {
-        try {
-            joynr::types::DiscoveryEntry entry(defaultProviderVersion,
-                                               DOMAIN_1_NAME,
-                                               INTERFACE_1_NAME,
-                                               dummyParticipantId1,
-                                               qos,
-                                               lastSeenDateMs,
-                                               expiryDateMs,
-                                               PUBLIC_KEY_ID);
-            localCapabilitiesDirectory->add(entry,
-                                            defaultOnSuccess,
-                                            defaultOnError);
-        } catch (const exceptions::JoynrException& e) {
-            std::ignore = e;
-            exceptionCounter++;
-        }
-    }
-
-    EXPECT_EQ(3, exceptionCounter);
-    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
-    std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(100);
-    EXPECT_EQ(1, capabilities.size());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
@@ -824,7 +781,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
     callback->clearResults();
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
-    localCapabilitiesDirectory->cleanCache(std::chrono::milliseconds::zero());
+    localCapabilitiesDirectory->clear();
 
     discoveryQos.setCacheMaxAge(4000);
     localCapabilitiesDirectory->registerReceivedCapabilities(std::move(globalCapEntryMap));
@@ -1665,13 +1622,13 @@ std::tuple<bool,bool> const LCDWithAC_UseCases[] = {
 INSTANTIATE_TEST_CASE_P(
   WithAC, LocalCapabilitiesDirectoryACTest, ::testing::ValuesIn(LCDWithAC_UseCases));
 
-class LocalCapabilitiesDirectoryPurgeTest
+class LocalCapabilitiesDirectoryWithProviderScope
         : public LocalCapabilitiesDirectoryTest,
           public ::testing::WithParamInterface<types::ProviderScope::Enum>
 {
 };
 
-TEST_P(LocalCapabilitiesDirectoryPurgeTest, purgeTimedOutEntries)
+TEST_P(LocalCapabilitiesDirectoryWithProviderScope, purgeTimedOutEntries)
 {
     types::ProviderQos providerQos;
     providerQos.setScope(GetParam());
@@ -1708,7 +1665,57 @@ TEST_P(LocalCapabilitiesDirectoryPurgeTest, purgeTimedOutEntries)
     callback->clearResults();
 }
 
-INSTANTIATE_TEST_CASE_P(PurgeTimedoutEntries,
-                        LocalCapabilitiesDirectoryPurgeTest,
+TEST_P(LocalCapabilitiesDirectoryWithProviderScope, registerCapabilitiesMultipleTimesDoesNotDuplicate)
+{
+    types::ProviderQos providerQos;
+    providerQos.setScope(GetParam());
+
+    const int numberOfDuplicatedEntriesToAdd = 3;
+
+    int exceptionCounter = 0;
+    const bool testingGlobalScope = GetParam() == types::ProviderScope::GLOBAL;
+    if(testingGlobalScope) {
+        // simulate capabilities client cannot connect to global directory
+        EXPECT_CALL(*capabilitiesClient, add(_, _, _))
+                .Times(numberOfDuplicatedEntriesToAdd)
+                .WillRepeatedly(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
+    }
+
+    for (int i = 0; i < numberOfDuplicatedEntriesToAdd; ++i) {
+        // change expiryDate and lastSeen so that entries are not exactly equal
+        lastSeenDateMs++;
+        expiryDateMs++;
+
+        joynr::types::DiscoveryEntry entry(defaultProviderVersion,
+                                           DOMAIN_1_NAME,
+                                           INTERFACE_1_NAME,
+                                           dummyParticipantId1,
+                                           providerQos,
+                                           lastSeenDateMs,
+                                           expiryDateMs,
+                                           PUBLIC_KEY_ID);
+        try {
+            localCapabilitiesDirectory->add(entry,
+                                            defaultOnSuccess,
+                                            defaultOnError);
+        } catch (const exceptions::JoynrException& e) {
+            std::ignore = e;
+            exceptionCounter++;
+        }
+    }
+
+    if(testingGlobalScope) {
+        EXPECT_EQ(numberOfDuplicatedEntriesToAdd, exceptionCounter);
+    }
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
+    std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(100);
+
+    // we do expect only one entry from the lookup
+    EXPECT_EQ(1, capabilities.size());
+}
+
+INSTANTIATE_TEST_CASE_P(changeProviderScope,
+                        LocalCapabilitiesDirectoryWithProviderScope,
                         ::testing::Values(types::ProviderScope::LOCAL,
                                           types::ProviderScope::GLOBAL));
