@@ -1,3 +1,10 @@
+# joynr 0.28.1
+
+## API relevant changes
+
+## Other changes
+* **[JS]** Changed node node-localstorage to node-persist to avoid too long filenames
+
 # joynr 0.28.0
 
 ## API relevant changes
