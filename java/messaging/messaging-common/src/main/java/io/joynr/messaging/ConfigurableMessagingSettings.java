@@ -64,6 +64,9 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS = "joynr.messaging.routingtablegraceperiodms";
     public static final String PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS = "joynr.messaging.routingtablecleanupintervalms";
 
+    public static final String PROPERTY_ROUTING_MAX_RETRY_COUNT = "joynr.messaging.routingmaxretrycount";
+    public static final long DEFAULT_ROUTING_MAX_RETRY_COUNT = -1;
+
     private final BounceProxyUrl bounceProxyUrl;
     private final long createChannelRetryIntervalMs;
     private final long deleteChannelRetryIntervalMs;

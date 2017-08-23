@@ -168,16 +168,34 @@ The number of milliseconds between two consecutive invocations of the routing ta
 ### `PROPERTY_SEND_MSG_RETRY_INTERVAL_MS`
 The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,
 MQTT, ...) using middleware-specific messaging stubs. On transmission errors the message router
-initiates a retransmission. If the messaging stub does not provide information on when to retry
-message transmission, the message router will use the send message retry interval defined by this
-property to delay the message transmission and start a new transmission attempt. Multiple
-unsuccessful retransmittion attempts will add an additional exponential backoff to delay message
-transmission.
+initiates a retransmission.
+
+If the messaging stub does not provide information on when to retry message transmission, the
+message router will use the send message retry interval defined by this property to delay the
+message transmission and start a new transmission attempt. Multiple unsuccessful retransmission
+attempts will add an additional exponential backoff to delay message transmission.
+
+The message router tries to resend a message until its TTL expires or the maximum number of retries
+is reached, see `PROPERTY_ROUTING_MAX_RETRY_COUNT`.
 
 * **OPTIONAL**
 * **Type**: long
 * **User property**: `joynr.messaging.sendmsgretryintervalms`
 * **Default value**: `3000`
+
+### `PROPERTY_ROUTING_MAX_RETRY_COUNT`
+The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,
+MQTT, ...) using middleware-specific messaging stubs. On transmission errors the message router
+initiates a retransmission until the message's TTL expires.
+
+If `PROPERTY_ROUTING_MAX_RETRY_COUNT` is set, this value is used as upper bound on the number of
+send retries. If either the message's TTL expires or the maximum number of retries is reached, no
+further retransmission attempts are initiated and the message is dropped with an error log message.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.routingmaxretrycount`
+* **Default value**: `-1` (retry count is not taken into account)
 
 ### PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
 
