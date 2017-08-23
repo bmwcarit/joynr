@@ -4,6 +4,7 @@
 
 ## Other changes
 * **[JS]** Changed node node-localstorage to node-persist to avoid too long filenames
+* **[C++]** LocalCapabilitiesDirectory does not store multiple entries for a single participantId
 
 # joynr 0.28.0
 
