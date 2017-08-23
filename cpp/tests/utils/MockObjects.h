@@ -423,12 +423,13 @@ public:
             )
     );
 
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             sendReply,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
                 const joynr::MessagingQos& qos,
+                std::unordered_map<std::string, std::string> prefixedCustomHeaders,
                 const joynr::Reply& reply
             )
     );

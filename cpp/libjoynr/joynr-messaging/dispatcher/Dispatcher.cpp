@@ -178,6 +178,7 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                  senderId,   // sender of request is receiver of reply
                                  MessagingQos(ttl),
+                                 {},
                                  std::move(reply));
     };
 
@@ -196,6 +197,7 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
         messageSender->sendReply(receiverId, // receiver of the request is sender of reply
                                  senderId,   // sender of request is receiver of reply
                                  MessagingQos(ttl),
+                                 {},
                                  std::move(reply));
     };
     // execute request

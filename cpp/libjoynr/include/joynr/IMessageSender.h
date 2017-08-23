@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "joynr/IPublicationSender.h"
 
@@ -100,6 +101,7 @@ public:
     virtual void sendReply(const std::string& senderParticipantId,
                            const std::string& receiverParticipantId,
                            const MessagingQos& qos,
+                           std::unordered_map<std::string, std::string> prefixedCustomHeaders,
                            const Reply& reply) = 0;
 
     virtual void sendSubscriptionRequest(const std::string& senderParticipantId,

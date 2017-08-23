@@ -195,7 +195,7 @@ TEST_F(MutableMessageFactoryTest, createRequest)
 
 TEST_F(MutableMessageFactoryTest, createReply)
 {
-    MutableMessage mutableMessage = messageFactory.createReply(senderID, receiverID, qos, reply);
+    MutableMessage mutableMessage = messageFactory.createReply(senderID, receiverID, qos, {}, reply);
     checkSenderRecipient(mutableMessage);
     checkReply(mutableMessage);
     EXPECT_EQ(Message::VALUE_MESSAGE_TYPE_REPLY(), mutableMessage.getType());

@@ -61,6 +61,7 @@ public:
     MutableMessage createReply(const std::string& senderId,
                                const std::string& receiverId,
                                const MessagingQos& qos,
+                               std::unordered_map<std::string, std::string>&& prefixedCustomHeaders,
                                const Reply& payload) const;
 
     MutableMessage createOneWayRequest(const std::string& senderId,

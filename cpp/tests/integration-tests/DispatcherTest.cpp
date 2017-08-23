@@ -165,6 +165,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
+                {},
                 reply
     );
 
@@ -209,9 +210,9 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller) {
                 proxyParticipantId,
                 providerParticipantId,
                 qos,
+                {},
                 reply
     );
-
 
     // test code: send the reply through the dispatcher.
     // This should cause our reply caller to be called
