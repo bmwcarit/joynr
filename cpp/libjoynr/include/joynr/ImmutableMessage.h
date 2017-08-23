@@ -34,6 +34,13 @@
 namespace joynr
 {
 
+struct RequiredHeaders
+{
+    std::string id;
+    std::string type;
+    static constexpr std::size_t NUM_REQUIRED_HEADERS = 2;
+};
+
 class ImmutableMessage
 {
 public:
@@ -132,8 +139,7 @@ private:
     bool receivedFromGlobal;
 
     std::string creator;
-    std::string id;
-    std::string type;
+    RequiredHeaders requiredHeaders;
     ADD_LOGGER(ImmutableMessage);
 };
 

@@ -34,8 +34,7 @@ ImmutableMessage::ImmutableMessage(smrf::ByteVector&& serializedMessage, bool ve
           decompressedBody(),
           receivedFromGlobal(false),
           creator(),
-          id(),
-          type()
+          requiredHeaders()
 {
     init();
 }
@@ -48,8 +47,7 @@ ImmutableMessage::ImmutableMessage(const smrf::ByteVector& serializedMessage, bo
           decompressedBody(),
           receivedFromGlobal(false),
           creator(),
-          id(),
-          type()
+          requiredHeaders()
 {
     init();
 }
@@ -104,12 +102,12 @@ std::string ImmutableMessage::toLogMessage() const
 
 const std::string& ImmutableMessage::getType() const
 {
-    return type;
+    return requiredHeaders.type;
 }
 
 const std::string& ImmutableMessage::getId() const
 {
-    return id;
+    return requiredHeaders.id;
 }
 
 boost::optional<std::string> ImmutableMessage::getReplyTo() const
@@ -186,8 +184,8 @@ void ImmutableMessage::init()
     if (!optionalId.is_initialized() || !optionalType.is_initialized()) {
         throw std::invalid_argument("missing header");
     } else {
-        id = std::move(*optionalId);
-        type = std::move(*optionalType);
+        requiredHeaders.id = std::move(*optionalId);
+        requiredHeaders.type = std::move(*optionalType);
     }
 }
 
