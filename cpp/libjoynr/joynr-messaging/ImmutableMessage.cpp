@@ -19,6 +19,8 @@
 
 #include "joynr/ImmutableMessage.h"
 
+#include "boost/algorithm/string.hpp"
+
 #include "joynr/Message.h"
 
 namespace joynr
@@ -70,6 +72,47 @@ bool ImmutableMessage::isTtlAbsolute() const
 const std::unordered_map<std::string, std::string>& ImmutableMessage::getHeaders() const
 {
     return headers;
+}
+
+std::unordered_map<std::string, std::string> ImmutableMessage::getCustomHeaders() const
+{
+    if (headers.size() <= RequiredHeaders::NUM_REQUIRED_HEADERS) {
+        return std::unordered_map<std::string, std::string>();
+    }
+
+    static std::size_t CUSTOM_HEADER_PREFIX_LENGTH = Message::CUSTOM_HEADER_PREFIX().length();
+    std::unordered_map<std::string, std::string> result;
+
+    for (const auto& headersPair : headers) {
+        const std::string& headerName = headersPair.first;
+
+        if (isCustomHeaderKey(headerName)) {
+            std::string headerNameWithoutPrefix = headerName.substr(CUSTOM_HEADER_PREFIX_LENGTH);
+
+            result.insert({std::move(headerNameWithoutPrefix), headersPair.second});
+        }
+    }
+
+    return result;
+}
+
+std::unordered_map<std::string, std::string> ImmutableMessage::getPrefixedCustomHeaders() const
+{
+    if (headers.size() <= RequiredHeaders::NUM_REQUIRED_HEADERS) {
+        return std::unordered_map<std::string, std::string>();
+    }
+
+    std::unordered_map<std::string, std::string> result;
+
+    for (const auto& headersPair : headers) {
+        const std::string& headerName = headersPair.first;
+
+        if (isCustomHeaderKey(headerName)) {
+            result.insert({headersPair.first, headersPair.second});
+        }
+    }
+
+    return result;
 }
 
 bool ImmutableMessage::isEncrypted() const
@@ -187,6 +230,11 @@ void ImmutableMessage::init()
         requiredHeaders.id = std::move(*optionalId);
         requiredHeaders.type = std::move(*optionalType);
     }
+}
+
+bool ImmutableMessage::isCustomHeaderKey(const std::string& key) const
+{
+    return boost::algorithm::starts_with(key, Message::CUSTOM_HEADER_PREFIX());
 }
 
 } // namespace joynr

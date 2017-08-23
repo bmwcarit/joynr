@@ -60,6 +60,8 @@ public:
     bool isTtlAbsolute() const;
 
     const std::unordered_map<std::string, std::string>& getHeaders() const;
+    std::unordered_map<std::string, std::string> getPrefixedCustomHeaders() const;
+    std::unordered_map<std::string, std::string> getCustomHeaders() const;
 
     bool isEncrypted() const;
 
@@ -127,6 +129,7 @@ private:
     boost::optional<std::string> getOptionalHeaderByKey(const std::string& key) const;
 
     void init();
+    bool isCustomHeaderKey(const std::string& key) const;
 
     smrf::ByteVector serializedMessage;
     smrf::MessageDeserializer messageDeserializer;

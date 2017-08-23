@@ -26,9 +26,47 @@
 
 using namespace joynr;
 
-TEST(ImmutableMessageTest, isReceivedFromGlobal)
+class ImmutableMessageTest : public ::testing::Test
 {
-    MutableMessage mutableMessage;    
+protected:
+    std::unique_ptr<ImmutableMessage> createImmutableMessage(std::unordered_map<std::string, std::string> prefixedCustomHeaders) {
+        MutableMessage message;
+
+        message.setPrefixedCustomHeaders(prefixedCustomHeaders);
+
+        return message.getImmutableMessage();
+    }
+};
+
+TEST_F(ImmutableMessageTest, retrieveCustomHeaders_tooShortHeader) {
+    std::unique_ptr<joynr::ImmutableMessage> message = createImmutableMessage({{"c","value"}});
+
+    auto prefixedCustomHeaders = message->getPrefixedCustomHeaders();
+    auto customHeaders = message->getCustomHeaders();
+
+    EXPECT_EQ(prefixedCustomHeaders.size(), 0);
+    EXPECT_EQ(customHeaders.size(), 0);
+}
+
+TEST_F(ImmutableMessageTest, retrieveCustomHeaders) {
+    const std::string headerKey = "my-header-key";
+    const std::string prefixedHeaderKey = Message::CUSTOM_HEADER_PREFIX() + headerKey;
+
+    std::unique_ptr<joynr::ImmutableMessage> message = createImmutableMessage({{prefixedHeaderKey,"value"}});
+
+    auto prefixedCustomHeaders = message->getPrefixedCustomHeaders();
+    auto customHeaders = message->getCustomHeaders();
+
+    EXPECT_EQ(prefixedCustomHeaders.size(), 1);
+    EXPECT_EQ(customHeaders.size(), 1);
+
+    EXPECT_EQ(customHeaders.cbegin()->first, headerKey);
+    EXPECT_EQ(prefixedCustomHeaders.cbegin()->first, prefixedHeaderKey);
+}
+
+TEST_F(ImmutableMessageTest, isReceivedFromGlobal)
+{
+    MutableMessage mutableMessage;
     auto immutableMessage = mutableMessage.getImmutableMessage();
     const bool expectedValue = true;
     immutableMessage->setReceivedFromGlobal(expectedValue);
