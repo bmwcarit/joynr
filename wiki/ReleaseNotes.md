@@ -609,6 +609,15 @@ None.
 * **[JS]** Added reconnect after connection loss for websockets
 * **[JS]** Support to clear local storage when loading joynr library
 
+# joynr 0.18.3
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Enabled Discovery and ACL addresses to use MQTT
+* **[JEE]** Introduced example radio JEE app
+
 # joynr 0.18.2
 This is a minor bug fix release.
 
