@@ -307,7 +307,6 @@ None.
   often if multiple matching listeners were found.
 
 # joynr 0.21.4
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -371,7 +370,6 @@ None.
   messaging layer to joynr version 0.21.x.
 
 # joynr 0.21.3
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -381,7 +379,6 @@ None.
   requests
 
 # joynr 0.21.2
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -390,7 +387,6 @@ None.
 * **[C++]** Fix cluster controller crash if many persisted discovery entries are present
 
 # joynr 0.21.1
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -426,7 +422,6 @@ None.
 * **[C++]** The dependency to Qt is now fully removed.
 
 # joynr 0.20.4
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -436,7 +431,6 @@ None.
   cluster controller.
 
 # joynr 0.20.3
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -445,7 +439,6 @@ None.
 * **[JS]** Fix bug which resulted in improper shutdown of joynr.
 
 # joynr 0.20.2
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -455,7 +448,6 @@ None.
   subscriptions during startup.
 
 # joynr 0.20.1
-This is a minor bug fix release.
 
 ## API relevant changes
 * **[Java]** The BroadcastSubscriptionListener is now able to get informed about succeeded
@@ -529,7 +521,6 @@ This is a minor bug fix release.
 * **[C++]** muesli is now used as serializer; it can be found at https://github.com/bmwcarit/muesli
 
 # joynr 0.19.5
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -538,7 +529,6 @@ None.
 * **[C++]** Fix multi-threading issue in LocalCapabilitiesDirectory.
 
 # joynr 0.19.4
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -547,7 +537,6 @@ None.
 * **[C++]** Correctly load persisted routing table in the LibJoynrRuntime.
 
 # joynr 0.19.3
-This is a minor bug fix release.
 
 ## API relevant changes
 * **[C++]** Add new API to create joynr runtime with settings object.
@@ -556,7 +545,6 @@ This is a minor bug fix release.
 * **[JS]** Support attributes starting with capital letters.
 
 # joynr 0.19.2
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -565,7 +553,6 @@ None.
 * **[C++]** Do not crash joynr runtime if writing persistency files fails.
 
 # joynr 0.19.1
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -599,7 +586,6 @@ None.
   MQTT for communication.
 
 # joynr 0.18.5
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -610,7 +596,6 @@ None.
   `ProviderWrapper`.
 
 # joynr 0.18.4
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -632,7 +617,6 @@ None.
 * **[JEE]** Introduced example radio JEE app
 
 # joynr 0.18.2
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -641,7 +625,6 @@ None.
 * **[JS]** Fixed bug when using joynr with node version >= 6
 
 # joynr 0.18.1
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -675,7 +658,6 @@ None.
    revised its required dependencies.
 
 # joynr 0.17.2
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -685,7 +667,6 @@ None.
   joynr has no native dependencies in its npm package.
 
 # joynr 0.17.1
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -786,8 +767,6 @@ None.
 
 # joynr 0.15.1
 
-This is a minor bug fix release.
-
 ## API relevant changes
 None.
 
@@ -827,8 +806,6 @@ None.
 
 # joynr 0.14.3
 
-This is a minor bug fix release.
-
 ## API relevant changes
 None.
 
@@ -840,8 +817,6 @@ None.
 
 # joynr 0.14.2
 
-This is a minor bug fix release.
-
 ## API relevant changes
 None.
 
@@ -849,8 +824,6 @@ None.
 * **[C++]** Fix dependency resolution in the CMake package config file for joynr.
 
 # joynr 0.14.1
-
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -948,8 +921,6 @@ None.
 
 # joynr 0.12.3
 
-This is a minor bug fix release.
-
 ## API relevant changes
 None.
 
@@ -957,8 +928,6 @@ None.
 * **[C++]** Selective broadcasts of basic types generate compilable code.
 
 # joynr 0.12.2
-
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -968,8 +937,6 @@ None.
   unresolved value.
 
 # joynr 0.12.1
-
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -1019,8 +986,6 @@ None.
   the console.
 
 # joynr 0.11.1
-
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -1081,8 +1046,6 @@ None.
 
 # joynr 0.10.2
 
-This is a minor bug fix release.
-
 ## API relevant changes
 None.
 
@@ -1092,8 +1055,6 @@ None.
   methods in JavaScript.
 
 # joynr 0.10.1
-
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -1145,8 +1106,6 @@ JavaScript, and try out the radio app examples to see it all in action.
 
 # joynr 0.9.4
 
-This is a minor bug fix release.
-
 ## API relevant changes
 * **[Java, C++, JS]** Use spelling of Franca element names (packages, type collections,
   interfaces, ...) as defined in the model (.fidl files) in generated code. I.e. perform
@@ -1178,8 +1137,6 @@ None.
 
 # joynr 0.9.2
 
-This is a minor bug fix release.
-
 ## API relevant changes
 None.
 
@@ -1188,8 +1145,6 @@ None.
 * **[Java, C++]** Default domain for backend services is now "io.joynr".
 
 # joynr 0.9.1
-
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
