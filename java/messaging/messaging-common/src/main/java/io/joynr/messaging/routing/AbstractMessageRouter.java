@@ -29,9 +29,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -61,6 +61,9 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     private long sendMsgRetryIntervalMs;
     private long routingTableGracePeriodMs;
     private long routingTableCleanupIntervalMs;
+    @Inject(optional = true)
+    @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_MAX_RETRY_COUNT)
+    private long maxRetryCount = ConfigurableMessagingSettings.DEFAULT_ROUTING_MAX_RETRY_COUNT;
     private MessagingStubFactory messagingStubFactory;
     private final MessagingSkeletonFactory messagingSkeletonFactory;
     private AddressManager addressManager;
@@ -242,6 +245,15 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     private void routeInternal(final ImmutableMessage message, final long delayMs, final int retriesCount) {
         logger.trace("Scheduling {} with delay {} and retries {}", new Object[]{ message, delayMs, retriesCount });
         DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, delayMs, retriesCount);
+        if (maxRetryCount > -1) {
+            if (retriesCount > maxRetryCount) {
+                logger.error("Max-retry-count (" + maxRetryCount + ") reached. Dropping message " + message);
+                return;
+            }
+            if (retriesCount > 0) {
+                logger.debug("Retry {}/{} sending message {}", retriesCount, maxRetryCount, message);
+            }
+        }
         try {
             messageQueue.putBounded(delayableMessage);
         } catch (InterruptedException e) {
