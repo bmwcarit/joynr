@@ -727,7 +727,7 @@ None.
  * Subscription QoS allows to specify the validity (relative from current time) instead of
    an absolute expiry date. The clearExpiryDate() function removes a previously set expiry date.
  * The clearAlertAfterInterval function removes a previously set alert after interval.
- * Add suffix "_MS" to timing related subscription QoS constants (default, min and max values).
+ * Add suffix "_Ms_" to timing related subscription QoS constants (default, min and max values).
  * Add missing default values and min/max limits for the QoS parameters.
  * The old interface is deprecated but still available for backward compatibility reasons and might
    be removed by end of 2016.
@@ -793,8 +793,8 @@ None.
 * **[C++]** There is a new build and runtime dependency for the clustercontroller to mosquitto 1.4.7
 * **[Java]** Handling of different transport middlewares has been refactored to be much more
   extensible. Using Guice Multibinders, it is now possible for external projects to add transport
-  middleware implementations and inject these into the runtime. See the ```
-joynr-mqtt-client``` project for an example of how this can be done.
+  middleware implementations and inject these into the runtime. See the ```joynr-mqtt-client```
+  project for an example of how this can be done.
 * **[C++]** libjoynr uses libwebsockets of the libwebsockets project (http://libwebsockets.org)
   to communicate with the cluster-controller. Due to an incompatibility with Mac OS X,
   the C++-Websocket-Runtime currently does not work on Mac OS X.
