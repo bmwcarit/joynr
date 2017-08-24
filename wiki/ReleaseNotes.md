@@ -10,7 +10,7 @@
 # joynr 0.28.1
 
 ## API relevant changes
-none
+None.
 
 ## Other changes
 * **[JS]** Changed node node-localstorage to node-persist to avoid too long filenames
@@ -34,7 +34,7 @@ none
 # joynr 0.27.4
 
 ## API relevant changes
-none
+None.
 
 ## Other changes
 * **[C++]** Fixed crash which can occur when a queued message cannot be routed due to expired timeout.
@@ -42,7 +42,7 @@ none
 # joynr 0.27.3
 
 ## API relevant changes
-none
+None.
 
 ## Other changes
 * **[C++]** Fixed crash which occurs when a LibJoynrRuntime is destroyed before the init method was called.
@@ -50,7 +50,7 @@ none
 # joynr 0.27.2
 
 ## API relevant changes
-none
+None.
 
 ## Other changes
 * **[JEE]** Applications can inject a MqttClientIdProvider to generate an id for the mqtt client.
@@ -61,6 +61,7 @@ none
 # joynr 0.27.1
 
 ## API relevant changes
+None.
 
 ## Other changes
 * **[JEE]** Fixed cleanup of thread pool when application is undeployed
@@ -121,6 +122,7 @@ This version of joynr is NOT compatible with previous versions due to internal c
 # joynr 0.25.3
 
 ## API relevant changes
+None.
 
 ## Other changes
 * **[C++]** setting "discovery-entry-expiry-interval-ms" can now store values up to 2^63-1
@@ -128,6 +130,7 @@ This version of joynr is NOT compatible with previous versions due to internal c
 # joynr 0.25.2
 
 ## API relevant changes
+None.
 
 ## Other changes
 * **[C++]** libCommon has been moved to libJoynr. This fixes issues with static linking with libjoynr.
@@ -136,6 +139,7 @@ This version of joynr is NOT compatible with previous versions due to internal c
 # joynr 0.25.1
 
 ## API relevant changes
+None.
 
 ## Other changes
 * **[C++]** Fixed a race condition in DelayedScheduler potentially leading to an assertion.
@@ -159,6 +163,7 @@ See [Joynr C++ configuration reference](CppConfigurationReference.md) for more i
 # joynr 0.24.1
 
 ## API relevant changes
+None.
 
 ## Other changes
 * **[Java]** Fixed a bug where enumeration parameters in fire and forget method calls
@@ -216,7 +221,7 @@ See [Joynr C++ configuration reference](CppConfigurationReference.md) for more i
 # joynr 0.23.2
 
 ## API relevant changes
-none
+None.
 
 ## Other changes
 * **[JEE]** Fixed issue that caused joynr not to start correctly with debug logging enabled
@@ -284,6 +289,9 @@ None.
 
 # joynr 0.22.2
 
+## API relevant changes
+None.
+
 ## Other changes
 
 * **[C++]** Bugfix: MQTT sender blocks message router thread in case of connection to broker not
@@ -291,8 +299,10 @@ None.
 
 # joynr 0.22.1
 
-## Other changes
+## API relevant changes
+None.
 
+## Other changes
 * **[JS]** Bugfix: For non-selective broadcast subscriptions the listeners could be called too
   often if multiple matching listeners were found.
 
@@ -417,6 +427,9 @@ None.
 
 # joynr 0.20.4
 This is a minor bug fix release.
+
+## API relevant changes
+None.
 
 ## Other changes
 * **[C++]** Fixed an issue which caused a high CPU load when a client disconnected from a
