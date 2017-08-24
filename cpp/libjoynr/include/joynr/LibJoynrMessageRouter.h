@@ -135,7 +135,7 @@ public:
      * removes parentRouter shared ptr in order to break cyclic dependency
      * SubscriptionManager -> LibJoynrMessageRouter -> RoutingProxy -> SubscriptionManager
      */
-    void shutdown();
+    void shutdown() final;
 
     friend class MessageRunnable;
 
