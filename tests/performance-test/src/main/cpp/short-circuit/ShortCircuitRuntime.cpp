@@ -53,13 +53,16 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings)
             std::make_unique<MqttMulticastAddressCalculator>(nullptr, multicastTopicPrefix);
 
     const std::string& globalClusterControllerAddress("globalAddress");
+    const std::string messageNotificationProviderParticipantId(
+            "messageNotificationProviderParticipantId");
 
     messageRouter = std::make_shared<CcMessageRouter>(std::move(messagingStubFactory),
                                                       nullptr,
                                                       nullptr,
                                                       singleThreadedIOService.getIOService(),
                                                       std::move(addressCalculator),
-                                                      globalClusterControllerAddress);
+                                                      globalClusterControllerAddress,
+                                                      messageNotificationProviderParticipantId);
 
     messageSender = std::make_shared<MessageSender>(messageRouter);
     joynrDispatcher =

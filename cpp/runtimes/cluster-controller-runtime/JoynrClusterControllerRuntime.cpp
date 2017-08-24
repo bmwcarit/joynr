@@ -333,13 +333,15 @@ void JoynrClusterControllerRuntime::init()
                             : httpSerializedGlobalClusterControllerAddress;
 
     // init message router
-    ccMessageRouter = std::make_shared<CcMessageRouter>(messagingStubFactory,
-                                                        multicastMessagingSkeletonDirectory,
-                                                        std::move(securityManager),
-                                                        singleThreadIOService->getIOService(),
-                                                        std::move(addressCalculator),
-                                                        globalClusterControllerAddress,
-                                                        std::move(transportStatuses));
+    ccMessageRouter = std::make_shared<CcMessageRouter>(
+            messagingStubFactory,
+            multicastMessagingSkeletonDirectory,
+            std::move(securityManager),
+            singleThreadIOService->getIOService(),
+            std::move(addressCalculator),
+            globalClusterControllerAddress,
+            systemServicesSettings.getCcMessageNotificationProviderParticipantId(),
+            std::move(transportStatuses));
     ccMessageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
     ccMessageRouter->loadMulticastReceiverDirectory(
             clusterControllerSettings.getMulticastReceiverDirectoryPersistenceFilename());

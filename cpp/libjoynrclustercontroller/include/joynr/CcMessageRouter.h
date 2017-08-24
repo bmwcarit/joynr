@@ -86,6 +86,7 @@ public:
                     boost::asio::io_service& ioService,
                     std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                     const std::string& globalClusterControllerAddress,
+                    const std::string& messageNotificationProviderParticipantId,
                     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
                     int maxThreads = 1,
                     std::unique_ptr<MessageQueue<std::string>> messageQueue =
@@ -221,6 +222,7 @@ private:
     std::string multicastReceiverDirectoryFilename;
     const std::string globalClusterControllerAddress;
     std::shared_ptr<CcMessageNotificationProvider> messageNotificationProvider;
+    const std::string messageNotificationProviderParticipantId;
 };
 
 } // namespace joynr
