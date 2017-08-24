@@ -1189,6 +1189,9 @@ None.
   scripts are also used by the joynr project itself in its own CI (Jenkins-based) environment.
 * **[Java]** Capability Directory entries on the global directory are now persisted using JPA.
 
+## Other changes
+None.
+
 # joynr 0.8.0
 
 ## API relevant changes
