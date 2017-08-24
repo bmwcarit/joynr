@@ -172,7 +172,6 @@ None.
 # joynr 0.24.0
 
 ## API relevant changes
-
 * **[All]** Added 'encrypt' to MessagingQos (incl. additional constructors, getter/setter),
   existing MessagingQos APIs remain working
 * **[C++]** Providers can be (un)registered asynchronously through `(un)registerProviderAsync`
@@ -241,7 +240,6 @@ None.
 # joynr 0.23.0
 
 ## API relevant changes
-
 * **[JEE]** Providers are no longer deregistered automatically when the application is shutdown.
 * **[C++]** Proxy builder returns a std::unique_ptr to the created proxy instead of a raw pointer.
 * **[C++]** Joynr runtime returns a std::unique_ptr to a created proxy builder instead of a raw pointer.
@@ -270,7 +268,6 @@ None.
 None.
 
 ## Other changes
-
 * **[C++, JS, Java]** Apply configurable Time To Live (TTL) Uplift to each outgoing message and to
   the expiry date of subscriptions
 
@@ -280,7 +277,6 @@ None.
 None.
 
 ## Other changes
-
 * **[C++]** fix MQTT connection to broker blocked after first message was sent
 * **[JS]** fix typing issues with maps of structs
 * **[JS]** fix receiving too many multicast publications when provider and proxy are in same
@@ -293,7 +289,6 @@ None.
 None.
 
 ## Other changes
-
 * **[C++]** Bugfix: MQTT sender blocks message router thread in case of connection to broker not
   established.
 
@@ -1237,6 +1232,7 @@ None.
   are no longer supported.
 
 # joynr 0.7.0
+
 ## API relevant changes
 * **[Java]** SubscriptionListener is now called AttributeSubscriptionListener, and
   unregisterSubscription renamed unregisterAttributeSubcription (change required to differentiate
