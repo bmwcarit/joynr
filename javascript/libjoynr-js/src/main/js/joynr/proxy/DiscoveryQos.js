@@ -25,8 +25,8 @@ define("joynr/proxy/DiscoveryQos", [
 ], function(ArbitrationStrategyCollection, DiscoveryScope, Util, LoggerFactory) {
 
     var defaultSettings = {
-        discoveryTimeoutMs : 30000,
-        discoveryRetryDelayMs : 1000,
+        discoveryTimeoutMs : 10 * 60 * 1000, // 10 minutes
+        discoveryRetryDelayMs : 10 * 1000, // 10 seconds
         arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
         cacheMaxAgeMs : 0,
         discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
@@ -102,6 +102,10 @@ define("joynr/proxy/DiscoveryQos", [
          */
         this.additionalParameters = settings.additionalParameters;
     }
+
+    DiscoveryQos.setDefaultSettings = function(settings) {
+        defaultSettings = Util.extend({}, defaultSettings, settings);
+    };
 
     return DiscoveryQos;
 

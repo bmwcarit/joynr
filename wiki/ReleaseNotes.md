@@ -3,9 +3,11 @@
 ## API relevant changes
 
 ## Other changes
-* **[Java]** Introduced new properties: PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS,
-  PROPERTY_DISCOVERY_RETRY_INTERVAL_MS, and PROPERTY_ROUTING_MAX_RETRY_COUNT.
-  See the [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Introduced new properties: PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS and
+  PROPERTY_DISCOVERY_RETRY_INTERVAL_MS. See the [Java Configuration Reference](JavaSettings.md)
+  for more details.
+* **[Js]** Made default discoveryQos configurable via provisioning. See the
+  [Javascript Configuration Reference](JavaScriptTutorial.md) for more details.
 
 # joynr 0.28.1
 
