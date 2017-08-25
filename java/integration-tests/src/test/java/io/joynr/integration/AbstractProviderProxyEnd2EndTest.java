@@ -51,6 +51,7 @@ import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -274,7 +275,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         @Override
         public Promise<EchoCallingPrincipalDeferred> echoCallingPrincipal() {
             EchoCallingPrincipalDeferred deferred = new EchoCallingPrincipalDeferred();
-            deferred.resolve(this.getCallContext().getPrincipal());
+            deferred.resolve(AbstractJoynrProvider.getCallContext().getPrincipal());
             return new Promise<EchoCallingPrincipalDeferred>(deferred);
         }
 

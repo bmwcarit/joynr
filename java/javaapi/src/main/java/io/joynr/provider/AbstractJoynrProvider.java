@@ -30,7 +30,7 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
     public AbstractJoynrProvider() {
     }
 
-    public CallContext getCallContext() {
+    public static CallContext getCallContext() {
         return callContext.get();
     }
 
@@ -38,4 +38,7 @@ public abstract class AbstractJoynrProvider implements JoynrProvider {
         AbstractJoynrProvider.callContext.set(callContext);
     }
 
+    public static void removeCallContext() {
+        callContext.remove();
+    }
 }
