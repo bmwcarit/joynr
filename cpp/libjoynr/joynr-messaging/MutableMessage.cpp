@@ -134,6 +134,19 @@ void MutableMessage::setCustomHeader(std::string&& key, std::string&& value)
     customHeaders.insert({std::move(key) + Message::CUSTOM_HEADER_PREFIX(), std::move(value)});
 }
 
+void MutableMessage::setPrefixedCustomHeaders(
+        const std::unordered_map<std::string, std::string>& prefixedCustomHeaders)
+{
+    customHeaders.insert(prefixedCustomHeaders.cbegin(), prefixedCustomHeaders.cend());
+}
+
+void MutableMessage::setPrefixedCustomHeaders(
+        std::unordered_map<std::string, std::string>&& prefixedCustomHeaders)
+{
+    customHeaders.insert(std::make_move_iterator(prefixedCustomHeaders.begin()),
+                         std::make_move_iterator(prefixedCustomHeaders.end()));
+}
+
 void MutableMessage::setEffort(const std::string& effort)
 {
     this->effort = effort;

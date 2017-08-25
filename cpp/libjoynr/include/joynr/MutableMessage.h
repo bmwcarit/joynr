@@ -142,6 +142,16 @@ public:
     void setCustomHeader(std::string&& key, std::string&& value);
 
     /**
+     * @brief Sets custom headers for this message. The keys in the provided map
+     * must already be prefixed with Message::CUSTOM_HEADER_PREFIX.
+     * @param prefixedCustomHeaders Custom headers to add.
+     */
+    void setPrefixedCustomHeaders(
+            const std::unordered_map<std::string, std::string>& prefixedCustomHeaders);
+    void setPrefixedCustomHeaders(
+            std::unordered_map<std::string, std::string>&& prefixedCustomHeaders);
+
+    /**
      * @brief Gets all custom headers that have been set for this message
      * @return a map containing all custom headers of this message
      */

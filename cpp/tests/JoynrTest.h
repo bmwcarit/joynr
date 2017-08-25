@@ -103,6 +103,23 @@ MATCHER_P(ImmutableMessageHasPayload, payload, "") {
     return immutablePayload == payload;
 }
 
+MATCHER_P(ImmutableMessageHasPrefixedCustomHeaders, prefixedCustomHeaders, "") {
+    auto msgCustomHeaders = arg->getCustomHeaders();
+    for(const auto& customHeader : prefixedCustomHeaders) {
+        auto keyIt = msgCustomHeaders.find(customHeader.first);
+
+        if(keyIt == msgCustomHeaders.cend()) {
+            return false;
+        }
+
+        if(keyIt->second != customHeader.second) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // works for both Mutable and ImmutableMessages
 MATCHER_P(MessageHasType, type, "") {
     return arg->getType() == type;

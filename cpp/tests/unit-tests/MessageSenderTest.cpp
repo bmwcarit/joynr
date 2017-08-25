@@ -166,11 +166,12 @@ TEST_F(MessageSenderTest, sendReply_normal){
                 senderID,
                 receiverID,
                 qosSettings,
+                {},
                 reply);
 
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_REPLY(), mutableMessage.getPayload());
 
-    messageSender.sendReply(senderID, receiverID, qosSettings, reply);
+    messageSender.sendReply(senderID, receiverID, qosSettings, {}, reply);
 }
 
 TEST_F(MessageSenderTest, sendSubscriptionRequest_normal){

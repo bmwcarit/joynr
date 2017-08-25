@@ -34,6 +34,13 @@
 namespace joynr
 {
 
+struct RequiredHeaders
+{
+    std::string id;
+    std::string type;
+    static constexpr std::size_t NUM_REQUIRED_HEADERS = 2;
+};
+
 class ImmutableMessage
 {
 public:
@@ -53,6 +60,8 @@ public:
     bool isTtlAbsolute() const;
 
     const std::unordered_map<std::string, std::string>& getHeaders() const;
+    std::unordered_map<std::string, std::string> getPrefixedCustomHeaders() const;
+    std::unordered_map<std::string, std::string> getCustomHeaders() const;
 
     bool isEncrypted() const;
 
@@ -120,6 +129,7 @@ private:
     boost::optional<std::string> getOptionalHeaderByKey(const std::string& key) const;
 
     void init();
+    bool isCustomHeaderKey(const std::string& key) const;
 
     smrf::ByteVector serializedMessage;
     smrf::MessageDeserializer messageDeserializer;
@@ -132,8 +142,7 @@ private:
     bool receivedFromGlobal;
 
     std::string creator;
-    std::string id;
-    std::string type;
+    RequiredHeaders requiredHeaders;
     ADD_LOGGER(ImmutableMessage);
 };
 
