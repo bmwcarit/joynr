@@ -74,6 +74,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
 
     private BoundedDelayQueue<DelayableImmutableMessage> messageQueue;
 
+    private List<MessageProcessedListener> messageProcessedListeners;
     private List<ScheduledFuture<?>> workerFutures;
 
     @Inject
@@ -103,6 +104,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
         shutdownNotifier.registerForShutdown(this);
+        messageProcessedListeners = new ArrayList<MessageProcessedListener>();
         startMessageWorkerThreads(maxParallelSends);
         startRoutingTableCleanupThread();
     }
@@ -126,6 +128,20 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                 routingTable.purge();
             }
         }, routingTableCleanupIntervalMs, routingTableCleanupIntervalMs, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void registerMessageProcessedListener(MessageProcessedListener messageProcessedListener) {
+        synchronized (messageProcessedListeners) {
+            messageProcessedListeners.add(messageProcessedListener);
+        }
+    }
+
+    @Override
+    public void unregisterMessageProcessedListener(MessageProcessedListener messageProcessedListener) {
+        synchronized (messageProcessedListeners) {
+            messageProcessedListeners.remove(messageProcessedListener);
+        }
     }
 
     @Override
