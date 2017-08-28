@@ -30,6 +30,8 @@ None.
  joynr.messaging.mqtt.connectiontimeoutsec (new value: 60s)
 * **[JS]** Updated wscpp version to 0.2.4
 * **[C++, Java, JS]** Updated smrf version ot 0.2.1
+* **[C++]** Add cluster-controller property for MQTT CA certificate folder path.
+* **[C++, Java]** Always log MQTT client ID.
 
 # joynr 0.27.4
 
