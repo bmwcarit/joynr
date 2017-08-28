@@ -96,7 +96,7 @@ do
 done
 
 CPP_BUILD_DOCKER_IMAGE=joynr-cpp-gcc:${DOCKER_IMAGE_VERSION}
-JS_BUILD_DOCKER_IMAGE=joynr-javascript:${DOCKER_IMAGE_VERSION}
+JS_BUILD_DOCKER_IMAGE=joynr-ilt-gcc:${DOCKER_IMAGE_VERSION}
 
 function execute_in_docker {
 	if [ -z "$2" ]; then
@@ -139,6 +139,7 @@ else
 	fi
 	execute_in_docker "echo \"Building joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --additionalcmakeargs \"-DUSE_PLATFORM_MUESLI=OFF\" --jobs ${JOBS} --enableclangformatter OFF --buildtests OFF 2>&1"
 	execute_in_docker "echo \"Packaging joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-rpm-package.sh --rpm-spec tests/system-integration-test/docker/onboard/joynr-without-test.spec 2>&1"
+	execute_in_docker "echo \"Building and packaging smrf\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-smrf-rpm-package.sh 2>&1"
 fi
 
 if [ $NO_CPP_TEST_BUILD ]; then
