@@ -58,7 +58,7 @@ public:
               clusterControllerSettings(settings),
               capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
               singleThreadedIOService(),
-              mockMessageRouter(singleThreadedIOService.getIOService()),
+              mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
               clusterControllerId("clusterControllerId"),
               localCapabilitiesDirectory(),
               lastSeenDateMs(std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -277,7 +277,7 @@ protected:
     ClusterControllerSettings clusterControllerSettings;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
     SingleThreadedIOService singleThreadedIOService;
-    MockMessageRouter mockMessageRouter;
+    std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::string clusterControllerId;
     std::unique_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     std::int64_t lastSeenDateMs;
@@ -1461,12 +1461,12 @@ void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(
 {
     const std::string participantId = "TEST_participantId";
     EXPECT_CALL(
-            mockMessageRouter,
+            *mockMessageRouter,
             addNextHop(participantId,
                        AllOf(Pointee(A<const joynr::system::RoutingTypes::Address>()),
                              pointerToAddressWithSerializedAddress(addressType, serializedAddress)),
                        _,_,_)).Times(1);
-    EXPECT_CALL(mockMessageRouter,
+    EXPECT_CALL(*mockMessageRouter,
                 addNextHop(participantId,
                            AnyOf(Not(Pointee(A<const joynr::system::RoutingTypes::Address>())),
                                  Not(pointerToAddressWithSerializedAddress(

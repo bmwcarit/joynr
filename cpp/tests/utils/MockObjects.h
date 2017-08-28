@@ -1294,9 +1294,9 @@ public:
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
-    MockLocalCapabilitiesDirectory(joynr::ClusterControllerSettings& ccSettings, boost::asio::io_service& ioService):
-        messageRouter(ioService),
-        LocalCapabilitiesDirectory(ccSettings, nullptr, "localAddress", messageRouter, ioService, "clusterControllerId"){}
+    MockLocalCapabilitiesDirectory(joynr::ClusterControllerSettings& ccSettings, std::shared_ptr<joynr::IMessageRouter> mockMessageRouter, boost::asio::io_service& ioService):
+        LocalCapabilitiesDirectory(ccSettings, nullptr, "localAddress", mockMessageRouter, ioService, "clusterControllerId")
+   {}
 
     MOCK_METHOD3(
             lookup,
@@ -1305,9 +1305,6 @@ public:
                 std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)> onSuccess,
                 std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError
             ));
-
-private:
-    MockMessageRouter messageRouter;
 };
 
 class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback

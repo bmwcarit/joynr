@@ -52,7 +52,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         ClusterControllerSettings& clusterControllerSettings,
         std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
         const std::string& localAddress,
-        IMessageRouter& messageRouter,
+        std::weak_ptr<IMessageRouter> messageRouter,
         boost::asio::io_service& ioService,
         const std::string clusterControllerId)
         : joynr::system::DiscoveryAbstractProvider(),
@@ -232,7 +232,13 @@ void LocalCapabilitiesDirectory::remove(const types::DiscoveryEntry& discoveryEn
         capabilitiesClient->remove(discoveryEntry.getParticipantId());
     }
     informObserversOnRemove(discoveryEntry);
-    messageRouter.removeNextHop(discoveryEntry.getParticipantId());
+    if (auto messageRouterSharedPtr = messageRouter.lock()) {
+        messageRouterSharedPtr->removeNextHop(discoveryEntry.getParticipantId());
+    } else {
+        JOYNR_LOG_FATAL(logger,
+                        "could not removeNextHop for {} because messageRouter is not available",
+                        discoveryEntry.getParticipantId());
+    }
 }
 
 void LocalCapabilitiesDirectory::removeFromGloballyRegisteredCapabilities(
@@ -568,7 +574,16 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
         const bool isGloballyVisible = isGlobal(currentEntry);
         try {
             joynr::serializer::deserializeFromJson(address, serializedAddress);
-            messageRouter.addNextHop(currentEntry.getParticipantId(), address, isGloballyVisible);
+            if (auto messageRouterSharedPtr = messageRouter.lock()) {
+                messageRouterSharedPtr->addNextHop(
+                        currentEntry.getParticipantId(), address, isGloballyVisible);
+            } else {
+                JOYNR_LOG_FATAL(
+                        logger,
+                        "could not addNextHop {} to {} because messageRouter is not available",
+                        currentEntry.getParticipantId(),
+                        serializedAddress);
+            }
             this->insertInCache(currentEntry, false, true);
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger,

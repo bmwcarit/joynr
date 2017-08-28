@@ -514,7 +514,7 @@ void JoynrClusterControllerRuntime::init()
             std::make_shared<LocalCapabilitiesDirectory>(clusterControllerSettings,
                                                          capabilitiesClient,
                                                          globalClusterControllerAddress,
-                                                         *ccMessageRouter,
+                                                         ccMessageRouter,
                                                          singleThreadIOService->getIOService(),
                                                          clusterControllerId);
     localCapabilitiesDirectory->loadPersistedFile();

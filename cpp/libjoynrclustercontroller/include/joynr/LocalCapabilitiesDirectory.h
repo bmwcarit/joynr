@@ -78,7 +78,7 @@ public:
     LocalCapabilitiesDirectory(ClusterControllerSettings& messagingSettings,
                                std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
                                const std::string& localAddress,
-                               IMessageRouter& messageRouter,
+                               std::weak_ptr<IMessageRouter> messageRouter,
                                boost::asio::io_service& ioService,
                                const std::string clusterControllerId);
 
@@ -249,7 +249,7 @@ private:
     TypedClientMultiCache<std::string, types::DiscoveryEntry> participantId2LocalCapability;
 
     std::vector<types::GlobalDiscoveryEntry> registeredGlobalCapabilities;
-    IMessageRouter& messageRouter;
+    std::weak_ptr<IMessageRouter> messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
 
     std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
