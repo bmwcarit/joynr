@@ -83,6 +83,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             try {
                 mqttClient.setCallback(this);
                 mqttClient.setTimeToWait(timeToWaitMs);
+                mqttClient.setManualAcks(true);
                 mqttClient.connect(getConnectOptions());
                 logger.debug("MQTT Connected client");
                 for (String topic : subscribedTopics) {
@@ -343,6 +344,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 logger.error("MQTT message not processed");
             }
         });
+        mqttClient.messageArrivedComplete(mqttMessage.getId(), mqttMessage.getQos());
     }
 
     @Override
