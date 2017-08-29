@@ -29,7 +29,7 @@ define([
             "joynr/types/DiscoveryEntry",
             "joynr/types/ProviderScope",
             "joynr/types/Version",
-            "uuid",
+            "uuid"
         ],
         function(
                 Promise,
