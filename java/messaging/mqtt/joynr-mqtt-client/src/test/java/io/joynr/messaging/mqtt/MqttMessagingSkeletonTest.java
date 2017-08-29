@@ -97,6 +97,11 @@ public class MqttMessagingSkeletonTest {
     }
 
     @Test
+    public void testSkeletonRegistersItselfAsMessageProcessedListener() {
+        verify(messageRouter).registerMessageProcessedListener(eq(subject));
+    }
+
+    @Test
     public void testSubscribeToMulticastWithTopicPrefix() {
         final String expectedPrefix = "testMulticastPrefix";
         final String multicastId = "multicastId";

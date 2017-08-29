@@ -37,6 +37,7 @@ import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.routing.MessageProcessedListener;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
@@ -46,7 +47,8 @@ import joynr.system.RoutingTypes.MqttAddress;
 /**
  * Connects to the MQTT broker
  */
-public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMulticastSubscriber {
+public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMulticastSubscriber,
+        MessageProcessedListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
     private MessageRouter messageRouter;
@@ -75,6 +77,7 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
 
     @Override
     public void init() {
+        messageRouter.registerMessageProcessedListener(this);
         mqttClient = mqttClientFactory.create();
         mqttClient.setMessageListener(this);
         mqttClient.start();
@@ -166,6 +169,11 @@ public class MqttMessagingSkeleton implements IMessagingSkeleton, IMessagingMult
 
     private String getSubscriptionTopic(String multicastId) {
         return mqttTopicPrefixProvider.getMulticastTopicPrefix() + translateWildcard(multicastId);
+    }
+
+    @Override
+    public void messageProcessed(String messageId) {
+        // TODO Auto-generated method stub
     }
 
 }
