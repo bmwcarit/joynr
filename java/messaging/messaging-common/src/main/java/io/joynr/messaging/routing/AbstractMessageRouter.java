@@ -64,6 +64,9 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_MAX_RETRY_COUNT)
     private long maxRetryCount = ConfigurableMessagingSettings.DEFAULT_ROUTING_MAX_RETRY_COUNT;
+    @Inject(optional = true)
+    @Named(ConfigurableMessagingSettings.PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS)
+    private long maxDelayMs = ConfigurableMessagingSettings.DEFAULT_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF;
     private MessagingStubFactory messagingStubFactory;
     private final MessagingSkeletonFactory messagingSkeletonFactory;
     private AddressManager addressManager;
@@ -320,9 +323,13 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         }
     }
 
-    private long createDelayWithExponentialBackoff(long delayMs, int retries) {
+    private long createDelayWithExponentialBackoff(long sendMsgRetryIntervalMs, int retries) {
         logger.trace("TRIES: " + retries);
-        long millis = delayMs + (long) ((2 ^ (retries)) * delayMs * Math.random());
+        long millis = sendMsgRetryIntervalMs + (long) ((2 ^ (retries)) * sendMsgRetryIntervalMs * Math.random());
+        if (maxDelayMs >= sendMsgRetryIntervalMs && millis > maxDelayMs) {
+            millis = maxDelayMs;
+            logger.trace("set MILLIS to " + millis + " since maxDelayMs is " + maxDelayMs);
+        }
         logger.trace("MILLIS: " + millis);
         return millis;
     }

@@ -66,6 +66,8 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
 
     public static final String PROPERTY_ROUTING_MAX_RETRY_COUNT = "joynr.messaging.routingmaxretrycount";
     public static final long DEFAULT_ROUTING_MAX_RETRY_COUNT = -1;
+    public static final String PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS = "joynr.messaging.maxDelayWithExponentialBackoffMs";
+    public static final long DEFAULT_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF = -1;
 
     private final BounceProxyUrl bounceProxyUrl;
     private final long createChannelRetryIntervalMs;
