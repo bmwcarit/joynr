@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.SuccessAction;
 import joynr.system.RoutingTypes.Address;
 
 public interface JoynrWebSocketEndpoint {
@@ -37,7 +38,12 @@ public interface JoynrWebSocketEndpoint {
 
     public void shutdown();
 
-    public void writeBytes(Address to, byte[] message, long timeout, TimeUnit unit, FailureAction failureAction);
+    public void writeBytes(Address to,
+                           byte[] message,
+                           long timeout,
+                           TimeUnit unit,
+                           SuccessAction successAction,
+                           FailureAction failureAction);
 
     public void reconnect();
 }

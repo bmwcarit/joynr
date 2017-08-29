@@ -18,11 +18,12 @@
  */
 package io.joynr.messaging;
 
-import joynr.ImmutableMessage;
+public interface SuccessAction {
+    public void execute();
 
-/**
- * Common interface for messaging stubs (transmit outgoing messages)
- */
-public interface IMessagingStub {
-    void transmit(ImmutableMessage immutableMessage, SuccessAction successAction, FailureAction failureAction);
+    static final SuccessAction noAction = new SuccessAction() {
+        @Override
+        public void execute() {
+        }
+    };
 }

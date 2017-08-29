@@ -52,6 +52,7 @@ import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -167,6 +168,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                                         byte[] message,
                                         long timeout,
                                         TimeUnit unit,
+                                        final SuccessAction successAction,
                                         final FailureAction failureAction) {
         if (!(toAddress instanceof WebSocketClientAddress)) {
             throw new JoynrIllegalStateException("Web Socket Server can only send to WebSocketClientAddresses");
@@ -183,7 +185,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
             session.getRemote().sendBytes(ByteBuffer.wrap(message), new WriteCallback() {
                 @Override
                 public void writeSuccess() {
-                    // Nothing to do
+                    successAction.execute();
                 }
 
                 @Override

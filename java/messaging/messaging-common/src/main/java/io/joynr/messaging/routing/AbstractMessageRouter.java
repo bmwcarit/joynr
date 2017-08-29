@@ -43,6 +43,7 @@ import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.SuccessAction;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.ImmutableMessage;
@@ -267,6 +268,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         if (maxRetryCount > -1) {
             if (retriesCount > maxRetryCount) {
                 logger.error("Max-retry-count (" + maxRetryCount + ") reached. Dropping message " + message);
+                callMessageProcessedListeners(message.getId());
                 return;
             }
             if (retriesCount > 0) {
@@ -283,6 +285,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
 
     private void checkExpiry(final ImmutableMessage message) {
         if (!message.isTtlAbsolute()) {
+            callMessageProcessedListeners(message.getId());
             throw new JoynrRuntimeException("Relative ttl not supported");
         }
 
@@ -294,6 +297,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                                                        currentTimeMillis,
                                                        ttlExpirationDateMs);
             logger.error(errorMessage);
+            callMessageProcessedListeners(message.getId());
             throw new JoynrMessageNotSentException(errorMessage);
         }
     }
@@ -319,6 +323,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                 } else if (error instanceof JoynrMessageNotSentException) {
                     logger.error(" ERROR SENDING:  aborting send of messageId: {}. Error: {}", new Object[]{ messageId,
                             error.getMessage() });
+                    callMessageProcessedListeners(messageId);
                     return;
                 }
                 logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error: {} Message: {}", new Object[]{
@@ -338,11 +343,35 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                     routeInternal(message, delayMs, retriesCount + 1);
                 } catch (Exception e) {
                     logger.warn("Rescheduling of message failed (messageId {})", messageId);
+                    callMessageProcessedListeners(messageId);
                 }
                 return;
             }
         };
         return failureAction;
+    }
+
+    private void callMessageProcessedListeners(final String messageId) {
+        synchronized (messageProcessedListeners) {
+            for (MessageProcessedListener messageProcessedListener : messageProcessedListeners) {
+                messageProcessedListener.messageProcessed(messageId);
+            }
+        }
+    }
+
+    private SuccessAction createMessageProcessedAction(final String messageId, final int numberOfCalls) {
+        final SuccessAction successAction = new SuccessAction() {
+            private int callCount = numberOfCalls;
+
+            @Override
+            public void execute() {
+                callCount--;
+                if (callCount == 0) {
+                    callMessageProcessedListeners(messageId);
+                }
+            }
+        };
+        return successAction;
     }
 
     @Override
@@ -389,6 +418,8 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                         throw new JoynrMessageNotSentException("Failed to send Message: No route for given participantId: "
                                 + message.getRecipient());
                     }
+                    SuccessAction messageProcessedAction = createMessageProcessedAction(message.getId(),
+                                                                                        addresses.size());
                     // If multiple stub calls for a multicast to multiple destination addresses fail, the failure
                     // action is called for each failing stub call. Hence, the same failureAction has to be used.
                     // Otherwise, the message is rescheduled multiple times and the message queue is flooded with
@@ -402,7 +433,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                         logger.trace(">>>>> SEND  {} to address {}", message, address);
 
                         IMessagingStub messagingStub = messagingStubFactory.create(address);
-                        messagingStub.transmit(message, failureAction);
+                        messagingStub.transmit(message, messageProcessedAction, failureAction);
                     }
                 } catch (InterruptedException e) {
                     logger.trace("Message Worker interrupted. Stopping.");

@@ -47,6 +47,7 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -216,6 +217,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
                                         byte[] message,
                                         long timeout,
                                         TimeUnit unit,
+                                        final SuccessAction successAction,
                                         final FailureAction failureAction) {
         if (messageListener == null) {
             throw new JoynrDelayMessageException(20, "WebSocket write failed: receiver has not been set yet");
@@ -235,7 +237,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
 
                 @Override
                 public void writeSuccess() {
-                    // Nothing to do
+                    successAction.execute();
                 }
 
                 @Override
