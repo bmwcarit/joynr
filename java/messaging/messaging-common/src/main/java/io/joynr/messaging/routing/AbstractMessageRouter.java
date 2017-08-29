@@ -325,7 +325,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                 logger.error("Rescheduling messageId: {} with delay " + delayMs + " ms, TTL is: {} ms",
                              messageId,
                              DateFormatter.format(message.getTtlMs()));
-                routeInternal(message, delayMs, retriesCount + 1);
+                try {
+                    routeInternal(message, delayMs, retriesCount + 1);
+                } catch (Exception e) {
+                    logger.warn("Rescheduling of message failed (messageId {})", messageId);
+                }
                 return;
             }
         };
