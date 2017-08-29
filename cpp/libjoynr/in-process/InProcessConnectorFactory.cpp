@@ -28,7 +28,7 @@ INIT_LOGGER(InProcessConnectorFactory);
 InProcessConnectorFactory::InProcessConnectorFactory(
         ISubscriptionManager* subscriptionManager,
         std::weak_ptr<PublicationManager> publicationManager,
-        InProcessPublicationSender* inProcessPublicationSender,
+        std::weak_ptr<InProcessPublicationSender> inProcessPublicationSender,
         std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory)
         : subscriptionManager(subscriptionManager),
           publicationManager(std::move(publicationManager)),

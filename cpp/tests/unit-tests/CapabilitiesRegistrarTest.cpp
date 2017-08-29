@@ -49,7 +49,7 @@ public:
             singleThreadedIOService(),
             mockMessageRouter(new MockMessageRouter(singleThreadedIOService.getIOService())),
             expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION),
-            mockMessageSender(new MockMessageSender()),
+            mockMessageSender(std::make_shared<MockMessageSender>()),
             pubManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), mockMessageSender))
     {
         singleThreadedIOService.start();
@@ -61,7 +61,7 @@ public:
         pubManager->shutdown();
         singleThreadedIOService.stop();
         pubManager.reset();
-        delete mockMessageSender;
+        mockMessageSender.reset();
     }
 
     void SetUp(){
@@ -95,7 +95,7 @@ protected:
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     const types::Version expectedProviderVersion;
-    IMessageSender* mockMessageSender;
+    std::shared_ptr<IMessageSender> mockMessageSender;
     std::shared_ptr<PublicationManager> pubManager;
 };
 

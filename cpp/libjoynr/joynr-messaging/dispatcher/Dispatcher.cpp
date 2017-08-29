@@ -81,7 +81,7 @@ void Dispatcher::addRequestCaller(const std::string& participantId,
         // publication manager queues received subscription requests, that are
         // received before the corresponding request caller is added
         publicationManagerSharedPtr->restore(
-                participantId, std::move(requestCaller), messageSender.get());
+                participantId, std::move(requestCaller), messageSender);
     } else {
         JOYNR_LOG_WARN(logger, "No publication manager available!");
     }
@@ -323,7 +323,7 @@ void Dispatcher::handleSubscriptionRequestReceived(const ImmutableMessage& messa
                                          message.getRecipient(),
                                          std::move(caller),
                                          subscriptionRequest,
-                                         messageSender.get());
+                                         messageSender);
     }
 }
 
@@ -353,7 +353,7 @@ void Dispatcher::handleMulticastSubscriptionRequestReceived(const ImmutableMessa
     }
 
     publicationManagerSharedPtr->add(
-            message.getSender(), message.getRecipient(), subscriptionRequest, messageSender.get());
+            message.getSender(), message.getRecipient(), subscriptionRequest, messageSender);
 }
 
 void Dispatcher::handleBroadcastSubscriptionRequestReceived(const ImmutableMessage& message)
@@ -399,7 +399,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(const ImmutableMessa
                                          message.getRecipient(),
                                          std::move(caller),
                                          subscriptionRequest,
-                                         messageSender.get());
+                                         messageSender);
     }
 }
 

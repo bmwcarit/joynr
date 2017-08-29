@@ -48,7 +48,7 @@ namespace joynr
 LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
         : JoynrRuntime(*settings),
           subscriptionManager(nullptr),
-          inProcessPublicationSender(nullptr),
+          inProcessPublicationSender(),
           messageSender(nullptr),
           joynrDispatcher(nullptr),
           inProcessDispatcher(),
@@ -82,8 +82,7 @@ LibJoynrRuntime::~LibJoynrRuntime()
         libjoynrSettings = nullptr;
     }
     if (inProcessPublicationSender) {
-        delete inProcessPublicationSender;
-        inProcessPublicationSender = nullptr;
+        inProcessPublicationSender.reset();
     }
     if (libJoynrMessageRouter) {
         libJoynrMessageRouter->shutdown();
@@ -132,7 +131,7 @@ void LibJoynrRuntime::init(
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
     publicationManager = std::make_shared<PublicationManager>(singleThreadIOService->getIOService(),
-                                                              messageSender.get(),
+                                                              messageSender,
                                                               messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings->getSubscriptionRequestPersistenceFilename());
@@ -144,7 +143,7 @@ void LibJoynrRuntime::init(
     inProcessDispatcher =
             std::make_shared<InProcessDispatcher>(singleThreadIOService->getIOService());
 
-    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
+    inProcessPublicationSender = std::make_shared<InProcessPublicationSender>(subscriptionManager);
     // TODO: replace raw ptr to IRequestCallerDirectory
     auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
             subscriptionManager.get(),

@@ -196,7 +196,7 @@ private:
     std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<PublicationManager> publicationManager;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
-    std::unique_ptr<InProcessPublicationSender> inProcessPublicationSender;
+    std::shared_ptr<InProcessPublicationSender> inProcessPublicationSender;
     std::unique_ptr<ProxyFactory> proxyFactory;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;

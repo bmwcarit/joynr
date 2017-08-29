@@ -132,7 +132,7 @@ void PublicationManager::shutdown()
 }
 
 PublicationManager::PublicationManager(boost::asio::io_service& ioService,
-                                       IMessageSender* messageSender,
+                                       std::weak_ptr<IMessageSender> messageSender,
                                        std::uint64_t ttlUplift,
                                        int maxThreads)
         : messageSender(messageSender),
@@ -166,7 +166,7 @@ bool isSubscriptionExpired(const std::shared_ptr<SubscriptionQos> qos, int offse
            qos->getExpiryDateMs() < (now + offset);
 }
 
-void PublicationManager::sendSubscriptionReply(IPublicationSender* publicationSender,
+void PublicationManager::sendSubscriptionReply(std::weak_ptr<IPublicationSender> publicationSender,
                                                const std::string& fromParticipantId,
                                                const std::string& toParticipantId,
                                                std::int64_t expiryDateMs,
@@ -180,11 +180,13 @@ void PublicationManager::sendSubscriptionReply(IPublicationSender* publicationSe
                 JoynrTimePoint(std::chrono::milliseconds(expiryDateMs)));
         messagingQos.setTtl(ttl);
     }
-    publicationSender->sendSubscriptionReply(
-            fromParticipantId, toParticipantId, messagingQos, subscriptionReply);
+    if (auto publicationSenderSharedPtr = publicationSender.lock()) {
+        publicationSenderSharedPtr->sendSubscriptionReply(
+                fromParticipantId, toParticipantId, messagingQos, subscriptionReply);
+    }
 }
 
-void PublicationManager::sendSubscriptionReply(IPublicationSender* publicationSender,
+void PublicationManager::sendSubscriptionReply(std::weak_ptr<IPublicationSender> publicationSender,
                                                const std::string& fromParticipantId,
                                                const std::string& toParticipantId,
                                                std::int64_t expiryDateMs,
@@ -197,7 +199,7 @@ void PublicationManager::sendSubscriptionReply(IPublicationSender* publicationSe
 }
 
 void PublicationManager::sendSubscriptionReply(
-        IPublicationSender* publicationSender,
+        std::weak_ptr<IPublicationSender> publicationSender,
         const std::string& fromParticipantId,
         const std::string& toParticipantId,
         std::int64_t expiryDateMs,
@@ -215,7 +217,7 @@ void PublicationManager::add(const std::string& proxyParticipantId,
                              const std::string& providerParticipantId,
                              std::shared_ptr<RequestCaller> requestCaller,
                              SubscriptionRequest& subscriptionRequest,
-                             IPublicationSender* publicationSender)
+                             std::weak_ptr<IPublicationSender> publicationSender)
 {
     assert(requestCaller);
     auto requestInfo = std::make_shared<SubscriptionRequestInformation>(proxyParticipantId,
@@ -251,7 +253,7 @@ void PublicationManager::addSubscriptionCleanupIfNecessary(std::shared_ptr<Publi
 void PublicationManager::handleAttributeSubscriptionRequest(
         std::shared_ptr<SubscriptionRequestInformation> requestInfo,
         std::shared_ptr<RequestCaller> requestCaller,
-        IPublicationSender* publicationSender)
+        std::weak_ptr<IPublicationSender> publicationSender)
 {
     const std::string& subscriptionId = requestInfo->getSubscriptionId();
     auto publication = std::make_shared<Publication>(publicationSender, requestCaller);
@@ -377,7 +379,7 @@ void PublicationManager::add(const std::string& proxyParticipantId,
 void PublicationManager::add(const std::string& proxyParticipantId,
                              const std::string& providerParticipantId,
                              MulticastSubscriptionRequest& subscriptionRequest,
-                             IPublicationSender* publicationSender)
+                             std::weak_ptr<IPublicationSender> publicationSender)
 {
     // silently handle multicast subscription request
     sendSubscriptionReply(publicationSender,
@@ -391,7 +393,7 @@ void PublicationManager::add(const std::string& proxyParticipantId,
                              const std::string& providerParticipantId,
                              std::shared_ptr<RequestCaller> requestCaller,
                              BroadcastSubscriptionRequest& subscriptionRequest,
-                             IPublicationSender* publicationSender)
+                             std::weak_ptr<IPublicationSender> publicationSender)
 {
     assert(requestCaller);
     auto requestInfo = std::make_shared<BroadcastSubscriptionRequestInformation>(
@@ -403,7 +405,7 @@ void PublicationManager::add(const std::string& proxyParticipantId,
 void PublicationManager::handleBroadcastSubscriptionRequest(
         std::shared_ptr<BroadcastSubscriptionRequestInformation> requestInfo,
         std::shared_ptr<RequestCaller> requestCaller,
-        IPublicationSender* publicationSender)
+        std::weak_ptr<IPublicationSender> publicationSender)
 {
     const std::string& subscriptionId = requestInfo->getSubscriptionId();
 
@@ -541,7 +543,7 @@ bool PublicationManager::publicationExists(const std::string& subscriptionId) co
 
 void PublicationManager::restore(const std::string& providerId,
                                  std::shared_ptr<RequestCaller> requestCaller,
-                                 IPublicationSender* publicationSender)
+                                 std::weak_ptr<IPublicationSender> publicationSender)
 {
     JOYNR_LOG_TRACE(logger, "restore: entering ...");
 
@@ -839,23 +841,28 @@ void PublicationManager::sendSubscriptionPublication(
     // Set the TTL
     mQos.setTtl(getPublicationTtlMs(request));
 
-    IPublicationSender* publicationSender = publication->sender;
+    std::weak_ptr<IPublicationSender> publicationSender = publication->sender;
 
-    publicationSender->sendSubscriptionPublication(subscriptionInformation->getProviderId(),
-                                                   subscriptionInformation->getProxyId(),
-                                                   mQos,
-                                                   std::move(subscriptionPublication));
+    if (auto publicationSenderSharedPtr = publicationSender.lock()) {
+        publicationSenderSharedPtr->sendSubscriptionPublication(
+                subscriptionInformation->getProviderId(),
+                subscriptionInformation->getProxyId(),
+                mQos,
+                std::move(subscriptionPublication));
+        // Make note of when this publication was sent
+        std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                   std::chrono::system_clock::now().time_since_epoch()).count();
+        publication->timeOfLastPublication = now;
 
-    // Make note of when this publication was sent
-    std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                               std::chrono::system_clock::now().time_since_epoch()).count();
-    publication->timeOfLastPublication = now;
-
-    {
-        std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
-        util::removeAll(currentScheduledPublications, request->getSubscriptionId());
+        {
+            std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
+            util::removeAll(currentScheduledPublications, request->getSubscriptionId());
+        }
+        JOYNR_LOG_TRACE(logger, "sent publication @ {}", now);
+    } else {
+        JOYNR_LOG_ERROR(
+                logger, "publication could not be sent because publicationSender is not available");
     }
-    JOYNR_LOG_TRACE(logger, "sent publication @ {}", now);
 }
 
 void PublicationManager::sendPublication(
@@ -1033,7 +1040,7 @@ void PublicationManager::reschedulePublication(const std::string& subscriptionId
 
 //------ PublicationManager::Publication ---------------------------------------
 
-PublicationManager::Publication::Publication(IPublicationSender* publicationSender,
+PublicationManager::Publication::Publication(std::weak_ptr<IPublicationSender> publicationSender,
                                              std::shared_ptr<RequestCaller> requestCaller)
         : timeOfLastPublication(0),
           sender(publicationSender),

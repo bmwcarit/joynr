@@ -50,9 +50,9 @@ public:
         proxyParticipantId("proxyParticipantId"),
         subscriptionId("subscriptionId"),
         mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
-        messageSender(new MessageSender(mockMessageRouter)),
+        messageSender(std::make_shared<MessageSender>(mockMessageRouter)),
         publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender)),
-        publicationSender(),
+        publicationSender(std::make_shared<MockPublicationSender>()),
         request(),
         subscriptionBroadcastListener(std::make_shared<UnicastBroadcastListener>(subscriptionId, publicationManager)),
         multicastBroadcastListener(std::make_shared<MulticastBroadcastListener>(providerParticipantId, publicationManager)),
@@ -94,7 +94,7 @@ public:
                     providerParticipantId,
                     requestCaller,
                     request,
-                    &publicationSender);
+                    publicationSender);
 
         provider->registerBroadcastListener(multicastBroadcastListener);
         provider->addBroadcastFilter(filter1);
@@ -104,7 +104,7 @@ public:
     void TearDown(){
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter1.get()));
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter2.get()));
-        delete messageSender;
+        messageSender.reset();
     }
 
 protected:
@@ -116,9 +116,9 @@ protected:
     std::string proxyParticipantId;
     std::string subscriptionId;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    IMessageSender* messageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     std::shared_ptr<PublicationManager> publicationManager;
-    MockPublicationSender publicationSender;
+    std::shared_ptr<MockPublicationSender> publicationSender;
     BroadcastSubscriptionRequest request;
     std::shared_ptr<UnicastBroadcastListener> subscriptionBroadcastListener;
     std::shared_ptr<MulticastBroadcastListener> multicastBroadcastListener;
@@ -159,7 +159,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess) {
     ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
     ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
 
-    EXPECT_CALL(publicationSender, sendSubscriptionPublicationMock(
+    EXPECT_CALL(*publicationSender, sendSubscriptionPublicationMock(
                     Eq(providerParticipantId),
                     Eq(proxyParticipantId),
                     _,
@@ -199,7 +199,7 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail) {
     ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
     ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(false));
 
-    EXPECT_CALL(publicationSender, sendSubscriptionPublicationMock(
+    EXPECT_CALL(*publicationSender, sendSubscriptionPublicationMock(
                     Eq(providerParticipantId),
                     Eq(proxyParticipantId),
                     _,

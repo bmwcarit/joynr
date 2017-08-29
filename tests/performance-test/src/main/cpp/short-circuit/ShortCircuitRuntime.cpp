@@ -70,17 +70,17 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings)
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
     publicationManager = std::make_shared<PublicationManager>(
-            singleThreadedIOService.getIOService(), messageSender.get());
+            singleThreadedIOService.getIOService(), messageSender);
     subscriptionManager = std::make_shared<SubscriptionManager>(
             singleThreadedIOService.getIOService(), messageRouter);
     inProcessDispatcher =
             std::make_shared<InProcessDispatcher>(singleThreadedIOService.getIOService());
 
-    inProcessPublicationSender = std::make_unique<InProcessPublicationSender>(subscriptionManager);
+    inProcessPublicationSender = std::make_shared<InProcessPublicationSender>(subscriptionManager);
     auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
             subscriptionManager.get(),
             publicationManager,
-            inProcessPublicationSender.get(),
+            inProcessPublicationSender,
             std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher));
     auto joynrMessagingConnectorFactory =
             std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);

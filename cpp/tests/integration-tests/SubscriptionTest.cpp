@@ -75,7 +75,7 @@ public:
         dispatcher(messageSender, singleThreadedIOService.getIOService()),
         subscriptionManager(nullptr),
         provider(new MockTestProvider),
-        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender.get())),
+        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender)),
         requestCaller(new joynr::tests::testRequestCaller(provider)),
         isLocalMessage(true)
     {
@@ -377,7 +377,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
                 providerParticipantId,
                 requestCaller,
                 subscriptionRequest,
-                messageSender.get());
+                messageSender);
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(15)));
 

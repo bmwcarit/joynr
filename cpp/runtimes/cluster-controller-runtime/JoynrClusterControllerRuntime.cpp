@@ -119,7 +119,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           joynrDispatcher(),
           inProcessDispatcher(),
           subscriptionManager(nullptr),
-          messageSender(nullptr),
+          messageSender(),
           localCapabilitiesDirectory(nullptr),
           libJoynrMessagingSkeleton(nullptr),
           httpMessageReceiver(httpMessageReceiver),
@@ -130,7 +130,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           mqttMessageSender(mqttMessageSender),
           mqttMessagingSkeleton(nullptr),
           dispatcherList(),
-          inProcessPublicationSender(nullptr),
+          inProcessPublicationSender(),
           settings(std::move(settings)),
           libjoynrSettings(*(this->settings)),
           localDomainAccessController(nullptr),
@@ -471,7 +471,7 @@ void JoynrClusterControllerRuntime::init()
       *
       */
     publicationManager = std::make_shared<PublicationManager>(singleThreadIOService->getIOService(),
-                                                              messageSender.get(),
+                                                              messageSender,
                                                               messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings.getSubscriptionRequestPersistenceFilename());
@@ -480,7 +480,7 @@ void JoynrClusterControllerRuntime::init()
 
     subscriptionManager = std::make_shared<SubscriptionManager>(
             singleThreadIOService->getIOService(), ccMessageRouter);
-    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
+    inProcessPublicationSender = std::make_shared<InProcessPublicationSender>(subscriptionManager);
 
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(libJoynrMessagingSkeleton);
     // subscriptionManager = new SubscriptionManager(...)
@@ -912,8 +912,7 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 
     inProcessDispatcher.reset();
 
-    delete inProcessPublicationSender;
-    inProcessPublicationSender = nullptr;
+    inProcessPublicationSender.reset();
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
     delete ccDbusMessageRouterAdapter;
