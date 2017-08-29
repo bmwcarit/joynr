@@ -3,9 +3,10 @@
 ## API relevant changes
 
 ## Other changes
-* **[Java]** Introduced new properties: PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS and
-  PROPERTY_DISCOVERY_RETRY_INTERVAL_MS. See the [Java Configuration Reference](JavaSettings.md)
-  for more details.
+* **[Java]** Introduced new properties: PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS,
+  PROPERTY_DISCOVERY_RETRY_INTERVAL_MS, PROPERTY_ROUTING_MAX_RETRY_COUNT and
+  PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS.
+  See the [Java Configuration Reference](JavaSettings.md) for more details.
 * **[Java]** Added new property `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`.
   See the [Java Configuration Reference](JavaSettings.md) for more details.
 * **[Js]** Made default discoveryQos configurable via provisioning. See the

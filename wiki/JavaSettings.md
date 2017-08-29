@@ -175,6 +175,9 @@ message router will use the send message retry interval defined by this property
 message transmission and start a new transmission attempt. Multiple unsuccessful retransmission
 attempts will add an additional exponential backoff to delay message transmission.
 
+The maximum delay between such retransmission attempts can be configured with
+`PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS`.
+
 The message router tries to resend a message until its TTL expires or the maximum number of retries
 is reached, see `PROPERTY_ROUTING_MAX_RETRY_COUNT`.
 
@@ -196,6 +199,23 @@ further retransmission attempts are initiated and the message is dropped with an
 * **Type**: long
 * **User property**: `joynr.messaging.routingmaxretrycount`
 * **Default value**: `-1` (retry count is not taken into account)
+
+### `PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS`
+The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,
+MQTT, ...) using middleware-specific messaging stubs. On transmission errors the message router
+initiates a retransmission until the message's TTL expires.
+The time till the next retransmission increases exponentially with each unsuccessful retransmission.
+
+The maximum time can be limited by setting `PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS`.
+Please make sure to set a value higher than `PROPERTY_SEND_MSG_RETRY_INTERVAL_MS`.
+
+If `PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS` is set, this value is used as upper bound
+for the added time to the retry interval by the exponential backoff algorithm.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.maxDelayWithExponentialBackoffMs`
+* **Default value**: `-1` (no maximum delay for retry interval)
 
 ### PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
 
