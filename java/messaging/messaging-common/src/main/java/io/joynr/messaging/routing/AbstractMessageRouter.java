@@ -301,9 +301,18 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     private FailureAction createFailureAction(final ImmutableMessage message, final int retriesCount) {
         final FailureAction failureAction = new FailureAction() {
             final String messageId = message.getId();
+            private boolean failureActionExecutedOnce = false;
 
             @Override
             public void execute(Throwable error) {
+                synchronized (this) {
+                    if (failureActionExecutedOnce) {
+                        logger.trace("Failure action for message with id {} already executed once. Ignoring further call.",
+                                     messageId);
+                        return;
+                    }
+                    failureActionExecutedOnce = true;
+                }
                 if (error instanceof JoynrShutdownException) {
                     logger.warn("{}", error.getMessage());
                     return;
@@ -380,11 +389,20 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                         throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
                                 + message.getRecipient());
                     }
+                    // If multiple stub calls for a multicast to multiple destination addresses fail, the failure
+                    // action is called for each failing stub call. Hence, the same failureAction has to be used.
+                    // Otherwise, the message is rescheduled multiple times and the message queue is flooded with
+                    // entries for the same message until the transmission of every entry is successful for all
+                    // recipients. Also the recipients are flooded with the same message.
+                    // Open issue:
+                    // If only some stub calls fail, the rescheduled message will be sent to all its recipients again,
+                    // no matter if an earlier transmission attempt was already successful or not.
+                    FailureAction failureAction = createFailureAction(message, retriesCount);
                     for (Address address : addresses) {
                         logger.trace(">>>>> SEND  {} to address {}", message, address);
 
                         IMessagingStub messagingStub = messagingStubFactory.create(address);
-                        messagingStub.transmit(message, createFailureAction(message, retriesCount));
+                        messagingStub.transmit(message, failureAction);
                     }
                 } catch (InterruptedException e) {
                     logger.trace("Message Worker interrupted. Stopping.");

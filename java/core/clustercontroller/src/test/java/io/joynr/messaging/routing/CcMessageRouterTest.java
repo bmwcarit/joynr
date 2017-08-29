@@ -22,6 +22,7 @@ package io.joynr.messaging.routing;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -80,6 +81,7 @@ import joynr.MutableMessage;
 import joynr.Request;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -96,10 +98,11 @@ public class CcMessageRouterTest {
     private final ChannelAddress channelAddress = new ChannelAddress("http://testUrl", channelId);
 
     private RoutingTable routingTable = spy(new RoutingTableImpl());
+    InMemoryMulticastReceiverRegistry multicastReceiverRegistry = new InMemoryMulticastReceiverRegistry(new MulticastWildcardRegexFactory());
     private AddressManager addressManager = spy(new AddressManager(routingTable,
                                                                    new AddressManager.PrimaryGlobalTransportHolder(null),
                                                                    Sets.<MulticastAddressCalculator> newHashSet(),
-                                                                   new InMemoryMulticastReceiverRegistry(new MulticastWildcardRegexFactory())));
+                                                                   multicastReceiverRegistry));
 
     @Mock
     private ChannelMessagingStubFactory messagingStubFactoryMock;
@@ -132,7 +135,7 @@ public class CcMessageRouterTest {
                 bind(MessageRouter.class).to(CcMessageRouter.class);
                 bind(RoutingTable.class).toInstance(routingTable);
                 bind(AddressManager.class).toInstance(addressManager);
-                bind(MulticastReceiverRegistry.class).to(InMemoryMulticastReceiverRegistry.class).asEagerSingleton();
+                bind(MulticastReceiverRegistry.class).toInstance(multicastReceiverRegistry);
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
                                 .toInstance(msgRetryIntervalMs);
                 bind(Integer.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS))
@@ -169,23 +172,6 @@ public class CcMessageRouterTest {
 
                 Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
                 });
-
-                ObjectMapper objectMapper = new ObjectMapper();
-                MutableMessageFactory messageFactory = new MutableMessageFactory(objectMapper,
-                                                                                 new HashSet<JoynrMessageProcessor>());
-
-                final boolean isGloballyVisible = true; // toParticipantId is globally visible
-                final long expiryDateMs = Long.MAX_VALUE;
-                final boolean isSticky = true;
-                routingTable.put(toParticipantId, channelAddress, isGloballyVisible, expiryDateMs, isSticky);
-
-                Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
-
-                joynrMessage = messageFactory.createRequest(fromParticipantId,
-                                                            toParticipantId,
-                                                            request,
-                                                            new MessagingQos());
-                joynrMessage.setLocalMessage(true);
             }
 
             @Provides
@@ -205,6 +191,20 @@ public class CcMessageRouterTest {
 
         Injector injector = Guice.createInjector(testModule);
         messageRouter = injector.getInstance(MessageRouter.class);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        MutableMessageFactory messageFactory = new MutableMessageFactory(objectMapper,
+                                                                         new HashSet<JoynrMessageProcessor>());
+
+        final boolean isGloballyVisible = true; // toParticipantId is globally visible
+        final long expiryDateMs = Long.MAX_VALUE;
+        final boolean isSticky = true;
+        routingTable.put(toParticipantId, channelAddress, isGloballyVisible, expiryDateMs, isSticky);
+
+        Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
+
+        joynrMessage = messageFactory.createRequest(fromParticipantId, toParticipantId, request, new MessagingQos());
+        joynrMessage.setLocalMessage(true);
     }
 
     @Test
@@ -262,6 +262,53 @@ public class CcMessageRouterTest {
         messageRouter.route(immutableMessage);
         Thread.sleep(100);
         verify(addressManager).getAddresses(immutableMessage);
+    }
+
+    @Test
+    public void testNoMessageDuplicationForMulticastForMultipleAddressesWithErrorFromStub() throws Exception {
+        final String multicastId = "multicastId";
+        final String receiverParticipantId1 = "receiverParticipantId1";
+        final String receiverParticipantId2 = "receiverParticipantId2";
+
+        multicastReceiverRegistry.registerMulticastReceiver(multicastId, receiverParticipantId1);
+        multicastReceiverRegistry.registerMulticastReceiver(multicastId, receiverParticipantId2);
+
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = Long.MAX_VALUE;
+        final boolean isSticky = false;
+        ChannelAddress receiverAddress1 = new ChannelAddress("http://testUrl", "channelId1");
+        routingTable.put(receiverParticipantId1, receiverAddress1, isGloballyVisible, expiryDateMs, isSticky);
+        ChannelAddress receiverAddress2 = new ChannelAddress("http://testUrl", "channelId2");
+        routingTable.put(receiverParticipantId2, receiverAddress2, isGloballyVisible, expiryDateMs, isSticky);
+
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
+        joynrMessage.setType(Message.VALUE_MESSAGE_TYPE_MULTICAST);
+        joynrMessage.setRecipient(multicastId);
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        doAnswer(new Answer<Void>() {
+            private int callCount = 0;
+
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                FailureAction failureAction = invocation.getArgumentAt(1, FailureAction.class);
+                if (callCount < 2) {
+                    callCount++;
+                    failureAction.execute(new JoynrDelayMessageException(10, "first retry"));
+                } else {
+                    failureAction.execute(new JoynrMessageNotSentException("do not retry twice"));
+                }
+                return null;
+            }
+        }).when(messagingStubMock).transmit(eq(immutableMessage), any(FailureAction.class));
+
+        messageRouter.route(immutableMessage);
+
+        Thread.sleep(1000);
+
+        verify(messagingStubMock, times(4)).transmit(eq(immutableMessage), any(FailureAction.class));
+        verify(messagingStubFactoryMock, times(2)).create(receiverAddress1);
+        verify(messagingStubFactoryMock, times(2)).create(receiverAddress2);
     }
 
     private ImmutableMessage retryRoutingWith1msDelay(MessageRouter messageRouter, int ttlMs) throws Exception {
