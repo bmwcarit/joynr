@@ -118,7 +118,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         : JoynrRuntime(*settings),
           joynrDispatcher(),
           inProcessDispatcher(),
-          subscriptionManager(nullptr),
+          subscriptionManager(),
           messageSender(),
           localCapabilitiesDirectory(nullptr),
           libJoynrMessagingSkeleton(nullptr),
@@ -483,9 +483,8 @@ void JoynrClusterControllerRuntime::init()
     inProcessPublicationSender = std::make_shared<InProcessPublicationSender>(subscriptionManager);
 
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(libJoynrMessagingSkeleton);
-    // subscriptionManager = new SubscriptionManager(...)
     auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
-            subscriptionManager.get(),
+            subscriptionManager,
             publicationManager,
             inProcessPublicationSender,
             std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher));
@@ -529,7 +528,7 @@ void JoynrClusterControllerRuntime::init()
     {
         using joynr::system::DiscoveryInProcessConnector;
         auto discoveryInProcessConnector = std::make_unique<DiscoveryInProcessConnector>(
-                subscriptionManager.get(),
+                subscriptionManager,
                 publicationManager,
                 inProcessPublicationSender,
                 std::make_shared<DummyPlatformSecurityManager>(),

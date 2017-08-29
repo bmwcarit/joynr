@@ -146,7 +146,7 @@ void LibJoynrRuntime::init(
     inProcessPublicationSender = std::make_shared<InProcessPublicationSender>(subscriptionManager);
     // TODO: replace raw ptr to IRequestCallerDirectory
     auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
-            subscriptionManager.get(),
+            subscriptionManager,
             publicationManager,
             inProcessPublicationSender,
             std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher));

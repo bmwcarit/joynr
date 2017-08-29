@@ -286,7 +286,7 @@ class MockInProcessConnectorFactory : public joynr::InProcessConnectorFactory {
 public:
 
     MockInProcessConnectorFactory()
-        : InProcessConnectorFactory(nullptr,std::weak_ptr<joynr::PublicationManager>(),std::weak_ptr<joynr::InProcessPublicationSender>(),nullptr) {
+        : InProcessConnectorFactory(std::weak_ptr<joynr::SubscriptionManager>(),std::weak_ptr<joynr::PublicationManager>(),std::weak_ptr<joynr::InProcessPublicationSender>(),nullptr) {
     }
 
     MOCK_METHOD1(canBeCreated, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address> address));

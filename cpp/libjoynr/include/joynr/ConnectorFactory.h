@@ -39,7 +39,7 @@ class JOYNR_EXPORT ConnectorFactory
 {
 public:
     ConnectorFactory(
-            std::unique_ptr<InProcessConnectorFactory> inProcessConnectorFactory,
+            std::shared_ptr<InProcessConnectorFactory> inProcessConnectorFactory,
             std::unique_ptr<JoynrMessagingConnectorFactory> joynrMessagingConnectorFactory);
 
     virtual ~ConnectorFactory() = default;
@@ -62,7 +62,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ConnectorFactory);
-    std::unique_ptr<InProcessConnectorFactory> inProcessConnectorFactory;
+    std::shared_ptr<InProcessConnectorFactory> inProcessConnectorFactory;
     std::unique_ptr<JoynrMessagingConnectorFactory> joynrMessagingConnectorFactory;
     ADD_LOGGER(ConnectorFactory);
 };

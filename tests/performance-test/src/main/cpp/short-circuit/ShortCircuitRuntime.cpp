@@ -78,7 +78,7 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings)
 
     inProcessPublicationSender = std::make_shared<InProcessPublicationSender>(subscriptionManager);
     auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
-            subscriptionManager.get(),
+            subscriptionManager,
             publicationManager,
             inProcessPublicationSender,
             std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher));

@@ -91,7 +91,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 INIT_LOGGER(«className»);
 
 «className»::«className»(
-			joynr::ISubscriptionManager* subscriptionManager,
+			std::weak_ptr<joynr::ISubscriptionManager> subscriptionManager,
 			std::weak_ptr<joynr::PublicationManager> publicationManager,
 			std::weak_ptr<joynr::InProcessPublicationSender> inProcessPublicationSender,
 			std::shared_ptr<joynr::IPlatformSecurityManager> securityManager,
@@ -259,13 +259,17 @@ INIT_LOGGER(«className»);
 				return std::make_shared<Future<std::string>>();
 			«ELSE»
 				JOYNR_LOG_TRACE(logger, "Subscribing to «attributeName».");
-				assert(subscriptionManager != nullptr);
 				std::string attributeName("«attributeName»");
+				auto subscriptionManagerSharedPtr = subscriptionManager.lock();
 				auto future = std::make_shared<Future<std::string>>();
+				if (!subscriptionManagerSharedPtr) {
+					JOYNR_LOG_FATAL(logger, "Subscribing to attribute name «interfaceName».«attributeName» failed, because SubscriptionManager is not available");
+					return future;
+				}
 				auto subscriptionCallback = std::make_shared<
 						joynr::UnicastSubscriptionCallback<«returnType»>
-				>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
-				subscriptionManager->registerSubscription(
+				>(subscriptionRequest.getSubscriptionId(), future, subscriptionManagerSharedPtr);
+				subscriptionManagerSharedPtr->registerSubscription(
 						attributeName,
 						subscriptionCallback,
 						subscriptionListener,
@@ -316,9 +320,14 @@ INIT_LOGGER(«className»);
 					JOYNR_LOG_FATAL(logger, "Unsubscribing from attribute name: «interfaceName».«attributeName» failed, because PublicationManager is not available");
 					assert(false);
 				}
-				assert(subscriptionManager != nullptr);
-				JOYNR_LOG_TRACE(logger, "Unregistering attribute subscription.");
-				subscriptionManager->unregisterSubscription(subscriptionId);
+				auto subscriptionManagerSharedPtr = subscriptionManager.lock();
+				if (subscriptionManagerSharedPtr) {
+					JOYNR_LOG_TRACE(logger, "Unregistering attribute subscription.");
+					subscriptionManagerSharedPtr->unregisterSubscription(subscriptionId);
+				} else {
+					JOYNR_LOG_FATAL(logger, "Unregistering from attribute name: «interfaceName».«attributeName» failed, because SubscriptionManager is not available.");
+					assert(false);
+				}
 			«ENDIF»
 		}
 
@@ -397,7 +406,11 @@ INIT_LOGGER(«className»);
 
 	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
 		JOYNR_LOG_TRACE(logger, "Subscribing to «broadcastName».");
-		assert(subscriptionManager != nullptr);
+		auto subscriptionManagerSharedPtr = subscriptionManager.lock();
+		if (!subscriptionManagerSharedPtr) {
+			JOYNR_LOG_FATAL(logger, "Subscribing to «broadcastName» failed because SubscriptionManager is not available.");
+			assert(false);
+		}
 		«IF broadcast.selective»
 			joynr::BroadcastSubscriptionRequest subscriptionRequest;
 			subscriptionRequest.setFilterParameters(filterParameters);
@@ -447,16 +460,20 @@ INIT_LOGGER(«className»);
 			«ENDIF»
 	) {
 		JOYNR_LOG_TRACE(logger, "Subscribing to «broadcastName».");
-		assert(subscriptionManager != nullptr);
 		std::string broadcastName("«broadcastName»");
+		auto subscriptionManagerSharedPtr = subscriptionManager.lock();
+		if (!subscriptionManagerSharedPtr) {
+			JOYNR_LOG_FATAL(logger, "Subscribing to selective broadcast name «interfaceName».«broadcastName» failed, because SubscriptionManager is not available");
+			assert(false);
+		}
 
 		auto future = std::make_shared<Future<std::string>>();
 		assert(address);
 		«IF broadcast.selective»
 			auto subscriptionCallback = std::make_shared<
 				joynr::UnicastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
-			subscriptionManager->registerSubscription(
+			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManagerSharedPtr);
+			subscriptionManagerSharedPtr->registerSubscription(
 						broadcastName,
 						subscriptionCallback,
 						subscriptionListener,
@@ -498,12 +515,12 @@ INIT_LOGGER(«className»);
 		«ELSE»
 			auto subscriptionCallback = std::make_shared<
 				joynr::MulticastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager);
+			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManagerSharedPtr);
 			auto publicationManagerSharedPtr = publicationManager.lock();
 			if (publicationManagerSharedPtr) {
 				std::function<void()> onSuccess =
-						[this, subscriptionRequest] () {
-							auto publicationManagerSharedPtr = publicationManager.lock();
+						[this, subscriptionRequest, publicationManagerWeakPtr = joynr::util::as_weak_ptr(publicationManagerSharedPtr)] () {
+							auto publicationManagerSharedPtr = publicationManagerWeakPtr.lock();
 							if (publicationManagerSharedPtr) {
 								JOYNR_LOG_TRACE(
 										logger,
@@ -524,7 +541,7 @@ INIT_LOGGER(«className»);
 
 				std::string subscriptionId = subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId();
 				std::function<void(const exceptions::ProviderRuntimeException& error)> onError =
-					[this, subscriptionListener, subscriptionId]
+					[this, subscriptionListener, subscriptionId, subscriptionManagerWeakPtr = joynr::util::as_weak_ptr(subscriptionManagerSharedPtr)]
 					(const exceptions::ProviderRuntimeException& error) {
 						std::string message = "Could not register subscription to" \
 								" «broadcastName»." \
@@ -535,9 +552,11 @@ INIT_LOGGER(«className»);
 								message,
 								subscriptionId);
 						subscriptionListener->onError(subscriptionException);
-						subscriptionManager->unregisterSubscription(subscriptionId);
+						if (auto subscriptionManagerSharedPtr = subscriptionManagerWeakPtr.lock()) {
+							subscriptionManagerSharedPtr->unregisterSubscription(subscriptionId);
+						}
 					};
-				subscriptionManager->registerSubscription(
+				subscriptionManagerSharedPtr->registerSubscription(
 								broadcastName,
 								proxyParticipantId,
 								providerParticipantId,
@@ -566,9 +585,14 @@ INIT_LOGGER(«className»);
 			JOYNR_LOG_FATAL(logger, "Unsubscribing from broadcast Id={} failed because PublicationManager is not available", subscriptionId);
 			assert(false);
 		}
-		assert(subscriptionManager != nullptr);
-		JOYNR_LOG_TRACE(logger, "Unregistering broadcast subscription.");
-		subscriptionManager->unregisterSubscription(subscriptionId);
+		auto subscriptionManagerSharedPtr = subscriptionManager.lock();
+		if (subscriptionManagerSharedPtr) {
+			JOYNR_LOG_TRACE(logger, "Unregistering broadcast subscription.");
+			subscriptionManagerSharedPtr->unregisterSubscription(subscriptionId);
+		} else {
+			JOYNR_LOG_FATAL(logger, "Unsubscribing from broadcast Id={} failed because SubscriptionManager is not available", subscriptionId);
+			assert(false);
+		}
 	}
 «ENDFOR»
 «getNamespaceEnder(francaIntf)»

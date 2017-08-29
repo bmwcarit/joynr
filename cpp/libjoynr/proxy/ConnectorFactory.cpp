@@ -24,7 +24,7 @@ namespace joynr
 INIT_LOGGER(ConnectorFactory);
 
 ConnectorFactory::ConnectorFactory(
-        std::unique_ptr<InProcessConnectorFactory> inProcessConnectorFactory,
+        std::shared_ptr<InProcessConnectorFactory> inProcessConnectorFactory,
         std::unique_ptr<JoynrMessagingConnectorFactory> joynrMessagingConnectorFactory)
         : inProcessConnectorFactory(std::move(inProcessConnectorFactory)),
           joynrMessagingConnectorFactory(std::move(joynrMessagingConnectorFactory))

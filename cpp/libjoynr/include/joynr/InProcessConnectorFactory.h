@@ -45,7 +45,7 @@ struct InProcessTraits;
 class JOYNR_EXPORT InProcessConnectorFactory
 {
 public:
-    InProcessConnectorFactory(ISubscriptionManager* subscriptionManager,
+    InProcessConnectorFactory(std::weak_ptr<ISubscriptionManager> subscriptionManager,
                               std::weak_ptr<PublicationManager> publicationManager,
                               std::weak_ptr<InProcessPublicationSender> inProcessPublicationSender,
                               std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory);
@@ -79,7 +79,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessConnectorFactory);
-    ISubscriptionManager* subscriptionManager;
+    std::weak_ptr<ISubscriptionManager> subscriptionManager;
     std::weak_ptr<PublicationManager> publicationManager;
     std::weak_ptr<InProcessPublicationSender> inProcessPublicationSender;
     std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;

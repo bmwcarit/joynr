@@ -73,7 +73,7 @@ public:
         messageFactory(),
         messageSender(std::make_shared<MessageSender>(mockMessageRouter)),
         dispatcher(messageSender, singleThreadedIOService.getIOService()),
-        subscriptionManager(nullptr),
+        subscriptionManager(),
         provider(new MockTestProvider),
         publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender)),
         requestCaller(new joynr::tests::testRequestCaller(provider)),
@@ -205,7 +205,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -261,7 +261,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     subscriptionPublication.setResponse(tests::testTypes::TestEnum::ZERO);
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(

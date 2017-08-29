@@ -41,14 +41,12 @@ using namespace joynr;
 class ProxyIntegrationTest : public ::testing::Test {
 public:
     ProxyIntegrationTest() :
-        mockInProcessConnectorFactory(nullptr),
+        mockInProcessConnectorFactory(std::make_shared<MockInProcessConnectorFactory>()),
         connectorFactory(nullptr)
     {
-        auto mockInProcessConnectorFactoryPtr = std::make_unique<MockInProcessConnectorFactory>();
-        mockInProcessConnectorFactory = mockInProcessConnectorFactoryPtr.get();
         auto mockMessageSender = std::make_shared<MockMessageSender>();
         auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(std::move(mockMessageSender), nullptr);
-        connectorFactory = new ConnectorFactory(std::move(mockInProcessConnectorFactoryPtr), std::move(joynrMessagingConnectorFactory));
+        connectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, std::move(joynrMessagingConnectorFactory));
     }
 
     ~ProxyIntegrationTest() override{
@@ -58,7 +56,7 @@ public:
     }
 
 protected:
-    MockInProcessConnectorFactory* mockInProcessConnectorFactory;
+    std::shared_ptr<MockInProcessConnectorFactory> mockInProcessConnectorFactory;
     ConnectorFactory* connectorFactory;
 
 private:
