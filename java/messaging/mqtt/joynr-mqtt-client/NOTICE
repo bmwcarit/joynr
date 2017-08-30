@@ -40,5 +40,6 @@ This project has dependencies to:
   javax.inject under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
   Mockito under The MIT License
+  Objenesis under MIT License
   SLF4J API Module under MIT License
 

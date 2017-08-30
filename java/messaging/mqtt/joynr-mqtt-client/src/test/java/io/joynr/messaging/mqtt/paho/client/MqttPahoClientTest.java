@@ -27,6 +27,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -41,6 +43,7 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
@@ -56,7 +59,6 @@ import joynr.system.RoutingTypes.MqttAddress;
 import static org.mockito.Mockito.*;
 
 public class MqttPahoClientTest {
-
     private static int mqttBrokerPort;
     private static Process mosquittoProcess;
     private Injector injector;
@@ -67,6 +69,10 @@ public class MqttPahoClientTest {
     @Mock
     private MessageRouter mockMessageRouter;
     private JoynrMqttClient client;
+    private Properties properties;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @BeforeClass
     public static void startBroker() throws Exception {
@@ -84,7 +90,10 @@ public class MqttPahoClientTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        Properties properties = new Properties();
+        properties = new Properties();
+    }
+
+    private void createClient() {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS, "100");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC, "60");
@@ -96,7 +105,6 @@ public class MqttPahoClientTest {
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MessagingPropertyKeys.CHANNELID, "myChannelId");
-
         injector = Guice.createInjector(new MqttPahoModule(),
                                         new JoynrPropertiesModule(properties),
                                         new AbstractModule() {
@@ -127,13 +135,36 @@ public class MqttPahoClientTest {
     }
 
     @Test
-    public void mqttClientTest() throws Exception {
+    public void mqttClientTestWithEnabledMessageSizeCheck() throws Exception {
+        final int maxMessageSize = 100;
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, String.valueOf(maxMessageSize));
+        createClient();
         client.setMessageListener(mockReceiver);
-        String message = "test";
-        byte[] serializedMessage = message.getBytes(Charsets.UTF_8);
-        client.publishMessage(ownTopic.getTopic(), serializedMessage);
-        verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
-        client.shutdown();
+
+        byte[] shortSerializedMessage = new byte[maxMessageSize];
+        client.publishMessage(ownTopic.getTopic(), shortSerializedMessage);
+        verify(mockReceiver, timeout(100).times(1)).transmit(eq(shortSerializedMessage), any(FailureAction.class));
+
+        byte[] largeSerializedMessage = new byte[maxMessageSize + 1];
+        thrown.expect(JoynrMessageNotSentException.class);
+        thrown.expectMessage("MQTT Publish failed: maximum allowed message size of " + maxMessageSize
+                + " bytes exceeded, actual size is " + largeSerializedMessage.length + " bytes");
+        client.publishMessage(ownTopic.getTopic(), largeSerializedMessage);
     }
 
+    @Test
+    public void mqttClientTestWithDisabledMessageSizeCheck() throws Exception {
+        final int initialMessageSize = 100;
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
+        createClient();
+        client.setMessageListener(mockReceiver);
+
+        byte[] shortSerializedMessage = new byte[initialMessageSize];
+        client.publishMessage(ownTopic.getTopic(), shortSerializedMessage);
+        verify(mockReceiver, timeout(100).times(1)).transmit(eq(shortSerializedMessage), any(FailureAction.class));
+
+        byte[] largeSerializedMessage = new byte[initialMessageSize + 1];
+        client.publishMessage(ownTopic.getTopic(), largeSerializedMessage);
+        verify(mockReceiver, timeout(100).times(1)).transmit(eq(largeSerializedMessage), any(FailureAction.class));
+    }
 }

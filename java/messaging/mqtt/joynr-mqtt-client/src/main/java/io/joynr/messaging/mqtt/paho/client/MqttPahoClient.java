@@ -55,6 +55,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private int connectionTimeoutSec;
     private int timeToWaitMs;
     private int maxMsgsInflight;
+    private int maxMsgSizeBytes;
 
     private Set<String> subscribedTopics = new HashSet<>();
 
@@ -65,13 +66,15 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                           int keepAliveTimerSec,
                           int connectionTimeoutSec,
                           int timeToWaitMs,
-                          int maxMsgsInflight) throws MqttException {
+                          int maxMsgsInflight,
+                          int maxMsgSizeBytes) throws MqttException {
         this.mqttClient = mqttClient;
         this.reconnectSleepMs = reconnectSleepMS;
         this.keepAliveTimerSec = keepAliveTimerSec;
         this.connectionTimeoutSec = connectionTimeoutSec;
         this.timeToWaitMs = timeToWaitMs;
         this.maxMsgsInflight = maxMsgsInflight;
+        this.maxMsgSizeBytes = maxMsgSizeBytes;
     }
 
     @Override
@@ -206,6 +209,10 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
         if (messagingSkeleton == null) {
             throw new JoynrDelayMessageException("MQTT Publish failed: messagingSkeleton has not been set yet");
+        }
+        if (maxMsgSizeBytes != 0 && serializedMessage.length > maxMsgSizeBytes) {
+            throw new JoynrMessageNotSentException("MQTT Publish failed: maximum allowed message size of "
+                    + maxMsgSizeBytes + " bytes exceeded, actual size is " + serializedMessage.length + " bytes");
         }
         try {
             MqttMessage message = new MqttMessage();
