@@ -47,7 +47,7 @@ import joynr.system.RoutingTypes.MqttAddress;
  * Like {@link MqttMessagingSkeletonProvider}. It checks the property configured under
  * {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY} to see if
  * messages should be received via HTTP instead of MQTT. In this case, it returns an instance of
- * {@link NoOpMessagingSkeleton}. Otherwise it behaves like {@link MqttMessagingSkeletonProvider}.
+ * {@link NoOpMqttMessagingSkeleton}. Otherwise it behaves like {@link MqttMessagingSkeletonProvider}.
  */
 public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvider {
 
@@ -84,7 +84,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     @Override
     public IMessagingSkeleton get() {
         if (httpBridgeEnabled) {
-            return new NoOpMessagingSkeleton(mqttClientFactory);
+            return new NoOpMqttMessagingSkeleton(mqttClientFactory);
         } else {
             return super.get();
         }

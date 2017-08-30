@@ -31,13 +31,13 @@ import io.joynr.messaging.mqtt.MqttClientFactory;
  * for the MqttAddress type, we bind a dummy implementation in this module which simply does nothing (no operation -
  * NoOp).
  */
-public class NoOpMessagingSkeleton implements IMessagingSkeleton {
+public class NoOpMqttMessagingSkeleton implements IMessagingSkeleton {
 
     private MqttClientFactory mqttClientFactory;
     private JoynrMqttClient mqttClient;
 
     @Inject
-    public NoOpMessagingSkeleton(MqttClientFactory mqttClientFactory) {
+    public NoOpMqttMessagingSkeleton(MqttClientFactory mqttClientFactory) {
         this.mqttClientFactory = mqttClientFactory;
     }
 
