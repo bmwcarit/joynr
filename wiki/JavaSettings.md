@@ -270,7 +270,7 @@ Set the mqtt prefix to be prepended to multicast topics.
 ### `DISCOVERYDIRECTORYURL`
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
 service. To connect to the global capabilities directory the cluster controller creates an
-appropriate entry in the local capabilities directory.  
+appropriate entry in the local capabilities directory.
 If the capabilities directory is using MQTT as its primary transport, then the URL you set here
 is that of the MQTT broker configured for the capabilities directory. E.g.
 `tcp://mqttbroker:1883`.
@@ -595,10 +595,10 @@ it points to is available for reading at startup time of the application.
 
 The capabilities directory and domain access control directory have a special status, in
 that the system requires exactly one entry for each to be provisioned. The system will
-fail to start if either one is lacking or duplicate entries have been provisioned.  
+fail to start if either one is lacking or duplicate entries have been provisioned.
 If you want to change either one of those entries from the default, you don't have to
 do so using the JSON format. You can override the entries from the JSON by using the
-properties listed in the `ConfigurableMessagingSettings` section above.  
+properties listed in the `ConfigurableMessagingSettings` section above.
 Generally you will simply specifiy one of `DISCOVERYDIRECTORYURL` and/or
 `DOMAINACCESSCONTROLLERURL`, although it is also possible to override all other parts
 of the entry if necessary. Specifying an incomplete entry by, e.g., setting the
