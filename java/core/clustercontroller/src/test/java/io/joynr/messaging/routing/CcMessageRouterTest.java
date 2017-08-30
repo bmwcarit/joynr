@@ -258,7 +258,7 @@ public class CcMessageRouterTest {
         verify(addressManager).getAddresses(immutableMessage);
     }
 
-    private ImmutableMessage testRetryWith1msDelay(int ttlMs, MessageRouter messageRouter) throws Exception {
+    private ImmutableMessage retryRoutingWith1msDelay(MessageRouter messageRouter, int ttlMs) throws Exception {
         Mockito.doThrow(new JoynrDelayMessageException(1, "test"))
                .when(messagingStubMock)
                .transmit(any(ImmutableMessage.class), any(FailureAction.class));
@@ -286,7 +286,7 @@ public class CcMessageRouterTest {
         Injector injector2 = Guice.createInjector(testMaxRetryCountModule);
         MessageRouter messageRouterWithMaxRetryCount = injector2.getInstance(MessageRouter.class);
 
-        ImmutableMessage immutableMessage = testRetryWith1msDelay(100000000, messageRouterWithMaxRetryCount);
+        ImmutableMessage immutableMessage = retryRoutingWith1msDelay(messageRouterWithMaxRetryCount, 100000000);
 
         verify(messagingStubMock, times((int) routingMaxRetryCount + 1)).transmit(eq(immutableMessage),
                                                                                   any(FailureAction.class));
@@ -294,7 +294,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testRetryWithoutMaxRetryCount() throws Exception {
-        ImmutableMessage immutableMessage = testRetryWith1msDelay(200, messageRouter);
+        ImmutableMessage immutableMessage = retryRoutingWith1msDelay(messageRouter, 200);
 
         verify(messagingStubMock, Mockito.atLeast(10)).transmit(eq(immutableMessage), any(FailureAction.class));
     }
