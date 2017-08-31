@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.google.common.base.Charsets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -127,6 +126,7 @@ public class MqttPahoClientTest {
         client = mqttClientFactory.create();
         client.start();
         client.subscribe(ownTopic.getTopic());
+        client.setMessageListener(mockReceiver);
     }
 
     @After
@@ -139,7 +139,6 @@ public class MqttPahoClientTest {
         final int maxMessageSize = 100;
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, String.valueOf(maxMessageSize));
         createClient();
-        client.setMessageListener(mockReceiver);
 
         byte[] shortSerializedMessage = new byte[maxMessageSize];
         client.publishMessage(ownTopic.getTopic(), shortSerializedMessage);
@@ -157,7 +156,6 @@ public class MqttPahoClientTest {
         final int initialMessageSize = 100;
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
         createClient();
-        client.setMessageListener(mockReceiver);
 
         byte[] shortSerializedMessage = new byte[initialMessageSize];
         client.publishMessage(ownTopic.getTopic(), shortSerializedMessage);
