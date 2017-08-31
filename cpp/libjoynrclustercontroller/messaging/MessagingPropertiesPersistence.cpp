@@ -28,44 +28,34 @@ MessagingPropertiesPersistence::MessagingPropertiesPersistence(const std::string
 {
 }
 
-std::string MessagingPropertiesPersistence::getChannelId()
+std::string MessagingPropertiesPersistence::getIdFromPersistence(const std::string& key)
 {
     // Read and write to the persistence file using a Settings object
     Settings settings(filename);
 
-    std::string channelId;
+    std::string id;
 
-    // Get the persisted channel id if one exists
-    if (settings.contains(CHANNEL_ID_KEY())) {
-        channelId = settings.get<std::string>(CHANNEL_ID_KEY());
+    // Get the persisted specified id if one exists
+    if (settings.contains(key)) {
+        id = settings.get<std::string>(key);
     } else {
-        // Create and persist a channelId
-        channelId = util::createUuid();
-        settings.set(CHANNEL_ID_KEY(), channelId);
+        // Create a new persisted id for key
+        id = util::createUuid();
+        settings.set(key, id);
         settings.sync();
     }
 
-    return channelId;
+    return id;
+}
+
+std::string MessagingPropertiesPersistence::getChannelId()
+{
+    return getIdFromPersistence(CHANNEL_ID_KEY());
 }
 
 std::string MessagingPropertiesPersistence::getReceiverId()
 {
-    // Read and write to the persistence file using a Settings object
-    Settings settings(filename);
-
-    std::string receiverId;
-
-    // Get the persisted receiver id if one exists
-    if (settings.contains(RECEIVER_ID_KEY())) {
-        receiverId = settings.get<std::string>(RECEIVER_ID_KEY());
-    } else {
-        // Create and persist a receiverId
-        receiverId = util::createUuid();
-        settings.set(RECEIVER_ID_KEY(), receiverId);
-        settings.sync();
-    }
-
-    return receiverId;
+    return getIdFromPersistence(RECEIVER_ID_KEY());
 }
 
 const std::string& MessagingPropertiesPersistence::CHANNEL_ID_KEY()
