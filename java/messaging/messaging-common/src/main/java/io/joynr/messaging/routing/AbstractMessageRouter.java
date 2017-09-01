@@ -386,7 +386,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
 
                     Set<Address> addresses = getAddresses(message);
                     if (addresses.isEmpty()) {
-                        throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
+                        throw new JoynrMessageNotSentException("Failed to send Message: No route for given participantId: "
                                 + message.getRecipient());
                     }
                     // If multiple stub calls for a multicast to multiple destination addresses fail, the failure
