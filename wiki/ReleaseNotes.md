@@ -15,6 +15,10 @@
   configurable. See default-messaging.settings for more details.
 * **[C++]** The MQTT maximum message size is now configurable using the new
    setting mqtt-max-message-size-bytes. See default-messaging.settings for more details.
+* **[Java, JS]** Changed default values for the following properties:
+  * Discovery expiry interval set to 6 weeks
+  * Discovery timeout interval set to 10 minutes
+  * Discovery retry interval set to 10 seconds
 
 # joynr 0.28.1
 
