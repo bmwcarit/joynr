@@ -453,7 +453,8 @@ void JoynrClusterControllerRuntime::init()
                             "The mqtt message sender supplied is NULL, creating the default "
                             "mqtt MessageSender");
 
-            mqttMessageSender = std::make_shared<MqttSender>(mosquittoConnection);
+            mqttMessageSender =
+                    std::make_shared<MqttSender>(mosquittoConnection, messagingSettings);
         }
 
         messagingStubFactory->registerStubFactory(
