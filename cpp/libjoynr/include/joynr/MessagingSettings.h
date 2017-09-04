@@ -68,6 +68,9 @@ public:
     static const std::string& SETTING_HTTP_CONNECT_TIMEOUT_MS();
     static const std::string& SETTING_BROKER_TIMEOUT_MS();
 
+    static const std::string& SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS();
+    static const std::string& SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS();
+
     /**
      * @brief SETTING_MAXIMUM_TTL_MS The key used in settings to identifiy the maximum allowed value
      * of the time-to-live joynr message header.
@@ -90,11 +93,15 @@ public:
     static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const std::string& DEFAULT_PERSISTENCE_FILENAME();
     static std::int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
+    static std::int64_t DEFAULT_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS();
     static std::int64_t DEFAULT_HTTP_CONNECT_TIMEOUT_MS();
     static std::int64_t DEFAULT_BROKER_TIMEOUT_MS();
     static std::int64_t DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
+    static std::int64_t DEFAULT_DISCOVERY_DEFAULT_TIMEOUT_MS();
+    static std::int64_t DEFAULT_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS();
     static std::int64_t DEFAULT_SEND_MESSAGE_MAX_TTL();
     static std::uint64_t DEFAULT_TTL_UPLIFT_MS();
+
     /**
      * @brief DEFAULT_MAXIMUM_TTL_MS
      * @return the default value for maximum message TTL in milliseconds.
@@ -177,6 +184,11 @@ public:
     void setSendMsgMaxTtl(std::int64_t ttl_ms);
     void setTtlUpliftMs(std::uint64_t ttlUpliftMs);
     std::uint64_t getTtlUpliftMs() const;
+
+    std::int64_t getDiscoveryDefaultTimeoutMs() const;
+    void setDiscoveryDefaultTimeoutMs(std::int64_t discoveryDefaultTimeoutMs);
+    std::int64_t getDiscoveryDefaultRetryIntervalMs() const;
+    void setDiscoveryDefaultRetryIntervalMs(std::int64_t discoveryDefaultRetryIntervalMs);
 
     bool contains(const std::string& key) const;
 

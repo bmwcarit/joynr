@@ -271,10 +271,40 @@ const std::string& MessagingSettings::SETTING_BROKER_TIMEOUT_MS()
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS()
+{
+    static const std::string value("messaging/discovery-default-timeout-ms");
+    return value;
+}
+
+const std::string& MessagingSettings::SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS()
+{
+    static const std::string value("messaging/discovery-default-retry-interval-ms");
+    return value;
+}
+
 std::int64_t MessagingSettings::DEFAULT_BROKER_TIMEOUT_MS()
 {
     // 20 seconds
     return (20 * 1000);
+}
+
+std::int64_t MessagingSettings::DEFAULT_DISCOVERY_DEFAULT_TIMEOUT_MS()
+{
+    // 10 minutes
+    return 10 * 60 * 1000;
+}
+
+std::int64_t MessagingSettings::DEFAULT_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS()
+{
+    // 10 seconds
+    return 10 * 1000;
+}
+
+std::int64_t MessagingSettings::DEFAULT_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS()
+{
+    // 6 weeks
+    return 6 * 7 * 24 * 60 * 60 * 1000L;
 }
 
 const std::string& MessagingSettings::SETTING_MAXIMUM_TTL_MS()
@@ -569,6 +599,27 @@ std::uint64_t MessagingSettings::getTtlUpliftMs() const
     return settings.get<std::uint64_t>(SETTING_TTL_UPLIFT_MS());
 }
 
+std::int64_t MessagingSettings::getDiscoveryDefaultTimeoutMs() const
+{
+    return settings.get<std::int64_t>(SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS());
+}
+
+void MessagingSettings::setDiscoveryDefaultTimeoutMs(std::int64_t discoveryDefaultTimeoutMs)
+{
+    settings.set(SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS(), discoveryDefaultTimeoutMs);
+}
+
+std::int64_t MessagingSettings::getDiscoveryDefaultRetryIntervalMs() const
+{
+    return settings.get<std::int64_t>(SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS());
+}
+
+void MessagingSettings::setDiscoveryDefaultRetryIntervalMs(
+        std::int64_t discoveryDefaultRetryIntervalMs)
+{
+    settings.set(SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS(), discoveryDefaultRetryIntervalMs);
+}
+
 bool MessagingSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
@@ -637,6 +688,19 @@ void MessagingSettings::checkSettings()
     }
     if (!settings.contains(SETTING_TTL_UPLIFT_MS())) {
         settings.set(SETTING_TTL_UPLIFT_MS(), DEFAULT_TTL_UPLIFT_MS());
+    }
+
+    if (!settings.contains(SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS())) {
+        settings.set(
+                SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS(), DEFAULT_DISCOVERY_DEFAULT_TIMEOUT_MS());
+    }
+    if (!settings.contains(SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS())) {
+        settings.set(SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS(),
+                     DEFAULT_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS());
+    }
+    if (!settings.contains(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS())) {
+        settings.set(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS(),
+                     DEFAULT_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS());
     }
 }
 
