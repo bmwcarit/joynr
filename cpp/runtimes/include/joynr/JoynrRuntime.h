@@ -229,7 +229,7 @@ public:
                                                           domain,
                                                           dispatcherAddress,
                                                           getMessageRouter(),
-                                                          messagingSettings.getMaximumTtlMs());
+                                                          messagingSettings);
     }
 
     /**

@@ -177,7 +177,7 @@ public:
                                                           domain,
                                                           dispatcherAddress,
                                                           messageRouter,
-                                                          maximumTtlMs);
+                                                          messagingSettings);
     }
 
     std::shared_ptr<IMessageRouter> getMessageRouter()
