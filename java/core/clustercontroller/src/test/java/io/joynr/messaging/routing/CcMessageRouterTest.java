@@ -132,7 +132,6 @@ public class CcMessageRouterTest {
 
             private Long msgRetryIntervalMs = 10L;
             private int maximumParallelSends = 1;
-            private int maxMessagesInQueue = 10;
             private long routingTableGracePeriodMs = 30000;
             private long routingTableCleanupIntervalMs = 60000;
 
@@ -151,8 +150,6 @@ public class CcMessageRouterTest {
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS))
                                 .toInstance(routingTableCleanupIntervalMs);
 
-                bind(Integer.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGES_INQUEUE))
-                                   .toInstance(maxMessagesInQueue);
                 bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
                               .to(false);
 

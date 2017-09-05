@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -73,7 +74,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     private AddressManager addressManager;
     protected final MulticastReceiverRegistry multicastReceiverRegistry;
 
-    private BoundedDelayQueue<DelayableImmutableMessage> messageQueue;
+    private DelayQueue<DelayableImmutableMessage> messageQueue;
 
     private List<MessageProcessedListener> messageProcessedListeners;
     private List<ScheduledFuture<?>> workerFutures;
@@ -91,7 +92,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                                  MessagingSkeletonFactory messagingSkeletonFactory,
                                  AddressManager addressManager,
                                  MulticastReceiverRegistry multicastReceiverRegistry,
-                                 BoundedDelayQueue<DelayableImmutableMessage> messageQueue,
+                                 DelayQueue<DelayableImmutableMessage> messageQueue,
                                  ShutdownNotifier shutdownNotifier) {
         // CHECKSTYLE:ON
         this.routingTable = routingTable;
@@ -275,12 +276,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                 logger.debug("Retry {}/{} sending message {}", retriesCount, maxRetryCount, message);
             }
         }
-        try {
-            messageQueue.putBounded(delayableMessage);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new JoynrShutdownException("INTERRUPTED. Shutting down");
-        }
+        messageQueue.put(delayableMessage);
     }
 
     private void checkExpiry(final ImmutableMessage message) {
