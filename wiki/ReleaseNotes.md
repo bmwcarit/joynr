@@ -11,6 +11,8 @@
   See the [Java Configuration Reference](JavaSettings.md) for more details.
 * **[Js]** Made default discoveryQos configurable via provisioning. See the
   [Javascript Configuration Reference](JavaScriptTutorial.md) for more details.
+* **[C++]** Made discovery-default-timeout-ms and discovery-default-retry-interval-ms
+  configurable. See default-messaging.settings for more details.
 
 # joynr 0.28.1
 
