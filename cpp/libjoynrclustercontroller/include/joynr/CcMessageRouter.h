@@ -75,8 +75,7 @@ class CcMessageNotificationProvider;
   */
 
 class JOYNR_EXPORT CcMessageRouter : public joynr::AbstractMessageRouter,
-                                     public joynr::system::RoutingAbstractProvider,
-                                     public std::enable_shared_from_this<CcMessageRouter>
+                                     public joynr::system::RoutingAbstractProvider
 {
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored

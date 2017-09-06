@@ -114,6 +114,7 @@ void LibJoynrRuntime::init(
                                                     std::move(messagingStubFactory),
                                                     singleThreadIOService->getIOService(),
                                                     std::move(addressCalculator));
+    libJoynrMessageRouter->init();
 
     libJoynrMessageRouter->loadRoutingTable(
             libjoynrSettings->getMessageRouterPersistenceFilename());

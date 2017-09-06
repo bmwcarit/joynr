@@ -86,7 +86,7 @@ public:
         mockMessageSender(new MockTransportMessageSender()),
         messagingStubFactory(std::make_shared<MessagingStubFactory>()),
         singleThreadedIOService(),
-        messageRouter(nullptr)
+        messageRouter()
     {
         const std::string globalCCAddress("globalAddress");
 
@@ -97,6 +97,7 @@ public:
                                                           singleThreadedIOService.getIOService(),
                                                           nullptr,
                                                           globalCCAddress);
+        messageRouter->init();
         qos.setTtl(10000);
     }
 

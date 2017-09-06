@@ -54,7 +54,9 @@ AbstractMessageRouter::AbstractMessageRouter(
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
-        : routingTable(),
+        : IMessageRouter(),
+          enable_shared_from_this<AbstractMessageRouter>(),
+          routingTable(),
           routingTableLock(),
           multicastReceiverDirectory(),
           messagingStubFactory(std::move(messagingStubFactory)),
@@ -67,8 +69,6 @@ AbstractMessageRouter::AbstractMessageRouter(
           messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000)),
           transportStatuses(std::move(transportStatuses))
 {
-    activateMessageCleanerTimer();
-    registerTransportStatusCallbacks();
 }
 
 AbstractMessageRouter::~AbstractMessageRouter()
@@ -76,6 +76,12 @@ AbstractMessageRouter::~AbstractMessageRouter()
     // make sure this gets called in any case,
     // even if we might have called shutdown before manually
     shutdown();
+}
+
+void AbstractMessageRouter::init()
+{
+    activateMessageCleanerTimer();
+    registerTransportStatusCallbacks();
 }
 
 void AbstractMessageRouter::shutdown()
@@ -305,18 +311,26 @@ void AbstractMessageRouter::scheduleMessage(
 void AbstractMessageRouter::activateMessageCleanerTimer()
 {
     messageQueueCleanerTimer.expiresFromNow(messageQueueCleanerTimerPeriodMs);
-    messageQueueCleanerTimer.asyncWait(std::bind(
-            &AbstractMessageRouter::onMessageCleanerTimerExpired, this, std::placeholders::_1));
+    messageQueueCleanerTimer.asyncWait([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
+            const boost::system::error_code& errorCode) {
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            thisSharedPtr->onMessageCleanerTimerExpired(thisSharedPtr, errorCode);
+        }
+    });
 }
 
 void AbstractMessageRouter::registerTransportStatusCallbacks()
 {
     for (auto& transportStatus : transportStatuses) {
-        transportStatus->setAvailabilityChangedCallback([this, transportStatus](bool isAvailable) {
-            if (isAvailable) {
-                rescheduleQueuedMessagesForTransport(transportStatus);
-            }
-        });
+        transportStatus->setAvailabilityChangedCallback(
+                [ thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()), transportStatus ](
+                        bool isAvailable) {
+                    if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                        if (isAvailable) {
+                            thisSharedPtr->rescheduleQueuedMessagesForTransport(transportStatus);
+                        }
+                    }
+                });
     }
 }
 
@@ -337,11 +351,13 @@ void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
     }
 }
 
-void AbstractMessageRouter::onMessageCleanerTimerExpired(const boost::system::error_code& errorCode)
+void AbstractMessageRouter::onMessageCleanerTimerExpired(
+        std::shared_ptr<AbstractMessageRouter> thisSharedPtr,
+        const boost::system::error_code& errorCode)
 {
     if (!errorCode) {
-        messageQueue->removeOutdatedMessages();
-        activateMessageCleanerTimer();
+        thisSharedPtr->messageQueue->removeOutdatedMessages();
+        thisSharedPtr->activateMessageCleanerTimer();
     } else if (errorCode != boost::system::errc::operation_canceled) {
         JOYNR_LOG_ERROR(logger,
                         "Failed to schedule timer to remove outdated messages: {}",

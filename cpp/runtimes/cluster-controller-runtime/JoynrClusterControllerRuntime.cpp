@@ -340,6 +340,7 @@ void JoynrClusterControllerRuntime::init()
                                                         std::move(addressCalculator),
                                                         globalClusterControllerAddress,
                                                         std::move(transportStatuses));
+    ccMessageRouter->init();
     ccMessageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
     ccMessageRouter->loadMulticastReceiverDirectory(
             clusterControllerSettings.getMulticastReceiverDirectoryPersistenceFilename());
