@@ -42,11 +42,6 @@ public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
     }
 
     @Override
-    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
-        throw new IllegalStateException("MqttMessagingSkeleton requires additional arguments" + " (Mqtt message id and Mqtt Qos).");
-    }
-
-    @Override
     public void transmit(byte[] serializedMessage, int mqttId, int mqttQos, FailureAction failureAction) {
         mqttClient.sendMqttAck(mqttId, mqttQos);
     }

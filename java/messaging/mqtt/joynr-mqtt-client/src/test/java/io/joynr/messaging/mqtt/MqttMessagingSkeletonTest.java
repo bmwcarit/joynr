@@ -198,11 +198,6 @@ public class MqttMessagingSkeletonTest {
         Assert.assertArrayEquals(message.getSerializedMessage(), argCaptor.getValue().getSerializedMessage());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testTransmitMethodFromIMessagingSkeletonThrows() throws Exception {
-        subject.transmit(createTestMessage().getSerializedMessage(), failIfCalledAction);
-    }
-
     @Test
     public void testClientNotifiedWhenMessageIsProcessed() throws Exception {
         final int mqttMessageId = -753;

@@ -51,8 +51,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.SuccessAction;
+import io.joynr.messaging.websocket.IWebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -70,7 +70,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
 
     public ObjectMapper objectMapper;
 
-    private IMessagingSkeleton messageListener;
+    private IWebSocketMessagingSkeleton messageListener;
 
     private boolean shutdown = false;
 
@@ -115,6 +115,8 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
 
         ServletHolder holderEvents = new ServletHolder("ws-events", new WebSocketServlet() {
 
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void configure(WebSocketServletFactory webSocketServletFactory) {
                 webSocketServletFactory.getPolicy().setMaxBinaryMessageSize(maxMessageSize);
@@ -142,7 +144,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
     }
 
     @Override
-    public void setMessageListener(IMessagingSkeleton messageListener) {
+    public void setMessageListener(IWebSocketMessagingSkeleton messageListener) {
         this.messageListener = messageListener;
     }
 

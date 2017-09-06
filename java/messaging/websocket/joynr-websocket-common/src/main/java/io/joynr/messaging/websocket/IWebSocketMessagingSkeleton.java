@@ -16,11 +16,12 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.messaging;
+package io.joynr.messaging.websocket;
 
-public interface IMessagingSkeleton {
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.IMessagingSkeleton;
 
-    void init();
+public interface IWebSocketMessagingSkeleton extends IMessagingSkeleton {
 
-    void shutdown();
+    void transmit(byte[] serializedMessage, FailureAction failureAction);
 }

@@ -218,12 +218,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     }
 
     @Override
-    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
-        throw new IllegalStateException("MqttMessagingSkeleton requires additional arguments"
-                + " (Mqtt message id and Mqtt Qos).");
-    }
-
-    @Override
     public void transmit(byte[] serializedMessage, int mqttId, int mqttQos, FailureAction failureAction) {
         try {
             HashMap<String, Serializable> context = new HashMap<String, Serializable>();
