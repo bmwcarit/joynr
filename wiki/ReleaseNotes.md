@@ -13,6 +13,8 @@
   [Javascript Configuration Reference](JavaScriptTutorial.md) for more details.
 * **[C++]** Made discovery-default-timeout-ms and discovery-default-retry-interval-ms
   configurable. See default-messaging.settings for more details.
+* **[C++]** The MQTT maximum message size is now configurable using the new
+   setting mqtt-max-message-size-bytes. See default-messaging.settings for more details.
 
 # joynr 0.28.1
 
