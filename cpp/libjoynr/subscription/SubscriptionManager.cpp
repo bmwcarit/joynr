@@ -77,7 +77,9 @@ INIT_LOGGER(SubscriptionManager);
 
 SubscriptionManager::SubscriptionManager(boost::asio::io_service& ioService,
                                          std::shared_ptr<IMessageRouter> messageRouter)
-        : subscriptions(),
+        : ISubscriptionManager(),
+          enable_shared_from_this<SubscriptionManager>(),
+          subscriptions(),
           multicastSubscribers(),
           multicastSubscribersMutex(),
           messageRouter(messageRouter),
@@ -152,7 +154,7 @@ void SubscriptionManager::registerSubscription(
                                                                 periodicPublicationInterval,
                                                                 subscriptionId,
                                                                 subscription,
-                                                                *this,
+                                                                shared_from_this(),
                                                                 alertAfterInterval),
                     std::chrono::milliseconds(alertAfterInterval));
         } else if (subscriptionExpiryDateMs != SubscriptionQos::NO_EXPIRY_DATE()) {
@@ -161,7 +163,7 @@ void SubscriptionManager::registerSubscription(
                             std::chrono::system_clock::now().time_since_epoch()).count();
 
             subscription->subscriptionEndRunnableHandle = missedPublicationScheduler->schedule(
-                    std::make_shared<SubscriptionEndRunnable>(subscriptionId, *this),
+                    std::make_shared<SubscriptionEndRunnable>(subscriptionId, shared_from_this()),
                     std::chrono::milliseconds(subscriptionExpiryDateMs - now));
         }
     }
@@ -456,7 +458,7 @@ SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
         std::int64_t expectedIntervalMSecs,
         const std::string& subscriptionId,
         std::shared_ptr<Subscription> subscription,
-        SubscriptionManager& subscriptionManager,
+        std::weak_ptr<SubscriptionManager> subscriptionManager,
         std::int64_t alertAfterInterval)
         : Runnable(true),
           ObjectWithDecayTime(expiryDate),
@@ -494,16 +496,24 @@ void SubscriptionManager::MissedPublicationRunnable::run()
             listener->onError(error);
             delay = alertAfterInterval - timeSinceLastExpectedPublication(timeSinceLastPublication);
         }
-        JOYNR_LOG_TRACE(logger, "Rescheduling MissedPublicationRunnable with delay: {}", delay);
-        subscription->missedPublicationRunnableHandle =
-                subscriptionManager.missedPublicationScheduler->schedule(
-                        std::make_shared<MissedPublicationRunnable>(decayTime,
-                                                                    expectedIntervalMSecs,
-                                                                    subscriptionId,
-                                                                    subscription,
-                                                                    subscriptionManager,
-                                                                    alertAfterInterval),
-                        std::chrono::milliseconds(delay));
+
+        if (auto subscriptionManagerSharedPtr = subscriptionManager.lock()) {
+            JOYNR_LOG_TRACE(logger, "Rescheduling MissedPublicationRunnable with delay: {}", delay);
+            subscription->missedPublicationRunnableHandle =
+                    subscriptionManagerSharedPtr->missedPublicationScheduler->schedule(
+                            std::make_shared<MissedPublicationRunnable>(decayTime,
+                                                                        expectedIntervalMSecs,
+                                                                        subscriptionId,
+                                                                        subscription,
+                                                                        subscriptionManager,
+                                                                        alertAfterInterval),
+                            std::chrono::milliseconds(delay));
+        } else {
+            JOYNR_LOG_ERROR(logger,
+                            "Error: Failed to rescheduling MissedPublicationRunnable with delay: "
+                            "{} because SubscriptionManager is not available",
+                            delay);
+        }
     } else {
         JOYNR_LOG_TRACE(logger,
                         "Publication expired / interrupted. Expiring on subscription id={}",
@@ -521,7 +531,7 @@ INIT_LOGGER(SubscriptionManager::SubscriptionEndRunnable);
 
 SubscriptionManager::SubscriptionEndRunnable::SubscriptionEndRunnable(
         const std::string& subscriptionId,
-        SubscriptionManager& subscriptionManager)
+        std::weak_ptr<SubscriptionManager> subscriptionManager)
         : Runnable(true), subscriptionId(subscriptionId), subscriptionManager(subscriptionManager)
 {
 }
@@ -532,12 +542,19 @@ void SubscriptionManager::SubscriptionEndRunnable::shutdown()
 
 void SubscriptionManager::SubscriptionEndRunnable::run()
 {
-    JOYNR_LOG_TRACE(
-            logger, "Running SubscriptionEndRunnable for subscription id= {}", subscriptionId);
-    JOYNR_LOG_TRACE(logger,
-                    "Publication expired / interrupted. Expiring on subscription id={}",
-                    subscriptionId);
-    subscriptionManager.unregisterSubscription(subscriptionId);
+    if (auto subscriptionManagerSharedPtr = subscriptionManager.lock()) {
+        JOYNR_LOG_TRACE(
+                logger, "Running SubscriptionEndRunnable for subscription id= {}", subscriptionId);
+        JOYNR_LOG_TRACE(logger,
+                        "Publication expired / interrupted. Expiring on subscription id={}",
+                        subscriptionId);
+        subscriptionManagerSharedPtr->unregisterSubscription(subscriptionId);
+    } else {
+        JOYNR_LOG_ERROR(logger,
+                        "Error running SubscriptionEndRunnable for subscription id= {} because "
+                        "subscriptionManager is not available",
+                        subscriptionId);
+    }
 }
 
 } // namespace joynr
