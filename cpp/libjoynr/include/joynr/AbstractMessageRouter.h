@@ -189,7 +189,7 @@ public:
     MessageRunnable(std::shared_ptr<ImmutableMessage> message,
                     std::shared_ptr<IMessagingStub> messagingStub,
                     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
-                    AbstractMessageRouter& messageRouter,
+                    std::weak_ptr<AbstractMessageRouter> messageRouter,
                     std::uint32_t tryCount);
     void shutdown() override;
     void run() override;
@@ -198,7 +198,7 @@ private:
     std::shared_ptr<ImmutableMessage> message;
     std::shared_ptr<IMessagingStub> messagingStub;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
-    AbstractMessageRouter& messageRouter;
+    std::weak_ptr<AbstractMessageRouter> messageRouter;
     std::uint32_t tryCount;
 
     ADD_LOGGER(MessageRunnable);

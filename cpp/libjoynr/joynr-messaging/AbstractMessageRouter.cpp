@@ -256,10 +256,12 @@ void AbstractMessageRouter::sendMessages(
 
         try {
             const std::uint32_t tryCount = 0;
-            messageScheduler.schedule(
-                    new MessageRunnable(
-                            item->getContent(), std::move(messagingStub), address, *this, tryCount),
-                    std::chrono::milliseconds(0));
+            messageScheduler.schedule(new MessageRunnable(item->getContent(),
+                                                          std::move(messagingStub),
+                                                          address,
+                                                          shared_from_this(),
+                                                          tryCount),
+                                      std::chrono::milliseconds(0));
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Message with Id {} could not be sent. Error: {}",
@@ -293,7 +295,7 @@ void AbstractMessageRouter::scheduleMessage(
         messageScheduler.schedule(new MessageRunnable(std::move(message),
                                                       std::move(stub),
                                                       std::move(destAddress),
-                                                      *this,
+                                                      shared_from_this(),
                                                       tryCount),
                                   delay);
     } else {
@@ -431,7 +433,7 @@ MessageRunnable::MessageRunnable(
         std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<IMessagingStub> messagingStub,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
-        AbstractMessageRouter& messageRouter,
+        std::weak_ptr<AbstractMessageRouter> messageRouter,
         std::uint32_t tryCount)
         : Runnable(true),
           ObjectWithDecayTime(message->getExpiryDate()),
@@ -458,13 +460,22 @@ void MessageRunnable::run()
                                 const_cast<exceptions::JoynrRuntimeException&>(e));
                 std::chrono::milliseconds delay = delayException.getDelayMs();
 
-                JOYNR_LOG_TRACE(logger,
-                                "Rescheduling message after error: messageId: {}, new delay {}ms, "
-                                "reason: {}",
-                                message->getId(),
-                                delay.count(),
-                                e.getMessage());
-                messageRouter.scheduleMessage(message, destAddress, tryCount + 1, delay);
+                if (auto messageRouterSharedPtr = messageRouter.lock()) {
+                    JOYNR_LOG_TRACE(
+                            logger,
+                            "Rescheduling message after error: messageId: {}, new delay {}ms, "
+                            "reason: {}",
+                            message->getId(),
+                            delay.count(),
+                            e.getMessage());
+                    messageRouterSharedPtr->scheduleMessage(
+                            message, destAddress, tryCount + 1, delay);
+                } else {
+                    JOYNR_LOG_ERROR(logger,
+                                    "Message with ID {} could not be sent! reason: messageRouter "
+                                    "not available",
+                                    message->getId());
+                }
             } catch (const std::bad_cast&) {
                 JOYNR_LOG_ERROR(logger,
                                 "Message with ID {} could not be sent! reason: {}",
