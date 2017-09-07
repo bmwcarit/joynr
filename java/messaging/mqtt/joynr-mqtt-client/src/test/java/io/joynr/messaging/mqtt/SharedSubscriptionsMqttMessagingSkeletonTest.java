@@ -50,6 +50,7 @@ import joynr.system.RoutingTypes.MqttAddress;
 @RunWith(MockitoJUnitRunner.class)
 public class SharedSubscriptionsMqttMessagingSkeletonTest {
 
+    private final int maxMqttMessagesInQueue = 20;
     private final int repeatedMqttMessageIgnorePeriodMs = 1000;
 
     @Mock
@@ -87,6 +88,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         when(replyToAddress.getTopic()).thenReturn(replyToAddressTopic);
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                repeatedMqttMessageIgnorePeriodMs,
+                                                               maxMqttMessagesInQueue,
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
@@ -103,6 +105,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     public void testChannelIdStrippedOfNonAlphaChars() {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                repeatedMqttMessageIgnorePeriodMs,
+                                                               maxMqttMessagesInQueue,
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
@@ -118,6 +121,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     public void testIllegalChannelId() {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                repeatedMqttMessageIgnorePeriodMs,
+                                                               maxMqttMessagesInQueue,
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,

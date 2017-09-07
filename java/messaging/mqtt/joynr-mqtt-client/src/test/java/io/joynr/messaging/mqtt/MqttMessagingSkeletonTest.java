@@ -64,6 +64,7 @@ import com.google.common.collect.Sets;
 public class MqttMessagingSkeletonTest {
 
     private final int repeatedMqttMessageIgnorePeriodMs = 1000;
+    private final int maxMqttMessagesInQueue = 20;
     private MqttMessagingSkeleton subject;
 
     @Mock
@@ -101,6 +102,7 @@ public class MqttMessagingSkeletonTest {
     public void setup() {
         subject = new MqttMessagingSkeleton(ownAddress,
                                             repeatedMqttMessageIgnorePeriodMs,
+                                            maxMqttMessagesInQueue,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
@@ -162,6 +164,7 @@ public class MqttMessagingSkeletonTest {
         when(preprocessor.process(any(byte[].class), anyMap())).then(returnsFirstArg());
         subject = new MqttMessagingSkeleton(ownAddress,
                                             repeatedMqttMessageIgnorePeriodMs,
+                                            maxMqttMessagesInQueue,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
@@ -186,6 +189,7 @@ public class MqttMessagingSkeletonTest {
 
         subject = new MqttMessagingSkeleton(ownAddress,
                                             repeatedMqttMessageIgnorePeriodMs,
+                                            maxMqttMessagesInQueue,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,

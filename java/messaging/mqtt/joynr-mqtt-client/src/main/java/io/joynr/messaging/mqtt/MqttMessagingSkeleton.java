@@ -19,6 +19,7 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
 
 import java.util.concurrent.ConcurrentMap;
@@ -54,6 +55,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
     private final int repeatedMqttMessageIgnorePeriodMs;
+    private final int maxMqttMessagesInQueue;
     private MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
     private MqttClientFactory mqttClientFactory;
@@ -127,8 +129,10 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     }
 
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                  @Named(PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS) int repeatedMqttMessageIgnorePeriodMs,
+                                 @Named(PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE) int maxMqttMessagesInQueue,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
@@ -136,6 +140,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
                                  Set<JoynrMessageProcessor> messageProcessors) {
         this.ownAddress = ownAddress;
         this.repeatedMqttMessageIgnorePeriodMs = repeatedMqttMessageIgnorePeriodMs;
+        this.maxMqttMessagesInQueue = maxMqttMessagesInQueue;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
@@ -233,6 +238,14 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             }
 
             synchronized (processingMessages) {
+                // The number of not yet processed (queued) Mqtt messages is the difference between
+                // processingMessages.size() and the number of messages which are already processed but still
+                // not removed from processingMessages.
+                if (processingMessages.size() - processedMessagesQueue.size() >= maxMqttMessagesInQueue) {
+                    LOG.warn("Maximum number of Mqtt messages in message queue reached. "
+                            + "Incoming Mqtt message with id {} cannot be handled now.", message.getId());
+                    return;
+                }
                 if (processingMessages.containsKey(message.getId())) {
                     LOG.debug("Dropping already received message with id {}", message.getId());
                     return;
