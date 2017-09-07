@@ -140,15 +140,8 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
 
     // register globally
     if (isGloballyVisible) {
-        types::GlobalDiscoveryEntry globalDiscoveryEntry(discoveryEntry.getProviderVersion(),
-                                                         discoveryEntry.getDomain(),
-                                                         discoveryEntry.getInterfaceName(),
-                                                         discoveryEntry.getParticipantId(),
-                                                         discoveryEntry.getQos(),
-                                                         discoveryEntry.getLastSeenDateMs(),
-                                                         discoveryEntry.getExpiryDateMs(),
-                                                         discoveryEntry.getPublicKeyId(),
-                                                         localAddress);
+        types::GlobalDiscoveryEntry globalDiscoveryEntry = toGlobalDiscoveryEntry(discoveryEntry);
+
         if (std::find(registeredGlobalCapabilities.begin(),
                       registeredGlobalCapabilities.end(),
                       globalDiscoveryEntry) == registeredGlobalCapabilities.end()) {
@@ -179,6 +172,20 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
         callPendingLookups(
                 InterfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()));
     }
+}
+
+types::GlobalDiscoveryEntry LocalCapabilitiesDirectory::toGlobalDiscoveryEntry(
+        const types::DiscoveryEntry& discoveryEntry) const
+{
+    return types::GlobalDiscoveryEntry(discoveryEntry.getProviderVersion(),
+                                       discoveryEntry.getDomain(),
+                                       discoveryEntry.getInterfaceName(),
+                                       discoveryEntry.getParticipantId(),
+                                       discoveryEntry.getQos(),
+                                       discoveryEntry.getLastSeenDateMs(),
+                                       discoveryEntry.getExpiryDateMs(),
+                                       discoveryEntry.getPublicKeyId(),
+                                       localAddress);
 }
 
 void LocalCapabilitiesDirectory::remove(const std::string& participantId)
