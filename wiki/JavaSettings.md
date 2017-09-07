@@ -112,19 +112,17 @@ The number of threads used by the message router to send joynr messages.
 * **User property**: `joynr.messaging.maximumparallelsends`
 * **Default value**: `20`
 
-### `PROPERTY_MAX_MESSAGES_INQUEUE`
-The number of messages (incoming and outgoing) that can be queued in the
-message router at the same time. The queue is blocking, so that messaging
-skeletons that receive a message that no longer has room in the queue will
-block until a message can be removed from the queue and processed.
-**NOTE** This value works in conjunction with joynr.messaging.maximumparallelsends,
-which determines the number of worker threads started to process messages.
-The sum of the two values is the maximum number of messages handled by
-joynr in parallel.
+### `PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`
+The number of incoming MQTT messages that can be handled by the message router at the same time.
+
+To prevent the mqtt broker from flooding the message queue, the reception of further incoming MQTT
+messages will be delayed by not sending acknowledgement messages to the broker until an already
+accepted Mqtt message is removed from the message queue and is marked as processed.
+See also `PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`.
 
 * **OPTIONAL**
 * **Type**: int
-* **User property**: `joynr.messaging.maxmessagesinqueue`
+* **User property**: `joynr.messaging.maxincomingmqttmessagesinqueue`
 * **Default value**: `20`
 
 ### `PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`
