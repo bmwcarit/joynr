@@ -230,8 +230,6 @@ private:
                                                        bool localEntries);
     void removeFromGloballyRegisteredCapabilities(const types::DiscoveryEntry& discoveryEntry);
 
-    void cleanCaches();
-
     ADD_LOGGER(LocalCapabilitiesDirectory);
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient;
     std::string localAddress;
