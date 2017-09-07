@@ -90,8 +90,8 @@ public class JoynrIntegrationBean {
         registerProviders(serviceProviderBeans, joynrRuntime);
     }
 
-	private void registerProviders(Set<Bean<?>> serviceProviderBeans, JoynrRuntime runtime) {
-		Set<ProviderQosFactory> providerQosFactories = getProviderQosFactories();
+    private void registerProviders(Set<Bean<?>> serviceProviderBeans, JoynrRuntime runtime) {
+        Set<ProviderQosFactory> providerQosFactories = getProviderQosFactories();
         for (Bean<?> bean : serviceProviderBeans) {
             Class<?> beanClass = bean.getBeanClass();
             ServiceProvider providerService = beanClass.getAnnotation(ServiceProvider.class);
@@ -102,8 +102,8 @@ public class JoynrIntegrationBean {
                                  serviceInterface));
             }
             Object provider = Proxy.newProxyInstance(beanClass.getClassLoader(),
-                                                                            new Class<?>[]{ serviceInterface },
-                                                                            new ProviderWrapper(bean,
+                                                     new Class<?>[]{ serviceInterface },
+                                                     new ProviderWrapper(bean,
                                                                          beanManager,
                                                                          joynrRuntimeFactory.getInjector()));
             ProviderQos providerQos = null;
@@ -136,7 +136,7 @@ public class JoynrIntegrationBean {
     private Set<ProviderQosFactory> getProviderQosFactories() {
         Set<Bean<?>> providerQosFactoryBeans = beanManager.getBeans(ProviderQosFactory.class,
                                                                     new AnnotationLiteral<Any>() {
-                                                                    });
+        });
         Set<ProviderQosFactory> providerQosFactories = new HashSet<>();
         for (Bean providerQosFactoryBean : providerQosFactoryBeans) {
             ProviderQosFactory factory = (ProviderQosFactory) providerQosFactoryBean.create(beanManager.createCreationalContext(providerQosFactoryBean));
@@ -173,9 +173,7 @@ public class JoynrIntegrationBean {
     private Set<Class<?>> getServiceProviderInterfaceClasses(Set<Bean<?>> serviceProviderBeans) {
         Set<Class<?>> result = new HashSet<>();
         for (Bean<?> bean : serviceProviderBeans) {
-            result.add(bean.getBeanClass()
-                                                            .getAnnotation(ServiceProvider.class)
-                                                            .serviceInterface());
+            result.add(bean.getBeanClass().getAnnotation(ServiceProvider.class).serviceInterface());
         }
         return result;
     }
