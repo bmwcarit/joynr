@@ -44,12 +44,6 @@ import joynr.tests.DefaulttestProvider;
 @RunWith(MockitoJUnitRunner.class)
 public class RequestInterpreterTest {
 
-    private static class TestRequestCaller extends RequestCaller {
-        public TestRequestCaller() {
-            super(null, new DefaulttestProvider());
-        }
-    }
-
     @Mock
     private JoynrMessageScope joynrMessageScope;
 
