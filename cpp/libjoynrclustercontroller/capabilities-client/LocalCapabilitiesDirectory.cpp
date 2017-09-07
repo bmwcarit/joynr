@@ -234,6 +234,41 @@ void LocalCapabilitiesDirectory::removeFromGloballyRegisteredCapabilities(
     }
 }
 
+void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::vector<joynr::types::GlobalDiscoveryEntry> convertedGlobalCapabilities;
+
+    {
+        std::lock_guard<std::mutex> lock(cacheLock);
+
+        const std::size_t numOfGlobalCapabilities =
+                std::distance(globalCapabilities.begin(), globalCapabilities.end());
+        convertedGlobalCapabilities.reserve(numOfGlobalCapabilities);
+
+        for (const auto& globalCapability : globalCapabilities) {
+            convertedGlobalCapabilities.push_back(toGlobalDiscoveryEntry(globalCapability));
+        }
+    }
+
+    auto onErrorWrapper = [onError = std::move(onError)](
+            const joynr::exceptions::JoynrRuntimeException& exception)
+    {
+        if (onError) {
+            onError(joynr::exceptions::ProviderRuntimeException(exception.getMessage()));
+        }
+    };
+
+    if (convertedGlobalCapabilities.empty()) {
+        if (onSuccess) {
+            onSuccess();
+        }
+    } else {
+        capabilitiesClient->add(convertedGlobalCapabilities, onSuccess, onErrorWrapper);
+    }
+}
+
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
         const std::vector<InterfaceAddress>& interfaceAddresses,
         const joynr::types::DiscoveryQos& discoveryQos,
