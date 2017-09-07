@@ -170,7 +170,6 @@ public class JoynrIntegrationBean {
         return joynrRuntimeFactory.getInjector();
     }
 
-    @SuppressWarnings("unchecked")
     private Set<Class<?>> getServiceProviderInterfaceClasses(Set<Bean<?>> serviceProviderBeans) {
         Set<Class<?>> result = new HashSet<>();
         for (Bean<?> bean : serviceProviderBeans) {
