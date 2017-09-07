@@ -72,8 +72,8 @@ public:
             std::shared_ptr<IMessageRouter> messageRouter,
             std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory)
             : endpoint(),
-              receiver(),
               clients(),
+              receiver(),
               clientsMutex(),
               messageRouter(messageRouter),
               messagingStubFactory(messagingStubFactory)
@@ -150,13 +150,33 @@ protected:
         }
     }
 
+    // List of client connections
+    struct CertEntry
+    {
+        CertEntry() : webSocketClientAddress(), ownerId()
+        {
+        }
+        explicit CertEntry(
+                const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
+                std::string owenrId)
+                : webSocketClientAddress(webSocketClientAddress), ownerId(std::move(owenrId))
+        {
+        }
+        CertEntry(CertEntry&&) = default;
+        CertEntry& operator=(CertEntry&&) = default;
+        joynr::system::RoutingTypes::WebSocketClientAddress webSocketClientAddress;
+        std::string ownerId;
+    };
+
+    std::map<ConnectionHandle, CertEntry, std::owner_less<ConnectionHandle>> clients;
+
 private:
     void onConnectionClosed(ConnectionHandle hdl)
     {
         std::unique_lock<std::mutex> lock(clientsMutex);
         auto it = clients.find(hdl);
         if (it != clients.cend()) {
-            messagingStubFactory->onMessagingStubClosed(it->second);
+            messagingStubFactory->onMessagingStubClosed(it->second.webSocketClientAddress);
             clients.erase(it);
         }
     }
@@ -204,7 +224,18 @@ private:
                               std::placeholders::_2));
             {
                 std::unique_lock<std::mutex> lock(clientsMutex);
-                clients[hdl] = std::move(clientAddress);
+                // search whether this connection handler has been mapped to a cert. (secure
+                // connection)
+                // if so, then move the client address to it. Otherwise, make a new entry with an
+                // empty ownerId
+                auto it = clients.find(hdl);
+                if (it != clients.cend()) {
+                    it->second.webSocketClientAddress = std::move(clientAddress);
+                } else {
+                    // insecure connection, no CN exists
+                    auto certEntry = CertEntry(std::move(clientAddress), std::string());
+                    clients[hdl] = std::move(certEntry);
+                }
             }
         } else {
             JOYNR_LOG_ERROR(
@@ -246,10 +277,7 @@ private:
     }
 
     WebSocketPpReceiver<Server> receiver;
-    /*! List of client connections */
-    std::map<ConnectionHandle,
-             joynr::system::RoutingTypes::WebSocketClientAddress,
-             std::owner_less<ConnectionHandle>> clients;
+
     /*! Router for incoming messages */
     std::mutex clientsMutex;
     std::shared_ptr<IMessageRouter> messageRouter;
