@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,13 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/types/GlobalDiscoveryEntry",
-    "joynr/types/ProviderQos",
-    "joynr/types/ProviderScope",
-    "joynr/types/Version"
-], function(GlobalDiscoveryEntry, ProviderQos, ProviderScope, Version) {
+var GlobalDiscoveryEntry = require('../../../classes/joynr/types/GlobalDiscoveryEntry');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
+var Version = require('../../../classes/joynr/types/Version');
+module.exports = (function(GlobalDiscoveryEntry, ProviderQos, ProviderScope, Version) {
 
     var capInfo;
     beforeEach(function() {
@@ -56,4 +56,4 @@ define([
         });
     });
 
-}); // require
+}(GlobalDiscoveryEntry, ProviderQos, ProviderScope, Version)); // require

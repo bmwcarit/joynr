@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,12 +17,12 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/messaging/JoynrMessage",
-    "joynr/system/RoutingTypes/MqttAddress",
-    "joynr/messaging/MessageReplyToAddressCalculator"
-], function(JoynrMessage, MqttAddress, MessageReplyToAddressCalculator) {
+var JoynrMessage = require('../../../classes/joynr/messaging/JoynrMessage');
+var MqttAddress = require('../../../classes/joynr/system/RoutingTypes/MqttAddress');
+var MessageReplyToAddressCalculator =
+        require('../../../classes/joynr/messaging/MessageReplyToAddressCalculator');
+module.exports =
+        (function(JoynrMessage, MqttAddress, MessageReplyToAddressCalculator) {
 
     describe("libjoynr-js.joynr.messaging.MessageReplyToAddressCalculator", function() {
         var messageReplyToAddressCalculator;
@@ -117,4 +116,4 @@ define([
         });
 
     }); // describe MessageReplyToAddressCalculator
-}); // define
+        }(JoynrMessage, MqttAddress, MessageReplyToAddressCalculator)); // define

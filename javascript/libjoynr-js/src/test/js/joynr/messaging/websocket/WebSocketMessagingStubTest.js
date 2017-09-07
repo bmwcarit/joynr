@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,21 +18,23 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/messaging/websocket/WebSocketMessagingStub",
-    "joynr/messaging/websocket/WebSocketMessagingStubFactory",
-    "joynr/system/RoutingTypes/WebSocketAddress",
-    "joynr/system/RoutingTypes/WebSocketProtocol",
-    "joynr/system/RoutingTypes/WebSocketClientAddress",
-    "joynr/messaging/websocket/SharedWebSocket"
-], function(
-        WebSocketMessagingStub,
-        WebSocketMessagingStubFactory,
-        WebSocketAddress,
-        WebSocketProtocol,
-        WebSocketClientAddress,
-        SharedWebSocket) {
+var WebSocketMessagingStub =
+        require('../../../../classes/joynr/messaging/websocket/WebSocketMessagingStub');
+var WebSocketMessagingStubFactory =
+        require('../../../../classes/joynr/messaging/websocket/WebSocketMessagingStubFactory');
+var WebSocketAddress = require('../../../../classes/joynr/system/RoutingTypes/WebSocketAddress');
+var WebSocketProtocol = require('../../../../classes/joynr/system/RoutingTypes/WebSocketProtocol');
+var WebSocketClientAddress =
+        require('../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress');
+var SharedWebSocket = require('../../../../classes/joynr/messaging/websocket/SharedWebSocket');
+module.exports =
+        (function(
+                WebSocketMessagingStub,
+                WebSocketMessagingStubFactory,
+                WebSocketAddress,
+                WebSocketProtocol,
+                WebSocketClientAddress,
+                SharedWebSocket) {
 
     describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStub", function() {
         var webSocketMessagingStub = null;
@@ -84,4 +88,10 @@ define([
         });
 
     });
-});
+        }(
+                WebSocketMessagingStub,
+                WebSocketMessagingStubFactory,
+                WebSocketAddress,
+                WebSocketProtocol,
+                WebSocketClientAddress,
+                SharedWebSocket));

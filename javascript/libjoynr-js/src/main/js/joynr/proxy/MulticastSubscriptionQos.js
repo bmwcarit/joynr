@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/proxy/MulticastSubscriptionQos", [
-    "joynr/util/Typing",
-    "joynr/util/UtilInternal",
-    "joynr/proxy/SubscriptionQos"
-], function(Typing, Util, SubscriptionQos) {
+var Typing = require('../util/Typing');
+var UtilInternal = require('../util/UtilInternal');
+var SubscriptionQos = require('./SubscriptionQos');
+module.exports = (function(Typing, Util, SubscriptionQos) {
 
     var defaultSettings;
 
@@ -82,4 +82,4 @@ define("joynr/proxy/MulticastSubscriptionQos", [
 
     return MulticastSubscriptionQos;
 
-});
+}(Typing, UtilInternal, SubscriptionQos));

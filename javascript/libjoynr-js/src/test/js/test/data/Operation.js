@@ -1,4 +1,4 @@
-/*jslint nomen: true */
+/*jslint nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -17,13 +17,11 @@
  * limitations under the License.
  * #L%
  */
-
 // This data file is used in Test[ProxyProvider]Operation
-define("test/data/Operation", [
-    "joynr/vehicle/radiotypes/RadioStation",
-    "joynr/vehicle/radiotypes/ErrorList",
-    "joynr/tests/testTypes/TestEnum"
-], function(RadioStation, ErrorList, TestEnum) {
+var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+var ErrorList = require('../../../test-classes/joynr/vehicle/radiotypes/ErrorList');
+var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
+module.exports = (function (RadioStation, ErrorList, TestEnum) {
     var radioStationVar = new RadioStation({
         name : "asdf"
     });
@@ -279,4 +277,4 @@ define("test/data/Operation", [
     ];
 
     return testData;
-});
+}(RadioStation, ErrorList, TestEnum));

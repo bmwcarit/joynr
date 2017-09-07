@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,27 +18,29 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/vehicle/RadioProvider",
-            "joynr/vehicle/radiotypes/RadioStation",
-            "joynr/datatypes/exampleTypes/Country",
-            "joynr/datatypes/exampleTypes/StringMap",
-            "joynr/provider/ProviderAttributeNotifyReadWrite",
-            "joynr/provider/ProviderAttributeNotifyRead",
-            "joynr/provider/ProviderAttributeNotifyWrite",
-            "joynr/provider/ProviderAttributeNotify",
-            "joynr/provider/ProviderAttributeReadWrite",
-            "joynr/provider/ProviderAttributeRead",
-            "joynr/provider/ProviderAttributeWrite",
-            "joynr/provider/ProviderOperation",
-            "joynr/provider/ProviderEvent",
-            "joynr/util/uuid",
-            "joynr/tests/TestWithVersionProvider",
-            "joynr/tests/TestWithoutVersionProvider"
-        ],
-        function(
+var RadioProvider = require('../../../test-classes/joynr/vehicle/RadioProvider');
+var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+var Country = require('../../../test-classes/joynr/datatypes/exampleTypes/Country');
+var StringMap = require('../../../test-classes/joynr/datatypes/exampleTypes/StringMap');
+var ProviderAttributeNotifyReadWrite =
+        require('../../../classes/joynr/provider/ProviderAttributeNotifyReadWrite');
+var ProviderAttributeNotifyRead =
+        require('../../../classes/joynr/provider/ProviderAttributeNotifyRead');
+var ProviderAttributeNotifyWrite =
+        require('../../../classes/joynr/provider/ProviderAttributeNotifyWrite');
+var ProviderAttributeNotify = require('../../../classes/joynr/provider/ProviderAttributeNotify');
+var ProviderAttributeReadWrite =
+        require('../../../classes/joynr/provider/ProviderAttributeReadWrite');
+var ProviderAttributeRead = require('../../../classes/joynr/provider/ProviderAttributeRead');
+var ProviderAttributeWrite = require('../../../classes/joynr/provider/ProviderAttributeWrite');
+var ProviderOperation = require('../../../classes/joynr/provider/ProviderOperation');
+var ProviderEvent = require('../../../classes/joynr/provider/ProviderEvent');
+var uuid = require('../../../classes/joynr/util/uuid');
+var TestWithVersionProvider = require('../../../test-classes/joynr/tests/TestWithVersionProvider');
+var TestWithoutVersionProvider =
+        require('../../../test-classes/joynr/tests/TestWithoutVersionProvider');
+module.exports =
+        (function(
                 RadioProvider,
                 RadioStation,
                 Country,
@@ -401,4 +405,20 @@ define(
 
                     });
 
-        }); // require
+        }(
+                RadioProvider,
+                RadioStation,
+                Country,
+                StringMap,
+                ProviderAttributeNotifyReadWrite,
+                ProviderAttributeNotifyRead,
+                ProviderAttributeNotifyWrite,
+                ProviderAttributeNotify,
+                ProviderAttributeReadWrite,
+                ProviderAttributeRead,
+                ProviderAttributeWrite,
+                ProviderOperation,
+                ProviderEvent,
+                uuid,
+                TestWithVersionProvider,
+                TestWithoutVersionProvider)); // require

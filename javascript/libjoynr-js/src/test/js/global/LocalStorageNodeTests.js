@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,7 +18,6 @@
  * limitations under the License.
  * #L%
  */
-
 /**
  * node wrapper for LocalStorage for testing
  *
@@ -25,10 +26,10 @@
  *
  * @returns constructor for a localStorage object
  */
-define([
-    "global/LocalStorageNode",
-    "joynr/util/uuid"
-], function(LocalStorage, uuid) {
+var LocalStorageNode = require('../../classes/global/LocalStorageNode');
+var uuid = require('../../classes/joynr/util/uuid');
+module.exports =
+        (function(LocalStorage, uuid) {
     /**
      * LocalStorage constructor (node wrapper for LocalStorage)
      * @constructor LocalStorageWrapper
@@ -51,4 +52,4 @@ define([
                 return new LocalStorage(settings);
             };
     return LocalStorageWrapper;
-});
+        }(LocalStorageNode, uuid));

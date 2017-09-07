@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define([ "joynr/messaging/browser/BrowserMessagingStub"
-], function(BrowserMessagingStub) {
+var BrowserMessagingStub =
+        require('../../../../classes/joynr/messaging/browser/BrowserMessagingStub');
+module.exports = (function(BrowserMessagingStub) {
 
     describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() {
 
@@ -70,4 +72,4 @@ define([ "joynr/messaging/browser/BrowserMessagingStub"
 
     });
 
-});
+}(BrowserMessagingStub));

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,13 +18,12 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/exceptions/ProviderRuntimeException", [
-    "joynr/types/TypeRegistrySingleton",
-    "joynr/util/UtilInternal",
-    "joynr/exceptions/JoynrRuntimeException",
-    "joynr/system/LoggerFactory"
-], function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
+var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var UtilInternal = require('../util/UtilInternal');
+var JoynrRuntimeException = require('./JoynrRuntimeException');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports =
+        (function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -75,4 +76,4 @@ define("joynr/exceptions/ProviderRuntimeException", [
     ProviderRuntimeException.prototype.name = "ProviderRuntimeException";
 
     return ProviderRuntimeException;
-});
+        }(TypeRegistrySingleton, UtilInternal, JoynrRuntimeException, LoggerFactory));

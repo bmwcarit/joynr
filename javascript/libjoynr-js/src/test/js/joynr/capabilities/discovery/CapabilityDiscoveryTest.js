@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true, node: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,38 +18,21 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-            "joynr/capabilities/discovery/CapabilityDiscovery",
-            "joynr/types/DiscoveryQos",
-            "joynr/types/ArbitrationStrategyCollection",
-            "joynr/types/ProviderQos",
-            "joynr/types/CustomParameter",
-            "joynr/types/ProviderScope",
-            "joynr/types/DiscoveryScope",
-            "joynr/types/DiscoveryEntry",
-            "joynr/types/GlobalDiscoveryEntry",
-            "joynr/system/RoutingTypes/ChannelAddress",
-            "joynr/types/Version",
-            "global/Promise",
-            "global/WaitsFor",
-            "joynr/util/CapabilitiesUtil"
-        ],
-        function(
-                CapabilityDiscovery,
-                DiscoveryQos,
-                ArbitrationStrategyCollection,
-                ProviderQos,
-                CustomParameter,
-                ProviderScope,
-                DiscoveryScope,
-                DiscoveryEntry,
-                GlobalDiscoveryEntry,
-                ChannelAddress,
-                Version,
-                Promise,
-                waitsFor,
-                CapabilitiesUtil) {
+var CapabilityDiscovery = require('../../../../classes/joynr/capabilities/discovery/CapabilityDiscovery');
+var DiscoveryQos = require('../../../../classes/joynr/types/DiscoveryQos');
+var ArbitrationStrategyCollection = require('../../../../classes/joynr/types/ArbitrationStrategyCollection');
+var ProviderQos = require('../../../../classes/joynr/types/ProviderQos');
+var CustomParameter = require('../../../../classes/joynr/types/CustomParameter');
+var ProviderScope = require('../../../../classes/joynr/types/ProviderScope');
+var DiscoveryScope = require('../../../../classes/joynr/types/DiscoveryScope');
+var DiscoveryEntry = require('../../../../classes/joynr/types/DiscoveryEntry');
+var GlobalDiscoveryEntry = require('../../../../classes/joynr/types/GlobalDiscoveryEntry');
+var ChannelAddress = require('../../../../classes/joynr/system/RoutingTypes/ChannelAddress');
+var Version = require('../../../../classes/joynr/types/Version');
+var Promise = require('../../../../classes/global/Promise');
+var WaitsFor = require('../../../../test-classes/global/WaitsFor');
+var CapabilitiesUtil = require('../../../../classes/joynr/util/CapabilitiesUtil');
+module.exports = (function (CapabilityDiscovery, DiscoveryQos, ArbitrationStrategyCollection, ProviderQos, CustomParameter, ProviderScope, DiscoveryScope, DiscoveryEntry, GlobalDiscoveryEntry, ChannelAddress, Version, Promise, waitsFor, CapabilitiesUtil) {
 
             var domain, interfaceName, discoveryQos;
             var discoveryEntries, discoveryEntriesReturned, globalDiscoveryEntries, globalDiscoveryEntriesReturned;
@@ -914,4 +896,4 @@ define([
 
                     });
 
-        }); // require
+}(CapabilityDiscovery, DiscoveryQos, ArbitrationStrategyCollection, ProviderQos, CustomParameter, ProviderScope, DiscoveryScope, DiscoveryEntry, GlobalDiscoveryEntry, ChannelAddress, Version, Promise, WaitsFor, CapabilitiesUtil));    // require

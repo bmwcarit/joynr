@@ -1,6 +1,5 @@
 /*global JSON: true */
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -19,35 +18,19 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/messaging/routing/MessageRouter",
-        [
-            "global/Promise",
-            "joynr/messaging/util/MulticastWildcardRegexFactory",
-            "joynr/system/DiagnosticTags",
-            "joynr/system/LoggerFactory",
-            "joynr/messaging/inprocess/InProcessAddress",
-            "joynr/messaging/JoynrMessage",
-            "joynr/messaging/MessageReplyToAddressCalculator",
-            "joynr/exceptions/JoynrException",
-            "joynr/exceptions/JoynrRuntimeException",
-            "joynr/util/Typing",
-            "joynr/util/UtilInternal",
-            "joynr/util/JSONSerializer",
-        ],
-        function(Promise,
-                MulticastWildcardRegexFactory,
-                DiagnosticTags,
-                LoggerFactory,
-                InProcessAddress,
-                JoynrMessage,
-                MessageReplyToAddressCalculator,
-                JoynrException,
-                JoynrRuntimeException,
-                Typing,
-                Util,
-                JSONSerializer) {
+var Promise = require('../../../global/Promise');
+var MulticastWildcardRegexFactory = require('../util/MulticastWildcardRegexFactory');
+var DiagnosticTags = require('../../system/DiagnosticTags');
+var LoggerFactory = require('../../system/LoggerFactory');
+var InProcessAddress = require('../inprocess/InProcessAddress');
+var JoynrMessage = require('../JoynrMessage');
+var MessageReplyToAddressCalculator = require('../MessageReplyToAddressCalculator');
+var JoynrException = require('../../exceptions/JoynrException');
+var JoynrRuntimeException = require('../../exceptions/JoynrRuntimeException');
+var Typing = require('../../util/Typing');
+var UtilInternal = require('../../util/UtilInternal');
+var JsonSerializer = require('../../util/JSONSerializer');
+module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTags, LoggerFactory, InProcessAddress, JoynrMessage, MessageReplyToAddressCalculator, JoynrException, JoynrRuntimeException, Typing, Util, JSONSerializer) {
 
             /**
              * Message Router receives a message and forwards it to the correct endpoint, as looked up in the {@link RoutingTable}
@@ -772,4 +755,4 @@ define(
             }
 
             return MessageRouter;
-        });
+}(Promise, MulticastWildcardRegexFactory, DiagnosticTags, LoggerFactory, InProcessAddress, JoynrMessage, MessageReplyToAddressCalculator, JoynrException, JoynrRuntimeException, Typing, UtilInternal, JsonSerializer));

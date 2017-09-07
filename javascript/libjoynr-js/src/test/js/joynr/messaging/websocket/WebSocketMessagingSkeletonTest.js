@@ -1,5 +1,6 @@
-/*global Buffer: true, TextEncoder: true */
+/*jslint node: true */
 
+/*global Buffer: true, TextEncoder: true */
 /*
  * #%L
  * %%
@@ -18,21 +19,22 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/messaging/websocket/WebSocketMessagingSkeleton",
-    "joynr/messaging/JoynrMessage",
-    "joynr/system/RoutingTypes/WebSocketAddress",
-    "joynr/system/RoutingTypes/WebSocketClientAddress",
-    "joynr/messaging/websocket/SharedWebSocket",
-    "global/WebSocket"
-], function(
-        WebSocketMessagingSkeleton,
-        JoynrMessage,
-        WebSocketAddress,
-        WebSocketClientAddress,
-        SharedWebSocket,
-        WebSocket) {
+var WebSocketMessagingSkeleton =
+        require('../../../../classes/joynr/messaging/websocket/WebSocketMessagingSkeleton');
+var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
+var WebSocketAddress = require('../../../../classes/joynr/system/RoutingTypes/WebSocketAddress');
+var WebSocketClientAddress =
+        require('../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress');
+var SharedWebSocket = require('../../../../classes/joynr/messaging/websocket/SharedWebSocket');
+var WebSocket = require('../../../../test-classes/global/WebSocketMock');
+module.exports =
+        (function(
+                WebSocketMessagingSkeleton,
+                JoynrMessage,
+                WebSocketAddress,
+                WebSocketClientAddress,
+                SharedWebSocket,
+                WebSocket) {
 
     describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", function() {
 
@@ -198,4 +200,10 @@ define([
         });
 
     });
-});
+        }(
+                WebSocketMessagingSkeleton,
+                JoynrMessage,
+                WebSocketAddress,
+                WebSocketClientAddress,
+                SharedWebSocket,
+                WebSocket));

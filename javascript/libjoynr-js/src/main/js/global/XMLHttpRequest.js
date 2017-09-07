@@ -23,6 +23,4 @@
  *
  * @returns browser supported XMLHttpRequest.
  */
-define([], function() {
-    return XMLHttpRequest;
-});
+module.exports = XMLHttpRequest;

@@ -1,5 +1,6 @@
-/*global postMessage: true */
+/*jslint node: true */
 
+/*global postMessage: true */
 /*
  * #%L
  * %%
@@ -18,14 +19,13 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/system/DistributedLoggingAppender", [
-    "joynr/system/JoynrLogEvent",
-    "joynr/system/JoynrLoggingContextTag",
-    "joynr/system/LoggingManager",
-    "joynr/util/UtilInternal",
-    "joynr/util/JSONSerializer"
-], function(JoynrLogEvent, JoynrLoggingContextTag, LoggingManager, Util, JSONSerializer) {
+var JoynrLogEvent = require('./JoynrLogEvent');
+var JoynrLoggingContextTag = require('./JoynrLoggingContextTag');
+var LoggingManager = require('./LoggingManager');
+var UtilInternal = require('../util/UtilInternal');
+var JsonSerializer = require('../util/JSONSerializer');
+module.exports =
+        (function(JoynrLogEvent, JoynrLoggingContextTag, LoggingManager, Util, JSONSerializer) {
     var DEFAULT_FLUSH_INTERVAL_MS = 60000;
     var DEFAULT_FLUSH_MAX_LOGEVENTS_COUNT = 20;
     /**
@@ -200,4 +200,4 @@ define("joynr/system/DistributedLoggingAppender", [
 
     return DistributedLoggingAppender;
 
-});
+        }(JoynrLogEvent, JoynrLoggingContextTag, LoggingManager, UtilInternal, JsonSerializer));

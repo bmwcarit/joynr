@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,13 +18,12 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/proxy/DiscoveryQos", [
-    "joynr/types/ArbitrationStrategyCollection",
-    "joynr/types/DiscoveryScope",
-    "joynr/util/UtilInternal",
-    "joynr/system/LoggerFactory"
-], function(ArbitrationStrategyCollection, DiscoveryScope, Util, LoggerFactory) {
+var ArbitrationStrategyCollection =
+        require('../../joynr/types/ArbitrationStrategyCollection');
+var DiscoveryScope = require('../../joynr/types/DiscoveryScope');
+var UtilInternal = require('../util/UtilInternal');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports = (function(ArbitrationStrategyCollection, DiscoveryScope, Util, LoggerFactory) {
 
     var defaultSettings = {
         discoveryTimeoutMs : 30000,
@@ -105,4 +106,4 @@ define("joynr/proxy/DiscoveryQos", [
 
     return DiscoveryQos;
 
-});
+}(ArbitrationStrategyCollection, DiscoveryScope, UtilInternal, LoggerFactory));

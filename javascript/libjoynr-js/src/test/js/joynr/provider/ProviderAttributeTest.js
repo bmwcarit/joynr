@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true, node: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,39 +18,21 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/provider/ProviderAttribute",
-            "joynr/provider/ProviderAttributeNotifyReadWrite",
-            "joynr/provider/ProviderAttributeNotifyRead",
-            "joynr/provider/ProviderAttributeNotifyWrite",
-            "joynr/provider/ProviderAttributeNotify",
-            "joynr/provider/ProviderAttributeReadWrite",
-            "joynr/provider/ProviderAttributeRead",
-            "joynr/provider/ProviderAttributeWrite",
-            "joynr/types/ProviderQos",
-            "joynr/tests/testTypes/TestEnum",
-            "joynr/datatypes/exampleTypes/ComplexRadioStation",
-            "joynr/datatypes/exampleTypes/Country",
-            "global/Promise",
-            "global/WaitsFor"
-        ],
-        function(
-                ProviderAttribute,
-                ProviderAttributeNotifyReadWrite,
-                ProviderAttributeNotifyRead,
-                ProviderAttributeNotifyWrite,
-                ProviderAttributeNotify,
-                ProviderAttributeReadWrite,
-                ProviderAttributeRead,
-                ProviderAttributeWrite,
-                ProviderQos,
-                TestEnum,
-                ComplexRadioStation,
-                Country,
-                Promise,
-                waitsFor) {
+var ProviderAttribute = require('../../../classes/joynr/provider/ProviderAttribute');
+var ProviderAttributeNotifyReadWrite = require('../../../classes/joynr/provider/ProviderAttributeNotifyReadWrite');
+var ProviderAttributeNotifyRead = require('../../../classes/joynr/provider/ProviderAttributeNotifyRead');
+var ProviderAttributeNotifyWrite = require('../../../classes/joynr/provider/ProviderAttributeNotifyWrite');
+var ProviderAttributeNotify = require('../../../classes/joynr/provider/ProviderAttributeNotify');
+var ProviderAttributeReadWrite = require('../../../classes/joynr/provider/ProviderAttributeReadWrite');
+var ProviderAttributeRead = require('../../../classes/joynr/provider/ProviderAttributeRead');
+var ProviderAttributeWrite = require('../../../classes/joynr/provider/ProviderAttributeWrite');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
+var ComplexRadioStation = require('../../../test-classes/joynr/datatypes/exampleTypes/ComplexRadioStation');
+var Country = require('../../../test-classes/joynr/datatypes/exampleTypes/Country');
+var Promise = require('../../../classes/global/Promise');
+var WaitsFor = require('../../../test-classes/global/WaitsFor');
+module.exports = (function (ProviderAttribute, ProviderAttributeNotifyReadWrite, ProviderAttributeNotifyRead, ProviderAttributeNotifyWrite, ProviderAttributeNotify, ProviderAttributeReadWrite, ProviderAttributeRead, ProviderAttributeWrite, ProviderQos, TestEnum, ComplexRadioStation, Country, Promise, waitsFor) {
 
             var safetyTimeoutDelta = 100;
 
@@ -661,4 +642,4 @@ define(
                         });
                     });
 
-        }); // require
+}(ProviderAttribute, ProviderAttributeNotifyReadWrite, ProviderAttributeNotifyRead, ProviderAttributeNotifyWrite, ProviderAttributeNotify, ProviderAttributeReadWrite, ProviderAttributeRead, ProviderAttributeWrite, ProviderQos, TestEnum, ComplexRadioStation, Country, Promise, WaitsFor));    // require

@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true, node: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,18 +18,15 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-            "global/Promise",
-            "joynr/messaging/channel/ChannelMessagingSender",
-            "joynr/messaging/JoynrMessage",
-            "joynr/system/RoutingTypes/ChannelAddress",
-            "joynr/util/Typing",
-            "joynr/system/LoggerFactory",
-            "joynr/provisioning/provisioning_root",
-            "global/WaitsFor"
-        ],
-        function(Promise, ChannelMessagingSender, JoynrMessage, ChannelAddress, Typing, LoggerFactory, provisioning, waitsFor) {
+var Promise = require('../../../../classes/global/Promise');
+var ChannelMessagingSender = require('../../../../classes/joynr/messaging/channel/ChannelMessagingSender');
+var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
+var ChannelAddress = require('../../../../classes/joynr/system/RoutingTypes/ChannelAddress');
+var Typing = require('../../../../classes/joynr/util/Typing');
+var LoggerFactory = require('../../../../classes/joynr/system/LoggerFactory');
+var provisioningRoot = require('../../../../test-classes/joynr/provisioning/provisioning_root');
+var WaitsFor = require('../../../../test-classes/global/WaitsFor');
+module.exports = (function (Promise, ChannelMessagingSender, JoynrMessage, ChannelAddress, Typing, LoggerFactory, provisioning, waitsFor) {
 
             var log = LoggerFactory.getLogger("joynr.messaging.TestChannelMessagingSender");
 
@@ -154,4 +150,4 @@ define([
 
                     });
 
-        });
+}(Promise, ChannelMessagingSender, JoynrMessage, ChannelAddress, Typing, LoggerFactory, provisioningRoot, WaitsFor));

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,14 +18,13 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/exceptions/JoynrRuntimeException", [
-    "joynr/types/TypeRegistrySingleton",
-    "joynr/util/Typing",
-    "joynr/util/UtilInternal",
-    "joynr/exceptions/JoynrException",
-    "joynr/system/LoggerFactory"
-], function(TypeRegistrySingleton, Typing, Util, JoynrException, LoggerFactory) {
+var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var Typing = require('../util/Typing');
+var UtilInternal = require('../util/UtilInternal');
+var JoynrException = require('./JoynrException');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports =
+        (function(TypeRegistrySingleton, Typing, Util, JoynrException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -77,4 +78,4 @@ define("joynr/exceptions/JoynrRuntimeException", [
 
     return JoynrRuntimeException;
 
-});
+        }(TypeRegistrySingleton, Typing, UtilInternal, JoynrException, LoggerFactory));

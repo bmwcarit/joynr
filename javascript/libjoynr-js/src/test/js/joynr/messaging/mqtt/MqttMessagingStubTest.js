@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,14 +17,12 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "global/Promise",
-    "joynr/messaging/mqtt/SharedMqttClient",
-    "joynr/system/RoutingTypes/MqttAddress",
-    "joynr/messaging/mqtt/MqttMessagingStub",
-    "joynr/messaging/JoynrMessage"
-], function(Promise, SharedMqttClient, MqttAddress, MqttMessagingStub, JoynrMessage) {
+var Promise = require('../../../../classes/global/Promise');
+var SharedMqttClient = require('../../../../classes/joynr/messaging/mqtt/SharedMqttClient');
+var MqttAddress = require('../../../../classes/joynr/system/RoutingTypes/MqttAddress');
+var MqttMessagingStub = require('../../../../classes/joynr/messaging/mqtt/MqttMessagingStub');
+var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
+module.exports = (function(Promise, SharedMqttClient, MqttAddress, MqttMessagingStub, JoynrMessage) {
 
     describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", function() {
         var destinationMqttAddress, topic;
@@ -86,4 +83,4 @@ define([
 
     });
 
-});
+}(Promise, SharedMqttClient, MqttAddress, MqttMessagingStub, JoynrMessage));

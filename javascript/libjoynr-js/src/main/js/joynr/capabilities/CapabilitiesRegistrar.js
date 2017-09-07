@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,15 +18,14 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/capabilities/CapabilitiesRegistrar", [
-    "global/Promise",
-    "joynr/util/UtilInternal",
-    "joynr/types/DiscoveryEntry",
-    "joynr/types/ProviderScope",
-    "joynr/capabilities/ParticipantIdStorage",
-    "joynr/types/Version"
-], function(Promise, Util, DiscoveryEntry, ProviderScope, ParticipantIdStorage, Version) {
+var Promise = require('../../global/Promise');
+var UtilInternal = require('../util/UtilInternal');
+var DiscoveryEntry = require('../../joynr/types/DiscoveryEntry');
+var ProviderScope = require('../../joynr/types/ProviderScope');
+var ParticipantIdStorage = require('./ParticipantIdStorage');
+var Version = require('../../joynr/types/Version');
+module.exports =
+        (function(Promise, Util, DiscoveryEntry, ProviderScope, ParticipantIdStorage, Version) {
     var ONE_DAY_MS = 24 * 60 * 60 * 1000;
     /**
      * The Capabilities Registrar
@@ -267,4 +268,4 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
 
     return CapabilitiesRegistrar;
 
-});
+        }(Promise, UtilInternal, DiscoveryEntry, ProviderScope, ParticipantIdStorage, Version));

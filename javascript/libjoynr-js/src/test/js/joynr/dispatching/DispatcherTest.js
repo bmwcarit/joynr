@@ -1,6 +1,5 @@
 /*global fail: true */
-/*jslint es5: true, nomen: true */
-
+/*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -19,63 +18,33 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/util/Util",
-            "joynr/dispatching/Dispatcher",
-            "joynr/dispatching/subscription/PublicationManager",
-            "joynr/dispatching/subscription/SubscriptionManager",
-            "joynr/dispatching/RequestReplyManager",
-            "joynr/messaging/inprocess/InProcessMessagingStub",
-            "joynr/messaging/inprocess/InProcessMessagingSkeleton",
-            "joynr/messaging/JoynrMessage",
-            "joynr/messaging/MessagingQos",
-            "joynr/messaging/MessagingQosEffort",
-            "joynr/dispatching/types/OneWayRequest",
-            "joynr/dispatching/types/Request",
-            "joynr/dispatching/types/Reply",
-            "joynr/dispatching/types/BroadcastSubscriptionRequest",
-            "joynr/dispatching/types/MulticastSubscriptionRequest",
-            "joynr/dispatching/types/SubscriptionRequest",
-            "joynr/dispatching/types/SubscriptionReply",
-            "joynr/dispatching/types/SubscriptionStop",
-            "joynr/dispatching/types/MulticastPublication",
-            "joynr/dispatching/types/SubscriptionPublication",
-            "joynr/tests/testTypes/TestEnum",
-            "joynr/types/TypeRegistrySingleton",
-            "joynr/types/DiscoveryEntryWithMetaInfo",
-            "joynr/types/Version",
-            "joynr/types/ProviderQos",
-            "uuid"
-        ],
-        function(
-                Util,
-                Dispatcher,
-                PublicationManager,
-                SubscriptionManager,
-                RequestReplyManager,
-                InProcessMessagingStub,
-                InProcessMessagingSkeleton,
-                JoynrMessage,
-                MessagingQos,
-                MessagingQosEffort,
-                OneWayRequest,
-                Request,
-                Reply,
-                BroadcastSubscriptionRequest,
-                MulticastSubscriptionRequest,
-                SubscriptionRequest,
-                SubscriptionReply,
-                SubscriptionStop,
-                MulticastPublication,
-                SubscriptionPublication,
-                TestEnum,
-                TypeRegistrySingleton,
-                DiscoveryEntryWithMetaInfo,
-                Version,
-                ProviderQos,
-                uuid) {
+var Util = require('../../../classes/joynr/util/Util');
+var Dispatcher = require('../../../classes/joynr/dispatching/Dispatcher');
+var PublicationManager = require('../../../classes/joynr/dispatching/subscription/PublicationManager');
+var SubscriptionManager = require('../../../classes/joynr/dispatching/subscription/SubscriptionManager');
+var RequestReplyManager = require('../../../classes/joynr/dispatching/RequestReplyManager');
+var InProcessMessagingStub = require('../../../classes/joynr/messaging/inprocess/InProcessMessagingStub');
+var InProcessMessagingSkeleton = require('../../../classes/joynr/messaging/inprocess/InProcessMessagingSkeleton');
+var JoynrMessage = require('../../../classes/joynr/messaging/JoynrMessage');
+var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
+var MessagingQosEffort = require('../../../classes/joynr/messaging/MessagingQosEffort');
+var OneWayRequest = require('../../../classes/joynr/dispatching/types/OneWayRequest');
+var Request = require('../../../classes/joynr/dispatching/types/Request');
+var Reply = require('../../../classes/joynr/dispatching/types/Reply');
+var BroadcastSubscriptionRequest = require('../../../classes/joynr/dispatching/types/BroadcastSubscriptionRequest');
+var MulticastSubscriptionRequest = require('../../../classes/joynr/dispatching/types/MulticastSubscriptionRequest');
+var SubscriptionRequest = require('../../../classes/joynr/dispatching/types/SubscriptionRequest');
+var SubscriptionReply = require('../../../classes/joynr/dispatching/types/SubscriptionReply');
+var SubscriptionStop = require('../../../classes/joynr/dispatching/types/SubscriptionStop');
+var MulticastPublication = require('../../../classes/joynr/dispatching/types/MulticastPublication');
+var SubscriptionPublication = require('../../../classes/joynr/dispatching/types/SubscriptionPublication');
+var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
+var TypeRegistrySingleton = require('../../../classes/joynr/types/TypeRegistrySingleton');
+var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
+var Version = require('../../../classes/joynr/types/Version');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var uuid = require('../../../classes/lib/uuid-annotated');
+module.exports = (function (Util, Dispatcher, PublicationManager, SubscriptionManager, RequestReplyManager, InProcessMessagingStub, InProcessMessagingSkeleton, JoynrMessage, MessagingQos, MessagingQosEffort, OneWayRequest, Request, Reply, BroadcastSubscriptionRequest, MulticastSubscriptionRequest, SubscriptionRequest, SubscriptionReply, SubscriptionStop, MulticastPublication, SubscriptionPublication, TestEnum, TypeRegistrySingleton, DiscoveryEntryWithMetaInfo, Version, ProviderQos, uuid) {
 
             var providerId = "providerId";
             var proxyId = "proxyId";
@@ -757,4 +726,4 @@ define(
                                 });
                     });
 
-        }); // require
+}(Util, Dispatcher, PublicationManager, SubscriptionManager, RequestReplyManager, InProcessMessagingStub, InProcessMessagingSkeleton, JoynrMessage, MessagingQos, MessagingQosEffort, OneWayRequest, Request, Reply, BroadcastSubscriptionRequest, MulticastSubscriptionRequest, SubscriptionRequest, SubscriptionReply, SubscriptionStop, MulticastPublication, SubscriptionPublication, TestEnum, TypeRegistrySingleton, DiscoveryEntryWithMetaInfo, Version, ProviderQos, uuid));    // require

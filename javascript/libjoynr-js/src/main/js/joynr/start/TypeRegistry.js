@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,14 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/start/TypeRegistry",
-        [
-            "joynr/system/LoggerFactory",
-            "global/Promise"
-        ],
-        function(LoggerFactory, Promise) {
+var LoggerFactory = require('../system/LoggerFactory');
+var Promise = require('../../global/Promise');
+module.exports =
+        (function(LoggerFactory, Promise) {
 
             /**
              * The <code>TypeRegistry</code> contains a mapping of type names (which are sent on the wire
@@ -166,4 +164,4 @@ define(
 
             return TypeRegistry;
 
-        });
+        }(LoggerFactory, Promise));

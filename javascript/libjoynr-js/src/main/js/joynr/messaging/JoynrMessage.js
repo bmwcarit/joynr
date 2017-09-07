@@ -1,3 +1,4 @@
+/*jslint node: true */
 /*
  * #%L
  * %%
@@ -16,15 +17,11 @@
  * limitations under the License.
  * #L%
  */
-
-var MESSAGE_CUSTOM_HEADER_PREFIX = "custom-";
-define(
-        "joynr/messaging/JoynrMessage",
-        [
-            "joynr/util/UtilInternal",
-            "uuid"
-        ],
-        function(Util, uuid) {
+var MESSAGE_CUSTOM_HEADER_PREFIX = 'custom-';
+var UtilInternal = require('../util/UtilInternal');
+var uuid = require('../../lib/uuid-annotated');
+module.exports =
+        (function(Util, uuid) {
 
             var jmBase = uuid();
             var jmIndex = 0;
@@ -352,4 +349,4 @@ define(
 
             return JoynrMessage;
 
-        });
+        }(UtilInternal, uuid));

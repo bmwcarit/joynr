@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,16 +17,12 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/provider/ProviderAttribute",
-        [
-            "global/Promise",
-            "joynr/util/UtilInternal",
-            "joynr/util/Typing",
-            "joynr/types/TypeRegistrySingleton"
-        ],
-        function(Promise, Util, Typing, TypeRegistrySingleton) {
+var Promise = require('../../global/Promise');
+var UtilInternal = require('../util/UtilInternal');
+var Typing = require('../util/Typing');
+var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+module.exports =
+        (function(Promise, Util, Typing, TypeRegistrySingleton) {
 
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
@@ -251,4 +246,4 @@ define(
 
             return ProviderAttribute;
 
-        });
+        }(Promise, UtilInternal, Typing, TypeRegistrySingleton));

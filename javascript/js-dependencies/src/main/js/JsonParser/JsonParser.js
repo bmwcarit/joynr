@@ -1,3 +1,4 @@
+/*jslint node:true*/
 /*	Modified from Douglas Crockford's json_parse_state.js (2012-06-01)
 	... in order to support concatenated JSON strings sent via Atmospehere:
 
@@ -63,10 +64,7 @@
  ovalue, pop, prototype, push, r, replace, slice, state, t, test, true,
  value, "{", "}"
  */
-define(
-		"JsonParser",
-		[],
-		function () {
+module.exports =
 			function JsonParser(source, reviver) {
 				"use strict";
 
@@ -484,6 +482,4 @@ define(
 										}, '')) : value;
 									}
 								});
-			}
-			return JsonParser;
-		});
+			};

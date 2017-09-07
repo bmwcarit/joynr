@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true, node: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,58 +18,31 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-            "joynr/dispatching/subscription/SubscriptionManager",
-            "joynr/messaging/MessagingQos",
-            "joynr/start/settings/defaultMessagingSettings",
-            "joynr/dispatching/types/MulticastSubscriptionRequest",
-            "joynr/dispatching/types/SubscriptionReply",
-            "joynr/dispatching/types/SubscriptionRequest",
-            "joynr/dispatching/types/SubscriptionStop",
-            "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
-            "joynr/proxy/OnChangeSubscriptionQos",
-            "joynr/proxy/SubscriptionQos",
-            "joynr/dispatching/types/SubscriptionPublication",
-            "global/Promise",
-            "joynr/dispatching/types/Reply",
-            "joynr/exceptions/PublicationMissedException",
-            "joynr/exceptions/SubscriptionException",
-            "joynr/system/LoggerFactory",
-            "Date",
-            "global/WaitsFor",
-            "joynr/tests/testTypes/TestEnum",
-            "joynr/types/TypeRegistrySingleton",
-            "joynr/types/DiscoveryEntryWithMetaInfo",
-            "joynr/types/Version",
-            "joynr/types/ProviderQos",
-            "joynr/util/UtilInternal"
-        ],
-        function(
-                SubscriptionManager,
-                MessagingQos,
-                defaultMessagingSettings,
-                MulticastSubscriptionRequest,
-                SubscriptionReply,
-                SubscriptionRequest,
-                SubscriptionStop,
-                OnChangeWithKeepAliveSubscriptionQos,
-                OnChangeSubscriptionQos,
-                SubscriptionQos,
-                SubscriptionPublication,
-                Promise,
-                Reply,
-                PublicationMissedException,
-                SubscriptionException,
-                LoggerFactory,
-                Date,
-                waitsFor,
-                TestEnum,
-                TypeRegistrySingleton,
-                DiscoveryEntryWithMetaInfo,
-                Version,
-                ProviderQos,
-                Util) {
+var SubscriptionManager = require('../../../../classes/joynr/dispatching/subscription/SubscriptionManager');
+var MessagingQos = require('../../../../classes/joynr/messaging/MessagingQos');
+var defaultMessagingSettings = require('../../../../classes/joynr/start/settings/defaultMessagingSettings');
+var MulticastSubscriptionRequest = require('../../../../classes/joynr/dispatching/types/MulticastSubscriptionRequest');
+var SubscriptionReply = require('../../../../classes/joynr/dispatching/types/SubscriptionReply');
+var SubscriptionRequest = require('../../../../classes/joynr/dispatching/types/SubscriptionRequest');
+var SubscriptionStop = require('../../../../classes/joynr/dispatching/types/SubscriptionStop');
+var OnChangeWithKeepAliveSubscriptionQos = require('../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
+var OnChangeSubscriptionQos = require('../../../../classes/joynr/proxy/OnChangeSubscriptionQos');
+var SubscriptionQos = require('../../../../classes/joynr/proxy/SubscriptionQos');
+var SubscriptionPublication = require('../../../../classes/joynr/dispatching/types/SubscriptionPublication');
+var Promise = require('../../../../classes/global/Promise');
+var Reply = require('../../../../classes/joynr/dispatching/types/Reply');
+var PublicationMissedException = require('../../../../classes/joynr/exceptions/PublicationMissedException');
+var SubscriptionException = require('../../../../classes/joynr/exceptions/SubscriptionException');
+var LoggerFactory = require('../../../../classes/joynr/system/LoggerFactory');
+var Date = require('../../../../test-classes/global/Date');
+var WaitsFor = require('../../../../test-classes/global/WaitsFor');
+var TestEnum = require('../../../../test-classes/joynr/tests/testTypes/TestEnum');
+var TypeRegistrySingleton = require('../../../../classes/joynr/types/TypeRegistrySingleton');
+var DiscoveryEntryWithMetaInfo = require('../../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
+var Version = require('../../../../classes/joynr/types/Version');
+var ProviderQos = require('../../../../classes/joynr/types/ProviderQos');
+var UtilInternal = require('../../../../classes/joynr/util/UtilInternal');
+module.exports = (function (SubscriptionManager, MessagingQos, defaultMessagingSettings, MulticastSubscriptionRequest, SubscriptionReply, SubscriptionRequest, SubscriptionStop, OnChangeWithKeepAliveSubscriptionQos, OnChangeSubscriptionQos, SubscriptionQos, SubscriptionPublication, Promise, Reply, PublicationMissedException, SubscriptionException, LoggerFactory, Date, waitsFor, TestEnum, TypeRegistrySingleton, DiscoveryEntryWithMetaInfo, Version, ProviderQos, Util) {
 
             describe(
                     "libjoynr-js.joynr.dispatching.subscription.SubscriptionManager",
@@ -919,4 +891,4 @@ define([
                                     });
                                 });
                         });
-        });
+}(SubscriptionManager, MessagingQos, defaultMessagingSettings, MulticastSubscriptionRequest, SubscriptionReply, SubscriptionRequest, SubscriptionStop, OnChangeWithKeepAliveSubscriptionQos, OnChangeSubscriptionQos, SubscriptionQos, SubscriptionPublication, Promise, Reply, PublicationMissedException, SubscriptionException, LoggerFactory, Date, WaitsFor, TestEnum, TypeRegistrySingleton, DiscoveryEntryWithMetaInfo, Version, ProviderQos, UtilInternal));

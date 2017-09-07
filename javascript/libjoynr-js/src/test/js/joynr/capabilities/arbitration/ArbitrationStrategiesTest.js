@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,18 +18,16 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/types/ArbitrationStrategyCollection",
-            "joynr/types/DiscoveryEntry",
-            "joynr/types/ProviderScope",
-            "joynr/types/ProviderQos",
-            "joynr/types/CustomParameter",
-            "joynr/types/Version",
-            "joynr/messaging/inprocess/InProcessAddress"
-        ],
-        function(
+var ArbitrationStrategyCollection =
+        require('../../../../classes/joynr/types/ArbitrationStrategyCollection');
+var DiscoveryEntry = require('../../../../classes/joynr/types/DiscoveryEntry');
+var ProviderScope = require('../../../../classes/joynr/types/ProviderScope');
+var ProviderQos = require('../../../../classes/joynr/types/ProviderQos');
+var CustomParameter = require('../../../../classes/joynr/types/CustomParameter');
+var Version = require('../../../../classes/joynr/types/Version');
+var InProcessAddress = require('../../../../classes/joynr/messaging/inprocess/InProcessAddress');
+module.exports =
+        (function(
                 ArbitrationStrategyCollection,
                 DiscoveryEntry,
                 ProviderScope,
@@ -289,4 +289,11 @@ define(
 
                     });
 
-        }); // require
+        }(
+                ArbitrationStrategyCollection,
+                DiscoveryEntry,
+                ProviderScope,
+                ProviderQos,
+                CustomParameter,
+                Version,
+                InProcessAddress)); // require

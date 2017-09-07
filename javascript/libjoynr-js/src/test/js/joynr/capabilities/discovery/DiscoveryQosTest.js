@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,12 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/proxy/DiscoveryQos",
-    "joynr/types/ArbitrationStrategyCollection",
-    "joynr/types/DiscoveryScope"
-], function(DiscoveryQos, ArbitrationStrategyCollection, DiscoveryScope) {
+var DiscoveryQos = require('../../../../classes/joynr/proxy/DiscoveryQos');
+var ArbitrationStrategyCollection =
+        require('../../../../classes/joynr/types/ArbitrationStrategyCollection');
+var DiscoveryScope = require('../../../../classes/joynr/types/DiscoveryScope');
+module.exports =
+        (function(DiscoveryQos, ArbitrationStrategyCollection, DiscoveryScope) {
 
     describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", function() {
         it("is instantiable", function() {
@@ -91,4 +93,4 @@ define([
         });
     });
 
-}); // require
+        }(DiscoveryQos, ArbitrationStrategyCollection, DiscoveryScope)); // require

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/start/settings/defaultSettings", [], function() {
+module.exports = (function() {
     var defaultSettings = {};
     // do nothing
     return defaultSettings;
-});
+}());

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/util/InProcessSkeleton", [], function() {
+module.exports = (function() {
 
     /**
      * Note: This skeleton is merely the holder of the proxy object and does not get informed about
@@ -50,4 +51,4 @@ define("joynr/util/InProcessSkeleton", [], function() {
     }
 
     return InProcessSkeleton;
-});
+}());
