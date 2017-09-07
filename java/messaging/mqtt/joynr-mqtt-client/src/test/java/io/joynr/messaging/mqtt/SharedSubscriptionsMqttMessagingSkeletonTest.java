@@ -50,6 +50,8 @@ import joynr.system.RoutingTypes.MqttAddress;
 @RunWith(MockitoJUnitRunner.class)
 public class SharedSubscriptionsMqttMessagingSkeletonTest {
 
+    private final int repeatedMqttMessageIgnorePeriodMs = 1000;
+
     @Mock
     private MqttClientFactory mqttClientFactory;
 
@@ -84,6 +86,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         final String replyToAddressTopic = "replyToAddressTopic";
         when(replyToAddress.getTopic()).thenReturn(replyToAddressTopic);
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                               repeatedMqttMessageIgnorePeriodMs,
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
@@ -99,6 +102,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     @Test
     public void testChannelIdStrippedOfNonAlphaChars() {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                               repeatedMqttMessageIgnorePeriodMs,
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
@@ -113,6 +117,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalChannelId() {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                               repeatedMqttMessageIgnorePeriodMs,
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,

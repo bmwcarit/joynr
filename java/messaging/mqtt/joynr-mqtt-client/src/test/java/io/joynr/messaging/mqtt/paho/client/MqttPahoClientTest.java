@@ -43,6 +43,7 @@ import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -106,6 +107,7 @@ public class MqttPahoClientTest {
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MessagingPropertyKeys.CHANNELID, "myChannelId");
+        properties.put(ConfigurableMessagingSettings.PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS, "1000");
 
         injector = Guice.createInjector(new MqttPahoModule(),
                                         new JoynrPropertiesModule(properties),

@@ -19,6 +19,8 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
+
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,7 +53,7 @@ import joynr.system.RoutingTypes.MqttAddress;
 public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessageProcessedListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
-    private static final long PROCESSED_MESSAGE_DELAY_MS = 1000;
+    private final int repeatedMqttMessageIgnorePeriodMs;
     private MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
     private MqttClientFactory mqttClientFactory;
@@ -84,10 +86,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private static class DelayedMessageId extends TimedDelayed {
 
         private String messageId;
-
-        public DelayedMessageId(String messageId) {
-            this(messageId, PROCESSED_MESSAGE_DELAY_MS);
-        }
 
         public DelayedMessageId(String messageId, long delayMs) {
             super(delayMs);
@@ -130,12 +128,14 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
     @Inject
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
+                                 @Named(PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS) int repeatedMqttMessageIgnorePeriodMs,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
                                  Set<JoynrMessageProcessor> messageProcessors) {
         this.ownAddress = ownAddress;
+        this.repeatedMqttMessageIgnorePeriodMs = repeatedMqttMessageIgnorePeriodMs;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
@@ -266,7 +266,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     }
 
     private void handleMessageProcessed(String messageId, int mqttId, int mqttQos) {
-        DelayedMessageId delayedMessageId = new DelayedMessageId(messageId);
+        DelayedMessageId delayedMessageId = new DelayedMessageId(messageId, repeatedMqttMessageIgnorePeriodMs);
         if (!processedMessagesQueue.contains(delayedMessageId)) {
             mqttClient.sendMqttAck(mqttId, mqttQos);
             processedMessagesQueue.put(delayedMessageId);

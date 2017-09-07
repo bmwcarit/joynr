@@ -63,6 +63,7 @@ import com.google.common.collect.Sets;
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonTest {
 
+    private final int repeatedMqttMessageIgnorePeriodMs = 1000;
     private MqttMessagingSkeleton subject;
 
     @Mock
@@ -99,6 +100,7 @@ public class MqttMessagingSkeletonTest {
     @Before
     public void setup() {
         subject = new MqttMessagingSkeleton(ownAddress,
+                                            repeatedMqttMessageIgnorePeriodMs,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
@@ -159,6 +161,7 @@ public class MqttMessagingSkeletonTest {
         RawMessagingPreprocessor preprocessor = mock(RawMessagingPreprocessor.class);
         when(preprocessor.process(any(byte[].class), anyMap())).then(returnsFirstArg());
         subject = new MqttMessagingSkeleton(ownAddress,
+                                            repeatedMqttMessageIgnorePeriodMs,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
@@ -182,6 +185,7 @@ public class MqttMessagingSkeletonTest {
         when(processorMock.processIncoming(any(ImmutableMessage.class))).then(returnsFirstArg());
 
         subject = new MqttMessagingSkeleton(ownAddress,
+                                            repeatedMqttMessageIgnorePeriodMs,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,

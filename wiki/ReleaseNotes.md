@@ -1,8 +1,11 @@
 # joynr 0.29.0
 
 ## API relevant changes
+None.
 
-## Other changes
+## Configuration property changes
+* **[Java]** Added new property `PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`.
+  See the [Java Configuration Reference](JavaSettings.md) for more details.
 * **[Java]** Introduced new properties: PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS,
   PROPERTY_DISCOVERY_RETRY_INTERVAL_MS, PROPERTY_ROUTING_MAX_RETRY_COUNT and
   PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS.
@@ -10,11 +13,14 @@
 * **[Java]** Added new property `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`.
   See the [Java Configuration Reference](JavaSettings.md) for more details.
 * **[Js]** Made default discoveryQos configurable via provisioning. See the
-  [Javascript Configuration Reference](JavaScriptTutorial.md) for more details.
+  [Javascript Configuration Reference](JavaScriptTutorial.md#provisioning) for more details.
 * **[C++]** Made discovery-default-timeout-ms and discovery-default-retry-interval-ms
   configurable. See default-messaging.settings for more details.
 * **[C++]** The MQTT maximum message size is now configurable using the new
    setting mqtt-max-message-size-bytes. See default-messaging.settings for more details.
+
+## Other changes
+None.
 
 # joynr 0.28.1
 

@@ -19,6 +19,7 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
@@ -52,6 +53,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected MqttClientFactory mqttClientFactory;
     private boolean sharedSubscriptionsEnabled;
     private MqttAddress ownAddress;
+    private int repeatedMqttMessageIgnorePeriodMs;
     private MqttAddress replyToAddress;
     private MessageRouter messageRouter;
     private String channelId;
@@ -63,6 +65,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessagingSkeletonProvider(@Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
                                          @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
+                                         @Named(PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS) int repeatedMqttMessageIgnorePeriodMs,
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          MessageRouter messageRouter,
                                          MqttClientFactory mqttClientFactory,
@@ -74,6 +77,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
         this.ownAddress = ownAddress;
+        this.repeatedMqttMessageIgnorePeriodMs = repeatedMqttMessageIgnorePeriodMs;
         this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
@@ -87,6 +91,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     public IMessagingSkeleton get() {
         if (sharedSubscriptionsEnabled) {
             return new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+                                                                repeatedMqttMessageIgnorePeriodMs,
                                                                 replyToAddress,
                                                                 messageRouter,
                                                                 mqttClientFactory,
@@ -96,6 +101,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                 messageProcessors);
         }
         return new MqttMessagingSkeleton(ownAddress,
+                                         repeatedMqttMessageIgnorePeriodMs,
                                          messageRouter,
                                          mqttClientFactory,
                                          mqttTopicPrefixProvider,

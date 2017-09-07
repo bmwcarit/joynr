@@ -58,6 +58,7 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
 
     public static final String PROPERTY_MAX_MESSAGE_SIZE = "joynr.messaging.maxmessagesize";
     public static final String PROPERTY_MAX_MESSAGES_INQUEUE = "joynr.messaging.maxmessagesinqueue";
+    public static final String PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS = "joynr.messaging.repeatedmqttmessageignoreperiodms";
 
     public static final String PROPERTY_MESSAGING_MAXIMUM_TTL_MS = "joynr.messaging.maxttlms";
     public static final String PROPERTY_TTL_UPLIFT_MS = "joynr.messaging.ttlupliftms";
