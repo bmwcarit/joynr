@@ -194,13 +194,13 @@ class MockDelayedScheduler : public joynr::DelayedScheduler
 {
 public:
     MockDelayedScheduler(boost::asio::io_service& ioService)
-        : DelayedScheduler([](joynr::Runnable*){ assert(false); }, ioService, std::chrono::milliseconds::zero())
+        : DelayedScheduler([](std::shared_ptr<joynr::Runnable>){ assert(false); }, ioService, std::chrono::milliseconds::zero())
     {
     }
 
     void shutdown() { joynr::DelayedScheduler::shutdown(); }
     MOCK_METHOD1(unschedule, void (joynr::DelayedScheduler::RunnableHandle));
-    MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (joynr::Runnable*, std::chrono::milliseconds delay));
+    MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (std::shared_ptr<joynr::Runnable>, std::chrono::milliseconds delay));
 };
 
 class MockRunnable : public joynr::Runnable

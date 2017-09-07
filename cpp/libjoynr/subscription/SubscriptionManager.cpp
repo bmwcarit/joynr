@@ -148,12 +148,12 @@ void SubscriptionManager::registerSubscription(
                         std::chrono::milliseconds(std::numeric_limits<std::int64_t>::max()));
             }
             subscription->missedPublicationRunnableHandle = missedPublicationScheduler->schedule(
-                    new MissedPublicationRunnable(expiryDate,
-                                                  periodicPublicationInterval,
-                                                  subscriptionId,
-                                                  subscription,
-                                                  *this,
-                                                  alertAfterInterval),
+                    std::make_shared<MissedPublicationRunnable>(expiryDate,
+                                                                periodicPublicationInterval,
+                                                                subscriptionId,
+                                                                subscription,
+                                                                *this,
+                                                                alertAfterInterval),
                     std::chrono::milliseconds(alertAfterInterval));
         } else if (subscriptionExpiryDateMs != SubscriptionQos::NO_EXPIRY_DATE()) {
             const std::int64_t now =
@@ -161,7 +161,7 @@ void SubscriptionManager::registerSubscription(
                             std::chrono::system_clock::now().time_since_epoch()).count();
 
             subscription->subscriptionEndRunnableHandle = missedPublicationScheduler->schedule(
-                    new SubscriptionEndRunnable(subscriptionId, *this),
+                    std::make_shared<SubscriptionEndRunnable>(subscriptionId, *this),
                     std::chrono::milliseconds(subscriptionExpiryDateMs - now));
         }
     }
@@ -497,12 +497,12 @@ void SubscriptionManager::MissedPublicationRunnable::run()
         JOYNR_LOG_TRACE(logger, "Rescheduling MissedPublicationRunnable with delay: {}", delay);
         subscription->missedPublicationRunnableHandle =
                 subscriptionManager.missedPublicationScheduler->schedule(
-                        new MissedPublicationRunnable(decayTime,
-                                                      expectedIntervalMSecs,
-                                                      subscriptionId,
-                                                      subscription,
-                                                      subscriptionManager,
-                                                      alertAfterInterval),
+                        std::make_shared<MissedPublicationRunnable>(decayTime,
+                                                                    expectedIntervalMSecs,
+                                                                    subscriptionId,
+                                                                    subscription,
+                                                                    subscriptionManager,
+                                                                    alertAfterInterval),
                         std::chrono::milliseconds(delay));
     } else {
         JOYNR_LOG_TRACE(logger,

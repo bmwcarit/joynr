@@ -245,7 +245,7 @@ TEST_F(SubscriptionManagerTest, registerSubscription_withExpiryDate) {
     auto future = std::make_shared<Future<std::string>>();
     MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler(singleThreadedIOService.getIOService());
     EXPECT_CALL(*mockDelayedScheduler,
-                schedule(A<Runnable*>(),_))
+                schedule(A<std::shared_ptr<Runnable>>(),_))
             .Times(1).WillRepeatedly(::testing::Return(runnableHandle()));
     auto subscriptionManager = std::make_shared<SubscriptionManager>(mockDelayedScheduler, nullptr);
     SubscriptionRequest subscriptionRequest;

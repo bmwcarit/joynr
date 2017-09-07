@@ -71,7 +71,7 @@ public:
     /**
      * @brief Executes the runnable in the thread pool
      */
-    void execute(Runnable* runnable);
+    void execute(std::shared_ptr<Runnable> runnable);
 
     /**
      * @brief Does an ordinary shutdown of @ref SingleThreadedDelayedScheduler

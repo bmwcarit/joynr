@@ -244,7 +244,7 @@ void PublicationManager::addSubscriptionCleanupIfNecessary(std::shared_ptr<Publi
             publicationEndDelay = qos->getExpiryDateMs() + ttlUplift - now;
         }
         publication->publicationEndRunnableHandle = delayedScheduler->schedule(
-                new PublicationEndRunnable(shared_from_this(), subscriptionId),
+                std::make_shared<PublicationEndRunnable>(shared_from_this(), subscriptionId),
                 std::chrono::milliseconds(publicationEndDelay));
         JOYNR_LOG_TRACE(logger, "publication will end in {}  ms", publicationEndDelay);
     }
@@ -295,7 +295,8 @@ void PublicationManager::handleAttributeSubscriptionRequest(
                                   qos->getExpiryDateMs(),
                                   subscriptionId);
             // sent at least once the current value
-            delayedScheduler->schedule(new PublisherRunnable(shared_from_this(), subscriptionId));
+            delayedScheduler->schedule(
+                    std::make_shared<PublisherRunnable>(shared_from_this(), subscriptionId));
         } else {
             JOYNR_LOG_WARN(logger, "publication end is in the past");
             std::int64_t expiryDateMs =
@@ -918,7 +919,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                 std::int64_t delayUntilNextPublication = publicationInterval - timeSinceLast;
                 assert(delayUntilNextPublication >= 0);
                 delayedScheduler->schedule(
-                        new PublisherRunnable(shared_from_this(), subscriptionId),
+                        std::make_shared<PublisherRunnable>(shared_from_this(), subscriptionId),
                         std::chrono::milliseconds(delayUntilNextPublication));
                 return;
             }
@@ -952,7 +953,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                 JOYNR_LOG_TRACE(
                         logger, "rescheduling runnable with delay: {}", publicationInterval);
                 delayedScheduler->schedule(
-                        new PublisherRunnable(shared_from_this(), subscriptionId),
+                        std::make_shared<PublisherRunnable>(shared_from_this(), subscriptionId),
                         std::chrono::milliseconds(publicationInterval));
             }
         };
@@ -972,7 +973,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
                 JOYNR_LOG_TRACE(
                         logger, "rescheduling runnable with delay: {}", publicationInterval);
                 delayedScheduler->schedule(
-                        new PublisherRunnable(shared_from_this(), subscriptionId),
+                        std::make_shared<PublisherRunnable>(shared_from_this(), subscriptionId),
                         std::chrono::milliseconds(publicationInterval));
             }
         };
@@ -1032,8 +1033,9 @@ void PublicationManager::reschedulePublication(const std::string& subscriptionId
         if (!util::vectorContains(currentScheduledPublications, subscriptionId)) {
             JOYNR_LOG_TRACE(logger, "rescheduling runnable with delay: {}", nextPublication);
             currentScheduledPublications.push_back(subscriptionId);
-            delayedScheduler->schedule(new PublisherRunnable(shared_from_this(), subscriptionId),
-                                       std::chrono::milliseconds(nextPublication));
+            delayedScheduler->schedule(
+                    std::make_shared<PublisherRunnable>(shared_from_this(), subscriptionId),
+                    std::chrono::milliseconds(nextPublication));
         }
     }
 }

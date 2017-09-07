@@ -120,8 +120,8 @@ void Dispatcher::receive(std::shared_ptr<ImmutableMessage> message)
     JOYNR_LOG_TRACE(logger, "received message: {}", message->toLogMessage());
     // we only support non-encrypted messages for now
     assert(!message->isEncrypted());
-    ReceivedMessageRunnable* receivedMessageRunnable =
-            new ReceivedMessageRunnable(std::move(message), *this);
+    std::shared_ptr<ReceivedMessageRunnable> receivedMessageRunnable =
+            std::make_shared<ReceivedMessageRunnable>(std::move(message), *this);
     handleReceivedMessageThreadPool->execute(receivedMessageRunnable);
 }
 

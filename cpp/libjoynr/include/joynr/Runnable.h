@@ -19,6 +19,8 @@
 #ifndef JOYNRRUNNABLE_H
 #define JOYNRRUNNABLE_H
 
+#include <memory>
+
 #include "joynr/JoynrExport.h"
 
 namespace joynr
@@ -28,7 +30,7 @@ namespace joynr
  * @class Runnable
  * @brief Abstract class providing work that should be done
  */
-class JOYNR_EXPORT Runnable
+class JOYNR_EXPORT Runnable : public std::enable_shared_from_this<Runnable>
 {
 public:
     /**

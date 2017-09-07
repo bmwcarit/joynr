@@ -75,12 +75,12 @@ void ThreadPool::shutdown()
 
     {
         std::lock_guard<std::mutex> lock(mutex);
-        for (Runnable* runnable : currentlyRunning) {
+        for (std::shared_ptr<Runnable> runnable : currentlyRunning) {
             runnable->shutdown();
         }
     }
 
-    std::set<Runnable*>::size_type maxRunning = 0;
+    std::set<std::shared_ptr<Runnable>>::size_type maxRunning = 0;
     for (auto thread = threads.begin(); thread != threads.end(); ++thread) {
         // do not cause an abort waiting for ourselves
         if (std::this_thread::get_id() == thread->get_id()) {
@@ -106,7 +106,7 @@ bool ThreadPool::isRunning()
     return keepRunning;
 }
 
-void ThreadPool::execute(Runnable* runnable)
+void ThreadPool::execute(std::shared_ptr<Runnable> runnable)
 {
     scheduler.add(runnable);
 }
@@ -119,9 +119,9 @@ void ThreadPool::threadLifecycle(std::shared_ptr<ThreadPool> thisSharedPtr)
 
         JOYNR_LOG_TRACE(logger, "Thread is waiting");
         // Take a runnable
-        Runnable* runnable = scheduler.take();
+        std::shared_ptr<Runnable> runnable = scheduler.take();
 
-        if (runnable != nullptr) {
+        if (runnable) {
 
             JOYNR_LOG_TRACE(logger, "Thread got runnable and will do work");
 
@@ -130,9 +130,9 @@ void ThreadPool::threadLifecycle(std::shared_ptr<ThreadPool> thisSharedPtr)
                 std::lock_guard<std::mutex> lock(thisSharedPtr->mutex);
                 if (!thisSharedPtr->keepRunning) {
                     // Call Dtor of runnable if needed
-                    if (runnable->isDeleteOnExit()) {
-                        delete runnable;
-                    }
+                    // if (runnable->isDeleteOnExit()) {
+                    //    delete runnable;
+                    //}
                     break;
                 }
                 thisSharedPtr->currentlyRunning.insert(runnable);
@@ -149,9 +149,9 @@ void ThreadPool::threadLifecycle(std::shared_ptr<ThreadPool> thisSharedPtr)
             }
 
             // Call Dtor of runnable if needed
-            if (runnable->isDeleteOnExit()) {
-                delete runnable;
-            }
+            // if (runnable->isDeleteOnExit()) {
+            //    delete runnable;
+            //}
         }
     }
 

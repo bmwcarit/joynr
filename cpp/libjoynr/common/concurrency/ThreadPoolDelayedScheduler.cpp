@@ -46,9 +46,9 @@ ThreadPoolDelayedScheduler::~ThreadPoolDelayedScheduler()
     assert(!threadPool->isRunning());
 }
 
-void ThreadPoolDelayedScheduler::execute(Runnable* runnable)
+void ThreadPoolDelayedScheduler::execute(std::shared_ptr<Runnable> runnable)
 {
-    threadPool->execute(runnable);
+    threadPool->execute(std::move(runnable));
 }
 
 void ThreadPoolDelayedScheduler::shutdown()

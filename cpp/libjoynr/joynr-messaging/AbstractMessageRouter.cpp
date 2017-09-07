@@ -256,11 +256,11 @@ void AbstractMessageRouter::sendMessages(
 
         try {
             const std::uint32_t tryCount = 0;
-            messageScheduler.schedule(new MessageRunnable(item->getContent(),
-                                                          std::move(messagingStub),
-                                                          address,
-                                                          shared_from_this(),
-                                                          tryCount),
+            messageScheduler.schedule(std::make_shared<MessageRunnable>(item->getContent(),
+                                                                        std::move(messagingStub),
+                                                                        address,
+                                                                        shared_from_this(),
+                                                                        tryCount),
                                       std::chrono::milliseconds(0));
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger,
@@ -292,11 +292,11 @@ void AbstractMessageRouter::scheduleMessage(
 
     auto stub = messagingStubFactory->create(destAddress);
     if (stub) {
-        messageScheduler.schedule(new MessageRunnable(std::move(message),
-                                                      std::move(stub),
-                                                      std::move(destAddress),
-                                                      shared_from_this(),
-                                                      tryCount),
+        messageScheduler.schedule(std::make_shared<MessageRunnable>(std::move(message),
+                                                                    std::move(stub),
+                                                                    std::move(destAddress),
+                                                                    shared_from_this(),
+                                                                    tryCount),
                                   delay);
     } else {
         JOYNR_LOG_WARN(
@@ -453,34 +453,45 @@ void MessageRunnable::run()
 {
     if (!isExpired()) {
         // TODO is it safe to capture (this) here? rather capture members by value!
-        auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
-            try {
-                exceptions::JoynrDelayMessageException& delayException =
-                        dynamic_cast<exceptions::JoynrDelayMessageException&>(
-                                const_cast<exceptions::JoynrRuntimeException&>(e));
-                std::chrono::milliseconds delay = delayException.getDelayMs();
+        auto onFailure = [thisWeakPtr = joynr::util::as_weak_ptr(
+                                  std::dynamic_pointer_cast<MessageRunnable>(shared_from_this()))](
+                const exceptions::JoynrRuntimeException& e)
+        {
+            if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                try {
+                    exceptions::JoynrDelayMessageException& delayException =
+                            dynamic_cast<exceptions::JoynrDelayMessageException&>(
+                                    const_cast<exceptions::JoynrRuntimeException&>(e));
+                    std::chrono::milliseconds delay = delayException.getDelayMs();
 
-                if (auto messageRouterSharedPtr = messageRouter.lock()) {
-                    JOYNR_LOG_TRACE(
-                            logger,
-                            "Rescheduling message after error: messageId: {}, new delay {}ms, "
-                            "reason: {}",
-                            message->getId(),
-                            delay.count(),
-                            e.getMessage());
-                    messageRouterSharedPtr->scheduleMessage(
-                            message, destAddress, tryCount + 1, delay);
-                } else {
-                    JOYNR_LOG_ERROR(logger,
-                                    "Message with ID {} could not be sent! reason: messageRouter "
-                                    "not available",
-                                    message->getId());
-                }
-            } catch (const std::bad_cast&) {
-                JOYNR_LOG_ERROR(logger,
-                                "Message with ID {} could not be sent! reason: {}",
-                                message->getId(),
+                    if (auto messageRouterSharedPtr = thisSharedPtr->messageRouter.lock()) {
+                        JOYNR_LOG_TRACE(
+                                logger,
+                                "Rescheduling message after error: messageId: {}, new delay {}ms, "
+                                "reason: {}",
+                                thisSharedPtr->message->getId(),
+                                delay.count(),
                                 e.getMessage());
+                        messageRouterSharedPtr->scheduleMessage(thisSharedPtr->message,
+                                                                thisSharedPtr->destAddress,
+                                                                thisSharedPtr->tryCount + 1,
+                                                                delay);
+                    } else {
+                        JOYNR_LOG_ERROR(
+                                logger,
+                                "Message with ID {} could not be sent! reason: messageRouter "
+                                "not available",
+                                thisSharedPtr->message->getId());
+                    }
+                } catch (const std::bad_cast&) {
+                    JOYNR_LOG_ERROR(logger,
+                                    "Message with ID {} could not be sent! reason: {}",
+                                    thisSharedPtr->message->getId(),
+                                    e.getMessage());
+                }
+            } else {
+                JOYNR_LOG_ERROR(
+                        logger, "Message could not be sent! reason: MessageRunnable not available");
             }
         };
         messagingStub->transmit(message, onFailure);

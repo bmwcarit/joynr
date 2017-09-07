@@ -81,7 +81,7 @@ public:
      * Executes work by adding to the queue
      * @param runnable Runnable to be executed
      */
-    void execute(Runnable* runnable);
+    void execute(std::shared_ptr<Runnable> runnable);
 
 private:
     /*! Disallow copy and assign */
@@ -104,7 +104,7 @@ private:
     std::atomic_bool keepRunning;
 
     /*! Currently running work in @ref threads */
-    std::set<Runnable*> currentlyRunning;
+    std::set<std::shared_ptr<Runnable>> currentlyRunning;
 
     std::mutex mutex;
 
