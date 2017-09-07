@@ -1,21 +1,24 @@
 # joynr 0.29.0
 
 ## API relevant changes
+None.
 
 ## Other changes
-* **[Java]** Introduced new properties: PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS,
-  PROPERTY_DISCOVERY_RETRY_INTERVAL_MS, PROPERTY_ROUTING_MAX_RETRY_COUNT and
-  PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS.
-  See the [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** Added new property `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`.
-  See the [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Js]** Made default discoveryQos configurable via provisioning. See the
+* **[Java]** See the [Java Configuration Reference](JavaSettings.md) for
+  details about these newly introduced properties:
+  * `PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS`
+  * `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS`
+  * `PROPERTY_ROUTING_MAX_RETRY_COUNT`
+  * `PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS`
+  * `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`
+* **[JS]** Made default discoveryQos configurable via provisioning. See the
   [Javascript Configuration Reference](JavaScriptTutorial.md) for more details.
-* **[C++]** Made discovery-default-timeout-ms and discovery-default-retry-interval-ms
-  configurable. See default-messaging.settings for more details.
-* **[C++]** The MQTT maximum message size is now configurable using the new
-   setting mqtt-max-message-size-bytes. See default-messaging.settings for more details.
-* **[Java, JS]** Changed default values for the following properties:
+* **[C++]** Made the following properties configurable. See
+  default-messaging.settings for more details.
+  * `discovery-default-timeout-ms`
+  * `discovery-default-retry-interval-ms`
+  * `mqtt-max-message-size-bytes`
+* **[C++, Java, JS]** Changed default values for the following properties:
   * Discovery expiry interval set to 6 weeks
   * Discovery timeout interval set to 10 minutes
   * Discovery retry interval set to 10 seconds
