@@ -33,7 +33,6 @@ import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
-import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.GlobalDomainAccessControllerSubscriptionPublisher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,12 +62,8 @@ public class GlobalDomainAccessControllerBeanTest {
     private GlobalDomainAccessControllerBean globalDomainAccessControllerSubject = new GlobalDomainAccessControllerBean();
 
     private final static String USER_ID = "user.name";
-    private final static String USER_PARTITION = "username";
     private final static String DOMAIN = "domain1";
-    private final static String[] DOMAINS = { DOMAIN };
     private final static String INTERFACE_NAME = "interfaceName";
-    private final static Role ROLE = Role.MASTER;
-    private final static String OPERATION = "operation";
 
     @Test
     public void testFindMasterAccessControlEntriesByUserId() {

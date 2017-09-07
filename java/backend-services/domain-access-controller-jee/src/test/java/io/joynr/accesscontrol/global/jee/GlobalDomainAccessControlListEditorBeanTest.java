@@ -72,9 +72,7 @@ public class GlobalDomainAccessControlListEditorBeanTest {
     private GlobalDomainAccessControlListEditorBean globalDomainAccessControlListEditorSubject = new GlobalDomainAccessControlListEditorBean();
 
     private final static String USER_ID = "user.name";
-    private final static String USER_PARTITION = "username";
     private final static String DOMAIN = "domain1";
-    private final static String[] DOMAINS = { DOMAIN };
     private final static String INTERFACE_NAME = "interfaceName";
     private final static String OPERATION = "operation";
 
