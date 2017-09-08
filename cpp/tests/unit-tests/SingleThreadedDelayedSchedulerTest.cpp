@@ -56,11 +56,11 @@ TEST_F(SingleThreadedDelayedSchedulerTest, startAndShutdownWithPendingWork_callD
     SingleThreadedDelayedScheduler scheduler("SingleThreadedDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
 
     // Dtor should be called
-    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>(true);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
     scheduler.schedule(runnable1, std::chrono::milliseconds(100));
 
     // Dtor called after scheduler was cleaned
-    auto runnable2 = std::make_shared<StrictMock<MockRunnable>>(false);
+    auto runnable2 = std::make_shared<StrictMock<MockRunnable>>();
     scheduler.schedule(runnable2, std::chrono::milliseconds(100));
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
@@ -78,7 +78,7 @@ TEST_F(SingleThreadedDelayedSchedulerTest, testAccuracyOfDelayedScheduler)
 {
     SingleThreadedDelayedScheduler scheduler("SingleThreadedDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
 
-    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(false, 5);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(5);
 
     scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
@@ -96,7 +96,7 @@ TEST_F(SingleThreadedDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasE
 {
     SingleThreadedDelayedScheduler scheduler("SingleThreadedDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
 
-    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>(true);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
 
     scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
@@ -112,7 +112,7 @@ TEST_F(SingleThreadedDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
 {
     SingleThreadedDelayedScheduler scheduler("SingleThreadedDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
 
-    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(false, 5);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(5);
 
     DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
@@ -131,7 +131,7 @@ TEST_F(SingleThreadedDelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDto
 {
     SingleThreadedDelayedScheduler scheduler("SingleThreadedDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
 
-    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(true, 5u);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(5u);
 
     DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
@@ -150,7 +150,7 @@ TEST_F(SingleThreadedDelayedSchedulerTest, useDefaultDelay)
 {
     SingleThreadedDelayedScheduler scheduler("SingleThreadedDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds(10));
 
-    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(false, 10u);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(10u);
 
     scheduler.schedule(runnable1);
 

@@ -1059,7 +1059,7 @@ PublicationManager::Publication::Publication(std::weak_ptr<IPublicationSender> p
 PublicationManager::PublisherRunnable::PublisherRunnable(
         std::weak_ptr<PublicationManager> publicationManager,
         const std::string& subscriptionId)
-        : Runnable(true),
+        : Runnable(),
           publicationManager(std::move(publicationManager)),
           subscriptionId(subscriptionId)
 {
@@ -1081,7 +1081,7 @@ void PublicationManager::PublisherRunnable::run()
 PublicationManager::PublicationEndRunnable::PublicationEndRunnable(
         std::weak_ptr<PublicationManager> publicationManager,
         const std::string& subscriptionId)
-        : Runnable(true), publicationManager(publicationManager), subscriptionId(subscriptionId)
+        : Runnable(), publicationManager(publicationManager), subscriptionId(subscriptionId)
 {
 }
 

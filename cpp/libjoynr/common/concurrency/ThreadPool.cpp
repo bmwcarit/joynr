@@ -129,10 +129,6 @@ void ThreadPool::threadLifecycle(std::shared_ptr<ThreadPool> thisSharedPtr)
             {
                 std::lock_guard<std::mutex> lock(thisSharedPtr->mutex);
                 if (!thisSharedPtr->keepRunning) {
-                    // Call Dtor of runnable if needed
-                    // if (runnable->isDeleteOnExit()) {
-                    //    delete runnable;
-                    //}
                     break;
                 }
                 thisSharedPtr->currentlyRunning.insert(runnable);
@@ -147,11 +143,6 @@ void ThreadPool::threadLifecycle(std::shared_ptr<ThreadPool> thisSharedPtr)
                 std::lock_guard<std::mutex> lock(thisSharedPtr->mutex);
                 thisSharedPtr->currentlyRunning.erase(runnable);
             }
-
-            // Call Dtor of runnable if needed
-            // if (runnable->isDeleteOnExit()) {
-            //    delete runnable;
-            //}
         }
     }
 

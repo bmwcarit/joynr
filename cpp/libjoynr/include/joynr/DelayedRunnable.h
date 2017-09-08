@@ -51,11 +51,6 @@ public:
     ~DelayedRunnable()
     {
         timer.cancel();
-
-        // Don't delete the runnable if automatic deletition is disabled
-        if (runnable && !runnable->isDeleteOnExit()) {
-            runnable.reset();
-        }
     }
 
     std::shared_ptr<Runnable> takeRunnable()

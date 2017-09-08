@@ -21,14 +21,8 @@
 namespace joynr
 {
 
-Runnable::Runnable(bool deleteOnExit)
-        : enable_shared_from_this<Runnable>(), deleteOnExit(deleteOnExit)
+Runnable::Runnable() : enable_shared_from_this<Runnable>()
 {
-}
-
-bool Runnable::isDeleteOnExit() const
-{
-    return deleteOnExit;
 }
 
 } // namespace joynr

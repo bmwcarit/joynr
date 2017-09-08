@@ -460,7 +460,7 @@ SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
         std::shared_ptr<Subscription> subscription,
         std::weak_ptr<SubscriptionManager> subscriptionManager,
         std::int64_t alertAfterInterval)
-        : Runnable(true),
+        : Runnable(),
           ObjectWithDecayTime(expiryDate),
           expectedIntervalMSecs(expectedIntervalMSecs),
           subscription(subscription),
@@ -532,7 +532,7 @@ INIT_LOGGER(SubscriptionManager::SubscriptionEndRunnable);
 SubscriptionManager::SubscriptionEndRunnable::SubscriptionEndRunnable(
         const std::string& subscriptionId,
         std::weak_ptr<SubscriptionManager> subscriptionManager)
-        : Runnable(true), subscriptionId(subscriptionId), subscriptionManager(subscriptionManager)
+        : Runnable(), subscriptionId(subscriptionId), subscriptionManager(subscriptionManager)
 {
 }
 

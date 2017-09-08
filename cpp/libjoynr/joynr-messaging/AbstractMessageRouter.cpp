@@ -435,7 +435,7 @@ MessageRunnable::MessageRunnable(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
         std::weak_ptr<AbstractMessageRouter> messageRouter,
         std::uint32_t tryCount)
-        : Runnable(true),
+        : Runnable(),
           ObjectWithDecayTime(message->getExpiryDate()),
           message(message),
           messagingStub(messagingStub),

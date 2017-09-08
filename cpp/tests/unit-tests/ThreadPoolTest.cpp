@@ -43,10 +43,10 @@ TEST(ThreadPoolTest, startAndShutdown_callDtorOfRunnablesCorrect)
     pool->init();
 
     // Dtor should be called after execution has finished
-    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>(true);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
 
     // Dtor called after the test
-    auto runnable2 = std::make_shared<StrictMock<MockRunnable>>(false);
+    auto runnable2 = std::make_shared<StrictMock<MockRunnable>>();
 
     EXPECT_CALL(*runnable2, run()).Times(1);
     pool->execute(runnable2);
@@ -69,7 +69,7 @@ TEST(ThreadPoolTest, callDtorOfRunnabeAfterWorkHasDone)
     auto pool = std::make_shared<ThreadPool>("ThreadPoolTest", 1);
     pool->init();
 
-    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>(true);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
 
     EXPECT_CALL(*runnable1, run()).Times(1);
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);

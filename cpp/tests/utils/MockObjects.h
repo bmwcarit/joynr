@@ -206,7 +206,7 @@ public:
 class MockRunnable : public joynr::Runnable
 {
 public:
-    MockRunnable(bool deleteMe) : Runnable(deleteMe)
+    MockRunnable() : Runnable()
     {
     }
 
@@ -225,8 +225,7 @@ class MockRunnableWithAccuracy : public joynr::Runnable
 public:
     static const std::uint64_t timerAccuracyTolerance_ms = 5U;
 
-    MockRunnableWithAccuracy(bool deleteMe,
-                             const std::uint64_t delay);
+    MockRunnableWithAccuracy(const std::uint64_t delay);
 
     MOCK_CONST_METHOD0(dtorCalled, void ());
     ~MockRunnableWithAccuracy();
@@ -245,8 +244,8 @@ private:
 class MockRunnableBlocking : public joynr::Runnable
 {
 public:
-    MockRunnableBlocking(bool deleteMe = false)
-        : Runnable(deleteMe),
+    MockRunnableBlocking()
+        : Runnable(),
           mutex(),
           wait()
     {

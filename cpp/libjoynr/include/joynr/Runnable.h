@@ -44,12 +44,6 @@ public:
     virtual void shutdown() = 0;
 
     /**
-     * @brief Get free on exit flag
-     * @return Flag indicating if object should be deleted after execution
-     */
-    bool isDeleteOnExit() const;
-
-    /**
      * @brief Method that will be called from thread context
      * @note This method must terminate execution as soon as possible if @ref
      *      shutdown got called
@@ -59,14 +53,8 @@ public:
 protected:
     /**
      * @brief Constructor
-     * @param deleteOnExit Flag indicating if destructor should be called when
-     *      @ref run has returned
      */
-    explicit Runnable(bool deleteOnExit);
-
-private:
-    /*! Flag indicating if object should be deleted after execution */
-    bool deleteOnExit;
+    explicit Runnable();
 };
 
 } // namespace joynr

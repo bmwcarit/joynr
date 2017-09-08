@@ -115,11 +115,11 @@ TEST(DelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCo
     SimpleDelayedScheduler scheduler(singleThreadedIOService);
 
     // Dtor should be called
-    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>(true);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
     scheduler.schedule(runnable1, std::chrono::milliseconds(100));
 
     // Dtor called after scheduler was cleaned
-    auto runnable2 = std::make_shared<StrictMock<MockRunnable>>(false);
+    auto runnable2 = std::make_shared<StrictMock<MockRunnable>>();
     scheduler.schedule(runnable2, std::chrono::milliseconds(100));
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
@@ -139,7 +139,7 @@ TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
     SingleThreadedIOService singleThreadedIOService;
     singleThreadedIOService.start();
     SimpleDelayedScheduler scheduler(singleThreadedIOService);
-    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>(false);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
     scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
     EXPECT_CALL(scheduler, workAvailableCalled(std::dynamic_pointer_cast<Runnable>(runnable1))).Times(1);
@@ -158,7 +158,7 @@ TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
     SingleThreadedIOService singleThreadedIOService;
     singleThreadedIOService.start();
     SimpleDelayedScheduler scheduler(singleThreadedIOService);
-    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>(true);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
     scheduler.schedule(runnable1, std::chrono::milliseconds(5));
 
     EXPECT_CALL(scheduler, workAvailableCalled(std::dynamic_pointer_cast<Runnable>(runnable1))).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
@@ -175,7 +175,7 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
     SingleThreadedIOService singleThreadedIOService;
     singleThreadedIOService.start();
     SimpleDelayedScheduler scheduler(singleThreadedIOService);
-    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>(false);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
     DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(50));
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
@@ -194,7 +194,7 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
     SingleThreadedIOService singleThreadedIOService;
     singleThreadedIOService.start();
     SimpleDelayedScheduler scheduler(singleThreadedIOService);
-    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>(true);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
     DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(50));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
