@@ -393,7 +393,13 @@ void AbstractMessageRouter::addToRoutingTable(
 {
     {
         WriteLocker lock(routingTableLock);
-        routingTable.add(participantId, isGloballyVisible, std::move(address));
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
+        routingTable.add(std::move(participantId),
+                         std::move(isGloballyVisible),
+                         std::move(address),
+                         expiryDateMs,
+                         isSticky);
     }
     const joynr::InProcessMessagingAddress* inprocessAddress =
             dynamic_cast<const joynr::InProcessMessagingAddress*>(address.get());
