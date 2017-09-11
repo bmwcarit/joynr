@@ -136,12 +136,16 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     @Override
     public void subscribe(String topic) {
         boolean subscribed = false;
-        while (!subscribed) {
-            logger.debug("MQTT subscribed to: {}", topic);
+        while (!subscribed && !shutdown) {
+            logger.debug("MQTT subscribing to: {}", topic);
             try {
-                mqttClient.subscribe(topic);
-                subscribed = true;
-                subscribedTopics.add(topic);
+                synchronized (subscribedTopics) {
+                    if (!subscribedTopics.contains(topic)) {
+                        mqttClient.subscribe(topic);
+                        subscribedTopics.add(topic);
+                    }
+                    subscribed = true;
+                }
             } catch (MqttException mqttError) {
                 logger.debug("MQTT subscribe to {} failed: {}. Error code {}",
                              topic,
@@ -159,6 +163,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 case MqttException.REASON_CODE_SUBSCRIBE_FAILED:
                 case MqttException.REASON_CODE_UNEXPECTED_ERROR:
                 case MqttException.REASON_CODE_WRITE_TIMEOUT:
+                case MqttException.REASON_CODE_CONNECTION_LOST:
+                case MqttException.REASON_CODE_CLIENT_NOT_CONNECTED:
+                case MqttException.REASON_CODE_CLIENT_DISCONNECTING:
                     try {
                         Thread.sleep(reconnectSleepMs);
                     } catch (InterruptedException e) {
@@ -166,10 +173,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                         return;
                     }
                     continue;
-                case MqttException.REASON_CODE_CONNECTION_LOST:
-                case MqttException.REASON_CODE_CLIENT_NOT_CONNECTED:
-                case MqttException.REASON_CODE_CLIENT_DISCONNECTING:
-                    throw new JoynrIllegalStateException("client is not connected");
+                default:
+                    throw new JoynrIllegalStateException("Unexpected exception while subscribing to " + topic
+                            + ", error: " + mqttError);
                 }
 
             } catch (Exception e) {
@@ -181,7 +187,11 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     @Override
     public void unsubscribe(String topic) {
         try {
-            mqttClient.unsubscribe(topic);
+            synchronized (subscribedTopics) {
+                if (subscribedTopics.remove(topic)) {
+                    mqttClient.unsubscribe(topic);
+                }
+            }
         } catch (MqttException e) {
             throw new JoynrRuntimeException("Unable to unsubscribe from " + topic, e);
         }
