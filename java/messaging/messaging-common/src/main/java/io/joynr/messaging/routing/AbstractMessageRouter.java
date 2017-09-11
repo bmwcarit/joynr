@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +44,7 @@ import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.SuccessAction;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.ImmutableMessage;
@@ -72,8 +74,9 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     private AddressManager addressManager;
     protected final MulticastReceiverRegistry multicastReceiverRegistry;
 
-    private BoundedDelayQueue<DelayableImmutableMessage> messageQueue;
+    private DelayQueue<DelayableImmutableMessage> messageQueue;
 
+    private List<MessageProcessedListener> messageProcessedListeners;
     private List<ScheduledFuture<?>> workerFutures;
 
     @Inject
@@ -89,7 +92,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                                  MessagingSkeletonFactory messagingSkeletonFactory,
                                  AddressManager addressManager,
                                  MulticastReceiverRegistry multicastReceiverRegistry,
-                                 BoundedDelayQueue<DelayableImmutableMessage> messageQueue,
+                                 DelayQueue<DelayableImmutableMessage> messageQueue,
                                  ShutdownNotifier shutdownNotifier) {
         // CHECKSTYLE:ON
         this.routingTable = routingTable;
@@ -103,6 +106,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
         shutdownNotifier.registerForShutdown(this);
+        messageProcessedListeners = new ArrayList<MessageProcessedListener>();
         startMessageWorkerThreads(maxParallelSends);
         startRoutingTableCleanupThread();
     }
@@ -126,6 +130,20 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                 routingTable.purge();
             }
         }, routingTableCleanupIntervalMs, routingTableCleanupIntervalMs, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void registerMessageProcessedListener(MessageProcessedListener messageProcessedListener) {
+        synchronized (messageProcessedListeners) {
+            messageProcessedListeners.add(messageProcessedListener);
+        }
+    }
+
+    @Override
+    public void unregisterMessageProcessedListener(MessageProcessedListener messageProcessedListener) {
+        synchronized (messageProcessedListeners) {
+            messageProcessedListeners.remove(messageProcessedListener);
+        }
     }
 
     @Override
@@ -251,22 +269,19 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         if (maxRetryCount > -1) {
             if (retriesCount > maxRetryCount) {
                 logger.error("Max-retry-count (" + maxRetryCount + ") reached. Dropping message " + message);
+                callMessageProcessedListeners(message.getId());
                 return;
             }
             if (retriesCount > 0) {
                 logger.debug("Retry {}/{} sending message {}", retriesCount, maxRetryCount, message);
             }
         }
-        try {
-            messageQueue.putBounded(delayableMessage);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new JoynrShutdownException("INTERRUPTED. Shutting down");
-        }
+        messageQueue.put(delayableMessage);
     }
 
     private void checkExpiry(final ImmutableMessage message) {
         if (!message.isTtlAbsolute()) {
+            callMessageProcessedListeners(message.getId());
             throw new JoynrRuntimeException("Relative ttl not supported");
         }
 
@@ -278,6 +293,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                                                        currentTimeMillis,
                                                        ttlExpirationDateMs);
             logger.error(errorMessage);
+            callMessageProcessedListeners(message.getId());
             throw new JoynrMessageNotSentException(errorMessage);
         }
     }
@@ -285,15 +301,25 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     private FailureAction createFailureAction(final ImmutableMessage message, final int retriesCount) {
         final FailureAction failureAction = new FailureAction() {
             final String messageId = message.getId();
+            private boolean failureActionExecutedOnce = false;
 
             @Override
             public void execute(Throwable error) {
+                synchronized (this) {
+                    if (failureActionExecutedOnce) {
+                        logger.trace("Failure action for message with id {} already executed once. Ignoring further call.",
+                                     messageId);
+                        return;
+                    }
+                    failureActionExecutedOnce = true;
+                }
                 if (error instanceof JoynrShutdownException) {
                     logger.warn("{}", error.getMessage());
                     return;
                 } else if (error instanceof JoynrMessageNotSentException) {
                     logger.error(" ERROR SENDING:  aborting send of messageId: {}. Error: {}", new Object[]{ messageId,
                             error.getMessage() });
+                    callMessageProcessedListeners(messageId);
                     return;
                 }
                 logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error: {} Message: {}", new Object[]{
@@ -309,11 +335,39 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                 logger.error("Rescheduling messageId: {} with delay " + delayMs + " ms, TTL is: {} ms",
                              messageId,
                              DateFormatter.format(message.getTtlMs()));
-                routeInternal(message, delayMs, retriesCount + 1);
+                try {
+                    routeInternal(message, delayMs, retriesCount + 1);
+                } catch (Exception e) {
+                    logger.warn("Rescheduling of message failed (messageId {})", messageId);
+                    callMessageProcessedListeners(messageId);
+                }
                 return;
             }
         };
         return failureAction;
+    }
+
+    private void callMessageProcessedListeners(final String messageId) {
+        synchronized (messageProcessedListeners) {
+            for (MessageProcessedListener messageProcessedListener : messageProcessedListeners) {
+                messageProcessedListener.messageProcessed(messageId);
+            }
+        }
+    }
+
+    private SuccessAction createMessageProcessedAction(final String messageId, final int numberOfCalls) {
+        final SuccessAction successAction = new SuccessAction() {
+            private int callCount = numberOfCalls;
+
+            @Override
+            public void execute() {
+                callCount--;
+                if (callCount == 0) {
+                    callMessageProcessedListeners(messageId);
+                }
+            }
+        };
+        return successAction;
     }
 
     @Override
@@ -357,14 +411,25 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
 
                     Set<Address> addresses = getAddresses(message);
                     if (addresses.isEmpty()) {
-                        throw new JoynrMessageNotSentException("Failed to send Request: No route for given participantId: "
+                        throw new JoynrMessageNotSentException("Failed to send Message: No route for given participantId: "
                                 + message.getRecipient());
                     }
+                    SuccessAction messageProcessedAction = createMessageProcessedAction(message.getId(),
+                                                                                        addresses.size());
+                    // If multiple stub calls for a multicast to multiple destination addresses fail, the failure
+                    // action is called for each failing stub call. Hence, the same failureAction has to be used.
+                    // Otherwise, the message is rescheduled multiple times and the message queue is flooded with
+                    // entries for the same message until the transmission of every entry is successful for all
+                    // recipients. Also the recipients are flooded with the same message.
+                    // Open issue:
+                    // If only some stub calls fail, the rescheduled message will be sent to all its recipients again,
+                    // no matter if an earlier transmission attempt was already successful or not.
+                    FailureAction failureAction = createFailureAction(message, retriesCount);
                     for (Address address : addresses) {
                         logger.trace(">>>>> SEND  {} to address {}", message, address);
 
                         IMessagingStub messagingStub = messagingStubFactory.create(address);
-                        messagingStub.transmit(message, createFailureAction(message, retriesCount));
+                        messagingStub.transmit(message, messageProcessedAction, failureAction);
                     }
                 } catch (InterruptedException e) {
                     logger.trace("Message Worker interrupted. Stopping.");

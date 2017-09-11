@@ -40,14 +40,14 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClient.class);
     private MqttClient mqttClient;
-    private IMessagingSkeleton messagingSkeleton;
+    private IMqttMessagingSkeleton messagingSkeleton;
     private int reconnectSleepMs;
     private int keepAliveTimerSec;
     private int connectionTimeoutSec;
@@ -81,6 +81,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             try {
                 mqttClient.setCallback(this);
                 mqttClient.setTimeToWait(timeToWaitMs);
+                mqttClient.setManualAcks(true);
                 mqttClient.connect(getConnectOptions());
                 logger.debug("MQTT Connected client");
                 for (String topic : subscribedTopics) {
@@ -334,18 +335,29 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             logger.error("MQTT message not processed: messagingSkeleton has not been set yet");
             return;
         }
-        messagingSkeleton.transmit(mqttMessage.getPayload(), new FailureAction() {
+        messagingSkeleton.transmit(mqttMessage.getPayload(),
+                                   mqttMessage.getId(),
+                                   mqttMessage.getQos(),
+                                   new FailureAction() {
 
-            @Override
-            public void execute(Throwable error) {
-                logger.error("MQTT message not processed");
-            }
-        });
+                                       @Override
+                                       public void execute(Throwable error) {
+                                           logger.error("MQTT message not processed");
+                                       }
+                                   });
     }
 
     @Override
-    public void setMessageListener(IMessagingSkeleton messaging) {
+    public void setMessageListener(IMqttMessagingSkeleton messaging) {
         this.messagingSkeleton = messaging;
+    }
 
+    @Override
+    public void sendMqttAck(int mqttId, int mqttQos) {
+        try {
+            mqttClient.messageArrivedComplete(mqttId, mqttQos);
+        } catch (MqttException e) {
+            logger.error("Sending Mqtt Ack failed for message with mqtt id " + mqttId, e);
+        }
     }
 }

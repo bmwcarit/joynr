@@ -16,13 +16,9 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.messaging;
+package io.joynr.messaging.routing;
 
-import joynr.ImmutableMessage;
+public interface MessageProcessedListener {
 
-/**
- * Common interface for messaging stubs (transmit outgoing messages)
- */
-public interface IMessagingStub {
-    void transmit(ImmutableMessage immutableMessage, SuccessAction successAction, FailureAction failureAction);
+    public void messageProcessed(String messageId);
 }

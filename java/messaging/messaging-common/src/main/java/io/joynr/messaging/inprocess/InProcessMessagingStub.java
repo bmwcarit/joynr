@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingStub;
+import io.joynr.messaging.SuccessAction;
 import joynr.ImmutableMessage;
 
 public class InProcessMessagingStub implements IMessagingStub {
@@ -39,9 +40,9 @@ public class InProcessMessagingStub implements IMessagingStub {
     }
 
     @Override
-    public void transmit(ImmutableMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, SuccessAction successAction, FailureAction failureAction) {
         LOG.trace(">>> OUTGOING >>> {}", message);
 
-        skeleton.transmit(message, failureAction);
+        skeleton.transmit(message, successAction, failureAction);
     }
 }

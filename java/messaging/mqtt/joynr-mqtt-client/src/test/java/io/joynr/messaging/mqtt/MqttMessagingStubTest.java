@@ -20,13 +20,16 @@ package io.joynr.messaging.mqtt;
  */
 
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessagingQosEffort;
+import io.joynr.messaging.SuccessAction;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.MqttAddress;
 import org.junit.Before;
@@ -48,6 +51,15 @@ public class MqttMessagingStubTest {
     @Mock
     private JoynrMqttClient mqttClient;
 
+    @Mock
+    private ImmutableMessage joynrMessage;
+
+    @Mock
+    private FailureAction failureAction;
+
+    @Mock
+    private SuccessAction successAction;
+
     private MqttMessagingStub subject;
 
     @Before
@@ -56,15 +68,44 @@ public class MqttMessagingStubTest {
     }
 
     @Test
-    public void testReactToBestEffortQosInJoynrMessageHeader() {
-        ImmutableMessage joynrMessage = mock(ImmutableMessage.class);
-        when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.BEST_EFFORT));
-        FailureAction failureAction = mock(FailureAction.class);
+    public void testMessagePublishedWithNormalEffort() {
+        when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.NORMAL));
 
-        subject.transmit(joynrMessage, failureAction);
+        subject.transmit(joynrMessage, successAction, failureAction);
+
+        Mockito.verify(mqttClient).publishMessage(anyString(),
+                                                  any(byte[].class),
+                                                  eq(MqttMessagingStub.DEFAULT_QOS_LEVEL));
+    }
+
+    @Test
+    public void testReactToBestEffortQosInJoynrMessageHeader() {
+        when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.BEST_EFFORT));
+
+        subject.transmit(joynrMessage, successAction, failureAction);
 
         Mockito.verify(mqttClient).publishMessage(anyString(),
                                                   any(byte[].class),
                                                   eq(MqttMessagingStub.BEST_EFFORT_QOS_LEVEL));
+    }
+
+    @Test
+    public void testSuccessActionCalled() {
+        when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.NORMAL));
+
+        subject.transmit(joynrMessage, successAction, failureAction);
+
+        Mockito.verify(successAction).execute();
+    }
+
+    @Test
+    public void testFailureActionCalled() {
+        when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.NORMAL));
+        JoynrRuntimeException exception = new JoynrRuntimeException("testException");
+        doThrow(exception).when(mqttClient).publishMessage(anyString(), any(byte[].class), anyInt());
+
+        subject.transmit(joynrMessage, successAction, failureAction);
+
+        Mockito.verify(failureAction).execute(exception);
     }
 }

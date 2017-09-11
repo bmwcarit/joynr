@@ -26,6 +26,7 @@ import com.google.inject.Inject;
 
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.SuccessAction;
 import joynr.ImmutableMessage;
 
 public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSkeleton {
@@ -39,19 +40,15 @@ public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSke
     }
 
     @Override
-    public void transmit(ImmutableMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, SuccessAction successAction, FailureAction failureAction) {
         LOG.trace("<<< INCOMING <<< {}", message);
 
         try {
             dispatcher.messageArrived(message);
+            successAction.execute();
         } catch (Exception e) {
             failureAction.execute(e);
         }
-    }
-
-    @Override
-    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
-        throw new IllegalStateException("InProcessMessagingSkeleton does not handle serialized messages");
     }
 
     @Override

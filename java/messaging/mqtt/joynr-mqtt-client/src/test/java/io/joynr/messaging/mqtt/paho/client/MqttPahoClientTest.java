@@ -43,13 +43,15 @@ import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttMessagingStub;
+import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
@@ -58,13 +60,14 @@ import joynr.system.RoutingTypes.MqttAddress;
 import static org.mockito.Mockito.*;
 
 public class MqttPahoClientTest {
+
     private static int mqttBrokerPort;
     private static Process mosquittoProcess;
     private Injector injector;
     private MqttClientFactory mqttClientFactory;
     private MqttAddress ownTopic;
     @Mock
-    private IMessagingSkeleton mockReceiver;
+    private IMqttMessagingSkeleton mockReceiver;
     @Mock
     private MessageRouter mockMessageRouter;
     private JoynrMqttClient client;
@@ -104,6 +107,9 @@ public class MqttPahoClientTest {
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
         properties.put(MessagingPropertyKeys.CHANNELID, "myChannelId");
+        properties.put(ConfigurableMessagingSettings.PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS, "1000");
+        properties.put(ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE, "20");
+
         injector = Guice.createInjector(new MqttPahoModule(),
                                         new JoynrPropertiesModule(properties),
                                         new AbstractModule() {
@@ -142,7 +148,10 @@ public class MqttPahoClientTest {
 
         byte[] shortSerializedMessage = new byte[maxMessageSize];
         client.publishMessage(ownTopic.getTopic(), shortSerializedMessage);
-        verify(mockReceiver, timeout(100).times(1)).transmit(eq(shortSerializedMessage), any(FailureAction.class));
+        verify(mockReceiver, timeout(100).times(1)).transmit(eq(shortSerializedMessage),
+                                                             anyInt(),
+                                                             eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                                             any(FailureAction.class));
 
         byte[] largeSerializedMessage = new byte[maxMessageSize + 1];
         thrown.expect(JoynrMessageNotSentException.class);
@@ -159,10 +168,16 @@ public class MqttPahoClientTest {
 
         byte[] shortSerializedMessage = new byte[initialMessageSize];
         client.publishMessage(ownTopic.getTopic(), shortSerializedMessage);
-        verify(mockReceiver, timeout(100).times(1)).transmit(eq(shortSerializedMessage), any(FailureAction.class));
+        verify(mockReceiver, timeout(100).times(1)).transmit(eq(shortSerializedMessage),
+                                                             anyInt(),
+                                                             eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                                             any(FailureAction.class));
 
         byte[] largeSerializedMessage = new byte[initialMessageSize + 1];
         client.publishMessage(ownTopic.getTopic(), largeSerializedMessage);
-        verify(mockReceiver, timeout(100).times(1)).transmit(eq(largeSerializedMessage), any(FailureAction.class));
+        verify(mockReceiver, timeout(100).times(1)).transmit(eq(largeSerializedMessage),
+                                                             anyInt(),
+                                                             eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                                             any(FailureAction.class));
     }
 }

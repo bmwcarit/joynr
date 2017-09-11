@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingQosEffort;
+import io.joynr.messaging.SuccessAction;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -48,7 +49,7 @@ public class MqttMessagingStub implements IMessagingStub {
     }
 
     @Override
-    public void transmit(ImmutableMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, SuccessAction successAction, FailureAction failureAction) {
         LOG.debug(">>> OUTGOING >>> {}", message);
         String topic = address.getTopic();
         if (!Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
@@ -62,6 +63,7 @@ public class MqttMessagingStub implements IMessagingStub {
         }
         try {
             mqttClient.publishMessage(topic, message.getSerializedMessage(), qosLevel);
+            successAction.execute();
         } catch (Exception error) {
             failureAction.execute(error);
         }

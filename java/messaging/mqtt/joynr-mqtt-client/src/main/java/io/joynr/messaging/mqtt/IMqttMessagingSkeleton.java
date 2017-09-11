@@ -1,7 +1,9 @@
+package io.joynr.messaging.mqtt;
+
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +18,12 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.messaging;
 
-import joynr.ImmutableMessage;
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.IMessagingMulticastSubscriber;
+import io.joynr.messaging.IMessagingSkeleton;
 
-/**
- * Common interface for messaging stubs (transmit outgoing messages)
- */
-public interface IMessagingStub {
-    void transmit(ImmutableMessage immutableMessage, SuccessAction successAction, FailureAction failureAction);
+public interface IMqttMessagingSkeleton extends IMessagingSkeleton, IMessagingMulticastSubscriber {
+
+    public void transmit(byte[] serializedMessage, int mqttId, int mqttQos, FailureAction failureAction);
 }
