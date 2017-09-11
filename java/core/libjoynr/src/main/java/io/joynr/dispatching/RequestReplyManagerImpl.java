@@ -292,8 +292,9 @@ public class RequestReplyManagerImpl implements RequestReplyManager, DirectoryLi
                 requestQueue.get(providerParticipantId).remove(requestItem);
                 replyCallbacks.remove(requestItem.getContent());
                 Request request = requestItem.getContent();
-                logger.warn("TTL DISCARD. providerParticipantId: {} request method: {} because it has expired. ",
-                            new String[]{ providerParticipantId, request.getMethodName() });
+                logger.warn("TTL DISCARD. providerParticipantId: {} request method: {} because it has expired.",
+                            providerParticipantId,
+                            request.getMethodName());
 
             }
         }, expiryDate.getRelativeTtl(), TimeUnit.MILLISECONDS);

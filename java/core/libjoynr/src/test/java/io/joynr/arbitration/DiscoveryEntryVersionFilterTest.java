@@ -40,7 +40,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.Sets;
 
-import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Version;
 

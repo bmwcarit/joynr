@@ -418,7 +418,8 @@ public class CcMessageRouterTest {
         messageRouterWithMaxExponentialBackoff.route(immutableMessage);
         Thread.sleep(routingDuration);
 
-        // test that assertThat runs at least once
+        // test that the mock is called multiple times which means that
+        // the assert inside is multiple times correct
         verify(messagingStubMock, Mockito.atLeast(10)).transmit(eq(immutableMessage),
                                                                 any(SuccessAction.class),
                                                                 any(FailureAction.class));
@@ -427,13 +428,14 @@ public class CcMessageRouterTest {
     @Test
     public void testDelayWithoutExponentialBackoffLimit() throws Exception {
         // test idea is that on average more than sendMsgRetryIntervalMs ms are needed.
-        // -> at least one run exists that takes longer than sendMsgRetryIntervalMs -> exponential backoff active
+        // -> at least one run exists that takes longer than sendMsgRetryIntervalMs
+        // -> exponential backoff for the retry interval is active
 
         final long routingDuration = 1000;
         final long sendMsgRetryIntervalMs = 20;
-        final long expectedAverage = 50;
+        final long expectedAverageIntervalMs = 50;
 
-        final long maxruns = routingDuration / (expectedAverage);
+        final long maxruns = routingDuration / expectedAverageIntervalMs;
 
         Module testMaxRetryCountModule = Modules.override(testModule).with(new AbstractModule() {
             @Override
@@ -462,14 +464,15 @@ public class CcMessageRouterTest {
         messageRouterWithHighRetryInterval.route(immutableMessage);
         Thread.sleep(routingDuration);
 
-        // make sure that there are retries
+        // make sure that the stub is called at least few times
+        // but not too often which means that the average retry interval
+        // is much higher then initially set in sendMsgRetryIntervalMs
         verify(messagingStubMock, Mockito.atLeast(5)).transmit(eq(immutableMessage),
                                                                any(SuccessAction.class),
                                                                any(FailureAction.class));
         verify(messagingStubMock, Mockito.atMost((int) maxruns)).transmit(eq(immutableMessage),
                                                                           any(SuccessAction.class),
                                                                           any(FailureAction.class));
-
     }
 
     @Test

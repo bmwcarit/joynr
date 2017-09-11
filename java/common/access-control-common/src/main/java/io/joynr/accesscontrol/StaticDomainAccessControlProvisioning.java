@@ -41,7 +41,6 @@ public class StaticDomainAccessControlProvisioning implements DomainAccessContro
     private List<MasterAccessControlEntry> masterControlEntries = new ArrayList<MasterAccessControlEntry>();
     private static Logger logger = LoggerFactory.getLogger(StaticDomainAccessControlProvisioning.class);
 
-    @SuppressWarnings("unchecked")
     @Inject(optional = true)
     private void loadDomainRoleEntries(@Named(PROPERTY_PROVISIONED_DOMAIN_ROLES) String entries,
                                        ObjectMapper objectMapper) {
@@ -58,7 +57,6 @@ public class StaticDomainAccessControlProvisioning implements DomainAccessContro
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Inject(optional = true)
     private void loadMasterAccessControlEntries(@Named(PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES) String entries,
                                                 ObjectMapper objectMapper) {

@@ -45,8 +45,6 @@ import io.joynr.messaging.mqtt.JoynrMqttClient;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
-    public static final String MQTT_PRIO = "low";
-
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClient.class);
     private MqttClient mqttClient;
     private IMqttMessagingSkeleton messagingSkeleton;

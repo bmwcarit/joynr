@@ -1,5 +1,7 @@
 package io.joynr.discovery.jee;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * %%
@@ -113,7 +115,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void remove(String[] participantIds) {
-        logger.debug("Removing global discovery entries with IDs {}", participantIds);
+        logger.debug("Removing global discovery entries with IDs {}", Arrays.toString(participantIds));
         String queryString = "delete from GlobalDiscoveryEntryPersisted gdep where gdep.participantId in :participantIds";
         int deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
                                         .setParameter("participantIds", Sets.newHashSet(participantIds))

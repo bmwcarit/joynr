@@ -4,23 +4,27 @@
 None.
 
 ## Configuration property changes
+* **[Java]** See the [Java Configuration Reference](JavaSettings.md) for
+  details about these newly introduced properties:
+  * `PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS`
+  * `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS`
+  * `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`
+  * `PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS`
+  * `PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`
+  * `PROPERTY_ROUTING_MAX_RETRY_COUNT`
 * **[Java]** Renamed property `PROPERTY_MAX_MESSAGES_INQUEUE` to
-  `PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`
-  See the [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** Added new property `PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`.
-  See the [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** Introduced new properties: `PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS`,
-  `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS`, `PROPERTY_ROUTING_MAX_RETRY_COUNT` and
-  `PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS`.
-  See the [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** Added new property `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`.
-  See the [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Js]** Made default discoveryQos configurable via provisioning. See the
-  [Javascript Configuration Reference](JavaScriptTutorial.md#provisioning) for more details.
-* **[C++]** Made discovery-default-timeout-ms and discovery-default-retry-interval-ms
-  configurable. See default-messaging.settings for more details.
-* **[C++]** The MQTT maximum message size is now configurable using the new
-   setting mqtt-max-message-size-bytes. See default-messaging.settings for more details.
+  `PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`.
+* **[JS]** Made default discoveryQos configurable via provisioning. See the
+  [Javascript Configuration Reference](JavaScriptTutorial.md) for more details.
+* **[C++]** Made the following properties configurable. See
+  default-messaging.settings for more details.
+  * `discovery-default-retry-interval-ms`
+  * `discovery-default-timeout-ms`
+  * `mqtt-max-message-size-bytes`
+* **[C++, Java, JS]** Changed default values for the following properties:
+  * Discovery expiry interval set to 6 weeks
+  * Discovery timeout interval set to 10 minutes
+  * Discovery retry interval set to 10 seconds
 
 ## Other changes
 None.

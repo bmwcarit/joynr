@@ -51,6 +51,7 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
+import joynr.ImmutableMessage;
 import joynr.infrastructure.GlobalDomainAccessControlListEditorProxy;
 import joynr.infrastructure.GlobalDomainRoleControllerProxy;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
@@ -71,7 +72,6 @@ public class AccessControllerEnd2EndTest {
     private static final String GDAC_DOMAIN = "io.joynr";
     private static final long DISCOVERY_TIMEOUT = 4000;
     private static final long MESSAGING_TTL = 5000;
-    private static final String USERID = System.getProperty("user.name");
 
     private JoynrRuntime runtime;
 
@@ -99,7 +99,11 @@ public class AccessControllerEnd2EndTest {
 
     @Test
     public void testAllowedRPCCallSucceeds() {
-        createDefaultGDACEntries(TEST_DOMAIN, testProxy.INTERFACE_NAME, "*", USERID, Permission.YES);
+        createDefaultGDACEntries(TEST_DOMAIN,
+                                 testProxy.INTERFACE_NAME,
+                                 "*",
+                                 ImmutableMessage.DUMMY_CREATOR_USER_ID,
+                                 Permission.YES);
 
         registerProvider(runtime);
         testProxy testProxy = createProxy(runtime);
@@ -111,7 +115,11 @@ public class AccessControllerEnd2EndTest {
 
     @Test
     public void testForbiddenRPCCallFails() {
-        createDefaultGDACEntries(TEST_DOMAIN, testProxy.INTERFACE_NAME, "*", USERID, Permission.NO);
+        createDefaultGDACEntries(TEST_DOMAIN,
+                                 testProxy.INTERFACE_NAME,
+                                 "*",
+                                 ImmutableMessage.DUMMY_CREATOR_USER_ID,
+                                 Permission.NO);
 
         registerProvider(runtime);
         testProxy testProxy = createProxy(runtime);

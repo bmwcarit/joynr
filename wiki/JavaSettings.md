@@ -563,7 +563,7 @@ the default value will be read from this property.
 * **Type**: int
 * **User property**: `joynr.discovery.defaultTimeoutMs`
 * **Unit**: milliseconds
-* **Default value**: `30000`
+* **Default value**: `600000`
 
 ### `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS`
 If a proxy is built and the corresponding provider cannot be found immediately,
@@ -576,7 +576,7 @@ interval is specified this way, the default value will be read from this propert
 * **Type**: int
 * **User property**: `joynr.discovery.defaultRetryIntervalMs`
 * **Unit**: milliseconds
-* **Default value**: `2000`
+* **Default value**: `10000`
 
 ### `PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS`
 If a provider is registered, its expiry date will be set to 'now + N'. N is
@@ -586,7 +586,7 @@ the value of this property.
 * **Type**: int
 * **User property**: `joynr.discovery.provider.defaultexpirytimems`
 * **Unit**: milliseconds
-* **Default value**: `86400000 (24 hours)`
+* **Default value**: `3628800000 (6 weeks)`
 
 ## JEE Integration
 
