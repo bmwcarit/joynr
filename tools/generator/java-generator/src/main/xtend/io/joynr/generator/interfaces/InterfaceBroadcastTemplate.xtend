@@ -49,7 +49,7 @@ import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.OnChangeSubscriptionQos;
 import joynr.BroadcastFilterParameters;
 «IF hasNonSelectiveBroadcast»
-import joynr.MulticastSubscriptionQos;
+	import joynr.MulticastSubscriptionQos;
 «ENDIF»
 
 «FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, false, true, false)»
