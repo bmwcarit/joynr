@@ -57,7 +57,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     private Set<String> subscribedTopics = new HashSet<>();
 
-    private boolean shutdown = false;
+    private volatile boolean shutdown = false;
 
     public MqttPahoClient(MqttClient mqttClient,
                           int reconnectSleepMS,
