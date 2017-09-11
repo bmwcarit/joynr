@@ -14,7 +14,12 @@
   * `PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`
   * `PROPERTY_ROUTING_MAX_RETRY_COUNT`
 * **[Java]** Renamed property `PROPERTY_MAX_MESSAGES_INQUEUE` to
-  `PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`.
+  `PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`. Please note that
+  joynr will ignore messages if the MQTT queue is full by not sending an PUBACK
+  for the message (QOS 1). joynr requires that the message is resend by the MQTT
+  broker at a later point in time. If the resend time intervall of the broker is
+  too high, an additional delay will be introduced. Please make sure to set the
+  resend intervall of your MQTT broker appropriately.
 * **[JS]** Made default discoveryQos configurable via provisioning. See the
   [Javascript Configuration Reference](JavaScriptTutorial.md) for more details.
 * **[C++]** Made the following properties configurable. See
