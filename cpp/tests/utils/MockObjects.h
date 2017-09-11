@@ -35,6 +35,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <mococrw/key.h>
+#include <mococrw/x509.h>
+
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/AbstractMessageRouter.h"
 #include "joynr/BrokerUrl.h"
@@ -48,6 +51,7 @@
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 #include "joynr/IClusterControllerSignalHandler.h"
 #include "joynr/IDispatcher.h"
+#include "joynr/IKeychain.h"
 #include "joynr/IMessageRouter.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
@@ -153,6 +157,15 @@ public:
     MOCK_METHOD0_T(build, std::shared_ptr<T>());
     MOCK_METHOD2_T(buildAsync, void(std::function<void(std::shared_ptr<T> proxy)> onSuccess,
                                     std::function<void(const joynr::exceptions::DiscoveryException&)>));
+};
+
+class MockKeyChain : public joynr::IKeychain
+{
+public:
+    MOCK_CONST_METHOD0(getTlsCertificate, std::shared_ptr<const mococrw::X509Certificate>());
+    MOCK_CONST_METHOD0(getTlsKey, std::shared_ptr<const mococrw::AsymmetricPrivateKey>());
+    MOCK_CONST_METHOD0(getTlsRootCertificate, std::shared_ptr<const mococrw::X509Certificate>());
+    MOCK_CONST_METHOD0(getOwnerId, std::string());
 };
 
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
@@ -304,6 +317,14 @@ public:
     MOCK_METHOD1(registerSubscriptionManager, void(std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager));
     MOCK_METHOD1(registerPublicationManager,void(joynr::PublicationManager* publicationManager));
     MOCK_METHOD0(shutdown, void ());
+};
+
+class MockKeychain : public joynr::IKeychain {
+public:
+    MOCK_CONST_METHOD0(getTlsCertificate, std::shared_ptr<const mococrw::X509Certificate>());
+    MOCK_CONST_METHOD0(getTlsKey, std::shared_ptr<const mococrw::AsymmetricPrivateKey>());
+    MOCK_CONST_METHOD0(getTlsRootCertificate, std::shared_ptr<const mococrw::X509Certificate>());
+    MOCK_CONST_METHOD0(getOwnerId, std::string());
 };
 
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {

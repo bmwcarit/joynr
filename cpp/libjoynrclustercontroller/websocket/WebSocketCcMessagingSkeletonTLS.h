@@ -46,7 +46,8 @@ public:
 private:
     std::shared_ptr<SSLContext> createSSLContext(const std::string& caPemFile,
                                                  const std::string& certPemFile,
-                                                 const std::string& privateKeyPemFile);
+                                                 const std::string& privateKeyPemFile,
+                                                 ConnectionHandle hdl);
 };
 
 } // namespace joynr

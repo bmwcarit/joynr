@@ -50,7 +50,7 @@ public:
         proxyParticipantId("proxyParticipantId"),
         subscriptionId("subscriptionId"),
         mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
-        messageSender(new MessageSender(mockMessageRouter)),
+        messageSender(new MessageSender(mockMessageRouter, nullptr)),
         publicationManager(singleThreadedIOService.getIOService(), messageSender),
         publicationSender(),
         request(),

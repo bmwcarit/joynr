@@ -29,6 +29,7 @@
 namespace joynr
 {
 
+class IKeychain;
 class MessagingQos;
 class MulticastPublication;
 class OneWayRequest;
@@ -49,7 +50,8 @@ class IPlatformSecurityManager;
 class JOYNR_EXPORT MutableMessageFactory
 {
 public:
-    explicit MutableMessageFactory(std::uint64_t ttlUpliftMs = 0);
+    explicit MutableMessageFactory(std::uint64_t ttlUpliftMs = 0,
+                                   std::shared_ptr<IKeychain> keyChain = nullptr);
     ~MutableMessageFactory();
 
     MutableMessage createRequest(const std::string& senderId,
@@ -119,6 +121,7 @@ private:
 
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     std::uint64_t ttlUpliftMs;
+    std::shared_ptr<IKeychain> keyChain;
     ADD_LOGGER(MutableMessageFactory);
 };
 

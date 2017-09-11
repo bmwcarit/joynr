@@ -100,6 +100,7 @@ public:
         //a channelId for getReceiveChannelId.
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                 std::move(settings),
+                nullptr,
                 mockMessageReceiverHttp,
                 nullptr,
                 mockMessageReceiverMqtt,

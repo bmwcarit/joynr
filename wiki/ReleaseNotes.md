@@ -1,7 +1,8 @@
 # joynr 0.29.0
 
 ## API relevant changes
-None.
+* **[C++]** JoynrRuntime::createRuntimeAsync and JoynrRuntime::createRuntime now accept an
+  optional IKeychain argument. See the [C++ Documentation](cplusplus.md) for more information.
 
 ## Configuration property changes
 * **[Java]** See the [Java Configuration Reference](JavaSettings.md) for

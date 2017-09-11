@@ -35,6 +35,7 @@
 #include "joynr/RuntimeConfig.h"
 #include "joynr/Semaphore.h"
 #include "joynr/WebSocketSettings.h"
+#include "joynr/IKeychain.h"
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "joynr/DBusMessageRouterAdapter.h"
@@ -70,6 +71,7 @@ class CcMessageRouter;
 class WebSocketMessagingStubFactory;
 class MosquittoConnection;
 class LocalDomainAccessController;
+class IKeychain;
 
 namespace infrastructure
 {
@@ -84,16 +86,21 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
 public:
     JoynrClusterControllerRuntime(
             std::unique_ptr<Settings> settings,
+            std::shared_ptr<IKeychain> keyChain = nullptr,
             std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver = nullptr,
             std::shared_ptr<ITransportMessageSender> httpMessageSender = nullptr,
             std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver = nullptr,
             std::shared_ptr<ITransportMessageSender> mqttMessageSender = nullptr);
 
-    static std::shared_ptr<JoynrClusterControllerRuntime> create(std::size_t argc, char* argv[]);
+    static std::shared_ptr<JoynrClusterControllerRuntime> create(
+            std::size_t argc,
+            char* argv[],
+            std::shared_ptr<IKeychain> keyChain = nullptr);
 
     static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::unique_ptr<Settings> settings,
-            const std::string& discoveryEntriesFile = "");
+            const std::string& discoveryEntriesFile = "",
+            std::shared_ptr<IKeychain> keyChain = nullptr);
 
     ~JoynrClusterControllerRuntime() override;
 
@@ -193,6 +200,8 @@ private:
     Semaphore lifetimeSemaphore;
 
     std::shared_ptr<joynr::AccessController> accessController;
+    std::shared_ptr<IKeychain> keyChain;
+
     std::string routingProviderParticipantId;
     std::string discoveryProviderParticipantId;
     std::string messageNotificationProviderParticipantId;

@@ -138,11 +138,14 @@ asynchronously:
         // Process the error here
     };
 
+    std::shared_ptr<IKeychain> keychain = createMyKeychain();
+
     std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntimeAsync(
         pathToLibJoynrSettings,
         onSuccess,
         onError,
-        pathToMessagingSettings);
+        pathToMessagingSettings,
+        keychain);
 ```
 
 The ```JoynrRuntime``` instance that is returned by ```createRuntimeAsync``` MUST NOT be
@@ -776,8 +779,9 @@ main(int argc, char** argv)
 
 ```cpp
     // setup pathToLibJoynrSettings, and optionally pathToMessagingSettings
+    std::shared_ptr<IKeychain> keychain = createMyKeychain();
     std::shared_ptr<JoynrRuntime> runtime =
-        JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
+        JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings, keychain);
 ```
 
 ### The Provider quality of service
