@@ -16,13 +16,12 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.messaging;
+package io.joynr.messaging.websocket;
 
-import joynr.ImmutableMessage;
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.IMessagingSkeleton;
 
-/**
- * Common interface for messaging stubs (transmit outgoing messages)
- */
-public interface IMessagingStub {
-    void transmit(ImmutableMessage immutableMessage, SuccessAction successAction, FailureAction failureAction);
+public interface IWebSocketMessagingSkeleton extends IMessagingSkeleton {
+
+    void transmit(byte[] serializedMessage, FailureAction failureAction);
 }

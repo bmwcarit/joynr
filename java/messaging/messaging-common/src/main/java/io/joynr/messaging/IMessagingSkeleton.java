@@ -1,5 +1,3 @@
-package io.joynr.messaging;
-
 /*
  * #%L
  * %%
@@ -18,15 +16,11 @@ package io.joynr.messaging;
  * limitations under the License.
  * #L%
  */
+package io.joynr.messaging;
 
-/**
- *
- */
 public interface IMessagingSkeleton {
 
     void init();
 
     void shutdown();
-
-    void transmit(byte[] serializedMessage, FailureAction failureAction);
 }
