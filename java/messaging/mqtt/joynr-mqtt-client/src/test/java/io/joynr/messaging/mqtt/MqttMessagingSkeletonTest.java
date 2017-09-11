@@ -349,6 +349,59 @@ public class MqttMessagingSkeletonTest {
         assertArrayEquals(message1.getSerializedMessage(), captor.getAllValues().get(2).getSerializedMessage());
     }
 
+    @Test
+    public void testMessagesAreRejectedWhenMaxMqttMessagesInQueueIsReached() throws Exception {
+        final int mqttMessageId = 1517;
+        final int mqttQos = 1;
+
+        for (int i = 0; i < maxMqttMessagesInQueue; i++) {
+            subject.transmit(createTestMessage().getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
+        }
+        verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
+
+        // As the queue is full, further messages should not be transmitted
+        subject.transmit(createTestMessage().getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
+        verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
+    }
+
+    @Test
+    public void testMessagesAreAcceptedAgainWhenMessageIsProcessedAfterMaxMessagesInQueueReached() throws Exception {
+        final int mqttQos = 1;
+        final int mqttMessageId1_willBeProcessed = 1618;
+        final int mqttMessageId2_fillingUpQueue = 1648;
+        final int mqttMessageId3_willBeRejected = 1789;
+        final int mqttMessageId4_willBeAcceptedAsQueueHasFreeSlotAgain = 2017;
+
+        ImmutableMessage message1 = createTestMessage();
+        final String messageId1 = message1.getId();
+        subject.transmit(message1.getSerializedMessage(), mqttMessageId1_willBeProcessed, mqttQos, failIfCalledAction);
+
+        for (int i = 0; i < maxMqttMessagesInQueue - 1; i++) {
+            subject.transmit(createTestMessage().getSerializedMessage(),
+                             mqttMessageId2_fillingUpQueue,
+                             mqttQos,
+                             failIfCalledAction);
+        }
+        verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
+
+        // As the queue is full, further messages should not be transmitted
+        // until an already accepted message is marked as processed
+        subject.transmit(createTestMessage().getSerializedMessage(),
+                         mqttMessageId3_willBeRejected,
+                         mqttQos,
+                         failIfCalledAction);
+        verify(messageRouter, times(maxMqttMessagesInQueue)).route(any(ImmutableMessage.class));
+
+        subject.messageProcessed(messageId1);
+
+        subject.transmit(createTestMessage().getSerializedMessage(),
+                         mqttMessageId4_willBeAcceptedAsQueueHasFreeSlotAgain,
+                         mqttQos,
+                         failIfCalledAction);
+        verify(messageRouter, times(maxMqttMessagesInQueue + 1)).route(any(ImmutableMessage.class));
+
+    }
+
     private ImmutableMessage createTestMessage() throws Exception {
         MutableMessage message = new MutableMessage();
 
