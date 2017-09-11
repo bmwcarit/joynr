@@ -74,17 +74,19 @@ public:
 
     void registerPublicationManager(PublicationManager* publicationManager) override;
 
+    void shutdown() override;
+
 private:
-    void handleRequestReceived(const ImmutableMessage& message);
-    void handleOneWayRequestReceived(const ImmutableMessage& message);
-    void handleReplyReceived(const ImmutableMessage& message);
-    void handleMulticastReceived(const ImmutableMessage& message);
-    void handlePublicationReceived(const ImmutableMessage& message);
-    void handleSubscriptionRequestReceived(const ImmutableMessage& message);
-    void handleBroadcastSubscriptionRequestReceived(const ImmutableMessage& message);
-    void handleSubscriptionStopReceived(const ImmutableMessage& message);
-    void handleSubscriptionReplyReceived(const ImmutableMessage& message);
-    void handleMulticastSubscriptionRequestReceived(const ImmutableMessage& message);
+    void handleRequestReceived(std::shared_ptr<ImmutableMessage> message);
+    void handleOneWayRequestReceived(std::shared_ptr<ImmutableMessage> message);
+    void handleReplyReceived(std::shared_ptr<ImmutableMessage> message);
+    void handleMulticastReceived(std::shared_ptr<ImmutableMessage> message);
+    void handlePublicationReceived(std::shared_ptr<ImmutableMessage> message);
+    void handleSubscriptionRequestReceived(std::shared_ptr<ImmutableMessage> message);
+    void handleBroadcastSubscriptionRequestReceived(std::shared_ptr<ImmutableMessage> message);
+    void handleSubscriptionStopReceived(std::shared_ptr<ImmutableMessage> message);
+    void handleSubscriptionReplyReceived(std::shared_ptr<ImmutableMessage> message);
+    void handleMulticastSubscriptionRequestReceived(std::shared_ptr<ImmutableMessage> message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Dispatcher);

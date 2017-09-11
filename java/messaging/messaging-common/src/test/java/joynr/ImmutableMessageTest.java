@@ -18,6 +18,9 @@
  */
 package joynr;
 
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertThat;
+
 import org.junit.Test;
 
 public class ImmutableMessageTest {
@@ -41,5 +44,20 @@ public class ImmutableMessageTest {
 
         // Expect no exception is thrown
         immutableMessage.toLogMessage();
+    }
+
+    @Test
+    public void testPayloadIsWrittenAsString() throws Exception {
+        final String payload = "$=payload=$";
+        MutableMessage testMessage = new MutableMessage();
+
+        testMessage.setPayload(payload.getBytes());
+        testMessage.setRecipient("test");
+        testMessage.setSender("test");
+
+        ImmutableMessage immutableMessage = testMessage.getImmutableMessage();
+        String logMessage = immutableMessage.toLogMessage();
+
+        assertThat(logMessage, containsString(payload));
     }
 }

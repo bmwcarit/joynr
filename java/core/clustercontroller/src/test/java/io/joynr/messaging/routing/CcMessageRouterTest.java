@@ -25,8 +25,12 @@ import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThan;
 
 import java.util.HashSet;
 import java.util.UUID;
@@ -53,6 +57,7 @@ import com.google.inject.util.Modules;
 import io.joynr.accesscontrol.AccessController;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.MutableMessageFactory;
+import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -79,7 +84,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageRouterTest {
@@ -104,6 +111,8 @@ public class CcMessageRouterTest {
     private MutableMessage joynrMessage;
     protected String toParticipantId = "toParticipantId";
     protected String fromParticipantId = "fromParticipantId";
+
+    private Module testModule;
 
     @Before
     public void setUp() throws Exception {
@@ -191,7 +200,7 @@ public class CcMessageRouterTest {
             }
         };
 
-        Module testModule = Modules.override(mockModule).with(new TestGlobalAddressModule());
+        testModule = Modules.override(mockModule).with(new TestGlobalAddressModule());
 
         Injector injector = Guice.createInjector(testModule);
         messageRouter = injector.getInstance(MessageRouter.class);
@@ -254,4 +263,141 @@ public class CcMessageRouterTest {
         verify(addressManager).getAddresses(immutableMessage);
     }
 
+    private ImmutableMessage retryRoutingWith1msDelay(MessageRouter messageRouter, int ttlMs) throws Exception {
+        Mockito.doThrow(new JoynrDelayMessageException(1, "test"))
+               .when(messagingStubMock)
+               .transmit(any(ImmutableMessage.class), any(FailureAction.class));
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(ttlMs).getValue());
+        joynrMessage.setTtlAbsolute(true);
+
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        messageRouter.route(immutableMessage);
+        Thread.sleep(100);
+
+        return immutableMessage;
+    }
+
+    @Test
+    public void testRetryWithMaxRetryCount() throws Exception {
+        final long routingMaxRetryCount = 3;
+        Module testMaxRetryCountModule = Modules.override(testModule).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_MAX_RETRY_COUNT))
+                                .toInstance(routingMaxRetryCount);
+            }
+        });
+        Injector injector2 = Guice.createInjector(testMaxRetryCountModule);
+        MessageRouter messageRouterWithMaxRetryCount = injector2.getInstance(MessageRouter.class);
+
+        ImmutableMessage immutableMessage = retryRoutingWith1msDelay(messageRouterWithMaxRetryCount, 100000000);
+
+        verify(messagingStubMock, times((int) routingMaxRetryCount + 1)).transmit(eq(immutableMessage),
+                                                                                  any(FailureAction.class));
+    }
+
+    @Test
+    public void testRetryWithoutMaxRetryCount() throws Exception {
+        ImmutableMessage immutableMessage = retryRoutingWith1msDelay(messageRouter, 200);
+
+        verify(messagingStubMock, Mockito.atLeast(10)).transmit(eq(immutableMessage), any(FailureAction.class));
+    }
+
+    @Test
+    public void testDelayWithExponentialBackoffLimit() throws Exception {
+        final long routingDuration = 1000;
+        final long sendMsgRetryIntervalMs = 50;
+        final long maxDelayMs = 70;
+        final long toleranceMs = 20;
+
+        Module testMaxRetryCountModule = Modules.override(testModule).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
+                                .toInstance(sendMsgRetryIntervalMs);
+                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS))
+                                .toInstance(maxDelayMs);
+
+            }
+        });
+        Injector injector3 = Guice.createInjector(testMaxRetryCountModule);
+        MessageRouter messageRouterWithMaxExponentialBackoff = injector3.getInstance(MessageRouter.class);
+
+        Mockito.doAnswer(new Answer<Object>() {
+            private long previousInvocationTimeMs = -1;
+
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                if (previousInvocationTimeMs == -1) { // firstRun
+                    previousInvocationTimeMs = System.currentTimeMillis();
+
+                } else {
+                    long now = System.currentTimeMillis();
+                    assertThat(now - previousInvocationTimeMs, lessThan(maxDelayMs + toleranceMs));
+                    previousInvocationTimeMs = now;
+                }
+
+                invocation.getArgumentAt(1, FailureAction.class).execute(new Exception());
+
+                return null;
+            }
+        }).when(messagingStubMock).transmit(any(ImmutableMessage.class), any(FailureAction.class));
+
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
+        joynrMessage.setTtlAbsolute(true);
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        messageRouterWithMaxExponentialBackoff.route(immutableMessage);
+        Thread.sleep(routingDuration);
+
+        // test that the mock is called multiple times which means that
+        // the assert inside is multiple times correct
+        verify(messagingStubMock, Mockito.atLeast(10)).transmit(eq(immutableMessage), any(FailureAction.class));
+    }
+
+    @Test
+    public void testDelayWithoutExponentialBackoffLimit() throws Exception {
+        // test idea is that on average more than sendMsgRetryIntervalMs ms are needed.
+        // -> at least one run exists that takes longer than sendMsgRetryIntervalMs
+        // -> exponential backoff for the retry interval is active
+
+        final long routingDuration = 1000;
+        final long sendMsgRetryIntervalMs = 20;
+        final long expectedAverageIntervalMs = 50;
+
+        final long maxruns = routingDuration / expectedAverageIntervalMs;
+
+        Module testMaxRetryCountModule = Modules.override(testModule).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
+                                .toInstance(sendMsgRetryIntervalMs);
+            }
+        });
+        Injector injector4 = Guice.createInjector(testMaxRetryCountModule);
+        MessageRouter messageRouterWithHighRetryInterval = injector4.getInstance(MessageRouter.class);
+
+        Mockito.doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                invocation.getArgumentAt(1, FailureAction.class).execute(new Exception());
+                return null;
+            }
+        }).when(messagingStubMock).transmit(any(ImmutableMessage.class), any(FailureAction.class));
+
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
+        joynrMessage.setTtlAbsolute(true);
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        messageRouterWithHighRetryInterval.route(immutableMessage);
+        Thread.sleep(routingDuration);
+
+        // make sure that the stub is called at least few times
+        // but not too often which means that the average retry interval
+        // is much higher then initially set in sendMsgRetryIntervalMs
+        verify(messagingStubMock, Mockito.atLeast(5)).transmit(eq(immutableMessage), any(FailureAction.class));
+        verify(messagingStubMock, Mockito.atMost((int) maxruns)).transmit(eq(immutableMessage),
+                                                                          any(FailureAction.class));
+    }
 }

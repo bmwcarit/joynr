@@ -21,7 +21,6 @@ package io.joynr.test;
 
 import java.util.Set;
 
-import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;

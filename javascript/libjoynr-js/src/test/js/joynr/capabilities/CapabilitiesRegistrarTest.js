@@ -29,7 +29,7 @@ define([
             "joynr/types/DiscoveryEntry",
             "joynr/types/ProviderScope",
             "joynr/types/Version",
-            "uuid",
+            "uuid"
         ],
         function(
                 Promise,
@@ -182,6 +182,34 @@ define([
                             });
                             expect(provider.checkImplementation).toHaveBeenCalled();
                             done();
+                        });
+
+                        it("defaultDelayMs can be configured", function(done) {
+
+                            var overwrittenDelay = 100000;
+
+                            jasmine.clock().install();
+                            var baseTime = new Date();
+                            jasmine.clock().mockDate(baseTime);
+
+                            CapabilitiesRegistrar.setDefaultExpiryIntervalMs(overwrittenDelay);
+
+                            capabilitiesRegistrar.registerProvider(
+                            domain,
+                            provider,
+                            providerQos).then(function() {
+                                return null;
+                            }).catch(function() {
+                                return null;
+                            });
+
+                            expect(discoveryStubSpy.add).toHaveBeenCalledWith(jasmine.objectContaining({
+                                expiryDateMs: baseTime.getTime() + overwrittenDelay
+                            }));
+
+                            jasmine.clock().uninstall();
+                            done();
+
                         });
 
                         it(

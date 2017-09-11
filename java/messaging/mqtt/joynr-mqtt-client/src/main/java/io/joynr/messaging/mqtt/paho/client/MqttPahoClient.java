@@ -45,8 +45,6 @@ import io.joynr.messaging.mqtt.JoynrMqttClient;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
-    public static final String MQTT_PRIO = "low";
-
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClient.class);
     private MqttClient mqttClient;
     private IMessagingSkeleton messagingSkeleton;
@@ -55,6 +53,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private int connectionTimeoutSec;
     private int timeToWaitMs;
     private int maxMsgsInflight;
+    private int maxMsgSizeBytes;
 
     private Set<String> subscribedTopics = new HashSet<>();
 
@@ -65,13 +64,15 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                           int keepAliveTimerSec,
                           int connectionTimeoutSec,
                           int timeToWaitMs,
-                          int maxMsgsInflight) throws MqttException {
+                          int maxMsgsInflight,
+                          int maxMsgSizeBytes) throws MqttException {
         this.mqttClient = mqttClient;
         this.reconnectSleepMs = reconnectSleepMS;
         this.keepAliveTimerSec = keepAliveTimerSec;
         this.connectionTimeoutSec = connectionTimeoutSec;
         this.timeToWaitMs = timeToWaitMs;
         this.maxMsgsInflight = maxMsgsInflight;
+        this.maxMsgSizeBytes = maxMsgSizeBytes;
     }
 
     @Override
@@ -207,6 +208,10 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         if (messagingSkeleton == null) {
             throw new JoynrDelayMessageException("MQTT Publish failed: messagingSkeleton has not been set yet");
         }
+        if (maxMsgSizeBytes != 0 && serializedMessage.length > maxMsgSizeBytes) {
+            throw new JoynrMessageNotSentException("MQTT Publish failed: maximum allowed message size of "
+                    + maxMsgSizeBytes + " bytes exceeded, actual size is " + serializedMessage.length + " bytes");
+        }
         try {
             MqttMessage message = new MqttMessage();
             message.setPayload(serializedMessage);
@@ -249,6 +254,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void connectionLost(Throwable error) {
+        logger.debug("connectionLost: {}", error.getMessage());
+
         if (error instanceof MqttException) {
             MqttException mqttError = (MqttException) error;
             int reason = mqttError.getReasonCode();

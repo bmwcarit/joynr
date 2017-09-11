@@ -34,15 +34,18 @@
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
+#include "joynr/Settings.h"
 #include "libjoynrclustercontroller/include/joynr/CcMessageRouter.h"
 
 namespace joynr
 {
 
-ShortCircuitRuntime::ShortCircuitRuntime(std::shared_ptr<IKeychain> keyChain)
-        : keyChain(std::move(keyChain))
+ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
+                                         std::shared_ptr<IKeychain> keyChain)
+        : JoynrRuntime(*settings), keyChain(std::move(keyChain))
 {
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
+    requestCallerDirectory = std::make_shared<DummyRequestCallerDirectory>();
 
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
 
@@ -52,16 +55,20 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::shared_ptr<IKeychain> keyChain)
             std::make_unique<MqttMulticastAddressCalculator>(nullptr, multicastTopicPrefix);
 
     const std::string& globalClusterControllerAddress("globalAddress");
+    const std::string messageNotificationProviderParticipantId(
+            "messageNotificationProviderParticipantId");
 
     messageRouter = std::make_shared<CcMessageRouter>(std::move(messagingStubFactory),
                                                       nullptr,
                                                       nullptr,
                                                       singleThreadedIOService.getIOService(),
                                                       std::move(addressCalculator),
-                                                      globalClusterControllerAddress);
+                                                      globalClusterControllerAddress,
+                                                      messageNotificationProviderParticipantId);
 
     messageSender = std::make_shared<MessageSender>(messageRouter, keyChain);
-    joynrDispatcher = new Dispatcher(messageSender, singleThreadedIOService.getIOService());
+    joynrDispatcher =
+            std::make_shared<Dispatcher>(messageSender, singleThreadedIOService.getIOService());
     messageSender->registerDispatcher(joynrDispatcher);
 
     dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
@@ -71,14 +78,15 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::shared_ptr<IKeychain> keyChain)
             new PublicationManager(singleThreadedIOService.getIOService(), messageSender.get());
     subscriptionManager = std::make_shared<SubscriptionManager>(
             singleThreadedIOService.getIOService(), messageRouter);
-    inProcessDispatcher = new InProcessDispatcher(singleThreadedIOService.getIOService());
+    inProcessDispatcher =
+            std::make_shared<InProcessDispatcher>(singleThreadedIOService.getIOService());
 
     inProcessPublicationSender = std::make_unique<InProcessPublicationSender>(subscriptionManager);
     auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
             subscriptionManager.get(),
             publicationManager,
             inProcessPublicationSender.get(),
-            dynamic_cast<IRequestCallerDirectory*>(inProcessDispatcher));
+            std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher));
     auto joynrMessagingConnectorFactory =
             std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
     auto connectorFactory = std::make_unique<ConnectorFactory>(
@@ -88,7 +96,7 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::shared_ptr<IKeychain> keyChain)
     std::string persistenceFilename = "dummy.txt";
     participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
 
-    std::vector<IDispatcher*> dispatcherList;
+    std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
     dispatcherList.push_back(inProcessDispatcher);
     dispatcherList.push_back(joynrDispatcher);
 

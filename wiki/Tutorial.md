@@ -167,7 +167,7 @@ can be stopped by hitting `q`. The provider will be unregistered and the applica
 
 ```c++
 ...
-std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToLibJoynSettings, pathToMessagingSettings);
+std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToLibJoynSettings, pathToMessagingSettings);
 // Initialize the quality of service settings
 // Set the priority so that the consumer application always uses the most recently started provider
 std::chrono::milliseconds millisSinceEpoch =
@@ -247,7 +247,7 @@ you added to the interface, and add a print statement so that you can see the re
 int main(int argc, char* argv[])
 {
     ...
-    std::unique_ptr<JoynrRuntime> runtime =
+    std::shared_ptr<JoynrRuntime> runtime =
             JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder

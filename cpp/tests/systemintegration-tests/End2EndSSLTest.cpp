@@ -61,10 +61,11 @@ public:
         }
 
         auto ccSettings = std::make_unique<Settings>(std::get<0>(GetParam()));
-        runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(ccSettings));
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(ccSettings));
+        runtime->init();
 
         auto libJoynrSettings = std::make_unique<Settings>(std::get<1>(GetParam()));
-        libJoynrRuntime = std::make_unique<TestLibJoynrWebSocketRuntime>(std::move(libJoynrSettings), keyChain);
+        libJoynrRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(libJoynrSettings), keyChain);
 
         std::string uuid = util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
@@ -116,8 +117,8 @@ private:
 
 protected:
     std::string domain;
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
-    std::unique_ptr<TestLibJoynrWebSocketRuntime> libJoynrRuntime;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<TestLibJoynrWebSocketRuntime> libJoynrRuntime;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(End2EndSSLTest);
@@ -134,17 +135,17 @@ TEST_P(End2EndSSLTest, localconnection_call_rpc_method_and_get_expected_result)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
+    std::string participantId = runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
 
     // Build a proxy
-    std::unique_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
+    std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
             libJoynrRuntime->createProxyBuilder<vehicle::GpsProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(3000);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::unique_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
+    std::shared_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -157,6 +158,7 @@ TEST_P(End2EndSSLTest, localconnection_call_rpc_method_and_get_expected_result)
     int actualValue;
     gpsFuture->get(actualValue);
     EXPECT_EQ(expectedValue, actualValue);
+    runtime->unregisterProvider(participantId);
 }
 
 INSTANTIATE_TEST_CASE_P(TLS,

@@ -42,6 +42,8 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "HttpSystemIntegrationTest1.settings"
         "HttpSystemIntegrationTest2.settings"
         "HttpJoynrClusterControllerRuntimeTest.settings"
+        "MqttSenderTestWithMaxMessageSizeLimits1.settings"
+        "MqttSenderTestWithMaxMessageSizeLimits2.settings"
         "MqttSystemIntegrationTest1.settings"
         "MqttSystemIntegrationTest2.settings"
         "MqttOverTLSSystemIntegrationTest1.settings"
@@ -192,7 +194,7 @@ endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 
 # Add additional boost dependencies for tests
-list(APPEND JOYNR_BOOST_REQUIRED_COMPONENTS filesystem regex)
+list(APPEND JOYNR_BOOST_REQUIRED_COMPONENTS regex)
 find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
     COMPONENTS ${JOYNR_BOOST_REQUIRED_COMPONENTS}
 )
@@ -200,7 +202,6 @@ include(CheckBoostImportTargets)
 
 list(
     APPEND test_TARGET_LIBRARIES
-    Boost::filesystem
     Boost::regex
     # Link the Dbus runtime last so that the cluster controller
     # runtime is the default runtime
@@ -306,6 +307,10 @@ if(${BUILD_INTEGRATION_TESTS})
        ${test_HEADERS}
        ${test_SOURCES}
        ${g_IntegrationTests_SOURCES}
+       # Make the LibJoynrWebSocketRuntime available in parallel to the cluster controller runtime
+       "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+       "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
+       "../runtimes/libjoynr-runtime/LibJoynrRuntime.cpp"
     )
 
     target_link_libraries(

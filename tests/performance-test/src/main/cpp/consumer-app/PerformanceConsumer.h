@@ -57,7 +57,7 @@ public:
     using ComplexStruct = joynr::tests::performance::Types::ComplexStruct;
 
 public:
-    PerformanceConsumer(std::unique_ptr<JoynrRuntime> joynrRuntime,
+    PerformanceConsumer(std::shared_ptr<JoynrRuntime> joynrRuntime,
                         std::size_t messageCount,
                         std::size_t stringLength,
                         std::size_t byteArraySize,
@@ -71,7 +71,7 @@ public:
         if (messageCount == 0) {
             throw std::invalid_argument("messageCount must be >= 1");
         }
-        std::unique_ptr<ProxyBuilder<EchoProxy>> proxyBuilder =
+        std::shared_ptr<ProxyBuilder<EchoProxy>> proxyBuilder =
                 runtime->createProxyBuilder<EchoProxy>(domain);
 
         if (!proxyBuilder) {
@@ -171,14 +171,14 @@ protected:
     }
 
     std::size_t messageCount;
-    std::unique_ptr<EchoProxy> echoProxy;
+    std::shared_ptr<EchoProxy> echoProxy;
     std::vector<ClockResolution> durationVector;
 
     std::size_t stringLength;
     std::size_t byteArraySize;
 
 private:
-    std::unique_ptr<JoynrRuntime> runtime;
+    std::shared_ptr<JoynrRuntime> runtime;
     std::uint64_t ttl = 600000;
 };
 

@@ -114,6 +114,7 @@ protected:
     std::unique_ptr<CcMessageRouter> createMessageRouter(std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {})
     {
         const std::string globalCcAddress("globalAddress");
+        const std::string messageNotificationProviderParticipantId("messageNotificationProviderParticipantId");
         ClusterControllerSettings ccSettings(settings);
 
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
@@ -129,6 +130,7 @@ protected:
                     singleThreadedIOService.getIOService(),
                     std::make_unique<MqttMulticastAddressCalculator>(globalTransport, ccSettings.getMqttMulticastTopicPrefix()),
                     globalCcAddress,
+                    messageNotificationProviderParticipantId,
                     std::move(transportStatuses),
                     6,
                     std::move(messageQueueForMessageRouter),

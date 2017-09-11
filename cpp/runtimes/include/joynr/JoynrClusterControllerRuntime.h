@@ -92,12 +92,12 @@ public:
             std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver = nullptr,
             std::shared_ptr<ITransportMessageSender> mqttMessageSender = nullptr);
 
-    static std::unique_ptr<JoynrClusterControllerRuntime> create(
+    static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::size_t argc,
             char* argv[],
             std::shared_ptr<IKeychain> keyChain = nullptr);
 
-    static std::unique_ptr<JoynrClusterControllerRuntime> create(
+    static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::unique_ptr<Settings> settings,
             const std::string& discoveryEntriesFile = "",
             std::shared_ptr<IKeychain> keyChain = nullptr);
@@ -120,6 +120,11 @@ public:
     void registerDiscoveryProvider();
     void registerMessageNotificationProvider();
     void registerAccessControlListEditorProvider();
+    void unregisterRoutingProvider();
+    void unregisterDiscoveryProvider();
+    void unregisterMessageNotificationProvider();
+    void unregisterAccessControlListEditorProvider();
+    void init();
 
     /*
      * Inject predefined capabilities stored in a JSON file.
@@ -128,7 +133,6 @@ public:
 
 protected:
     void importMessageRouterFromFile();
-    void initializeAllDependencies();
     void importPersistedLocalCapabilitiesDirectory();
 
     std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> getProvisionedEntries()
@@ -136,8 +140,8 @@ protected:
 
     std::shared_ptr<IMessageRouter> getMessageRouter() final;
 
-    IDispatcher* joynrDispatcher;
-    IDispatcher* inProcessDispatcher;
+    std::shared_ptr<IDispatcher> joynrDispatcher;
+    std::shared_ptr<IDispatcher> inProcessDispatcher;
 
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::shared_ptr<IMessageSender> messageSender;
@@ -155,7 +159,7 @@ protected:
     std::shared_ptr<ITransportMessageSender> mqttMessageSender;
     std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
 
-    std::vector<IDispatcher*> dispatcherList;
+    std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
     InProcessPublicationSender* inProcessPublicationSender;
 
     std::unique_ptr<Settings> settings;
@@ -180,7 +184,7 @@ protected:
 
 private:
     void createWsCCMessagingSkeletons();
-    std::unique_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
+    std::shared_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
     createGlobalDomainAccessControllerProxy();
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
@@ -197,6 +201,11 @@ private:
 
     std::shared_ptr<joynr::AccessController> accessController;
     std::shared_ptr<IKeychain> keyChain;
+
+    std::string routingProviderParticipantId;
+    std::string discoveryProviderParticipantId;
+    std::string messageNotificationProviderParticipantId;
+    std::string accessControlListEditorProviderParticipantId;
 };
 
 } // namespace joynr

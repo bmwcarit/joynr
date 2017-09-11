@@ -47,6 +47,7 @@ This project has dependencies to:
   org.franca.core.dsl under Eclipse Public License - v 1.0
   org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
   Reflections under WTFPL
+  SLF4J API Module under MIT License
   Tycho org.eclipse.jdt.core dependency (Incubation) under Eclipse Public License
   Xbase Runtime Library under Eclipse Public License - v 1.0
   XML Commons External Components XML APIs under The Apache Software License, Version 2.0 or The SAX License or The W3C License

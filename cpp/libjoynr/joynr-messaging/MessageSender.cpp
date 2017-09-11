@@ -41,7 +41,7 @@ INIT_LOGGER(MessageSender);
 MessageSender::MessageSender(std::shared_ptr<IMessageRouter> messageRouter,
                              std::shared_ptr<IKeychain> keyChain,
                              std::uint64_t ttlUpliftMs)
-        : dispatcher(nullptr),
+        : dispatcher(),
           messageRouter(std::move(messageRouter)),
           messageFactory(ttlUpliftMs, std::move(keyChain)),
           replyToAddress()
@@ -53,9 +53,9 @@ void MessageSender::setReplyToAddress(const std::string& replyToAddress)
     this->replyToAddress = replyToAddress;
 }
 
-void MessageSender::registerDispatcher(IDispatcher* dispatcher)
+void MessageSender::registerDispatcher(std::weak_ptr<IDispatcher> dispatcher)
 {
-    this->dispatcher = dispatcher;
+    this->dispatcher = std::move(dispatcher);
 }
 
 void MessageSender::sendRequest(const std::string& senderParticipantId,
@@ -65,7 +65,8 @@ void MessageSender::sendRequest(const std::string& senderParticipantId,
                                 std::shared_ptr<IReplyCaller> callback,
                                 bool isLocalMessage)
 {
-    if (dispatcher == nullptr) {
+    auto dispatcherSharedPtr = dispatcher.lock();
+    if (dispatcherSharedPtr == nullptr) {
         JOYNR_LOG_ERROR(logger,
                         "Sending a request failed. Dispatcher is null. Probably a proxy "
                         "was used after the runtime was deleted.");
@@ -74,7 +75,7 @@ void MessageSender::sendRequest(const std::string& senderParticipantId,
 
     MutableMessage message = messageFactory.createRequest(
             senderParticipantId, receiverParticipantId, qos, request, isLocalMessage);
-    dispatcher->addReplyCaller(request.getRequestReplyId(), std::move(callback), qos);
+    dispatcherSharedPtr->addReplyCaller(request.getRequestReplyId(), std::move(callback), qos);
 
     if (!message.isLocalMessage()) {
         message.setReplyTo(replyToAddress);
@@ -103,11 +104,15 @@ void MessageSender::sendOneWayRequest(const std::string& senderParticipantId,
 void MessageSender::sendReply(const std::string& senderParticipantId,
                               const std::string& receiverParticipantId,
                               const MessagingQos& qos,
+                              std::unordered_map<std::string, std::string> prefixedCustomHeaders,
                               const Reply& reply)
 {
     try {
-        MutableMessage message =
-                messageFactory.createReply(senderParticipantId, receiverParticipantId, qos, reply);
+        MutableMessage message = messageFactory.createReply(senderParticipantId,
+                                                            receiverParticipantId,
+                                                            qos,
+                                                            std::move(prefixedCustomHeaders),
+                                                            reply);
         assert(messageRouter);
         messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {

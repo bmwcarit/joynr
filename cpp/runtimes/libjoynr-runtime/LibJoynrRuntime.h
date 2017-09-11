@@ -58,8 +58,8 @@ protected:
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     InProcessPublicationSender* inProcessPublicationSender;
     std::shared_ptr<IMessageSender> messageSender;
-    IDispatcher* joynrDispatcher;
-    IDispatcher* inProcessDispatcher;
+    std::shared_ptr<IDispatcher> joynrDispatcher;
+    std::shared_ptr<IDispatcher> inProcessDispatcher;
 
     // take ownership, so a pointer is used
     std::unique_ptr<Settings> settings;

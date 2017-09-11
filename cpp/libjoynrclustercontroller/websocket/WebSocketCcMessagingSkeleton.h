@@ -52,6 +52,7 @@ public:
     virtual void transmit(
             std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
+    virtual void shutdown() = 0;
 };
 
 /**
@@ -109,7 +110,9 @@ public:
     /**
      * @brief Destructor
      */
-    ~WebSocketCcMessagingSkeleton() override
+    ~WebSocketCcMessagingSkeleton() override = default;
+
+    void shutdown() override
     {
         websocketpp::lib::error_code shutdownError;
         endpoint.stop_listening(shutdownError);
@@ -198,7 +201,7 @@ private:
                             "received initialization message from websocket client: {}",
                             initMessage);
             // register client with messaging stub factory
-            joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
+            std::shared_ptr<joynr::system::RoutingTypes::WebSocketClientAddress> clientAddress;
             try {
                 joynr::serializer::deserializeFromJson(clientAddress, initMessage);
             } catch (const std::invalid_argument& e) {
@@ -214,7 +217,7 @@ private:
             auto sender = std::make_shared<WebSocketPpSender<Server>>(endpoint);
             sender->setConnectionHandle(hdl);
 
-            messagingStubFactory->addClient(clientAddress, std::move(sender));
+            messagingStubFactory->addClient(*clientAddress, std::move(sender));
 
             typename Server::connection_ptr connection = endpoint.get_con_from_hdl(hdl);
             connection->set_message_handler(
@@ -230,13 +233,15 @@ private:
                 // empty ownerId
                 auto it = clients.find(hdl);
                 if (it != clients.cend()) {
-                    it->second.webSocketClientAddress = std::move(clientAddress);
+                    it->second.webSocketClientAddress = *clientAddress;
                 } else {
                     // insecure connection, no CN exists
-                    auto certEntry = CertEntry(std::move(clientAddress), std::string());
+                    auto certEntry = CertEntry(*clientAddress, std::string());
                     clients[hdl] = std::move(certEntry);
                 }
             }
+
+            messageRouter->sendMessages(clientAddress);
         } else {
             JOYNR_LOG_ERROR(
                     logger, "received an initial message with wrong format: \"{}\"", initMessage);
@@ -257,7 +262,7 @@ private:
             return;
         }
 
-        JOYNR_LOG_DEBUG(logger, "<<<< INCOMING <<<< {}", immutableMessage->toLogMessage());
+        JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
 
         auto onFailure = [messageId = immutableMessage->getId()](
                 const exceptions::JoynrRuntimeException& e)

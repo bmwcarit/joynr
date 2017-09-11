@@ -75,6 +75,8 @@ public:
         fixedParticipantArbitrationStrategyFunction(std::make_unique<const FixedParticipantArbitrationStrategyFunction>()),
         lastSeenDateMs(0),
         expiryDateMs(0),
+        defaultDiscoveryTimeoutMs(30000),
+        defaultRetryIntervalMs(1000),
         publicKeyId("publicKeyId"),
         mockDiscovery(std::make_shared<MockDiscovery>())
         {}
@@ -90,6 +92,8 @@ public:
 protected:
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
+    std::int64_t defaultDiscoveryTimeoutMs;
+    std::int64_t defaultRetryIntervalMs;
     std::string publicKeyId;
     static joynr::Logger logger;
     std::shared_ptr<MockDiscovery> mockDiscovery;
@@ -143,6 +147,8 @@ TEST_F(ArbitratorTest, arbitrationTimeout) {
 TEST_F(ArbitratorTest, getLastSeen) {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
+    discoveryQos.setDiscoveryTimeoutMs(defaultDiscoveryTimeoutMs);
+    discoveryQos.setRetryIntervalMs(defaultRetryIntervalMs);
     joynr::types::Version providerVersion(47, 11);
     Arbitrator lastSeenArbitrator(domain,
                     interfaceName,
@@ -198,6 +204,8 @@ TEST_F(ArbitratorTest, getLastSeen) {
 // Test that the Arbitrator selects the provider with the highest priority
 TEST_F(ArbitratorTest, getHighestPriority) {
     DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryTimeoutMs(defaultDiscoveryTimeoutMs);
+    discoveryQos.setRetryIntervalMs(defaultRetryIntervalMs);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     joynr::types::Version providerVersion(47, 11);
     Arbitrator qosArbitrator(domain,
@@ -257,6 +265,8 @@ TEST_F(ArbitratorTest, getHighestPriority) {
 // Test that the Arbitrator selects a provider with compatible version and compatible priority
 TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
     DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryTimeoutMs(defaultDiscoveryTimeoutMs);
+    discoveryQos.setRetryIntervalMs(defaultRetryIntervalMs);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     joynr::types::Version expectedVersion(47, 11);
     Arbitrator qosArbitrator(domain,
@@ -325,6 +335,8 @@ TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
 // Test that the Arbitrator selects a provider that supports onChange subscriptions
 TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
     DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryTimeoutMs(defaultDiscoveryTimeoutMs);
+    discoveryQos.setRetryIntervalMs(defaultRetryIntervalMs);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setProviderMustSupportOnChange(true);
     joynr::types::Version providerVersion(47, 11);
@@ -393,6 +405,8 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
     const std::string keywordValue("unittests-keyword");
 
     DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryTimeoutMs(defaultDiscoveryTimeoutMs);
+    discoveryQos.setRetryIntervalMs(defaultRetryIntervalMs);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     joynr::types::Version providerVersion(47, 11);
@@ -471,6 +485,8 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
     const std::string keywordValue("unittests-keyword");
 
     DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryTimeoutMs(defaultDiscoveryTimeoutMs);
+    discoveryQos.setRetryIntervalMs(defaultRetryIntervalMs);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     joynr::types::Version expectedVersion(47, 11);

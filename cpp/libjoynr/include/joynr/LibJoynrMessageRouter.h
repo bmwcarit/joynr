@@ -127,7 +127,7 @@ public:
     /*
      * Method specific to LibJoynrMessageRouter
      */
-    void setParentRouter(std::unique_ptr<joynr::system::RoutingProxy> parentRouter);
+    void setParentRouter(std::shared_ptr<joynr::system::RoutingProxy> parentRouter);
     bool publishToGlobal(const ImmutableMessage& message) final;
 
     /*
@@ -135,7 +135,7 @@ public:
      * removes parentRouter shared ptr in order to break cyclic dependency
      * SubscriptionManager -> LibJoynrMessageRouter -> RoutingProxy -> SubscriptionManager
      */
-    void shutdown();
+    void shutdown() final;
 
     friend class MessageRunnable;
 
@@ -150,7 +150,7 @@ private:
                             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                                     onError = nullptr);
 
-    std::unique_ptr<joynr::system::RoutingProxy> parentRouter;
+    std::shared_ptr<joynr::system::RoutingProxy> parentRouter;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress;
     std::unordered_set<std::string> runningParentResolves;

@@ -40,7 +40,7 @@ class JoynrRuntimeException;
 class HttpMessagingSkeleton
 {
 public:
-    explicit HttpMessagingSkeleton(IMessageRouter& messageRouter);
+    explicit HttpMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter);
 
     ~HttpMessagingSkeleton() = default;
 
@@ -53,7 +53,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingSkeleton);
     ADD_LOGGER(HttpMessagingSkeleton);
 
-    IMessageRouter& messageRouter;
+    std::weak_ptr<IMessageRouter> messageRouter;
 };
 
 } // namespace joynr

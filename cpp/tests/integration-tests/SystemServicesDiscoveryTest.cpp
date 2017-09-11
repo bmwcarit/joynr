@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "joynr/CapabilityUtils.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/system/DiscoveryProxy.h"
@@ -42,13 +43,13 @@ public:
     std::unique_ptr<Settings> settings;
     std::string discoveryDomain;
     std::string discoveryProviderParticipantId;
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
     std::shared_ptr<ITransportMessageSender> mockMessageSenderMqtt;
     DiscoveryQos discoveryQos;
-    std::unique_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder;
-    std::unique_ptr<joynr::system::DiscoveryProxy> discoveryProxy;
+    std::shared_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder;
+    std::shared_ptr<joynr::system::DiscoveryProxy> discoveryProxy;
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
     std::string publicKeyId;
@@ -58,7 +59,7 @@ public:
         settings(std::make_unique<Settings>(settingsFilename)),
         discoveryDomain(),
         discoveryProviderParticipantId(),
-        runtime(nullptr),
+        runtime(),
         mockMessageReceiverHttp(std::make_shared<MockTransportMessageReceiver>()),
         mockMessageReceiverMqtt(std::make_shared<MockTransportMessageReceiver>()),
         mockMessageSenderMqtt(std::make_shared<MockTransportMessageSender>()),
@@ -97,7 +98,7 @@ public:
 
         //runtime can only be created, after MockCommunicationManager has been told to return
         //a channelId for getReceiveChannelId.
-        runtime = std::make_unique<JoynrClusterControllerRuntime>(
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(
                 std::move(settings),
                 nullptr,
                 mockMessageReceiverHttp,
@@ -105,21 +106,21 @@ public:
                 mockMessageReceiverMqtt,
                 mockMessageSenderMqtt);
         // discovery provider is normally registered in JoynrClusterControllerRuntime::create
+        runtime->init();
         runtime->registerDiscoveryProvider();
-    }
-
-    ~SystemServicesDiscoveryTest(){
-        runtime->deleteChannel();
-        runtime->stopExternalCommunication();
-        std::remove(settingsFilename.c_str());
-    }
-
-    void SetUp(){
         discoveryProxyBuilder = runtime->createProxyBuilder<joynr::system::DiscoveryProxy>(discoveryDomain);
     }
 
-    void TearDown(){
+    ~SystemServicesDiscoveryTest(){
+        discoveryProxy.reset();
+        discoveryProxyBuilder.reset();
+        runtime->unregisterDiscoveryProvider();
+        runtime->deleteChannel();
+        runtime->stopExternalCommunication();
+        runtime.reset();
+
         // Delete persisted files
+        std::remove(settingsFilename.c_str());
         std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
@@ -190,8 +191,7 @@ TEST_F(SystemServicesDiscoveryTest, add)
                 false                                   // provider supports on change subscriptions
     );
     joynr::types::Version providerVersion(47, 11);
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedResult;
-    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry(
+    joynr::types::DiscoveryEntry discoveryEntry(
                 providerVersion,
                 domain,
                 interfaceName,
@@ -199,10 +199,11 @@ TEST_F(SystemServicesDiscoveryTest, add)
                 providerQos,
                 lastSeenDateMs,
                 expiryDateMs,
-                publicKeyId,
-                true
+                publicKeyId
     );
-    expectedResult.push_back(discoveryEntry);
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedResult;
+    auto expectedEntry = util::convert(true, discoveryEntry);
+    expectedResult.push_back(expectedEntry);
 
     try {
         discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQos);
@@ -248,8 +249,7 @@ TEST_F(SystemServicesDiscoveryTest, remove)
                 false                                   // provider supports on change subscriptions
     );
     joynr::types::Version providerVersion(47, 11);
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedResult;
-    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry(
+    joynr::types::DiscoveryEntry discoveryEntry(
                 providerVersion,
                 domain,
                 interfaceName,
@@ -257,10 +257,12 @@ TEST_F(SystemServicesDiscoveryTest, remove)
                 providerQos,
                 lastSeenDateMs,
                 expiryDateMs,
-                publicKeyId,
-                true
+                publicKeyId
     );
-    expectedResult.push_back(discoveryEntry);
+
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedResult;
+    auto expectedEntry = util::convert(true, discoveryEntry);
+    expectedResult.push_back(expectedEntry);
 
     try {
         discoveryProxy->add(discoveryEntry);

@@ -52,9 +52,7 @@ public class GlobalDomainRoleControllerBeanTest {
     private final static String USER_PARTITION = "username";
     private final static String DOMAIN = "domain1";
     private final static String[] DOMAINS = { DOMAIN };
-    private final static String INTERFACE_NAME = "interfaceName";
     private final static Role ROLE = Role.MASTER;
-    private final static String OPERATION = "operation";
 
     @Test
     public void testGetDomainRoleEntries() {

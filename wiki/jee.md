@@ -604,6 +604,9 @@ from the consumer to the client:
 	- This gets the current station, and you should see some output similar to:
 	  `{"country":"GERMANY","name":"Bayern 3","trafficService":true}`
 
+Note: If you use a joynr docker container to run the JEE application server
+the payara's default http port 8080 won't be available. Use the https port 8181 instead.
+
 Next, explore the code in the `radio-jee-provider` and `radio-jee-consumer` projects.
 Note the `radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBean.java`
 and `radio-jee-consumer/src/main/java/io/joynr/examples/jee/RadioConsumerRestEndpoint.java`

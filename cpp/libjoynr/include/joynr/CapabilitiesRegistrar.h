@@ -50,7 +50,7 @@ class JOYNR_EXPORT CapabilitiesRegistrar
 {
 public:
     CapabilitiesRegistrar(
-            std::vector<IDispatcher*> dispatcherList,
+            std::vector<std::shared_ptr<IDispatcher>> dispatcherList,
             joynr::system::IDiscoveryAsync& discoveryProxy,
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
@@ -79,7 +79,7 @@ public:
         provider->registerBroadcastListener(
                 new MulticastBroadcastListener(participantId, publicationManager));
 
-        for (IDispatcher* currentDispatcher : dispatcherList) {
+        for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
             //     should it be configurable which ones are used to contact it.
             assert(currentDispatcher != nullptr);
@@ -145,12 +145,12 @@ public:
         return participantId;
     }
 
-    void addDispatcher(IDispatcher* dispatcher);
-    void removeDispatcher(IDispatcher* dispatcher);
+    void addDispatcher(std::shared_ptr<IDispatcher> dispatcher);
+    void removeDispatcher(std::shared_ptr<IDispatcher> dispatcher);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
-    std::vector<IDispatcher*> dispatcherList;
+    std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
     joynr::system::IDiscoveryAsync& discoveryProxy;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;

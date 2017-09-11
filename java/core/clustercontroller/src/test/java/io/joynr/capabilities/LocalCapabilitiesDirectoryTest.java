@@ -95,6 +95,7 @@ import org.mockito.stubbing.Answer;
 public class LocalCapabilitiesDirectoryTest {
     private static final String TEST_URL = "http://testUrl";
     private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
+    private static final long defaultDiscoveryRetryIntervalMs = 2000L;
     private Long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
     private String publicKeyId = "publicKeyId";
 
@@ -217,7 +218,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         globalCapabilitiesClient,
                                                                         expiredDiscoveryEntryCacheCleaner,
                                                                         3600000,
-                                                                        capabilitiesFreshnessUpdateExecutor);
+                                                                        capabilitiesFreshnessUpdateExecutor,
+                                                                        defaultDiscoveryRetryIntervalMs);
         verify(expiredDiscoveryEntryCacheCleaner).scheduleCleanUpForCaches(Mockito.<ExpiredDiscoveryEntryCacheCleaner.CleanupAction> any(),
                                                                            argThat(new DiscoveryEntryStoreVarargMatcher(globalDiscoveryEntryCacheMock,
                                                                                                                         localDiscoveryEntryStoreMock)));

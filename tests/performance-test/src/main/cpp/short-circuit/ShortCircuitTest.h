@@ -25,6 +25,7 @@
 #include "../provider/PerformanceTestEchoProvider.h"
 #include "../common/PerformanceTest.h"
 #include "joynr/types/ProviderQos.h"
+#include "joynr/Settings.h"
 
 #include "ShortCircuitRuntime.h"
 
@@ -34,7 +35,9 @@ struct ShortCircuitTest : public PerformanceTest
 {
     using ByteArray = std::vector<std::int8_t>;
 
-    ShortCircuitTest(std::uint64_t runs) : runs(runs), runtime()
+    ShortCircuitTest(std::uint64_t runs)
+            : runs(runs),
+              runtime(std::make_shared<ShortCircuitRuntime>(std::make_unique<joynr::Settings>()))
     {
         echoProvider = std::make_shared<PerformanceTestEchoProvider>();
         // default uses a priority that is the current time,
@@ -46,16 +49,16 @@ struct ShortCircuitTest : public PerformanceTest
         echoProviderQos.setPriority(millisSinceEpoch.count());
         echoProviderQos.setScope(joynr::types::ProviderScope::GLOBAL);
         echoProviderQos.setSupportsOnChangeSubscriptions(true);
-        runtime.registerProvider<tests::performance::EchoProvider>(
+        runtime->registerProvider<tests::performance::EchoProvider>(
                 domainName, echoProvider, echoProviderQos);
-        std::unique_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder =
-                runtime.createProxyBuilder<tests::performance::EchoProxy>(domainName);
+        std::shared_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder =
+                runtime->createProxyBuilder<tests::performance::EchoProxy>(domainName);
         echoProxy = proxyBuilder->setDiscoveryQos(joynr::DiscoveryQos())->build();
     }
 
     ~ShortCircuitTest()
     {
-        runtime.unregisterProvider<tests::performance::EchoProvider>(domainName, echoProvider);
+        runtime->unregisterProvider<tests::performance::EchoProvider>(domainName, echoProvider);
     }
 
     void roundTripString(std::size_t length)
@@ -108,8 +111,8 @@ private:
     }
 
     std::uint64_t runs;
-    ShortCircuitRuntime runtime;
+    std::shared_ptr<ShortCircuitRuntime> runtime;
     std::shared_ptr<PerformanceTestEchoProvider> echoProvider;
-    std::unique_ptr<tests::performance::EchoProxy> echoProxy;
+    std::shared_ptr<tests::performance::EchoProxy> echoProxy;
     std::string domainName = "short-circuit";
 };

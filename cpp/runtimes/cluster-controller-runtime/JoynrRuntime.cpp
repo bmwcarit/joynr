@@ -23,7 +23,7 @@
 
 namespace joynr
 {
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
         const std::string& pathToLibjoynrSettings,
         const std::string& pathToMessagingSettings,
         std::shared_ptr<IKeychain> keyChain)
@@ -35,7 +35,7 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
     return createRuntime(std::move(settings), std::move(keyChain));
 }
 
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings,
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings,
                                                           std::shared_ptr<IKeychain> keyChain)
 {
     const std::string discoveryEntriesFile("");
@@ -43,14 +43,14 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settin
             std::move(settings), discoveryEntriesFile, std::move(keyChain));
 }
 
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         const std::string& pathToLibjoynrSettings,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         const std::string& pathToMessagingSettings,
         std::shared_ptr<IKeychain> keyChain)
 {
-    std::unique_ptr<JoynrRuntime> runtime;
+    std::shared_ptr<JoynrRuntime> runtime;
 
     try {
         runtime =
@@ -62,13 +62,13 @@ std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
     return runtime;
 }
 
-std::unique_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::unique_ptr<Settings> settings,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         std::shared_ptr<IKeychain> keyChain)
 {
-    std::unique_ptr<JoynrRuntime> runtime;
+    std::shared_ptr<JoynrRuntime> runtime;
     try {
         runtime = createRuntime(std::move(settings), std::move(keyChain));
         onSuccess();

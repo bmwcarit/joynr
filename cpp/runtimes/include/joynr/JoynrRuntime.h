@@ -48,6 +48,7 @@ class SingleThreadedIOService;
  * used to register / unregister providers and create proxy builders
  */
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrRuntime
+        : public std::enable_shared_from_this<JoynrRuntime>
 {
 public:
     /**
@@ -215,20 +216,21 @@ public:
      * @return A proxy builder object that can be used to create proxies.
      */
     template <class TIntfProxy>
-    std::unique_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
+    std::shared_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
         if (!proxyFactory) {
             throw exceptions::JoynrRuntimeException(
                     "Exception in JoynrRuntime: Cannot perform arbitration as"
                     "runtime is not yet fully initialized.");
         }
-        return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
+        return std::make_shared<ProxyBuilder<TIntfProxy>>(shared_from_this(),
+                                                          *proxyFactory,
                                                           requestCallerDirectory,
                                                           discoveryProxy,
                                                           domain,
                                                           dispatcherAddress,
                                                           getMessageRouter(),
-                                                          messagingSettings.getMaximumTtlMs());
+                                                          messagingSettings);
     }
 
     /**
@@ -238,7 +240,7 @@ public:
      * @param An optional key chain that is used for websocket connections
      * @return pointer to a JoynrRuntime instance
      */
-    static std::unique_ptr<JoynrRuntime> createRuntime(
+    static std::shared_ptr<JoynrRuntime> createRuntime(
             const std::string& pathToLibjoynrSettings,
             const std::string& pathToMessagingSettings = "",
             std::shared_ptr<IKeychain> keyChain = nullptr);
@@ -249,7 +251,7 @@ public:
      * @param An optional key chain that is used for websocket connections
      * @return pointer to a JoynrRuntime instance
      */
-    static std::unique_ptr<JoynrRuntime> createRuntime(
+    static std::shared_ptr<JoynrRuntime> createRuntime(
             std::unique_ptr<Settings> settings,
             std::shared_ptr<IKeychain> keyChain = nullptr);
 
@@ -261,10 +263,10 @@ public:
      * @param onError Is called when an error occurs
      * @param pathToMessagingSettings
      * @param An optional key chain that is used for websocket connections
-     * @return unique_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
+     * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
      * onSuccess is called
      */
-    static std::unique_ptr<JoynrRuntime> createRuntimeAsync(
+    static std::shared_ptr<JoynrRuntime> createRuntimeAsync(
             const std::string& pathToLibjoynrSettings,
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
@@ -278,10 +280,10 @@ public:
      * @param onSuccess Is called when the runtime is available for use
      * @param onError Is called when an error occurs
      * @param An optional key chain that is used for websocket connections
-     * @return unique_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
+     * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
      * onSuccess is called
      */
-    static std::unique_ptr<JoynrRuntime> createRuntimeAsync(
+    static std::shared_ptr<JoynrRuntime> createRuntimeAsync(
             std::unique_ptr<Settings> settings,
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
@@ -320,7 +322,7 @@ protected:
     /** @brief Factory for creating proxy instances */
     std::unique_ptr<ProxyFactory> proxyFactory;
     /** Is forwarded to proxy builder objects. They use it to identify in-process providers **/
-    IRequestCallerDirectory* requestCallerDirectory;
+    std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
     /** @brief Creates and persists participant id */
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     /** @brief Class that handles provider registration/deregistration */

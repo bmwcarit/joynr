@@ -39,7 +39,7 @@ class JoynrRuntimeException;
 class JOYNR_EXPORT InProcessMessagingSkeleton
 {
 public:
-    explicit InProcessMessagingSkeleton(IDispatcher* dispatcher);
+    explicit InProcessMessagingSkeleton(std::shared_ptr<IDispatcher> dispatcher);
     virtual ~InProcessMessagingSkeleton() = default;
     virtual void transmit(
             std::shared_ptr<ImmutableMessage> message,
@@ -47,7 +47,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessMessagingSkeleton);
-    IDispatcher* dispatcher;
+    std::shared_ptr<IDispatcher> dispatcher;
 };
 
 } // namespace joynr

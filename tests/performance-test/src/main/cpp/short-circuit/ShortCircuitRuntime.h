@@ -138,10 +138,11 @@ public:
 /**
  * @brief Very reduced Runtime which uses DummyDiscovery as the discovery proxy.
  */
-class ShortCircuitRuntime
+class ShortCircuitRuntime : public JoynrRuntime
 {
 public:
-    ShortCircuitRuntime(std::shared_ptr<IKeychain> keyChain = nullptr);
+    ShortCircuitRuntime(std::unique_ptr<Settings> settings,
+                        std::shared_ptr<IKeychain> keyChain = nullptr);
 
     template <class TIntfProvider>
     std::string registerProvider(const std::string& domain,
@@ -169,15 +170,21 @@ public:
     }
 
     template <class TIntfProxy>
-    std::unique_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
+    std::shared_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
-        return std::make_unique<ProxyBuilder<TIntfProxy>>(*proxyFactory,
-                                                          &requestCallerDirectory,
+        return std::make_shared<ProxyBuilder<TIntfProxy>>(shared_from_this(),
+                                                          *proxyFactory,
+                                                          requestCallerDirectory,
                                                           discoveryProxy,
                                                           domain,
                                                           dispatcherAddress,
                                                           messageRouter,
-                                                          maximumTtlMs);
+                                                          messagingSettings);
+    }
+
+    std::shared_ptr<IMessageRouter> getMessageRouter()
+    {
+        return messageRouter;
     }
 
 private:
@@ -185,8 +192,8 @@ private:
     std::shared_ptr<IMessageRouter> messageRouter;
     std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     std::shared_ptr<IMessageSender> messageSender;
-    IDispatcher* joynrDispatcher;
-    IDispatcher* inProcessDispatcher;
+    std::shared_ptr<IDispatcher> joynrDispatcher;
+    std::shared_ptr<IDispatcher> inProcessDispatcher;
     std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
     std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
     PublicationManager* publicationManager;
@@ -196,8 +203,8 @@ private:
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
     std::uint64_t maximumTtlMs;
-    DummyRequestCallerDirectory requestCallerDirectory;
     std::shared_ptr<IKeychain> keyChain;
+    std::shared_ptr<DummyRequestCallerDirectory> requestCallerDirectory;
 };
 
 } // namespace joynr

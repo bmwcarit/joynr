@@ -20,11 +20,11 @@ package joynr.messaging.types
 
 typeCollection Types {
 
-   /* **************************************************** */
-    /* Type definitions for joynr messaging API              */
-    /* **************************************************** */
+	/* **************************************************** */
+	/* Type definitions for joynr messaging API              */
+	/* **************************************************** */
 
-    map JoynrMessageHeader {
-        String to String
-    }
+	map JoynrMessageHeader {
+		String to String
+	}
 }

@@ -36,7 +36,7 @@ LocalDiscoveryAggregator::LocalDiscoveryAggregator(
 {
 }
 
-void LocalDiscoveryAggregator::setDiscoveryProxy(std::unique_ptr<IDiscoveryAsync> discoveryProxy)
+void LocalDiscoveryAggregator::setDiscoveryProxy(std::shared_ptr<IDiscoveryAsync> discoveryProxy)
 {
     this->discoveryProxy = std::move(discoveryProxy);
 }

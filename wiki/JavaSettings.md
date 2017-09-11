@@ -168,16 +168,54 @@ The number of milliseconds between two consecutive invocations of the routing ta
 ### `PROPERTY_SEND_MSG_RETRY_INTERVAL_MS`
 The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,
 MQTT, ...) using middleware-specific messaging stubs. On transmission errors the message router
-initiates a retransmission. If the messaging stub does not provide information on when to retry
-message transmission, the message router will use the send message retry interval defined by this
-property to delay the message transmission and start a new transmission attempt. Multiple
-unsuccessful retransmittion attempts will add an additional exponential backoff to delay message
-transmission.
+initiates a retransmission.
+
+If the messaging stub does not provide information on when to retry message transmission, the
+message router will use the send message retry interval defined by this property to delay the
+message transmission and start a new transmission attempt. Multiple unsuccessful retransmission
+attempts will add an additional exponential backoff to delay message transmission.
+
+The maximum delay between such retransmission attempts can be configured with
+`PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS`.
+
+The message router tries to resend a message until its TTL expires or the maximum number of retries
+is reached, see `PROPERTY_ROUTING_MAX_RETRY_COUNT`.
 
 * **OPTIONAL**
 * **Type**: long
 * **User property**: `joynr.messaging.sendmsgretryintervalms`
 * **Default value**: `3000`
+
+### `PROPERTY_ROUTING_MAX_RETRY_COUNT`
+The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,
+MQTT, ...) using middleware-specific messaging stubs. On transmission errors the message router
+initiates a retransmission until the message's TTL expires.
+
+If `PROPERTY_ROUTING_MAX_RETRY_COUNT` is set, this value is used as upper bound on the number of
+send retries. If either the message's TTL expires or the maximum number of retries is reached, no
+further retransmission attempts are initiated and the message is dropped with an error log message.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.routingmaxretrycount`
+* **Default value**: `-1` (retry count is not taken into account)
+
+### `PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS`
+The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,
+MQTT, ...) using middleware-specific messaging stubs. On transmission errors the message router
+initiates a retransmission until the message's TTL expires.
+The time till the next retransmission increases exponentially with each unsuccessful retransmission.
+
+The maximum time can be limited by setting `PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS`.
+Please make sure to set a value higher than `PROPERTY_SEND_MSG_RETRY_INTERVAL_MS`.
+
+If `PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS` is set, this value is used as upper bound
+for the added time to the retry interval by the exponential backoff algorithm.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.messaging.maxDelayWithExponentialBackoffMs`
+* **Default value**: `-1` (no maximum delay for retry interval)
 
 ### PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
 
@@ -252,7 +290,7 @@ Set the mqtt prefix to be prepended to multicast topics.
 ### `DISCOVERYDIRECTORYURL`
 The URL of the receive channel (incoming message queue) of the global capabilities directory backend
 service. To connect to the global capabilities directory the cluster controller creates an
-appropriate entry in the local capabilities directory.  
+appropriate entry in the local capabilities directory.
 If the capabilities directory is using MQTT as its primary transport, then the URL you set here
 is that of the MQTT broker configured for the capabilities directory. E.g.
 `tcp://mqttbroker:1883`.
@@ -340,7 +378,7 @@ disconnects without using TCP/IP mechanisms. A value of 0 disables the "keep ali
 * **OPTIONAL**
 * **Type**: int
 * **User property**: `joynr.messaging.mqtt.keepalivetimersec`
-* **Default value**: `60`
+* **Default value**: `30`
 
 ### `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC`
 Sets the connection timeout measured in seconds. This value states how long a client will wait until
@@ -350,7 +388,7 @@ the network connection is established successfully or fails.
 * **OPTIONAL**
 * **Type**: int
 * **User property**: `joynr.messaging.mqtt.connectiontimeoutsec`
-* **Default value**: `30`
+* **Default value**: `60`
 
 ### `PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS`
 Sets the maximum time for an action to complete (measured in milliseconds) before the control is returned
@@ -384,6 +422,15 @@ improve the performance.
 * **Type**: int
 * **User property**: `joynr.messaging.mqtt.maxmsgsinflight`
 * **Default value**: `10`
+
+### `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`
+Configures the maximum size for an outgoing MQTT message in bytes.
+A message larger than this size is discarded. A value of 0 means that the check is disabled.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.maxmqttmessagesizebytes`
+* **Default value**: `0`
 
 ## SystemServicesSettings
 
@@ -491,6 +538,40 @@ global cached discovery entries.
 * **User property**: `joynr.cc.discovery.entry.cache.cleanup.interval`
 * **Default value**: `60`
 
+### `PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS`
+When a proxy is built, the max. duration of the arbitration process can be limited
+by setting the discoveryTimeoutMs attribute of a DiscoveryQos object that is
+then passed to the proxy builder. If no discovery timeout is specified this way,
+the default value will be read from this property.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.discovery.defaultTimeoutMs`
+* **Unit**: milliseconds
+* **Default value**: `600000`
+
+### `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS`
+If a proxy is built and the corresponding provider cannot be found immediately,
+the lookup on the capabilities directory will be repeated after a certain time interval.
+The length of this interval can be specified by setting the retryIntervalMs attribute
+of a DiscoveryQos object that is then passed to the proxy builder. If no retry
+interval is specified this way, the default value will be read from this property.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.discovery.defaultRetryIntervalMs`
+* **Unit**: milliseconds
+* **Default value**: `10000`
+
+### `PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS`
+If a provider is registered, its expiry date will be set to 'now + N'. N is
+the value of this property.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.discovery.provider.defaultexpirytimems`
+* **Unit**: milliseconds
+* **Default value**: `3628800000 (6 weeks)`
 
 ## JEE Integration
 
@@ -543,10 +624,10 @@ it points to is available for reading at startup time of the application.
 
 The capabilities directory and domain access control directory have a special status, in
 that the system requires exactly one entry for each to be provisioned. The system will
-fail to start if either one is lacking or duplicate entries have been provisioned.  
+fail to start if either one is lacking or duplicate entries have been provisioned.
 If you want to change either one of those entries from the default, you don't have to
 do so using the JSON format. You can override the entries from the JSON by using the
-properties listed in the `ConfigurableMessagingSettings` section above.  
+properties listed in the `ConfigurableMessagingSettings` section above.
 Generally you will simply specifiy one of `DISCOVERYDIRECTORYURL` and/or
 `DOMAINACCESSCONTROLLERURL`, although it is also possible to override all other parts
 of the entry if necessary. Specifying an incomplete entry by, e.g., setting the

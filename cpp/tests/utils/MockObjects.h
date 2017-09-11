@@ -52,6 +52,7 @@
 #include "joynr/IClusterControllerSignalHandler.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IKeychain.h"
+#include "joynr/IMessageRouter.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStub.h"
@@ -65,6 +66,7 @@
 #include "joynr/ITransportMessageReceiver.h"
 #include "joynr/ITransportMessageSender.h"
 #include "joynr/IWebSocketSendInterface.h"
+#include "joynr/JoynrRuntime.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
@@ -94,7 +96,6 @@
 #include "joynr/vehicle/GpsProvider.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
 #include "joynr/WebSocketSettings.h"
-#include "joynr/IKeychain.h"
 
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/websocket/IWebSocketPpClient.h"
@@ -103,6 +104,7 @@
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
 #include "libjoynrclustercontroller/include/joynr/ITransportStatus.h"
+#include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
 #include "tests/PrettyPrint.h"
 #include "tests/utils/LibJoynrMockObjects.h"
@@ -129,6 +131,16 @@ using ::testing::Return;
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #pragma GCC diagnostic ignored "-Wreorder"
 
+class MockJoynrRuntime : public joynr::JoynrRuntime
+{
+public:
+    MockJoynrRuntime(joynr::Settings& settings) : joynr::JoynrRuntime(settings) {
+    }
+    MockJoynrRuntime(std::unique_ptr<joynr::Settings> settings) : joynr::JoynrRuntime(*settings) {
+    }
+    MOCK_METHOD0(getMessageRouter, std::shared_ptr<joynr::IMessageRouter>());
+};
+
 template<typename T>
 class MockProxyBuilder : public joynr::IProxyBuilder<T>
 {
@@ -142,8 +154,8 @@ public:
     MOCK_METHOD1_T(setCached, joynr::IProxyBuilder<T>*(const bool cached));
     MOCK_METHOD1_T(setMessagingQos, joynr::IProxyBuilder<T>*(const joynr::MessagingQos& cached));
     MOCK_METHOD1_T(setDiscoveryQos, joynr::IProxyBuilder<T>*(const joynr::DiscoveryQos& cached));
-    MOCK_METHOD0_T(build, std::unique_ptr<T>());
-    MOCK_METHOD2_T(buildAsync, void(std::function<void(std::unique_ptr<T> proxy)> onSuccess,
+    MOCK_METHOD0_T(build, std::shared_ptr<T>());
+    MOCK_METHOD2_T(buildAsync, void(std::function<void(std::shared_ptr<T> proxy)> onSuccess,
                                     std::function<void(const joynr::exceptions::DiscoveryException&)>));
 };
 
@@ -179,7 +191,7 @@ public:
                      std::function<void()> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
 
-    void setProxyBuilder(std::unique_ptr<joynr::IProxyBuilder<joynr::infrastructure::GlobalCapabilitiesDirectoryProxy>> input) {
+    void setProxyBuilder(std::shared_ptr<joynr::IProxyBuilder<joynr::infrastructure::GlobalCapabilitiesDirectoryProxy>> input) {
         std::ignore = input;
     }
 };
@@ -304,6 +316,7 @@ public:
     MOCK_METHOD1(receive, void(std::shared_ptr<joynr::ImmutableMessage> message));
     MOCK_METHOD1(registerSubscriptionManager, void(std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager));
     MOCK_METHOD1(registerPublicationManager,void(joynr::PublicationManager* publicationManager));
+    MOCK_METHOD0(shutdown, void ());
 };
 
 class MockKeychain : public joynr::IKeychain {
@@ -393,6 +406,7 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 
     MOCK_METHOD1(queueMessage, void(std::shared_ptr<joynr::ImmutableMessage> message));
+    MOCK_METHOD1(sendMessages, void(std::shared_ptr<const joynr::system::RoutingTypes::Address> address));
 };
 
 class MockMessageSender : public joynr::IMessageSender {
@@ -405,7 +419,7 @@ public:
 
     MOCK_METHOD1(
             registerDispatcher,
-            void(joynr::IDispatcher* dispatcher)
+            void(std::weak_ptr<joynr::IDispatcher> dispatcher)
     );
 
     MOCK_METHOD6(
@@ -431,12 +445,13 @@ public:
             )
     );
 
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             sendReply,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
                 const joynr::MessagingQos& qos,
+                std::unordered_map<std::string, std::string> prefixedCustomHeaders,
                 const joynr::Reply& reply
             )
     );
@@ -700,24 +715,29 @@ public:
 
 class MockRoutingProxy : public virtual joynr::system::RoutingProxy {
 public:
-    MockRoutingProxy() :
+    MockRoutingProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
         RoutingProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         ProxyBase(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         RoutingProxyBase(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         RoutingSyncProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         RoutingAsyncProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos())
@@ -1030,24 +1050,29 @@ public:
 
 class MockGlobalDomainAccessControllerProxy : public virtual joynr::infrastructure::GlobalDomainAccessControllerProxy {
 public:
-    MockGlobalDomainAccessControllerProxy() :
+    MockGlobalDomainAccessControllerProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
         GlobalDomainAccessControllerProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         ProxyBase(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainAccessControllerProxyBase(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainAccessControllerSyncProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainAccessControllerAsyncProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos())
@@ -1206,24 +1231,29 @@ public:
 
 class MockGlobalDomainRoleControllerProxy : public virtual joynr::infrastructure::GlobalDomainRoleControllerProxy {
 public:
-    MockGlobalDomainRoleControllerProxy() :
+    MockGlobalDomainRoleControllerProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
         GlobalDomainRoleControllerProxy(
+                runtime,
                 nullptr,
                   "domain",
                 joynr::MessagingQos()),
         ProxyBase(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainRoleControllerProxyBase(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainRoleControllerSyncProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainRoleControllerAsyncProxy(
+                runtime,
                 nullptr,
                 "domain",
                 joynr::MessagingQos())
@@ -1387,6 +1417,26 @@ public:
                                              const std::string& interfaceName));
 
     MOCK_METHOD1(addParticipantToWhitelist, void(const std::string& participantId));
+};
+
+class MockMosquittoConnection : public joynr::MosquittoConnection
+{
+public:
+    MockMosquittoConnection(const joynr::MessagingSettings& messagingSettings, const joynr::ClusterControllerSettings& ccSettings, const std::string& clientId) : MosquittoConnection(messagingSettings, ccSettings, clientId) {};
+
+    MOCK_CONST_METHOD0(getMqttPrio, std::string());
+    MOCK_CONST_METHOD0(getMqttQos, std::uint16_t());
+    MOCK_CONST_METHOD0(isMqttRetain, bool());
+    MOCK_CONST_METHOD0(isReadyToSend, bool());
+    MOCK_CONST_METHOD0(isSubscribedToChannelTopic, bool());
+    MOCK_METHOD5(publishMessage, void(const std::string& topic, const int qosLevel, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure, std::uint32_t payloadlen, const void* payload));
+    MOCK_METHOD1(registerChannelId, void(const std::string& channelId));
+    MOCK_METHOD1(registerReceiveCallback, void(std::function<void(smrf::ByteVector&&)> onMessageReceived));
+    MOCK_METHOD1(registerReadyToSendChangedCallback, void(std::function<void(bool)> readyToSendCallback));
+    MOCK_METHOD0(start, void());
+    MOCK_METHOD0(stop, void());
+    MOCK_METHOD1(subscribeToTopic, void(const std::string& topic));
+    MOCK_METHOD1(unsubscribeFromTopic, void(const std::string& topic));
 };
 
 #ifdef _MSC_VER

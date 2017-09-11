@@ -208,6 +208,8 @@ public:
     void loadSavedBroadcastSubscriptionRequestsMap(const std::string& fileName);
     void loadSavedAttributeSubscriptionRequestsMap(const std::string& fileName);
 
+    void shutdown();
+
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
 

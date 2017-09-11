@@ -82,6 +82,7 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
 
 void LibJoynrMessageRouter::shutdown()
 {
+    AbstractMessageRouter::shutdown();
     parentRouter.reset();
     parentAddress.reset();
 }
@@ -94,7 +95,7 @@ void LibJoynrMessageRouter::setParentAddress(
     addProvisionedNextHop(parentParticipantId, this->parentAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
 }
 
-void LibJoynrMessageRouter::setParentRouter(std::unique_ptr<system::RoutingProxy> parentRouter)
+void LibJoynrMessageRouter::setParentRouter(std::shared_ptr<system::RoutingProxy> parentRouter)
 {
     assert(parentAddress);
     this->parentRouter = std::move(parentRouter);
@@ -265,9 +266,7 @@ void LibJoynrMessageRouter::addNextHop(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     assert(address);
-    const auto routingEntry =
-            std::make_shared<RoutingEntry>(RoutingEntry(address, isGloballyVisible));
-    addToRoutingTable(participantId, std::move(routingEntry));
+    addToRoutingTable(participantId, isGloballyVisible, address);
     addNextHopToParent(participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
     sendMessages(participantId, address);
 }
@@ -325,7 +324,8 @@ void LibJoynrMessageRouter::addMulticastReceiver(
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
         ReadLocker lock(routingTableLock);
-        const auto routingEntry = routingTable.lookup(providerParticipantId);
+        const auto routingEntry =
+                routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
         if (routingEntry) {
             providerAddress = routingEntry->address;
         }
@@ -414,7 +414,8 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
         ReadLocker lock(routingTableLock);
-        const auto routingEntry = routingTable.lookup(providerParticipantId);
+        const auto routingEntry =
+                routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
         assert(routingEntry);
         providerAddress = routingEntry->address;
     }

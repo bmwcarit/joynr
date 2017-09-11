@@ -119,6 +119,7 @@ CcMessageRouter::CcMessageRouter(
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         const std::string& globalClusterControllerAddress,
+        const std::string& messageNotificationProviderParticipantId,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         int maxThreads,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
@@ -134,9 +135,10 @@ CcMessageRouter::CcMessageRouter(
           multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           securityManager(std::move(securityManager)),
           accessController(),
-          multicastReceveiverDirectoryFilename(),
+          multicastReceiverDirectoryFilename(),
           globalClusterControllerAddress(globalClusterControllerAddress),
-          messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>())
+          messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>()),
+          messageNotificationProviderParticipantId(messageNotificationProviderParticipantId)
 {
     messageNotificationProvider->addBroadcastFilter(
             std::make_shared<MessageQueuedForDeliveryBroadcastFilter>());
@@ -153,14 +155,14 @@ void CcMessageRouter::setAccessController(std::weak_ptr<IAccessController> acces
 
 void CcMessageRouter::saveMulticastReceiverDirectory() const
 {
-    if (multicastReceveiverDirectoryFilename.empty()) {
+    if (multicastReceiverDirectoryFilename.empty()) {
         JOYNR_LOG_INFO(logger, "Did not save multicast receiver directory: No filename specified");
         return;
     }
 
     try {
         joynr::util::saveStringToFile(
-                multicastReceveiverDirectoryFilename,
+                multicastReceiverDirectoryFilename,
                 joynr::serializer::serializeToJson(multicastReceiverDirectory));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_INFO(logger, ex.what());
@@ -169,12 +171,12 @@ void CcMessageRouter::saveMulticastReceiverDirectory() const
 
 void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
 {
-    multicastReceveiverDirectoryFilename = std::move(filename);
+    multicastReceiverDirectoryFilename = std::move(filename);
 
     try {
         joynr::serializer::deserializeFromJson(
                 multicastReceiverDirectory,
-                joynr::util::loadStringFromFile(multicastReceveiverDirectoryFilename));
+                joynr::util::loadStringFromFile(multicastReceiverDirectoryFilename));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
         return;
@@ -230,7 +232,9 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
             continue;
         }
 
-        const auto routingEntry = routingTable.lookup(providerParticipantId);
+        ReadLocker lock(routingTableLock);
+        const auto routingEntry =
+                routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
         if (!routingEntry) {
             JOYNR_LOG_WARN(logger,
                            "Persisted multicast receivers: No provider address found for "
@@ -310,8 +314,10 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
 
 bool CcMessageRouter::publishToGlobal(const ImmutableMessage& message)
 {
+    // Caution: Do not lock routingTableLock here, it must have been called from outside
+    // method gets called from AbstractMessageRouter
     const std::string& participantId = message.getSender();
-    const auto routingEntry = routingTable.lookup(participantId);
+    const auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
     if (routingEntry && routingEntry->isGloballyVisible) {
         return true;
     }
@@ -346,9 +352,7 @@ void CcMessageRouter::addNextHop(
 {
     std::ignore = onError;
     assert(address);
-    const auto routingEntry =
-            std::make_shared<RoutingEntry>(RoutingEntry(address, isGloballyVisible));
-    addToRoutingTable(participantId, std::move(routingEntry));
+    addToRoutingTable(participantId, isGloballyVisible, address);
     sendMessages(participantId, address);
     if (onSuccess) {
         onSuccess();
@@ -448,7 +452,7 @@ void CcMessageRouter::resolveNextHop(
     bool resolved;
     {
         ReadLocker lock(routingTableLock);
-        resolved = routingTable.contains(participantId);
+        resolved = routingTable.containsParticipantId(participantId);
     }
     onSuccess(resolved);
 }
@@ -489,11 +493,11 @@ void CcMessageRouter::addMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::shared_ptr<RoutingEntry> routingEntry;
+    boost::optional<routingtable::RoutingEntry> routingEntry;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
         ReadLocker lock(routingTableLock);
-        routingEntry = routingTable.lookup(providerParticipantId);
+        routingEntry = routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
     }
 
     std::function<void()> onSuccessWrapper =
@@ -551,10 +555,10 @@ void CcMessageRouter::removeMulticastReceiver(
 
     saveMulticastReceiverDirectory();
 
-    std::shared_ptr<RoutingEntry> routingEntry;
+    boost::optional<routingtable::RoutingEntry> routingEntry;
     {
         ReadLocker lock(routingTableLock);
-        routingEntry = routingTable.lookup(providerParticipantId);
+        routingEntry = routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
     }
 
     if (!routingEntry) {
@@ -587,8 +591,13 @@ void CcMessageRouter::removeMulticastReceiver(
 void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 {
     JOYNR_LOG_TRACE(logger, "message queued: {}", message->toLogMessage());
-    messageNotificationProvider->fireMessageQueuedForDelivery(
-            message->getRecipient(), message->getType());
+    // do not fire a broadcast for an undeliverable message sent by
+    // messageNotificationProvider (e.g. messageQueueForDelivery publication)
+    // since it may cause an endless loop
+    if (message->getSender() != messageNotificationProviderParticipantId) {
+        messageNotificationProvider->fireMessageQueuedForDelivery(
+                message->getRecipient(), message->getType());
+    }
     std::string recipient = message->getRecipient();
     messageQueue->queueMessage(std::move(recipient), std::move(message));
 }

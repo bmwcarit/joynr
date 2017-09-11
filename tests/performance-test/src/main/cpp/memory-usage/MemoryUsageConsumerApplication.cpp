@@ -36,7 +36,7 @@ using namespace joynr;
 
 bool isRunning = true;
 
-void syncTest(std::unique_ptr<tests::performance::EchoProxy> proxy,
+void syncTest(std::shared_ptr<tests::performance::EchoProxy> proxy,
               const std::int64_t& periodMs,
               const std::int64_t& validityMs,
               const std::uint64_t& stringLength,
@@ -56,7 +56,7 @@ void syncTest(std::unique_ptr<tests::performance::EchoProxy> proxy,
     }
 }
 
-void asyncTest(std::unique_ptr<tests::performance::EchoProxy> proxy,
+void asyncTest(std::shared_ptr<tests::performance::EchoProxy> proxy,
                const std::int64_t& validityMs,
                const std::uint64_t& stringLength,
                joynr::Logger logger)
@@ -119,10 +119,10 @@ int main(int argc, char* argv[])
 
     // Initialise the joynr runtime
     std::string pathToMessagingSettings(dir + "/resources/memory-usage-consumer.settings");
-    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
 
     // Create proxy builder
-    std::unique_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder =
             runtime->createProxyBuilder<tests::performance::EchoProxy>(providerDomain);
 
     // Messaging Quality of service
@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     // Build a proxy
-    std::unique_ptr<tests::performance::EchoProxy> proxy;
+    std::shared_ptr<tests::performance::EchoProxy> proxy;
     try {
         JOYNR_LOG_DEBUG(logger, "About to call proxyBuilder");
         proxy = proxyBuilder->setMessagingQos(MessagingQos(qosMsgTtl))

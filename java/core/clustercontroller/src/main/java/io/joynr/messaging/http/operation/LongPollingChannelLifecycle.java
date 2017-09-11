@@ -366,8 +366,10 @@ public class LongPollingChannelLifecycle {
                 break;
 
             default:
-                logger.error("createChannel channelId: {} failed. status: {} reason: {}", new String[]{ channelId,
-                        Integer.toString(statusCode), reasonPhrase });
+                logger.error("createChannel channelId: {} failed. status: {} reason: {}",
+                             channelId,
+                             statusCode,
+                             reasonPhrase);
                 throw new JoynrChannelMissingException("channel url was null");
             }
 

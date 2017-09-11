@@ -26,3 +26,4 @@ fakeParticipantId=Fake_ParticipantId
 mqtt-certificate-authority-pem-filename=/data/ssl-data/certs/ca.cert.pem
 mqtt-certificate-pem-filename=/data/ssl-data/certs/client.cert.pem
 mqtt-private-key-pem-filename=/data/ssl-data/private/client.key.pem
+mqtt-tls-enabled=true

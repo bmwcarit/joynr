@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.28.0-SNAPSHOT)
+project(joynr-0.29.0-SNAPSHOT)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 28)
+set(JOYNR_MINOR_VERSION 29)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
@@ -373,6 +373,7 @@ endif(ENABLE_DOXYGEN)
 
 set(JOYNR_BOOST_REQUIRED_COMPONENTS
     system
+    filesystem
     thread)
 set(JOYNR_BOOST_REQUIRED_VERSION 1.58.0)
 find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
@@ -734,7 +735,7 @@ else(USE_PLATFORM_MOCOCRW)
 endif(USE_PLATFORM_MOCOCRW)
 
 if (USE_PLATFORM_SMRF)
-    find_package(smrf 0.2.0 REQUIRED CONFIG)
+    find_package(smrf 0.2.1 REQUIRED CONFIG)
 else(USE_PLATFORM_SMRF)
     message(STATUS "############ Download: smrf ############")
 
@@ -745,7 +746,7 @@ else(USE_PLATFORM_SMRF)
     AddExternalProject(
         smrf
         GIT_REPOSITORY https://github.com/bmwcarit/smrf
-        GIT_TAG 0.2.0
+        GIT_TAG 0.2.1
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""

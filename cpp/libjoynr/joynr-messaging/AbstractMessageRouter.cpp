@@ -54,11 +54,7 @@ AbstractMessageRouter::AbstractMessageRouter(
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
-        : routingTable("AbstractMessageRouter-RoutingTable",
-                       ioService,
-                       std::bind(&AbstractMessageRouter::routingTableSaveFilterFunc,
-                                 this,
-                                 std::placeholders::_1)),
+        : routingTable(),
           routingTableLock(),
           multicastReceiverDirectory(),
           messagingStubFactory(std::move(messagingStubFactory)),
@@ -77,16 +73,15 @@ AbstractMessageRouter::AbstractMessageRouter(
 
 AbstractMessageRouter::~AbstractMessageRouter()
 {
-    messageQueueCleanerTimer.cancel();
-    messageScheduler.shutdown();
+    // make sure this gets called in any case,
+    // even if we might have called shutdown before manually
+    shutdown();
 }
 
-bool AbstractMessageRouter::routingTableSaveFilterFunc(std::shared_ptr<RoutingEntry> routingEntry)
+void AbstractMessageRouter::shutdown()
 {
-    const auto destAddress = routingEntry->address;
-    const joynr::InProcessMessagingAddress* inprocessAddress =
-            dynamic_cast<const joynr::InProcessMessagingAddress*>(destAddress.get());
-    return inprocessAddress == nullptr;
+    messageQueueCleanerTimer.cancel();
+    messageScheduler.shutdown();
 }
 
 void AbstractMessageRouter::addProvisionedNextHop(
@@ -95,18 +90,19 @@ void AbstractMessageRouter::addProvisionedNextHop(
         bool isGloballyVisible)
 {
     assert(address);
-    const auto routingEntry = std::make_shared<RoutingEntry>(std::move(address), isGloballyVisible);
-    addToRoutingTable(participantId, std::move(routingEntry));
+    addToRoutingTable(participantId, isGloballyVisible, address);
 }
 
 AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::lookupAddresses(
         const std::unordered_set<std::string>& participantIds)
 {
+    // Caution: Do not lock routingTableLock here, it must have been locked from outside
+    // this method gets called from getDestinationAddresses()
     AbstractMessageRouter::AddressUnorderedSet addresses;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
     for (const auto& participantId : participantIds) {
-        const auto routingEntry = routingTable.lookup(participantId);
+        const auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
         if (routingEntry) {
             destAddress = routingEntry->address;
             addresses.insert(destAddress);
@@ -119,6 +115,7 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::lookupAddresse
 AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestinationAddresses(
         const ImmutableMessage& message)
 {
+    ReadLocker lock(routingTableLock);
     AbstractMessageRouter::AddressUnorderedSet addresses;
     if (message.getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
         const std::string& multicastId = message.getRecipient();
@@ -139,7 +136,7 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
         }
     } else {
         const std::string& destinationPartId = message.getRecipient();
-        const auto routingEntry = routingTable.lookup(destinationPartId);
+        const auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(destinationPartId);
         if (routingEntry) {
             addresses.insert(routingEntry->address);
         }
@@ -209,9 +206,29 @@ void AbstractMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std
 }
 
 void AbstractMessageRouter::sendMessages(
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+{
+    JOYNR_LOG_TRACE(logger, "sendMessages: sending messages for {}", address->toString());
+    std::unordered_set<std::string> participantIdSet;
+    {
+        ReadLocker lock(routingTableLock);
+        participantIdSet = routingTable.lookupParticipantIdsByAddress(address);
+    }
+    if (participantIdSet.size() > 0) {
+        for (const auto& participantId : participantIdSet) {
+            sendMessages(participantId, address);
+        }
+    }
+}
+
+void AbstractMessageRouter::sendMessages(
         const std::string& destinationPartId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
+    JOYNR_LOG_TRACE(logger,
+                    "sendMessages: sending messages for destinationPartId {} and {}",
+                    destinationPartId,
+                    address->toString());
     while (true) {
         // We have to check all the time whether the messaging stub is still available because
         // it will be deleted if a disconnect occurs (this may happen while this method
@@ -305,7 +322,15 @@ void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
 {
     while (auto nextImmutableMessage =
                    transportNotAvailableQueue->getNextMessageFor(transportStatus)) {
-        route(nextImmutableMessage->getContent());
+        std::shared_ptr<ImmutableMessage> message = nextImmutableMessage->getContent();
+        try {
+            route(message);
+        } catch (const exceptions::JoynrRuntimeException& e) {
+            JOYNR_LOG_DEBUG(logger,
+                            "could not route queued message '{}' due to '{}'",
+                            message->toLogMessage(),
+                            e.getMessage());
+        }
     }
 }
 
@@ -361,14 +386,20 @@ void AbstractMessageRouter::saveRoutingTable()
     }
 }
 
-void AbstractMessageRouter::addToRoutingTable(std::string participantId,
-                                              std::shared_ptr<RoutingEntry> routingEntry)
+void AbstractMessageRouter::addToRoutingTable(
+        std::string participantId,
+        bool isGloballyVisible,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
     {
         WriteLocker lock(routingTableLock);
-        routingTable.add(participantId, std::move(routingEntry));
+        routingTable.add(participantId, isGloballyVisible, std::move(address));
     }
-    saveRoutingTable();
+    const joynr::InProcessMessagingAddress* inprocessAddress =
+            dynamic_cast<const joynr::InProcessMessagingAddress*>(address.get());
+    if (!inprocessAddress) {
+        saveRoutingTable();
+    }
 }
 
 /**

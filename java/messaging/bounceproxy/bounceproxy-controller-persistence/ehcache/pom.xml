@@ -30,20 +30,15 @@
 	<parent>
 		<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 		<artifactId>bounceproxy-controller-persistence</artifactId>
-		<version>0.28.0-SNAPSHOT</version>
+		<version>0.29.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-
-	<properties>
-		<ehcache.version>2.8.1</ehcache.version>
-	</properties>
 
 	<dependencies>
 
 	    <dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
-			<version>${ehcache.version}</version>
 		</dependency>
 
 	    <dependency>

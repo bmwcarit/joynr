@@ -511,7 +511,7 @@ class TypeUtil {
 			if (hasExtendsDeclaration(datatype)) {
 				return getExtendedType(datatype).polymorphic
 			}
-			return (datatype as FStructType).polymorphic;
+			return datatype.polymorphic;
 		}
 		return false
 	}

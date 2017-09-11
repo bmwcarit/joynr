@@ -37,7 +37,9 @@ public:
     static const std::string& SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
     static const std::string& SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
     static const std::string& SETTING_MQTT_CLIENT_ID_PREFIX();
+    static const std::string& SETTING_MQTT_TLS_ENABLED();
     static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME();
+    static const std::string& SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH();
     static const std::string& SETTING_MQTT_CERTIFICATE_PEM_FILENAME();
     static const std::string& SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME();
     static const std::string& SETTING_MQTT_MULTICAST_TOPIC_PREFIX();
@@ -58,6 +60,7 @@ public:
     static const std::string& DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_MQTT_CLIENT_ID_PREFIX();
+    static bool DEFAULT_MQTT_TLS_ENABLED();
     static const std::string& DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX();
     static const std::string& DEFAULT_MQTT_UNICAST_TOPIC_PREFIX();
     static const std::string& DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
@@ -95,12 +98,16 @@ public:
     bool isMqttCertificateAuthorityPemFilenameSet() const;
     std::string getMqttCertificateAuthorityPemFilename() const;
 
+    bool isMqttCertificateAuthorityCertificateFolderPathSet() const;
+    std::string getMqttCertificateAuthorityCertificateFolderPath() const;
+
     bool isMqttCertificatePemFilenameSet() const;
     std::string getMqttCertificatePemFilename() const;
 
     bool isMqttPrivateKeyPemFilenameSet() const;
     std::string getMqttPrivateKeyPemFilename() const;
 
+    void setMqttTlsEnabled(bool enabled);
     bool isMqttTlsEnabled() const;
 
     std::string getLocalDomainAccessStorePersistenceFilename() const;

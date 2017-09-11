@@ -70,14 +70,17 @@ MutableMessage MutableMessageFactory::createRequest(const std::string& senderId,
     return msg;
 }
 
-MutableMessage MutableMessageFactory::createReply(const std::string& senderId,
-                                                  const std::string& receiverId,
-                                                  const MessagingQos& qos,
-                                                  const Reply& payload) const
+MutableMessage MutableMessageFactory::createReply(
+        const std::string& senderId,
+        const std::string& receiverId,
+        const MessagingQos& qos,
+        std::unordered_map<std::string, std::string>&& prefixedCustomHeaders,
+        const Reply& payload) const
 {
     MutableMessage msg;
     msg.setType(Message::VALUE_MESSAGE_TYPE_REPLY());
     msg.setCustomHeader(Message::CUSTOM_HEADER_REQUEST_REPLY_ID(), payload.getRequestReplyId());
+    msg.setPrefixedCustomHeaders(std::move(prefixedCustomHeaders));
     initMsg(msg, senderId, receiverId, qos, joynr::serializer::serializeToJson(payload), false);
     return msg;
 }

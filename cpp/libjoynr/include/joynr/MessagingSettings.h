@@ -47,6 +47,7 @@ public:
     static const std::string& SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS();
     static const std::string& SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS();
     static const std::string& SETTING_MQTT_CONNECTION_TIMEOUT_MS();
+    static const std::string& SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES();
     static const std::string& SETTING_INDEX();
     static const std::string& SETTING_CREATE_CHANNEL_RETRY_INTERVAL();
     static const std::string& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
@@ -66,6 +67,9 @@ public:
     static const std::string& SETTING_LONGPOLL_TIMEOUT_MS();
     static const std::string& SETTING_HTTP_CONNECT_TIMEOUT_MS();
     static const std::string& SETTING_BROKER_TIMEOUT_MS();
+
+    static const std::string& SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS();
+    static const std::string& SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS();
 
     /**
      * @brief SETTING_MAXIMUM_TTL_MS The key used in settings to identifiy the maximum allowed value
@@ -89,11 +93,15 @@ public:
     static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const std::string& DEFAULT_PERSISTENCE_FILENAME();
     static std::int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
+    static std::int64_t DEFAULT_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS();
     static std::int64_t DEFAULT_HTTP_CONNECT_TIMEOUT_MS();
     static std::int64_t DEFAULT_BROKER_TIMEOUT_MS();
     static std::int64_t DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
+    static std::int64_t DEFAULT_DISCOVERY_DEFAULT_TIMEOUT_MS();
+    static std::int64_t DEFAULT_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS();
     static std::int64_t DEFAULT_SEND_MESSAGE_MAX_TTL();
     static std::uint64_t DEFAULT_TTL_UPLIFT_MS();
+
     /**
      * @brief DEFAULT_MAXIMUM_TTL_MS
      * @return the default value for maximum message TTL in milliseconds.
@@ -103,6 +111,8 @@ public:
     static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS();
     static std::chrono::seconds DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS();
     static std::chrono::milliseconds DEFAULT_MQTT_CONNECTION_TIMEOUT_MS();
+    static std::int64_t DEFAULT_MQTT_MAX_MESSAGE_SIZE_BYTES();
+    static std::int64_t NO_MQTT_MAX_MESSAGE_SIZE_BYTES();
 
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
@@ -119,6 +129,8 @@ public:
     std::chrono::seconds getMqttReconnectDelayTimeSeconds() const;
     void setMqttReconnectDelayTimeSeconds(std::chrono::seconds mqttReconnectDelayTimeSeconds);
     std::chrono::milliseconds getMqttConnectionTimeoutMs() const;
+    std::int64_t getMqttMaxMessageSizeBytes() const;
+    void setMqttMaxMessageSizeBytes(std::int64_t mqttMaxMessageSizeBytes);
     std::int64_t getIndex() const;
     void setIndex(std::int64_t index);
     int getCreateChannelRetryInterval() const;
@@ -172,6 +184,11 @@ public:
     void setSendMsgMaxTtl(std::int64_t ttl_ms);
     void setTtlUpliftMs(std::uint64_t ttlUpliftMs);
     std::uint64_t getTtlUpliftMs() const;
+
+    std::int64_t getDiscoveryDefaultTimeoutMs() const;
+    void setDiscoveryDefaultTimeoutMs(std::int64_t discoveryDefaultTimeoutMs);
+    std::int64_t getDiscoveryDefaultRetryIntervalMs() const;
+    void setDiscoveryDefaultRetryIntervalMs(std::int64_t discoveryDefaultRetryIntervalMs);
 
     bool contains(const std::string& key) const;
 

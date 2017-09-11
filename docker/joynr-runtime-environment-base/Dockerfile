@@ -10,6 +10,7 @@ RUN dnf update -y \
 	tar \
 	nodejs \
 	npm \
+	wget \
 	procps \
 	java-1.8.0-openjdk-headless \
 	&& dnf clean all
@@ -17,10 +18,11 @@ RUN dnf update -y \
 ###################################################
 # install jetty
 ###################################################
-ADD http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/9.2.13.v20150730/jetty-distribution-9.2.13.v20150730.tar.gz /usr/local/jetty.tar.gz
-RUN cd /usr/local \
+RUN wget -O /usr/local/jetty.tar.gz http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/9.2.13.v20150730/jetty-distribution-9.2.13.v20150730.tar.gz \
+	&& cd /usr/local \
 	&& mkdir jetty \
-	&& tar xzf jetty.tar.gz --strip-components=1 -C /usr/local/jetty
+	&& tar xzf jetty.tar.gz --strip-components=1 -C /usr/local/jetty \
+	&& rm /usr/local/jetty.tar.gz
 
 ENV BACKEND_HOST localhost
 ENV JAVA_OPTS \

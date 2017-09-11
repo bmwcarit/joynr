@@ -1,5 +1,3 @@
-package io.joynr.accesscontrol.global.jee;
-
 /*
  * #%L
  * %%
@@ -18,44 +16,29 @@ package io.joynr.accesscontrol.global.jee;
  * limitations under the License.
  * #L%
  */
+package io.joynr.accesscontrol.global.jee;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
-import joynr.infrastructure.DacTypes.ChangeType;
-import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
-import joynr.infrastructure.DacTypes.Permission;
-import joynr.infrastructure.DacTypes.Role;
-import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.infrastructure.GlobalDomainAccessControllerSubscriptionPublisher;
-import joynr.infrastructure.GlobalDomainRoleControllerSubscriptionPublisher;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.concurrent.LinkedBlockingDeque;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GlobalDomainAccessControllerBeanTest {
@@ -79,12 +62,8 @@ public class GlobalDomainAccessControllerBeanTest {
     private GlobalDomainAccessControllerBean globalDomainAccessControllerSubject = new GlobalDomainAccessControllerBean();
 
     private final static String USER_ID = "user.name";
-    private final static String USER_PARTITION = "username";
     private final static String DOMAIN = "domain1";
-    private final static String[] DOMAINS = { DOMAIN };
     private final static String INTERFACE_NAME = "interfaceName";
-    private final static Role ROLE = Role.MASTER;
-    private final static String OPERATION = "operation";
 
     @Test
     public void testFindMasterAccessControlEntriesByUserId() {

@@ -57,7 +57,7 @@ public:
         receiverID(),
         requestID(),
         qosSettings(),
-        mockDispatcher(),
+        mockDispatcher(std::make_shared<MockDispatcher>()),
         mockMessagingStub(),
         callBack(),
         singleThreadedIOService(),
@@ -96,7 +96,7 @@ protected:
     std::string receiverID;
     std::string requestID;
     MessagingQos qosSettings;
-    MockDispatcher mockDispatcher;
+    std::shared_ptr<MockDispatcher> mockDispatcher;
     MockMessagingStub mockMessagingStub;
     std::shared_ptr<IReplyCaller> callBack;
     SingleThreadedIOService singleThreadedIOService;
@@ -127,7 +127,7 @@ TEST_F(MessageSenderTest, sendRequest_normal){
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_REQUEST(), mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter, nullptr);
-    messageSender.registerDispatcher(&mockDispatcher);
+    messageSender.registerDispatcher(mockDispatcher);
     messageSender.sendRequest(senderID, receiverID, qosSettings, request, callBack, isLocalMessage);
 }
 
@@ -151,13 +151,13 @@ TEST_F(MessageSenderTest, sendOneWayRequest_normal){
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_ONE_WAY(), mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter, nullptr);
-    messageSender.registerDispatcher(&mockDispatcher);
+    messageSender.registerDispatcher(mockDispatcher);
     messageSender.sendOneWayRequest(senderID, receiverID, qosSettings, oneWayRequest, isLocalMessage);
 }
 
 TEST_F(MessageSenderTest, sendReply_normal){
     MessageSender messageSender(mockMessageRouter, nullptr);
-    messageSender.registerDispatcher(&mockDispatcher);
+    messageSender.registerDispatcher(mockDispatcher);
     Reply reply;
     reply.setRequestReplyId(util::createUuid());
     reply.setResponse(std::string("response"));
@@ -166,11 +166,12 @@ TEST_F(MessageSenderTest, sendReply_normal){
                 senderID,
                 receiverID,
                 qosSettings,
+                {},
                 reply);
 
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_REPLY(), mutableMessage.getPayload());
 
-    messageSender.sendReply(senderID, receiverID, qosSettings, reply);
+    messageSender.sendReply(senderID, receiverID, qosSettings, {}, reply);
 }
 
 TEST_F(MessageSenderTest, sendSubscriptionRequest_normal){
@@ -195,7 +196,7 @@ TEST_F(MessageSenderTest, sendSubscriptionRequest_normal){
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST(), mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter, nullptr);
-    messageSender.registerDispatcher(&mockDispatcher);
+    messageSender.registerDispatcher(mockDispatcher);
 
     messageSender.sendSubscriptionRequest(senderID, receiverID, qosSettings, subscriptionRequest, isLocalMessage);
 }
@@ -224,7 +225,7 @@ TEST_F(MessageSenderTest, sendBroadcastSubscriptionRequest_normal){
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST(), mutableMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter, nullptr);
-    messageSender.registerDispatcher(&mockDispatcher);
+    messageSender.registerDispatcher(mockDispatcher);
 
     messageSender.sendBroadcastSubscriptionRequest(senderID, receiverID, qosSettings, subscriptionRequest, isLocalMessage);
 }
@@ -236,14 +237,14 @@ TEST_F(MessageSenderTest, DISABLED_sendSubscriptionReply_normal){
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY(), payload);
 
     MessageSender messageSender(mockMessageRouter, nullptr);
-    messageSender.registerDispatcher(&mockDispatcher);
+    messageSender.registerDispatcher(mockDispatcher);
 
 //    messageSender.sendSubscriptionReply(util::createUuid(), payload, senderID, receiverID, qosSettings);
 }
 
 TEST_F(MessageSenderTest, sendPublication_normal){
     MessageSender messageSender(mockMessageRouter, nullptr);
-    messageSender.registerDispatcher(&mockDispatcher);
+    messageSender.registerDispatcher(mockDispatcher);
     SubscriptionPublication publication;
     publication.setSubscriptionId("ignoresubscriptionid");
     publication.setResponse(std::string("publication"));

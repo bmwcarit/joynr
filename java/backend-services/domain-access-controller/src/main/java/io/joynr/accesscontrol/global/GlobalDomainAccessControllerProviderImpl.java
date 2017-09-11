@@ -35,8 +35,6 @@ import com.google.inject.Singleton;
 @Singleton
 public class GlobalDomainAccessControllerProviderImpl extends GlobalDomainAccessControllerAbstractProvider {
 
-    private static final String DUMMY_USERID = "dummyUserId";
-
     private final DomainAccessControlStore domainAccessStore;
 
     @Inject

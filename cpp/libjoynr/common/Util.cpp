@@ -26,6 +26,7 @@
 #include <stdexcept>
 #include <string>
 
+#include <boost/filesystem.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -64,6 +65,13 @@ std::string loadStringFromFile(const std::string& fileName)
     if (!inStream.is_open()) {
         throw std::runtime_error("Could not open file " + fileName + " for reading: " +
                                  std::strerror(errno));
+    }
+
+    // validate the file size
+    constexpr std::uint64_t MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024UL;
+    std::uint64_t fileSize = boost::filesystem::file_size(fileName);
+    if (fileSize > MAX_FILE_SIZE) {
+        throw std::runtime_error("File " + fileName + " is too big: " + std::strerror(errno));
     }
 
     std::string fileContents;
@@ -168,6 +176,11 @@ std::uint64_t toMilliseconds(const std::chrono::system_clock::time_point& timePo
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch())
             .count();
+}
+
+bool isAdditionOnPointerSafe(std::uintptr_t address, int payloadLength)
+{
+    return address + payloadLength < address;
 }
 
 } // namespace util

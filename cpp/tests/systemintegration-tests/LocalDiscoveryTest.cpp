@@ -37,8 +37,8 @@ class LocalDiscoveryTest : public ::testing::Test
 public:
 
     LocalDiscoveryTest() :
-        runtime1(nullptr),
-        runtime2(nullptr),
+        runtime1(),
+        runtime2(),
         testDomain("testDomain")
     {
         auto settings1 = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
@@ -55,12 +55,14 @@ public:
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
 
-        runtime1 = std::make_unique<JoynrClusterControllerRuntime>(std::move(settings1));
+        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings1));
+        runtime1->init();
 
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings2, false);
 
-        runtime2 = std::make_unique<JoynrClusterControllerRuntime>(std::move(settings2));
+        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings2));
+        runtime2->init();
 
         runtime1->start();
         runtime2->start();
@@ -87,15 +89,15 @@ public:
 
 protected:
 
-    void registerProvider(JoynrClusterControllerRuntime& runtime)
+    void registerProvider(std::shared_ptr<JoynrClusterControllerRuntime> runtime)
     {
         auto testProvider = std::make_shared<tests::DefaulttestProvider>();
         joynr::types::ProviderQos providerQos;
-        runtime.registerProvider<tests::testProvider>(testDomain, testProvider, providerQos);
+        runtime->registerProvider<tests::testProvider>(testDomain, testProvider, providerQos);
     }
 
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime1;
-    std::unique_ptr<JoynrClusterControllerRuntime> runtime2;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
     const std::string testDomain;
     DiscoveryQos discoveryQos;
     MessagingQos messagingQos;
@@ -111,15 +113,16 @@ class LocalDiscoveryTestTestProxy : public tests::testProxy
 public:
 
     LocalDiscoveryTestTestProxy(
+        std::weak_ptr<joynr::JoynrRuntime> runtime,
         joynr::ConnectorFactory* connectorFactory,
         const std::string& domain,
         const joynr::MessagingQos& qosSettings) :
-            joynr::ProxyBase(connectorFactory, domain, qosSettings),
-            testProxyBase(connectorFactory, domain, qosSettings),
-            testFireAndForgetProxy(connectorFactory, domain, qosSettings),
-            testSyncProxy(connectorFactory, domain, qosSettings),
-            testAsyncProxy(connectorFactory, domain, qosSettings),
-            testProxy(connectorFactory, domain, qosSettings)
+            joynr::ProxyBase(runtime, connectorFactory, domain, qosSettings),
+            testProxyBase(runtime, connectorFactory, domain, qosSettings),
+            testFireAndForgetProxy(runtime, connectorFactory, domain, qosSettings),
+            testSyncProxy(runtime, connectorFactory, domain, qosSettings),
+            testAsyncProxy(runtime, connectorFactory, domain, qosSettings),
+            testProxy(runtime, connectorFactory, domain, qosSettings)
     {
 
     }
@@ -128,13 +131,13 @@ public:
 };
 
 TEST_F(LocalDiscoveryTest, testLocalLookup) {
-    registerProvider(*runtime1);
+    registerProvider(runtime1);
 
-    std::unique_ptr<ProxyBuilder<LocalDiscoveryTestTestProxy>> testProxyBuilder(
+    std::shared_ptr<ProxyBuilder<LocalDiscoveryTestTestProxy>> testProxyBuilder(
         runtime1->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain)
     );
 
-    std::unique_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
+    std::shared_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
        ->setMessagingQos(messagingQos)
        ->setDiscoveryQos(discoveryQos)
        ->build());
@@ -143,13 +146,13 @@ TEST_F(LocalDiscoveryTest, testLocalLookup) {
 }
 
 TEST_F(LocalDiscoveryTest, testGloballLookup) {
-    registerProvider(*runtime1);
+    registerProvider(runtime1);
 
-    std::unique_ptr<ProxyBuilder<LocalDiscoveryTestTestProxy>> testProxyBuilder(
+    std::shared_ptr<ProxyBuilder<LocalDiscoveryTestTestProxy>> testProxyBuilder(
         runtime2->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain)
     );
 
-    std::unique_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
+    std::shared_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
        ->setMessagingQos(messagingQos)
        ->setDiscoveryQos(discoveryQos)
        ->build());
@@ -168,11 +171,11 @@ TEST_F(LocalDiscoveryTest, testAsyncRegistration)
 
     runtime1->registerProviderAsync<tests::testProvider>(testDomain, testProvider, providerQos, onSuccess, onError);
 
-    std::unique_ptr<ProxyBuilder<LocalDiscoveryTestTestProxy>> testProxyBuilder(
+    std::shared_ptr<ProxyBuilder<LocalDiscoveryTestTestProxy>> testProxyBuilder(
         runtime2->createProxyBuilder<LocalDiscoveryTestTestProxy>(testDomain)
     );
 
-    std::unique_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
+    std::shared_ptr<LocalDiscoveryTestTestProxy> testProxy(testProxyBuilder
        ->setMessagingQos(messagingQos)
        ->setDiscoveryQos(discoveryQos)
        ->build());

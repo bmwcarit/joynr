@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "joynr/IPublicationSender.h"
 
@@ -73,7 +74,7 @@ public:
     /*
      * registers Dispatcher. See above comment why this is necessary.
      */
-    virtual void registerDispatcher(IDispatcher* dispatcher) = 0;
+    virtual void registerDispatcher(std::weak_ptr<IDispatcher> dispatcher) = 0;
 
     /*
      * Prepares and sends a request message (such as issued by a Proxy)
@@ -100,6 +101,7 @@ public:
     virtual void sendReply(const std::string& senderParticipantId,
                            const std::string& receiverParticipantId,
                            const MessagingQos& qos,
+                           std::unordered_map<std::string, std::string> prefixedCustomHeaders,
                            const Reply& reply) = 0;
 
     virtual void sendSubscriptionRequest(const std::string& senderParticipantId,

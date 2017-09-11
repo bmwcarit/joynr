@@ -49,6 +49,7 @@ public class MqttPahoClientFactory implements MqttClientFactory {
     private int connectionTimeoutSec;
     private int timeToWaitMs;
     private int maxMsgsInflight;
+    private int maxMsgSizeBytes;
     private ScheduledExecutorService scheduledExecutorService;
     private MqttClientIdProvider clientIdProvider;
 
@@ -60,6 +61,7 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC) int connectionTimeoutSec,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS) int timeToWaitMs,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT) int maxMsgsInflight,
+                                 @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES) int maxMsgSizeBytes,
                                  @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                  MqttClientIdProvider mqttClientIdProvider) {
         this.ownAddress = ownAddress;
@@ -70,6 +72,7 @@ public class MqttPahoClientFactory implements MqttClientFactory {
         this.connectionTimeoutSec = connectionTimeoutSec;
         this.timeToWaitMs = timeToWaitMs;
         this.maxMsgsInflight = maxMsgsInflight;
+        this.maxMsgSizeBytes = maxMsgSizeBytes;
     }
 
     @Override
@@ -91,12 +94,14 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                                    clientId,
                                                    new MemoryPersistence(),
                                                    scheduledExecutorService);
+            logger.info("Creating MQTT Paho client using MQTT client ID: {}", clientId);
             pahoClient = new MqttPahoClient(mqttClient,
                                             reconnectSleepMs,
                                             keepAliveTimerSec,
                                             connectionTimeoutSec,
                                             timeToWaitMs,
-                                            maxMsgsInflight);
+                                            maxMsgsInflight,
+                                            maxMsgSizeBytes);
         } catch (MqttException e) {
             logger.error("Create MqttClient failed", e);
         }

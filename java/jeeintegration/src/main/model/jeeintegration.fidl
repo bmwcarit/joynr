@@ -34,13 +34,13 @@ interface MyService {
 		}
 	}
 	broadcast myMulticast {
-        out {
-            String someValue
-	    }
+		out {
+			String someValue
+		}
 	}
 	broadcast mySelectiveBroadcast selective {
-	    out {
-	        String someValue
-	    }
+		out {
+			String someValue
+		}
 	}
 }

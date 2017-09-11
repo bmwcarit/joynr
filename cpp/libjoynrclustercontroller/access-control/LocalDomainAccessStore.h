@@ -873,26 +873,9 @@ private:
     }
 
     template <typename Table, typename Value = typename Table::value_type>
-    std::vector<Value> getEditableAccessControlEntries(const Table& table,
-                                                       const std::string& userId,
-                                                       access_control::dac::Role::Enum role) const
-    {
-        std::vector<Value> entries;
-        auto it = domainRoleTable.find(std::make_tuple(userId, role));
-        if (it != domainRoleTable.end()) {
-            for (const std::string& domain : it->getDomains()) {
-                auto range = table.template get<access_control::tags::Domain>().equal_range(domain);
-                std::copy(range.first, range.second, std::back_inserter(entries));
-            }
-        }
-        return entries;
-    }
-
-    template <typename Table, typename Value = typename Table::value_type>
-    std::vector<Value> getEditableRegistrationControlEntries(
-            const Table& table,
-            const std::string& userId,
-            access_control::dac::Role::Enum role) const
+    std::vector<Value> getEntries(const Table& table,
+                                  const std::string& userId,
+                                  access_control::dac::Role::Enum role) const
     {
         std::vector<Value> entries;
         auto it = domainRoleTable.find(std::make_tuple(userId, role));

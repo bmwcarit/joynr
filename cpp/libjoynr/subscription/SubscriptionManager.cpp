@@ -96,6 +96,11 @@ SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler,
 {
 }
 
+void SubscriptionManager::shutdown()
+{
+    missedPublicationScheduler->shutdown();
+}
+
 void SubscriptionManager::registerSubscription(
         const std::string& subscribeToName,
         std::shared_ptr<ISubscriptionCallback> subscriptionCaller,

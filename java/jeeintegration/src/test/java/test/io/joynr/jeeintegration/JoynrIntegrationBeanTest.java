@@ -110,7 +110,7 @@ public class JoynrIntegrationBeanTest {
         when(joynrRuntimeFactory.create(any())).thenReturn(joynrRuntime);
         when(joynrRuntimeFactory.getLocalDomain()).thenReturn(LOCAL_DOMAIN);
 
-        doAnswer(new Answer() {
+        doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 return MyServiceProvider.class;

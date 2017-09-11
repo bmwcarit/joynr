@@ -180,6 +180,8 @@ public:
     std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> getMulticastSubscriptionListeners(
             const std::string& multicastId) override;
 
+    void shutdown() override;
+
 private:
     //    void checkMissedPublication(const Timer::TimerId id);
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);

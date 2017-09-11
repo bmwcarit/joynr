@@ -125,6 +125,11 @@ PublicationManager::~PublicationManager()
     }
 }
 
+void PublicationManager::shutdown()
+{
+    delayedScheduler->shutdown();
+}
+
 PublicationManager::PublicationManager(boost::asio::io_service& ioService,
                                        IMessageSender* messageSender,
                                        std::uint64_t ttlUplift,
@@ -679,10 +684,16 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
 
     // Deserialize the JSON into the array of subscription requests
     std::vector<std::shared_ptr<RequestInformationType>> subscriptionVector;
-    joynr::serializer::deserializeFromJson(subscriptionVector, jsonString);
+    try {
+        joynr::serializer::deserializeFromJson(subscriptionVector, jsonString);
+    } catch (const std::invalid_argument& e) {
+        std::string errorMessage("could not deserialize subscription requests from'" + jsonString +
+                                 "' - error: " + e.what());
+        JOYNR_LOG_FATAL(logger, errorMessage);
+        return;
+    }
 
     // Loop through the saved subscriptions
-
     for (auto& requestInfo : subscriptionVector) {
         if (isSubscriptionExpired(requestInfo->getQos())) {
             JOYNR_LOG_TRACE(logger, "Removing subscription Request: {}", requestInfo->toString());

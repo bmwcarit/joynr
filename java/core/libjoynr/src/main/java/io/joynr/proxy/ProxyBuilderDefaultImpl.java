@@ -53,7 +53,9 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private Version interfaceVersion;
     private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
-    private long maxMessagingTtl;
+    private final long maxMessagingTtl;
+    private final long defaultDiscoveryTimeoutMs;
+    private final long defaultDiscoveryRetryIntervalMs;
 
     private T proxy;
 
@@ -61,9 +63,14 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                             Set<String> domains,
                             Class<T> interfaceClass,
                             ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
-                            long maxMessagingTtl) {
+                            long maxMessagingTtl,
+                            long defaultDiscoveryTimeoutMs,
+                            long defaultDiscoveryRetryIntervalMs) {
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
         this.maxMessagingTtl = maxMessagingTtl;
+        this.defaultDiscoveryTimeoutMs = defaultDiscoveryTimeoutMs;
+        this.defaultDiscoveryRetryIntervalMs = defaultDiscoveryRetryIntervalMs;
+
         try {
             interfaceName = (String) interfaceClass.getField("INTERFACE_NAME").get(String.class);
         } catch (Exception e) {
@@ -77,12 +84,9 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.domains = domains;
-        discoveryQos = new DiscoveryQos();
-        arbitrator = ArbitratorFactory.create(domains,
-                                              interfaceName,
-                                              interfaceVersion,
-                                              discoveryQos,
-                                              localDiscoveryAggregator);
+
+        setDiscoveryQos(new DiscoveryQos());
+
         messagingQos = new MessagingQos();
         buildCalled = false;
 
@@ -117,6 +121,15 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
      */
     @Override
     public ProxyBuilder<T> setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
+        if (discoveryQos.getDiscoveryTimeoutMs() < 0 && discoveryQos.getDiscoveryTimeoutMs() != DiscoveryQos.NO_VALUE) {
+            throw new DiscoveryException("Discovery timeout cannot be less than zero");
+        }
+
+        if (discoveryQos.getRetryIntervalMs() < 0 && discoveryQos.getRetryIntervalMs() != DiscoveryQos.NO_VALUE) {
+            throw new DiscoveryException("Discovery retry interval cannot be less than zero");
+        }
+
+        applyDefaultValues(discoveryQos);
         this.discoveryQos = discoveryQos;
         // TODO which interfaceName should be used here?
         arbitrator = ArbitratorFactory.create(domains,
@@ -220,5 +233,15 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         });
 
         return proxyInvocationHandler;
+    }
+
+    private void applyDefaultValues(DiscoveryQos discoveryQos) {
+        if (discoveryQos.getDiscoveryTimeoutMs() == DiscoveryQos.NO_VALUE) {
+            discoveryQos.setDiscoveryTimeoutMs(defaultDiscoveryTimeoutMs);
+        }
+
+        if (discoveryQos.getRetryIntervalMs() == DiscoveryQos.NO_VALUE) {
+            discoveryQos.setRetryIntervalMs(defaultDiscoveryRetryIntervalMs);
+        }
     }
 }
