@@ -578,6 +578,8 @@ void JoynrClusterControllerRuntime::init()
     // Do this after local capabilities directory and message router have been initialized.
     enableAccessController(provisionedDiscoveryEntries);
 #endif // JOYNR_ENABLE_ACCESS_CONTROL
+
+    registerInternalSystemServiceProviders();
 }
 
 std::shared_ptr<IMessageRouter> JoynrClusterControllerRuntime::getMessageRouter()
@@ -735,6 +737,41 @@ std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterC
     return globalDomainAccessControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
 }
 
+void JoynrClusterControllerRuntime::registerInternalSystemServiceProviders()
+{
+    routingProviderParticipantId = registerInternalSystemServiceProvider(
+            std::dynamic_pointer_cast<joynr::system::RoutingProvider>(ccMessageRouter),
+            systemServicesSettings.getCcRoutingProviderParticipantId());
+    discoveryProviderParticipantId = registerInternalSystemServiceProvider(
+            std::dynamic_pointer_cast<joynr::system::DiscoveryProvider>(localCapabilitiesDirectory),
+            systemServicesSettings.getCcDiscoveryProviderParticipantId());
+    messageNotificationProviderParticipantId = registerInternalSystemServiceProvider(
+            std::dynamic_pointer_cast<joynr::system::MessageNotificationProvider>(
+                    ccMessageRouter->getMessageNotificationProvider()),
+            systemServicesSettings.getCcMessageNotificationProviderParticipantId());
+
+#ifdef JOYNR_ENABLE_ACCESS_CONTROL
+    if (clusterControllerSettings.enableAccessController()) {
+        accessControlListEditorProviderParticipantId = registerInternalSystemServiceProvider(
+                std::dynamic_pointer_cast<joynr::infrastructure::AccessControlListEditorProvider>(
+                        aclEditor),
+                systemServicesSettings.getCcAccessControlListEditorProviderParticipantId());
+    }
+#endif // JOYNR_ENABLE_ACCESS_CONTROL
+}
+
+void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProviders()
+{
+#ifdef JOYNR_ENABLE_ACCESS_CONTROL
+    if (!accessControlListEditorProviderParticipantId.empty()) {
+        unregisterProvider(accessControlListEditorProviderParticipantId);
+    }
+#endif // JOYNR_ENABLE_ACCESS_CONTROL
+    unregisterProvider(messageNotificationProviderParticipantId);
+    unregisterProvider(discoveryProviderParticipantId);
+    unregisterProvider(routingProviderParticipantId);
+}
+
 void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
 {
     if (clusterControllerSettings.isWsTLSPortSet()) {
@@ -781,108 +818,6 @@ void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
     }
 }
 
-void JoynrClusterControllerRuntime::registerRoutingProvider()
-{
-    std::string domain(systemServicesSettings.getDomain());
-    std::shared_ptr<joynr::system::RoutingProvider> routingProvider(ccMessageRouter);
-    std::string interfaceName(routingProvider->getInterfaceName());
-    std::string participantId(systemServicesSettings.getCcRoutingProviderParticipantId());
-
-    // provision the participant ID for the routing provider
-    participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
-
-    joynr::types::ProviderQos routingProviderQos;
-    routingProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
-    routingProviderQos.setPriority(1);
-    routingProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
-    routingProviderQos.setSupportsOnChangeSubscriptions(false);
-    routingProviderParticipantId = registerProvider(domain, routingProvider, routingProviderQos);
-}
-
-void JoynrClusterControllerRuntime::registerDiscoveryProvider()
-{
-    std::string domain(systemServicesSettings.getDomain());
-    std::shared_ptr<joynr::system::DiscoveryProvider> discoveryProvider(localCapabilitiesDirectory);
-    std::string interfaceName(discoveryProvider->getInterfaceName());
-    std::string participantId(systemServicesSettings.getCcDiscoveryProviderParticipantId());
-
-    // provision the participant ID for the discovery provider
-    participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
-
-    joynr::types::ProviderQos discoveryProviderQos;
-    discoveryProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
-    discoveryProviderQos.setPriority(1);
-    discoveryProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
-    discoveryProviderQos.setSupportsOnChangeSubscriptions(false);
-    discoveryProviderParticipantId =
-            registerProvider(domain, discoveryProvider, discoveryProviderQos);
-}
-
-void JoynrClusterControllerRuntime::registerMessageNotificationProvider()
-{
-    std::shared_ptr<joynr::system::MessageNotificationProvider> messageNotificationProvider =
-            ccMessageRouter->getMessageNotificationProvider();
-    std::string domain(systemServicesSettings.getDomain());
-    std::string interfaceName(messageNotificationProvider->getInterfaceName());
-    std::string participantId(
-            systemServicesSettings.getCcMessageNotificationProviderParticipantId());
-
-    // provision the participant ID for the message notification provider
-    participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
-
-    joynr::types::ProviderQos messageNotificationProviderQos;
-    messageNotificationProviderQos.setPriority(1);
-    messageNotificationProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
-    messageNotificationProviderQos.setSupportsOnChangeSubscriptions(false);
-    messageNotificationProviderParticipantId =
-            registerProvider(domain, messageNotificationProvider, messageNotificationProviderQos);
-}
-
-void JoynrClusterControllerRuntime::registerAccessControlListEditorProvider()
-{
-    if (!clusterControllerSettings.enableAccessController()) {
-        return;
-    }
-
-    std::string domain(systemServicesSettings.getDomain());
-    std::shared_ptr<joynr::infrastructure::AccessControlListEditorProvider> aclEditorProvider(
-            aclEditor);
-    std::string interfaceName(aclEditorProvider->getInterfaceName());
-    std::string participantId(
-            systemServicesSettings.getCcAccessControlListEditorProviderParticipantId());
-
-    // provision the participant ID for the AccessControlListEditor provider
-    participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
-
-    joynr::types::ProviderQos aclEditorProviderQos;
-    aclEditorProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
-    aclEditorProviderQos.setPriority(1);
-    aclEditorProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
-    aclEditorProviderQos.setSupportsOnChangeSubscriptions(false);
-    accessControlListEditorProviderParticipantId =
-            registerProvider(domain, aclEditorProvider, aclEditorProviderQos);
-}
-
-void JoynrClusterControllerRuntime::unregisterAccessControlListEditorProvider()
-{
-    unregisterProvider(accessControlListEditorProviderParticipantId);
-}
-
-void JoynrClusterControllerRuntime::unregisterMessageNotificationProvider()
-{
-    unregisterProvider(messageNotificationProviderParticipantId);
-}
-
-void JoynrClusterControllerRuntime::unregisterRoutingProvider()
-{
-    unregisterProvider(routingProviderParticipantId);
-}
-
-void JoynrClusterControllerRuntime::unregisterDiscoveryProvider()
-{
-    unregisterProvider(discoveryProviderParticipantId);
-}
-
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
     JOYNR_LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
@@ -893,6 +828,9 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     if (wsTLSCcMessagingSkeleton) {
         wsTLSCcMessagingSkeleton->shutdown();
     }
+
+    unregisterInternalSystemServiceProviders();
+
     ccMessageRouter->shutdown();
     inProcessDispatcher->shutdown();
     publicationManager->shutdown();
@@ -989,23 +927,11 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
 void JoynrClusterControllerRuntime::start()
 {
     startExternalCommunication();
-    registerRoutingProvider();
-    registerDiscoveryProvider();
-    registerMessageNotificationProvider();
-#ifdef JOYNR_ENABLE_ACCESS_CONTROL
-    registerAccessControlListEditorProvider();
-#endif // JOYNR_ENABLE_ACCESS_CONTROL
     singleThreadIOService->start();
 }
 
 void JoynrClusterControllerRuntime::stop(bool deleteChannel)
 {
-#ifdef JOYNR_ENABLE_ACCESS_CONTROL
-    unregisterAccessControlListEditorProvider();
-#endif // JOYNR_ENABLE_ACCESS_CONTROL
-    unregisterMessageNotificationProvider();
-    unregisterDiscoveryProvider();
-    unregisterRoutingProvider();
     if (deleteChannel) {
         this->deleteChannel();
     }

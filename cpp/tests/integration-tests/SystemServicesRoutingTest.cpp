@@ -84,7 +84,6 @@ public:
                 mockMessageSender);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->init();
-        runtime->registerRoutingProvider();
     }
 
     ~SystemServicesRoutingTest(){

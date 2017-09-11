@@ -106,14 +106,12 @@ public:
                 mockMessageSenderMqtt);
         // discovery provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->init();
-        runtime->registerDiscoveryProvider();
         discoveryProxyBuilder = runtime->createProxyBuilder<joynr::system::DiscoveryProxy>(discoveryDomain);
     }
 
     ~SystemServicesDiscoveryTest(){
         discoveryProxy.reset();
         discoveryProxyBuilder.reset();
-        runtime->unregisterDiscoveryProvider();
         runtime->deleteChannel();
         runtime->stopExternalCommunication();
         runtime.reset();
