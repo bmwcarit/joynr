@@ -160,6 +160,9 @@ public:
     MOCK_METHOD3(add, void(const joynr::types::GlobalDiscoveryEntry& entry,
                            std::function<void()> onSuccess,
                            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
+    MOCK_METHOD3(add, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& entry,
+                           std::function<void()> onSuccess,
+                           std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
 
     MOCK_METHOD1(remove, void(std::vector<std::string> participantIdList));
     MOCK_METHOD1(remove, void(const std::string& participantId));
