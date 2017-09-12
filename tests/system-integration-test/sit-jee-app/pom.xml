@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>io.joynr.tests</groupId>
 		<artifactId>system-integration-test</artifactId>
-		<version>0.29.0-SNAPSHOT</version>
+		<version>0.30.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
