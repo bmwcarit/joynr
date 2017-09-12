@@ -71,6 +71,9 @@ public:
     static const std::string& SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS();
     static const std::string& SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS();
 
+    static const std::string& SETTING_ROUTING_TABLE_GRACE_PERIOD_MS();
+    static const std::string& SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS();
+
     /**
      * @brief SETTING_MAXIMUM_TTL_MS The key used in settings to identifiy the maximum allowed value
      * of the time-to-live joynr message header.
@@ -99,6 +102,8 @@ public:
     static std::int64_t DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
     static std::int64_t DEFAULT_DISCOVERY_DEFAULT_TIMEOUT_MS();
     static std::int64_t DEFAULT_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS();
+    static std::int64_t DEFAULT_ROUTING_TABLE_GRACE_PERIOD_MS();
+    static std::int64_t DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS();
     static std::int64_t DEFAULT_SEND_MESSAGE_MAX_TTL();
     static std::uint64_t DEFAULT_TTL_UPLIFT_MS();
 
@@ -163,6 +168,10 @@ public:
     void setHttpConnectTimeoutMs(std::int64_t timeout_ms);
     std::int64_t getBrokerTimeoutMs() const;
     void setBrokerTimeoutMs(std::int64_t timeout_ms);
+    std::int64_t getRoutingTableGracePeriodMs() const;
+    void setRoutingTableGracePeriodMs(std::int64_t routingTableGracePeriodMs);
+    std::int64_t getRoutingTableCleanupIntervalMs() const;
+    void setRoutingTableCleanupIntervalMs(std::int64_t routingTableCleanupIntervalMs);
 
     /**
      * @brief getMaximumTtlMs Get the maximum allowed time-to-live value in milliseconds for joynr
