@@ -142,7 +142,9 @@ protected:
 
     void addToRoutingTable(std::string participantId,
                            bool isGloballyVisible,
-                           std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+                           std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                           const std::int64_t expiryDateMs,
+                           const bool isSticky);
 
     void scheduleMessage(std::shared_ptr<ImmutableMessage> message,
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,

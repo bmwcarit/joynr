@@ -90,7 +90,9 @@ void AbstractMessageRouter::addProvisionedNextHop(
         bool isGloballyVisible)
 {
     assert(address);
-    addToRoutingTable(participantId, isGloballyVisible, address);
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
 }
 
 AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::lookupAddresses(
@@ -389,17 +391,14 @@ void AbstractMessageRouter::saveRoutingTable()
 void AbstractMessageRouter::addToRoutingTable(
         std::string participantId,
         bool isGloballyVisible,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+        const std::int64_t expiryDateMs,
+        const bool isSticky)
 {
     {
         WriteLocker lock(routingTableLock);
-        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-        const bool isSticky = false;
-        routingTable.add(std::move(participantId),
-                         std::move(isGloballyVisible),
-                         std::move(address),
-                         expiryDateMs,
-                         isSticky);
+        routingTable.add(
+                std::move(participantId), isGloballyVisible, address, expiryDateMs, isSticky);
     }
     const joynr::InProcessMessagingAddress* inprocessAddress =
             dynamic_cast<const joynr::InProcessMessagingAddress*>(address.get());

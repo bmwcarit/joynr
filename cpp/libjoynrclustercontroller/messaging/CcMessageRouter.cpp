@@ -352,7 +352,9 @@ void CcMessageRouter::addNextHop(
 {
     std::ignore = onError;
     assert(address);
-    addToRoutingTable(participantId, isGloballyVisible, address);
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
     sendMessages(participantId, address);
     if (onSuccess) {
         onSuccess();
