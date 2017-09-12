@@ -208,6 +208,7 @@ private:
     std::shared_ptr<joynr::AccessController> accessController;
     std::string routingProviderParticipantId;
     std::string discoveryProviderParticipantId;
+    std::string providerReregistrationControllerParticipantId;
     std::string messageNotificationProviderParticipantId;
     std::string accessControlListEditorProviderParticipantId;
 };

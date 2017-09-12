@@ -69,6 +69,7 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/DiscoveryInProcessConnector.h"
 #include "joynr/system/DiscoveryProvider.h"
+#include "joynr/system/ProviderReregistrationControllerProvider.h"
 #include "joynr/system/DiscoveryRequestCaller.h"
 #include "joynr/system/MessageNotificationProvider.h"
 #include "joynr/system/RoutingProvider.h"
@@ -155,6 +156,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           accessController(nullptr),
           routingProviderParticipantId(),
           discoveryProviderParticipantId(),
+          providerReregistrationControllerParticipantId(
+                  "providerReregistrationController_participantId"),
           messageNotificationProviderParticipantId(),
           accessControlListEditorProviderParticipantId()
 {
@@ -745,6 +748,10 @@ void JoynrClusterControllerRuntime::registerInternalSystemServiceProviders()
     discoveryProviderParticipantId = registerInternalSystemServiceProvider(
             std::dynamic_pointer_cast<joynr::system::DiscoveryProvider>(localCapabilitiesDirectory),
             systemServicesSettings.getCcDiscoveryProviderParticipantId());
+    providerReregistrationControllerParticipantId = registerInternalSystemServiceProvider(
+            std::dynamic_pointer_cast<joynr::system::ProviderReregistrationControllerProvider>(
+                    localCapabilitiesDirectory),
+            providerReregistrationControllerParticipantId);
     messageNotificationProviderParticipantId = registerInternalSystemServiceProvider(
             std::dynamic_pointer_cast<joynr::system::MessageNotificationProvider>(
                     ccMessageRouter->getMessageNotificationProvider()),
@@ -769,6 +776,7 @@ void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProviders()
 #endif // JOYNR_ENABLE_ACCESS_CONTROL
     unregisterProvider(messageNotificationProviderParticipantId);
     unregisterProvider(discoveryProviderParticipantId);
+    unregisterProvider(providerReregistrationControllerParticipantId);
     unregisterProvider(routingProviderParticipantId);
 }
 
