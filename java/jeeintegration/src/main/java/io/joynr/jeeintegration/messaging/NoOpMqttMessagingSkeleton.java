@@ -43,7 +43,7 @@ public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
 
     @Override
     public void transmit(byte[] serializedMessage, int mqttId, int mqttQos, FailureAction failureAction) {
-        mqttClient.sendMqttAck(mqttId, mqttQos);
+        mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
     }
 
     @Override

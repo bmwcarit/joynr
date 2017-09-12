@@ -355,7 +355,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void sendMqttAck(int mqttId, int mqttQos) {
+    public void messageReceivedAndProcessingFinished(int mqttId, int mqttQos) {
         try {
             mqttClient.messageArrivedComplete(mqttId, mqttQos);
         } catch (MqttException e) {

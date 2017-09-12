@@ -216,10 +216,10 @@ public class MqttMessagingSkeletonTest {
         subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
 
         Thread.sleep(50);
-        verify(mqttClient, times(0)).sendMqttAck(anyInt(), anyInt());
+        verify(mqttClient, times(0)).messageReceivedAndProcessingFinished(anyInt(), anyInt());
 
         subject.messageProcessed(messageId);
-        verify(mqttClient).sendMqttAck(mqttMessageId, mqttQos);
+        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
     }
 
     @Test
@@ -233,7 +233,7 @@ public class MqttMessagingSkeletonTest {
                          mqttQos,
                          getExpectToBeCalledAction(semaphore));
 
-        verify(mqttClient).sendMqttAck(mqttMessageId, mqttQos);
+        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
         assertTrue(semaphore.tryAcquire());
     }
 
@@ -249,7 +249,7 @@ public class MqttMessagingSkeletonTest {
         Semaphore semaphore = new Semaphore(0);
         subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, getExpectToBeCalledAction(semaphore));
 
-        verify(mqttClient).sendMqttAck(mqttMessageId, mqttQos);
+        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
         assertTrue(semaphore.tryAcquire());
     }
 
@@ -266,13 +266,13 @@ public class MqttMessagingSkeletonTest {
         subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, getExpectToBeCalledAction(semaphore));
 
         assertTrue(semaphore.tryAcquire());
-        verify(mqttClient, times(1)).sendMqttAck(anyInt(), anyInt());
+        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(anyInt(), anyInt());
 
         subject.messageProcessed(messageId);
-        verify(mqttClient, times(1)).sendMqttAck(mqttMessageId, mqttQos);
+        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
 
         subject.messageProcessed(messageId);
-        verify(mqttClient, times(1)).sendMqttAck(mqttMessageId, mqttQos);
+        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
     }
 
     @Test
@@ -285,13 +285,13 @@ public class MqttMessagingSkeletonTest {
         subject.transmit(message.getSerializedMessage(), mqttMessageId, mqttQos, failIfCalledAction);
 
         Thread.sleep(50);
-        verify(mqttClient, times(0)).sendMqttAck(mqttMessageId, mqttQos);
+        verify(mqttClient, times(0)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
 
         subject.messageProcessed(messageId);
-        verify(mqttClient, times(1)).sendMqttAck(mqttMessageId, mqttQos);
+        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
 
         subject.messageProcessed(messageId);
-        verify(mqttClient, times(1)).sendMqttAck(mqttMessageId, mqttQos);
+        verify(mqttClient, times(1)).messageReceivedAndProcessingFinished(mqttMessageId, mqttQos);
     }
 
     private void transmitDuplicatedMessageForRepeatMqttMessageIgnorePeriodTests(ImmutableMessage message1,
