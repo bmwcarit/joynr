@@ -288,5 +288,24 @@ define(
                 });
             });
 
+            describe("libjoynr-js.joynr.Util.forward", function() {
+
+                it("forwards methods to another object", function() {
+
+                    var receiver = {};
+                    var producer = {
+                        someFunction : function() {
+                            return "some result";
+                        },
+                        someObject : "some Value"
+                    };
+
+                    var augmentedReceiver = Util.forward(receiver, producer);
+
+                    expect(typeof augmentedReceiver.someFunction).toBe("function");
+                    expect(augmentedReceiver.someObject).toBeUndefined();
+                });
+            });
+
         });
 /* jslint nomen: false */

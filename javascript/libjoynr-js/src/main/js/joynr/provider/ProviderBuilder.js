@@ -18,34 +18,13 @@
  */
 
 define("joynr/provider/ProviderBuilder", [
-    "joynr/provider/ProviderAttributeNotifyReadWrite",
-    "joynr/provider/ProviderAttributeNotifyRead",
-    "joynr/provider/ProviderAttributeNotifyWrite",
-    "joynr/provider/ProviderAttributeNotify",
-    "joynr/provider/ProviderAttributeReadWrite",
-    "joynr/provider/ProviderAttributeRead",
-    "joynr/provider/ProviderAttributeWrite",
+    "joynr/provider/ProviderAttribute",
     "joynr/provider/ProviderOperation",
     "joynr/provider/ProviderEvent"
-], function(
-        ProviderAttributeNotifyReadWrite,
-        ProviderAttributeNotifyRead,
-        ProviderAttributeNotifyWrite,
-        ProviderAttributeNotify,
-        ProviderAttributeReadWrite,
-        ProviderAttributeRead,
-        ProviderAttributeWrite,
-        ProviderOperation,
-        ProviderEvent) {
+], function(ProviderAttribute, ProviderOperation, ProviderEvent) {
 
     var dependencies = {
-        ProviderAttributeNotifyReadWrite : ProviderAttributeNotifyReadWrite,
-        ProviderAttributeNotifyRead : ProviderAttributeNotifyRead,
-        ProviderAttributeNotifyWrite : ProviderAttributeNotifyWrite,
-        ProviderAttributeNotify : ProviderAttributeNotify,
-        ProviderAttributeReadWrite : ProviderAttributeReadWrite,
-        ProviderAttributeRead : ProviderAttributeRead,
-        ProviderAttributeWrite : ProviderAttributeWrite,
+        ProviderAttribute : ProviderAttribute,
         ProviderOperation : ProviderOperation,
         ProviderEvent : ProviderEvent
     };

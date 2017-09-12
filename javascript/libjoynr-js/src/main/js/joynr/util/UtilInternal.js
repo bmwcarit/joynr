@@ -74,6 +74,24 @@ define("joynr/util/UtilInternal", [
     };
 
     /**
+     * Forwards all methods from provider to receiver and thus creating privacy
+     * @param receiver
+     * @param provider
+     * @returns {*}
+     */
+    UtilInternal.forward = function forward (receiver, provider) {
+
+        var methodName;
+        for (methodName in provider) {
+            if (provider.hasOwnProperty(methodName) && (typeof provider[methodName] === "function")) {
+                receiver[methodName] = provider[methodName].bind(provider);
+            }
+        }
+
+        return receiver;
+    };
+
+    /**
      * @function UtilInternal#isArray
      * @param {?} object
      */

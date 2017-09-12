@@ -23,13 +23,7 @@ define(
             "joynr/vehicle/radiotypes/RadioStation",
             "joynr/datatypes/exampleTypes/Country",
             "joynr/datatypes/exampleTypes/StringMap",
-            "joynr/provider/ProviderAttributeNotifyReadWrite",
-            "joynr/provider/ProviderAttributeNotifyRead",
-            "joynr/provider/ProviderAttributeNotifyWrite",
-            "joynr/provider/ProviderAttributeNotify",
-            "joynr/provider/ProviderAttributeReadWrite",
-            "joynr/provider/ProviderAttributeRead",
-            "joynr/provider/ProviderAttributeWrite",
+            "joynr/provider/ProviderAttribute",
             "joynr/provider/ProviderOperation",
             "joynr/provider/ProviderEvent",
             "joynr/util/uuid",
@@ -41,13 +35,7 @@ define(
                 RadioStation,
                 Country,
                 StringMap,
-                ProviderAttributeNotifyReadWrite,
-                ProviderAttributeNotifyRead,
-                ProviderAttributeNotifyWrite,
-                ProviderAttributeNotify,
-                ProviderAttributeReadWrite,
-                ProviderAttributeRead,
-                ProviderAttributeWrite,
+                ProviderAttribute,
                 ProviderOperation,
                 ProviderEvent,
                 uuid,
@@ -58,13 +46,7 @@ define(
                     function() {
                         var implementation = null;
                         var dependencies = {
-                            ProviderAttributeNotifyReadWrite : ProviderAttributeNotifyReadWrite,
-                            ProviderAttributeNotifyRead : ProviderAttributeNotifyRead,
-                            ProviderAttributeNotifyWrite : ProviderAttributeNotifyWrite,
-                            ProviderAttributeNotify : ProviderAttributeNotify,
-                            ProviderAttributeReadWrite : ProviderAttributeReadWrite,
-                            ProviderAttributeRead : ProviderAttributeRead,
-                            ProviderAttributeWrite : ProviderAttributeWrite,
+                            ProviderAttribute : ProviderAttribute,
                             ProviderOperation : ProviderOperation,
                             ProviderEvent : ProviderEvent,
                             uuid : uuid
@@ -320,17 +302,8 @@ define(
                                 function() {
                                     var radioProvider = new RadioProvider({}, dependencies);
                                     expect(radioProvider.isOn).toBeDefined();
-                                    expect(
-                                            radioProvider.isOn instanceof ProviderAttributeNotifyReadWrite)
-                                            .toBeTruthy();
                                     expect(radioProvider.enumAttribute).toBeDefined();
-                                    expect(
-                                            radioProvider.enumAttribute instanceof ProviderAttributeNotifyReadWrite)
-                                            .toBeTruthy();
                                     expect(radioProvider.enumArrayAttribute).toBeDefined();
-                                    expect(
-                                            radioProvider.enumArrayAttribute instanceof ProviderAttributeNotifyReadWrite)
-                                            .toBeTruthy();
                                     expect(radioProvider.addFavoriteStation).toBeDefined();
                                     expect(
                                             radioProvider.addFavoriteStation instanceof ProviderOperation)

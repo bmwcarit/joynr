@@ -25,13 +25,7 @@ define(
             "global/Promise",
             "joynr/vehicle/RadioProxy",
             "joynr/vehicle/radiotypes/RadioStation",
-            "joynr/proxy/ProxyAttributeNotifyReadWrite",
-            "joynr/proxy/ProxyAttributeNotifyRead",
-            "joynr/proxy/ProxyAttributeNotifyWrite",
-            "joynr/proxy/ProxyAttributeNotify",
-            "joynr/proxy/ProxyAttributeReadWrite",
-            "joynr/proxy/ProxyAttributeRead",
-            "joynr/proxy/ProxyAttributeWrite",
+            "joynr/proxy/ProxyAttribute",
             "joynr/proxy/ProxyOperation",
             "joynr/proxy/ProxyEvent",
             "joynr/types/TypeRegistrySingleton",
@@ -44,13 +38,7 @@ define(
                 Promise,
                 RadioProxy,
                 RadioStation,
-                ProxyAttributeNotifyReadWrite,
-                ProxyAttributeNotifyRead,
-                ProxyAttributeNotifyWrite,
-                ProxyAttributeNotify,
-                ProxyAttributeReadWrite,
-                ProxyAttributeRead,
-                ProxyAttributeWrite,
+                ProxyAttribute,
                 ProxyOperation,
                 ProxyEvent,
                 TypeRegistrySingleton,
@@ -73,13 +61,7 @@ define(
                                 discoveryQos : new DiscoveryQos(),
                                 messagingQos : new MessagingQos(),
                                 proxyElementTypes : {
-                                    ProxyAttributeNotifyReadWrite : ProxyAttributeNotifyReadWrite,
-                                    ProxyAttributeNotifyRead : ProxyAttributeNotifyRead,
-                                    ProxyAttributeNotifyWrite : ProxyAttributeNotifyWrite,
-                                    ProxyAttributeNotify : ProxyAttributeNotify,
-                                    ProxyAttributeReadWrite : ProxyAttributeReadWrite,
-                                    ProxyAttributeRead : ProxyAttributeRead,
-                                    ProxyAttributeWrite : ProxyAttributeWrite,
+                                    ProxyAttribute : ProxyAttribute,
                                     ProxyOperation : ProxyOperation,
                                     ProxyEvent : ProxyEvent
                                 },
@@ -151,8 +133,6 @@ define(
 
                         it("RadioProxy has all members", function(done) {
                             expect(radioProxy.isOn).toBeDefined();
-                            expect(radioProxy.isOn instanceof ProxyAttributeNotifyReadWrite)
-                                    .toBeTruthy();
                             expect(radioProxy.addFavoriteStation).toBeDefined();
                             expect(typeof radioProxy.addFavoriteStation === "function")
                                     .toBeTruthy();

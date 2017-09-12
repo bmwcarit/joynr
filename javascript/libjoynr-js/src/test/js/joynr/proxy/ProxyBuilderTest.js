@@ -22,7 +22,6 @@
 
 define([
             "joynr/proxy/ProxyBuilder",
-            "joynr/proxy/ProxyAttributeNotifyReadWrite",
             "joynr/proxy/ProxyOperation",
             "joynr/proxy/ProxyEvent",
             "joynr/proxy/DiscoveryQos",
@@ -41,7 +40,6 @@ define([
         ],
         function(
                 ProxyBuilder,
-                ProxyAttributeNotifyReadWrite,
                 ProxyOperation,
                 ProxyEvent,
                 DiscoveryQos,

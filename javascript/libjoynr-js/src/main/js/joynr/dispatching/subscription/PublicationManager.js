@@ -388,8 +388,7 @@ define(
                  * @returns {Boolean} if the provider attribute is notifiable
                  */
                 function providerAttributeIsNotifiable(providerAttribute) {
-                    return Typing.getObjectType(providerAttribute)
-                            .match(/^ProviderAttributeNotify/);
+                    return (typeof providerAttribute.isNotifiable === "function") && providerAttribute.isNotifiable();
                 }
 
                 /**

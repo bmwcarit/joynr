@@ -97,7 +97,7 @@ define("joynr/provider/ProviderEvent", [
         /**
          * Registers an Observer for value changes
          *
-         * @name ProviderAttributeNotify#registerObserver
+         * @name ProviderAttribute#registerObserver
          * @function
          *
          * @param {Function}
@@ -111,7 +111,7 @@ define("joynr/provider/ProviderEvent", [
         /**
          * Unregisters an Observer for value changes
          *
-         * @name ProviderAttributeNotify#unregisterObserver
+         * @name ProviderAttribute#unregisterObserver
          * @function
          *
          * @param {Function}
@@ -139,7 +139,7 @@ define("joynr/provider/ProviderEvent", [
         /**
          * Unregisters an Observer for value changes
          *
-         * @name ProviderAttributeNotify#deleteBroadcastFilter
+         * @name ProviderAttribute#deleteBroadcastFilter
          * @function
          *
          * @param {Function}

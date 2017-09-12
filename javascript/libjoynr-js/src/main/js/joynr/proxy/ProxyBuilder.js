@@ -21,13 +21,7 @@
 
 define("joynr/proxy/ProxyBuilder", [
     "global/Promise",
-    "joynr/proxy/ProxyAttributeNotifyReadWrite",
-    "joynr/proxy/ProxyAttributeNotifyRead",
-    "joynr/proxy/ProxyAttributeNotifyWrite",
-    "joynr/proxy/ProxyAttributeNotify",
-    "joynr/proxy/ProxyAttributeReadWrite",
-    "joynr/proxy/ProxyAttributeRead",
-    "joynr/proxy/ProxyAttributeWrite",
+    "joynr/proxy/ProxyAttribute",
     "joynr/proxy/ProxyOperation",
     "joynr/proxy/ProxyEvent",
     "uuid",
@@ -39,13 +33,7 @@ define("joynr/proxy/ProxyBuilder", [
     "joynr/system/LoggerFactory"
 ], function(
         Promise,
-        ProxyAttributeNotifyReadWrite,
-        ProxyAttributeNotifyRead,
-        ProxyAttributeNotifyWrite,
-        ProxyAttributeNotify,
-        ProxyAttributeReadWrite,
-        ProxyAttributeRead,
-        ProxyAttributeWrite,
+        ProxyAttribute,
         ProxyOperation,
         ProxyEvent,
         uuid,
@@ -57,13 +45,7 @@ define("joynr/proxy/ProxyBuilder", [
         LoggerFactory) {
 
     var proxyElementTypes = {
-        ProxyAttributeNotifyReadWrite: ProxyAttributeNotifyReadWrite,
-        ProxyAttributeNotifyRead     : ProxyAttributeNotifyRead,
-        ProxyAttributeNotifyWrite    : ProxyAttributeNotifyWrite,
-        ProxyAttributeNotify         : ProxyAttributeNotify,
-        ProxyAttributeReadWrite      : ProxyAttributeReadWrite,
-        ProxyAttributeRead           : ProxyAttributeRead,
-        ProxyAttributeWrite          : ProxyAttributeWrite,
+        ProxyAttribute               : ProxyAttribute,
         ProxyOperation               : ProxyOperation,
         ProxyEvent                   : ProxyEvent
     };

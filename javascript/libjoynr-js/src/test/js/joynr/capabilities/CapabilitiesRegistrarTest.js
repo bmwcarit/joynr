@@ -25,7 +25,7 @@ define([
             "joynr/capabilities/CapabilitiesRegistrar",
             "joynr/types/ProviderQos",
             "joynr/types/GlobalDiscoveryEntry",
-            "joynr/provider/ProviderAttributeNotifyReadWrite",
+            "joynr/provider/ProviderAttribute",
             "joynr/types/DiscoveryEntry",
             "joynr/types/ProviderScope",
             "joynr/types/Version",
@@ -36,7 +36,7 @@ define([
                 CapabilitiesRegistrar,
                 ProviderQos,
                 GlobalDiscoveryEntry,
-                ProviderAttributeNotifyReadWrite,
+                ProviderAttribute,
                 DiscoveryEntry,
                 ProviderScope,
                 Version,
@@ -95,11 +95,11 @@ define([
                                         supportsOnChangeSubscriptions : true
                                     });
 
-                            provider.myAttribute = new ProviderAttributeNotifyReadWrite(provider, {
+                            provider.myAttribute = new ProviderAttribute(provider, {
                                 dependencies : {
                                     publicationManager : publicationManagerSpy
                                 }
-                            }, "myAttribute", "Boolean");
+                            }, "myAttribute", "Boolean", "NOTIFYREADWRITE");
 
                             localChannelId = "localChannelId";
                             domain = "testdomain";

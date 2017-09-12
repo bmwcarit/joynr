@@ -173,6 +173,7 @@ define(
                             this.valueChanged = providerAttribute.valueChanged;
                             this.registerObserver = providerAttribute.registerObserver;
                             this.unregisterObserver = providerAttribute.unregisterObserver;
+                            this.isNotifiable = providerAttribute.isNotifiable;
                         }
 
                         function ProviderAttributeReadWrite(
@@ -191,6 +192,7 @@ define(
                             this.get = providerAttribute.get;
                             this.registerSetter = providerAttribute.registerSetter;
                             this.set = providerAttribute.set;
+                            this.isNotifiable = providerAttribute.isNotifiable;
                             //this.valueChanged = providerAttribute.valueChanged;
                             //this.registerObserver = providerAttribute.registerObserver;
                             //this.unregisterObserver = providerAttribute.unregisterObserver;

@@ -22,13 +22,6 @@
 
 define([
             "joynr/proxy/ProxyAttribute",
-            "joynr/proxy/ProxyAttributeNotifyReadWrite",
-            "joynr/proxy/ProxyAttributeNotifyRead",
-            "joynr/proxy/ProxyAttributeNotifyWrite",
-            "joynr/proxy/ProxyAttributeNotify",
-            "joynr/proxy/ProxyAttributeReadWrite",
-            "joynr/proxy/ProxyAttributeRead",
-            "joynr/proxy/ProxyAttributeWrite",
             "joynr/proxy/DiscoveryQos",
             "joynr/messaging/MessagingQos",
             "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
@@ -44,13 +37,6 @@ define([
         ],
         function(
                 ProxyAttribute,
-                ProxyAttributeNotifyReadWrite,
-                ProxyAttributeNotifyRead,
-                ProxyAttributeNotifyWrite,
-                ProxyAttributeNotify,
-                ProxyAttributeReadWrite,
-                ProxyAttributeRead,
-                ProxyAttributeWrite,
                 DiscoveryQos,
                 MessagingQos,
                 OnChangeWithKeepAliveSubscriptionQos,
@@ -77,13 +63,6 @@ define([
                         var isOnReadWrite;
                         var isOnReadOnly;
                         var isOnWriteOnly;
-                        var isOnProxyAttributeNotifyReadWrite;
-                        var isOnProxyAttributeNotifyRead;
-                        var isOnProxyAttributeNotifyWrite;
-                        var isOnProxyAttributeNotify;
-                        var isOnProxyAttributeReadWrite;
-                        var isOnProxyAttributeRead;
-                        var isOnProxyAttributeWrite;
                         var subscriptionQos;
                         var messagingQos;
                         var requestReplyManagerSpy;
@@ -211,59 +190,16 @@ define([
                                             "Boolean",
                                             "WRITEONLY");
 
-                            isOnProxyAttributeNotifyReadWrite =
-                                    new ProxyAttributeNotifyReadWrite(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeNotifyReadWrite",
-                                            "Boolean");
-                            isOnProxyAttributeNotifyRead =
-                                    new ProxyAttributeNotifyRead(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeNotifyRead",
-                                            "Boolean");
-                            isOnProxyAttributeNotifyWrite =
-                                    new ProxyAttributeNotifyWrite(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeNotifyWrite",
-                                            "Boolean");
-                            isOnProxyAttributeNotify =
-                                    new ProxyAttributeNotify(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeNotify",
-                                            "Boolean");
-                            isOnProxyAttributeReadWrite =
-                                    new ProxyAttributeReadWrite(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeReadWrite",
-                                            "Boolean");
-                            isOnProxyAttributeRead =
-                                    new ProxyAttributeRead(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeRead",
-                                            "Boolean");
-                            isOnProxyAttributeWrite =
-                                    new ProxyAttributeWrite(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeWrite",
-                                            "Boolean");
                             TypeRegistrySingleton.getInstance().getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000).then(function() {
                                 done();
                                 return null;
                             }).catch(fail);
                         });
 
-                        it("is of correct type (ProxyAttribute)", function(done) {
+                        it("got initialized", function(done) {
                             expect(isOn).toBeDefined();
                             expect(isOn).not.toBeNull();
                             expect(typeof isOn === "object").toBeTruthy();
-                            expect(isOn instanceof ProxyAttribute).toBeTruthy();
                             done();
                         });
 
@@ -320,62 +256,6 @@ define([
                             expect(isOnWriteOnly.set).toBeDefined();
                             expect(isOnWriteOnly.subscribe).toBeUndefined();
                             expect(isOnWriteOnly.unsubscribe).toBeUndefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeNotifyReadWrite)", function(done) {
-                            expect(isOnProxyAttributeNotifyReadWrite.get).toBeDefined();
-                            expect(isOnProxyAttributeNotifyReadWrite.set).toBeDefined();
-                            expect(isOnProxyAttributeNotifyReadWrite.subscribe).toBeDefined();
-                            expect(isOnProxyAttributeNotifyReadWrite.unsubscribe).toBeDefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeNotifyRead)", function(done) {
-                            expect(isOnProxyAttributeNotifyRead.get).toBeDefined();
-                            expect(isOnProxyAttributeNotifyRead.set).toBeUndefined();
-                            expect(isOnProxyAttributeNotifyRead.subscribe).toBeDefined();
-                            expect(isOnProxyAttributeNotifyRead.unsubscribe).toBeDefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeNotifyWrite)", function(done) {
-                            expect(isOnProxyAttributeNotifyWrite.get).toBeUndefined();
-                            expect(isOnProxyAttributeNotifyWrite.set).toBeDefined();
-                            expect(isOnProxyAttributeNotifyWrite.subscribe).toBeDefined();
-                            expect(isOnProxyAttributeNotifyWrite.unsubscribe).toBeDefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeNotify)", function(done) {
-                            expect(isOnProxyAttributeNotify.get).toBeUndefined();
-                            expect(isOnProxyAttributeNotify.set).toBeUndefined();
-                            expect(isOnProxyAttributeNotify.subscribe).toBeDefined();
-                            expect(isOnProxyAttributeNotify.unsubscribe).toBeDefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeReadWrite)", function(done) {
-                            expect(isOnProxyAttributeReadWrite.get).toBeDefined();
-                            expect(isOnProxyAttributeReadWrite.set).toBeDefined();
-                            expect(isOnProxyAttributeReadWrite.subscribe).toBeUndefined();
-                            expect(isOnProxyAttributeReadWrite.unsubscribe).toBeUndefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeRead)", function(done) {
-                            expect(isOnProxyAttributeRead.get).toBeDefined();
-                            expect(isOnProxyAttributeRead.set).toBeUndefined();
-                            expect(isOnProxyAttributeRead.subscribe).toBeUndefined();
-                            expect(isOnProxyAttributeRead.unsubscribe).toBeUndefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeWrite)", function(done) {
-                            expect(isOnProxyAttributeWrite.get).toBeUndefined();
-                            expect(isOnProxyAttributeWrite.set).toBeDefined();
-                            expect(isOnProxyAttributeWrite.subscribe).toBeUndefined();
-                            expect(isOnProxyAttributeWrite.unsubscribe).toBeUndefined();
                             done();
                         });
 
@@ -631,11 +511,12 @@ define([
                                 function(done) {
                                     var proxy = {};
                                     var radioStationProxyAttributeWrite =
-                                            new ProxyAttributeWrite(
+                                            new ProxyAttribute(
                                                     proxy,
                                                     settings,
                                                     "radioStationProxyAttributeWrite",
-                                                    RadioStation);
+                                                    RadioStation,
+                                                    "WRITE");
 
                                     expect(function() {
                                         radioStationProxyAttributeWrite.set({
