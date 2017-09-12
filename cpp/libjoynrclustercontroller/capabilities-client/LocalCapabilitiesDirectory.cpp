@@ -577,7 +577,13 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
         const bool isGloballyVisible = isGlobal(currentEntry);
         try {
             joynr::serializer::deserializeFromJson(address, serializedAddress);
-            messageRouter.addNextHop(currentEntry.getParticipantId(), address, isGloballyVisible);
+            constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+            const bool isSticky = false;
+            messageRouter.addNextHop(currentEntry.getParticipantId(),
+                                     address,
+                                     isGloballyVisible,
+                                     expiryDateMs,
+                                     isSticky);
             this->insertInCache(currentEntry, false, true);
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger,

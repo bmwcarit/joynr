@@ -243,8 +243,13 @@ void ProxyBuilder<T>::buildAsync(
         proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
 
         bool isGloballyVisible = !discoverEntry.getIsLocal();
-        messageRouter->addNextHop(
-                proxy->getProxyParticipantId(), dispatcherAddress, isGloballyVisible);
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
+        messageRouter->addNextHop(proxy->getProxyParticipantId(),
+                                  dispatcherAddress,
+                                  isGloballyVisible,
+                                  expiryDateMs,
+                                  isSticky);
 
         onSuccess(std::move(proxy));
     };

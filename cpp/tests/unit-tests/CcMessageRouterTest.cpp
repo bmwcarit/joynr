@@ -437,16 +437,18 @@ TEST_F(CcMessageRouterTest, persistMulticastReceiverDirectory) {
 
     const std::string persistencyFilename = "multicast-receiver-directory-test.persist";
     const bool isGloballyVisible = true;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
     std::remove(persistencyFilename.c_str());
     // Load method stores the filename which will later be used to save the multicast receiver directory.
     messageRouter->loadMulticastReceiverDirectory(persistencyFilename);
 
     multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(multicastSubscriber);
-    messageRouter->addNextHop(providerParticipantId, providerAddress, isGloballyVisible);
+    messageRouter->addNextHop(providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
     messageRouter->addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId, []() {}, nullptr);
 
     messageRouter = createMessageRouter();
-    messageRouter->addNextHop(providerParticipantId, providerAddress, isGloballyVisible);
+    messageRouter->addNextHop(providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
 
     EXPECT_CALL(*multicastSubscriber, registerMulticastSubscription(multicastId)).Times(1);
     messageRouter->loadMulticastReceiverDirectory(persistencyFilename);

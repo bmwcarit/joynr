@@ -264,12 +264,12 @@ void LibJoynrMessageRouter::addNextHop(
         const std::string& participantId,
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
         bool isGloballyVisible,
+        const std::int64_t expiryDateMs,
+        const bool isSticky,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     assert(address);
-    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    const bool isSticky = false;
     addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
     addNextHopToParent(participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
     sendMessages(participantId, address);

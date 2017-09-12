@@ -349,13 +349,13 @@ void CcMessageRouter::addNextHop(
         const std::string& participantId,
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
         bool isGloballyVisible,
+        const std::int64_t expiryDateMs,
+        const bool isSticky,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     assert(address);
-    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    const bool isSticky = false;
     addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
     sendMessages(participantId, address);
     if (onSuccess) {
@@ -374,7 +374,14 @@ void CcMessageRouter::addNextHop(
     std::ignore = onError;
     auto address =
             std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(channelAddress);
-    addNextHop(participantId, std::move(address), isGloballyVisible, std::move(onSuccess));
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    addNextHop(participantId,
+               std::move(address),
+               isGloballyVisible,
+               expiryDateMs,
+               isSticky,
+               std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -386,8 +393,15 @@ void CcMessageRouter::addNextHop(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(mqttAddress);
-    addNextHop(participantId, std::move(address), isGloballyVisible, std::move(onSuccess));
+    addNextHop(participantId,
+               std::move(address),
+               isGloballyVisible,
+               expiryDateMs,
+               isSticky,
+               std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -399,9 +413,16 @@ void CcMessageRouter::addNextHop(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
     auto address = std::make_shared<const joynr::system::RoutingTypes::CommonApiDbusAddress>(
             commonApiDbusAddress);
-    addNextHop(participantId, std::move(address), isGloballyVisible, std::move(onSuccess));
+    addNextHop(participantId,
+               std::move(address),
+               isGloballyVisible,
+               expiryDateMs,
+               isSticky,
+               std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -413,9 +434,16 @@ void CcMessageRouter::addNextHop(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
     auto address =
             std::make_shared<const joynr::system::RoutingTypes::BrowserAddress>(browserAddress);
-    addNextHop(participantId, std::move(address), isGloballyVisible, std::move(onSuccess));
+    addNextHop(participantId,
+               std::move(address),
+               isGloballyVisible,
+               expiryDateMs,
+               isSticky,
+               std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -427,9 +455,16 @@ void CcMessageRouter::addNextHop(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
     auto address =
             std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(webSocketAddress);
-    addNextHop(participantId, std::move(address), isGloballyVisible, std::move(onSuccess));
+    addNextHop(participantId,
+               std::move(address),
+               isGloballyVisible,
+               expiryDateMs,
+               isSticky,
+               std::move(onSuccess));
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -441,9 +476,16 @@ void CcMessageRouter::addNextHop(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
     auto address = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
             webSocketClientAddress);
-    addNextHop(participantId, std::move(address), isGloballyVisible, std::move(onSuccess));
+    addNextHop(participantId,
+               std::move(address),
+               isGloballyVisible,
+               expiryDateMs,
+               isSticky,
+               std::move(onSuccess));
 }
 
 void CcMessageRouter::resolveNextHop(

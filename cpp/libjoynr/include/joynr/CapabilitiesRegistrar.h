@@ -113,9 +113,13 @@ public:
         {
             // add next hop to dispatcher
             if (auto ptr = messageRouter.lock()) {
+                constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+                const bool isSticky = false;
                 ptr->addNextHop(participantId,
                                 dispatcherAddress,
                                 isGloballyVisible,
+                                expiryDateMs,
+                                isSticky,
                                 std::move(onSuccess),
                                 std::move(onError));
             }

@@ -190,7 +190,9 @@ void AbstractMessageRouter::registerGlobalRoutingEntryIfRequired(const Immutable
             // because the message is received via global transport (isGloballyVisible=true),
             // isGloballyVisible must be true
             const bool isGloballyVisible = true;
-            addNextHop(message.getSender(), address, isGloballyVisible);
+            constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+            const bool isSticky = false;
+            addNextHop(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky);
         } catch (const std::invalid_argument& e) {
             std::string errorMessage("could not deserialize Address from " + replyTo +
                                      " - error: " + e.what());
