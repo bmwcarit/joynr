@@ -1,10 +1,3 @@
-package io.joynr.servlet;
-
-import io.joynr.accesscontrol.global.GlobalDomainAccessControllerModule;
-import com.google.inject.AbstractModule;
-import io.joynr.accesscontrol.global.GlobalDomainAccessStoreAdmin;
-import io.joynr.accesscontrol.global.GlobalDomainAccessStoreAdminEhCache;
-
 /*
  * #%L
  * %%
@@ -13,9 +6,9 @@ import io.joynr.accesscontrol.global.GlobalDomainAccessStoreAdminEhCache;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +16,12 @@ import io.joynr.accesscontrol.global.GlobalDomainAccessStoreAdminEhCache;
  * limitations under the License.
  * #L%
  */
+package io.joynr.servlet;
+
+import io.joynr.accesscontrol.global.GlobalDomainAccessControllerModule;
+import com.google.inject.AbstractModule;
+import io.joynr.accesscontrol.global.GlobalDomainAccessStoreAdmin;
+import io.joynr.accesscontrol.global.GlobalDomainAccessStoreAdminEhCache;
 
 public class ServletModule extends AbstractModule {
 
