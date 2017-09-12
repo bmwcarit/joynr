@@ -28,6 +28,7 @@
 
 #include "joynr/AbstractMessageRouter.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/Logger.h"
@@ -75,6 +76,7 @@ class JOYNR_EXPORT LibJoynrMessageRouter : public joynr::AbstractMessageRouter
 {
 public:
     LibJoynrMessageRouter(
+            MessagingSettings& messagingSettings,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
             std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
             boost::asio::io_service& ioService,

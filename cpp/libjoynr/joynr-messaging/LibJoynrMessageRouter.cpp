@@ -54,6 +54,7 @@ LibJoynrMessageRouter::~LibJoynrMessageRouter()
 }
 
 LibJoynrMessageRouter::LibJoynrMessageRouter(
+        MessagingSettings& messagingSettings,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         boost::asio::io_service& ioService,
@@ -78,6 +79,7 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
           parentClusterControllerReplyToAddress(),
           DEFAULT_IS_GLOBALLY_VISIBLE(false)
 {
+    std::ignore = messagingSettings;
 }
 
 void LibJoynrMessageRouter::shutdown()

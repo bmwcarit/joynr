@@ -30,6 +30,7 @@
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/MessageSender.h"
 #include "joynr/LibJoynrMessageRouter.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/Settings.h"
@@ -111,7 +112,8 @@ void LibJoynrRuntime::init(
             systemServicesSettings.getCcRoutingProviderParticipantId();
     // create message router
     libJoynrMessageRouter =
-            std::make_shared<LibJoynrMessageRouter>(libjoynrMessagingAddress,
+            std::make_shared<LibJoynrMessageRouter>(messagingSettings,
+                                                    libjoynrMessagingAddress,
                                                     std::move(messagingStubFactory),
                                                     singleThreadIOService->getIOService(),
                                                     std::move(addressCalculator));

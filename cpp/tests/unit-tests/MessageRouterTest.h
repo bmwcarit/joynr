@@ -96,6 +96,7 @@ protected:
         transportNotAvailableQueueRef = transportNotAvailableQueue.get();
 
         auto libJoynrMessageRouter = std::make_unique<LibJoynrMessageRouter>(
+                    messagingSettings,
                     webSocketClientAddress,
                     messagingStubFactory,
                     singleThreadedIOService.getIOService(),
