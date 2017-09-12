@@ -47,6 +47,7 @@ INIT_LOGGER(AbstractMessageRouter);
 
 //------ AbstractMessageRouter ---------------------------------------------------------
 AbstractMessageRouter::AbstractMessageRouter(
+        MessagingSettings& messagingSettings,
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
@@ -57,6 +58,7 @@ AbstractMessageRouter::AbstractMessageRouter(
         : routingTable(),
           routingTableLock(),
           multicastReceiverDirectory(),
+          messagingSettings(messagingSettings),
           messagingStubFactory(std::move(messagingStubFactory)),
           messageScheduler(maxThreads, "AbstractMessageRouter", ioService),
           messageQueue(std::move(messageQueue)),

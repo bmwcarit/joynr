@@ -63,7 +63,8 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
         int maxThreads,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
-        : AbstractMessageRouter(std::move(messagingStubFactory),
+        : AbstractMessageRouter(messagingSettings,
+                                std::move(messagingStubFactory),
                                 ioService,
                                 std::move(addressCalculator),
                                 maxThreads,
@@ -79,7 +80,6 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
           parentClusterControllerReplyToAddress(),
           DEFAULT_IS_GLOBALLY_VISIBLE(false)
 {
-    std::ignore = messagingSettings;
 }
 
 void LibJoynrMessageRouter::shutdown()

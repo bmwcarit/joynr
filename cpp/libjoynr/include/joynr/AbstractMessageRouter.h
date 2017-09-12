@@ -29,6 +29,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessageQueue.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -115,7 +116,8 @@ protected:
                                AddressEqual>;
 
     // Instantiation of this class only possible through its child classes.
-    AbstractMessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+    AbstractMessageRouter(MessagingSettings& messagingSettings,
+                          std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                           boost::asio::io_service& ioService,
                           std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                           int maxThreads = 1,
@@ -159,6 +161,7 @@ protected:
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
+    MessagingSettings messagingSettings;
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
     ThreadPoolDelayedScheduler messageScheduler;
     std::unique_ptr<MessageQueue<std::string>> messageQueue;
