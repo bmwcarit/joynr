@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingStub;
+import io.joynr.messaging.SuccessAction;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 
@@ -43,7 +44,7 @@ public class WebSocketMessagingStub implements IMessagingStub {
     }
 
     @Override
-    public void transmit(ImmutableMessage message, FailureAction failureAction) {
+    public void transmit(ImmutableMessage message, SuccessAction successAction, FailureAction failureAction) {
         logger.debug(">>> OUTGOING >>> {}", message);
 
         if (!message.isTtlAbsolute()) {
@@ -53,6 +54,11 @@ public class WebSocketMessagingStub implements IMessagingStub {
         long timeout = message.getTtlMs() - System.currentTimeMillis();
         byte[] serializedMessage = message.getSerializedMessage();
 
-        webSocketEndpoint.writeBytes(toAddress, serializedMessage, timeout, TimeUnit.MILLISECONDS, failureAction);
+        webSocketEndpoint.writeBytes(toAddress,
+                                     serializedMessage,
+                                     timeout,
+                                     TimeUnit.MILLISECONDS,
+                                     successAction,
+                                     failureAction);
     }
 }

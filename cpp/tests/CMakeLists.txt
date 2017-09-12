@@ -42,6 +42,8 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "HttpSystemIntegrationTest1.settings"
         "HttpSystemIntegrationTest2.settings"
         "HttpJoynrClusterControllerRuntimeTest.settings"
+        "MqttSenderTestWithMaxMessageSizeLimits1.settings"
+        "MqttSenderTestWithMaxMessageSizeLimits2.settings"
         "MqttSystemIntegrationTest1.settings"
         "MqttSystemIntegrationTest2.settings"
         "MqttOverTLSSystemIntegrationTest1.settings"

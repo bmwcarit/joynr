@@ -31,9 +31,9 @@ import com.google.common.collect.Maps;
 
 public class DiscoveryQos {
     public static final DiscoveryQos NO_FILTER;
+    public static final long NO_VALUE = -1L;
 
     private long discoveryTimeoutMs;
-    private static final long DEFAULT_DISCOVERYTIMEOUT = 30000;
 
     private ArbitrationStrategy arbitrationStrategy;
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
@@ -47,7 +47,6 @@ public class DiscoveryQos {
     private static final boolean DEFAULT_PROVIDERMUSTSUPPORTONCHANGE = false;
 
     private long retryIntervalMs;
-    private static final long DEFAULT_RETRYINTERVAL = 1000L;
 
     private DiscoveryScope discoveryScope;
     private static final DiscoveryScope DEFAULT_DISCOVERYSCOPE = DiscoveryScope.LOCAL_AND_GLOBAL;
@@ -63,11 +62,11 @@ public class DiscoveryQos {
     }
 
     public DiscoveryQos() {
-        this.discoveryTimeoutMs = DEFAULT_DISCOVERYTIMEOUT;
+        this.discoveryTimeoutMs = NO_VALUE;
         this.arbitrationStrategy = DEFAULT_ARBITRATIONSTRATEGY;
         this.cacheMaxAgeMs = DEFAULT_CACHEMAXAGE;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
-        this.retryIntervalMs = DEFAULT_RETRYINTERVAL;
+        this.retryIntervalMs = NO_VALUE;
         this.discoveryScope = DEFAULT_DISCOVERYSCOPE;
     }
 
@@ -120,6 +119,35 @@ public class DiscoveryQos {
                         ArbitrationStrategy arbitrationStrategy,
                         long cacheMaxAge,
                         DiscoveryScope discoveryScope) {
+        this(discoveryTimeout, NO_VALUE, arbitrationStrategy, cacheMaxAge, discoveryScope);
+    }
+
+    /**
+     * @param discoveryTimeout
+     *            Timeout for rpc calls to wait for arbitration to finish.
+     * @param retryIntervalMs
+     *            Lookups for the arbitration will be repeated after this time interval if they were not successful
+     * @param arbitrationStrategy
+     *            Strategy for choosing the appropriate provider from the list returned by the capabilities directory
+     * @param cacheMaxAge
+     *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the
+     *            local capabilities directory a lookup in the global capabilitiesDirectory will take place.
+     * @param discoveryScope
+     *            determines where the discovery process will look for matching providers<br>
+     *            <ul>
+     *            <li>LOCAL_ONLY: only locally registered providers will be considered.
+     *            <li>LOCAL_THEN_GLOBAL locally registered providers are preferred. When none is found, the global
+     *            providers are included in search results.
+     *            <li>LOCAL_AND_GLOBAL: all providers registered locally, and query results from the gobal directory are
+     *            combined and returned.
+     *            <li>GLOBAL_ONLY only returns providers that are found in the global directory.
+     *            </ul>
+     */
+    public DiscoveryQos(long discoveryTimeout,
+                        long retryIntervalMs,
+                        ArbitrationStrategy arbitrationStrategy,
+                        long cacheMaxAge,
+                        DiscoveryScope discoveryScope) {
         if (arbitrationStrategy.equals(ArbitrationStrategy.Custom)) {
             throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DisocveryQos constructor");
         }
@@ -127,8 +155,9 @@ public class DiscoveryQos {
         this.cacheMaxAgeMs = cacheMaxAge;
         this.discoveryScope = discoveryScope;
         this.discoveryTimeoutMs = discoveryTimeout;
+        this.retryIntervalMs = retryIntervalMs;
         this.arbitrationStrategy = arbitrationStrategy;
-        this.retryIntervalMs = DEFAULT_RETRYINTERVAL;
+        this.retryIntervalMs = NO_VALUE;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
 
@@ -136,13 +165,20 @@ public class DiscoveryQos {
                         ArbitrationStrategyFunction arbitrationStrategyFunction,
                         long cacheMaxAge,
                         DiscoveryScope discoveryScope) {
+        this(discoveryTimeout, NO_VALUE, arbitrationStrategyFunction, cacheMaxAge, discoveryScope);
+    }
 
+    public DiscoveryQos(long discoveryTimeout,
+                        long retryIntervalMs,
+                        ArbitrationStrategyFunction arbitrationStrategyFunction,
+                        long cacheMaxAge,
+                        DiscoveryScope discoveryScope) {
         this.arbitrationStrategy = ArbitrationStrategy.Custom;
         this.discoveryTimeoutMs = discoveryTimeout;
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;
         this.cacheMaxAgeMs = cacheMaxAge;
         this.discoveryScope = discoveryScope;
-        this.retryIntervalMs = DEFAULT_RETRYINTERVAL;
+        this.retryIntervalMs = NO_VALUE;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
 

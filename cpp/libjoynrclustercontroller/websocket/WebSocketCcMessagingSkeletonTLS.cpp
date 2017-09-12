@@ -17,7 +17,9 @@
  * #L%
  */
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonTLS.h"
-
+#include <mococrw/distinguished_name.h>
+#include <mococrw/openssl_lib.h>
+#include <mococrw/openssl_wrap.h>
 #include <openssl/ssl.h>
 
 namespace joynr
@@ -41,8 +43,7 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
 
     endpoint.set_tls_init_handler([this, caPemFile, certPemFile, privateKeyPemFile](
                                           ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
-        std::ignore = hdl;
-        return createSSLContext(caPemFile, certPemFile, privateKeyPemFile);
+        return createSSLContext(caPemFile, certPemFile, privateKeyPemFile, hdl);
     });
 
     startAccept(serverAddress.getPort());
@@ -51,7 +52,8 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
 std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagingSkeletonTLS::
         createSSLContext(const std::string& caPemFile,
                          const std::string& certPemFile,
-                         const std::string& privateKeyPemFile)
+                         const std::string& privateKeyPemFile,
+                         ConnectionHandle hdl)
 {
     std::shared_ptr<SSLContext> sslContext;
 
@@ -67,6 +69,28 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
         sslContext->load_verify_file(caPemFile);
         sslContext->use_certificate_file(certPemFile, SSLContext::pem);
         sslContext->use_private_key_file(privateKeyPemFile, SSLContext::pem);
+
+        using VerifyContext = websocketpp::lib::asio::ssl::verify_context;
+        auto getCNFromCertificate = [this, hdl](bool preverified, VerifyContext& ctx) {
+            // getting cert out of the verification context
+            X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
+
+            // extracting ownerId out of cert
+            X509_NAME* certSubName = mococrw::openssl::_X509_get_subject_name(cert);
+            mococrw::DistinguishedName distinguishedName =
+                    mococrw::DistinguishedName::fromX509Name(certSubName);
+            const std::string ownerId(distinguishedName.commonName());
+
+            // mapping the connetion handler to the ownerId in clients map
+            joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
+            auto certEntry = CertEntry(std::move(clientAddress), ownerId);
+            clients.emplace(hdl, std::move(certEntry));
+            return preverified;
+        };
+
+        // read ownerId of client's certificate and store it in clients map
+        sslContext->set_verify_callback(getCNFromCertificate);
+
     } catch (boost::system::system_error& e) {
         JOYNR_LOG_ERROR(logger, "Failed to initialize TLS session {}", e.what());
         return nullptr;

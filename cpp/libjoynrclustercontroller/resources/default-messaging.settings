@@ -12,8 +12,8 @@ ttl-uplift-ms=0
 # is used to determine a default expiry date. The expiry date will be
 # 'now' + discovery-entry-expiry-interval-ms. After this date the capabilities
 # directory might delete the discovery information and the provider is not
-# discoverable anymore. # 86400000 = 1 day in millisecond.
-discovery-entry-expiry-interval-ms=86400000
+# discoverable anymore. # 3628800000 = 6 weeks in milliseconds.
+discovery-entry-expiry-interval-ms=3628800000
 
 broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@/
 
@@ -37,6 +37,10 @@ mqtt-keep-alive-time-seconds=60
 mqtt-reconnect-delay-time-seconds=1
 # Maximum time in milliseconds to wait for network activity before timing out.
 mqtt-connection-timeout-ms=1000
+# Maximum message size in bytes. This value should be adjusted following the
+# mqtt broker settings. If the value is not set, joynr will allow messages
+# of any size to be sent to the mqtt broker.
+mqtt-max-message-size-bytes=0
 
 
 index=0
@@ -51,3 +55,13 @@ persistence-file=joynr.settings
 long-poll-timeout=
 broker-timeout=
 max-send-ttl=
+
+# Default setting for the discoveryTimeoutMs value of joynr::DiscoveryQos
+# when no specific setting has been provided per API call.
+# Please refer to joynr::DiscoveryQos for details.
+discovery-default-timeout-ms=600000
+
+# Default setting for the retryIntervalMs value of joynr::DiscoveryQos
+# when no specific setting has been provided per API call.
+# Please refer to joynr::DiscoveryQos for details.
+discovery-default-retry-interval-ms=10000

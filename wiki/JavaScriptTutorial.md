@@ -121,6 +121,11 @@ var capabilitiesValue = [ // untyped list of provisioned capabilities
             priority: <priority>,
             supportsOnChangeSubscriptions: <true|false>
         },
+        discoveryQos: {
+            discoveryTimeoutMs: <number>
+            discoveryRetryDelayMs: <number>
+            discoveryExpiryIntervalMs: <number> // discoveryExpiryIntervalMs + Date.now() = expiryDateMs
+        },
         participantId: <participantId>
     },
     ...

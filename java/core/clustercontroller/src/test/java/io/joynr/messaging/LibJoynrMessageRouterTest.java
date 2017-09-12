@@ -21,6 +21,7 @@ package io.joynr.messaging;
 
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -41,7 +42,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.joynr.common.ExpiryDate;
 
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
-import io.joynr.messaging.routing.BoundedDelayQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.ShutdownNotifier;
@@ -80,7 +80,7 @@ public class LibJoynrMessageRouterTest {
     @Mock
     private ShutdownNotifier shutdownNotifier;
 
-    private BoundedDelayQueue<DelayableImmutableMessage> messageQueue = new BoundedDelayQueue<>(10);
+    private DelayQueue<DelayableImmutableMessage> messageQueue = new DelayQueue<>();
     private LibJoynrMessageRouter messageRouter;
     private String unknownParticipantId = "unknownParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;

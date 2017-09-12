@@ -119,6 +119,7 @@ CcMessageRouter::CcMessageRouter(
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         const std::string& globalClusterControllerAddress,
+        const std::string& messageNotificationProviderParticipantId,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         int maxThreads,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
@@ -136,7 +137,8 @@ CcMessageRouter::CcMessageRouter(
           accessController(),
           multicastReceiverDirectoryFilename(),
           globalClusterControllerAddress(globalClusterControllerAddress),
-          messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>())
+          messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>()),
+          messageNotificationProviderParticipantId(messageNotificationProviderParticipantId)
 {
     messageNotificationProvider->addBroadcastFilter(
             std::make_shared<MessageQueuedForDeliveryBroadcastFilter>());
@@ -589,8 +591,13 @@ void CcMessageRouter::removeMulticastReceiver(
 void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 {
     JOYNR_LOG_TRACE(logger, "message queued: {}", message->toLogMessage());
-    messageNotificationProvider->fireMessageQueuedForDelivery(
-            message->getRecipient(), message->getType());
+    // do not fire a broadcast for an undeliverable message sent by
+    // messageNotificationProvider (e.g. messageQueueForDelivery publication)
+    // since it may cause an endless loop
+    if (message->getSender() != messageNotificationProviderParticipantId) {
+        messageNotificationProvider->fireMessageQueuedForDelivery(
+                message->getRecipient(), message->getType());
+    }
     std::string recipient = message->getRecipient();
     messageQueue->queueMessage(std::move(recipient), std::move(message));
 }

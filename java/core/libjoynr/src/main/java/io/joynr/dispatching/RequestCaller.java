@@ -44,6 +44,12 @@ public class RequestCaller implements JoynrProvider {
         }
     }
 
+    public void removeContext() {
+        if (provider instanceof AbstractJoynrProvider) {
+            AbstractJoynrProvider.removeCallContext();
+        }
+    }
+
     public Object invoke(Method method, Object[] params) throws IllegalAccessException, IllegalArgumentException,
                                                         InvocationTargetException {
         return method.invoke(proxy, params);

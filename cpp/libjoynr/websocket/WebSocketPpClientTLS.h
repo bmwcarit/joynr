@@ -23,6 +23,7 @@
 
 namespace joynr
 {
+class IKeychain;
 
 class WebSocketPpClientTLS : public WebSocketPpClient<websocketpp::config::asio_tls_client>
 {
@@ -31,14 +32,10 @@ class WebSocketPpClientTLS : public WebSocketPpClient<websocketpp::config::asio_
 public:
     WebSocketPpClientTLS(const WebSocketSettings& wsSettings,
                          boost::asio::io_service& ioService,
-                         const std::string& caPemFile,
-                         const std::string& certPemFile,
-                         const std::string& privateKeyPemFile);
+                         std::shared_ptr<IKeychain> keyChain);
 
 private:
-    std::shared_ptr<SSLContext> createSSLContext(const std::string& caPemFile,
-                                                 const std::string& certPemFile,
-                                                 const std::string& privateKeyPemFile,
+    std::shared_ptr<SSLContext> createSSLContext(std::shared_ptr<IKeychain> keyChain,
                                                  Logger& logger);
 };
 

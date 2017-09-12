@@ -59,9 +59,29 @@ define([
 
         it("constructs correct default object", function() {
             expect(new DiscoveryQos()).toEqual(new DiscoveryQos({
+                discoveryTimeoutMs : 600000,
+                discoveryRetryDelayMs : 10000,
+                arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
+                cacheMaxAgeMs : 0,
+                discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
+                additionalParameters : {}
+            }));
+        });
+
+        it("adapts to new default values", function() {
+
+            DiscoveryQos.setDefaultSettings({
                 discoveryTimeoutMs : 30000,
                 discoveryRetryDelayMs : 1000,
-                arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
+                arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
+                cacheMaxAgeMs : 0,
+                discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
+                additionalParameters : {}
+            });
+            expect(new DiscoveryQos()).toEqual(new DiscoveryQos({
+                discoveryTimeoutMs : 30000,
+                discoveryRetryDelayMs : 1000,
+                arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
                 cacheMaxAgeMs : 0,
                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                 additionalParameters : {}

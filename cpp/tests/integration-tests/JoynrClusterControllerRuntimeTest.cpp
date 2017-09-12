@@ -128,6 +128,7 @@ public:
 
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(settingsFilenameMqtt),
+                    nullptr,
                     mockHttpMessageReceiver,
                     mockHttpMessageSender,
                     mockMqttMessageReceiver,
@@ -144,6 +145,7 @@ public:
 
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(settingsFilenameHttp),
+                    nullptr,
                     mockHttpMessageReceiver,
                     mockHttpMessageSender,
                     mockMqttMessageReceiver,

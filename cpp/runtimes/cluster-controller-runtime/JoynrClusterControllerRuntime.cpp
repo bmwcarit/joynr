@@ -111,6 +111,7 @@ static const std::string ACC_ENTRIES_FILE = "CCAccessControl.entries";
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::unique_ptr<Settings> settings,
+        std::shared_ptr<IKeychain> keyChain,
         std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver,
         std::shared_ptr<ITransportMessageSender> httpMessageSender,
         std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver,
@@ -153,6 +154,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           aclEditor(nullptr),
           lifetimeSemaphore(0),
           accessController(nullptr),
+          keyChain(std::move(keyChain)),
           routingProviderParticipantId(),
           discoveryProviderParticipantId(),
           messageNotificationProviderParticipantId(),
@@ -162,7 +164,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
 
 std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
         std::size_t argc,
-        char* argv[])
+        char* argv[],
+        std::shared_ptr<IKeychain> keyChain)
 {
     // Object that holds all the settings
     auto settings = std::make_unique<Settings>();
@@ -203,7 +206,7 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
         // Merge
         Settings::merge(currentSettings, *settings, true);
     }
-    return create(std::move(settings), discoveryEntriesFile);
+    return create(std::move(settings), discoveryEntriesFile, keyChain);
 }
 
 void JoynrClusterControllerRuntime::init()
@@ -333,13 +336,15 @@ void JoynrClusterControllerRuntime::init()
                             : httpSerializedGlobalClusterControllerAddress;
 
     // init message router
-    ccMessageRouter = std::make_shared<CcMessageRouter>(messagingStubFactory,
-                                                        multicastMessagingSkeletonDirectory,
-                                                        std::move(securityManager),
-                                                        singleThreadIOService->getIOService(),
-                                                        std::move(addressCalculator),
-                                                        globalClusterControllerAddress,
-                                                        std::move(transportStatuses));
+    ccMessageRouter = std::make_shared<CcMessageRouter>(
+            messagingStubFactory,
+            multicastMessagingSkeletonDirectory,
+            std::move(securityManager),
+            singleThreadIOService->getIOService(),
+            std::move(addressCalculator),
+            globalClusterControllerAddress,
+            systemServicesSettings.getCcMessageNotificationProviderParticipantId(),
+            std::move(transportStatuses));
     ccMessageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
     ccMessageRouter->loadMulticastReceiverDirectory(
             clusterControllerSettings.getMulticastReceiverDirectoryPersistenceFilename());
@@ -385,8 +390,8 @@ void JoynrClusterControllerRuntime::init()
 
     /* LibJoynr */
     assert(ccMessageRouter);
-    messageSender =
-            std::make_shared<MessageSender>(ccMessageRouter, messagingSettings.getTtlUpliftMs());
+    messageSender = std::make_shared<MessageSender>(
+            ccMessageRouter, keyChain, messagingSettings.getTtlUpliftMs());
     joynrDispatcher =
             std::make_shared<Dispatcher>(messageSender, singleThreadIOService->getIOService());
     messageSender->registerDispatcher(joynrDispatcher);
@@ -451,7 +456,8 @@ void JoynrClusterControllerRuntime::init()
                             "The mqtt message sender supplied is NULL, creating the default "
                             "mqtt MessageSender");
 
-            mqttMessageSender = std::make_shared<MqttSender>(mosquittoConnection);
+            mqttMessageSender =
+                    std::make_shared<MqttSender>(mosquittoConnection, messagingSettings);
         }
 
         messagingStubFactory->registerStubFactory(
@@ -972,10 +978,13 @@ void JoynrClusterControllerRuntime::runForever()
 
 std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
         std::unique_ptr<Settings> settings,
-        const std::string& discoveryEntriesFile)
+        const std::string& discoveryEntriesFile,
+        std::shared_ptr<IKeychain> keyChain)
 {
-    auto runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings));
+    auto runtime = std::make_shared<JoynrClusterControllerRuntime>(
+            std::move(settings), std::move(keyChain));
     runtime->init();
+
     assert(runtime->localCapabilitiesDirectory);
     runtime->localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);
     runtime->start();

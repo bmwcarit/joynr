@@ -25,7 +25,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
     "joynr/capabilities/ParticipantIdStorage",
     "joynr/types/Version"
 ], function(Promise, Util, DiscoveryEntry, ProviderScope, ParticipantIdStorage, Version) {
-    var ONE_DAY_MS = 24 * 60 * 60 * 1000;
+    var defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
     /**
      * The Capabilities Registrar
      *
@@ -103,7 +103,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          *            settings.providerQos the Quality of Service parameters for provider registration
          * @param {Number}
          *            [settings.expiryDateMs] date in millis since epoch after which the discovery entry can be purged from all directories.
-         *            Default value is one day.
+         *            Default value is six weeks.
          * @param {Object}
          *            [settings.loggingContext] optional logging context will be appended to logging messages created in the name of this proxy
          * @param {String}
@@ -141,7 +141,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
          *            providerQos the Quality of Service parameters for provider registration
          * @param {Number}
          *            [expiryDateMs] date in millis since epoch after which the discovery entry can be purged from all directories.
-         *            Default value is one day.
+         *            Default value is six weeks.
          * @param {Object}
          *            [loggingContext] optional logging context will be appended to logging messages created in the name of this proxy
          * @param {String}
@@ -183,7 +183,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                     requestReplyManager.addRequestCaller(participantId, provider);
 
                     // register routing address at routingTable
-                    var isGloballyVisible = (providerQos.scope === ProviderScope.GLOBAL);
+                    var isGloballyVisible = providerQos.scope === ProviderScope.GLOBAL;
                     var messageRouterPromise =
                             messageRouter.addNextHop(
                                     participantId,
@@ -206,7 +206,7 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
                         participantId : participantId,
                         qos : providerQos,
                         publicKeyId : defaultPublicKeyId,
-                        expiryDateMs : expiryDateMs || Date.now() + ONE_DAY_MS,
+                        expiryDateMs : expiryDateMs || Date.now() + defaultExpiryIntervalMs,
                         lastSeenDateMs : Date.now()
                     }));
 
@@ -264,6 +264,10 @@ define("joynr/capabilities/CapabilitiesRegistrar", [
             started = false;
         };
     }
+
+    CapabilitiesRegistrar.setDefaultExpiryIntervalMs = function(delay) {
+        defaultExpiryIntervalMs = delay;
+    };
 
     return CapabilitiesRegistrar;
 

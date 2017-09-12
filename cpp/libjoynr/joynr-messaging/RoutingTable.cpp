@@ -72,10 +72,12 @@ void RoutingTable::add(const std::string& participantId,
     if (!result.second) {
         multiIndexContainer.replace(result.first, routingEntry);
     }
+    JOYNR_LOG_TRACE(logger, "Added participantId: {}", participantId);
 }
 
 void RoutingTable::remove(const std::string& participantId)
 {
+    JOYNR_LOG_TRACE(logger, "Removing registered participantId: {}", participantId);
     multiIndexContainer.erase(participantId);
 }
 

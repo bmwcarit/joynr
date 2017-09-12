@@ -54,6 +54,7 @@ set(
     Boost::thread
     Boost::filesystem
     smrf::smrf
+    MoCOCrW::mococrw
 )
 
 if(JOYNR_ENABLE_DLT_LOGGING)

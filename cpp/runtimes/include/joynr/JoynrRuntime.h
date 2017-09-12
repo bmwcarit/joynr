@@ -25,6 +25,7 @@
 #include <string>
 
 #include "joynr/CapabilitiesRegistrar.h"
+#include "joynr/IKeychain.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/MessagingSettings.h"
@@ -229,25 +230,30 @@ public:
                                                           domain,
                                                           dispatcherAddress,
                                                           getMessageRouter(),
-                                                          messagingSettings.getMaximumTtlMs());
+                                                          messagingSettings);
     }
 
     /**
      * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
      * @param pathToLibjoynrSettings
      * @param pathToMessagingSettings
+     * @param An optional key chain that is used for websocket connections
      * @return pointer to a JoynrRuntime instance
      */
     static std::shared_ptr<JoynrRuntime> createRuntime(
             const std::string& pathToLibjoynrSettings,
-            const std::string& pathToMessagingSettings = "");
+            const std::string& pathToMessagingSettings = "",
+            std::shared_ptr<IKeychain> keyChain = nullptr);
 
     /**
      * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
      * @param settings settings object
+     * @param An optional key chain that is used for websocket connections
      * @return pointer to a JoynrRuntime instance
      */
-    static std::shared_ptr<JoynrRuntime> createRuntime(std::unique_ptr<Settings> settings);
+    static std::shared_ptr<JoynrRuntime> createRuntime(
+            std::unique_ptr<Settings> settings,
+            std::shared_ptr<IKeychain> keyChain = nullptr);
 
     /**
      * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
@@ -256,6 +262,7 @@ public:
      * @param onSuccess Is called when the runtime is available for use
      * @param onError Is called when an error occurs
      * @param pathToMessagingSettings
+     * @param An optional key chain that is used for websocket connections
      * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
      * onSuccess is called
      */
@@ -263,7 +270,8 @@ public:
             const std::string& pathToLibjoynrSettings,
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
-            const std::string& pathToMessagingSettings = "");
+            const std::string& pathToMessagingSettings = "",
+            std::shared_ptr<IKeychain> keyChain = nullptr);
 
     /**
      * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
@@ -271,13 +279,15 @@ public:
      * @param settings settings object
      * @param onSuccess Is called when the runtime is available for use
      * @param onError Is called when an error occurs
+     * @param An optional key chain that is used for websocket connections
      * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
      * onSuccess is called
      */
     static std::shared_ptr<JoynrRuntime> createRuntimeAsync(
             std::unique_ptr<Settings> settings,
             std::function<void()> onSuccess,
-            std::function<void(const exceptions::JoynrRuntimeException& exception)> onError);
+            std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
+            std::shared_ptr<IKeychain> keyChain = nullptr);
 
 protected:
     // NOTE: The implementation of the constructor and destructor must be inside this
@@ -332,6 +342,7 @@ protected:
      * which are send back to the subscription manager.
      */
     PublicationManager* publicationManager;
+    std::shared_ptr<IKeychain> keyChain;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);

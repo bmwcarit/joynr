@@ -194,11 +194,13 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
     const types::DiscoveryEntry& entry = *optionalEntry;
 
     if (isGlobal(entry)) {
+        JOYNR_LOG_TRACE(logger, "Removing globally registered participantId: {}", participantId);
         removeFromGloballyRegisteredCapabilities(entry);
         globalCapabilities.removeByParticipantId(participantId);
         capabilitiesClient->remove(participantId);
     }
 
+    JOYNR_LOG_TRACE(logger, "Removing locally registered participantId: {}", participantId);
     localCapabilities.removeByParticipantId(participantId);
     informObserversOnRemove(entry);
     messageRouter.removeNextHop(participantId);

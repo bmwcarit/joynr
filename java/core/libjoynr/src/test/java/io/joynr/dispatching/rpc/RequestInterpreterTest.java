@@ -21,9 +21,6 @@ package io.joynr.dispatching.rpc;
 
 import static org.mockito.Mockito.verify;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,12 +43,6 @@ import joynr.tests.DefaulttestProvider;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RequestInterpreterTest {
-
-    private static class TestRequestCaller extends RequestCaller {
-        public TestRequestCaller() {
-            super(null, new DefaulttestProvider());
-        }
-    }
 
     @Mock
     private JoynrMessageScope joynrMessageScope;

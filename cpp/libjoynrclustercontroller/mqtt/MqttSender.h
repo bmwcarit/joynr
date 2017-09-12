@@ -34,7 +34,8 @@ class MqttSender : public ITransportMessageSender
 {
 
 public:
-    explicit MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection);
+    explicit MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection,
+                        const MessagingSettings& settings);
 
     ~MqttSender() override = default;
 
@@ -51,6 +52,7 @@ private:
 
     std::shared_ptr<MosquittoConnection> mosquittoConnection;
     std::shared_ptr<ITransportMessageReceiver> receiver;
+    const std::int64_t mqttMaxMessageSizeBytes;
 
     ADD_LOGGER(MqttSender);
 };

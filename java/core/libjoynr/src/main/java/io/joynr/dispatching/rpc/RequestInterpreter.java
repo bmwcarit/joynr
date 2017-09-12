@@ -156,6 +156,7 @@ public class RequestInterpreter {
                     : cause.getMessage());
             throw new ProviderRuntimeException(cause == null ? e.toString() : cause.toString());
         } finally {
+            requestCaller.removeContext();
             joynrMessageScope.deactivate();
         }
     }

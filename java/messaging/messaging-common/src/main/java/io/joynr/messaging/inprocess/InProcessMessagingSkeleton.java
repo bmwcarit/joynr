@@ -21,9 +21,10 @@ package io.joynr.messaging.inprocess;
 import io.joynr.messaging.FailureAction;
 
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.SuccessAction;
 import joynr.ImmutableMessage;
 
 public interface InProcessMessagingSkeleton extends IMessagingSkeleton {
 
-    void transmit(ImmutableMessage message, FailureAction failureAction);
+    void transmit(ImmutableMessage message, SuccessAction successAction, FailureAction failureAction);
 }

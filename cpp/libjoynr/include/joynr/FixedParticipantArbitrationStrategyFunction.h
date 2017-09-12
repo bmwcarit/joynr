@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "joynr/ArbitrationStrategyFunction.h"
+#include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
@@ -50,6 +51,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(FixedParticipantArbitrationStrategyFunction);
+    ADD_LOGGER(FixedParticipantArbitrationStrategyFunction);
 };
 
 } // namespace joynr

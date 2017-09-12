@@ -75,7 +75,7 @@ public class BounceProxyEhcacheAdapter implements BounceProxyDirectory {
 
         Cache cache = manager.getCache(cacheName);
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         List keys = cache.getKeys();
         Map<Object, Element> elements = cache.getAll(keys);
 
@@ -180,7 +180,7 @@ public class BounceProxyEhcacheAdapter implements BounceProxyDirectory {
         List<BounceProxyStatusInformation> result = new LinkedList<BounceProxyStatusInformation>();
 
         Cache cache = manager.getCache(cacheName);
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         List keys = cache.getKeys();
         Map<Object, Element> elements = cache.getAll(keys);
 

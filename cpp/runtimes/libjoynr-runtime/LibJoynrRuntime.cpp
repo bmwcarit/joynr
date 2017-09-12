@@ -122,7 +122,7 @@ void LibJoynrRuntime::init(
     startLibJoynrMessagingSkeleton(libJoynrMessageRouter);
 
     messageSender = std::make_shared<MessageSender>(
-            libJoynrMessageRouter, messagingSettings.getTtlUpliftMs());
+            libJoynrMessageRouter, keyChain, messagingSettings.getTtlUpliftMs());
     joynrDispatcher =
             std::make_shared<Dispatcher>(messageSender, singleThreadIOService->getIOService());
     messageSender->registerDispatcher(joynrDispatcher);

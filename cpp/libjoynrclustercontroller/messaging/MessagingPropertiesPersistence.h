@@ -60,6 +60,8 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingPropertiesPersistence);
     std::string filename;
+
+    std::string getIdFromPersistence(const std::string& key);
 };
 
 } // namespace joynr

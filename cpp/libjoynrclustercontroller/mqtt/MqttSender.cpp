@@ -22,6 +22,7 @@
 #include "joynr/ImmutableMessage.h"
 #include "joynr/Message.h"
 #include "joynr/MessagingQosEffort.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -33,8 +34,11 @@ namespace joynr
 
 INIT_LOGGER(MqttSender);
 
-MqttSender::MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection)
-        : mosquittoConnection(mosquittoConnection), receiver()
+MqttSender::MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection,
+                       const MessagingSettings& settings)
+        : mosquittoConnection(mosquittoConnection),
+          receiver(),
+          mqttMaxMessageSizeBytes(settings.getMqttMaxMessageSizeBytes())
 {
 }
 
@@ -75,6 +79,19 @@ void MqttSender::sendMessage(
     }
 
     const smrf::ByteVector& rawMessage = message->getSerializedMessage();
+
+    if (mqttMaxMessageSizeBytes != MessagingSettings::NO_MQTT_MAX_MESSAGE_SIZE_BYTES() &&
+        ((rawMessage.size() > std::numeric_limits<std::int64_t>::max()) ||
+         (static_cast<std::int64_t>(rawMessage.size()) > mqttMaxMessageSizeBytes))) {
+        std::stringstream errorMsg;
+        errorMsg << "Message size MQTT Publish failed: maximum allowed message size of "
+                 << mqttMaxMessageSizeBytes << " bytes exceeded, actual size is "
+                 << rawMessage.size() << " bytes";
+        JOYNR_LOG_DEBUG(logger, errorMsg.str());
+        onFailure(exceptions::JoynrMessageNotSentException(errorMsg.str()));
+        return;
+    }
+
     mosquittoConnection->publishMessage(
             topic, qosLevel, onFailure, rawMessage.size(), rawMessage.data());
 }

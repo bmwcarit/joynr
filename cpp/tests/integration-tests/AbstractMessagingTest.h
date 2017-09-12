@@ -86,6 +86,7 @@ public:
         messageRouter(nullptr)
     {
         const std::string globalCCAddress("globalAddress");
+        const std::string messageNotificationProviderParticipantId("messageNotificationProviderParticipantId");
 
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
         messageRouter = std::make_shared<CcMessageRouter>(messagingStubFactory,
@@ -93,7 +94,8 @@ public:
                                                           nullptr,
                                                           singleThreadedIOService.getIOService(),
                                                           nullptr,
-                                                          globalCCAddress);
+                                                          globalCCAddress,
+                                                          messageNotificationProviderParticipantId);
         qos.setTtl(10000);
     }
 
@@ -133,7 +135,7 @@ public:
         EXPECT_CALL(*mockDispatcher, addReplyCaller(_,_,_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-        MessageSender messageSender(messageRouter);
+        MessageSender messageSender(messageRouter, nullptr);
         std::shared_ptr<IReplyCaller> replyCaller;
         messageSender.registerDispatcher(mockDispatcher);
 
