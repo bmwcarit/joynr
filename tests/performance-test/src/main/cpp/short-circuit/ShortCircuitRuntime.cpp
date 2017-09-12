@@ -58,7 +58,8 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
     const std::string messageNotificationProviderParticipantId(
             "messageNotificationProviderParticipantId");
 
-    messageRouter = std::make_shared<CcMessageRouter>(std::move(messagingStubFactory),
+    messageRouter = std::make_shared<CcMessageRouter>(messagingSettings,
+                                                      std::move(messagingStubFactory),
                                                       nullptr,
                                                       nullptr,
                                                       singleThreadedIOService.getIOService(),

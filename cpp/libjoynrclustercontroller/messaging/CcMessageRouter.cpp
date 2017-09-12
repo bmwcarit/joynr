@@ -113,6 +113,7 @@ class MessageQueuedForDeliveryBroadcastFilter
 //------ MessageRouter ---------------------------------------------------------
 
 CcMessageRouter::CcMessageRouter(
+        MessagingSettings& messagingSettings,
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory,
         std::unique_ptr<IPlatformSecurityManager> securityManager,
@@ -140,6 +141,7 @@ CcMessageRouter::CcMessageRouter(
           messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>()),
           messageNotificationProviderParticipantId(messageNotificationProviderParticipantId)
 {
+    std::ignore = messagingSettings;
     messageNotificationProvider->addBroadcastFilter(
             std::make_shared<MessageQueuedForDeliveryBroadcastFilter>());
 }

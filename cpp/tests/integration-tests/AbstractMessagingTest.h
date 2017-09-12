@@ -89,7 +89,8 @@ public:
         const std::string messageNotificationProviderParticipantId("messageNotificationProviderParticipantId");
 
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
-        messageRouter = std::make_shared<CcMessageRouter>(messagingStubFactory,
+        messageRouter = std::make_shared<CcMessageRouter>(messagingSettings,
+                                                          messagingStubFactory,
                                                           std::make_shared<MulticastMessagingSkeletonDirectory>(),
                                                           nullptr,
                                                           singleThreadedIOService.getIOService(),

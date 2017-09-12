@@ -125,6 +125,7 @@ protected:
         transportNotAvailableQueueRef = transportNotAvailableQueue.get();
 
         return std::make_unique<CcMessageRouter>(
+                    messagingSettings,
                     messagingStubFactory,
                     multicastMessagingSkeletonDirectory,
                     std::unique_ptr<IPlatformSecurityManager>(),

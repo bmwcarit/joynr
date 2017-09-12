@@ -30,6 +30,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessageQueue.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -79,7 +80,8 @@ class JOYNR_EXPORT CcMessageRouter : public joynr::AbstractMessageRouter,
 {
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
-    CcMessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+    CcMessageRouter(MessagingSettings& messagingSettings,
+                    std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                     std::shared_ptr<MulticastMessagingSkeletonDirectory>
                             multicastMessagingSkeletonDirectory,
                     std::unique_ptr<IPlatformSecurityManager> securityManager,
