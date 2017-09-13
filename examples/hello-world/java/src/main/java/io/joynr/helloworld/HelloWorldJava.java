@@ -71,6 +71,7 @@ public class HelloWorldJava {
 
     static class HelloWorldApplication extends AbstractJoynrApplication {
         private HelloWorldServiceProviderImpl provider = new HelloWorldServiceProviderImpl();
+
         @Override
         public void run() {
 
@@ -82,7 +83,9 @@ public class HelloWorldJava {
             // Create a consumer proxy for the provider
             DiscoveryQos discoveryQos = new DiscoveryQos();
             discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
-            HelloWorldServiceProxy proxy = runtime.getProxyBuilder(LOCAL_DOMAIN, HelloWorldServiceProxy.class).setDiscoveryQos(discoveryQos).build();
+            HelloWorldServiceProxy proxy = runtime.getProxyBuilder(LOCAL_DOMAIN, HelloWorldServiceProxy.class)
+                                                  .setDiscoveryQos(discoveryQos)
+                                                  .build();
 
             // Print the result and exit
             String result = proxy.sayHello("world");
