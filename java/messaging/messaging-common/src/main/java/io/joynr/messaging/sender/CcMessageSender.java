@@ -31,14 +31,14 @@ import joynr.system.RoutingTypes.RoutingTypesUtil;
 @Singleton
 public class CcMessageSender extends AbstractMessageSender {
     @Inject
-    public CcMessageSender(MessageRouter messageRouter, ReplyToAddressProvider globalAddressProvider) {
+    public CcMessageSender(MessageRouter messageRouter, ReplyToAddressProvider replyToAddressProvider) {
         super(messageRouter);
 
-        globalAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
+        replyToAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
             @Override
             public void transportReady(Address address) {
-                String globalAddressString = RoutingTypesUtil.toAddressString(address);
-                setReplyToAddress(globalAddressString);
+                String replyToAddress = RoutingTypesUtil.toAddressString(address);
+                setReplyToAddress(replyToAddress);
             }
         });
     }
