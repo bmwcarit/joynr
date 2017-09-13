@@ -64,6 +64,11 @@ public:
              std::function<void()> onSuccess,
              std::function<void(const exceptions::JoynrRuntimeException& error)> onError) override;
 
+    void add(const std::vector<joynr::types::GlobalDiscoveryEntry>& globalDiscoveryEntries,
+             std::function<void()> onSuccess,
+             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                     onRuntimeError) override;
+
     /*
       Remove previously created capabilities directory entries.
       */

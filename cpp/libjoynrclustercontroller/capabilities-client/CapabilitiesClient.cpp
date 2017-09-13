@@ -69,6 +69,15 @@ void CapabilitiesClient::add(
     defaultCapabilitiesProxy->addAsync(entry, onSuccess, onError);
 }
 
+void CapabilitiesClient::add(
+        const std::vector<joynr::types::GlobalDiscoveryEntry>& globalDiscoveryEntries,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError)
+{
+    assert(defaultCapabilitiesProxy);
+    defaultCapabilitiesProxy->addAsync(globalDiscoveryEntries, onSuccess, onRuntimeError);
+}
+
 void CapabilitiesClient::remove(const std::string& participantId)
 {
     assert(defaultCapabilitiesProxy);

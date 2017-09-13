@@ -320,6 +320,18 @@ const std::int64_t LocalCapabilitiesDirectoryTest::EXPIRYDATE_MS(10000);
 const std::string LocalCapabilitiesDirectoryTest::PUBLIC_KEY_ID("publicKeyId");
 const int LocalCapabilitiesDirectoryTest::TIMEOUT(2000);
 
+MATCHER_P(AnConvertedGlobalDiscoveryEntry, other, "")
+{
+    return other.getDomain() == arg.getDomain() &&
+           other.getInterfaceName() == arg.getInterfaceName() &&
+           other.getParticipantId() == arg.getParticipantId() &&
+           other.getQos() == arg.getQos() &&
+           other.getLastSeenDateMs() == arg.getLastSeenDateMs() &&
+           other.getProviderVersion() == arg.getProviderVersion() &&
+           other.getExpiryDateMs() == arg.getExpiryDateMs() &&
+           other.getPublicKeyId() == arg.getPublicKeyId();
+}
+
 TEST_F(LocalCapabilitiesDirectoryTest, addGloballyDelegatesToCapabilitiesClient)
 {
     EXPECT_CALL(*capabilitiesClient, add(An<const types::GlobalDiscoveryEntry&>(),_,_))
@@ -337,6 +349,109 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGloballyDelegatesToCapabilitiesClient)
                                     defaultOnError);
 }
 
+TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities) {
+    joynr::types::DiscoveryEntry entry1(defaultProviderVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_1_NAME,
+                                       dummyParticipantId1,
+                                       types::ProviderQos(),
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    joynr::types::DiscoveryEntry entry2(defaultProviderVersion,
+                                       DOMAIN_2_NAME,
+                                       INTERFACE_2_NAME,
+                                       dummyParticipantId2,
+                                       types::ProviderQos(),
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    EXPECT_CALL(*capabilitiesClient,
+             add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry1)),_,_))
+            .Times(1);
+    EXPECT_CALL(*capabilitiesClient,
+             add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry2)),_,_))
+            .Times(1);
+    EXPECT_CALL(*capabilitiesClient,
+             add(Matcher<const std::vector<joynr::types::GlobalDiscoveryEntry>&>(ElementsAre(AnConvertedGlobalDiscoveryEntry(entry1), AnConvertedGlobalDiscoveryEntry(entry2))),_,_))
+            .Times(1)
+            .WillRepeatedly(testing::InvokeArgument<1>());
+
+    localCapabilitiesDirectory->add(entry1,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+
+    localCapabilitiesDirectory->add(entry2,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+
+    bool onSuccessCalled = false;
+    localCapabilitiesDirectory->triggerGlobalProviderReregistration(
+            [&onSuccessCalled]() { onSuccessCalled=true; },
+            [](const joynr::exceptions::ProviderRuntimeException&) { FAIL(); }
+    );
+
+    EXPECT_TRUE(onSuccessCalled);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities_Fails) {
+    joynr::types::DiscoveryEntry entry(defaultProviderVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_1_NAME,
+                                       dummyParticipantId1,
+                                       types::ProviderQos(),
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+
+    EXPECT_CALL(*capabilitiesClient,
+             add(Matcher<const std::vector<joynr::types::GlobalDiscoveryEntry>&>(ElementsAre(AnConvertedGlobalDiscoveryEntry(entry))),_,_))
+            .Times(1)
+            .WillRepeatedly(testing::InvokeArgument<2>(joynr::exceptions::ProviderRuntimeException("Test error")));
+
+    bool onErrorCalled = false;
+    localCapabilitiesDirectory->triggerGlobalProviderReregistration(
+            []() { FAIL(); },
+            [&onErrorCalled](const joynr::exceptions::ProviderRuntimeException&) { onErrorCalled = true; }
+    );
+
+    EXPECT_TRUE(onErrorCalled);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities_BackendNotCalledIfNoGlobalProvidersArePresent) {
+    types::ProviderQos localProviderQos({}, 1, joynr::types::ProviderScope::LOCAL, false);
+    joynr::types::DiscoveryEntry entry(defaultProviderVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_1_NAME,
+                                       dummyParticipantId1,
+                                       localProviderQos,
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    localCapabilitiesDirectory->add(entry,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+
+    EXPECT_CALL(*capabilitiesClient,
+             add(Matcher<const std::vector<joynr::types::GlobalDiscoveryEntry>&>(_),_,_))
+            .Times(0);
+
+    bool onSuccessCalled = false;
+    localCapabilitiesDirectory->triggerGlobalProviderReregistration(
+            [&onSuccessCalled]() { onSuccessCalled=true; },
+            [](const joynr::exceptions::ProviderRuntimeException&) { FAIL(); }
+    );
+
+    EXPECT_TRUE(onSuccessCalled);
+}
+
 TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache)
 {
     EXPECT_CALL(
@@ -346,7 +461,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache)
                            const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)>>(),
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(0);
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(1);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(1);
 
     joynr::types::DiscoveryEntry entry(defaultProviderVersion,
                                        DOMAIN_1_NAME,
@@ -372,7 +487,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient)
                                                     discoveryEntries)>>(),
                        A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(0);
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(0);
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
 
@@ -656,7 +771,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal)
     discoveryQos.setCacheMaxAge(5000);
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
 
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(0);
 
     joynr::types::DiscoveryEntry entry(defaultProviderVersion,
                                        DOMAIN_1_NAME,
@@ -701,7 +816,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(0);
     localCapabilitiesDirectory->add(entry,
                                     defaultOnSuccess,
                                     defaultOnError);
@@ -748,7 +863,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(0);
     localCapabilitiesDirectory->add(entry,
                                     defaultOnSuccess,
                                     defaultOnError);
@@ -809,7 +924,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             DoAll(AcquireSemaphore(&semaphore),
@@ -914,7 +1029,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(0);
 
@@ -983,7 +1098,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
@@ -1017,7 +1132,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
@@ -1086,7 +1201,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithResults));
@@ -1119,7 +1234,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsLocalEntries_
                                        lastSeenDateMs,
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(0);
 
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithError));
@@ -1218,7 +1333,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
     discoveryQos.setCacheMaxAge(5000);
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::GLOBAL_ONLY);
 
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(0);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(0);
 
     joynr::types::DiscoveryEntry entry(defaultProviderVersion,
                                        DOMAIN_1_NAME,
@@ -1272,7 +1387,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal)
     discoveryQos.setCacheMaxAge(5000);
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
 
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(1);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(1);
 
     joynr::types::DiscoveryEntry entry(defaultProviderVersion,
                                        DOMAIN_1_NAME,
@@ -1305,7 +1420,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     discoveryQos.setCacheMaxAge(100);
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
 
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(1);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(1);
 
     joynr::types::DiscoveryEntry entry(defaultProviderVersion,
                                        DOMAIN_1_NAME,
@@ -1357,7 +1472,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::GLOBAL_ONLY);
 
     // JoynrTimeOutException timeoutException;
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_)).Times(1);
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_)).Times(1);
 
     joynr::types::DiscoveryEntry entry(defaultProviderVersion,
                                        DOMAIN_1_NAME,
@@ -1637,7 +1752,7 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope, purgeTimedOutEntries)
     discoveryQos.setCacheMaxAge(5000);
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
 
-    EXPECT_CALL(*capabilitiesClient, add(_,_,_))
+    EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_),_,_))
             .Times(GetParam() == joynr::types::ProviderScope::LOCAL ? 0 : 1);
 
     joynr::types::DiscoveryEntry entry(defaultProviderVersion,
@@ -1676,7 +1791,7 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope, registerCapabilitiesMultiple
     const bool testingGlobalScope = GetParam() == types::ProviderScope::GLOBAL;
     if(testingGlobalScope) {
         // simulate capabilities client cannot connect to global directory
-        EXPECT_CALL(*capabilitiesClient, add(_, _, _))
+        EXPECT_CALL(*capabilitiesClient, add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_), _, _))
                 .Times(numberOfDuplicatedEntriesToAdd)
                 .WillRepeatedly(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     }

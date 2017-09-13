@@ -116,14 +116,7 @@ public:
 
     // Functions used by integration tests
     void deleteChannel();
-    void registerRoutingProvider();
-    void registerDiscoveryProvider();
-    void registerMessageNotificationProvider();
-    void registerAccessControlListEditorProvider();
-    void unregisterRoutingProvider();
-    void unregisterDiscoveryProvider();
-    void unregisterMessageNotificationProvider();
-    void unregisterAccessControlListEditorProvider();
+
     void init();
 
     /*
@@ -183,6 +176,26 @@ protected:
     ADD_LOGGER(JoynrClusterControllerRuntime);
 
 private:
+    template <typename T>
+    std::string registerInternalSystemServiceProvider(std::shared_ptr<T> provider,
+                                                      const std::string& participantId)
+    {
+        const std::string domain(systemServicesSettings.getDomain());
+        const std::string interfaceName(provider->getInterfaceName());
+
+        participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
+
+        joynr::types::ProviderQos systemProviderQos;
+        systemProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
+        systemProviderQos.setPriority(1);
+        systemProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
+        systemProviderQos.setSupportsOnChangeSubscriptions(false);
+
+        return registerProvider(domain, provider, systemProviderQos);
+    }
+
+    void registerInternalSystemServiceProviders();
+    void unregisterInternalSystemServiceProviders();
     void createWsCCMessagingSkeletons();
     std::shared_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
     createGlobalDomainAccessControllerProxy();
@@ -204,6 +217,7 @@ private:
 
     std::string routingProviderParticipantId;
     std::string discoveryProviderParticipantId;
+    std::string providerReregistrationControllerParticipantId;
     std::string messageNotificationProviderParticipantId;
     std::string accessControlListEditorProviderParticipantId;
 };

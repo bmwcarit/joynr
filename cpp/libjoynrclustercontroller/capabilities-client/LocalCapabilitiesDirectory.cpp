@@ -140,15 +140,8 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
 
     // register globally
     if (isGloballyVisible) {
-        types::GlobalDiscoveryEntry globalDiscoveryEntry(discoveryEntry.getProviderVersion(),
-                                                         discoveryEntry.getDomain(),
-                                                         discoveryEntry.getInterfaceName(),
-                                                         discoveryEntry.getParticipantId(),
-                                                         discoveryEntry.getQos(),
-                                                         discoveryEntry.getLastSeenDateMs(),
-                                                         discoveryEntry.getExpiryDateMs(),
-                                                         discoveryEntry.getPublicKeyId(),
-                                                         localAddress);
+        types::GlobalDiscoveryEntry globalDiscoveryEntry = toGlobalDiscoveryEntry(discoveryEntry);
+
         if (std::find(registeredGlobalCapabilities.begin(),
                       registeredGlobalCapabilities.end(),
                       globalDiscoveryEntry) == registeredGlobalCapabilities.end()) {
@@ -179,6 +172,20 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
         callPendingLookups(
                 InterfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()));
     }
+}
+
+types::GlobalDiscoveryEntry LocalCapabilitiesDirectory::toGlobalDiscoveryEntry(
+        const types::DiscoveryEntry& discoveryEntry) const
+{
+    return types::GlobalDiscoveryEntry(discoveryEntry.getProviderVersion(),
+                                       discoveryEntry.getDomain(),
+                                       discoveryEntry.getInterfaceName(),
+                                       discoveryEntry.getParticipantId(),
+                                       discoveryEntry.getQos(),
+                                       discoveryEntry.getLastSeenDateMs(),
+                                       discoveryEntry.getExpiryDateMs(),
+                                       discoveryEntry.getPublicKeyId(),
+                                       localAddress);
 }
 
 void LocalCapabilitiesDirectory::remove(const std::string& participantId)
@@ -224,6 +231,41 @@ void LocalCapabilitiesDirectory::removeFromGloballyRegisteredCapabilities(
                                                              compareFunc),
                                               registeredGlobalCapabilities.end()) !=
            registeredGlobalCapabilities.end()) {
+    }
+}
+
+void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::vector<joynr::types::GlobalDiscoveryEntry> convertedGlobalCapabilities;
+
+    {
+        std::lock_guard<std::mutex> lock(cacheLock);
+
+        const std::size_t numOfGlobalCapabilities =
+                std::distance(globalCapabilities.begin(), globalCapabilities.end());
+        convertedGlobalCapabilities.reserve(numOfGlobalCapabilities);
+
+        for (const auto& globalCapability : globalCapabilities) {
+            convertedGlobalCapabilities.push_back(toGlobalDiscoveryEntry(globalCapability));
+        }
+    }
+
+    auto onErrorWrapper = [onError = std::move(onError)](
+            const joynr::exceptions::JoynrRuntimeException& exception)
+    {
+        if (onError) {
+            onError(joynr::exceptions::ProviderRuntimeException(exception.getMessage()));
+        }
+    };
+
+    if (convertedGlobalCapabilities.empty()) {
+        if (onSuccess) {
+            onSuccess();
+        }
+    } else {
+        capabilitiesClient->add(convertedGlobalCapabilities, onSuccess, onErrorWrapper);
     }
 }
 
