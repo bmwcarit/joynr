@@ -19,6 +19,6 @@
 package system
 
 interface ProviderReregistrationController {
-	method triggerGlobalProviderRegistration {
+	method triggerGlobalProviderReregistration {
 	}
 }
