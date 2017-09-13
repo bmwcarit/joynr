@@ -75,7 +75,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
         replyToAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
             @Override
             public void transportReady(Address address) {
-                synchronized (unresolvedGlobalAddressDeferreds) {
+                synchronized (unresolvedReplyToAddressDeferreds) {
                     replyToAddressString = RoutingTypesUtil.toAddressString(address);
                     for (Deferred<String> replyToAddressDeferred : unresolvedReplyToAddressDeferreds) {
                         replyToAddressDeferred.resolve(replyToAddressString);
