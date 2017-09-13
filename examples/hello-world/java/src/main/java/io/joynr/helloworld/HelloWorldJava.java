@@ -20,6 +20,9 @@ package io.joynr.helloworld;
 
 import java.util.concurrent.Semaphore;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.provider.Promise;
@@ -31,8 +34,6 @@ import joynr.io.joynr.HelloWorldServiceAbstractProvider;
 import joynr.io.joynr.HelloWorldServiceProxy;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The simplest possible example of setting up a provider and a consumer which talk to eachother
