@@ -190,7 +190,14 @@ void AbstractMessageRouter::registerGlobalRoutingEntryIfRequired(const Immutable
             // because the message is received via global transport (isGloballyVisible=true),
             // isGloballyVisible must be true
             const bool isGloballyVisible = true;
-            constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+            std::int64_t expiryDateMs =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                            message.getExpiryDate().time_since_epoch()).count() +
+                    messagingSettings.getRoutingTableGracePeriodMs();
+            if (expiryDateMs < 0) {
+                expiryDateMs = std::numeric_limits<std::int64_t>::max();
+            }
+
             const bool isSticky = false;
             addNextHop(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky);
         } catch (const std::invalid_argument& e) {
@@ -396,11 +403,35 @@ void AbstractMessageRouter::addToRoutingTable(
         std::string participantId,
         bool isGloballyVisible,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
-        const std::int64_t expiryDateMs,
-        const bool isSticky)
+        std::int64_t expiryDateMs,
+        bool isSticky)
 {
     {
         WriteLocker lock(routingTableLock);
+        auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
+        if (routingEntry) {
+            if ((*(routingEntry->address) != *address) ||
+                (routingEntry->isGloballyVisible != isGloballyVisible)) {
+                JOYNR_LOG_WARN(logger,
+                               "unable to update (participantId={}, address={}, "
+                               "isGloballyVisible={}, expiryDateMs={}) into routing table, since "
+                               "the participantId is already associated with routing entry {}",
+                               participantId,
+                               routingEntry->toString());
+                return;
+            }
+            // keep longest lifetime
+            if (routingEntry->expiryDateMs > expiryDateMs) {
+                expiryDateMs = routingEntry->expiryDateMs;
+            }
+            if (routingEntry->isSticky) {
+                isSticky = true;
+            }
+            // manual removal of old entry is not required here since
+            // routingTable.add() automatically calls replace
+            // in case insert fails
+        }
+
         routingTable.add(
                 std::move(participantId), isGloballyVisible, address, expiryDateMs, isSticky);
     }
