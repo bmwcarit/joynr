@@ -60,7 +60,7 @@ public class HelloWorldJava {
         logger.info("Done.");
     }
 
-    static class HelloWorldServiceProvider extends HelloWorldServiceAbstractProvider {
+    static class HelloWorldServiceProviderImpl extends HelloWorldServiceAbstractProvider {
         @Override
         public Promise<SayHelloDeferred> sayHello(String toName) {
             SayHelloDeferred deferred = new SayHelloDeferred();
@@ -70,7 +70,7 @@ public class HelloWorldJava {
     }
 
     static class HelloWorldApplication extends AbstractJoynrApplication {
-        private HelloWorldServiceProvider provider = new HelloWorldServiceProvider();
+        private HelloWorldServiceProviderImpl provider = new HelloWorldServiceProviderImpl();
         @Override
         public void run() {
 
