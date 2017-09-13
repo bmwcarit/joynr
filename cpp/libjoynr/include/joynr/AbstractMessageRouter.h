@@ -154,9 +154,11 @@ protected:
                          std::chrono::milliseconds delay = std::chrono::milliseconds(0));
 
     void activateMessageCleanerTimer();
+    void activateRoutingTableCleanerTimer();
     void registerTransportStatusCallbacks();
     void rescheduleQueuedMessagesForTransport(std::shared_ptr<ITransportStatus> transportStatus);
     void onMessageCleanerTimerExpired(const boost::system::error_code& errorCode);
+    void onRoutingTableCleanerTimerExpired(const boost::system::error_code& errorCode);
 
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
@@ -170,6 +172,7 @@ protected:
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
     SteadyTimer messageQueueCleanerTimer;
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
+    SteadyTimer routingTableCleanerTimer;
     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
 
     void queueMessage(std::shared_ptr<ImmutableMessage> message) override;

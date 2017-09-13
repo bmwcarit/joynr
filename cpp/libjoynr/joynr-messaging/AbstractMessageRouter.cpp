@@ -67,9 +67,11 @@ AbstractMessageRouter::AbstractMessageRouter(
           addressCalculator(std::move(addressCalculator)),
           messageQueueCleanerTimer(ioService),
           messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000)),
+          routingTableCleanerTimer(ioService),
           transportStatuses(std::move(transportStatuses))
 {
     activateMessageCleanerTimer();
+    activateRoutingTableCleanerTimer();
     registerTransportStatusCallbacks();
 }
 
@@ -83,6 +85,7 @@ AbstractMessageRouter::~AbstractMessageRouter()
 void AbstractMessageRouter::shutdown()
 {
     messageQueueCleanerTimer.cancel();
+    routingTableCleanerTimer.cancel();
     messageScheduler.shutdown();
 }
 
@@ -319,6 +322,16 @@ void AbstractMessageRouter::activateMessageCleanerTimer()
             &AbstractMessageRouter::onMessageCleanerTimerExpired, this, std::placeholders::_1));
 }
 
+void AbstractMessageRouter::activateRoutingTableCleanerTimer()
+{
+    routingTableCleanerTimer.expiresFromNow(
+            std::chrono::milliseconds(messagingSettings.getRoutingTableCleanupIntervalMs()));
+    routingTableCleanerTimer.asyncWait(
+            std::bind(&AbstractMessageRouter::onRoutingTableCleanerTimerExpired,
+                      this,
+                      std::placeholders::_1));
+}
+
 void AbstractMessageRouter::registerTransportStatusCallbacks()
 {
     for (auto& transportStatus : transportStatuses) {
@@ -355,6 +368,22 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(const boost::system::er
     } else if (errorCode != boost::system::errc::operation_canceled) {
         JOYNR_LOG_ERROR(logger,
                         "Failed to schedule timer to remove outdated messages: {}",
+                        errorCode.message());
+    }
+}
+
+void AbstractMessageRouter::onRoutingTableCleanerTimerExpired(
+        const boost::system::error_code& errorCode)
+{
+    JOYNR_LOG_DEBUG(logger, "AbstractMessageRouter::onRoutingTableCleanerTimerExpired");
+
+    if (!errorCode) {
+        WriteLocker lock(routingTableLock);
+        routingTable.purge();
+        activateRoutingTableCleanerTimer();
+    } else if (errorCode != boost::system::errc::operation_canceled) {
+        JOYNR_LOG_ERROR(logger,
+                        "Failed to schedule timer to remove outdated routing table entries: {}",
                         errorCode.message());
     }
 }
