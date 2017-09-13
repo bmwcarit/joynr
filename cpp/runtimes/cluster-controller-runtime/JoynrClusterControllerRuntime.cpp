@@ -114,6 +114,7 @@ static const std::string ACC_ENTRIES_FILE = "CCAccessControl.entries";
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::unique_ptr<Settings> settings,
         std::shared_ptr<IKeychain> keyChain,
+        MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory,
         std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver,
         std::shared_ptr<ITransportMessageSender> httpMessageSender,
         std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver,
@@ -131,6 +132,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           mosquittoConnection(nullptr),
           mqttMessageReceiver(mqttMessageReceiver),
           mqttMessageSender(mqttMessageSender),
+          mqttMessagingSkeletonFactory(std::move(mqttMessagingSkeletonFactory)),
           mqttMessagingSkeleton(nullptr),
           dispatcherList(),
           inProcessPublicationSender(nullptr),
@@ -169,7 +171,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
 std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
         std::size_t argc,
         char* argv[],
-        std::shared_ptr<IKeychain> keyChain)
+        std::shared_ptr<IKeychain> keyChain,
+        MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory)
 {
     // Object that holds all the settings
     auto settings = std::make_unique<Settings>();
@@ -210,7 +213,10 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
         // Merge
         Settings::merge(currentSettings, *settings, true);
     }
-    return create(std::move(settings), discoveryEntriesFile, keyChain);
+    return create(std::move(settings),
+                  discoveryEntriesFile,
+                  keyChain,
+                  std::move(mqttMessagingSkeletonFactory));
 }
 
 void JoynrClusterControllerRuntime::init()
@@ -443,11 +449,22 @@ void JoynrClusterControllerRuntime::init()
       */
     if (doMqttMessaging) {
         if (!mqttMessagingIsRunning) {
-            mqttMessagingSkeleton = std::make_shared<MqttMessagingSkeleton>(
+            if (!mqttMessagingSkeletonFactory) {
+                mqttMessagingSkeletonFactory = [](std::weak_ptr<IMessageRouter> messageRouter,
+                                                  std::shared_ptr<MqttReceiver> mqttReceiver,
+                                                  const std::string& multicastTopicPrefix,
+                                                  std::uint64_t ttlUplift = 0) {
+                    return std::make_shared<MqttMessagingSkeleton>(
+                            messageRouter, mqttReceiver, multicastTopicPrefix, ttlUplift);
+                };
+            }
+
+            mqttMessagingSkeleton = mqttMessagingSkeletonFactory(
                     ccMessageRouter,
                     std::static_pointer_cast<MqttReceiver>(mqttMessageReceiver),
                     clusterControllerSettings.getMqttMulticastTopicPrefix(),
                     messagingSettings.getTtlUpliftMs());
+
             mqttMessageReceiver->registerReceiveCallback([&](smrf::ByteVector&& msg) {
                 mqttMessagingSkeleton->onMessageReceived(std::move(msg));
             });
@@ -927,10 +944,11 @@ void JoynrClusterControllerRuntime::runForever()
 std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
         std::unique_ptr<Settings> settings,
         const std::string& discoveryEntriesFile,
-        std::shared_ptr<IKeychain> keyChain)
+        std::shared_ptr<IKeychain> keyChain,
+        MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory)
 {
     auto runtime = std::make_shared<JoynrClusterControllerRuntime>(
-            std::move(settings), std::move(keyChain));
+            std::move(settings), std::move(keyChain), std::move(mqttMessagingSkeletonFactory));
     runtime->init();
 
     assert(runtime->localCapabilitiesDirectory);

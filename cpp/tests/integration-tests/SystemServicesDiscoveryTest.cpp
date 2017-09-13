@@ -101,6 +101,7 @@ public:
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                 std::move(settings),
                 nullptr,
+                nullptr,
                 mockMessageReceiverHttp,
                 nullptr,
                 mockMessageReceiverMqtt,

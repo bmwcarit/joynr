@@ -57,6 +57,7 @@
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStub.h"
 #include "joynr/IMessagingStubFactory.h"
+#include "joynr/IMqttMessagingSkeleton.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessConnectorFactory.h"
@@ -1440,6 +1441,23 @@ public:
     MOCK_METHOD0(stop, void());
     MOCK_METHOD1(subscribeToTopic, void(const std::string& topic));
     MOCK_METHOD1(unsubscribeFromTopic, void(const std::string& topic));
+};
+
+class MockMqttMessagingSkeleton : public joynr::IMqttMessagingSkeleton
+{
+public:
+    MOCK_METHOD2(transmit, void(std::shared_ptr<joynr::ImmutableMessage> message,
+                 const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
+
+    // GoogleMock does not support mocking functions with r-value references as parameters
+    MOCK_METHOD1(onMessageReceivedMock,void(smrf::ByteVector& rawMessage));
+    void onMessageReceived(smrf::ByteVector&& rawMessage) override
+    {
+        onMessageReceivedMock(rawMessage);
+    }
+
+    MOCK_METHOD1(registerMulticastSubscription, void(const std::string& multicastId));
+    MOCK_METHOD1(unregisterMulticastSubscription, void(const std::string& multicastId));
 };
 
 #ifdef _MSC_VER

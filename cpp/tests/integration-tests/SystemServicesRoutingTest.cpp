@@ -79,6 +79,7 @@ public:
         runtime = std::make_unique<JoynrClusterControllerRuntime>(
                 std::move(settings),
                 nullptr,
+                nullptr,
                 mockMessageReceiverHttp,
                 mockMessageSender,
                 mockMessageReceiverMqtt,
