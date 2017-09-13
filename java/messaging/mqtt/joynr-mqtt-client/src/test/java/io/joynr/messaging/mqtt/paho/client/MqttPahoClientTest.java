@@ -30,6 +30,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -72,6 +73,7 @@ public class MqttPahoClientTest {
     private MessageRouter mockMessageRouter;
     private JoynrMqttClient client;
     private Properties properties;
+    private ArgumentCaptor<Integer> mqttMessageIdCaptor;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -93,6 +95,7 @@ public class MqttPahoClientTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         properties = new Properties();
+        mqttMessageIdCaptor = ArgumentCaptor.forClass(Integer.class);
     }
 
     private void createClient() {
@@ -129,6 +132,9 @@ public class MqttPahoClientTest {
         ownTopic = injector.getInstance((Key.get(MqttAddress.class,
                                                  Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))));
 
+        // note:
+        // - the client below is used as sender and receiver at the same time
+        // - any received message needs to be acknowledged since otherwise the MQTT broker will resend it
         client = mqttClientFactory.create();
         client.start();
         client.subscribe(ownTopic.getTopic());
@@ -149,9 +155,10 @@ public class MqttPahoClientTest {
         byte[] shortSerializedMessage = new byte[maxMessageSize];
         client.publishMessage(ownTopic.getTopic(), shortSerializedMessage);
         verify(mockReceiver, timeout(100).times(1)).transmit(eq(shortSerializedMessage),
-                                                             anyInt(),
+                                                             mqttMessageIdCaptor.capture(),
                                                              eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                                              any(FailureAction.class));
+        client.sendMqttAck(mqttMessageIdCaptor.getValue(), MqttMessagingStub.DEFAULT_QOS_LEVEL);
 
         byte[] largeSerializedMessage = new byte[maxMessageSize + 1];
         thrown.expect(JoynrMessageNotSentException.class);
@@ -169,15 +176,17 @@ public class MqttPahoClientTest {
         byte[] shortSerializedMessage = new byte[initialMessageSize];
         client.publishMessage(ownTopic.getTopic(), shortSerializedMessage);
         verify(mockReceiver, timeout(100).times(1)).transmit(eq(shortSerializedMessage),
-                                                             anyInt(),
+                                                             mqttMessageIdCaptor.capture(),
                                                              eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                                              any(FailureAction.class));
+        client.sendMqttAck(mqttMessageIdCaptor.getValue(), MqttMessagingStub.DEFAULT_QOS_LEVEL);
 
         byte[] largeSerializedMessage = new byte[initialMessageSize + 1];
         client.publishMessage(ownTopic.getTopic(), largeSerializedMessage);
         verify(mockReceiver, timeout(100).times(1)).transmit(eq(largeSerializedMessage),
-                                                             anyInt(),
+                                                             mqttMessageIdCaptor.capture(),
                                                              eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                                              any(FailureAction.class));
+        client.sendMqttAck(mqttMessageIdCaptor.getValue(), MqttMessagingStub.DEFAULT_QOS_LEVEL);
     }
 }
