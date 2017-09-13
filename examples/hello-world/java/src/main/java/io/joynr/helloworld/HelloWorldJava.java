@@ -49,8 +49,9 @@ public class HelloWorldJava {
 
     private static Semaphore executionSemaphore = new Semaphore(0);
 
-    public static final void main(String ...args) throws InterruptedException {
+    public static final void main(String... args) throws InterruptedException {
         JoynrInjectorFactory joynrInjectorFactory = new JoynrInjectorFactory(new CCInProcessRuntimeModule());
+
         JoynrApplication helloWorldApplication = joynrInjectorFactory.createApplication(HelloWorldApplication.class);
         helloWorldApplication.run();
 
