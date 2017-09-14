@@ -29,6 +29,7 @@ var error = testbase.logging.error;
 var log = testbase.logging.log;
 var options = PerformanceUtilities.getCommandLineOptionsOrDefaults(process.env);
 var timeout = 600000;
+var summary = [];
 
 var consumerBase = {
     echoProxy : undefined,
@@ -80,6 +81,18 @@ var consumerBase = {
     },
 
     shutdown: function() {
+
+        error("");
+        error("Summary:");
+        error("");
+        summary.forEach((item)=>{
+            var lengthenedName = item.benchmarkName + new Array(20 - item.benchmarkName.length).join(" ");
+            var baseString = lengthenedName + ": msgs/s: " + item.averageTime + " +/- " + item.deviation
+            + " fastest: " + item.highestMsgPerSecond;
+            baseString = item.mb ? baseString+ " avMemory: " + item.mb + " MB" : baseString;
+            error(baseString);
+        });
+
         return joynr.shutdown();
     },
     registerProvider: function() {
@@ -153,23 +166,32 @@ var consumerBase = {
                 });
         }, { concurrency: 1 })
             .then(function () {
-                var averageTime = totalRuns / (totalTime / 1000);
+                var averageMsgPerSecond = totalRuns / (totalTime / 1000);
                 var variance = 0;
+                var highestMsgPerSecond = -1;
                 runsTime.map(function(time){
                     return numRuns / (time / 1000);
-                }).forEach(function (time) {
-                    variance += Math.pow(time - averageTime, 2);
+                }).forEach(function (runMsgPerSecond) {
+                    variance += Math.pow(runMsgPerSecond - averageMsgPerSecond, 2);
+                    highestMsgPerSecond = runMsgPerSecond > highestMsgPerSecond ? runMsgPerSecond : highestMsgPerSecond;
                 });
                 variance /= runsTime.length;
-                var deviation = Math.sqrt(variance);
-                error("the total runtime was: " + totalTime + " runs: " + totalRuns + " msgs/s: " + averageTime + " +/- " + deviation);
+                var deviation = Math.sqrt(variance).toFixed(2);
+                highestMsgPerSecond = highestMsgPerSecond.toFixed(2);
+                averageMsgPerSecond = averageMsgPerSecond.toFixed(2);
+                error("the total runtime was: " + totalTime + " msgs/s: " + averageMsgPerSecond + " +/- " + deviation
+                + "fastest: " + highestMsgPerSecond + " msg/s");
+
+                var sum = { averageTime: averageMsgPerSecond, deviation: deviation, highestMsgPerSecond: highestMsgPerSecond, benchmarkName: benchmarkName };
 
                 if (measureMemory){
-                    var memav = memSum / memTests;
-                    var mb = (memav / 1048576.0).toFixed(2);
+                    var averageMemory = memSum / memTests;
+                    var mb = (averageMemory / 1048576.0).toFixed(2);
                     error("test used on average: " + mb + " MB memory");
                     clearInterval(memInterval);
+                    sum.mb = mb;
                 }
+                summary.push(sum);
             });
     },
     echoString: function() {
