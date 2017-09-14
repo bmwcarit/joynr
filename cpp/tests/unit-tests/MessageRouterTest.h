@@ -118,6 +118,7 @@ protected:
         const std::string messageNotificationProviderParticipantId("messageNotificationProviderParticipantId");
         ClusterControllerSettings ccSettings(settings);
 
+        messagingSettings.setRoutingTableCleanupIntervalMs(5000);
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
         messageQueue = messageQueueForMessageRouter.get();
 

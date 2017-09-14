@@ -486,3 +486,54 @@ TEST_F(CcMessageRouterTest, doNotSaveInProcessMessagingAddressToFile) {
         [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&){ successCallbackCalled.notify(); });
     EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
+
+TEST_F(CcMessageRouterTest, routingTableGetsCleaned) {
+    const std::string providerParticipantId("providerParticipantId");
+    const std::string routingTablePersistenceFilename = "test-RoutingTable.persist";
+    std::remove(routingTablePersistenceFilename.c_str());
+
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>();
+    auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
+
+    const bool isGloballyVisible = true;
+    const bool isSticky = false;
+    std::int64_t expiryDateMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 4000;
+    messageRouter = createMessageRouter();
+    messageRouter->addNextHop(providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
+
+    Semaphore successCallbackCalled;
+    messageRouter->resolveNextHop(providerParticipantId,
+        [&successCallbackCalled](const bool& resolved) {
+            if(resolved) {
+                successCallbackCalled.notify();
+            } else {
+                FAIL() << "resolve should not succeed.";
+                successCallbackCalled.notify();
+            }
+        },
+        [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&){
+            FAIL() << "resolveNextHop did not succeed.";
+            successCallbackCalled.notify();
+        }
+    );
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(3000)));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(6000));
+    // in the meantime the garbage collector should have removed the entry
+
+    messageRouter->resolveNextHop(providerParticipantId,
+        [&successCallbackCalled](const bool& resolved) {
+            if(resolved) {
+                FAIL() << "resolve should not succeed.";
+                successCallbackCalled.notify();
+            } else {
+                successCallbackCalled.notify();
+            }
+        },
+        [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&){
+            FAIL() << "resolveNextHop did not succeed.";
+            successCallbackCalled.notify();
+        }
+    );
+    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(3000)));
+}
