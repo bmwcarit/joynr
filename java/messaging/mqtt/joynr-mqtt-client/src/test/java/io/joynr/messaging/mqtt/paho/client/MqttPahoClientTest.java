@@ -58,7 +58,10 @@ import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
 public class MqttPahoClientTest {
 
@@ -71,7 +74,7 @@ public class MqttPahoClientTest {
     private IMqttMessagingSkeleton mockReceiver;
     @Mock
     private MessageRouter mockMessageRouter;
-    private JoynrMqttClient client;
+    private JoynrMqttClient joynrMqttClient;
     private Properties properties;
     private ArgumentCaptor<Integer> mqttMessageIdCaptor;
 
@@ -98,7 +101,12 @@ public class MqttPahoClientTest {
         mqttMessageIdCaptor = ArgumentCaptor.forClass(Integer.class);
     }
 
-    private void createClient() {
+    @After
+    public void tearDown() {
+        joynrMqttClient.shutdown();
+    }
+
+    private void createJoynrMqttClient() {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS, "100");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC, "60");
@@ -135,58 +143,47 @@ public class MqttPahoClientTest {
         // note:
         // - the client below is used as sender and receiver at the same time
         // - any received message needs to be acknowledged since otherwise the MQTT broker will resend it
-        client = mqttClientFactory.create();
-        client.start();
-        client.subscribe(ownTopic.getTopic());
-        client.setMessageListener(mockReceiver);
+        joynrMqttClient = mqttClientFactory.create();
+        joynrMqttClient.start();
+        joynrMqttClient.subscribe(ownTopic.getTopic());
+        joynrMqttClient.setMessageListener(mockReceiver);
     }
 
-    @After
-    public void tearDown() {
-        client.shutdown();
+    private void joynrMqttClientPublishAndVerifyReceivedMessage(byte[] serializedMessage) {
+        joynrMqttClient.publishMessage(ownTopic.getTopic(), serializedMessage);
+        verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage),
+                                                             mqttMessageIdCaptor.capture(),
+                                                             eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                                             any(FailureAction.class));
+        joynrMqttClient.sendMqttAck(mqttMessageIdCaptor.getValue(), MqttMessagingStub.DEFAULT_QOS_LEVEL);
     }
 
     @Test
     public void mqttClientTestWithEnabledMessageSizeCheck() throws Exception {
         final int maxMessageSize = 100;
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, String.valueOf(maxMessageSize));
-        createClient();
+        createJoynrMqttClient();
 
         byte[] shortSerializedMessage = new byte[maxMessageSize];
-        client.publishMessage(ownTopic.getTopic(), shortSerializedMessage);
-        verify(mockReceiver, timeout(100).times(1)).transmit(eq(shortSerializedMessage),
-                                                             mqttMessageIdCaptor.capture(),
-                                                             eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                             any(FailureAction.class));
-        client.sendMqttAck(mqttMessageIdCaptor.getValue(), MqttMessagingStub.DEFAULT_QOS_LEVEL);
+        joynrMqttClientPublishAndVerifyReceivedMessage(shortSerializedMessage);
 
         byte[] largeSerializedMessage = new byte[maxMessageSize + 1];
         thrown.expect(JoynrMessageNotSentException.class);
         thrown.expectMessage("MQTT Publish failed: maximum allowed message size of " + maxMessageSize
                 + " bytes exceeded, actual size is " + largeSerializedMessage.length + " bytes");
-        client.publishMessage(ownTopic.getTopic(), largeSerializedMessage);
+        joynrMqttClient.publishMessage(ownTopic.getTopic(), largeSerializedMessage);
     }
 
     @Test
     public void mqttClientTestWithDisabledMessageSizeCheck() throws Exception {
         final int initialMessageSize = 100;
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
-        createClient();
+        createJoynrMqttClient();
 
         byte[] shortSerializedMessage = new byte[initialMessageSize];
-        client.publishMessage(ownTopic.getTopic(), shortSerializedMessage);
-        verify(mockReceiver, timeout(100).times(1)).transmit(eq(shortSerializedMessage),
-                                                             mqttMessageIdCaptor.capture(),
-                                                             eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                             any(FailureAction.class));
-        client.sendMqttAck(mqttMessageIdCaptor.getValue(), MqttMessagingStub.DEFAULT_QOS_LEVEL);
+        joynrMqttClientPublishAndVerifyReceivedMessage(shortSerializedMessage);
 
         byte[] largeSerializedMessage = new byte[initialMessageSize + 1];
-        client.publishMessage(ownTopic.getTopic(), largeSerializedMessage);
-        verify(mockReceiver, timeout(100).times(1)).transmit(eq(largeSerializedMessage),
-                                                             mqttMessageIdCaptor.capture(),
-                                                             eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                             any(FailureAction.class));
-        client.sendMqttAck(mqttMessageIdCaptor.getValue(), MqttMessagingStub.DEFAULT_QOS_LEVEL);
+        joynrMqttClientPublishAndVerifyReceivedMessage(largeSerializedMessage);
     }
 }
