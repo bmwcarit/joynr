@@ -169,6 +169,12 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastRecivers(const bool is
     EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*multicastAddress)))).Times(count);
 
     messageRouter->route(mutableMessage.getImmutableMessage());
+
+    // cleanup
+    messageRouter->removeNextHop(subscriberParticipantId1);
+    messageRouter->removeNextHop(subscriberParticipantId2);
+    messageRouter->removeNextHop(subscriberParticipantId3);
+    messageRouter->removeNextHop(providerParticipantId);
 }
 
 TEST_F(CcMessageRouterTest, routeMulticastMessageFromWebSocketProvider_multicastMsgIsSentToAllMulticastRecivers) {
