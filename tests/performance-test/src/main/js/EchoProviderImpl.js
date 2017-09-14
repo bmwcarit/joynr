@@ -29,6 +29,17 @@ var error = testbase.logging.error;
 var log = testbase.logging.log;
 
 exports.implementation = {
+
+    simpleAttribute: {
+
+        set : function() {
+        },
+
+        get: function () {
+
+        }
+    },
+
     echoString: function(opArgs) {
         return { responseData: opArgs.data };
     },

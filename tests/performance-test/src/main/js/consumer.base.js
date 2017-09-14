@@ -211,6 +211,18 @@ var consumerBase = {
         return consumerBase.excecuteMultipleBenchmarks("echoString", generateData, testProcedure);
     },
 
+    attributeString: function () {
+        var generateData = function(i) {
+            return {
+                data: PerformanceUtilities.createString(options.stringLength - 2, "x") + "-" + i
+            };
+        };
+        var testProcedure = function(args) {
+            return consumerBase.echoProxy.complexStructAttribute.set(args);
+        };
+        return consumerBase.excecuteMultipleBenchmarks("attributeString", generateData, testProcedure);
+    },
+
     echoComplexStruct: function() {
         var generateData = function(i){
             return {

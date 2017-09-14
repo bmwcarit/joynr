@@ -33,6 +33,8 @@ typeCollection Types {
 interface Echo {
     version { major 0 minor 1 }
 
+    attribute String simpleAttribute
+
     method echoString {
         in {
             String data

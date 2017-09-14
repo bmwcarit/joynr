@@ -22,8 +22,8 @@
 var Promise = require("bluebird").Promise;
 var consumerBase = require("./consumer.base.js");
 
-var whichTests = process.env.testsTypes || "csbk";
-// string explanation: c = complesStruct; s = string; b = byteArray; k = byteArrayWithSizeTimesk;
+var whichTests = process.env.testsTypes || "csbka";
+// string explanation: c = complesStruct; s = string; b = byteArray; k = byteArrayWithSizeTimesk; a = attribute
 
 var runOptional = function (letter, func) {
     return function(){ return whichTests.indexOf(letter) !== -1 ? func() : Promise.resolve();};
@@ -33,6 +33,7 @@ var runOptional = function (letter, func) {
 console.log = function() {};
 
 consumerBase.initialize()
+    .then(runOptional("a", consumerBase.attributeString))
     .then(runOptional("c", consumerBase.echoComplexStruct))
     .then(runOptional("s", consumerBase.echoString))
     .then(runOptional("b", consumerBase.echoByteArray))
