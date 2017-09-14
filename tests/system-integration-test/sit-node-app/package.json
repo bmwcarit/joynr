@@ -1,13 +1,13 @@
 {
   "name": "sit-node-app",
-  "version": "0.29.0",
+  "version": "0.29.1",
   "license": "Apache-2.0",
   "description": "System Integration Test Node App",
   "main": "src/main/js/consumer.js",
   "private": true,
   "dependencies": {
       "bluebird" : "3.3.5",
-      "joynr" : ">=0.29.0"
+      "joynr" : ">=0.29.1"
   },
   "config": {
     "domain": "io.joynr.systemintegrationtest.node",
