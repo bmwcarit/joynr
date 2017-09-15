@@ -141,7 +141,7 @@ TEST_F(SystemServicesDiscoveryTest, discoveryProviderIsAvailable)
     );
 }
 
-TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
+TEST_F(SystemServicesDiscoveryTest, lookupUnknownParticipantReturnsEmptyResult)
 {
     discoveryProxy = discoveryProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
