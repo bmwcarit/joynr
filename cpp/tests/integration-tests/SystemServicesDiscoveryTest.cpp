@@ -222,6 +222,13 @@ TEST_F(SystemServicesDiscoveryTest, add)
         ADD_FAILURE()<< "lookup was not successful";
     }
     EXPECT_EQ(expectedResult, result);
+
+    // cleanup after test
+    try {
+        discoveryProxy->remove(participantId);
+    } catch (const exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "remove was not successful";
+    }
 }
 
 TEST_F(SystemServicesDiscoveryTest, remove)
