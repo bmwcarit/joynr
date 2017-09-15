@@ -77,6 +77,11 @@ define([
             "expiryDate" : true
         };
 
+        var signingCallback = keychain ? function() {
+            // set the signature to just be the ownerID
+            return Buffer.from(keychain.ownerId);
+        } : undefined;
+
         webSocketObj.marshalJoynrMessage = function(joynrMessage) {
             var smrfMsg = {};
             var headerKey;
@@ -92,6 +97,7 @@ define([
             smrfMsg.headers = {};
             smrfMsg.headers.t = joynrMessage.type;
             smrfMsg.headers.id = joynrMessage.header.msgId;
+            smrfMsg.signingCallback = signingCallback;
             if (joynrMessage.header.replyChannelId) {
                 smrfMsg.headers.re = joynrMessage.header.replyChannelId;
             }

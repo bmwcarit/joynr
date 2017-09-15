@@ -77,6 +77,7 @@ requirejs.config({
         // stuff from require.config.node.js not yet included here
         //"global/LocalStorage" : "global/LocalStorageNode",
         "global/XMLHttpRequest" : "global/XMLHttpRequestNode",
+        "global/WebsocketNodeModule" : "global/WebSocketNode",
         //"global/WebSocket" : "global/WebSocketNode",
 
         "tests" : "../test-classes"
@@ -159,7 +160,8 @@ requirejs([
     "tests/joynr/dispatching/DispatcherTest",
     "tests/joynr/dispatching/TtlUpliftTest",
     "tests/joynr/dispatching/RequestReplyManagerTest",
-    "tests/global/LocalStorageNodeTest"
+    "tests/global/LocalStorageNodeTest",
+    "tests/global/WebSocketNodeTest"
 ], function() {
     console.log("all tests modules loaded");
 
