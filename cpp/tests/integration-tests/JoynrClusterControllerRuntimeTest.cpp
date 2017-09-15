@@ -84,7 +84,7 @@ public:
             mockMqttMessageReceiver(std::make_shared<MockTransportMessageReceiver>()),
             mockMqttMessageSender(std::make_shared<MockTransportMessageSender>()),
             semaphore(0)
-    {;
+    {
         std::string httpChannelId("http_JoynrClusterControllerRuntimeTest.ChannelId");
         std::string httpEndPointUrl("http_JoynrClusterControllerRuntimeTest.endPointUrl");
         std::string mqttTopic("mqtt_JoynrClusterControllerRuntimeTest.topic");
