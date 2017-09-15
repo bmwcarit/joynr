@@ -26,7 +26,7 @@
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 
-#include "libjoynrclustercontroller/mqtt/MqttReceiver.h"
+#include "joynr/MqttReceiver.h"
 
 namespace joynr
 {
