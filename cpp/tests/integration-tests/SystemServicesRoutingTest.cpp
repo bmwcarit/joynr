@@ -32,6 +32,7 @@
 #include "tests/utils/MockObjects.h"
 
 using namespace joynr;
+using ::testing::Mock;
 
 class SystemServicesRoutingTest : public ::testing::Test {
 public:
@@ -71,7 +72,7 @@ public:
 
         EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt).get()), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
         //runtime can only be created, after MockMessageReceiver has been told to return
@@ -99,6 +100,9 @@ public:
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
+
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt).get()));
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp).get()));
     }
 
     void SetUp(){
