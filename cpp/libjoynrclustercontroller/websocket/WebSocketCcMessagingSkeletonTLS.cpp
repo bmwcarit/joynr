@@ -81,7 +81,7 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
                     mococrw::DistinguishedName::fromX509Name(certSubName);
             const std::string ownerId(distinguishedName.commonName());
 
-            // mapping the connetion handler to the ownerId in clients map
+            // mapping the connection handler to the ownerId in clients map
             joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
             auto certEntry = CertEntry(std::move(clientAddress), ownerId);
             clients.emplace(hdl, std::move(certEntry));
