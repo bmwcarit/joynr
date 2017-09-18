@@ -41,6 +41,15 @@ public:
     {
         startAccept(serverAddress.getPort());
     }
+
+protected:
+    bool validateIncomingMessage(const ConnectionHandle& hdl,
+                                 std::shared_ptr<ImmutableMessage> message) final
+    {
+        std::ignore = hdl;
+        std::ignore = message;
+        return true;
+    }
 };
 
 } // namespace joynr

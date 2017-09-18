@@ -143,6 +143,9 @@ protected:
     ADD_LOGGER(WebSocketCcMessagingSkeleton);
     Server endpoint;
 
+    virtual bool validateIncomingMessage(const ConnectionHandle& hdl,
+                                         std::shared_ptr<ImmutableMessage> message) = 0;
+
     void startAccept(std::uint16_t port)
     {
         try {
@@ -252,7 +255,6 @@ private:
 
     void onMessageReceived(ConnectionHandle&& hdl, smrf::ByteVector&& message)
     {
-        std::ignore = hdl;
         // deserialize message and transmit
         std::shared_ptr<ImmutableMessage> immutableMessage;
         try {
@@ -266,6 +268,11 @@ private:
         }
 
         JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+
+        if (!validateIncomingMessage(hdl, immutableMessage)) {
+            JOYNR_LOG_ERROR(logger, "Dropping message with ID {}", immutableMessage->getId());
+            return;
+        }
 
         auto onFailure = [messageId = immutableMessage->getId()](
                 const exceptions::JoynrRuntimeException& e)
