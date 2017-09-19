@@ -73,9 +73,9 @@ public:
             std::shared_ptr<IMessageRouter> messageRouter,
             std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory)
             : endpoint(),
+              clientsMutex(),
               clients(),
               receiver(),
-              clientsMutex(),
               messageRouter(messageRouter),
               messagingStubFactory(messagingStubFactory)
     {
@@ -171,6 +171,7 @@ protected:
         std::string ownerId;
     };
 
+    std::mutex clientsMutex;
     std::map<ConnectionHandle, CertEntry, std::owner_less<ConnectionHandle>> clients;
 
 private:
@@ -284,7 +285,6 @@ private:
     WebSocketPpReceiver<Server> receiver;
 
     /*! Router for incoming messages */
-    std::mutex clientsMutex;
     std::shared_ptr<IMessageRouter> messageRouter;
     /*! Factory to build outgoing messaging stubs */
     std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory;
