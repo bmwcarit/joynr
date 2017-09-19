@@ -177,7 +177,7 @@ protected:
 private:
     void onConnectionClosed(ConnectionHandle hdl)
     {
-        std::unique_lock<std::mutex> lock(clientsMutex);
+        std::lock_guard<std::mutex> lock(clientsMutex);
         auto it = clients.find(hdl);
         if (it != clients.cend()) {
             messagingStubFactory->onMessagingStubClosed(it->second.webSocketClientAddress);
@@ -227,7 +227,7 @@ private:
                               std::placeholders::_1,
                               std::placeholders::_2));
             {
-                std::unique_lock<std::mutex> lock(clientsMutex);
+                std::lock_guard<std::mutex> lock(clientsMutex);
                 // search whether this connection handler has been mapped to a cert. (secure
                 // connection)
                 // if so, then move the client address to it. Otherwise, make a new entry with an
