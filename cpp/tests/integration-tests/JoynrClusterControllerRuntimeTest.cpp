@@ -118,6 +118,8 @@ public:
             std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
             std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
         }
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(mockHttpMessageReceiver.get()));
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(mockMqttMessageReceiver.get()));
     }
 
     void createRuntimeMqtt() {
