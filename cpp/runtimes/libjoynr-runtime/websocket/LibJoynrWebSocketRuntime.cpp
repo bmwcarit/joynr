@@ -16,8 +16,11 @@
  * limitations under the License.
  * #L%
  */
-#include <cassert>
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+
+#include <cassert>
+
+#include <websocketpp/common/connection_hdl.hpp>
 
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
@@ -159,9 +162,12 @@ void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
 {
     auto wsLibJoynrMessagingSkeleton =
             std::make_shared<WebSocketLibJoynrMessagingSkeleton>(util::as_weak_ptr(messageRouter));
-    websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](smrf::ByteVector&& msg) {
-        wsLibJoynrMessagingSkeleton->onMessageReceived(std::move(msg));
-    });
+    using ConnectionHandle = websocketpp::connection_hdl;
+    websocket->registerReceiveCallback(
+            [wsLibJoynrMessagingSkeleton](ConnectionHandle&& hdl, smrf::ByteVector&& msg) {
+                std::ignore = hdl;
+                wsLibJoynrMessagingSkeleton->onMessageReceived(std::move(msg));
+            });
 }
 
 } // namespace joynr

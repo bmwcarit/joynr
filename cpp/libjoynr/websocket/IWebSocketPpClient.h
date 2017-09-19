@@ -23,6 +23,7 @@
 
 #include <smrf/ByteArrayView.h>
 #include <smrf/ByteVector.h>
+#include <websocketpp/common/connection_hdl.hpp>
 
 namespace joynr
 {
@@ -44,13 +45,15 @@ class WebSocketAddress;
 class IWebSocketPpClient
 {
 public:
+    using ConnectionHandle = websocketpp::connection_hdl;
+
     virtual ~IWebSocketPpClient() = default;
 
     virtual void registerConnectCallback(std::function<void()> callback) = 0;
     virtual void registerReconnectCallback(std::function<void()> callback) = 0;
     virtual void registerDisconnectCallback(std::function<void()> onWebSocketDisconnected) = 0;
     virtual void registerReceiveCallback(
-            std::function<void(smrf::ByteVector&&)> onMessageReceived) = 0;
+            std::function<void(ConnectionHandle&&, smrf::ByteVector&&)> onMessageReceived) = 0;
 
     virtual void connect(const system::RoutingTypes::WebSocketAddress& address) = 0;
     virtual void close() = 0;

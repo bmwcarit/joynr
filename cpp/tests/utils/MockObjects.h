@@ -38,6 +38,8 @@
 #include <mococrw/key.h>
 #include <mococrw/x509.h>
 
+#include <websocketpp/common/connection_hdl.hpp>
+
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/AbstractMessageRouter.h"
 #include "joynr/BrokerUrl.h"
@@ -1355,9 +1357,10 @@ public:
         dtorCalled();
     }
 
+    using ConnectionHandle = websocketpp::connection_hdl;
     MOCK_METHOD1(registerConnectCallback, void(std::function<void()>));
     MOCK_METHOD1(registerReconnectCallback, void(std::function<void()>));
-    MOCK_METHOD1(registerReceiveCallback, void(std::function<void(smrf::ByteVector&&)>));
+    MOCK_METHOD1(registerReceiveCallback, void(std::function<void(ConnectionHandle&&, smrf::ByteVector&&)>));
 
     void registerDisconnectCallback(std::function<void()> callback) override
     {

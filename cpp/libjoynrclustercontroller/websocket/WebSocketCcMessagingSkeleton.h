@@ -103,8 +103,9 @@ public:
                                                std::placeholders::_1,
                                                std::placeholders::_2));
 
-        receiver.registerReceiveCallback(
-                [this](smrf::ByteVector&& msg) { onMessageReceived(std::move(msg)); });
+        receiver.registerReceiveCallback([this](ConnectionHandle&& hdl, smrf::ByteVector&& msg) {
+            onMessageReceived(std::move(hdl), std::move(msg));
+        });
     }
 
     /**
@@ -249,8 +250,9 @@ private:
         }
     }
 
-    void onMessageReceived(smrf::ByteVector&& message)
+    void onMessageReceived(ConnectionHandle&& hdl, smrf::ByteVector&& message)
     {
+        std::ignore = hdl;
         // deserialize message and transmit
         std::shared_ptr<ImmutableMessage> immutableMessage;
         try {
