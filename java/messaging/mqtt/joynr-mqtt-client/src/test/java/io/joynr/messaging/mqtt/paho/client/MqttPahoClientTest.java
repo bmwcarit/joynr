@@ -155,7 +155,8 @@ public class MqttPahoClientTest {
                                                              mqttMessageIdCaptor.capture(),
                                                              eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                                              any(FailureAction.class));
-        joynrMqttClient.sendMqttAck(mqttMessageIdCaptor.getValue(), MqttMessagingStub.DEFAULT_QOS_LEVEL);
+        joynrMqttClient.messageReceivedAndProcessingFinished(mqttMessageIdCaptor.getValue(),
+                                                             MqttMessagingStub.DEFAULT_QOS_LEVEL);
     }
 
     @Test
