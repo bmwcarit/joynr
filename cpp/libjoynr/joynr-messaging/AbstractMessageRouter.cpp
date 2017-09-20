@@ -93,7 +93,7 @@ void AbstractMessageRouter::addProvisionedNextHop(
 {
     assert(address);
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    const bool isSticky = false;
+    const bool isSticky = true;
     addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
 }
 
