@@ -27,6 +27,7 @@
 #include <smrf/ByteVector.h>
 
 #include "joynr/IMqttMessagingSkeleton.h"
+#include "JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
@@ -41,7 +42,7 @@ class ImmutableMessage;
 class IMessageRouter;
 class MqttReceiver;
 
-class MqttMessagingSkeleton : public IMqttMessagingSkeleton
+class JOYNRCLUSTERCONTROLLER_EXPORT MqttMessagingSkeleton : public IMqttMessagingSkeleton
 {
 public:
     /*

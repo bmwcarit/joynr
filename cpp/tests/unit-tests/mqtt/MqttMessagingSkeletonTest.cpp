@@ -24,7 +24,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "libjoynrclustercontroller/mqtt/MqttMessagingSkeleton.h"
+#include "joynr/MqttMessagingSkeleton.h"
 #include "joynr/MqttReceiver.h"
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 

@@ -93,7 +93,7 @@
 #include "libjoynrclustercontroller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
 #include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
-#include "libjoynrclustercontroller/mqtt/MqttMessagingSkeleton.h"
+#include "joynr/MqttMessagingSkeleton.h"
 #include "joynr/MqttReceiver.h"
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
 #include "libjoynrclustercontroller/mqtt/MqttTransportStatus.h"

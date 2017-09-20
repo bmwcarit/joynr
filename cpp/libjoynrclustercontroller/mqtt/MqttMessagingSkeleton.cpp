@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynrclustercontroller/mqtt/MqttMessagingSkeleton.h"
+#include "joynr/MqttMessagingSkeleton.h"
 
 #include <smrf/exceptions.h>
 
