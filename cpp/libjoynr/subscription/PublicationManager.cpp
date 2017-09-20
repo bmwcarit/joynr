@@ -647,7 +647,8 @@ void PublicationManager::saveSubscriptionRequestsMap(const Map& map,
         return;
     }
 
-    std::vector<typename Map::mapped_type> subscriptionVector(map.size());
+    std::vector<typename Map::mapped_type> subscriptionVector;
+    subscriptionVector.reserve(map.size());
 
     auto callback = [&subscriptionVector](auto&& map) {
         for (auto&& entry : map) {
