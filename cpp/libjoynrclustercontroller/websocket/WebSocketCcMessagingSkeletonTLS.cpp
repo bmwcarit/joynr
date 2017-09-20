@@ -80,6 +80,12 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
             mococrw::DistinguishedName distinguishedName =
                     mococrw::DistinguishedName::fromX509Name(certSubName);
             const std::string ownerId(distinguishedName.commonName());
+            if (ownerId.empty()) {
+                JOYNR_LOG_ERROR(logger,
+                                "Rejecting secure websocket connection because the ownerId "
+                                "(common name) of the TLS client certificate is empty.");
+                return false;
+            }
 
             // mapping the connection handler to the ownerId in clients map
             joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;

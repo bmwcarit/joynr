@@ -1,17 +1,20 @@
 # joynr 0.30.0
 
-## Configuration property changes
+## API relevant changes
+None.
 
+## Configuration property changes
 * **[C++]** Made the following properties configurable. See
   default-messaging.settings for more details.
   * `routing-table-grace-period-ms`
   * `routing-table-cleanup-interval-ms`
 
 ## Other changes
-
 * **[C++]** The internal routing table can now be cleaned up.
   Routing entries which have been created for handling a request from
   global can be removed when the ttl + grace period has passed.
+* **[C++]** TLS client certificates for secure websocket connections with empty common name (CN)
+  field are not accepted any longer.
 
 # joynr 0.29.1
 
