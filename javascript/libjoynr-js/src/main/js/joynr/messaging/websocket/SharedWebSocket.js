@@ -53,7 +53,7 @@ define(
              *            libjoynr
              */
             function initializeConnection(websocket, localAddress) {
-                websocket.send(WebSocket.encodeString(JSON.stringify(localAddress)), {binary: true});
+                websocket.send(websocket.encodeString(JSON.stringify(localAddress)), {binary: true});
             }
 
             /**
@@ -67,7 +67,7 @@ define(
                 while (queuedMessages.length) {
                     queued = queuedMessages.shift();
                     try {
-                        websocket.send(WebSocket.marshalJoynrMessage(queued.message), {binary: true});
+                        websocket.send(websocket.marshalJoynrMessage(queued.message), {binary: true});
                         queued.resolve();
                         // Error is thrown if the socket is no longer open
                     } catch (e) {
@@ -82,7 +82,7 @@ define(
                 return new Promise(function(resolve, reject){
                     if (websocket.readyState === WebSocket.OPEN) {
                         try {
-                            websocket.send(WebSocket.marshalJoynrMessage(joynrMessage), {binary: true});
+                            websocket.send(websocket.marshalJoynrMessage(joynrMessage), {binary: true});
                             resolve();
                             // Error is thrown if the socket is no longer open, so requeue to the front
                         } catch (e) {
@@ -230,7 +230,7 @@ define(
                             set : function(newCallback) {
                                 if (typeof newCallback === "function") {
                                     onmessageCallback = function(data) {
-                                        WebSocket.unmarshalJoynrMessage(data, newCallback);
+                                        websocket.unmarshalJoynrMessage(data, newCallback);
                                     };
                                     websocket.onmessage = onmessageCallback;
                                 } else {

@@ -114,7 +114,7 @@ define([
             websocket.readyState = WebSocket.OPEN;
             sharedWebSocket.send(joynrMessage);
             expect(websocket.send).toHaveBeenCalledWith(
-                    WebSocket.marshalJoynrMessage(joynrMessage),
+                    websocket.marshalJoynrMessage(joynrMessage),
                     {
                         binary : true
                     });
