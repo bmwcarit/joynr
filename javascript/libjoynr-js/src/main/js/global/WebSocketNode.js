@@ -57,7 +57,14 @@ define([
                 throw new Error("No websocket module available");
             }
         }
-        var webSocketObj = new ws(remoteUrl);
+
+        var certs = keychain ? {
+            cert : keychain.tlsCert,
+            key : keychain.tlsKey,
+            ca : keychain.tlsCa
+        } : undefined;
+
+        var webSocketObj = new ws(remoteUrl, certs);
 
         webSocketObj.encodeString = function(string) {
             return Buffer.from(string);

@@ -34,9 +34,11 @@ define("global/Smrf", {
     }
 });
 
+var wscppSpy = jasmine.createSpy("wscppSyp");
+
 requirejs.undef("wscpp");
 define("wscpp", [], function() {
-    return function() {};
+    return wscppSpy;
 });
 
 define([ "global/WebsocketNodeModule"
@@ -48,6 +50,12 @@ define([ "global/WebsocketNodeModule"
         var remoteUrl = "url";
         var keychain = {
             ownerId : "ownerId"
+        };
+        var keychainWithCerts = {
+            tlsCert : "tlsCert",
+            tlsKey : "tlsKey",
+            tlsCa : "tlsCa",
+            ownerId : "ownerID"
         };
 
         var joynrMessage = {
@@ -71,6 +79,20 @@ define([ "global/WebsocketNodeModule"
             var serializedMessage = websocketNode.marshalJoynrMessage(joynrMessage);
             expect(serializedMessage).toBe("callback was called");
         });
+
+        it("calls the wscpp constructor with certs", function() {
+
+            websocketNode = new WebsocketNode(remoteUrl, keychainWithCerts);
+
+            expect(wscppSpy).toHaveBeenCalledWith(remoteUrl, {
+                cert : keychainWithCerts.tlsCert,
+                key : keychainWithCerts.tlsKey,
+                ca : keychainWithCerts.tlsCa
+            });
+
+        });
+
+        // TODO add a Test, what happens if a cert object is incomplete?
 
     });
 });
