@@ -254,7 +254,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             forwardMessage(message, mqttId, mqttQos, failureAction);
         } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
             LOG.error("Message: \"{}\", could not be deserialized, exception: {}", serializedMessage, e.getMessage());
-            mqttClient.sendMqttAck(mqttId, mqttQos);
+            mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
             failureAction.execute(e);
         }
     }
@@ -281,7 +281,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private void handleMessageProcessed(String messageId, int mqttId, int mqttQos) {
         DelayedMessageId delayedMessageId = new DelayedMessageId(messageId, repeatedMqttMessageIgnorePeriodMs);
         if (!processedMessagesQueue.contains(delayedMessageId)) {
-            mqttClient.sendMqttAck(mqttId, mqttQos);
+            mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
             processedMessagesQueue.put(delayedMessageId);
         }
     }

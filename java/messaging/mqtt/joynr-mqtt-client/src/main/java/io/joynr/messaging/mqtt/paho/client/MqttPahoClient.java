@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -76,6 +77,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
+    @SuppressFBWarnings("SWL_SLEEP_WITH_LOCK_HELD")
     public synchronized void start() {
         while (!shutdown && !mqttClient.isConnected()) {
             try {
@@ -363,7 +365,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void sendMqttAck(int mqttId, int mqttQos) {
+    public void messageReceivedAndProcessingFinished(int mqttId, int mqttQos) {
         try {
             mqttClient.messageArrivedComplete(mqttId, mqttQos);
         } catch (MqttException e) {
