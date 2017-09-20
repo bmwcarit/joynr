@@ -32,7 +32,7 @@ define([
     "joynr/system/LoggerFactory"
 ], function(smrf, JoynrMessage, JoynrRuntimeException, LoggerFactory) {
 
-    function WebSocketNodeWrapper(remoteUrl) {
+    function WebSocketNodeWrapper(remoteUrl, keychain) {
 
         if (typeof Buffer !== "function") {
             throw new JoynrRuntimeException(

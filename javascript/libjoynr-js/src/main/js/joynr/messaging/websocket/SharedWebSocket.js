@@ -116,6 +116,7 @@ define(
              *            settings.remoteAddress to which messages are sent on the websocket server.
              * @param {Object} settings.provisioning
              * @param {Number} settings.provisioning.reconnectSleepTimeMs
+             * @param {Object} settings.keychain
              */
             var SharedWebSocket =
                     function SharedWebSocket(settings) {
@@ -147,7 +148,7 @@ define(
                             if (closed) {
                                 return;
                             }
-                            websocket = new WebSocket(remoteUrl);
+                            websocket = new WebSocket(remoteUrl, settings.keychain);
                             websocket.onopen = onOpen;
                             websocket.onclose = onClose;
                             websocket.onerror = onError;

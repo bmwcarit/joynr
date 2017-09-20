@@ -166,6 +166,7 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
         var persistency;
         var localAddress;
         var TWO_DAYS_IN_MS = 172800000;
+        var keychain = provisioning.keychain;
 
         // this is required at load time of libjoynr
         typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
@@ -355,7 +356,8 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
                     sharedWebSocket = new SharedWebSocket({
                         remoteAddress : ccAddress,
                         localAddress : localAddress,
-                        provisioning : provisioning.websocket || {}
+                        provisioning : provisioning.websocket || {},
+                        keychain : keychain
                     });
 
                     webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
