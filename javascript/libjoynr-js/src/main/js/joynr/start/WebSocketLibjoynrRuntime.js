@@ -283,6 +283,22 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
             DiscoveryQos.setDefaultSettings(discoveryQosSettings);
         }
 
+        if (keychain){
+
+            if (Util.checkNullUndefined(keychain.tlsCert)) {
+                throw new Error("tlsCert not set in keychain.tlsCert");
+            }
+            if (Util.checkNullUndefined(keychain.tlsKey)) {
+                throw new Error("tlsKey not set in keychain.tlsKey");
+            }
+            if (Util.checkNullUndefined(keychain.tlsCa)) {
+                throw new Error("tlsCa not set in keychain.tlsCa");
+            }
+            if (Util.checkNullUndefined(keychain.ownerId)) {
+                throw new Error("ownerId not set in keychain.ownerId");
+            }
+        }
+
         /**
          * Starts up the libjoynr instance
          *
