@@ -1,5 +1,8 @@
 # joynr 0.29.1
 
+## API relevant changes
+None.
+
 ## Other changes
 * **[C++]** Introduced ProviderReregistrationController interface which is implemented
  by the cluster-controller and can be accessed by creating the corresponding proxy.
