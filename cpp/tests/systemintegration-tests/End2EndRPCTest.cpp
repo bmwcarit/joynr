@@ -68,6 +68,7 @@ public:
     void TearDown(){
         bool deleteChannel = true;
         runtime->stop(deleteChannel);
+        runtime.reset();
 
         // Delete persisted files
         std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
