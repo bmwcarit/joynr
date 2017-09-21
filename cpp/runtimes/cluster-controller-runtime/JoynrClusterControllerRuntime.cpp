@@ -867,12 +867,12 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     subscriptionManager->shutdown();
     localCapabilitiesDirectory->shutdown();
 
+    stopExternalCommunication();
+
     // synchronously stop the underlying boost::asio::io_service
     // this ensures all asynchronous operations are stopped now
     // which allows a safe shutdown
     singleThreadIOService->stop();
-
-    stopExternalCommunication();
 
     multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
 
