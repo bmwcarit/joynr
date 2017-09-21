@@ -69,18 +69,14 @@ public:
 
         std::string uuid = util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
+        runtime->start();
+        EXPECT_TRUE(libJoynrRuntime->connect(std::chrono::milliseconds(2000)));
     }
 
-    // Sets up the test fixture.
-    void SetUp(){
-       runtime->start();
-       EXPECT_TRUE(libJoynrRuntime->connect(std::chrono::milliseconds(2000)));
-    }
-
-    // Tears down the test fixture.
-    void TearDown(){
+    ~End2EndSSLTest() {
         bool deleteChannel = true;
         runtime->stop(deleteChannel);
+        runtime.reset();
 
         // Delete persisted files
         std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
