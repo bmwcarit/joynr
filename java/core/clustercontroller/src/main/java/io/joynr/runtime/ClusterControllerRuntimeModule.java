@@ -29,7 +29,7 @@ import com.google.inject.name.Names;
 
 import io.joynr.accesscontrol.AccessControlClientModule;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.discovery.DiscoveryClientModule;
+import io.joynr.capabilities.LocalCapabilitiesDirectoryModule;
 import io.joynr.messaging.NoBackendMessagingModule;
 import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.messaging.routing.MessageRouter;
@@ -47,7 +47,7 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
     @Override
     protected void configure() {
         super.configure();
-        install(new DiscoveryClientModule());
+        install(new LocalCapabilitiesDirectoryModule());
         install(new NoBackendMessagingModule());
         install(new AccessControlClientModule());
         bind(RoutingProvider.class).to(RoutingProviderImpl.class);

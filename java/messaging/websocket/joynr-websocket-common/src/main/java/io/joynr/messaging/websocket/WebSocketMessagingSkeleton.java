@@ -29,17 +29,13 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
-/**
- *
- */
-public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IMessagingSkeleton {
+public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWebSocketMessagingSkeleton {
     private static final Logger LOG = LoggerFactory.getLogger(WebSocketMessagingSkeleton.class);
 
     public final static String WEBSOCKET_IS_MAIN_TRANSPORT = "io.joynr.websocket.is.main.transport";

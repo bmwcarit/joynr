@@ -104,6 +104,8 @@ import org.mockito.stubbing.Answer;
 public class ProxyTest {
     private static final int ONE_MINUTE_IN_MS = 60 * 1000;
     private static final long MAX_TTL_MS = 2592000000L;
+    private static long DISCOVERY_TIMEOUT_MS = 30000L;
+    private static long RETRY_INTERVAL_MS = 2000L;
     private DiscoveryQos discoveryQos;
     private MessagingQos messagingQos;
     @Mock
@@ -207,7 +209,9 @@ public class ProxyTest {
 
         proxyBuilderFactory = new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                           injector.getInstance(ProxyInvocationHandlerFactory.class),
-                                                          MAX_TTL_MS);
+                                                          MAX_TTL_MS,
+                                                          DISCOVERY_TIMEOUT_MS,
+                                                          RETRY_INTERVAL_MS);
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override

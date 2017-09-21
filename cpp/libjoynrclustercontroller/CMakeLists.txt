@@ -186,6 +186,7 @@ endif(NOT USE_PLATFORM_MOSQUITTO)
 list(
     APPEND JoynrClusterController_TARGET_LIBRARIES
     mosquitto::mosquitto
+    MoCOCrW::mococrw
 )
 
 

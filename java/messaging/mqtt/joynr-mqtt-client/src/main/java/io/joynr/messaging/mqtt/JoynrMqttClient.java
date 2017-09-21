@@ -19,13 +19,11 @@ package io.joynr.messaging.mqtt;
  * #L%
  */
 
-import io.joynr.messaging.IMessagingSkeleton;
-
 public interface JoynrMqttClient {
 
     public void start();
 
-    public void setMessageListener(IMessagingSkeleton rawMessaging);
+    public void setMessageListener(IMqttMessagingSkeleton rawMessaging);
 
     public void shutdown();
 
@@ -36,5 +34,7 @@ public interface JoynrMqttClient {
     public void subscribe(String topic);
 
     public void unsubscribe(String topic);
+
+    public void messageReceivedAndProcessingFinished(int mqttId, int mqttQos);
 
 }

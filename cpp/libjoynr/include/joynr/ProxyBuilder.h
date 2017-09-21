@@ -34,6 +34,7 @@
 #include "joynr/IRequestCallerDirectory.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/ProxyFactory.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -45,6 +46,7 @@ namespace joynr
 
 class ICapabilities;
 class JoynrRuntime;
+class MessagingSettings;
 
 /**
  * @brief Class to build a proxy object for the given interface T.
@@ -66,6 +68,7 @@ public:
      * @param domain The provider domain
      * @param dispatcherAddress The address of the dispatcher
      * @param messageRouter A shared pointer to the message router object
+     * @param messagingSettings Reference to the messaging settings object
      */
     ProxyBuilder(std::weak_ptr<JoynrRuntime> runtime,
                  ProxyFactory& proxyFactory,
@@ -74,7 +77,7 @@ public:
                  const std::string& domain,
                  std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
                  std::shared_ptr<IMessageRouter> messageRouter,
-                 std::uint64_t messagingMaximumTtlMs);
+                 MessagingSettings& messagingSettings);
 
     /** Destructor */
     ~ProxyBuilder() override = default;
@@ -127,6 +130,8 @@ private:
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<IMessageRouter> messageRouter;
     std::uint64_t messagingMaximumTtlMs;
+    std::int64_t discoveryDefaultTimeoutMs;
+    std::int64_t discoveryDefaultRetryIntervalMs;
     DiscoveryQos discoveryQos;
     static const std::string runtimeAlreadyDestroyed;
 
@@ -142,7 +147,7 @@ ProxyBuilder<T>::ProxyBuilder(
         const std::string& domain,
         std::shared_ptr<const system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<IMessageRouter> messageRouter,
-        std::uint64_t messagingMaximumTtlMs)
+        MessagingSettings& messagingSettings)
         : runtime(std::move(runtime)),
           domain(domain),
           messagingQos(),
@@ -152,7 +157,9 @@ ProxyBuilder<T>::ProxyBuilder(
           arbitrator(),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
-          messagingMaximumTtlMs(messagingMaximumTtlMs),
+          messagingMaximumTtlMs(messagingSettings.getMaximumTtlMs()),
+          discoveryDefaultTimeoutMs(messagingSettings.getDiscoveryDefaultTimeoutMs()),
+          discoveryDefaultRetryIntervalMs(messagingSettings.getDiscoveryDefaultRetryIntervalMs()),
           discoveryQos()
 {
 }
@@ -236,8 +243,13 @@ void ProxyBuilder<T>::buildAsync(
         proxy->handleArbitrationFinished(discoverEntry, useInProcessConnector);
 
         bool isGloballyVisible = !discoverEntry.getIsLocal();
-        messageRouter->addNextHop(
-                proxy->getProxyParticipantId(), dispatcherAddress, isGloballyVisible);
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
+        messageRouter->addNextHop(proxy->getProxyParticipantId(),
+                                  dispatcherAddress,
+                                  isGloballyVisible,
+                                  expiryDateMs,
+                                  isSticky);
 
         onSuccess(std::move(proxy));
     };
@@ -264,6 +276,12 @@ template <class T>
 ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQos)
 {
     this->discoveryQos = discoveryQos;
+    if (this->discoveryQos.getDiscoveryTimeoutMs() == DiscoveryQos::NO_VALUE()) {
+        this->discoveryQos.setDiscoveryTimeoutMs(discoveryDefaultTimeoutMs);
+    }
+    if (this->discoveryQos.getRetryIntervalMs() == DiscoveryQos::NO_VALUE()) {
+        this->discoveryQos.setRetryIntervalMs(discoveryDefaultRetryIntervalMs);
+    }
     return this;
 }
 

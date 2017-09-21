@@ -89,8 +89,6 @@ public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
 
             publishProgress("Properties loaded\n");
 
-            joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "120000");
-
             // Create an injector with all the required custom modules.
             // CCInProcessRuntimeModule is used by default but can be overwritten by custom modules
             Module combinedModules = Modules.override(new LibjoynrWebSocketRuntimeModule()).with(modules);

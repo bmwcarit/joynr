@@ -54,6 +54,7 @@ LibJoynrMessageRouter::~LibJoynrMessageRouter()
 }
 
 LibJoynrMessageRouter::LibJoynrMessageRouter(
+        MessagingSettings& messagingSettings,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         boost::asio::io_service& ioService,
@@ -62,7 +63,8 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
         int maxThreads,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
-        : AbstractMessageRouter(std::move(messagingStubFactory),
+        : AbstractMessageRouter(messagingSettings,
+                                std::move(messagingStubFactory),
                                 ioService,
                                 std::move(addressCalculator),
                                 maxThreads,
@@ -276,11 +278,13 @@ void LibJoynrMessageRouter::addNextHop(
         const std::string& participantId,
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
         bool isGloballyVisible,
+        const std::int64_t expiryDateMs,
+        const bool isSticky,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     assert(address);
-    addToRoutingTable(participantId, isGloballyVisible, address);
+    addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
     addNextHopToParent(participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
     sendMessages(participantId, address);
 }

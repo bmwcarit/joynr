@@ -34,6 +34,7 @@
 namespace joynr
 {
 
+class IKeychain;
 class IMessageSender;
 class InProcessMessagingSkeleton;
 class Settings;
@@ -140,7 +141,8 @@ public:
 class ShortCircuitRuntime : public JoynrRuntime
 {
 public:
-    ShortCircuitRuntime(std::unique_ptr<Settings> settings);
+    ShortCircuitRuntime(std::unique_ptr<Settings> settings,
+                        std::shared_ptr<IKeychain> keyChain = nullptr);
 
     template <class TIntfProvider>
     std::string registerProvider(const std::string& domain,
@@ -177,7 +179,7 @@ public:
                                                           domain,
                                                           dispatcherAddress,
                                                           messageRouter,
-                                                          maximumTtlMs);
+                                                          messagingSettings);
     }
 
     std::shared_ptr<IMessageRouter> getMessageRouter()
@@ -201,6 +203,7 @@ private:
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
     std::uint64_t maximumTtlMs;
+    std::shared_ptr<IKeychain> keyChain;
     std::shared_ptr<DummyRequestCallerDirectory> requestCallerDirectory;
 };
 

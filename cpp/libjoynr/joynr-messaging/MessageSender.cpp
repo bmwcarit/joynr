@@ -22,6 +22,7 @@
 #include <cassert>
 
 #include "joynr/IDispatcher.h"
+#include "joynr/IKeychain.h"
 #include "joynr/IMessageRouter.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/MulticastPublication.h"
@@ -38,10 +39,11 @@ namespace joynr
 INIT_LOGGER(MessageSender);
 
 MessageSender::MessageSender(std::shared_ptr<IMessageRouter> messageRouter,
+                             std::shared_ptr<IKeychain> keyChain,
                              std::uint64_t ttlUpliftMs)
         : dispatcher(),
           messageRouter(std::move(messageRouter)),
-          messageFactory(ttlUpliftMs),
+          messageFactory(ttlUpliftMs, std::move(keyChain)),
           replyToAddress()
 {
 }
@@ -102,11 +104,15 @@ void MessageSender::sendOneWayRequest(const std::string& senderParticipantId,
 void MessageSender::sendReply(const std::string& senderParticipantId,
                               const std::string& receiverParticipantId,
                               const MessagingQos& qos,
+                              std::unordered_map<std::string, std::string> prefixedCustomHeaders,
                               const Reply& reply)
 {
     try {
-        MutableMessage message =
-                messageFactory.createReply(senderParticipantId, receiverParticipantId, qos, reply);
+        MutableMessage message = messageFactory.createReply(senderParticipantId,
+                                                            receiverParticipantId,
+                                                            qos,
+                                                            std::move(prefixedCustomHeaders),
+                                                            reply);
         assert(messageRouter);
         messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {

@@ -1,9 +1,7 @@
-package io.joynr.integration;
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2013 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +16,7 @@ package io.joynr.integration;
  * limitations under the License.
  * #L%
  */
+package io.joynr.integration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +51,7 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
+import joynr.ImmutableMessage;
 import joynr.infrastructure.GlobalDomainAccessControlListEditorProxy;
 import joynr.infrastructure.GlobalDomainRoleControllerProxy;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
@@ -72,7 +72,6 @@ public class AccessControllerEnd2EndTest {
     private static final String GDAC_DOMAIN = "io.joynr";
     private static final long DISCOVERY_TIMEOUT = 4000;
     private static final long MESSAGING_TTL = 5000;
-    private static final String USERID = System.getProperty("user.name");
 
     private JoynrRuntime runtime;
 
@@ -100,7 +99,11 @@ public class AccessControllerEnd2EndTest {
 
     @Test
     public void testAllowedRPCCallSucceeds() {
-        createDefaultGDACEntries(TEST_DOMAIN, testProxy.INTERFACE_NAME, "*", USERID, Permission.YES);
+        createDefaultGDACEntries(TEST_DOMAIN,
+                                 testProxy.INTERFACE_NAME,
+                                 "*",
+                                 ImmutableMessage.DUMMY_CREATOR_USER_ID,
+                                 Permission.YES);
 
         registerProvider(runtime);
         testProxy testProxy = createProxy(runtime);
@@ -112,7 +115,11 @@ public class AccessControllerEnd2EndTest {
 
     @Test
     public void testForbiddenRPCCallFails() {
-        createDefaultGDACEntries(TEST_DOMAIN, testProxy.INTERFACE_NAME, "*", USERID, Permission.NO);
+        createDefaultGDACEntries(TEST_DOMAIN,
+                                 testProxy.INTERFACE_NAME,
+                                 "*",
+                                 ImmutableMessage.DUMMY_CREATOR_USER_ID,
+                                 Permission.NO);
 
         registerProvider(runtime);
         testProxy testProxy = createProxy(runtime);

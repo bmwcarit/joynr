@@ -19,6 +19,8 @@ package io.joynr.jeeintegration.messaging;
  * #L%
  */
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
 import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
@@ -47,7 +49,7 @@ import joynr.system.RoutingTypes.MqttAddress;
  * Like {@link MqttMessagingSkeletonProvider}. It checks the property configured under
  * {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY} to see if
  * messages should be received via HTTP instead of MQTT. In this case, it returns an instance of
- * {@link NoOpMessagingSkeleton}. Otherwise it behaves like {@link MqttMessagingSkeletonProvider}.
+ * {@link NoOpMqttMessagingSkeleton}. Otherwise it behaves like {@link MqttMessagingSkeletonProvider}.
  */
 public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvider {
 
@@ -60,6 +62,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     public JeeMqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String enableHttpBridge,
                                             @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
                                             @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
+                                            @Named(PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS) int repeatedMqttMessageIgnorePeriodMs,
+                                            @Named(PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE) int maxIncomingMqttMessagesInQueue,
                                             @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                             MessageRouter messageRouter,
                                             MqttClientFactory mqttClientFactory,
@@ -69,6 +73,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
         // CHECKSTYLE:ON
         super(enableSharedSubscriptions,
               ownAddress,
+              repeatedMqttMessageIgnorePeriodMs,
+              maxIncomingMqttMessagesInQueue,
               replyToAddress,
               messageRouter,
               mqttClientFactory,
@@ -84,7 +90,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     @Override
     public IMessagingSkeleton get() {
         if (httpBridgeEnabled) {
-            return new NoOpMessagingSkeleton(mqttClientFactory);
+            return new NoOpMqttMessagingSkeleton(mqttClientFactory);
         } else {
             return super.get();
         }

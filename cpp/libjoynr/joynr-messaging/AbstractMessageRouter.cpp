@@ -47,6 +47,7 @@ INIT_LOGGER(AbstractMessageRouter);
 
 //------ AbstractMessageRouter ---------------------------------------------------------
 AbstractMessageRouter::AbstractMessageRouter(
+        MessagingSettings& messagingSettings,
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
@@ -59,6 +60,7 @@ AbstractMessageRouter::AbstractMessageRouter(
           routingTable(),
           routingTableLock(),
           multicastReceiverDirectory(),
+          messagingSettings(messagingSettings),
           messagingStubFactory(std::move(messagingStubFactory)),
           messageScheduler(maxThreads, "AbstractMessageRouter", ioService),
           messageQueue(std::move(messageQueue)),
@@ -67,6 +69,7 @@ AbstractMessageRouter::AbstractMessageRouter(
           addressCalculator(std::move(addressCalculator)),
           messageQueueCleanerTimer(ioService),
           messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000)),
+          routingTableCleanerTimer(ioService),
           transportStatuses(std::move(transportStatuses))
 {
 }
@@ -81,12 +84,14 @@ AbstractMessageRouter::~AbstractMessageRouter()
 void AbstractMessageRouter::init()
 {
     activateMessageCleanerTimer();
+    activateRoutingTableCleanerTimer();
     registerTransportStatusCallbacks();
 }
 
 void AbstractMessageRouter::shutdown()
 {
     messageQueueCleanerTimer.cancel();
+    routingTableCleanerTimer.cancel();
     messageScheduler.shutdown();
     if (messagingStubFactory) {
         messagingStubFactory->shutdown();
@@ -99,7 +104,9 @@ void AbstractMessageRouter::addProvisionedNextHop(
         bool isGloballyVisible)
 {
     assert(address);
-    addToRoutingTable(participantId, isGloballyVisible, address);
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = true;
+    addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
 }
 
 AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::lookupAddresses(
@@ -195,7 +202,16 @@ void AbstractMessageRouter::registerGlobalRoutingEntryIfRequired(const Immutable
             // because the message is received via global transport (isGloballyVisible=true),
             // isGloballyVisible must be true
             const bool isGloballyVisible = true;
-            addNextHop(message.getSender(), address, isGloballyVisible);
+            std::int64_t expiryDateMs =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                            message.getExpiryDate().time_since_epoch()).count() +
+                    messagingSettings.getRoutingTableGracePeriodMs();
+            if (expiryDateMs < 0) {
+                expiryDateMs = std::numeric_limits<std::int64_t>::max();
+            }
+
+            const bool isSticky = false;
+            addNextHop(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky);
         } catch (const std::invalid_argument& e) {
             std::string errorMessage("could not deserialize Address from " + replyTo +
                                      " - error: " + e.what());
@@ -321,6 +337,16 @@ void AbstractMessageRouter::activateMessageCleanerTimer()
     });
 }
 
+void AbstractMessageRouter::activateRoutingTableCleanerTimer()
+{
+    routingTableCleanerTimer.expiresFromNow(
+            std::chrono::milliseconds(messagingSettings.getRoutingTableCleanupIntervalMs()));
+    routingTableCleanerTimer.asyncWait(
+            std::bind(&AbstractMessageRouter::onRoutingTableCleanerTimerExpired,
+                      this,
+                      std::placeholders::_1));
+}
+
 void AbstractMessageRouter::registerTransportStatusCallbacks()
 {
     for (auto& transportStatus : transportStatuses) {
@@ -363,6 +389,22 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(
     } else if (errorCode != boost::system::errc::operation_canceled) {
         JOYNR_LOG_ERROR(logger,
                         "Failed to schedule timer to remove outdated messages: {}",
+                        errorCode.message());
+    }
+}
+
+void AbstractMessageRouter::onRoutingTableCleanerTimerExpired(
+        const boost::system::error_code& errorCode)
+{
+    JOYNR_LOG_DEBUG(logger, "AbstractMessageRouter::onRoutingTableCleanerTimerExpired");
+
+    if (!errorCode) {
+        WriteLocker lock(routingTableLock);
+        routingTable.purge();
+        activateRoutingTableCleanerTimer();
+    } else if (errorCode != boost::system::errc::operation_canceled) {
+        JOYNR_LOG_ERROR(logger,
+                        "Failed to schedule timer to remove outdated routing table entries: {}",
                         errorCode.message());
     }
 }
@@ -410,11 +452,38 @@ void AbstractMessageRouter::saveRoutingTable()
 void AbstractMessageRouter::addToRoutingTable(
         std::string participantId,
         bool isGloballyVisible,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+        std::int64_t expiryDateMs,
+        bool isSticky)
 {
     {
         WriteLocker lock(routingTableLock);
-        routingTable.add(participantId, isGloballyVisible, std::move(address));
+        auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
+        if (routingEntry) {
+            if ((*(routingEntry->address) != *address) ||
+                (routingEntry->isGloballyVisible != isGloballyVisible)) {
+                JOYNR_LOG_WARN(logger,
+                               "unable to update (participantId={}, address={}, "
+                               "isGloballyVisible={}, expiryDateMs={}) into routing table, since "
+                               "the participantId is already associated with routing entry {}",
+                               participantId,
+                               routingEntry->toString());
+                return;
+            }
+            // keep longest lifetime
+            if (routingEntry->expiryDateMs > expiryDateMs) {
+                expiryDateMs = routingEntry->expiryDateMs;
+            }
+            if (routingEntry->isSticky) {
+                isSticky = true;
+            }
+            // manual removal of old entry is not required here since
+            // routingTable.add() automatically calls replace
+            // in case insert fails
+        }
+
+        routingTable.add(
+                std::move(participantId), isGloballyVisible, address, expiryDateMs, isSticky);
     }
     const joynr::InProcessMessagingAddress* inprocessAddress =
             dynamic_cast<const joynr::InProcessMessagingAddress*>(address.get());

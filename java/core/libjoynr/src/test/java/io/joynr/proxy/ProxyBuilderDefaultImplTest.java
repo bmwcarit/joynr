@@ -67,7 +67,9 @@ import joynr.types.Version;
 @RunWith(MockitoJUnitRunner.class)
 public class ProxyBuilderDefaultImplTest {
 
-    private static long MAX_MESSAGE_TTL = 1024L;
+    private static final long MAX_MESSAGE_TTL = 1024L;
+    private static final long DISCOVERY_TIMEOUT_MS = 30000L;
+    private static final long RETRY_INTERVAL_MS = 2000L;
 
     @JoynrVersion(major = 1, minor = 1)
     private static interface TestInterface {
@@ -102,7 +104,9 @@ public class ProxyBuilderDefaultImplTest {
                                                              domains,
                                                              TestInterface.class,
                                                              proxyInvocationHandlerFactory,
-                                                             MAX_MESSAGE_TTL);
+                                                             MAX_MESSAGE_TTL,
+                                                             DISCOVERY_TIMEOUT_MS,
+                                                             RETRY_INTERVAL_MS);
         Field arbitratorField = ProxyBuilderDefaultImpl.class.getDeclaredField("arbitrator");
         arbitratorField.setAccessible(true);
         arbitratorField.set(subject, arbitrator);

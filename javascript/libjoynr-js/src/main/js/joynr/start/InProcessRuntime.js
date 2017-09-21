@@ -269,6 +269,25 @@ define(
 
                 var joynrState = JoynrStates.SHUTDOWN;
 
+                if (provisioning.capabilities && provisioning.capabilities.discoveryQos){
+                    var discoveryQos = provisioning.capabilities.discoveryQos;
+
+                    if (discoveryQos.discoveryExpiryIntervalMs){
+                        CapabilitiesRegistrar.setDefaultExpiryIntervalMs(discoveryQos.discoveryExpiryIntervalMs);
+                    }
+
+                    var discoveryQosSettings = {};
+
+                    if (discoveryQos.discoveryRetryDelayMs){
+                        discoveryQosSettings.discoveryRetryDelayMs = discoveryQos.discoveryRetryDelayMs;
+                    }
+                    if (discoveryQos.discoveryTimeoutMs){
+                        discoveryQosSettings.discoveryTimeoutMs = discoveryQos.discoveryTimeoutMs;
+                    }
+
+                    DiscoveryQos.setDefaultSettings(discoveryQosSettings);
+                }
+
                 /**
                  * Starts up the libjoynr instance
                  *

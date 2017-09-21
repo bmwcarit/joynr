@@ -48,7 +48,7 @@ public class JeeIntegrationPropertyKeys {
      * will attempt to register itself with an endpoint registry
      * (See {@link io.joynr.integration.httpbridge.HttpBridgeRegistryClient}),
      * and two, the {@link io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule}
-     * will register the {@link io.joynr.jeeintegration.messaging.NoOpMessagingSkeleton}
+     * will register the {@link io.joynr.jeeintegration.messaging.NoOpMqttMessagingSkeleton}
      * to prevent the MQTT messaging module to subscribe to the channel's
      * topic on the broker, because the messages arriving at the broker will
      * be forwarded via HTTP.

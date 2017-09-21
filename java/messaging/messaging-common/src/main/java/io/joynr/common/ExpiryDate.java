@@ -32,12 +32,6 @@ public class ExpiryDate {
     private long value;
     private long relativeTtl;
     private long creationTime;
-    private static final ThreadLocal<DateFormat> DateFormatter = new ThreadLocal<DateFormat>() {
-        @Override
-        protected DateFormat initialValue() {
-            return new SimpleDateFormat("dd/MM HH:mm:ss:sss");
-        }
-    };
 
     /**
      * 
@@ -108,8 +102,9 @@ public class ExpiryDate {
 
     @Override
     public String toString() {
-        return "ExpiryDate in ms: " + value + " ExpiryDate: " + DateFormatter.get().format(value) + " relativeTtl:"
-                + relativeTtl + " creationTime: " + DateFormatter.get().format(creationTime);
+        DateFormat dateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
+        return "ExpiryDate in ms: " + value + " ExpiryDate: " + dateFormatter.format(value) + " relativeTtl:"
+                + relativeTtl + " creationTime: " + dateFormatter.format(creationTime);
     }
 
 }

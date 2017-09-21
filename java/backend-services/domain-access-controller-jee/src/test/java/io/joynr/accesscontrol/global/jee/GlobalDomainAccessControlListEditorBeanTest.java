@@ -1,5 +1,3 @@
-package io.joynr.accesscontrol.global.jee;
-
 /*
  * #%L
  * %%
@@ -18,8 +16,8 @@ package io.joynr.accesscontrol.global.jee;
  * limitations under the License.
  * #L%
  */
+package io.joynr.accesscontrol.global.jee;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -27,7 +25,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,15 +41,11 @@ import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.infrastructure.GlobalDomainAccessControllerSubscriptionPublisher;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.concurrent.LinkedBlockingDeque;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GlobalDomainAccessControlListEditorBeanTest {
@@ -79,9 +72,7 @@ public class GlobalDomainAccessControlListEditorBeanTest {
     private GlobalDomainAccessControlListEditorBean globalDomainAccessControlListEditorSubject = new GlobalDomainAccessControlListEditorBean();
 
     private final static String USER_ID = "user.name";
-    private final static String USER_PARTITION = "username";
     private final static String DOMAIN = "domain1";
-    private final static String[] DOMAINS = { DOMAIN };
     private final static String INTERFACE_NAME = "interfaceName";
     private final static String OPERATION = "operation";
 

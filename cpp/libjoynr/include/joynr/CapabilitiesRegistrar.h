@@ -70,7 +70,7 @@ public:
 
         std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
 
-        std::string interfaceName = provider->getInterfaceName();
+        std::string interfaceName = T::INTERFACE_NAME();
 
         // Get the provider participant Id - the persisted provider Id has priority
         std::string participantId =
@@ -113,9 +113,13 @@ public:
         {
             // add next hop to dispatcher
             if (auto ptr = messageRouter.lock()) {
+                constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+                const bool isSticky = false;
                 ptr->addNextHop(participantId,
                                 dispatcherAddress,
                                 isGloballyVisible,
+                                expiryDateMs,
+                                isSticky,
                                 std::move(onSuccess),
                                 std::move(onError));
             }

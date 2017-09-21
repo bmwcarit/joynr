@@ -29,6 +29,7 @@
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessageQueue.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -118,7 +119,8 @@ protected:
                                AddressEqual>;
 
     // Instantiation of this class only possible through its child classes.
-    AbstractMessageRouter(std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+    AbstractMessageRouter(MessagingSettings& messagingSettings,
+                          std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                           boost::asio::io_service& ioService,
                           std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                           int maxThreads = 1,
@@ -145,7 +147,9 @@ protected:
 
     void addToRoutingTable(std::string participantId,
                            bool isGloballyVisible,
-                           std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+                           std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                           const std::int64_t expiryDateMs,
+                           const bool isSticky);
 
     void scheduleMessage(std::shared_ptr<ImmutableMessage> message,
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
@@ -153,14 +157,17 @@ protected:
                          std::chrono::milliseconds delay = std::chrono::milliseconds(0));
 
     void activateMessageCleanerTimer();
+    void activateRoutingTableCleanerTimer();
     void registerTransportStatusCallbacks();
     void rescheduleQueuedMessagesForTransport(std::shared_ptr<ITransportStatus> transportStatus);
     void onMessageCleanerTimerExpired(std::shared_ptr<AbstractMessageRouter> thisSharedptr,
                                       const boost::system::error_code& errorCode);
+    void onRoutingTableCleanerTimerExpired(const boost::system::error_code& errorCode);
 
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
+    MessagingSettings messagingSettings;
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
     ThreadPoolDelayedScheduler messageScheduler;
     std::unique_ptr<MessageQueue<std::string>> messageQueue;
@@ -169,6 +176,7 @@ protected:
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
     SteadyTimer messageQueueCleanerTimer;
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
+    SteadyTimer routingTableCleanerTimer;
     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
 
     void queueMessage(std::shared_ptr<ImmutableMessage> message) override;

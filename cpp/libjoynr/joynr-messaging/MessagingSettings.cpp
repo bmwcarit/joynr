@@ -111,10 +111,26 @@ const std::string& MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES()
+{
+    static const std::string value("messaging/mqtt-max-message-size-bytes");
+    return value;
+}
+
 std::chrono::milliseconds MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS()
 {
     static const std::chrono::milliseconds value(1000);
     return value;
+}
+
+std::int64_t MessagingSettings::DEFAULT_MQTT_MAX_MESSAGE_SIZE_BYTES()
+{
+    return MessagingSettings::NO_MQTT_MAX_MESSAGE_SIZE_BYTES();
+}
+
+std::int64_t MessagingSettings::NO_MQTT_MAX_MESSAGE_SIZE_BYTES()
+{
+    return 0;
 }
 
 std::chrono::seconds MessagingSettings::DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS()
@@ -255,10 +271,52 @@ const std::string& MessagingSettings::SETTING_BROKER_TIMEOUT_MS()
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS()
+{
+    static const std::string value("messaging/discovery-default-timeout-ms");
+    return value;
+}
+
+const std::string& MessagingSettings::SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS()
+{
+    static const std::string value("messaging/discovery-default-retry-interval-ms");
+    return value;
+}
+
+const std::string& MessagingSettings::SETTING_ROUTING_TABLE_GRACE_PERIOD_MS()
+{
+    static const std::string value("messaging/routing-table-grace-period-ms");
+    return value;
+}
+
+const std::string& MessagingSettings::SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS()
+{
+    static const std::string value("messaging/routing-table-cleanup-interval-ms");
+    return value;
+}
+
 std::int64_t MessagingSettings::DEFAULT_BROKER_TIMEOUT_MS()
 {
     // 20 seconds
     return (20 * 1000);
+}
+
+std::int64_t MessagingSettings::DEFAULT_DISCOVERY_DEFAULT_TIMEOUT_MS()
+{
+    // 10 minutes
+    return 10 * 60 * 1000;
+}
+
+std::int64_t MessagingSettings::DEFAULT_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS()
+{
+    // 10 seconds
+    return 10 * 1000;
+}
+
+std::int64_t MessagingSettings::DEFAULT_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS()
+{
+    // 6 weeks
+    return 6 * 7 * 24 * 60 * 60 * 1000L;
 }
 
 const std::string& MessagingSettings::SETTING_MAXIMUM_TTL_MS()
@@ -277,6 +335,18 @@ std::int64_t MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS()
 {
     // 40 seconds
     return (40 * 1000);
+}
+
+std::int64_t MessagingSettings::DEFAULT_ROUTING_TABLE_GRACE_PERIOD_MS()
+{
+    // 60 seconds
+    return (60 * 1000);
+}
+
+std::int64_t MessagingSettings::DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS()
+{
+    // 60 seconds
+    return (60 * 1000);
 }
 
 const std::string& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
@@ -371,6 +441,16 @@ std::chrono::milliseconds MessagingSettings::getMqttConnectionTimeoutMs() const
 {
     return std::chrono::milliseconds(
             settings.get<std::int64_t>(SETTING_MQTT_CONNECTION_TIMEOUT_MS()));
+}
+
+std::int64_t MessagingSettings::getMqttMaxMessageSizeBytes() const
+{
+    return settings.get<std::int64_t>(SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES());
+}
+
+void MessagingSettings::setMqttMaxMessageSizeBytes(std::int64_t mqttMaxMessageSizeBytes)
+{
+    settings.set(SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES(), mqttMaxMessageSizeBytes);
 }
 
 std::int64_t MessagingSettings::getIndex() const
@@ -543,6 +623,47 @@ std::uint64_t MessagingSettings::getTtlUpliftMs() const
     return settings.get<std::uint64_t>(SETTING_TTL_UPLIFT_MS());
 }
 
+std::int64_t MessagingSettings::getDiscoveryDefaultTimeoutMs() const
+{
+    return settings.get<std::int64_t>(SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS());
+}
+
+void MessagingSettings::setDiscoveryDefaultTimeoutMs(std::int64_t discoveryDefaultTimeoutMs)
+{
+    settings.set(SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS(), discoveryDefaultTimeoutMs);
+}
+
+std::int64_t MessagingSettings::getDiscoveryDefaultRetryIntervalMs() const
+{
+    return settings.get<std::int64_t>(SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS());
+}
+
+void MessagingSettings::setDiscoveryDefaultRetryIntervalMs(
+        std::int64_t discoveryDefaultRetryIntervalMs)
+{
+    settings.set(SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS(), discoveryDefaultRetryIntervalMs);
+}
+
+std::int64_t MessagingSettings::getRoutingTableGracePeriodMs() const
+{
+    return settings.get<std::int64_t>(SETTING_ROUTING_TABLE_GRACE_PERIOD_MS());
+}
+
+void MessagingSettings::setRoutingTableGracePeriodMs(std::int64_t routingTableGracePeriodMs)
+{
+    settings.set(SETTING_ROUTING_TABLE_GRACE_PERIOD_MS(), routingTableGracePeriodMs);
+}
+
+std::int64_t MessagingSettings::getRoutingTableCleanupIntervalMs() const
+{
+    return settings.get<std::int64_t>(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS());
+}
+
+void MessagingSettings::setRoutingTableCleanupIntervalMs(std::int64_t routingTableCleanupIntervalMs)
+{
+    settings.set(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(), routingTableCleanupIntervalMs);
+}
+
 bool MessagingSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
@@ -582,6 +703,9 @@ void MessagingSettings::checkSettings()
         settings.set(
                 SETTING_MQTT_CONNECTION_TIMEOUT_MS(), DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
     }
+    if (!settings.contains(SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES())) {
+        settings.set(SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES(), DEFAULT_MQTT_MAX_MESSAGE_SIZE_BYTES());
+    }
     if (!settings.contains(SETTING_INDEX())) {
         settings.set(SETTING_INDEX(), 0);
     }
@@ -608,6 +732,27 @@ void MessagingSettings::checkSettings()
     }
     if (!settings.contains(SETTING_TTL_UPLIFT_MS())) {
         settings.set(SETTING_TTL_UPLIFT_MS(), DEFAULT_TTL_UPLIFT_MS());
+    }
+
+    if (!settings.contains(SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS())) {
+        settings.set(
+                SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS(), DEFAULT_DISCOVERY_DEFAULT_TIMEOUT_MS());
+    }
+    if (!settings.contains(SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS())) {
+        settings.set(SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS(),
+                     DEFAULT_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS());
+    }
+    if (!settings.contains(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS())) {
+        settings.set(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS(),
+                     DEFAULT_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS());
+    }
+    if (!settings.contains(SETTING_ROUTING_TABLE_GRACE_PERIOD_MS())) {
+        settings.set(
+                SETTING_ROUTING_TABLE_GRACE_PERIOD_MS(), DEFAULT_ROUTING_TABLE_GRACE_PERIOD_MS());
+    }
+    if (!settings.contains(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS())) {
+        settings.set(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(),
+                     DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS());
     }
 }
 
@@ -679,6 +824,14 @@ void MessagingSettings::printSettings() const
                     settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()));
     JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_MAXIMUM_TTL_MS(), getMaximumTtlMs());
     JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_TTL_UPLIFT_MS(), getTtlUpliftMs());
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {} = {})",
+                    SETTING_ROUTING_TABLE_GRACE_PERIOD_MS(),
+                    settings.get<std::int64_t>(SETTING_ROUTING_TABLE_GRACE_PERIOD_MS()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {} = {})",
+                    SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(),
+                    settings.get<std::int64_t>(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS()));
 }
 
 } // namespace joynr

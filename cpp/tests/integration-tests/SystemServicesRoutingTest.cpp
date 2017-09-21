@@ -79,13 +79,14 @@ public:
         //a channelId for getReceiveChannelId.
         runtime = std::make_unique<JoynrClusterControllerRuntime>(
                 std::move(settings),
+                nullptr,
+                nullptr,
                 mockMessageReceiverHttp,
                 mockMessageSender,
                 mockMessageReceiverMqtt,
                 mockMessageSender);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->init();
-        runtime->registerRoutingProvider();
     }
 
     ~SystemServicesRoutingTest(){

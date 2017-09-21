@@ -27,6 +27,7 @@
 #include <boost/optional.hpp>
 
 #include "joynr/DispatcherUtils.h"
+#include "joynr/IKeychain.h"
 #include "joynr/Message.h"
 #include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"
@@ -54,6 +55,12 @@ public:
      * @return an ImmutableMessage representing a frozen state of this message's content
      */
     std::unique_ptr<ImmutableMessage> getImmutableMessage() const;
+
+    /**
+     * @brief Sets Keychain to the message.
+     * @param shared pointer to the Keychain
+     */
+    void setKeychain(std::shared_ptr<IKeychain> keyChain);
 
     /**
      * @brief Sets the sender of this message.
@@ -140,6 +147,16 @@ public:
      */
     void setCustomHeader(const std::string& key, const std::string& value);
     void setCustomHeader(std::string&& key, std::string&& value);
+
+    /**
+     * @brief Sets custom headers for this message. The keys in the provided map
+     * must already be prefixed with Message::CUSTOM_HEADER_PREFIX.
+     * @param prefixedCustomHeaders Custom headers to add.
+     */
+    void setPrefixedCustomHeaders(
+            const std::unordered_map<std::string, std::string>& prefixedCustomHeaders);
+    void setPrefixedCustomHeaders(
+            std::unordered_map<std::string, std::string>&& prefixedCustomHeaders);
 
     /**
      * @brief Gets all custom headers that have been set for this message
@@ -251,6 +268,7 @@ public:
 private:
     std::string sender;
     std::string recipient;
+    std::shared_ptr<IKeychain> keyChain;
     JoynrTimePoint expiryDate;
     std::string type;
     std::string id;

@@ -50,6 +50,7 @@ public class ImmutableMessage extends Message {
     private final byte[] serializedMessage;
     private transient Map<String, Serializable> context = new HashMap<String, Serializable>();
     private ObjectMapper objectMapper = null;
+    public final static String DUMMY_CREATOR_USER_ID = "creatorUserId";
 
     public ImmutableMessage(byte[] serializedMessage) throws EncodingException, UnsuppportedVersionException {
         this.serializedMessage = serializedMessage.clone();
@@ -90,7 +91,7 @@ public class ImmutableMessage extends Message {
     }
 
     public String getCreatorUserId() {
-        return System.getProperty("user.name");
+        return DUMMY_CREATOR_USER_ID;
     }
 
     public byte[] getUnencryptedBody() throws EncodingException {

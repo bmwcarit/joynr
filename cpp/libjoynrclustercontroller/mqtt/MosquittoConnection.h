@@ -53,35 +53,35 @@ public:
 
     ~MosquittoConnection() override;
 
-    std::uint16_t getMqttQos() const;
-    std::string getMqttPrio() const;
-    bool isMqttRetain() const;
+    virtual std::uint16_t getMqttQos() const;
+    virtual std::string getMqttPrio() const;
+    virtual bool isMqttRetain() const;
 
     /**
      * Starts mosquitto's internal loop in case it is not running or handles reconnect when
      * external communication with MQTT broker needs to be restored.
      */
-    void start();
+    virtual void start();
 
     /**
      * Stops external communication by disconnecting from MQTT broker. Mosquitto loop is
      * not stopped.
      */
-    void stop();
+    virtual void stop();
 
-    void publishMessage(
+    virtual void publishMessage(
             const std::string& topic,
             const int qosLevel,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure,
             std::uint32_t payloadlen,
             const void* payload);
-    void subscribeToTopic(const std::string& topic);
-    void unsubscribeFromTopic(const std::string& topic);
-    void registerChannelId(const std::string& channelId);
-    void registerReceiveCallback(std::function<void(smrf::ByteVector&&)> onMessageReceived);
-    void registerReadyToSendChangedCallback(std::function<void(bool)> readyToSendCallback);
-    bool isSubscribedToChannelTopic() const;
-    bool isReadyToSend() const;
+    virtual void subscribeToTopic(const std::string& topic);
+    virtual void unsubscribeFromTopic(const std::string& topic);
+    virtual void registerChannelId(const std::string& channelId);
+    virtual void registerReceiveCallback(std::function<void(smrf::ByteVector&&)> onMessageReceived);
+    virtual void registerReadyToSendChangedCallback(std::function<void(bool)> readyToSendCallback);
+    virtual bool isSubscribedToChannelTopic() const;
+    virtual bool isReadyToSend() const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoConnection);

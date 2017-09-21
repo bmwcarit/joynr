@@ -21,6 +21,7 @@ package io.joynr.discovery;
 
 import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -131,7 +132,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                 @Override
                 public void onSuccess(DiscoveryEntryWithMetaInfo[] entries) {
                     assert entries != null : "Entries must not be null.";
-                    logger.trace("Globally found entries for missing domains: {}", entries);
+                    logger.trace("Globally found entries for missing domains: {}", Arrays.toString(entries));
                     Collections.addAll(discoveryEntries, entries);
                     resolveDiscoveryEntriesFutureWithEntries(discoveryEntryFuture, discoveryEntries, callback);
                 }

@@ -28,6 +28,7 @@
 #include "joynr/Settings.h"
 #include "joynr/Semaphore.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/IKeychain.h"
 
 namespace joynr
 {
@@ -36,7 +37,7 @@ class TestLibJoynrWebSocketRuntime : public LibJoynrWebSocketRuntime
 {
 public:
 
-    TestLibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings) : LibJoynrWebSocketRuntime(std::move(settings))
+    TestLibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings, std::shared_ptr<IKeychain> keyChain) : LibJoynrWebSocketRuntime(std::move(settings), std::move(keyChain))
     {
     }
 

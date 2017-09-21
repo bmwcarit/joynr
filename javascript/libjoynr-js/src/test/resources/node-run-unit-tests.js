@@ -158,7 +158,8 @@ requirejs([
     "tests/joynr/dispatching/subscription/SubscriptionManagerTest",
     "tests/joynr/dispatching/DispatcherTest",
     "tests/joynr/dispatching/TtlUpliftTest",
-    "tests/joynr/dispatching/RequestReplyManagerTest"
+    "tests/joynr/dispatching/RequestReplyManagerTest",
+    "tests/global/LocalStorageNodeTest"
 ], function() {
     console.log("all tests modules loaded");
 

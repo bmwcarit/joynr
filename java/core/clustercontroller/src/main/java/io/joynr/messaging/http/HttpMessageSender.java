@@ -26,6 +26,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.http.operation.HttpConstants;
@@ -90,7 +91,10 @@ public class HttpMessageSender implements ShutdownListener {
         shutdownNotifier.registerForShutdown(this);
     }
 
-    public void sendMessage(ChannelAddress address, byte[] serializedMessage, FailureAction failureAction) {
+    public void sendMessage(ChannelAddress address,
+                            byte[] serializedMessage,
+                            SuccessAction successAction,
+                            FailureAction failureAction) {
         // check if messageReceiver is ready to receive replies otherwise delay request by at least 100 ms
         if (!messageReceiver.isReady()) {
             long delay_ms = DELAY_RECEIVER_NOT_STARTED_MS;
@@ -127,6 +131,7 @@ public class HttpMessageSender implements ShutdownListener {
             case HttpURLConnection.HTTP_OK:
             case HttpURLConnection.HTTP_CREATED:
                 logger.trace("SENT: channelId {} message: {}", sendUrl, serializedMessage);
+                successAction.execute();
                 break;
             case HttpURLConnection.HTTP_BAD_REQUEST:
                 HttpEntity entity = response.getEntity();

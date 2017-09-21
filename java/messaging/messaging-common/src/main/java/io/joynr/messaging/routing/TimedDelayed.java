@@ -46,22 +46,17 @@ public class TimedDelayed implements Delayed {
             return 0;
         }
 
-        if (other instanceof DelayableImmutableMessage) {
-            DelayableImmutableMessage otherDelayedMessage = (DelayableImmutableMessage) other;
-            long diffDelayedUntil = delayUntilDate - otherDelayedMessage.delayUntilDate;
-            if (diffDelayedUntil < 0) {
-                return -1;
-            } else if (diffDelayedUntil > 0) {
-                return 1;
-            } else if (sequenceNumber < otherDelayedMessage.sequenceNumber) {
-                return -1;
-            } else {
-                return 1;
-            }
-        }
-
         long diff = getDelay(NANOSECONDS) - other.getDelay(NANOSECONDS);
-        return (diff < 0) ? -1 : (diff > 0) ? 1 : 0;
+        if (diff < 0) {
+            return -1;
+        } else if (diff > 0) {
+            return 1;
+        } else if (other instanceof TimedDelayed) {
+            TimedDelayed otherTimedDelayed = (TimedDelayed) other;
+            return (sequenceNumber < otherTimedDelayed.sequenceNumber) ? -1 : 1;
+        } else {
+            return 0;
+        }
     }
 
     @Override

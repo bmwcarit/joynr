@@ -51,6 +51,7 @@ import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -62,6 +63,7 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
+import joynr.ImmutableMessage;
 import joynr.MulticastSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
@@ -179,7 +181,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     public static void setupBaseConfig() {
         baseTestConfig = new Properties();
         baseTestConfig.put(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
-        baseTestConfig.put(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_REQUEST_TIMEOUT, "200");
         baseTestConfig.put(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
     }
 
@@ -275,7 +276,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         @Override
         public Promise<EchoCallingPrincipalDeferred> echoCallingPrincipal() {
             EchoCallingPrincipalDeferred deferred = new EchoCallingPrincipalDeferred();
-            deferred.resolve(this.getCallContext().getPrincipal());
+            deferred.resolve(AbstractJoynrProvider.getCallContext().getPrincipal());
             return new Promise<EchoCallingPrincipalDeferred>(deferred);
         }
 
@@ -1300,6 +1301,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         String callingPrincipal = proxy.echoCallingPrincipal();
-        assertEquals(System.getProperty("user.name"), callingPrincipal);
+        assertEquals(ImmutableMessage.DUMMY_CREATOR_USER_ID, callingPrincipal);
     }
 }

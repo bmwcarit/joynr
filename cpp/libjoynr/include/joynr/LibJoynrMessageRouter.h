@@ -28,6 +28,7 @@
 
 #include "joynr/AbstractMessageRouter.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/Logger.h"
@@ -75,6 +76,7 @@ class JOYNR_EXPORT LibJoynrMessageRouter : public joynr::AbstractMessageRouter
 {
 public:
     LibJoynrMessageRouter(
+            MessagingSettings& messagingSettings,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
             std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
             boost::asio::io_service& ioService,
@@ -97,6 +99,8 @@ public:
     void addNextHop(const std::string& participantId,
                     const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
                     bool isGloballyVisible,
+                    const std::int64_t expiryDateMs,
+                    const bool isSticky,
                     std::function<void()> onSuccess = nullptr,
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;
@@ -135,7 +139,7 @@ public:
      * removes parentRouter shared ptr in order to break cyclic dependency
      * SubscriptionManager -> LibJoynrMessageRouter -> RoutingProxy -> SubscriptionManager
      */
-    void shutdown();
+    void shutdown() final;
 
     friend class MessageRunnable;
 

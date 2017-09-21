@@ -35,6 +35,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <mococrw/key.h>
+#include <mococrw/x509.h>
+
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/AbstractMessageRouter.h"
 #include "joynr/BrokerUrl.h"
@@ -49,11 +52,13 @@
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 #include "joynr/IClusterControllerSignalHandler.h"
 #include "joynr/IDispatcher.h"
+#include "joynr/IKeychain.h"
 #include "joynr/IMessageRouter.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStub.h"
 #include "joynr/IMessagingStubFactory.h"
+#include "joynr/IMqttMessagingSkeleton.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessConnectorFactory.h"
@@ -101,6 +106,7 @@
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 #include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
 #include "libjoynrclustercontroller/include/joynr/ITransportStatus.h"
+#include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
 #include "tests/PrettyPrint.h"
 #include "tests/utils/LibJoynrMockObjects.h"
@@ -155,9 +161,21 @@ public:
                                     std::function<void(const joynr::exceptions::DiscoveryException&)>));
 };
 
+class MockKeyChain : public joynr::IKeychain
+{
+public:
+    MOCK_CONST_METHOD0(getTlsCertificate, std::shared_ptr<const mococrw::X509Certificate>());
+    MOCK_CONST_METHOD0(getTlsKey, std::shared_ptr<const mococrw::AsymmetricPrivateKey>());
+    MOCK_CONST_METHOD0(getTlsRootCertificate, std::shared_ptr<const mococrw::X509Certificate>());
+    MOCK_CONST_METHOD0(getOwnerId, std::string());
+};
+
 class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
 public:
     MOCK_METHOD3(add, void(const joynr::types::GlobalDiscoveryEntry& entry,
+                           std::function<void()> onSuccess,
+                           std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
+    MOCK_METHOD3(add, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& entry,
                            std::function<void()> onSuccess,
                            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
 
@@ -305,6 +323,14 @@ public:
     MOCK_METHOD0(shutdown, void ());
 };
 
+class MockKeychain : public joynr::IKeychain {
+public:
+    MOCK_CONST_METHOD0(getTlsCertificate, std::shared_ptr<const mococrw::X509Certificate>());
+    MOCK_CONST_METHOD0(getTlsKey, std::shared_ptr<const mococrw::AsymmetricPrivateKey>());
+    MOCK_CONST_METHOD0(getTlsRootCertificate, std::shared_ptr<const mococrw::X509Certificate>());
+    MOCK_CONST_METHOD0(getOwnerId, std::string());
+};
+
 class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
 public:
     MOCK_METHOD1(create, std::shared_ptr<joynr::IMessagingStub>(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
@@ -318,6 +344,8 @@ public:
     void invokeAddNextHopOnSuccessFct(const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
             const bool& isGloballyVisible,
+            const std::int64_t expiryDateMs,
+            const bool isSticky,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         if (onSuccess) {
@@ -337,7 +365,7 @@ public:
         std::ignore = ioService;
         EXPECT_CALL(
                 *this,
-                addNextHop(_,_,_,_,_)
+                addNextHop(_,_,_,_,_,_,_)
         )
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeAddNextHopOnSuccessFct));
         EXPECT_CALL(
@@ -358,10 +386,12 @@ public:
                                                  std::function<void()> onSuccess,
                                                  std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError));
 
-    MOCK_METHOD5(addNextHop, void(
+    MOCK_METHOD7(addNextHop, void(
             const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
             bool isGloballyVisible,
+            const std::int64_t expiryDateMs,
+            const bool isSticky,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 
@@ -424,12 +454,13 @@ public:
             )
     );
 
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             sendReply,
             void(
                 const std::string& senderParticipantId,
                 const std::string& receiverParticipantId,
                 const joynr::MessagingQos& qos,
+                std::unordered_map<std::string, std::string> prefixedCustomHeaders,
                 const joynr::Reply& reply
             )
     );
@@ -1392,6 +1423,43 @@ public:
                                              const std::string& interfaceName));
 
     MOCK_METHOD1(addParticipantToWhitelist, void(const std::string& participantId));
+};
+
+class MockMosquittoConnection : public joynr::MosquittoConnection
+{
+public:
+    MockMosquittoConnection(const joynr::MessagingSettings& messagingSettings, const joynr::ClusterControllerSettings& ccSettings, const std::string& clientId) : MosquittoConnection(messagingSettings, ccSettings, clientId) {};
+
+    MOCK_CONST_METHOD0(getMqttPrio, std::string());
+    MOCK_CONST_METHOD0(getMqttQos, std::uint16_t());
+    MOCK_CONST_METHOD0(isMqttRetain, bool());
+    MOCK_CONST_METHOD0(isReadyToSend, bool());
+    MOCK_CONST_METHOD0(isSubscribedToChannelTopic, bool());
+    MOCK_METHOD5(publishMessage, void(const std::string& topic, const int qosLevel, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure, std::uint32_t payloadlen, const void* payload));
+    MOCK_METHOD1(registerChannelId, void(const std::string& channelId));
+    MOCK_METHOD1(registerReceiveCallback, void(std::function<void(smrf::ByteVector&&)> onMessageReceived));
+    MOCK_METHOD1(registerReadyToSendChangedCallback, void(std::function<void(bool)> readyToSendCallback));
+    MOCK_METHOD0(start, void());
+    MOCK_METHOD0(stop, void());
+    MOCK_METHOD1(subscribeToTopic, void(const std::string& topic));
+    MOCK_METHOD1(unsubscribeFromTopic, void(const std::string& topic));
+};
+
+class MockMqttMessagingSkeleton : public joynr::IMqttMessagingSkeleton
+{
+public:
+    MOCK_METHOD2(transmit, void(std::shared_ptr<joynr::ImmutableMessage> message,
+                 const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
+
+    // GoogleMock does not support mocking functions with r-value references as parameters
+    MOCK_METHOD1(onMessageReceivedMock,void(smrf::ByteVector& rawMessage));
+    void onMessageReceived(smrf::ByteVector&& rawMessage) override
+    {
+        onMessageReceivedMock(rawMessage);
+    }
+
+    MOCK_METHOD1(registerMulticastSubscription, void(const std::string& multicastId));
+    MOCK_METHOD1(unregisterMulticastSubscription, void(const std::string& multicastId));
 };
 
 #ifdef _MSC_VER

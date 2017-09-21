@@ -89,14 +89,17 @@ public:
         messageRouter()
     {
         const std::string globalCCAddress("globalAddress");
+        const std::string messageNotificationProviderParticipantId("messageNotificationProviderParticipantId");
 
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
-        messageRouter = std::make_shared<CcMessageRouter>(messagingStubFactory,
+        messageRouter = std::make_shared<CcMessageRouter>(messagingSettings,
+                                                          messagingStubFactory,
                                                           std::make_shared<MulticastMessagingSkeletonDirectory>(),
                                                           nullptr,
                                                           singleThreadedIOService.getIOService(),
                                                           nullptr,
-                                                          globalCCAddress);
+                                                          globalCCAddress,
+                                                          messageNotificationProviderParticipantId);
         messageRouter->init();
         qos.setTtl(10000);
     }
@@ -137,13 +140,15 @@ public:
         EXPECT_CALL(*mockDispatcher, addReplyCaller(_,_,_))
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-        MessageSender messageSender(messageRouter);
+        MessageSender messageSender(messageRouter, nullptr);
         std::shared_ptr<IReplyCaller> replyCaller;
         messageSender.registerDispatcher(mockDispatcher);
 
         // local messages
         const bool isGloballyVisible = false;
-        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible);
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
+        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 
         messageSender.sendRequest(senderId, receiverId, qos, request, replyCaller, isLocalMessage);
 
@@ -192,8 +197,10 @@ public:
 
         auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
         const bool isGloballyVisible = false;
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
 
-        messageRouter->addNextHop(receiverId, messagingSkeletonEndpointAddr, isGloballyVisible);
+        messageRouter->addNextHop(receiverId, messagingSkeletonEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 
         messageRouter->route(immutableMessage);
 
@@ -219,7 +226,9 @@ public:
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         const bool isGloballyVisible = false;
-        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible);
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
+        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 
         messageRouter->route(immutableMessage);
 
@@ -261,9 +270,11 @@ public:
 
         auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
         const bool isGloballyVisible = false;
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
 
-        messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr, isGloballyVisible);
-        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible);
+        messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
+        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 
         messageRouter->route(immutableMessage1);
         messageRouter->route(immutableMessage2);

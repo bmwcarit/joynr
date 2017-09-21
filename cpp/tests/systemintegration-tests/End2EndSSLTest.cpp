@@ -49,16 +49,23 @@ using namespace joynr;
 * certificates!)
 *
 **********************************************************************************************************/
-class End2EndSSLTest : public TestWithParam<std::tuple<std::string, std::string>> {
+class End2EndSSLTest : public TestWithParam<std::tuple<std::string, std::string, bool>> {
 public:
     End2EndSSLTest() : domain()
     {
+        bool useTls = std::get<2>(GetParam());
+        std::shared_ptr<IKeychain> keyChain = nullptr;
+
+        if(useTls) {
+            keyChain = createMockKeyChain();
+        }
+
         auto ccSettings = std::make_unique<Settings>(std::get<0>(GetParam()));
         runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(ccSettings));
         runtime->init();
 
         auto libJoynrSettings = std::make_unique<Settings>(std::get<1>(GetParam()));
-        libJoynrRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(libJoynrSettings));
+        libJoynrRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(libJoynrSettings), keyChain);
 
         std::string uuid = util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
@@ -82,6 +89,30 @@ public:
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
 
         std::this_thread::sleep_for(std::chrono::milliseconds(550));
+    }
+
+private:
+
+    std::shared_ptr<IKeychain> createMockKeyChain() {
+        const std::string privateKeyPassword("");
+
+        std::shared_ptr<const mococrw::X509Certificate> certificate =
+                std::make_shared<const mococrw::X509Certificate>(mococrw::X509Certificate::fromPEMFile("/data/ssl-data/certs/client.cert.pem"));
+        std::shared_ptr<const mococrw::X509Certificate> caCertificate =
+                std::make_shared<const mococrw::X509Certificate>(mococrw::X509Certificate::fromPEMFile("/data/ssl-data/certs/ca.cert.pem"));
+        std::shared_ptr<const mococrw::AsymmetricPrivateKey> privateKey =
+                std::make_shared<const mococrw::AsymmetricPrivateKey>(
+                    mococrw::AsymmetricPrivateKey::readPrivateKeyFromPEM(
+                        joynr::util::loadStringFromFile("/data/ssl-data/private/client.key.pem"), privateKeyPassword)
+                    );
+
+        std::shared_ptr<MockKeyChain> keyChain = std::make_shared<MockKeyChain>();
+
+        ON_CALL(*keyChain, getTlsCertificate()).WillByDefault(Return(certificate));
+        ON_CALL(*keyChain, getTlsKey()).WillByDefault(Return(privateKey));
+        ON_CALL(*keyChain, getTlsRootCertificate()).WillByDefault(Return(caCertificate));
+
+        return keyChain;
     }
 
 protected:
@@ -132,10 +163,10 @@ TEST_P(End2EndSSLTest, localconnection_call_rpc_method_and_get_expected_result)
 
 INSTANTIATE_TEST_CASE_P(TLS,
     End2EndSSLTest,
-    testing::Values(std::make_tuple("test-resources/websocket-cc-tls.settings", "test-resources/websocket-libjoynr-tls.settings"))
+    testing::Values(std::make_tuple("test-resources/websocket-cc-tls.settings", "test-resources/websocket-libjoynr-tls.settings", true))
 );
 
 INSTANTIATE_TEST_CASE_P(NonTLS,
     End2EndSSLTest,
-    testing::Values(std::make_tuple("test-resources/websocket-cc-tls.settings", "test-resources/websocket-libjoynr-non-tls.settings"))
+    testing::Values(std::make_tuple("test-resources/websocket-cc-tls.settings", "test-resources/websocket-libjoynr-non-tls.settings", false))
 );

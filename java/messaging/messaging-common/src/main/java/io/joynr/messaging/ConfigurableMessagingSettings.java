@@ -35,7 +35,8 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID = "joynr.messaging.capabilitiesdirectoryparticipantid";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID = "joynr.messaging.capabilitiesdirectorychannelid";
     public static final String PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN = "joynr.messaging.discoverydirectoriesdomain";
-    public static final String PROPERTY_DISCOVERY_REQUEST_TIMEOUT = "joynr.discovery.requesttimeout";
+    public static final String PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS = "joynr.discovery.defaulttimeoutms";
+    public static final String PROPERTY_DISCOVERY_RETRY_INTERVAL_MS = "joynr.discovery.defaultretryintervalms";
     public static final String PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS = "joynr.discovery.provider.defaultexpirytimems";
 
     public static final String PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID = "joynr.messaging.domainaccesscontrollerparticipantid";
@@ -56,12 +57,18 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_HOSTS_FILENAME = "joynr.messaging.hostsfilename";
 
     public static final String PROPERTY_MAX_MESSAGE_SIZE = "joynr.messaging.maxmessagesize";
-    public static final String PROPERTY_MAX_MESSAGES_INQUEUE = "joynr.messaging.maxmessagesinqueue";
+    public static final String PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE = "joynr.messaging.maxincomingmqttmessagesinqueue";
+    public static final String PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS = "joynr.messaging.repeatedmqttmessageignoreperiodms";
 
     public static final String PROPERTY_MESSAGING_MAXIMUM_TTL_MS = "joynr.messaging.maxttlms";
     public static final String PROPERTY_TTL_UPLIFT_MS = "joynr.messaging.ttlupliftms";
     public static final String PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS = "joynr.messaging.routingtablegraceperiodms";
     public static final String PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS = "joynr.messaging.routingtablecleanupintervalms";
+
+    public static final String PROPERTY_ROUTING_MAX_RETRY_COUNT = "joynr.messaging.routingmaxretrycount";
+    public static final long DEFAULT_ROUTING_MAX_RETRY_COUNT = -1;
+    public static final String PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS = "joynr.messaging.maxDelayWithExponentialBackoffMs";
+    public static final long DEFAULT_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF = -1;
 
     private final BounceProxyUrl bounceProxyUrl;
     private final long createChannelRetryIntervalMs;
@@ -69,7 +76,6 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     private final long sendMsgRetryIntervalMs;
     private final long longPollRetryIntervalMs;
     private final int maxRetriesCount;
-    private long discoveryRequestTimeoutMs;
     private int maximumParallelSends;
 
     @Inject
@@ -80,11 +86,9 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
                                          @Named(PROPERTY_DELETE_CHANNEL_RETRY_INTERVAL_MS) long deleteChannelRetryIntervalMs,
                                          @Named(PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                                          @Named(PROPERTY_LONG_POLL_RETRY_INTERVAL_MS) long longPollRetryIntervalMs,
-                                         @Named(PROPERTY_DISCOVERY_REQUEST_TIMEOUT) long discoveryRequestTimeoutMs,
                                          @Named(PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
         // CHECKSTYLE:ON
         this.maxRetriesCount = maxRetriesCount;
-        this.discoveryRequestTimeoutMs = discoveryRequestTimeoutMs;
         this.maximumParallelSends = maximumParallelSends;
         this.bounceProxyUrl = new BounceProxyUrl(bounceProxyUrl);
         this.createChannelRetryIntervalMs = createChannelRetryIntervalMs;
@@ -131,9 +135,5 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     @Override
     public int getMaxRetriesCount() {
         return maxRetriesCount;
-    }
-
-    public long getDiscoveryRequestTimeoutMs() {
-        return discoveryRequestTimeoutMs;
     }
 }

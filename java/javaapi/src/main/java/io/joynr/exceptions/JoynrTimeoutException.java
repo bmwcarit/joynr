@@ -19,19 +19,12 @@ package io.joynr.exceptions;
  * #L%
  */
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class JoynrTimeoutException extends JoynrRuntimeException {
     private static final long serialVersionUID = 1L;
-    private static final ThreadLocal<DateFormat> DateFormatter = new ThreadLocal<DateFormat>() {
-        @Override
-        protected DateFormat initialValue() {
-            return new SimpleDateFormat("dd/MM HH:mm:ss:sss");
-        }
-    };
 
     @JsonProperty
     private long expiryDate;
@@ -44,9 +37,8 @@ public class JoynrTimeoutException extends JoynrRuntimeException {
     }
 
     public JoynrTimeoutException(long expiryDate) {
-        super("ttl expired on: " + DateFormatter.get().format(expiryDate));
+        super("ttl expired on: " + (new SimpleDateFormat("dd/MM HH:mm:ss:sss")).format(expiryDate));
         this.expiryDate = expiryDate;
-
     }
 
     public long getExpiryDate() {

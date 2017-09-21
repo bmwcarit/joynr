@@ -84,7 +84,7 @@ public:
             mockMqttMessageReceiver(std::make_shared<MockTransportMessageReceiver>()),
             mockMqttMessageSender(std::make_shared<MockTransportMessageSender>()),
             semaphore(0)
-    {;
+    {
         std::string httpChannelId("http_JoynrClusterControllerRuntimeTest.ChannelId");
         std::string httpEndPointUrl("http_JoynrClusterControllerRuntimeTest.endPointUrl");
         std::string mqttTopic("mqtt_JoynrClusterControllerRuntimeTest.topic");
@@ -130,6 +130,8 @@ public:
 
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(settingsFilenameMqtt),
+                    nullptr,
+                    nullptr,
                     mockHttpMessageReceiver,
                     mockHttpMessageSender,
                     mockMqttMessageReceiver,
@@ -146,6 +148,8 @@ public:
 
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(settingsFilenameHttp),
+                    nullptr,
+                    nullptr,
                     mockHttpMessageReceiver,
                     mockHttpMessageSender,
                     mockMqttMessageReceiver,
@@ -177,6 +181,44 @@ TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeHttp)
 {
     createRuntimeHttp();
     ASSERT_TRUE(runtime != nullptr);
+}
+
+TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
+{
+    auto mockMqttMessagingSkeleton = std::make_shared<MockMqttMessagingSkeleton>();
+
+    auto mockMqttMessagingSkeletonFactory = [mockMqttMessagingSkeleton] (
+            std::weak_ptr<IMessageRouter> messageRouter,
+            std::shared_ptr<MqttReceiver> mqttReceiver,
+            const std::string& multicastTopicPrefix,
+            std::uint64_t ttlUplift) {
+        std::ignore = messageRouter;
+        std::ignore = mqttReceiver;
+        std::ignore = multicastTopicPrefix;
+        std::ignore = ttlUplift;
+        return mockMqttMessagingSkeleton;
+    };
+
+    smrf::ByteVector msg;
+    auto registerReceivedCallbackHelper =
+            [msg] (std::function<void(smrf::ByteVector&&)> onMessageReceived) mutable {
+                onMessageReceived(std::move(msg));
+            };
+    EXPECT_CALL(*mockMqttMessageReceiver, registerReceiveCallback(_))
+            .WillOnce(Invoke(registerReceivedCallbackHelper));
+
+    EXPECT_CALL(*mockMqttMessagingSkeleton, onMessageReceivedMock(msg));
+
+    runtime = std::make_shared<JoynrClusterControllerRuntime>(
+                std::make_unique<Settings>(settingsFilenameMqtt),
+                nullptr,
+                mockMqttMessagingSkeletonFactory,
+                mockHttpMessageReceiver,
+                mockHttpMessageSender,
+                mockMqttMessageReceiver,
+                mockMqttMessageSender
+    );
+    runtime->init();
 }
 
 void JoynrClusterControllerRuntimeTest::startExternalCommunicationDoesNotThrow() {

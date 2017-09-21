@@ -96,6 +96,7 @@ protected:
         transportNotAvailableQueueRef = transportNotAvailableQueue.get();
 
         auto libJoynrMessageRouter = std::make_shared<LibJoynrMessageRouter>(
+                    messagingSettings,
                     webSocketClientAddress,
                     messagingStubFactory,
                     singleThreadedIOService.getIOService(),
@@ -115,8 +116,10 @@ protected:
     std::shared_ptr<CcMessageRouter> createMessageRouter(std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {})
     {
         const std::string globalCcAddress("globalAddress");
+        const std::string messageNotificationProviderParticipantId("messageNotificationProviderParticipantId");
         ClusterControllerSettings ccSettings(settings);
 
+        messagingSettings.setRoutingTableCleanupIntervalMs(5000);
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
         messageQueue = messageQueueForMessageRouter.get();
 
@@ -124,12 +127,14 @@ protected:
         transportNotAvailableQueueRef = transportNotAvailableQueue.get();
 
         auto ccMessageRouter = std::make_shared<CcMessageRouter>(
+                    messagingSettings,
                     messagingStubFactory,
                     multicastMessagingSkeletonDirectory,
                     std::unique_ptr<IPlatformSecurityManager>(),
                     singleThreadedIOService.getIOService(),
                     std::make_unique<MqttMulticastAddressCalculator>(globalTransport, ccSettings.getMqttMulticastTopicPrefix()),
                     globalCcAddress,
+                    messageNotificationProviderParticipantId,
                     std::move(transportStatuses),
                     6,
                     std::move(messageQueueForMessageRouter),
