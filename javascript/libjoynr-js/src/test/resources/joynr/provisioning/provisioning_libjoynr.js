@@ -35,6 +35,9 @@
             ){
             return setupProvisionedData(provisioning);
         });
+    } else if (typeof exports !== 'undefined') {
+        var provisioning = require('./provisioning_root');
+        module.exports = setupProvisionedData(provisioning);
     } else {
         // expect that joynrprovisioning.common has been loaded before
         window.joynr = window.joynr || {};

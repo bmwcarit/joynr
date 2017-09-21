@@ -1,6 +1,5 @@
 /*global unescape: true, Blob: true, Array:true */
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -19,9 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/util/JSONSerializer", [ "joynr/util/Typing"
-], function(Typing) {
+var Typing = require('./Typing');
+module.exports = (function(Typing) {
 
     /**
      * @name JSONSerializer
@@ -57,4 +55,4 @@ define("joynr/util/JSONSerializer", [ "joynr/util/Typing"
 
     return JSONSerializer;
 
-});
+}(Typing));

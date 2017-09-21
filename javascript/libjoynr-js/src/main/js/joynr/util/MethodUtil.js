@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,11 +17,10 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/util/MethodUtil", [
-    "joynr/util/Typing",
-    "joynr/util/UtilInternal"
-], function(Typing, Util) {
+var Typing = require('./Typing');
+var UtilInternal = require('./UtilInternal');
+module.exports =
+        (function(Typing, Util) {
     var MethodUtil = {};
 
     MethodUtil.transformParameterMapToArray =
@@ -77,4 +75,4 @@ define("joynr/util/MethodUtil", [
 
     return MethodUtil;
 
-});
+        }(Typing, UtilInternal));

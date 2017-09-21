@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
-define([ "bluebird"
-], function(promise) {
+var bluebird = require('bluebird');
+module.exports = (function(promise) {
     return promise.Promise;
-});
+}(bluebird));

@@ -1,3 +1,4 @@
+/*jslint node: true */
 /*
  * #%L
  * %%
@@ -16,11 +17,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/util/Util", [
-    "joynr/util/Typing",
-    "joynr/types/TypeRegistrySingleton"
-], function(Typing, TypeRegistrySingleton) {
+var Typing = require('./Typing');
+var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+module.exports = (function(Typing, TypeRegistrySingleton) {
 
     /**
      * @name Util
@@ -59,4 +58,4 @@ define("joynr/util/Util", [
 
     return Util;
 
-});
+}(Typing, TypeRegistrySingleton));

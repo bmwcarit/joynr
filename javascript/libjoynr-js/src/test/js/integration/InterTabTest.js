@@ -1,6 +1,5 @@
 /*global fail: true, xit: true */
-/*jslint es5: true */
-
+/*jslint es5: true, node: true */
 /*
  * #%L
  * %%
@@ -19,48 +18,26 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-            "global/Promise",
-            "joynr",
-            "joynr/types/DiscoveryEntry",
-            "joynr/types/DiscoveryScope",
-            "joynr/types/DiscoveryQos",
-            "joynr/system/DiscoveryProxy",
-            "joynr/system/RoutingProxy",
-            "joynr/system/RoutingTypes/ChannelAddress",
-            "joynr/system/RoutingTypes/BrowserAddress",
-            "joynr/system/RoutingTypes/WebSocketAddress",
-            "joynr/system/RoutingTypes/CommonApiDbusAddress",
-            "joynr/vehicle/RadioProxy",
-            "joynr/vehicle/RadioProvider",
-            "joynr/vehicle/radiotypes/RadioStation",
-            "joynr/datatypes/exampleTypes/Country",
-            "joynr/provisioning/provisioning_libjoynr",
-            "joynr/provisioning/provisioning_cc",
-            "joynr/system/RoutingTypes/MqttAddress",
-            "integration/IntegrationUtils",
-        ],
-        function(
-                Promise,
-                joynr,
-                DiscoveryEntry,
-                DiscoveryScope,
-                DiscoveryQosGen,
-                DiscoveryProxy,
-                RoutingProxy,
-                ChannelAddress,
-                BrowserAddress,
-                WebSocketAddress,
-                CommonApiDbusAddress,
-                RadioProxy,
-                RadioProvider,
-                RadioStation,
-                Country,
-                provisioning,
-                provisioning_cc,
-                MqttAddress,
-                IntegrationUtils) {
+var Promise = require('../../classes/global/Promise');
+var joynr = require('../../node-classes/joynr');
+var DiscoveryEntry = require('../../classes/joynr/types/DiscoveryEntry');
+var DiscoveryScope = require('../../classes/joynr/types/DiscoveryScope');
+var DiscoveryQos = require('../../classes/joynr/types/DiscoveryQos');
+var DiscoveryProxy = require('../../classes/joynr/system/DiscoveryProxy');
+var RoutingProxy = require('../../classes/joynr/system/RoutingProxy');
+var ChannelAddress = require('../../classes/joynr/system/RoutingTypes/ChannelAddress');
+var BrowserAddress = require('../../classes/joynr/system/RoutingTypes/BrowserAddress');
+var WebSocketAddress = require('../../classes/joynr/system/RoutingTypes/WebSocketAddress');
+var CommonApiDbusAddress = require('../../classes/joynr/system/RoutingTypes/CommonApiDbusAddress');
+var RadioProxy = require('../../test-classes/joynr/vehicle/RadioProxy');
+var RadioProvider = require('../../test-classes/joynr/vehicle/RadioProvider');
+var RadioStation = require('../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+var Country = require('../../test-classes/joynr/datatypes/exampleTypes/Country');
+var provisioningLibjoynr = require('../../test-classes/joynr/provisioning/provisioning_libjoynr');
+var provisioningCc = require('../../test-classes/joynr/provisioning/provisioning_cc');
+var MqttAddress = require('../../classes/joynr/system/RoutingTypes/MqttAddress');
+var IntegrationUtils = require('./IntegrationUtils');
+module.exports = (function (Promise, joynr, DiscoveryEntry, DiscoveryScope, DiscoveryQosGen, DiscoveryProxy, RoutingProxy, ChannelAddress, BrowserAddress, WebSocketAddress, CommonApiDbusAddress, RadioProxy, RadioProvider, RadioStation, Country, provisioning, provisioning_cc, MqttAddress, IntegrationUtils) {
             describe(
                     "libjoynr-js.integration.intertab",
                     function() {
@@ -1044,4 +1021,4 @@ define([
                                     });
                     });
         });
-});
+}(Promise, joynr, DiscoveryEntry, DiscoveryScope, DiscoveryQos, DiscoveryProxy, RoutingProxy, ChannelAddress, BrowserAddress, WebSocketAddress, CommonApiDbusAddress, RadioProxy, RadioProvider, RadioStation, Country, provisioningLibjoynr, provisioningCc, MqttAddress, IntegrationUtils));

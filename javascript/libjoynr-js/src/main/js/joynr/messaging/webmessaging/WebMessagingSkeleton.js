@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,14 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/messaging/webmessaging/WebMessagingSkeleton",
-        [
-            "joynr/util/Typing",
-            "joynr/util/UtilInternal"
-        ],
-        function(Typing, Util) {
+var Typing = require('../../util/Typing');
+var UtilInternal = require('../../util/UtilInternal');
+module.exports =
+        (function(Typing, Util) {
 
             /**
              * @constructor WebMessagingSkeleton
@@ -86,4 +84,4 @@ define(
 
             return WebMessagingSkeleton;
 
-        });
+        }(Typing, UtilInternal));

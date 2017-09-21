@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/proxy/ProxyEvent", [
-    "global/Promise",
-    "joynr/proxy/BroadcastFilterParameters",
-    "joynr/dispatching/subscription/util/SubscriptionUtil"
-], function(Promise, BroadcastFilterParameters, SubscriptionUtil) {
+var Promise = require('../../global/Promise');
+var BroadcastFilterParameters = require('./BroadcastFilterParameters');
+var SubscriptionUtil = require('../dispatching/subscription/util/SubscriptionUtil');
+module.exports =
+        (function(Promise, BroadcastFilterParameters, SubscriptionUtil) {
 
     /**
      * Checks if the given datatypes and values match the given broadcast parameters
@@ -188,4 +189,4 @@ define("joynr/proxy/ProxyEvent", [
 
     return ProxyEvent;
 
-});
+        }(Promise, BroadcastFilterParameters, SubscriptionUtil));

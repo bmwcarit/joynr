@@ -1,5 +1,4 @@
-/*jslint nomen: true */
-
+/*jslint nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,12 +17,10 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/dispatching/types/Request",
-    "joynr/types/TypeRegistrySingleton",
-    "joynr/vehicle/radiotypes/RadioStation"
-], function(Request, TypeRegistrySingleton, RadioStation) {
+var Request = require('../../../../classes/joynr/dispatching/types/Request');
+var TypeRegistrySingleton = require('../../../../classes/joynr/types/TypeRegistrySingleton');
+var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+module.exports = (function(Request, TypeRegistrySingleton, RadioStation) {
 
     describe("libjoynr-js.joynr.dispatching.types.Request", function() {
 
@@ -58,5 +55,5 @@ define([
 
     });
 
-}); // require
+}(Request, TypeRegistrySingleton, RadioStation)); // require
 /*jslint nomen: false */

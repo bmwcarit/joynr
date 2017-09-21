@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/dispatching/types/MulticastSubscriptionRequest", [
-    "joynr/util/Typing",
-    "joynr/proxy/MulticastSubscriptionQos",
-    "joynr/system/LoggerFactory"
-], function(Typing, MulticastSubscriptionQos, LoggerFactory) {
+var Typing = require('../../util/Typing');
+var MulticastSubscriptionQos = require('../../proxy/MulticastSubscriptionQos');
+var LoggerFactory = require('../../system/LoggerFactory');
+module.exports =
+        (function(Typing, MulticastSubscriptionQos, LoggerFactory) {
     var log = LoggerFactory.getLogger("joynr/dispatching/types/MulticastSubscriptionRequest");
     var defaultSettings = {
         qos : new MulticastSubscriptionQos()
@@ -113,4 +114,4 @@ define("joynr/dispatching/types/MulticastSubscriptionRequest", [
 
     return MulticastSubscriptionRequest;
 
-});
+        }(Typing, MulticastSubscriptionQos, LoggerFactory));

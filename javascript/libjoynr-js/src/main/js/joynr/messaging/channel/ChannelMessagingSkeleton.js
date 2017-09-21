@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,14 +18,13 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/channel/ChannelMessagingSkeleton", [
-    "joynr/util/Typing",
-    "joynr/system/LoggerFactory",
-    "joynr/system/DiagnosticTags",
-    "joynr/exceptions/JoynrException",
-    "joynr/messaging/JoynrMessage"
-], function(Typing, LoggerFactory, DiagnosticTags, JoynrException, JoynrMessage) {
+var Typing = require('../../util/Typing');
+var LoggerFactory = require('../../system/LoggerFactory');
+var DiagnosticTags = require('../../system/DiagnosticTags');
+var JoynrException = require('../../exceptions/JoynrException');
+var JoynrMessage = require('../JoynrMessage');
+module.exports =
+        (function(Typing, LoggerFactory, DiagnosticTags, JoynrException, JoynrMessage) {
 
     /**
      * @name ChannelMessagingSkeleton
@@ -69,4 +70,4 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
 
     return ChannelMessagingSkeleton;
 
-});
+        }(Typing, LoggerFactory, DiagnosticTags, JoynrException, JoynrMessage));

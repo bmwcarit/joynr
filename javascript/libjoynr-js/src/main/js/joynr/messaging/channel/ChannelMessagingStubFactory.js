@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,11 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/channel/ChannelMessagingStubFactory", [
-    "joynr/util/Typing",
-    "joynr/messaging/channel/ChannelMessagingStub"
-], function(Typing, ChannelMessagingStub) {
+var Typing = require('../../util/Typing');
+var ChannelMessagingStub = require('./ChannelMessagingStub');
+module.exports =
+        (function(Typing, ChannelMessagingStub) {
 
     /**
      * @constructor
@@ -73,4 +74,4 @@ define("joynr/messaging/channel/ChannelMessagingStubFactory", [
 
     return ChannelMessagingStubFactory;
 
-});
+        }(Typing, ChannelMessagingStub));

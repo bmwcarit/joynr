@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,16 +18,12 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
-        [
-            "joynr/util/Typing",
-            "joynr/util/UtilInternal",
-            "joynr/proxy/OnChangeSubscriptionQos",
-            "joynr/system/LoggerFactory"
-        ],
-        function(Typing, Util, OnChangeSubscriptionQos, LoggerFactory) {
+var Typing = require('../util/Typing');
+var UtilInternal = require('../util/UtilInternal');
+var OnChangeSubscriptionQos = require('./OnChangeSubscriptionQos');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports =
+        (function(Typing, Util, OnChangeSubscriptionQos, LoggerFactory) {
 
             var defaultSettings;
 
@@ -291,4 +289,4 @@ define(
 
             return OnChangeWithKeepAliveSubscriptionQos;
 
-        });
+        }(Typing, UtilInternal, OnChangeSubscriptionQos, LoggerFactory));

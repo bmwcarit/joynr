@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,11 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/dispatching/types/SubscriptionInformation", [
-    "joynr/util/Typing",
-    "joynr/dispatching/types/SubscriptionRequest"
-], function(Typing, SubscriptionRequest) {
+var Typing = require('../../util/Typing');
+var SubscriptionRequest = require('./SubscriptionRequest');
+module.exports =
+        (function(Typing, SubscriptionRequest) {
 
     /**
      * @name SubscriptionInformation
@@ -85,4 +86,4 @@ define("joynr/dispatching/types/SubscriptionInformation", [
 
     return SubscriptionInformation;
 
-});
+        }(Typing, SubscriptionRequest));

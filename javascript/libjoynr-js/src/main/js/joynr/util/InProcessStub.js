@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/util/InProcessStub", [ "joynr/util/InProcessSkeleton"
-], function(InProcessSkeleton) {
+var InProcessSkeleton = require('./InProcessSkeleton');
+module.exports = (function(InProcessSkeleton) {
 
     /**
      * Creates a proxy function that calls the proxyObjectFunction with the original arguments
@@ -97,4 +98,4 @@ define("joynr/util/InProcessStub", [ "joynr/util/InProcessSkeleton"
 
     return InProcessStub;
 
-});
+}(InProcessSkeleton));

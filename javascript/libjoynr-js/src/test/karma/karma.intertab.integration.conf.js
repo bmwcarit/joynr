@@ -17,6 +17,12 @@
  * #L%
  */
 
+ // @todo install browserify to correct location in mvn or make it available
+ // in any other way
+ var path = require('path');
+ var karmaModulePath = process.argv[1];
+ var projectRootPath = path.join(karmaModulePath, '../../..');
+
 module.exports = function(config) {
   config.set({
       plugins: [
@@ -24,9 +30,9 @@ module.exports = function(config) {
             'karma-jasmine',
             'karma-chrome-launcher',
             'karma-phantomjs-launcher',
-            'karma-requirejs',
             'karma-junit-reporter',
-            'karma-verbose-reporter'
+            'karma-verbose-reporter',
+            require('./karma.preprocessor.browserify')({'./joynr/Runtime': path.join(projectRootPath, 'joynr/Runtime.intertab.clustercontroller')})
     ],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -35,7 +41,7 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine', 'requirejs'],
+    frameworks: ['jasmine'],
 
 
     // list of files / patterns to load in the browser
@@ -58,8 +64,7 @@ module.exports = function(config) {
             {pattern: 'test-classes/integration/TestInterTabCommunicationCCWorker.js', included: false},
             {pattern: 'test-classes/integration/provisioning_end2end_common.js', included: false},
 
-            {pattern: 'test-classes/integration/InterTabTest.js', included: false},
-            'test-classes/test-intertab-integration.js'
+            {pattern: 'test-classes/integration/InterTabTest.js', included: true}
     ],
 
 
@@ -73,6 +78,7 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
+      'test-classes/integration/InterTabTest.js': ['browserify']
     },
 
 

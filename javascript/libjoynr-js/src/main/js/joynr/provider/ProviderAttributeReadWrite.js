@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/provider/ProviderAttributeReadWrite", [ "joynr/provider/ProviderAttribute"
-], function(ProviderAttribute) {
+var ProviderAttribute = require('./ProviderAttribute');
+module.exports =
+        (function(ProviderAttribute) {
 
     /**
      * Constructor of ProviderAttribute* object that is used in the generation of provider objects
@@ -129,4 +131,4 @@ define("joynr/provider/ProviderAttributeReadWrite", [ "joynr/provider/ProviderAt
 
     return ProviderAttributeReadWrite;
 
-});
+        }(ProviderAttribute));

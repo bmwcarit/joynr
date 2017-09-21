@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
-    "joynr/messaging/JoynrMessage",
-    "joynr/util/Typing",
-    "joynr/system/LoggerFactory"
-], function(JoynrMessage, Typing, LoggerFactory) {
+var JoynrMessage = require('../JoynrMessage');
+var Typing = require('../../util/Typing');
+var LoggerFactory = require('../../system/LoggerFactory');
+module.exports =
+        (function(JoynrMessage, Typing, LoggerFactory) {
 
     /**
      * @constructor WebSocketMessagingSkeleton
@@ -91,4 +92,4 @@ define("joynr/messaging/websocket/WebSocketMessagingSkeleton", [
 
     return WebSocketMessagingSkeleton;
 
-});
+        }(JoynrMessage, Typing, LoggerFactory));

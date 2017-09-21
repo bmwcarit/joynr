@@ -1,5 +1,4 @@
-/*jslint stupid: true, nomen: true */
-
+/*jslint stupid: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,14 +17,13 @@
  * limitations under the License.
  * #L%
  */
-
 /**
  * @returns constructor for a localStorage object
  */
-define([
-    "node-persist",
-    "joynr/util/Typing"
-], function(storage, Typing) {
+module.exports =
+        global.window !== undefined ? require('./LocalStorage') : (function() {
+    var Typing = require('../joynr/util/Typing');
+    var storage = require('node-persist');
     /**
      * LocalStorage constructor (node wrapper for LocalStorage)
      * @constructor LocalStorageWrapper
@@ -76,4 +74,4 @@ define([
     };
 
     return LocalStorageWrapper;
-});
+        }());

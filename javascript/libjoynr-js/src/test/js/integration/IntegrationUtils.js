@@ -1,6 +1,5 @@
 /*global Worker: true */
-/*jslint es5: true */
-
+/*jslint es5: true, node: true */
 /*
  * #%L
  * %%
@@ -19,22 +18,12 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "integration/IntegrationUtils",
-        [
-            "global/Promise",
-            "joynr/provisioning/provisioning_root",
-            "integration/provisioning_end2end_common",
-            "joynr/start/settings/defaultInterTabSettings",
-            "global/WaitsFor"
-        ],
-        function(
-            Promise,
-            provisioning_root,
-            provisioning_end2end,
-            defaultInterTabSettings,
-            waitsFor) {
+var Promise = require('../../classes/global/Promise');
+var provisioningRoot = require('../../test-classes/joynr/provisioning/provisioning_root');
+var provisioningEnd2EndCommon = require('./provisioning_end2end_common');
+var defaultInterTabSettings = require('../../classes/joynr/start/settings/defaultInterTabSettings');
+var WaitsFor = require('../../test-classes/global/WaitsFor');
+module.exports = (function (Promise, provisioning_root, provisioning_end2end, defaultInterTabSettings, waitsFor) {
             var IntegrationUtils = {};
             var currentlyRunningWebWorkerCC;
             var workerReady = {}, workerStarted = {}, workerFinished = {}, worker = {}, workerId =
@@ -287,4 +276,4 @@ define(
             };
 
             return IntegrationUtils;
-        });
+}(Promise, provisioningRoot, provisioningEnd2EndCommon, defaultInterTabSettings, WaitsFor));

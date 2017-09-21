@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define('joynr/types/TypeRegistrySingleton', [ "joynr/start/TypeRegistry"
-], function(TypeRegistry) {
+var TypeRegistry = require('../start/TypeRegistry');
+module.exports = (function(TypeRegistry) {
     var instance;
 
     /**
@@ -52,4 +53,4 @@ define('joynr/types/TypeRegistrySingleton', [ "joynr/start/TypeRegistry"
     TypeRegistrySingleton.addType = TypeRegistrySingleton.getInstance().addType;
 
     return TypeRegistrySingleton;
-});
+}(TypeRegistry));

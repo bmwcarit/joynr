@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,11 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/dispatching/types/OneWayRequest", [
-    "joynr/util/UtilInternal",
-    "joynr/util/Typing"
-], function(Util, Typing) {
+var UtilInternal = require('../../util/UtilInternal');
+var Typing = require('../../util/Typing');
+module.exports = (function(Util, Typing) {
 
     var defaultSettings = {
         paramDatatypes : [],
@@ -92,4 +92,4 @@ define("joynr/dispatching/types/OneWayRequest", [
 
     return OneWayRequest;
 
-});
+}(UtilInternal, Typing));

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/capabilities/ParticipantIdStorage", [], function() {
+module.exports = (function() {
 
     /**
      * @constructor
@@ -56,4 +57,4 @@ define("joynr/capabilities/ParticipantIdStorage", [], function() {
 
     return ParticipantIdStorage;
 
-});
+}());

@@ -1,5 +1,6 @@
-/*global console: true */
+/*jslint node: true */
 
+/*global console: true */
 /*
  * #%L
  * %%
@@ -18,8 +19,7 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/system/ConsoleAppender", [], function() {
+module.exports = (function() {
 
     /**
      * A log4javascript Appender that sends a logged message from a WebWorker to the main context to
@@ -64,4 +64,4 @@ define("joynr/system/ConsoleAppender", [], function() {
 
     return ConsoleAppender;
 
-});
+}());

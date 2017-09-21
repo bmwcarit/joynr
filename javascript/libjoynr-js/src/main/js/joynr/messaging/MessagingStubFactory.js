@@ -1,3 +1,4 @@
+/*jslint node: true */
 /*
  * #%L
  * %%
@@ -16,12 +17,11 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/MessagingStubFactory", [
-    "joynr/util/Typing",
-    "joynr/util/UtilInternal",
-    "joynr/system/LoggerFactory"
-], function(Typing, Util, LoggerFactory) {
+var Typing = require('../util/Typing');
+var UtilInternal = require('../util/UtilInternal');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports =
+        (function(Typing, Util, LoggerFactory) {
 
     /**
      * @name MessagingStubFactory
@@ -65,4 +65,4 @@ define("joynr/messaging/MessagingStubFactory", [
     }
 
     return MessagingStubFactory;
-});
+        }(Typing, UtilInternal, LoggerFactory));

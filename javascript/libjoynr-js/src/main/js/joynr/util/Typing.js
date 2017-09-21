@@ -1,3 +1,4 @@
+/*jslint node: true */
 /*
  * #%L
  * %%
@@ -16,14 +17,10 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/util/Typing",
-        [
-            "joynr",
-            "joynr/types/TypeRegistrySingleton"
-        ],
-        function(joynr, TypeRegistrySingleton) {
+var joynr = require('joynr');
+var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+module.exports =
+        (function(joynr, TypeRegistrySingleton) {
 
             /**
              * @name Typing
@@ -108,7 +105,7 @@ define(
              *            typeRegistry the typeRegistry to retrieve type information from
              * @param {String}
              *            typeHint optional parameter which provides the type informed of the untyped object.
-             *            This is used i.e. for enums, where the type information is not included in the untyped object itself 
+             *            This is used i.e. for enums, where the type information is not included in the untyped object itself
              * @returns a deep copy of the untyped object with the types being augmented
              * @throws {Error}
              *             if in any of the objects contains a member of type "Function" or the type of the
@@ -245,7 +242,7 @@ define(
              * Returns true if the object is a joynr enum type modelled in Franca
              * @function Typing#isEnumType
              * @param {Object} value the object to be check for typing
-             * @param {Boolean} checkForJoynrObject an optional member. If set to true, 
+             * @param {Boolean} checkForJoynrObject an optional member. If set to true,
              *                  the parameter value is forced to be an instance of the root
              *                  joynr object type
              * @returns {Boolean} true if the provided value is an enum type
@@ -269,4 +266,4 @@ define(
 
             return Typing;
 
-        });
+        }(joynr, TypeRegistrySingleton));

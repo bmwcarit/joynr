@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true, node: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,28 +18,16 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-            "global/Promise",
-            "joynr/capabilities/CapabilitiesRegistrar",
-            "joynr/types/ProviderQos",
-            "joynr/types/GlobalDiscoveryEntry",
-            "joynr/provider/ProviderAttributeNotifyReadWrite",
-            "joynr/types/DiscoveryEntry",
-            "joynr/types/ProviderScope",
-            "joynr/types/Version",
-            "uuid"
-        ],
-        function(
-                Promise,
-                CapabilitiesRegistrar,
-                ProviderQos,
-                GlobalDiscoveryEntry,
-                ProviderAttributeNotifyReadWrite,
-                DiscoveryEntry,
-                ProviderScope,
-                Version,
-                uuid) {
+var Promise = require('../../../classes/global/Promise');
+var CapabilitiesRegistrar = require('../../../classes/joynr/capabilities/CapabilitiesRegistrar');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var GlobalDiscoveryEntry = require('../../../classes/joynr/types/GlobalDiscoveryEntry');
+var ProviderAttributeNotifyReadWrite = require('../../../classes/joynr/provider/ProviderAttributeNotifyReadWrite');
+var DiscoveryEntry = require('../../../classes/joynr/types/DiscoveryEntry');
+var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
+var Version = require('../../../classes/joynr/types/Version');
+var uuid = require('../../../classes/lib/uuid-annotated');
+module.exports = (function (Promise, CapabilitiesRegistrar, ProviderQos, GlobalDiscoveryEntry, ProviderAttributeNotifyReadWrite, DiscoveryEntry, ProviderScope, Version, uuid) {
             describe(
                     "libjoynr-js.joynr.capabilities.CapabilitiesRegistrar",
                     function() {
@@ -440,4 +427,4 @@ define([
 
                     });
 
-        }); // require
+}(Promise, CapabilitiesRegistrar, ProviderQos, GlobalDiscoveryEntry, ProviderAttributeNotifyReadWrite, DiscoveryEntry, ProviderScope, Version, uuid));    // require

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define([ "global/LocalStorage"
-], function(LocalStorage) {
+var LocalStorage = require('../../classes/global/LocalStorageNode');
+module.exports = (function(LocalStorage) {
 
     describe("local storage", function() {
 
@@ -69,4 +70,4 @@ define([ "global/LocalStorage"
         });
 
     });
-});
+}(LocalStorage));

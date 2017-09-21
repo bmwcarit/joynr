@@ -1,5 +1,4 @@
-/*jslint nomen: true */
-
+/*jslint nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,9 +17,8 @@
  * limitations under the License.
  * #L%
  */
-
-define([ "joynr/messaging/MessagingStubFactory"
-], function(MessagingStubFactory) {
+var MessagingStubFactory = require('../../../classes/joynr/messaging/MessagingStubFactory');
+module.exports = (function(MessagingStubFactory) {
 
     describe("libjoynr-js.joynr.messaging.MessagingStubFactory", function() {
         var messagingStub1, messagingStub2, factory1, factory2;
@@ -103,5 +101,4 @@ define([ "joynr/messaging/MessagingStubFactory"
 
     });
 
-});
-/*jslint nomen: false */
+}(MessagingStubFactory)); /*jslint nomen: false */

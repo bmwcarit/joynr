@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/dispatching/types/Request", [
-    "joynr/util/UtilInternal",
-    "joynr/util/Typing",
-    "uuid"
-], function(Util, Typing, uuid) {
+var UtilInternal = require('../../util/UtilInternal');
+var Typing = require('../../util/Typing');
+var uuid = require('../../../lib/uuid-annotated');
+module.exports = (function(Util, Typing, uuid) {
 
     var defaultSettings = {
         paramDatatypes : [],
@@ -81,4 +81,4 @@ define("joynr/dispatching/types/Request", [
 
     return Request;
 
-});
+}(UtilInternal, Typing, uuid));

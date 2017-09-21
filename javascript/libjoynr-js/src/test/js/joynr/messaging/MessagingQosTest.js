@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,12 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/start/settings/defaultMessagingSettings",
-    "joynr/messaging/MessagingQos",
-    "joynr/messaging/MessagingQosEffort"
-], function(defaultMessagingSettings, MessagingQos, MessagingQosEffort) {
+var defaultMessagingSettings =
+        require('../../../classes/joynr/start/settings/defaultMessagingSettings');
+var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
+var MessagingQosEffort = require('../../../classes/joynr/messaging/MessagingQosEffort');
+module.exports =
+        (function(defaultMessagingSettings, MessagingQos, MessagingQosEffort) {
 
     describe("libjoynr-js.joynr.messaging.MessagingQos", function() {
         it("is instantiable", function() {
@@ -404,4 +406,4 @@ define([
         });
     });
 
-}); // require
+        }(defaultMessagingSettings, MessagingQos, MessagingQosEffort)); // require

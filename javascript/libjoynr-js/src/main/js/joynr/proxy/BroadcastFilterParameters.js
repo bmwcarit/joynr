@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*global joynr: true */
 /*
  * #%L
@@ -17,12 +19,11 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/proxy/BroadcastFilterParameters", [
-    "joynr/util/Typing",
-    "joynr/util/UtilInternal",
-    "joynr/system/LoggerFactory"
-], function(Typing, Util, LoggerFactory) {
+var Typing = require('../util/Typing');
+var UtilInternal = require('../util/UtilInternal');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports =
+        (function(Typing, Util, LoggerFactory) {
 
     /**
      * Constructor of BroadcastFilterParameters object used for subscriptions in generated proxy objects
@@ -101,4 +102,4 @@ define("joynr/proxy/BroadcastFilterParameters", [
     }
 
     return BroadcastFilterParameters;
-});
+        }(Typing, UtilInternal, LoggerFactory));

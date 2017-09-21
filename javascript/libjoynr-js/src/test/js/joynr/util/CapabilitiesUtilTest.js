@@ -1,5 +1,4 @@
-/*jslint es5: true, nomen: true */
-
+/*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -18,25 +17,24 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "global/Promise",
-    "joynr/util/CapabilitiesUtil",
-    "joynr/types/DiscoveryEntry",
-    "joynr/types/DiscoveryEntryWithMetaInfo",
-    "joynr/types/GlobalDiscoveryEntry",
-    "joynr/types/Version",
-    "joynr/types/ProviderQos",
-    "joynr/system/RoutingTypes/MqttAddress"
-], function(
-        Promise,
-        CapabilitiesUtil,
-        DiscoveryEntry,
-        DiscoveryEntryWithMetaInfo,
-        GlobalDiscoveryEntry,
-        Version,
-        ProviderQos,
-        MqttAddress) {
+var Promise = require('../../../classes/global/Promise');
+var CapabilitiesUtil = require('../../../classes/joynr/util/CapabilitiesUtil');
+var DiscoveryEntry = require('../../../classes/joynr/types/DiscoveryEntry');
+var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
+var GlobalDiscoveryEntry = require('../../../classes/joynr/types/GlobalDiscoveryEntry');
+var Version = require('../../../classes/joynr/types/Version');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var MqttAddress = require('../../../classes/joynr/system/RoutingTypes/MqttAddress');
+module.exports =
+        (function(
+                Promise,
+                CapabilitiesUtil,
+                DiscoveryEntry,
+                DiscoveryEntryWithMetaInfo,
+                GlobalDiscoveryEntry,
+                Version,
+                ProviderQos,
+                MqttAddress) {
 
     describe("libjoynr-js.joynr.CapabilitiesUtil", function() {
         it("is of correct type and has all members", function() {
@@ -303,5 +301,12 @@ define([
 
     });
 
-});
-/* jslint nomen: false */
+        }(
+                Promise,
+                CapabilitiesUtil,
+                DiscoveryEntry,
+                DiscoveryEntryWithMetaInfo,
+                GlobalDiscoveryEntry,
+                Version,
+                ProviderQos,
+                MqttAddress)); /* jslint nomen: false */

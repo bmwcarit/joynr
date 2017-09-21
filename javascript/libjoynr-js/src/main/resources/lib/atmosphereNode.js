@@ -22,7 +22,13 @@
  *
  * @returns atmosphere-client which is the equivalent for atmosphere in node.js
  */
-define([ "atmosphere.js"
-], function(atmosphere) {
-    return atmosphere;
-});
+module.exports = function () {
+    var oldWindow = global.window;
+    var oldNavigator = global.navigator;
+    global.window = {};
+    global.navigator = {userAgent: 'node'}
+    var result = require('atmosphere.js');
+    global.window = oldWindow;
+    global.navigator = oldNavigator;
+    return result;
+}();

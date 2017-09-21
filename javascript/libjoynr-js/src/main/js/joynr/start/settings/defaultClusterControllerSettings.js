@@ -1,4 +1,4 @@
-/*jslint nomen: true */
+/*jslint nomen: true, node:true */
 /*
  * #%L
  * %%
@@ -17,11 +17,10 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/start/settings/defaultClusterControllerSettings", [
-    "joynr/types/ProviderScope",
-    "joynr/util/UtilInternal"
-], function(ProviderScope, Util) {
+var ProviderScope = require('../../../joynr/types/ProviderScope');
+var UtilInternal = require('../../util/UtilInternal');
+module.exports =
+        (function(ProviderScope, Util) {
     var defaultClusterControllerSettings =
             function(settings) {
                 var defaultSettings = {};
@@ -66,4 +65,4 @@ define("joynr/start/settings/defaultClusterControllerSettings", [
     return function(settings) {
         return defaultClusterControllerSettings(settings);
     };
-});
+        }(ProviderScope, UtilInternal));
