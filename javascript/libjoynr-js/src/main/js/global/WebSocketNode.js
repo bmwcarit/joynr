@@ -55,13 +55,14 @@ module.exports =
             ws = require("ws");
         }
 
-        var certs = keychain ? {
-            cert: keychain.tlsCert,
-            key: keychain.tlsKey,
-            ca: keychain.tlsCa
+        var clientOptions = keychain ? {
+            cert : keychain.tlsCert,
+            key : keychain.tlsKey,
+            ca : keychain.tlsCa,
+            rejectUnauthorized : true
         } : undefined;
 
-        var webSocketObj = new ws(remoteUrl, certs);
+        var webSocketObj = new ws(remoteUrl, clientOptions);
 
         webSocketObj.encodeString = function (string) {
             return Buffer.from(string);
@@ -182,7 +183,9 @@ module.exports =
                 log.error("Received unsupported message from websocket.");
             }
         };
+
         return webSocketObj;
     }
+
     return WebSocketNodeWrapper;
 }(Smrf, JoynrMessage, JoynrRuntimeException, LoggerFactory));

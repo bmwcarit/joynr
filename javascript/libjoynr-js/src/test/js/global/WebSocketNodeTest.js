@@ -44,7 +44,6 @@ mod.prototype.require = function (md) {
         return wscppSpy;
     }
 
-
     return overriddenRequire.apply(this, arguments);
 };
 
@@ -94,7 +93,8 @@ describe("websocket node", function() {
         expect(wscppSpy).toHaveBeenCalledWith(remoteUrl, {
             cert : keychainWithCerts.tlsCert,
             key : keychainWithCerts.tlsKey,
-            ca : keychainWithCerts.tlsCa
+            ca : keychainWithCerts.tlsCa,
+            rejectUnauthorized: true
         });
 
     });
