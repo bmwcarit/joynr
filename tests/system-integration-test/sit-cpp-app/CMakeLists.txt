@@ -78,6 +78,16 @@ include_directories(
     ${Joynr_LIB_COMMON_INCLUDE_DIRS}
 )
 
+set(
+    common_HEADERS
+    "src/main/cpp/KeychainImpl.h"
+)
+
+set(
+    common_SOURCES
+    "src/main/cpp/KeychainImpl.cpp"
+)
+
 # Consumer headers
 set(
     jsit-consumer_HEADERS
@@ -126,6 +136,8 @@ add_executable(
     jsit-provider-ws
     ${jsit-provider_HEADERS}
     ${jsit-provider_SOURCES}
+    ${common_HEADERS}
+    ${common_SOURCES}
     ${GENERATED_HEADERS}
     ${GENERATED_SOURCES}
 )
@@ -143,6 +155,8 @@ add_executable(
     jsit-consumer-ws
     ${jsit-consumer_HEADERS}
     ${jsit-consumer_SOURCES}
+    ${common_HEADERS}
+    ${common_SOURCES}
     ${GENERATED_HEADERS}
     ${GENERATED_SOURCES}
 )
