@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,19 +18,16 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/types/GlobalDiscoveryEntry",
-            "joynr/types/ProviderQos",
-            "joynr/types/ProviderScope",
-            "joynr/types/CustomParameter",
-            "joynr/types/Version",
-            "joynr/messaging/inprocess/InProcessAddress",
-            "joynr/util/InProcessStub",
-            "joynr/util/InProcessSkeleton"
-        ],
-        function(
+var GlobalDiscoveryEntry = require('../../../classes/joynr/types/GlobalDiscoveryEntry');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
+var CustomParameter = require('../../../classes/joynr/types/CustomParameter');
+var Version = require('../../../classes/joynr/types/Version');
+var InProcessAddress = require('../../../classes/joynr/messaging/inprocess/InProcessAddress');
+var InProcessStub = require('../../../classes/joynr/util/InProcessStub');
+var InProcessSkeleton = require('../../../classes/joynr/util/InProcessSkeleton');
+module.exports =
+        (function(
                 GlobalDiscoveryEntry,
                 ProviderQos,
                 ProviderScope,
@@ -326,4 +325,12 @@ define(
 
                     });
 
-        }); // require
+        }(
+                GlobalDiscoveryEntry,
+                ProviderQos,
+                ProviderScope,
+                CustomParameter,
+                Version,
+                InProcessAddress,
+                InProcessStub,
+                InProcessSkeleton)); // require

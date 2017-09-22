@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/MessagingQosEffort", [], function() {
+module.exports = (function() {
 
     /**
      * The messaging QoS effort can be used to define how much effort should
@@ -53,4 +54,4 @@ define("joynr/messaging/MessagingQosEffort", [], function() {
     };
 
     return MessagingQosEffort;
-});
+}());

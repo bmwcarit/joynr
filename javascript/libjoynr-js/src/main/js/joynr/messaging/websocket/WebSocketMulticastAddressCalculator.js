@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/websocket/WebSocketMulticastAddressCalculator", [ "joynr/util/Typing"
-], function(Typing) {
+var Typing = require('../../util/Typing');
+module.exports =
+        (function(Typing) {
 
     /**
      * @constructor WebSocketMulticastAddressCalculator
@@ -50,4 +52,4 @@ define("joynr/messaging/websocket/WebSocketMulticastAddressCalculator", [ "joynr
 
     return WebSocketMulticastAddressCalculator;
 
-});
+        }(Typing));

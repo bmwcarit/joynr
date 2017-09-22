@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true, node: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,45 +18,24 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "global/Promise",
-            "joynr/vehicle/RadioProxy",
-            "joynr/vehicle/radiotypes/RadioStation",
-            "joynr/proxy/ProxyAttributeNotifyReadWrite",
-            "joynr/proxy/ProxyAttributeNotifyRead",
-            "joynr/proxy/ProxyAttributeNotifyWrite",
-            "joynr/proxy/ProxyAttributeNotify",
-            "joynr/proxy/ProxyAttributeReadWrite",
-            "joynr/proxy/ProxyAttributeRead",
-            "joynr/proxy/ProxyAttributeWrite",
-            "joynr/proxy/ProxyOperation",
-            "joynr/proxy/ProxyEvent",
-            "joynr/types/TypeRegistrySingleton",
-            "joynr/proxy/DiscoveryQos",
-            "joynr/messaging/MessagingQos",
-            "joynr/tests/TestWithVersionProxy",
-            "joynr/tests/TestWithoutVersionProxy"
-        ],
-        function(
-                Promise,
-                RadioProxy,
-                RadioStation,
-                ProxyAttributeNotifyReadWrite,
-                ProxyAttributeNotifyRead,
-                ProxyAttributeNotifyWrite,
-                ProxyAttributeNotify,
-                ProxyAttributeReadWrite,
-                ProxyAttributeRead,
-                ProxyAttributeWrite,
-                ProxyOperation,
-                ProxyEvent,
-                TypeRegistrySingleton,
-                DiscoveryQos,
-                MessagingQos,
-                TestWithVersionProxy,
-                TestWithoutVersionProxy) {
+var Promise = require('../../../classes/global/Promise');
+var RadioProxy = require('../../../test-classes/joynr/vehicle/RadioProxy');
+var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+var ProxyAttributeNotifyReadWrite = require('../../../classes/joynr/proxy/ProxyAttributeNotifyReadWrite');
+var ProxyAttributeNotifyRead = require('../../../classes/joynr/proxy/ProxyAttributeNotifyRead');
+var ProxyAttributeNotifyWrite = require('../../../classes/joynr/proxy/ProxyAttributeNotifyWrite');
+var ProxyAttributeNotify = require('../../../classes/joynr/proxy/ProxyAttributeNotify');
+var ProxyAttributeReadWrite = require('../../../classes/joynr/proxy/ProxyAttributeReadWrite');
+var ProxyAttributeRead = require('../../../classes/joynr/proxy/ProxyAttributeRead');
+var ProxyAttributeWrite = require('../../../classes/joynr/proxy/ProxyAttributeWrite');
+var ProxyOperation = require('../../../classes/joynr/proxy/ProxyOperation');
+var ProxyEvent = require('../../../classes/joynr/proxy/ProxyEvent');
+var TypeRegistrySingleton = require('../../../classes/joynr/types/TypeRegistrySingleton');
+var DiscoveryQos = require('../../../classes/joynr/proxy/DiscoveryQos');
+var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
+var TestWithVersionProxy = require('../../../test-classes/joynr/tests/TestWithVersionProxy');
+var TestWithoutVersionProxy = require('../../../test-classes/joynr/tests/TestWithoutVersionProxy');
+module.exports = (function (Promise, RadioProxy, RadioStation, ProxyAttributeNotifyReadWrite, ProxyAttributeNotifyRead, ProxyAttributeNotifyWrite, ProxyAttributeNotify, ProxyAttributeReadWrite, ProxyAttributeRead, ProxyAttributeWrite, ProxyOperation, ProxyEvent, TypeRegistrySingleton, DiscoveryQos, MessagingQos, TestWithVersionProxy, TestWithoutVersionProxy) {
 
             describe(
                     "libjoynr-js.joynr.proxy.Proxy",
@@ -163,4 +141,4 @@ define(
 
                     });
 
-        }); // define
+}(Promise, RadioProxy, RadioStation, ProxyAttributeNotifyReadWrite, ProxyAttributeNotifyRead, ProxyAttributeNotifyWrite, ProxyAttributeNotify, ProxyAttributeReadWrite, ProxyAttributeRead, ProxyAttributeWrite, ProxyOperation, ProxyEvent, TypeRegistrySingleton, DiscoveryQos, MessagingQos, TestWithVersionProxy, TestWithoutVersionProxy));    // define

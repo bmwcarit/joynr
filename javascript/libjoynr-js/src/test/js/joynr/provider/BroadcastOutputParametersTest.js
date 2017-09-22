@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define([ "joynr/provider/BroadcastOutputParameters"
-], function(BroadcastOutputParameters) {
+var BroadcastOutputParameters =
+        require('../../../classes/joynr/provider/BroadcastOutputParameters');
+module.exports = (function(BroadcastOutputParameters) {
 
     describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
         it("is instantiable", function() {
@@ -116,4 +118,4 @@ define([ "joynr/provider/BroadcastOutputParameters"
 
     });
 
-}); // require
+}(BroadcastOutputParameters)); // require

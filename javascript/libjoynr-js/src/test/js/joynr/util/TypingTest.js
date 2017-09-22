@@ -1,4 +1,4 @@
-/*jslint es5: true, newcap: true, nomen: true */
+/*jslint es5: true, node: true, newcap: true, nomen: true */
 /*global fail: true, xit: true */
 /*
  * #%L
@@ -18,39 +18,21 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/util/Typing",
-            "joynr/start/TypeRegistry",
-            "joynr/system/LoggerFactory",
-            "joynr/types/TypeRegistrySingleton",
-            "joynr/types/DiscoveryEntry",
-            "joynr/types/ProviderQos",
-            "joynr/types/ProviderScope",
-            "joynr/types/Version",
-            "joynr/vehicle/radiotypes/RadioStation",
-            "joynr/datatypes/exampleTypes/ComplexRadioStation",
-            "joynr/datatypes/exampleTypes/ComplexStruct",
-            "joynr/datatypes/exampleTypes/Country",
-            "joynr/tests/testTypes/TestEnum",
-            "global/Promise"
-        ],
-        function(
-                Typing,
-                TypeRegistry,
-                LoggerFactory,
-                TypeRegistrySingleton,
-                DiscoveryEntry,
-                ProviderQos,
-                ProviderScope,
-                Version,
-                RadioStation,
-                ComplexRadioStation,
-                ComplexStruct,
-                Country,
-                TestEnum,
-                Promise) {
+var Typing = require('../../../classes/joynr/util/Typing');
+var TypeRegistry = require('../../../classes/joynr/start/TypeRegistry');
+var LoggerFactory = require('../../../classes/joynr/system/LoggerFactory');
+var TypeRegistrySingleton = require('../../../classes/joynr/types/TypeRegistrySingleton');
+var DiscoveryEntry = require('../../../classes/joynr/types/DiscoveryEntry');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
+var Version = require('../../../classes/joynr/types/Version');
+var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+var ComplexRadioStation = require('../../../test-classes/joynr/datatypes/exampleTypes/ComplexRadioStation');
+var ComplexStruct = require('../../../test-classes/joynr/datatypes/exampleTypes/ComplexStruct');
+var Country = require('../../../test-classes/joynr/datatypes/exampleTypes/Country');
+var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
+var Promise = require('../../../classes/global/Promise');
+module.exports = (function (Typing, TypeRegistry, LoggerFactory, TypeRegistrySingleton, DiscoveryEntry, ProviderQos, ProviderScope, Version, RadioStation, ComplexRadioStation, ComplexStruct, Country, TestEnum, Promise) {
 
             function MyCustomObj() {}
             function _TestConstructor123_() {}
@@ -654,4 +636,4 @@ define(
                 });
             });
 
-        });
+}(Typing, TypeRegistry, LoggerFactory, TypeRegistrySingleton, DiscoveryEntry, ProviderQos, ProviderScope, Version, RadioStation, ComplexRadioStation, ComplexStruct, Country, TestEnum, Promise));

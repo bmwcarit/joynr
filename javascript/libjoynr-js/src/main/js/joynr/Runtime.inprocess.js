@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -17,9 +19,4 @@
  * #L%
  */
 
-define("joynr/Runtime", [ "joynr/start/InProcessRuntime"
-], function(InProcessRuntime) {
-
-    return InProcessRuntime;
-
-});
+module.exports = require('./start/InProcessRuntime');

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,27 +18,26 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/provider/ProviderBuilder", [
-    "joynr/provider/ProviderAttributeNotifyReadWrite",
-    "joynr/provider/ProviderAttributeNotifyRead",
-    "joynr/provider/ProviderAttributeNotifyWrite",
-    "joynr/provider/ProviderAttributeNotify",
-    "joynr/provider/ProviderAttributeReadWrite",
-    "joynr/provider/ProviderAttributeRead",
-    "joynr/provider/ProviderAttributeWrite",
-    "joynr/provider/ProviderOperation",
-    "joynr/provider/ProviderEvent"
-], function(
-        ProviderAttributeNotifyReadWrite,
-        ProviderAttributeNotifyRead,
-        ProviderAttributeNotifyWrite,
-        ProviderAttributeNotify,
-        ProviderAttributeReadWrite,
-        ProviderAttributeRead,
-        ProviderAttributeWrite,
-        ProviderOperation,
-        ProviderEvent) {
+var ProviderAttributeNotifyReadWrite = require('./ProviderAttributeNotifyReadWrite');
+var ProviderAttributeNotifyRead = require('./ProviderAttributeNotifyRead');
+var ProviderAttributeNotifyWrite = require('./ProviderAttributeNotifyWrite');
+var ProviderAttributeNotify = require('./ProviderAttributeNotify');
+var ProviderAttributeReadWrite = require('./ProviderAttributeReadWrite');
+var ProviderAttributeRead = require('./ProviderAttributeRead');
+var ProviderAttributeWrite = require('./ProviderAttributeWrite');
+var ProviderOperation = require('./ProviderOperation');
+var ProviderEvent = require('./ProviderEvent');
+module.exports =
+        (function(
+                ProviderAttributeNotifyReadWrite,
+                ProviderAttributeNotifyRead,
+                ProviderAttributeNotifyWrite,
+                ProviderAttributeNotify,
+                ProviderAttributeReadWrite,
+                ProviderAttributeRead,
+                ProviderAttributeWrite,
+                ProviderOperation,
+                ProviderEvent) {
 
     var dependencies = {
         ProviderAttributeNotifyReadWrite : ProviderAttributeNotifyReadWrite,
@@ -74,4 +75,13 @@ define("joynr/provider/ProviderBuilder", [
     };
 
     return ProviderBuilder;
-});
+        }(
+                ProviderAttributeNotifyReadWrite,
+                ProviderAttributeNotifyRead,
+                ProviderAttributeNotifyWrite,
+                ProviderAttributeNotify,
+                ProviderAttributeReadWrite,
+                ProviderAttributeRead,
+                ProviderAttributeWrite,
+                ProviderOperation,
+                ProviderEvent));

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/util/MulticastWildcardRegexFactory", [], function() {
+module.exports = (function() {
 
     /**
      * @name MulticastWildcardRegexFactory
@@ -42,4 +43,4 @@ define("joynr/messaging/util/MulticastWildcardRegexFactory", [], function() {
 
     return MulticastWildcardRegexFactory;
 
-});
+}());

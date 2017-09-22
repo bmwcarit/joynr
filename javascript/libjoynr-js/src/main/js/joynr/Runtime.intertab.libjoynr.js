@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -17,9 +19,4 @@
  * #L%
  */
 
-define("joynr/Runtime", [ "joynr/start/InterTabLibjoynrRuntime"
-], function(InterTabLibjoynrRuntime) {
-
-    return InterTabLibjoynrRuntime;
-
-});
+module.exports = require('./start/InterTabLibjoynrRuntime');

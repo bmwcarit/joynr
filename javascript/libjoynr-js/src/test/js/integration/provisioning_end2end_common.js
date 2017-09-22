@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-
 (function() {
     var setupProvisionedData = function(obj) {
         obj.interfaceNameComm = "vehicle/Radio";

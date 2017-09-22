@@ -1,5 +1,6 @@
-/*global process: true*/
+/*jslint node: true */
 
+/*global process: true*/
 /*
  * #%L
  * %%
@@ -18,8 +19,7 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/security/PlatformSecurityManager", [], function() {
+module.exports = (function() {
 
     /**
      * @name PlatformSecurityManager
@@ -49,4 +49,4 @@ define("joynr/security/PlatformSecurityManager", [], function() {
 
     return PlatformSecurityManager;
 
-});
+}());

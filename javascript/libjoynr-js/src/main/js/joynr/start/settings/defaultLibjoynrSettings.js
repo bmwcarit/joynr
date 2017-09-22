@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,11 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/start/settings/defaultLibjoynrSettings", [
-    "joynr/types/ProviderScope",
-    "joynr/util/UtilInternal"
-], function(ProviderScope, Util) {
+var ProviderScope = require('../../../joynr/types/ProviderScope');
+var UtilInternal = require('../../util/UtilInternal');
+module.exports = (function(ProviderScope, Util) {
     var defaultSettings = {};
     var discoveryCapability = {
         providerVersion : {
@@ -67,4 +67,4 @@ define("joynr/start/settings/defaultLibjoynrSettings", [
         routingCapability
     ];
     return defaultSettings;
-});
+}(ProviderScope, UtilInternal));

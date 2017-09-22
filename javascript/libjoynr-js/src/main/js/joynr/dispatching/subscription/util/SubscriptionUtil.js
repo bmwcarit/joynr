@@ -1,5 +1,6 @@
-/*global JSON: true */
+/*jslint node: true */
 
+/*global JSON: true */
 /*
  * #%L
  * %%
@@ -18,11 +19,8 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/dispatching/subscription/util/SubscriptionUtil",
-        [],
-        function() {
+module.exports =
+        (function() {
             /**
              * @exports SubscriptionUtil
              */
@@ -182,4 +180,4 @@ define(
             SubscriptionUtil.SINGLE_POSITION_WILDCARD = "+";
             SubscriptionUtil.MULTI_LEVEL_WILDCARD = "*";
             return SubscriptionUtil;
-        });
+        }());

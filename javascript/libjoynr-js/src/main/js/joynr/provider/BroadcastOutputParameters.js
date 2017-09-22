@@ -1,5 +1,6 @@
-/*global joynr: true */
+/*jslint node: true */
 
+/*global joynr: true */
 /*
  * #%L
  * %%
@@ -18,12 +19,11 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/provider/BroadcastOutputParameters", [
-    "joynr/util/Typing",
-    "joynr/util/UtilInternal",
-    "joynr/system/LoggerFactory"
-], function(Typing, Util, LoggerFactory) {
+var Typing = require('../util/Typing');
+var UtilInternal = require('../util/UtilInternal');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports =
+        (function(Typing, Util, LoggerFactory) {
 
     /**
      * Constructor of BroadcastOutputParameters object used for subscriptions in generated provider objects
@@ -101,4 +101,4 @@ define("joynr/provider/BroadcastOutputParameters", [
     }
 
     return BroadcastOutputParameters;
-});
+        }(Typing, UtilInternal, LoggerFactory));

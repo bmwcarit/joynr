@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,11 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/system/LoggingManager",
-    "joynr/system/DistributedLoggingAppender"
-], function(LoggingManager, DistributedLoggingAppender) {
+var LoggingManager = require('../../../classes/joynr/system/LoggingManager');
+var DistributedLoggingAppender =
+        require('../../../classes/joynr/system/DistributedLoggingAppender');
+module.exports = (function(LoggingManager, DistributedLoggingAppender) {
     var loggingProxy;
 
     loggingProxy = {
@@ -121,4 +122,4 @@ define([
         });
 
     });
-});
+}(LoggingManager, DistributedLoggingAppender));
