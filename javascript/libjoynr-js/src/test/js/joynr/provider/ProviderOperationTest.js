@@ -1,6 +1,5 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, node: true, nomen: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,29 +18,17 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-            "joynr/provider/ProviderOperation",
-            "joynr/types/ProviderQos",
-            "test/data/Operation",
-            "joynr/tests/testTypes/TestEnum",
-            "joynr/util/UtilInternal",
-            "joynr/types/TypeRegistrySingleton",
-            "global/Promise",
-            "joynr/exceptions/ProviderRuntimeException",
-            "joynr/exceptions/ApplicationException",
-            "global/WaitsFor"
-        ],
-        function(
-            ProviderOperation,
-            ProviderQos,
-            testDataOperation,
-            TestEnum,
-            Util,
-            TypeRegistrySingleton,
-            Promise,
-            ProviderRuntimeException,
-            ApplicationException, waitsFor) {
+var ProviderOperation = require('../../../classes/joynr/provider/ProviderOperation');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var Operation = require('../../../test-classes/test/data/Operation');
+var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
+var UtilInternal = require('../../../classes/joynr/util/UtilInternal');
+var TypeRegistrySingleton = require('../../../classes/joynr/types/TypeRegistrySingleton');
+var Promise = require('../../../classes/global/Promise');
+var ProviderRuntimeException = require('../../../classes/joynr/exceptions/ProviderRuntimeException');
+var ApplicationException = require('../../../classes/joynr/exceptions/ApplicationException');
+var WaitsFor = require('../../../test-classes/global/WaitsFor');
+module.exports = (function (ProviderOperation, ProviderQos, testDataOperation, TestEnum, Util, TypeRegistrySingleton, Promise, ProviderRuntimeException, ApplicationException, waitsFor) {
 
     var safetyTimeoutDelta = 100;
 
@@ -395,4 +382,4 @@ define([
             }).catch(fail);
         });
     });
-}); // require
+}(ProviderOperation, ProviderQos, Operation, TestEnum, UtilInternal, TypeRegistrySingleton, Promise, ProviderRuntimeException, ApplicationException, WaitsFor));    // require

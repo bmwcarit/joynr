@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /* *
  * #%L
  * %%
@@ -16,12 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/messaging/mqtt/MqttMessagingSkeleton",
-    "joynr/messaging/JoynrMessage",
-    "joynr/messaging/routing/MessageRouter"
-], function(MqttMessagingSkeleton, JoynrMessage, MessageRouter) {
+var MqttMessagingSkeleton =
+        require('../../../../classes/joynr/messaging/mqtt/MqttMessagingSkeleton');
+var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
+var MessageRouter = require('../../../../classes/joynr/messaging/routing/MessageRouter');
+module.exports = (function(MqttMessagingSkeleton, JoynrMessage, MessageRouter) {
     describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
 
         var sharedMqttClient, mqttMessagingSkeleton;
@@ -90,4 +91,4 @@ define([
             setsReceivedFromGlobal(subscriptionRequestMessage);
         });
     });
-});
+}(MqttMessagingSkeleton, JoynrMessage, MessageRouter));

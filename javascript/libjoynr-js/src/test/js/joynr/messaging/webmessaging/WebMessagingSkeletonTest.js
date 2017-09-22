@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define([ "joynr/messaging/webmessaging/WebMessagingSkeleton"
-], function(WebMessagingSkeleton) {
+var WebMessagingSkeleton =
+        require('../../../../classes/joynr/messaging/webmessaging/WebMessagingSkeleton');
+module.exports = (function(WebMessagingSkeleton) {
 
     describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingSkeleton", function() {
 
@@ -154,4 +156,4 @@ define([ "joynr/messaging/webmessaging/WebMessagingSkeleton"
         });
 
     });
-});
+}(WebMessagingSkeleton));

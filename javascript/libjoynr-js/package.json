@@ -20,6 +20,7 @@
     "karma-verbose-reporter" : "0.0.3",
     "karma-coverage" : "0.5.3",
     "karma" : "0.13.22",
+    "browserify": "14.4.0",
     "jasmine" : "2.4.1",
     "jasmine-reporters" : "2.1.1"
   },
@@ -28,7 +29,6 @@
     "node-persist": "2.1.0",
     "atmosphere.js": "2.3.2",
     "xmlhttprequest" : "1.8.0",
-    "requirejs" : "2.1.22",
     "ws" : "1.0.1",
     "mqtt" : "2.0.1",
     "bluebird" : "3.3.5",

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/proxy/ProxyAttributeNotify", [ "joynr/proxy/ProxyAttribute"
-], function(ProxyAttribute) {
+var ProxyAttribute = require('./ProxyAttribute');
+module.exports =
+        (function(ProxyAttribute) {
 
     /**
      * Constructor of ProxyAttribute* object that is used in the generation of proxy objects
@@ -113,4 +115,4 @@ define("joynr/proxy/ProxyAttributeNotify", [ "joynr/proxy/ProxyAttribute"
 
     return ProxyAttributeNotify;
 
-});
+        }(ProxyAttribute));

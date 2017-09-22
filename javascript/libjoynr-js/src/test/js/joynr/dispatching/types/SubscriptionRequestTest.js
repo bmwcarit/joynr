@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,12 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/dispatching/types/SubscriptionRequest",
-    "joynr/proxy/PeriodicSubscriptionQos",
-    "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos"
-], function(SubscriptionRequest, PeriodicSubscriptionQos) {
+var SubscriptionRequest =
+        require('../../../../classes/joynr/dispatching/types/SubscriptionRequest');
+var PeriodicSubscriptionQos = require('../../../../classes/joynr/proxy/PeriodicSubscriptionQos');
+var OnChangeWithKeepAliveSubscriptionQos =
+        require('../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
+module.exports = (function(SubscriptionRequest, PeriodicSubscriptionQos) {
 
     describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
 
@@ -126,4 +128,4 @@ define([
 
     });
 
-}); // require
+}(SubscriptionRequest, PeriodicSubscriptionQos, OnChangeWithKeepAliveSubscriptionQos)); // require

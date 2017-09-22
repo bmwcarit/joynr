@@ -23,6 +23,7 @@ None.
  by the cluster-controller and can be accessed by creating the corresponding proxy.
  It allows to trigger the re-registration of globally visible providers which are
  registered at the corresponding cluster-controller instance.
+* **[JS]** Use require instead of requirejs.
 
 # joynr 0.29.0
 

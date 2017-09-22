@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,25 +17,13 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/provider/ProviderOperation",
-        [
-            "joynr/util/Typing",
-            "joynr/util/MethodUtil",
-            "joynr/types/TypeRegistrySingleton",
-            "joynr/exceptions/ApplicationException",
-            "joynr/exceptions/ProviderRuntimeException",
-            "joynr/util/UtilInternal"
-        ],
-        function(
-            Typing,
-            MethodUtil,
-            TypeRegistrySingleton,
-            ApplicationException,
-            ProviderRuntimeException,
-            Util
-        ) {
+var Typing = require('../util/Typing');
+var MethodUtil = require('../util/MethodUtil');
+var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var ApplicationException = require('../exceptions/ApplicationException');
+var ProviderRuntimeException = require('../exceptions/ProviderRuntimeException');
+var UtilInternal = require('../util/UtilInternal');
+module.exports = (function (Typing, MethodUtil, TypeRegistrySingleton, ApplicationException, ProviderRuntimeException, Util) {
 
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
@@ -296,4 +283,4 @@ define(
 
             return ProviderOperation;
 
-        });
+}(Typing, MethodUtil, TypeRegistrySingleton, ApplicationException, ProviderRuntimeException, UtilInternal));

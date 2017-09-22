@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,11 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/messaging/webmessaging/WebMessagingStubFactory",
-    "joynr/util/JSONSerializer"
-], function(WebMessagingStubFactory, JSONSerializer) {
+var WebMessagingStubFactory =
+        require('../../../../classes/joynr/messaging/webmessaging/WebMessagingStubFactory');
+var JsonSerializer = require('../../../../classes/joynr/util/JSONSerializer');
+module.exports =
+        (function(WebMessagingStubFactory, JSONSerializer) {
 
     describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", function() {
         var returnValue;
@@ -80,4 +82,4 @@ define([
 
     });
 
-});
+        }(WebMessagingStubFactory, JsonSerializer));

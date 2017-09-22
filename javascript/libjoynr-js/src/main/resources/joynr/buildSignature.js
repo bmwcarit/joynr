@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
-define('joynr/buildSignature', [], function() {
+module.exports = (function () {
 
     var joynrBuildSignature = function joynrBuildSignature() {
         return "${project.groupId}.${project.artifactId}-${project.version}-r${buildNumber}-${signature.timestamp}";
     };
 
     return joynrBuildSignature;
-});
+}());

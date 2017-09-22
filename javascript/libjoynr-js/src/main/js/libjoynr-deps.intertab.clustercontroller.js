@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,83 +18,84 @@
  * limitations under the License.
  * #L%
  */
-
-var libjoynrClusterControllerExports, // will receive the module names that should be exported
+var libjoynrClusterControllerExports;
+// will receive the module names that should be exported
 // this instrumentation of the define method is there to...
 // ...leave the code block afterwards fully intact, so that static code analysis of require.js
 // optimizer can still find all dependencies in the array of the call to define below and
 // ...we can tap the dependency array with the full module names including the namespaces we need
 // for exporting
-amdDefine = define;
 
-/**
- * @private
- */
-define = function(name, dependencies, callback) {
-    if (name === "libjoynr-deps") { // so that it works in the tests with real async AMD loading
-        libjoynrClusterControllerExports = dependencies;
-    }
-    amdDefine(name, dependencies, callback);
-};
+libjoynrClusterControllerExports = [
+    './joynr/Runtime',
+    './joynr/buildSignature',
+    './joynr/messaging/MessagingQos',
+    './joynr/proxy/PeriodicSubscriptionQos',
+    './joynr/proxy/OnChangeSubscriptionQos',
+    './joynr/proxy/MulticastSubscriptionQos',
+    './joynr/proxy/OnChangeWithKeepAliveSubscriptionQos',
+    './joynr/types/ArbitrationStrategyCollection',
+    './joynr/system/RoutingTypes/BrowserAddress',
+    './joynr/system/RoutingTypes/ChannelAddress',
+    './joynr/system/RoutingTypes/CommonApiDbusAddress',
+    './joynr/system/RoutingTypes/WebSocketAddress',
+    './joynr/system/RoutingTypes/WebSocketClientAddress',
+    './joynr/util/Util'
+];
 
-define.amd = amdDefine.amd;
-
-//place the require.js module name of all modules that are part of the external joynr API.
-define("libjoynr-deps", [
-    "joynr/Runtime",
-    "joynr/buildSignature",
-    "joynr/messaging/MessagingQos",
-    "joynr/proxy/PeriodicSubscriptionQos",
-    "joynr/proxy/OnChangeSubscriptionQos",
-    "joynr/proxy/MulticastSubscriptionQos",
-    "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
-    "joynr/types/ArbitrationStrategyCollection",
-    "joynr/system/RoutingTypes/BrowserAddress",
-    "joynr/system/RoutingTypes/ChannelAddress",
-    "joynr/system/RoutingTypes/CommonApiDbusAddress",
-    "joynr/system/RoutingTypes/WebSocketAddress",
-    "joynr/system/RoutingTypes/WebSocketClientAddress",
-    "joynr/util/Util"
-], function() { // load all external modules
-    var nsContext, nsElem, nsElems, i, value;
-
-    var root = {};
-
-    // cycle over all exports
-    for (i = 0; i < libjoynrClusterControllerExports.length; ++i) {
-        // Window in case of a Browser or DedicatedWebWorkerContext in a WebWorker Environment
-        nsContext = root;
-        nsElems = libjoynrClusterControllerExports[i].split("/").reverse();
-        nsElems.pop(); //drop "joynr"
-        // go through namespace elements of require.js namespace, i.e. "some/namespace/NameSpaceTest"
-        while (nsElems.length) {
-            // translate namespace elements to objects on window or the current WebWorkerContext,
-            // e.g. "some/namespace/NameSpaceTest" is
-            // then usable as "some.namespace.NameSpaceTest" as in
-            // "console.log(new some.namespace.NameSpaceTest().msg);", but don"t
-            // overwrite already existing namespaces, make module publicly available on the window
-            // variable or the current WebWorkerContext, which in fact defines a global variable
-            // with the name <module.name> and assigns the module to it
-            nsElem = nsElems.pop();
-            if (nsElems.length) {
-                value = nsContext[nsElem] || {};
-            } else {
-                // make all members of the module read-only
-                value = Object.freeze(require(libjoynrClusterControllerExports[i]));
+var Runtime = require('./joynr/Runtime');
+var buildSignature = require('./joynr/buildSignature');
+var MessagingQos = require('./joynr/messaging/MessagingQos');
+var PeriodicSubscriptionQos = require('./joynr/proxy/PeriodicSubscriptionQos');
+var OnChangeSubscriptionQos = require('./joynr/proxy/OnChangeSubscriptionQos');
+var MulticastSubscriptionQos = require('./joynr/proxy/MulticastSubscriptionQos');
+var OnChangeWithKeepAliveSubscriptionQos =
+        require('./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
+var ArbitrationStrategyCollection = require('./joynr/types/ArbitrationStrategyCollection');
+var BrowserAddress = require('./joynr/system/RoutingTypes/BrowserAddress');
+var ChannelAddress = require('./joynr/system/RoutingTypes/ChannelAddress');
+var CommonApiDbusAddress = require('./joynr/system/RoutingTypes/CommonApiDbusAddress');
+var WebSocketAddress = require('./joynr/system/RoutingTypes/WebSocketAddress');
+var WebSocketClientAddress = require('./joynr/system/RoutingTypes/WebSocketClientAddress');
+var Util = require('./joynr/util/Util');
+module.exports =
+        (function() {
+            // load all external modules
+            var nsContext, nsElem, nsElems, i, value;
+            var root = {};
+            // cycle over all exports
+            for (i = 0; i < libjoynrClusterControllerExports.length; ++i) {
+                // Window in case of a Browser or DedicatedWebWorkerContext in a WebWorker Environment
+                nsContext = root;
+                nsElems =
+                        libjoynrClusterControllerExports[i].replace(/^\.\/joynr\//, '').split('/')
+                                .reverse();
+                // go through namespace elements of require.js namespace, i.e. "some/namespace/NameSpaceTest"
+                while (nsElems.length) {
+                    // translate namespace elements to objects on window or the current WebWorkerContext,
+                    // e.g. "some/namespace/NameSpaceTest" is
+                    // then usable as "some.namespace.NameSpaceTest" as in
+                    // "console.log(new some.namespace.NameSpaceTest().msg);", but don"t
+                    // overwrite already existing namespaces, make module publicly available on the window
+                    // variable or the current WebWorkerContext, which in fact defines a global variable
+                    // with the name <module.name> and assigns the module to it
+                    nsElem = nsElems.pop();
+                    if (nsElems.length) {
+                        value = nsContext[nsElem] || {};
+                    } else {
+                        // make all members of the module read-only
+                        value = Object.freeze(require(libjoynrClusterControllerExports[i]));
+                    }
+                    // export namespace fragment or module read-only to the parent namespace
+                    Object.defineProperty(nsContext, nsElem, {
+                        readable : true,
+                        enumerable : true,
+                        configurable : false,
+                        writable : false,
+                        value : value
+                    });
+                    nsContext = value;
+                }
             }
-
-            // export namespace fragment or module read-only to the parent namespace
-            Object.defineProperty(nsContext, nsElem, {
-                readable : true,
-                enumerable : true,
-                configurable : false,
-                writable : false,
-                value : value
-            });
-            nsContext = value;
-        }
-    }
-
-    return root;
-
-});
+            return root;
+        }());

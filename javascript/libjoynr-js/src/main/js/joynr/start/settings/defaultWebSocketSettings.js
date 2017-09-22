@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,10 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/start/settings/defaultWebSocketSettings", [], function() {
+module.exports = (function() {
     var defaultSettings = {};
     defaultSettings.protocol = "ws";
     defaultSettings.path = "";
     return defaultSettings;
-});
+}());

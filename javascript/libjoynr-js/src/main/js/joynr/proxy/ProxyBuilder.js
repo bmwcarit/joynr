@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,43 +17,24 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/proxy/ProxyBuilder", [
-    "global/Promise",
-    "joynr/proxy/ProxyAttributeNotifyReadWrite",
-    "joynr/proxy/ProxyAttributeNotifyRead",
-    "joynr/proxy/ProxyAttributeNotifyWrite",
-    "joynr/proxy/ProxyAttributeNotify",
-    "joynr/proxy/ProxyAttributeReadWrite",
-    "joynr/proxy/ProxyAttributeRead",
-    "joynr/proxy/ProxyAttributeWrite",
-    "joynr/proxy/ProxyOperation",
-    "joynr/proxy/ProxyEvent",
-    "uuid",
-    "joynr/proxy/DiscoveryQos",
-    "joynr/messaging/MessagingQos",
-    "joynr/types/TypeRegistrySingleton",
-    "joynr/types/Version",
-    "joynr/util/Typing",
-    "joynr/system/LoggerFactory"
-], function(
-        Promise,
-        ProxyAttributeNotifyReadWrite,
-        ProxyAttributeNotifyRead,
-        ProxyAttributeNotifyWrite,
-        ProxyAttributeNotify,
-        ProxyAttributeReadWrite,
-        ProxyAttributeRead,
-        ProxyAttributeWrite,
-        ProxyOperation,
-        ProxyEvent,
-        uuid,
-        DiscoveryQos,
-        MessagingQos,
-        TypeRegistrySingleton,
-        Version,
-        Typing,
-        LoggerFactory) {
+var Promise = require('../../global/Promise');
+var ProxyAttributeNotifyReadWrite = require('./ProxyAttributeNotifyReadWrite');
+var ProxyAttributeNotifyRead = require('./ProxyAttributeNotifyRead');
+var ProxyAttributeNotifyWrite = require('./ProxyAttributeNotifyWrite');
+var ProxyAttributeNotify = require('./ProxyAttributeNotify');
+var ProxyAttributeReadWrite = require('./ProxyAttributeReadWrite');
+var ProxyAttributeRead = require('./ProxyAttributeRead');
+var ProxyAttributeWrite = require('./ProxyAttributeWrite');
+var ProxyOperation = require('./ProxyOperation');
+var ProxyEvent = require('./ProxyEvent');
+var uuid = require('../../lib/uuid-annotated');
+var DiscoveryQos = require('./DiscoveryQos');
+var MessagingQos = require('../messaging/MessagingQos');
+var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var Version = require('../../joynr/types/Version');
+var Typing = require('../util/Typing');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports = (function (Promise, ProxyAttributeNotifyReadWrite, ProxyAttributeNotifyRead, ProxyAttributeNotifyWrite, ProxyAttributeNotify, ProxyAttributeReadWrite, ProxyAttributeRead, ProxyAttributeWrite, ProxyOperation, ProxyEvent, uuid, DiscoveryQos, MessagingQos, TypeRegistrySingleton, Version, Typing, LoggerFactory) {
 
     var proxyElementTypes = {
         ProxyAttributeNotifyReadWrite : ProxyAttributeNotifyReadWrite,
@@ -236,4 +216,4 @@ define("joynr/proxy/ProxyBuilder", [
     }
 
     return ProxyBuilder;
-});
+}(Promise, ProxyAttributeNotifyReadWrite, ProxyAttributeNotifyRead, ProxyAttributeNotifyWrite, ProxyAttributeNotify, ProxyAttributeReadWrite, ProxyAttributeRead, ProxyAttributeWrite, ProxyOperation, ProxyEvent, uuid, DiscoveryQos, MessagingQos, TypeRegistrySingleton, Version, Typing, LoggerFactory));

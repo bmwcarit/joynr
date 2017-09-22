@@ -1,3 +1,4 @@
+/*jslint node: true */
 /*
  * #%L
  * %%
@@ -16,18 +17,14 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/proxy/ProxyAttribute",
-        [
-            "global/Promise",
-            "joynr/util/UtilInternal",
-            "joynr/dispatching/types/Request",
-            "joynr/messaging/MessagingQos",
-            "joynr/util/Typing",
-            "joynr/types/TypeRegistrySingleton"
-        ],
-        function(Promise, Util, Request, MessagingQos, Typing, TypeRegistrySingleton) {
+var Promise = require('../../global/Promise');
+var UtilInternal = require('../util/UtilInternal');
+var Request = require('../dispatching/types/Request');
+var MessagingQos = require('../messaging/MessagingQos');
+var Typing = require('../util/Typing');
+var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+module.exports =
+        (function(Promise, Util, Request, MessagingQos, Typing, TypeRegistrySingleton) {
 
             var typeRegistry = TypeRegistrySingleton.getInstance();
 
@@ -313,4 +310,4 @@ define(
             }
 
             return ProxyAttribute;
-        });
+        }(Promise, UtilInternal, Request, MessagingQos, Typing, TypeRegistrySingleton));

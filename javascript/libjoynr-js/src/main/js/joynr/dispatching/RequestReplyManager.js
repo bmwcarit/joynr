@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,36 +17,19 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/dispatching/RequestReplyManager",
-        [
-            "global/Promise",
-            "joynr/dispatching/types/Reply",
-            "joynr/messaging/MessagingQos",
-            "joynr/messaging/inprocess/InProcessAddress",
-            "joynr/util/Typing",
-            "joynr/util/UtilInternal",
-            "joynr/util/JSONSerializer",
-            "joynr/util/LongTimer",
-            "joynr/exceptions/MethodInvocationException",
-            "joynr/exceptions/ProviderRuntimeException",
-            "joynr/types/Version",
-            "joynr/system/LoggerFactory"
-        ],
-        function(
-                Promise,
-                Reply,
-                MessagingQos,
-                InProcessAddress,
-                Typing,
-                Util,
-                JSONSerializer,
-                LongTimer,
-                MethodInvocationException,
-                ProviderRuntimeException,
-                Version,
-                LoggerFactory) {
+var Promise = require('../../global/Promise');
+var Reply = require('./types/Reply');
+var MessagingQos = require('../messaging/MessagingQos');
+var InProcessAddress = require('../messaging/inprocess/InProcessAddress');
+var Typing = require('../util/Typing');
+var UtilInternal = require('../util/UtilInternal');
+var JsonSerializer = require('../util/JSONSerializer');
+var LongTimer = require('../util/LongTimer');
+var MethodInvocationException = require('../exceptions/MethodInvocationException');
+var ProviderRuntimeException = require('../exceptions/ProviderRuntimeException');
+var Version = require('../../joynr/types/Version');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports = (function (Promise, Reply, MessagingQos, InProcessAddress, Typing, Util, JSONSerializer, LongTimer, MethodInvocationException, ProviderRuntimeException, Version, LoggerFactory) {
             /**
              * The RequestReplyManager is responsible maintaining a list of providers that wish to
              * receive incoming requests, and also a list of requestReplyIds which is used to match
@@ -489,4 +471,4 @@ define(
 
             return RequestReplyManager;
 
-        });
+}(Promise, Reply, MessagingQos, InProcessAddress, Typing, UtilInternal, JsonSerializer, LongTimer, MethodInvocationException, ProviderRuntimeException, Version, LoggerFactory));

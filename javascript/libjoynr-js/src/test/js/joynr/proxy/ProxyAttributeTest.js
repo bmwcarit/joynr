@@ -1,6 +1,5 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, node: true, nomen: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,50 +18,27 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-            "joynr/proxy/ProxyAttribute",
-            "joynr/proxy/ProxyAttributeNotifyReadWrite",
-            "joynr/proxy/ProxyAttributeNotifyRead",
-            "joynr/proxy/ProxyAttributeNotifyWrite",
-            "joynr/proxy/ProxyAttributeNotify",
-            "joynr/proxy/ProxyAttributeReadWrite",
-            "joynr/proxy/ProxyAttributeRead",
-            "joynr/proxy/ProxyAttributeWrite",
-            "joynr/proxy/DiscoveryQos",
-            "joynr/messaging/MessagingQos",
-            "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
-            "joynr/dispatching/RequestReplyManager",
-            "joynr/dispatching/types/Request",
-            "joynr/tests/testTypes/TestEnum",
-            "joynr/tests/testTypes/ComplexTestType",
-            "joynr/types/TypeRegistrySingleton",
-            "global/Promise",
-            "joynr/types/DiscoveryEntryWithMetaInfo",
-            "joynr/types/Version",
-            "joynr/types/ProviderQos"
-        ],
-        function(
-                ProxyAttribute,
-                ProxyAttributeNotifyReadWrite,
-                ProxyAttributeNotifyRead,
-                ProxyAttributeNotifyWrite,
-                ProxyAttributeNotify,
-                ProxyAttributeReadWrite,
-                ProxyAttributeRead,
-                ProxyAttributeWrite,
-                DiscoveryQos,
-                MessagingQos,
-                OnChangeWithKeepAliveSubscriptionQos,
-                RequestReplyManager,
-                Request,
-                TestEnum,
-                ComplexTestType,
-                TypeRegistrySingleton,
-                Promise,
-                DiscoveryEntryWithMetaInfo,
-                Version,
-                ProviderQos) {
+var ProxyAttribute = require('../../../classes/joynr/proxy/ProxyAttribute');
+var ProxyAttributeNotifyReadWrite = require('../../../classes/joynr/proxy/ProxyAttributeNotifyReadWrite');
+var ProxyAttributeNotifyRead = require('../../../classes/joynr/proxy/ProxyAttributeNotifyRead');
+var ProxyAttributeNotifyWrite = require('../../../classes/joynr/proxy/ProxyAttributeNotifyWrite');
+var ProxyAttributeNotify = require('../../../classes/joynr/proxy/ProxyAttributeNotify');
+var ProxyAttributeReadWrite = require('../../../classes/joynr/proxy/ProxyAttributeReadWrite');
+var ProxyAttributeRead = require('../../../classes/joynr/proxy/ProxyAttributeRead');
+var ProxyAttributeWrite = require('../../../classes/joynr/proxy/ProxyAttributeWrite');
+var DiscoveryQos = require('../../../classes/joynr/proxy/DiscoveryQos');
+var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
+var OnChangeWithKeepAliveSubscriptionQos = require('../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
+var RequestReplyManager = require('../../../classes/joynr/dispatching/RequestReplyManager');
+var Request = require('../../../classes/joynr/dispatching/types/Request');
+var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
+var ComplexTestType = require('../../../test-classes/joynr/tests/testTypes/ComplexTestType');
+var TypeRegistrySingleton = require('../../../classes/joynr/types/TypeRegistrySingleton');
+var Promise = require('../../../classes/global/Promise');
+var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
+var Version = require('../../../classes/joynr/types/Version');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+module.exports = (function (ProxyAttribute, ProxyAttributeNotifyReadWrite, ProxyAttributeNotifyRead, ProxyAttributeNotifyWrite, ProxyAttributeNotify, ProxyAttributeReadWrite, ProxyAttributeRead, ProxyAttributeWrite, DiscoveryQos, MessagingQos, OnChangeWithKeepAliveSubscriptionQos, RequestReplyManager, Request, TestEnum, ComplexTestType, TypeRegistrySingleton, Promise, DiscoveryEntryWithMetaInfo, Version, ProviderQos) {
 
             var asyncTimeout = 5000;
 
@@ -649,5 +625,5 @@ define([
                                 });
                     });
 
-        }); // require
-/*jslint nomen: false */
+}(ProxyAttribute, ProxyAttributeNotifyReadWrite, ProxyAttributeNotifyRead, ProxyAttributeNotifyWrite, ProxyAttributeNotify, ProxyAttributeReadWrite, ProxyAttributeRead, ProxyAttributeWrite, DiscoveryQos, MessagingQos, OnChangeWithKeepAliveSubscriptionQos, RequestReplyManager, Request, TestEnum, ComplexTestType, TypeRegistrySingleton, Promise, DiscoveryEntryWithMetaInfo, Version, ProviderQos));    // require
+                                                                                                                                                                                                                                                                                                                                                                                                               /*jslint nomen: false */

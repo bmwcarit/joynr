@@ -72,6 +72,6 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                                       ccMessagingAddress,
                                       parentRoutingProviderParticipantId,
                                       proxyBuilder.getParticipantId());
-        messageSender.setReplyToAddress(routingProxy.getGlobalAddress());
+        messageSender.setReplyToAddress(routingProxy.getReplyToAddress());
     }
 }
