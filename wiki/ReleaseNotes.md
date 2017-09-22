@@ -12,6 +12,9 @@
 * **[C++]** The internal routing table can now be cleaned up.
   Routing entries which have been created for handling a request from
   global can be removed when the ttl + grace period has passed.
+* **[C++]** If a LibJoynr instance was configured to use SSL but no keychain
+ was provided to the JoynrRuntime::create method, it will report a fatal error
+ and throw a JoynrRuntimeException.
 
 # joynr 0.29.1
 
