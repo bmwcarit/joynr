@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,10 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
 //TODO: some of this relies on the dummy implementation, change accordingly when implementating
-define([ "joynr/capabilities/ParticipantIdStorage"
-], function(ParticipantIdStorage) {
+var ParticipantIdStorage = require('../../../classes/joynr/capabilities/ParticipantIdStorage');
+module.exports = (function(ParticipantIdStorage) {
     describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", function() {
         var participantIdStorage, localStorageSpy, uuidSpy;
         var domain, provider, interfaceName, key, uuid, storedParticipantId;
@@ -82,4 +83,4 @@ define([ "joynr/capabilities/ParticipantIdStorage"
         });
     });
 
-}); // require
+}(ParticipantIdStorage)); // require

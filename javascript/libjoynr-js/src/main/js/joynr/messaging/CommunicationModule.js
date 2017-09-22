@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,16 +18,12 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/messaging/CommunicationModule",
-        [
-            "global/Promise",
-            "global/XMLHttpRequest",
-            "atmosphere",
-            "joynr/util/LongTimer"
-        ],
-        function(Promise, XMLHttpRequestDependency, atmosphereDependency, LongTimer) {
+var Promise = require('../../global/Promise');
+var XmlHttpRequest = require('../../global/XMLHttpRequestNode');
+var atmosphere = require('../../lib/atmosphereNode');
+var LongTimer = require('../util/LongTimer');
+module.exports =
+        (function(Promise, XMLHttpRequestDependency, atmosphereDependency, LongTimer) {
 
             /**
              * Constructor of CommunicationModule object that is used to stsub communication with the outer world
@@ -124,4 +122,4 @@ define(
 
             return CommunicationModule;
 
-        });
+        }(Promise, XmlHttpRequest, atmosphere, LongTimer));

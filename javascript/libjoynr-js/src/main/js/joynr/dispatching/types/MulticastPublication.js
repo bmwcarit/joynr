@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,11 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/dispatching/types/MulticastPublication", [
-    "joynr/util/UtilInternal",
-    "joynr/util/Typing"
-], function(Util, Typing) {
+var UtilInternal = require('../../util/UtilInternal');
+var Typing = require('../../util/Typing');
+module.exports = (function(Util, Typing) {
 
     /**
      * @name MulticastPublication
@@ -67,4 +67,4 @@ define("joynr/dispatching/types/MulticastPublication", [
 
     return MulticastPublication;
 
-});
+}(UtilInternal, Typing));

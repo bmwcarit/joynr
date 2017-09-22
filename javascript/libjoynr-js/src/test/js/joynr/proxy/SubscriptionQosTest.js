@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,16 +18,14 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/proxy/SubscriptionQos",
-            "joynr/proxy/PeriodicSubscriptionQos",
-            "joynr/proxy/OnChangeSubscriptionQos",
-            "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
-            "Date"
-        ],
-        function(
+var SubscriptionQos = require('../../../classes/joynr/proxy/SubscriptionQos');
+var PeriodicSubscriptionQos = require('../../../classes/joynr/proxy/PeriodicSubscriptionQos');
+var OnChangeSubscriptionQos = require('../../../classes/joynr/proxy/OnChangeSubscriptionQos');
+var OnChangeWithKeepAliveSubscriptionQos =
+        require('../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
+var Date = require('../../../test-classes/global/Date');
+module.exports =
+        (function(
                 SubscriptionQos,
                 PeriodicSubscriptionQos,
                 OnChangeSubscriptionQos,
@@ -436,4 +436,9 @@ define(
                         });
                     });
 
-        }); // require
+        }(
+                SubscriptionQos,
+                PeriodicSubscriptionQos,
+                OnChangeSubscriptionQos,
+                OnChangeWithKeepAliveSubscriptionQos,
+                Date)); // require

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,14 +18,14 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/messaging/websocket/SharedWebSocket",
-    "joynr/messaging/JoynrMessage",
-    "joynr/system/RoutingTypes/WebSocketAddress",
-    "joynr/system/RoutingTypes/WebSocketClientAddress",
-    "global/WebSocket"
-], function(SharedWebSocket, JoynrMessage, WebSocketAddress, WebSocketClientAddress, WebSocket) {
+var SharedWebSocket = require('../../../../classes/joynr/messaging/websocket/SharedWebSocket');
+var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
+var WebSocketAddress = require('../../../../classes/joynr/system/RoutingTypes/WebSocketAddress');
+var WebSocketClientAddress =
+        require('../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress');
+var WebSocket = require('../../../../test-classes/global/WebSocketMock');
+module.exports =
+        (function(SharedWebSocket, JoynrMessage, WebSocketAddress, WebSocketClientAddress, WebSocket) {
 
     describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() {
 
@@ -127,4 +129,4 @@ define([
         });
     });
 
-});
+        }(SharedWebSocket, JoynrMessage, WebSocketAddress, WebSocketClientAddress, WebSocket));

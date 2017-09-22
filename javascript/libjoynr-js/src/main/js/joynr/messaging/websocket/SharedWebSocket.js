@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,18 +17,13 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/messaging/websocket/SharedWebSocket",
-        [
-            "global/Promise",
-            "global/WebSocket",
-            "joynr/util/Typing",
-            "joynr/util/JSONSerializer",
-            "joynr/util/LongTimer",
-            "joynr/system/LoggerFactory"
-        ],
-        function(Promise, WebSocket, Typing, JSONSerializer, LongTimer, LoggerFactory) {
+var Promise = require('../../../global/Promise');
+var WebSocket = require('../../../global/WebSocketNode');
+var Typing = require('../../util/Typing');
+var JsonSerializer = require('../../util/JSONSerializer');
+var LongTimer = require('../../util/LongTimer');
+var LoggerFactory = require('../../system/LoggerFactory');
+module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTimer, LoggerFactory) {
             var log = LoggerFactory.getLogger("joynr.messaging.websocket.SharedWebSocket");
             /**
              * @param address
@@ -249,4 +243,4 @@ define(
                     };
             SharedWebSocket.EVENT_CODE_SHUTDOWN = 4000;
             return SharedWebSocket;
-        });
+}(Promise, WebSocket, Typing, JsonSerializer, LongTimer, LoggerFactory));

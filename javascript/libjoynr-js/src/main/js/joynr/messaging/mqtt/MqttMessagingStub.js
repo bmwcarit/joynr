@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/mqtt/MqttMessagingStub", [
-    "joynr/messaging/JoynrMessage",
-    "joynr/util/JSONSerializer",
-    "joynr/system/LoggerFactory"
-], function(JoynrMessage, JSONSerializer, LoggerFactory) {
+var JoynrMessage = require('../JoynrMessage');
+var JsonSerializer = require('../../util/JSONSerializer');
+var LoggerFactory = require('../../system/LoggerFactory');
+module.exports = (function(JoynrMessage, JSONSerializer, LoggerFactory) {
 
     /**
      * @name MqttMessagingStub
@@ -56,4 +56,4 @@ define("joynr/messaging/mqtt/MqttMessagingStub", [
 
     return MqttMessagingStub;
 
-});
+}(JoynrMessage, JsonSerializer, LoggerFactory));

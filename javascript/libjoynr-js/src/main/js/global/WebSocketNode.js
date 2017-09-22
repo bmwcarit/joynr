@@ -1,5 +1,6 @@
-/*global Buffer: true, requirejs: true */
+/*jslint node: true */
 
+/*global Buffer: true, requirejs: true */
 /*
  * #%L
  * %%
@@ -18,18 +19,19 @@
  * limitations under the License.
  * #L%
  */
-
 /**
  * Adapts the nodejs websocket lib WebSocket-Node to the WebSocket client API.
  * See: http://dev.w3.org/html5/websockets/#the-websocket-interface
  *
  */
-define([
-    "global/Smrf",
-    "joynr/messaging/JoynrMessage",
-    "joynr/exceptions/JoynrRuntimeException",
-    "joynr/system/LoggerFactory"
-], function(smrf, JoynrMessage, JoynrRuntimeException, LoggerFactory) {
+var Smrf = require('./SmrfNode');
+var JoynrMessage = require('../joynr/messaging/JoynrMessage');
+var JoynrRuntimeException = require('../joynr/exceptions/JoynrRuntimeException');
+var LoggerFactory = require('../joynr/system/LoggerFactory');
+module.exports =
+        global.window !== undefined
+                ? require('./WebSocket')
+                : (function(smrf, JoynrMessage, JoynrRuntimeException, LoggerFactory) {
     if (typeof Buffer !== "function") {
         throw new JoynrRuntimeException(
                 "Decoding of binary websocket messages not possible. Buffer not available.");
@@ -43,15 +45,10 @@ define([
      * fall back to JS implementation. Temporarily silence error output for first
      * load attempt.
      */
-    var savedOnError = requirejs.onError;
-    requirejs.onError = function() {};
-    ws = requirejs("wscpp");
-    requirejs.onError = savedOnError;
-    if (!ws) {
-        ws = requirejs("ws");
-        if (!ws) {
-            throw new Error("No websocket module available");
-        }
+    try {
+        ws = require("wscpp");
+    } catch (e) {
+        ws = require("ws");
     }
 
     ws.encodeString = function(string) {
@@ -169,4 +166,4 @@ define([
     };
 
     return ws;
-});
+                }(Smrf, JoynrMessage, JoynrRuntimeException, LoggerFactory));

@@ -1,5 +1,4 @@
-/*jslint es5: true, continue: true */
-
+/*jslint es5: true, node: true, continue: true */
 /*
  * #%L
  * %%
@@ -18,40 +17,23 @@
  * limitations under the License.
  * #L%
  */
-
 /**
  * The <code>CapabilityDiscovery</code> is a joynr internal interface. When the Arbitrator does a lookup for capabilities, this module is
  * queried. If a provider needs to be registered, this module selects the places to register at.
  */
-define(
-        "joynr/capabilities/discovery/CapabilityDiscovery",
-        [
-            "global/Promise",
-            "joynr/types/GlobalDiscoveryEntry",
-            "joynr/proxy/DiscoveryQos",
-            "joynr/types/DiscoveryScope",
-            "joynr/types/ProviderScope",
-            "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy",
-            "joynr/types/TypeRegistrySingleton",
-            "joynr/util/Typing",
-            "joynr/system/LoggerFactory",
-            "joynr/util/UtilInternal",
-            "joynr/exceptions/ProviderRuntimeException",
-            "joynr/util/CapabilitiesUtil"
-        ],
-        function(
-                Promise,
-                GlobalDiscoveryEntry,
-                DiscoveryQos,
-                DiscoveryScope,
-                ProviderScope,
-                GlobalCapabilitiesDirectoryProxy,
-                TypeRegistrySingleton,
-                Typing,
-                LoggerFactory,
-                Util,
-                ProviderRuntimeException,
-                CapabilitiesUtil) {
+var Promise = require('../../../global/Promise');
+var GlobalDiscoveryEntry = require('../../../joynr/types/GlobalDiscoveryEntry');
+var DiscoveryQos = require('../../proxy/DiscoveryQos');
+var DiscoveryScope = require('../../../joynr/types/DiscoveryScope');
+var ProviderScope = require('../../../joynr/types/ProviderScope');
+var GlobalCapabilitiesDirectoryProxy = require('../../infrastructure/GlobalCapabilitiesDirectoryProxy');
+var TypeRegistrySingleton = require('../../../joynr/types/TypeRegistrySingleton');
+var Typing = require('../../util/Typing');
+var LoggerFactory = require('../../system/LoggerFactory');
+var UtilInternal = require('../../util/UtilInternal');
+var ProviderRuntimeException = require('../../exceptions/ProviderRuntimeException');
+var CapabilitiesUtil = require('../../util/CapabilitiesUtil');
+module.exports = (function (Promise, GlobalDiscoveryEntry, DiscoveryQos, DiscoveryScope, ProviderScope, GlobalCapabilitiesDirectoryProxy, TypeRegistrySingleton, Typing, LoggerFactory, Util, ProviderRuntimeException, CapabilitiesUtil) {
 
             /**
              * The CapabilitiesDiscovery looks up the local and global capabilities directory
@@ -502,4 +484,4 @@ define(
 
             return CapabilityDiscovery;
 
-        });
+}(Promise, GlobalDiscoveryEntry, DiscoveryQos, DiscoveryScope, ProviderScope, GlobalCapabilitiesDirectoryProxy, TypeRegistrySingleton, Typing, LoggerFactory, UtilInternal, ProviderRuntimeException, CapabilitiesUtil));

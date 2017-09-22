@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/inprocess/InProcessMessagingSkeleton", [], function() {
+module.exports = (function() {
 
     /**
      * @name InProcessMessagingSkeleton
@@ -52,4 +53,4 @@ define("joynr/messaging/inprocess/InProcessMessagingSkeleton", [], function() {
 
     return InProcessMessagingSkeleton;
 
-});
+}());

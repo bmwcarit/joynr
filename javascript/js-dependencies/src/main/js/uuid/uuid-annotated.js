@@ -1,5 +1,5 @@
-define([], function () {
-    return function uuid(
+/*jslint node:true*/
+module.exports = function uuid(
       a                  // placeholder
     ){
       return a           // if the placeholder was passed, return
@@ -19,5 +19,4 @@ define([], function () {
             /[018]/g,    // zeroes, ones, and eights with
             uuid            // random hex digits
           )
-    }
-});
+    };

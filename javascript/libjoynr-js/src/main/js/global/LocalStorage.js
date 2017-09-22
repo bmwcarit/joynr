@@ -1,3 +1,4 @@
+/*jslint node: true*/
 /*global localStorage: true*/
 
 /*
@@ -24,8 +25,10 @@
  *
  * @returns constructor for a localStorage object
  */
-define([ "joynr/util/Typing"
-], function(Typing) {
+var Typing = require("../joynr/util/Typing");
+
+module.exports =
+        (function(Typing) {
     /**
      * constructor for a localStorage object
      * @param {Object}
@@ -49,4 +52,4 @@ define([ "joynr/util/Typing"
             };
 
     return LocalStorage;
-});
+        }(Typing));

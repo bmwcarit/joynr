@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -17,9 +19,4 @@
  * #L%
  */
 
-define("joynr/Runtime", [ "joynr/start/InterTabClusterControllerRuntime"
-], function(InterTabClusterControllerRuntime) {
-
-    return InterTabClusterControllerRuntime;
-
-});
+module.exports = require('./start/InterTabClusterControllerRuntime');

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,19 +18,19 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/dispatching/types/SubscriptionRequest", [
-    "joynr/util/UtilInternal",
-    "joynr/util/Typing",
-    "joynr/proxy/PeriodicSubscriptionQos",
-    "joynr/proxy/OnChangeSubscriptionQos",
-    "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos"
-], function(
-        Util,
-        Typing,
-        PeriodicSubscriptionQos,
-        OnChangeSubscriptionQos,
-        OnChangeWithKeepAliveSubscriptionQos) {
+var UtilInternal = require('../../util/UtilInternal');
+var Typing = require('../../util/Typing');
+var PeriodicSubscriptionQos = require('../../proxy/PeriodicSubscriptionQos');
+var OnChangeSubscriptionQos = require('../../proxy/OnChangeSubscriptionQos');
+var OnChangeWithKeepAliveSubscriptionQos =
+        require('../../proxy/OnChangeWithKeepAliveSubscriptionQos');
+module.exports =
+        (function(
+                Util,
+                Typing,
+                PeriodicSubscriptionQos,
+                OnChangeSubscriptionQos,
+                OnChangeWithKeepAliveSubscriptionQos) {
 
     var defaultSettings = {
         qos : new PeriodicSubscriptionQos()
@@ -104,4 +106,9 @@ define("joynr/dispatching/types/SubscriptionRequest", [
 
     return SubscriptionRequest;
 
-});
+        }(
+                UtilInternal,
+                Typing,
+                PeriodicSubscriptionQos,
+                OnChangeSubscriptionQos,
+                OnChangeWithKeepAliveSubscriptionQos));

@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,52 +17,27 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/dispatching/subscription/PublicationManager",
-        [
-            "global/Promise",
-            "joynr/proxy/SubscriptionQos",
-            "joynr/proxy/PeriodicSubscriptionQos",
-            "joynr/dispatching/types/BroadcastSubscriptionRequest",
-            "joynr/dispatching/types/SubscriptionRequest",
-            "joynr/dispatching/types/MulticastPublication",
-            "joynr/dispatching/types/SubscriptionPublication",
-            "joynr/dispatching/types/SubscriptionReply",
-            "joynr/dispatching/types/SubscriptionStop",
-            "joynr/dispatching/types/SubscriptionInformation",
-            "joynr/dispatching/types/Reply",
-            "joynr/provider/ProviderEvent",
-            "joynr/util/Typing",
-            "joynr/dispatching/subscription/util/SubscriptionUtil",
-            "joynr/exceptions/SubscriptionException",
-            "joynr/exceptions/ProviderRuntimeException",
-            "joynr/util/JSONSerializer",
-            "joynr/util/LongTimer",
-            "joynr/util/UtilInternal",
-            "joynr/system/LoggerFactory"
-        ],
-        function(
-                Promise,
-                SubscriptionQos,
-                PeriodicSubscriptionQos,
-                BroadcastSubscriptionRequest,
-                SubscriptionRequest,
-                MulticastPublication,
-                SubscriptionPublication,
-                SubscriptionReply,
-                SubscriptionStop,
-                SubscriptionInformation,
-                Reply,
-                ProviderEvent,
-                Typing,
-                SubscriptionUtil,
-                SubscriptionException,
-                ProviderRuntimeException,
-                JSONSerializer,
-                LongTimer,
-                Util,
-                LoggerFactory) {
+var Promise = require('../../../global/Promise');
+var SubscriptionQos = require('../../proxy/SubscriptionQos');
+var PeriodicSubscriptionQos = require('../../proxy/PeriodicSubscriptionQos');
+var BroadcastSubscriptionRequest = require('../types/BroadcastSubscriptionRequest');
+var SubscriptionRequest = require('../types/SubscriptionRequest');
+var MulticastPublication = require('../types/MulticastPublication');
+var SubscriptionPublication = require('../types/SubscriptionPublication');
+var SubscriptionReply = require('../types/SubscriptionReply');
+var SubscriptionStop = require('../types/SubscriptionStop');
+var SubscriptionInformation = require('../types/SubscriptionInformation');
+var Reply = require('../types/Reply');
+var ProviderEvent = require('../../provider/ProviderEvent');
+var Typing = require('../../util/Typing');
+var SubscriptionUtil = require('./util/SubscriptionUtil');
+var SubscriptionException = require('../../exceptions/SubscriptionException');
+var ProviderRuntimeException = require('../../exceptions/ProviderRuntimeException');
+var JsonSerializer = require('../../util/JSONSerializer');
+var LongTimer = require('../../util/LongTimer');
+var UtilInternal = require('../../util/UtilInternal');
+var LoggerFactory = require('../../system/LoggerFactory');
+module.exports = (function (Promise, SubscriptionQos, PeriodicSubscriptionQos, BroadcastSubscriptionRequest, SubscriptionRequest, MulticastPublication, SubscriptionPublication, SubscriptionReply, SubscriptionStop, SubscriptionInformation, Reply, ProviderEvent, Typing, SubscriptionUtil, SubscriptionException, ProviderRuntimeException, JSONSerializer, LongTimer, Util, LoggerFactory) {
 
 
             /**
@@ -1615,4 +1589,4 @@ define(
 
             PublicationManager.SUBSCRIPTIONS_STORAGE_PREFIX = "subscriptions";
             return PublicationManager;
-        });
+}(Promise, SubscriptionQos, PeriodicSubscriptionQos, BroadcastSubscriptionRequest, SubscriptionRequest, MulticastPublication, SubscriptionPublication, SubscriptionReply, SubscriptionStop, SubscriptionInformation, Reply, ProviderEvent, Typing, SubscriptionUtil, SubscriptionException, ProviderRuntimeException, JsonSerializer, LongTimer, UtilInternal, LoggerFactory));

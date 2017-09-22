@@ -1,5 +1,4 @@
-/*jslint es5: true, nomen: true */
-
+/*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -18,19 +17,20 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/types/TestTypesWithoutVersion/EnumInsideTypeCollectionWithoutVersion",
-            "joynr/types/TestTypesWithoutVersion/MapInsideTypeCollectionWithoutVersion",
-            "joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion",
-            "joynr/types/TestTypes/TEnum",
-            "joynr/types/TestTypes/TStringKeyMap",
-            "joynr/types/TestTypes/TStruct",
-            "joynr/types/TestTypes/TStructWithTypedefMembers",
-            "joynr/util/Typing"
-        ],
-        function(
+var EnumInsideTypeCollectionWithoutVersion =
+        require('../../../test-classes/joynr/types/TestTypesWithoutVersion/EnumInsideTypeCollectionWithoutVersion');
+var MapInsideTypeCollectionWithoutVersion =
+        require('../../../test-classes/joynr/types/TestTypesWithoutVersion/MapInsideTypeCollectionWithoutVersion');
+var StructInsideTypeCollectionWithoutVersion =
+        require('../../../test-classes/joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion');
+var Tenum = require('../../../test-classes/joynr/types/TestTypes/TEnum');
+var TstringKeyMap = require('../../../test-classes/joynr/types/TestTypes/TStringKeyMap');
+var Tstruct = require('../../../test-classes/joynr/types/TestTypes/TStruct');
+var TstructWithTypedefMembers =
+        require('../../../test-classes/joynr/types/TestTypes/TStructWithTypedefMembers');
+var Typing = require('../../../classes/joynr/util/Typing');
+module.exports =
+        (function(
                 EnumInsideTypeCollectionWithoutVersion,
                 MapInsideTypeCollectionWithoutVersion,
                 StructInsideTypeCollectionWithoutVersion,
@@ -236,4 +236,12 @@ define(
 
                     }); // describe Compound
 
-        });
+        }(
+                EnumInsideTypeCollectionWithoutVersion,
+                MapInsideTypeCollectionWithoutVersion,
+                StructInsideTypeCollectionWithoutVersion,
+                Tenum,
+                TstringKeyMap,
+                Tstruct,
+                TstructWithTypedefMembers,
+                Typing));

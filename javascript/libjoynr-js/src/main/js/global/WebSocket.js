@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*global WebSocket: true, FileReader: true, TextDecoder: true, TextEncoder: true */
 
 /*
@@ -19,15 +21,12 @@
  * #L%
  */
 
-define(
-        [
-            "joynr/messaging/JoynrMessage",
-            "joynr/util/JSONSerializer",
-            "joynr/exceptions/JoynrRuntimeException",
-            "joynr/system/LoggerFactory",
-            "text-encoding"
-        ],
-        function(JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
+var JoynrMessage = require("../joynr/messaging/JoynrMessage");
+var JSONSerializer = require("../joynr/util/JSONSerializer");
+var JoynrRuntimeException = require("../joynr/exceptions/JoynrRuntimeException");
+var LoggerFactory = require("../joynr/system/LoggerFactory");
+
+module.exports = (function(JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
             if (typeof TextDecoder !== "function") {
                 throw new JoynrRuntimeException(
                         "Encoding/Decoding of binary websocket messages not possible. TextEncoder/TextDecoder not available.");
@@ -73,4 +72,4 @@ define(
             };
 
             return WebSocket;
-        });
+    }(JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory));

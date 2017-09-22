@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
 /**
  * waitsFor helper function for jasmine 2.x
  */
-define([ "global/Promise"
-], function(Promise) {
+var Promise = require('../../classes/global/Promise');
+module.exports = (function(Promise) {
     var originalSetInterval = setInterval;
     var originalClearInterval = clearInterval;
     var originalSetTimeout = setTimeout;
@@ -43,4 +44,4 @@ define([ "global/Promise"
         });
     }
     return waitsFor;
-});
+}(Promise));

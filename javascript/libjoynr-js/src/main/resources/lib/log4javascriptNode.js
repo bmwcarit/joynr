@@ -16,17 +16,19 @@
  * limitations under the License.
  * #L%
  */
-
 /**
  * node wrapper for log4javascript
  *
  * @returns log4javascript wrapper for node.js
  */
-define([], function() {
+module.exports = function () {
     var oldWindow = global.window;
+    var oldNavigator = global.navigator;
     /* WORKAROUND: log4javascript node module v. 1.4.15 still expects a window object to be present */
     global.window = {};
-    var result = require("log4javascript");
+    global.navigator = {userAgent: 'node'}
+    var result = require('log4javascript');
     global.window = oldWindow;
+    global.navigator = oldNavigator;
     return result;
-});
+}();

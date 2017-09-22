@@ -31,10 +31,10 @@ module.exports = function(config) {
             'karma-jasmine',
             'karma-chrome-launcher',
             'karma-phantomjs-launcher',
-            'karma-requirejs',
             'karma-junit-reporter',
             'karma-verbose-reporter',
-            'karma-coverage'
+            'karma-coverage',
+            require('./karma.preprocessor.browserify')()
     ],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -43,7 +43,7 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine', 'requirejs'],
+    frameworks: ['jasmine'],
 
 
     // list of files / patterns to load in the browser
@@ -56,8 +56,7 @@ module.exports = function(config) {
             {pattern: 'classes/joynr.js', included: false},
             {pattern: 'classes/joynr/**/*.js', included: false},
             {pattern: 'test-classes/test/**/*.js', included: false},
-            {pattern: 'test-classes/joynr/**/*.js', included: false},
-            'test-classes/test-unit.js'
+            {pattern: 'test-classes/joynr/**/*.js', included: true}
     ],
 
 
@@ -73,7 +72,8 @@ module.exports = function(config) {
       'classes/joynr.js' : preProcessorList,
       'classes/global/*.js' : preProcessorList,
       'classes/joynr/**/*.js' : preProcessorList,
-      'classes/joynr.js' : preProcessorList
+      'classes/joynr.js' : preProcessorList,
+      'test-classes/joynr/**/*.js': ['browserify']
     },
 
 

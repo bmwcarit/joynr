@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define([ "joynr/messaging/inprocess/InProcessMessagingStub"
-], function(InProcessMessagingStub) {
+var InProcessMessagingStub =
+        require('../../../../classes/joynr/messaging/inprocess/InProcessMessagingStub');
+module.exports =
+        (function(InProcessMessagingStub) {
 
     describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub", function() {
         var skeletonCallReturn, inProcessMessagingSkeleton, inProcessMessagingStub, joynrMessage;
@@ -57,4 +60,4 @@ define([ "joynr/messaging/inprocess/InProcessMessagingStub"
 
     });
 
-});
+        }(InProcessMessagingStub));

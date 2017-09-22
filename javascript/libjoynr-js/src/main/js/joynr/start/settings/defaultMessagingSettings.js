@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/start/settings/defaultMessagingSettings", [ "joynr/messaging/MessagingQosEffort"
-], function(MessagingQosEffort) {
+var MessagingQosEffort = require('../../messaging/MessagingQosEffort');
+module.exports = (function(MessagingQosEffort) {
     return {
         // 30 days
         MAX_MESSAGING_TTL_MS : 2592000000,
@@ -26,4 +27,4 @@ define("joynr/start/settings/defaultMessagingSettings", [ "joynr/messaging/Messa
         effort : MessagingQosEffort.NORMAL
     };
 
-});
+}(MessagingQosEffort));
