@@ -25,7 +25,7 @@ namespace joynr
 INIT_LOGGER(TestRunnable);
 
 TestRunnable::TestRunnable()
-    : Runnable(true) {
+    : Runnable() {
 }
 
 void TestRunnable::shutdown() {

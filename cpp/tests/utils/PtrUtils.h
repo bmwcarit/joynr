@@ -16,19 +16,31 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/ConnectorFactory.h"
+#ifndef PTRUTILS_H
+#define PTRUTILS_H
 
-namespace joynr
+#include <chrono>
+#include <memory>
+
+namespace joynr {
+namespace test {
+namespace util {
+
+/**
+ * @brief Resets a shared_ptr and waits until the object is destructed
+ */
+template <typename T>
+inline static void resetAndWaitUntilDestroyed(std::shared_ptr<T>& sharedPtr)
 {
-
-INIT_LOGGER(ConnectorFactory);
-
-ConnectorFactory::ConnectorFactory(
-        std::shared_ptr<InProcessConnectorFactory> inProcessConnectorFactory,
-        std::unique_ptr<JoynrMessagingConnectorFactory> joynrMessagingConnectorFactory)
-        : inProcessConnectorFactory(std::move(inProcessConnectorFactory)),
-          joynrMessagingConnectorFactory(std::move(joynrMessagingConnectorFactory))
-{
+    std::weak_ptr<T> weakPtr = sharedPtr;
+    sharedPtr.reset();
+    while(weakPtr.lock()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 }
 
+} // namespace util
+} // namespace test
 } // namespace joynr
+
+#endif // PTRUTILS_H

@@ -45,6 +45,7 @@
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/DelayedScheduler.h"
+#include "joynr/Dispatcher.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
@@ -203,7 +204,7 @@ public:
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:
-    MockInProcessMessagingSkeleton() : InProcessMessagingSkeleton(nullptr){}
+    MockInProcessMessagingSkeleton(std::weak_ptr<joynr::IDispatcher> dispatcher) : InProcessMessagingSkeleton(dispatcher){}
     MOCK_METHOD2(transmit, void(std::shared_ptr<joynr::ImmutableMessage> message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
 };
 
@@ -211,19 +212,19 @@ class MockDelayedScheduler : public joynr::DelayedScheduler
 {
 public:
     MockDelayedScheduler(boost::asio::io_service& ioService)
-        : DelayedScheduler([](joynr::Runnable*){ assert(false); }, ioService, std::chrono::milliseconds::zero())
+        : DelayedScheduler([](std::shared_ptr<joynr::Runnable>){ assert(false); }, ioService, std::chrono::milliseconds::zero())
     {
     }
 
     void shutdown() { joynr::DelayedScheduler::shutdown(); }
     MOCK_METHOD1(unschedule, void (joynr::DelayedScheduler::RunnableHandle));
-    MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (joynr::Runnable*, std::chrono::milliseconds delay));
+    MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (std::shared_ptr<joynr::Runnable>, std::chrono::milliseconds delay));
 };
 
 class MockRunnable : public joynr::Runnable
 {
 public:
-    MockRunnable(bool deleteMe) : Runnable(deleteMe)
+    MockRunnable() : Runnable()
     {
     }
 
@@ -242,8 +243,7 @@ class MockRunnableWithAccuracy : public joynr::Runnable
 public:
     static const std::uint64_t timerAccuracyTolerance_ms = 5U;
 
-    MockRunnableWithAccuracy(bool deleteMe,
-                             const std::uint64_t delay);
+    MockRunnableWithAccuracy(const std::uint64_t delay);
 
     MOCK_CONST_METHOD0(dtorCalled, void ());
     ~MockRunnableWithAccuracy();
@@ -262,8 +262,8 @@ private:
 class MockRunnableBlocking : public joynr::Runnable
 {
 public:
-    MockRunnableBlocking(bool deleteMe = false)
-        : Runnable(deleteMe),
+    MockRunnableBlocking()
+        : Runnable(),
           mutex(),
           wait()
     {
@@ -303,7 +303,7 @@ class MockInProcessConnectorFactory : public joynr::InProcessConnectorFactory {
 public:
 
     MockInProcessConnectorFactory()
-        : InProcessConnectorFactory(nullptr,nullptr,nullptr,nullptr) {
+        : InProcessConnectorFactory(std::weak_ptr<joynr::SubscriptionManager>(),std::weak_ptr<joynr::PublicationManager>(),std::weak_ptr<joynr::InProcessPublicationSender>(),nullptr) {
     }
 
     MOCK_METHOD1(canBeCreated, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address> address));
@@ -319,7 +319,7 @@ public:
     MOCK_METHOD1(removeRequestCaller, void(const std::string& participantId));
     MOCK_METHOD1(receive, void(std::shared_ptr<joynr::ImmutableMessage> message));
     MOCK_METHOD1(registerSubscriptionManager, void(std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager));
-    MOCK_METHOD1(registerPublicationManager,void(joynr::PublicationManager* publicationManager));
+    MOCK_METHOD1(registerPublicationManager,void(std::weak_ptr<joynr::PublicationManager> publicationManager));
     MOCK_METHOD0(shutdown, void ());
 };
 
@@ -336,6 +336,7 @@ public:
     MOCK_METHOD1(create, std::shared_ptr<joynr::IMessagingStub>(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
     MOCK_METHOD1(remove, void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
     MOCK_METHOD1(contains, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
+    MOCK_METHOD0(shutdown, void ());
 };
 
 class MockMessageRouter : public joynr::IMessageRouter {
@@ -959,10 +960,10 @@ public:
         methodWithProviderRuntimeExceptionMock(onSuccess, onError);
     }
 
-    MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
-    MOCK_METHOD2(registerBroadcastListener, void(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener));
-    MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
-    MOCK_METHOD2(unregisterBroadcastListener, void(const std::string& broadcastName, joynr::UnicastBroadcastListener* broadcastListener));
+    MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, std::shared_ptr<joynr::SubscriptionAttributeListener> attributeListener));
+    MOCK_METHOD2(registerBroadcastListener, void(const std::string& broadcastName, std::shared_ptr<joynr::UnicastBroadcastListener> broadcastListener));
+    MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, std::shared_ptr<joynr::SubscriptionAttributeListener> attributeListener));
+    MOCK_METHOD2(unregisterBroadcastListener, void(const std::string& broadcastName, std::shared_ptr<joynr::UnicastBroadcastListener> broadcastListener));
 
     std::string providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
 
@@ -984,8 +985,8 @@ public:
         getLocationMock(onSuccess, onError);
     }
 
-    MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
-    MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, joynr::SubscriptionAttributeListener* attributeListener));
+    MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, std::shared_ptr<joynr::SubscriptionAttributeListener> attributeListener));
+    MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, std::shared_ptr<joynr::SubscriptionAttributeListener> attributeListener));
 };
 
 class MockSubscriptionManager : public joynr::SubscriptionManager {
@@ -1323,9 +1324,9 @@ public:
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
-    MockLocalCapabilitiesDirectory(joynr::ClusterControllerSettings& ccSettings, boost::asio::io_service& ioService):
-        messageRouter(ioService),
-        LocalCapabilitiesDirectory(ccSettings, nullptr, "localAddress", messageRouter, ioService, "clusterControllerId"){}
+    MockLocalCapabilitiesDirectory(joynr::ClusterControllerSettings& ccSettings, std::shared_ptr<joynr::IMessageRouter> mockMessageRouter, boost::asio::io_service& ioService):
+        LocalCapabilitiesDirectory(ccSettings, nullptr, "localAddress", mockMessageRouter, ioService, "clusterControllerId")
+   {}
 
     MOCK_METHOD3(
             lookup,
@@ -1334,9 +1335,6 @@ public:
                 std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)> onSuccess,
                 std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError
             ));
-
-private:
-    MockMessageRouter messageRouter;
 };
 
 class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback

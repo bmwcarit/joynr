@@ -70,7 +70,9 @@ class RoutingProxy;
 /**
   * Common implementation of functionalities of a message router object.
   */
-class JOYNR_EXPORT AbstractMessageRouter : public joynr::IMessageRouter
+class JOYNR_EXPORT AbstractMessageRouter
+        : public joynr::IMessageRouter,
+          public std::enable_shared_from_this<AbstractMessageRouter>
 {
 
 public:
@@ -79,6 +81,7 @@ public:
                                std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
                                bool isGloballyVisible);
 
+    virtual void init();
     void saveRoutingTable();
     void loadRoutingTable(std::string fileName);
 
@@ -157,7 +160,8 @@ protected:
     void activateRoutingTableCleanerTimer();
     void registerTransportStatusCallbacks();
     void rescheduleQueuedMessagesForTransport(std::shared_ptr<ITransportStatus> transportStatus);
-    void onMessageCleanerTimerExpired(const boost::system::error_code& errorCode);
+    void onMessageCleanerTimerExpired(std::shared_ptr<AbstractMessageRouter> thisSharedptr,
+                                      const boost::system::error_code& errorCode);
     void onRoutingTableCleanerTimerExpired(const boost::system::error_code& errorCode);
 
     RoutingTable routingTable;
@@ -193,7 +197,7 @@ public:
     MessageRunnable(std::shared_ptr<ImmutableMessage> message,
                     std::shared_ptr<IMessagingStub> messagingStub,
                     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
-                    AbstractMessageRouter& messageRouter,
+                    std::weak_ptr<AbstractMessageRouter> messageRouter,
                     std::uint32_t tryCount);
     void shutdown() override;
     void run() override;
@@ -202,7 +206,7 @@ private:
     std::shared_ptr<ImmutableMessage> message;
     std::shared_ptr<IMessagingStub> messagingStub;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
-    AbstractMessageRouter& messageRouter;
+    std::weak_ptr<AbstractMessageRouter> messageRouter;
     std::uint32_t tryCount;
 
     ADD_LOGGER(MessageRunnable);

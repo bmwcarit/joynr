@@ -32,13 +32,13 @@ public:
     /**
      * Create an broadcast listener
      */
-    explicit AbstractBroadcastListener(PublicationManager& publicationManager)
-            : publicationManager(publicationManager)
+    explicit AbstractBroadcastListener(std::weak_ptr<PublicationManager> publicationManager)
+            : publicationManager(std::move(publicationManager))
     {
     }
 
 protected:
-    PublicationManager& publicationManager;
+    std::weak_ptr<PublicationManager> publicationManager;
 };
 
 } // namespace joynr

@@ -40,9 +40,8 @@ const std::string& MockProvider::getInterfaceName() const
 INIT_LOGGER(MockRunnableWithAccuracy);
 
 MockRunnableWithAccuracy::MockRunnableWithAccuracy(
-    bool deleteMe,
     const std::uint64_t delay)
-    : Runnable(deleteMe),
+    : Runnable(),
       est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
 {
 }

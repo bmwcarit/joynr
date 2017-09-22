@@ -63,15 +63,20 @@ using namespace joynr;
 
 class PublicationManagerTest : public testing::Test {
 public:
-    PublicationManagerTest() : singleThreadedIOService(), messageSender(new MockMessageSender())
+    PublicationManagerTest() : singleThreadedIOService(), messageSender(std::make_shared<MockMessageSender>())
     {
         singleThreadedIOService.start();
+    }
+
+    ~PublicationManagerTest()
+    {
+        singleThreadedIOService.stop();
     }
 
     void TearDown(){
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored broadcastsubscriptions
-        delete messageSender;
+        messageSender.reset();
     }
 
     void invokeLocationAndSaveCallContext(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
@@ -86,7 +91,7 @@ protected:
     void sendSubscriptionReplyOnSuccessfulRegistration(SubscriptionRequest& subscriptionRequest);
     void sendSubscriptionExceptionOnExpiredRegistration(SubscriptionRequest& subscriptionRequest);
     SingleThreadedIOService singleThreadedIOService;
-    IMessageSender* messageSender;
+    std::shared_ptr<IMessageSender> messageSender;
     joynr::CallContext savedCallContext;
     joynr::Semaphore getLocationCalledSemaphore;
     ADD_LOGGER(PublicationManagerTest);
@@ -115,17 +120,17 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<joynr::tests::testRequestInterpreter>(joynr::tests::testProvider::INTERFACE_NAME());
 
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>(Between(3, 5));
 
     // NOTE: it depends on the timing and especially on the CPU load of
     // the current machine how often the publication is exectuted. Hence,
     // we expect the publication to haben between 3 or 5 times.
-    EXPECT_CALL(mockPublicationSender,
+    EXPECT_CALL(*mockPublicationSender,
                 sendSubscriptionPublicationMock(_,_,_,_))
             .Times(Between(3, 5));
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -147,23 +152,24 @@ TEST_F(PublicationManagerTest, add_requestCallerIsCalledCorrectlyByPublisherRunn
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller,subscriptionRequest, mockPublicationSender);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    publicationManager->shutdown();
 }
 
 
 TEST_F(PublicationManagerTest, stop_publications) {
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>(AtMost(2));
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    EXPECT_CALL(mockPublicationSender,
+    EXPECT_CALL(*mockPublicationSender,
                 sendSubscriptionPublicationMock(_,_,_,_))
             .Times(AtMost(2));
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -184,30 +190,31 @@ TEST_F(PublicationManagerTest, stop_publications) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
 
-    publicationManager.add(
+    publicationManager->add(
                 senderId,
                 receiverId,
                 requestCaller,
                 subscriptionRequest,
-                &mockPublicationSender
+                mockPublicationSender
     );
     std::this_thread::sleep_for(std::chrono::milliseconds(80));
-    publicationManager.stopPublication(subscriptionRequest.getSubscriptionId());
+    publicationManager->stopPublication(subscriptionRequest.getSubscriptionId());
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, remove_all_publications) {
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>(AtMost(2));
 
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    EXPECT_CALL(mockPublicationSender,
+    EXPECT_CALL(*mockPublicationSender,
                 sendSubscriptionPublicationMock(_,_,_,_))
             .Times(AtMost(2));
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -228,17 +235,18 @@ TEST_F(PublicationManagerTest, remove_all_publications) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
 
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller,subscriptionRequest, mockPublicationSender);
     std::this_thread::sleep_for(std::chrono::milliseconds(80));
-    publicationManager.removeAllSubscriptions(receiverId);
+    publicationManager->removeAllSubscriptions(receiverId);
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     // The attribute will change to this value
@@ -251,7 +259,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     expectedPublication.setResponse(std::move(attributeValue));
     // Expect an attribute change to send a publication as well as during registering subscription request
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
@@ -263,7 +271,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
 
     // Expect a call to set up the on change subscription
     std::string attributeName = "Location";
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
     EXPECT_CALL(
                 *requestCaller,
                 registerAttributeListener(attributeName,_)
@@ -278,7 +286,7 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     )
             .Times(1);
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -296,19 +304,20 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding request");
-    publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // Fake an attribute change
     attributeListener->attributeValueChanged(std::move(attributeValue));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     // The attribute will change to this value
@@ -321,7 +330,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     expectedPublication.setResponse(std::move(attributeValue));
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
@@ -333,7 +342,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
 
     EXPECT_CALL(*requestCaller,registerAttributeListener(attributeName, _))
             .Times(1)
@@ -341,7 +350,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
 
     EXPECT_CALL(*requestCaller,unregisterAttributeListener(attributeName, _)).Times(1);
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -359,7 +368,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller,subscriptionRequest, mockPublicationSender);
 
     // Sleep so that the first publication is sent
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -371,7 +380,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate) {
 
     // Wait for the subscription to finish
     std::this_thread::sleep_for(std::chrono::milliseconds(700));
-
+    publicationManager->shutdown();
 }
 
 
@@ -379,7 +388,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     // The attribute will change to this value
@@ -392,7 +401,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     expectedPublication.setResponse(std::move(attributeValue));
     // Expect a single attribute change to send a publication + one publication when registering sub request -> 2
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
@@ -404,7 +413,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
 
     EXPECT_CALL(*requestCaller,registerAttributeListener(attributeName, _))
             .Times(1)
@@ -412,7 +421,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
 
     EXPECT_CALL(*requestCaller,unregisterAttributeListener(attributeName, _)).Times(1);
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -429,7 +438,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller,subscriptionRequest, mockPublicationSender);
 
     // Sleep so that the first publication is sent
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -441,7 +450,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval) {
 
     // Wait for the subscription to finish
     std::this_thread::sleep_for(std::chrono::milliseconds(700));
-
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
@@ -449,18 +458,18 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
     // two request interpreters for the first and second add-API call
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     auto requestCaller2 = std::make_shared<MockTestRequestCaller>();
-    MockPublicationSender mockPublicationSender2;
+    auto mockPublicationSender2 = std::make_shared<MockPublicationSender>();
 
     // The attribute will change to this value
     joynr::types::Localisation::GpsLocation attributeValue;
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
 
     SubscriptionRequest subscriptionRequest;
 
@@ -468,7 +477,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     expectedPublication.setResponse(std::move(attributeValue));
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
@@ -479,7 +488,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
             .Times(3);
 
     EXPECT_CALL(
-                mockPublicationSender2,
+                *mockPublicationSender2,
                 sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
@@ -501,7 +510,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
 
     EXPECT_CALL(*requestCaller2,unregisterAttributeListener(attributeName, _)).Times(1);
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -521,7 +530,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding attribute subscription request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller,subscriptionRequest, mockPublicationSender);
 
     // Sleep so that the first publication is sent
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
@@ -546,7 +555,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     qos->setMinIntervalMs(minInterval_ms + 500);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "update attribute subscription request");
-    publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest, &mockPublicationSender2);
+    publicationManager->add(senderId, receiverId, requestCaller2, subscriptionRequest, mockPublicationSender2);
 
     // Sleep so that the first publication is sent
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
@@ -566,13 +575,14 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId) {
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 500));
 
     // now, we should got 2 publications on mockPublicationSender2
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_withGreaterExpiryDate) {
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     // The attribute will change to this value
@@ -580,7 +590,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
 
     SubscriptionRequest subscriptionRequest;
 
@@ -588,7 +598,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     expectedPublication.setResponse(std::move(attributeValue));
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
@@ -604,7 +614,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     EXPECT_CALL(*requestCaller,unregisterAttributeListener(attributeName, _)).Times(2);
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -627,7 +637,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     subscriptionRequest.setQos(qos);
 
     JOYNR_LOG_DEBUG(logger, "adding attribute subscription request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller,subscriptionRequest, mockPublicationSender);
 
     // exceed the minInterval
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms+50));
@@ -639,7 +649,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
     qos->setExpiryDateMs(testAbsExpiryDate + 1000);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller,subscriptionRequest, mockPublicationSender);
 
     // Sleep so that the first publication is sent
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -655,6 +665,7 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId_testQos_
 
     // wait for the subscription to finish
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + testRelExpiryDate));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_withLowerExpiryDate) {
@@ -663,7 +674,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     // The attribute will change to this value
@@ -671,7 +682,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
 
     SubscriptionRequest subscriptionRequest;
 
@@ -679,7 +690,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     expectedPublication.setSubscriptionId(subscriptionRequest.getSubscriptionId());
     expectedPublication.setResponse(std::move(attributeValue));
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
@@ -695,7 +706,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     EXPECT_CALL(*requestCaller,unregisterAttributeListener(attributeName, _)).Times(2);
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -718,7 +729,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding attribute subscription request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller,subscriptionRequest, mockPublicationSender);
 
     // exceed the minInterval
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -733,7 +744,7 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
     qos->setExpiryDateMs(testAbsExpiryDate - testExpiryDate_shift);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "update attribute subscription request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller,subscriptionRequest, mockPublicationSender);
 
     // Sleep so that the first publication is sent
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -747,24 +758,25 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
 
     // wait for the async publication, which shouldn't arrive
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
-    MockPublicationSender mockPublicationSender2;
+    auto mockPublicationSender2 = std::make_shared<MockPublicationSender>();
     auto requestCaller2 = std::make_shared<MockTestRequestCaller>();
 
     // The broacast will fire this value
     joynr::types::Localisation::GpsLocation broadcastValue;
 
-    // Expect calls to register an unregister an broadcast listener
+    // Expect calls to register and unregister an broadcast listener
     std::string broadcastName("Location");
-    UnicastBroadcastListener* broadcastListener;
+    std::shared_ptr<UnicastBroadcastListener> broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filterParameters;
@@ -775,7 +787,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     expectedPublication.setResponse(std::move(broadcastValue));
 
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
@@ -786,7 +798,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
             .Times(2);
 
     EXPECT_CALL(
-                mockPublicationSender2,
+                *mockPublicationSender2,
                 sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
@@ -808,7 +820,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     EXPECT_CALL(*requestCaller2,unregisterBroadcastListener(broadcastName, _)).Times(1);
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -828,7 +840,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding broadcast subscription request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // Fake broadcast
     broadcastListener->broadcastOccurred(broadcastValue);
@@ -850,7 +862,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
     qos->setMinIntervalMs(newMinInterval);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "update broadcast subscription request");
-    publicationManager.add(senderId, receiverId, requestCaller2,subscriptionRequest,&mockPublicationSender2);
+    publicationManager->add(senderId, receiverId, requestCaller2, subscriptionRequest, mockPublicationSender2);
 
     // Fake broadcast
     broadcastListener->broadcastOccurred(broadcastValue);
@@ -866,13 +878,14 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId) {
 
     // Wait for the subscription to finish
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_withGreaterExpiryDate) {
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     // The broacast will fire this value
@@ -880,7 +893,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
-    UnicastBroadcastListener* broadcastListener;
+    std::shared_ptr<UnicastBroadcastListener> broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filterParameters;
@@ -891,7 +904,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     expectedPublication.setResponse(std::move(broadcastValue));
 
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
@@ -907,7 +920,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     EXPECT_CALL(*requestCaller,unregisterBroadcastListener(broadcastName, _)).Times(2);
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -929,7 +942,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "add broadcast subscription request");
-    publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     broadcastListener->broadcastOccurred(broadcastValue);
     // exceed the minInterval
@@ -942,7 +955,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     qos->setExpiryDateMs(testAbsExpiryDate + 1000);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "update broadcast subscription request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     //now, exceed the original expiryDate, and make a broadcast
     std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate));
@@ -951,13 +964,14 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     // wait for the async publication
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     //now, two publications should be noticed, even if the original subscription is expired
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_withLowerExpiryDate) {
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     // The broacast will fire this value
@@ -965,7 +979,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     // Expect calls to register an unregister an broadcast listener
     std::string broadcastName("Location");
-    UnicastBroadcastListener* broadcastListener;
+    std::shared_ptr<UnicastBroadcastListener> broadcastListener;
 
     BroadcastSubscriptionRequest subscriptionRequest;
     BroadcastFilterParameters filterParameters;
@@ -976,7 +990,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     expectedPublication.setResponse(std::move(broadcastValue));
 
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
@@ -992,7 +1006,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     EXPECT_CALL(*requestCaller,unregisterBroadcastListener(broadcastName, _)).Times(2);
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -1015,7 +1029,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     subscriptionRequest.setSubscribeToName(broadcastName);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding broadcast subscription request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     broadcastListener->broadcastOccurred(broadcastValue);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -1027,7 +1041,7 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
     qos->setExpiryDateMs(testAbsExpiryDate - testExpiryDate_shift);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "update broadcast subscription request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest,&mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // now, exceed the new expiryDate, and make a broadcast
     std::this_thread::sleep_for(std::chrono::milliseconds(testRelExpiryDate - testExpiryDate_shift));
@@ -1040,18 +1054,19 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
 
     // now, no new publication should be received, even if the expiry date of the original request hasn't been expired
     // -> one publication expected
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     // A publication should never be sent
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionPublicationMock(
                     _, // sender participant ID
                     _, // receiver participant ID
@@ -1063,7 +1078,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
-    SubscriptionAttributeListener* attributeListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
 
     EXPECT_CALL(*requestCaller,registerAttributeListener(attributeName, _))
             .Times(1)
@@ -1071,7 +1086,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
 
     EXPECT_CALL(*requestCaller,unregisterAttributeListener(attributeName, _)).Times(1);
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
     //SubscriptionRequest
     std::string senderId = "SenderId";
@@ -1090,14 +1105,15 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription) {
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(qos);
     JOYNR_LOG_DEBUG(logger, "adding request");
-    publicationManager.add(senderId, receiverId, requestCaller,subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // Wait for the subscription to expire
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, restorePersistedAttributeSubscriptions) {
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
 
     const std::string attributeSubscriptionsPersistenceFilename = "test-SubscriptionRequest.persist";
     std::remove(attributeSubscriptionsPersistenceFilename.c_str());
@@ -1127,17 +1143,18 @@ TEST_F(PublicationManagerTest, restorePersistedAttributeSubscriptions) {
     subscriptionRequest2.setQos(qos);
 
     {
-        PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
-        publicationManager.loadSavedAttributeSubscriptionRequestsMap(attributeSubscriptionsPersistenceFilename);
-        publicationManager.add(senderId, receiverId, subscriptionRequest);
-        publicationManager.add(senderId, receiverId, subscriptionRequest2);
+        auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
+        publicationManager->loadSavedAttributeSubscriptionRequestsMap(attributeSubscriptionsPersistenceFilename);
+        publicationManager->add(senderId, receiverId, subscriptionRequest);
+        publicationManager->add(senderId, receiverId, subscriptionRequest2);
+        publicationManager->shutdown();
     }
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
     //if restoring works, this caller will be called.
     auto requestCaller = std::make_shared<MockTestRequestCaller>(AtLeast(1));
 
-    publicationManager.loadSavedAttributeSubscriptionRequestsMap(attributeSubscriptionsPersistenceFilename);
+    publicationManager->loadSavedAttributeSubscriptionRequestsMap(attributeSubscriptionsPersistenceFilename);
 
     const std::string attributeValue = "attributeValue";
     SubscriptionPublication subscriptionPublication;
@@ -1149,22 +1166,23 @@ TEST_F(PublicationManagerTest, restorePersistedAttributeSubscriptions) {
     subscriptionPublication2.setSubscriptionId(subscriptionRequest2.getSubscriptionId());
     subscriptionPublication2.setResponse(attributeValue2);
 
-    EXPECT_CALL(mockPublicationSender, sendSubscriptionPublicationMock(Eq(receiverId), Eq(senderId), _, Eq(ByRef(subscriptionPublication)))).Times(AtLeast(2));
-    EXPECT_CALL(mockPublicationSender, sendSubscriptionPublicationMock(Eq(receiverId), Eq(senderId), _, Eq(ByRef(subscriptionPublication2)))).Times(AtLeast(2));
-    publicationManager.restore(receiverId,
+    EXPECT_CALL(*mockPublicationSender, sendSubscriptionPublicationMock(Eq(receiverId), Eq(senderId), _, Eq(ByRef(subscriptionPublication)))).Times(AtLeast(2));
+    EXPECT_CALL(*mockPublicationSender, sendSubscriptionPublicationMock(Eq(receiverId), Eq(senderId), _, Eq(ByRef(subscriptionPublication2)))).Times(AtLeast(2));
+    publicationManager->restore(receiverId,
                                 requestCaller,
-                                &mockPublicationSender);
+                                mockPublicationSender);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
 
-    publicationManager.attributeValueChanged(subscriptionRequest.getSubscriptionId(), attributeValue);
-    publicationManager.attributeValueChanged(subscriptionRequest2.getSubscriptionId(), attributeValue2);
+    publicationManager->attributeValueChanged(subscriptionRequest.getSubscriptionId(), attributeValue);
+    publicationManager->attributeValueChanged(subscriptionRequest2.getSubscriptionId(), attributeValue2);
 
     std::remove(attributeSubscriptionsPersistenceFilename.c_str());
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, restorePersistedBroadcastSubscriptions) {
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
 
     const std::string broadcastSubscriptionsPersistenceFilename = "test-BroadcastSubscriptionRequest.persist";
     std::remove(broadcastSubscriptionsPersistenceFilename.c_str());
@@ -1185,28 +1203,30 @@ TEST_F(PublicationManagerTest, restorePersistedBroadcastSubscriptions) {
     broadcastSubscriptionRequest2.setQos(std::make_shared<joynr::OnChangeSubscriptionQos>());
 
     {
-        PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
-        publicationManager.loadSavedBroadcastSubscriptionRequestsMap(broadcastSubscriptionsPersistenceFilename);
-        publicationManager.add(broadcastSenderId, broadcastReceiverId, broadcastSubscriptionRequest);
-        publicationManager.add(broadcastSenderId2, broadcastReceiverId, broadcastSubscriptionRequest2);
+        auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
+        publicationManager->loadSavedBroadcastSubscriptionRequestsMap(broadcastSubscriptionsPersistenceFilename);
+        publicationManager->add(broadcastSenderId, broadcastReceiverId, broadcastSubscriptionRequest);
+        publicationManager->add(broadcastSenderId2, broadcastReceiverId, broadcastSubscriptionRequest2);
+        publicationManager->shutdown();
     }
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
-    publicationManager.loadSavedBroadcastSubscriptionRequestsMap(broadcastSubscriptionsPersistenceFilename);
+    publicationManager->loadSavedBroadcastSubscriptionRequestsMap(broadcastSubscriptionsPersistenceFilename);
 
     //if restoring works, this caller will be called.
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
-    publicationManager.restore(broadcastReceiverId,
+    publicationManager->restore(broadcastReceiverId,
                                 requestCaller,
-                                &mockPublicationSender);
+                                mockPublicationSender);
 
-    EXPECT_CALL(mockPublicationSender, sendSubscriptionPublicationMock(Eq(broadcastReceiverId), Eq(broadcastSenderId), _, _));
-    EXPECT_CALL(mockPublicationSender, sendSubscriptionPublicationMock(Eq(broadcastReceiverId), Eq(broadcastSenderId2), _, _));
-    publicationManager.broadcastOccurred(broadcastSubscriptionId);
-    publicationManager.broadcastOccurred(broadcastSubscriptionId2);
+    EXPECT_CALL(*mockPublicationSender, sendSubscriptionPublicationMock(Eq(broadcastReceiverId), Eq(broadcastSenderId), _, _));
+    EXPECT_CALL(*mockPublicationSender, sendSubscriptionPublicationMock(Eq(broadcastReceiverId), Eq(broadcastSenderId2), _, _));
+    publicationManager->broadcastOccurred(broadcastSubscriptionId);
+    publicationManager->broadcastOccurred(broadcastSubscriptionId2);
 
     std::remove(broadcastSubscriptionsPersistenceFilename.c_str());
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSender) {
@@ -1215,7 +1235,7 @@ TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSende
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     // The value will be fired by the broadcast
@@ -1243,7 +1263,7 @@ TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSende
     expectedPublication.setError(expected);
 
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionPublicationMock(
                     Eq(receiverId), // sender participant ID
                     Eq(senderId), // receiver participant ID
@@ -1253,13 +1273,14 @@ TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSende
     )
             .Times(2);
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
-    publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // wait for the async publication
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
     //now, two publications should be noticed, even if the original subscription is expired
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSender) {
@@ -1268,7 +1289,7 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
     // Register the request interpreter that calls the request caller
     InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>("tests/Test");
 
-    MockPublicationSender mockPublicationSender;
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     // The value will be fired by the broadcast
@@ -1297,7 +1318,7 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
     expectedPublication.setError(expected);
 
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionPublicationMock(
                     Eq(receiverId), // sender participant ID
                     Eq(senderId), // receiver participant ID
@@ -1307,20 +1328,21 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
     )
             .Times(2);
 
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
 
-    publicationManager.add(senderId, receiverId, requestCaller, subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // wait for the async publication
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
     //now, two publications should be noticed, even if the original subscription is expired
+    publicationManager->shutdown();
 }
 
 void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(SubscriptionRequest& subscriptionRequest)
 {
     joynr::Semaphore semaphore(0);
-    MockPublicationSender mockPublicationSender;
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     std::string proxyId = "ProxyId";
@@ -1333,7 +1355,7 @@ void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(Subsc
     expectedSubscriptionReply.setSubscriptionId(subscriptionId);
 
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionReply(
                     Eq(providerId), // sender participant ID
                     Eq(proxyId), // receiver participant ID
@@ -1344,12 +1366,13 @@ void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(Subsc
     .WillOnce(ReleaseSemaphore(&semaphore));
 
     JOYNR_LOG_DEBUG(logger, "adding subscription request");
-    publicationManager.add(proxyId, providerId, requestCaller, subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(proxyId, providerId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // remove subscription before deletion of mockPublicationSender
-    publicationManager.removeAllSubscriptions(providerId);
+    publicationManager->removeAllSubscriptions(providerId);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, attribute_sendSubscriptionReplyOnSuccessfulRegistration) {
@@ -1380,8 +1403,8 @@ TEST_F(PublicationManagerTest, multicast_sendSubscriptionReplyOnSuccessfulRegist
 void PublicationManagerTest::sendSubscriptionExceptionOnExpiredRegistration(SubscriptionRequest& subscriptionRequest)
 {
     joynr::Semaphore semaphore(0);
-    MockPublicationSender mockPublicationSender;
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
     auto requestCaller = std::make_shared<MockTestRequestCaller>();
 
     std::string proxyId = "ProxyId";
@@ -1406,7 +1429,7 @@ void PublicationManagerTest::sendSubscriptionExceptionOnExpiredRegistration(Subs
     expectedSubscriptionReply.setError(exception);
 
     EXPECT_CALL(
-                mockPublicationSender,
+                *mockPublicationSender,
                 sendSubscriptionReply(
                     Eq(providerId), // sender participant ID
                     Eq(proxyId), // receiver participant ID
@@ -1419,11 +1442,12 @@ void PublicationManagerTest::sendSubscriptionExceptionOnExpiredRegistration(Subs
     // wait some time to ensure the subscription is expired
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
     JOYNR_LOG_DEBUG(logger, "adding request");
-    publicationManager.add(proxyId, providerId, requestCaller, subscriptionRequest, &mockPublicationSender);
+    publicationManager->add(proxyId, providerId, requestCaller, subscriptionRequest, mockPublicationSender);
     // remove subscription before deletion of mockPublicationSender
-    publicationManager.removeAllSubscriptions(providerId);
+    publicationManager->removeAllSubscriptions(providerId);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    publicationManager->shutdown();
 }
 
 TEST_F(PublicationManagerTest, attribute_sendSubscriptionExceptionOnExpiredSubscriptionRequest) {
@@ -1448,8 +1472,8 @@ TEST_F(PublicationManagerTest, attribute_provideCallContextWhenPollingAttribute)
     const std::string proxyParticipantId("proxyId");
     const std::string providerParticipantId("providerId");
 
-    MockPublicationSender mockPublicationSender;
-    PublicationManager publicationManager(singleThreadedIOService.getIOService(), messageSender);
+    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender);
     std::shared_ptr<MockTestRequestCaller> requestCaller = std::make_shared<MockTestRequestCaller>();
     std::shared_ptr<PeriodicSubscriptionQos> qos = std::make_shared<PeriodicSubscriptionQos>(200, 100, 100, 200);
 
@@ -1465,12 +1489,13 @@ TEST_F(PublicationManagerTest, attribute_provideCallContextWhenPollingAttribute)
     ON_CALL(*requestCaller, getLocationMock(_,_)).
         WillByDefault(testing::Invoke(this, &PublicationManagerTest::invokeLocationAndSaveCallContext));
 
-    publicationManager.add(proxyParticipantId,
+    publicationManager->add(proxyParticipantId,
                            providerParticipantId,
                            requestCaller,
                            subscriptionRequest,
-                           &mockPublicationSender);
+                           mockPublicationSender);
 
     EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(1000)));
     EXPECT_EQ(expectedCallContext, CallContextStorage::get());
+    publicationManager->shutdown();
 }

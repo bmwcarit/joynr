@@ -20,6 +20,7 @@
 #include <gmock/gmock.h>
 
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Dispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
@@ -55,6 +56,7 @@ public:
     Request request;
     std::string requestId;
     MessagingQos qos;
+    std::shared_ptr<MockDispatcher> dispatcher;
     std::shared_ptr<MockInProcessMessagingSkeleton> inProcessMessagingSkeleton;
     Semaphore semaphore;
     const bool isLocalMessage;
@@ -75,7 +77,8 @@ public:
         request(),
         requestId("requestId"),
         qos(),
-        inProcessMessagingSkeleton(std::make_shared<MockInProcessMessagingSkeleton>()),
+        dispatcher(),
+        inProcessMessagingSkeleton(std::make_shared<MockInProcessMessagingSkeleton>(dispatcher)),
         semaphore(0),
         isLocalMessage(false),
         messageFactory(),
@@ -83,7 +86,7 @@ public:
         mockMessageSender(new MockTransportMessageSender()),
         messagingStubFactory(std::make_shared<MessagingStubFactory>()),
         singleThreadedIOService(),
-        messageRouter(nullptr)
+        messageRouter()
     {
         const std::string globalCCAddress("globalAddress");
         const std::string messageNotificationProviderParticipantId("messageNotificationProviderParticipantId");
@@ -97,6 +100,7 @@ public:
                                                           nullptr,
                                                           globalCCAddress,
                                                           messageNotificationProviderParticipantId);
+        messageRouter->init();
         qos.setTtl(10000);
     }
 

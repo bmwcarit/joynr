@@ -26,7 +26,6 @@
 #include "joynr/DelayedScheduler.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/ThreadPool.h"
 
 namespace boost
 {
@@ -38,6 +37,9 @@ class io_service;
 
 namespace joynr
 {
+
+class Runnable;
+class ThreadPool;
 
 /**
  * @class ThreadPoolDelayedScheduler
@@ -67,6 +69,11 @@ public:
     ~ThreadPoolDelayedScheduler() override;
 
     /**
+     * @brief Executes the runnable in the thread pool
+     */
+    void execute(std::shared_ptr<Runnable> runnable);
+
+    /**
      * @brief Does an ordinary shutdown of @ref SingleThreadedDelayedScheduler
      *      and its parent @ref DelayedScheduler and child @ref Thread
      * @note Must be called before destructor is called
@@ -79,7 +86,7 @@ private:
 
 private:
     /*! A collection of threads to do work */
-    ThreadPool threadPool;
+    std::shared_ptr<ThreadPool> threadPool;
 };
 
 } // namespace joynr

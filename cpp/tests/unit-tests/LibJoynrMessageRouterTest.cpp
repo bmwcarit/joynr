@@ -206,7 +206,8 @@ TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiverOfInProcessProvider_cal
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("providerParticipantId");
 
-    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>();
+    auto dispatcher = std::make_shared<MockDispatcher>();
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
     auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
     messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
@@ -302,7 +303,8 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForInProcessProvider_calls
     const std::string subscriberParticipantId("subscriberParticipantId");
 
     const std::string providerParticipantId("providerParticipantId");
-    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>();
+    auto dispatcher = std::make_shared<MockDispatcher>();
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
     auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
     messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
@@ -365,7 +367,8 @@ TEST_F(LibJoynrMessageRouterTest, addNextHop_callsAddNextHopInRoutingProxy) {
     testAddNextHopCallsRoutingProxyCorrectly(isGloballyVisible, providerAddress1);
 
     // InprocessMessagingAddress
-    auto mockSkeleton = std::make_shared<MockInProcessMessagingSkeleton>();
+    auto dispatcher = std::make_shared<MockDispatcher>();
+    auto mockSkeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
     const auto providerAddress2 = std::make_shared<const joynr::InProcessMessagingAddress>(mockSkeleton);
     isGloballyVisible = false;
     testAddNextHopCallsRoutingProxyCorrectly(isGloballyVisible, providerAddress2);

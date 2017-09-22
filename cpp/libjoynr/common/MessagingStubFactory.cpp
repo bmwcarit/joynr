@@ -33,7 +33,7 @@ std::shared_ptr<IMessagingStub> MessagingStubFactory::create(
     std::shared_ptr<IMessagingStub> stub = address2MessagingStubMap.value(destinationAddress);
     if (!stub) {
         for (std::vector<std::shared_ptr<IMiddlewareMessagingStubFactory>>::iterator it =
-                     this->factoryList.begin();
+                     factoryList.begin();
              it != factoryList.end();
              ++it) {
             if ((*it)->canCreate(*destinationAddress)) {
@@ -65,7 +65,12 @@ bool MessagingStubFactory::contains(
 void MessagingStubFactory::registerStubFactory(
         std::shared_ptr<IMiddlewareMessagingStubFactory> factory)
 {
-    this->factoryList.push_back(std::move(factory));
+    factoryList.push_back(std::move(factory));
+}
+
+void MessagingStubFactory::shutdown()
+{
+    factoryList.clear();
 }
 
 } // namespace joynr

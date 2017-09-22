@@ -58,13 +58,13 @@ class ConsumerPermissionCallback : public IAccessController::IHasConsumerPermiss
 {
 public:
     ConsumerPermissionCallback(
-            CcMessageRouter& owningMessageRouter,
+            std::weak_ptr<CcMessageRouter> owningMessageRouter,
             std::shared_ptr<ImmutableMessage> message,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> destination);
 
     void hasConsumerPermission(bool hasPermission) override;
 
-    CcMessageRouter& owningMessageRouter;
+    std::weak_ptr<CcMessageRouter> owningMessageRouter;
     std::shared_ptr<ImmutableMessage> message;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destination;
 
@@ -303,8 +303,10 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
         if (auto gotAccessController = accessController.lock()) {
             // Access control checks are asynchronous, callback will send message
             // if access is granted
-            auto callback =
-                    std::make_shared<ConsumerPermissionCallback>(*this, message, destAddress);
+            auto callback = std::make_shared<ConsumerPermissionCallback>(
+                    std::dynamic_pointer_cast<CcMessageRouter>(shared_from_this()),
+                    message,
+                    destAddress);
             gotAccessController->hasConsumerPermission(message, callback);
             return;
         }
@@ -546,17 +548,31 @@ void CcMessageRouter::addMulticastReceiver(
         routingEntry = routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
     }
 
-    std::function<void()> onSuccessWrapper =
-            [ this, multicastId, subscriberParticipantId, onSuccess = std::move(onSuccess) ]()
+    std::function<void()> onSuccessWrapper = [
+        thisWeakPtr = joynr::util::as_weak_ptr(
+                std::dynamic_pointer_cast<CcMessageRouter>(shared_from_this())),
+        multicastId,
+        subscriberParticipantId,
+        onSuccess = std::move(onSuccess)
+    ]()
     {
-        multicastReceiverDirectory.registerMulticastReceiver(multicastId, subscriberParticipantId);
-        JOYNR_LOG_TRACE(logger,
-                        "added multicast receiver={} for multicastId={}",
-                        subscriberParticipantId,
-                        multicastId);
-        saveMulticastReceiverDirectory();
-        if (onSuccess) {
-            onSuccess();
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            thisSharedPtr->multicastReceiverDirectory.registerMulticastReceiver(
+                    multicastId, subscriberParticipantId);
+            JOYNR_LOG_TRACE(logger,
+                            "added multicast receiver={} for multicastId={}",
+                            subscriberParticipantId,
+                            multicastId);
+            thisSharedPtr->saveMulticastReceiverDirectory();
+            if (onSuccess) {
+                onSuccess();
+            }
+        } else {
+            JOYNR_LOG_ERROR(logger,
+                            "error adding multicast receiver={} for multicastId={} because "
+                            "CcMessageRouter is no longer available",
+                            subscriberParticipantId,
+                            multicastId);
         }
     };
     std::function<void(const exceptions::JoynrRuntimeException&)> onErrorWrapper =
@@ -655,7 +671,7 @@ void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 INIT_LOGGER(ConsumerPermissionCallback);
 
 ConsumerPermissionCallback::ConsumerPermissionCallback(
-        CcMessageRouter& owningMessageRouter,
+        std::weak_ptr<CcMessageRouter> owningMessageRouter,
         std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destination)
         : owningMessageRouter(owningMessageRouter), message(message), destination(destination)
@@ -666,7 +682,14 @@ void ConsumerPermissionCallback::hasConsumerPermission(bool hasPermission)
 {
     if (hasPermission) {
         try {
-            owningMessageRouter.scheduleMessage(message, destination);
+            if (auto owningMessageRouterSharedPtr = owningMessageRouter.lock()) {
+                owningMessageRouterSharedPtr->scheduleMessage(message, destination);
+            } else {
+                JOYNR_LOG_ERROR(logger,
+                                "Message with Id {} could not be sent because messageRouter is not "
+                                "available",
+                                message->getId());
+            }
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Message with Id {} could not be sent. Error: {}",

@@ -36,28 +36,32 @@ const std::string& RequestCaller::getInterfaceName() const
     return interfaceName;
 }
 
-void RequestCaller::registerAttributeListener(const std::string& attributeName,
-                                              SubscriptionAttributeListener* attributeListener)
+void RequestCaller::registerAttributeListener(
+        const std::string& attributeName,
+        std::shared_ptr<SubscriptionAttributeListener> attributeListener)
 {
-    getProvider()->registerAttributeListener(attributeName, attributeListener);
+    getProvider()->registerAttributeListener(attributeName, std::move(attributeListener));
 }
 
-void RequestCaller::unregisterAttributeListener(const std::string& attributeName,
-                                                SubscriptionAttributeListener* attributeListener)
+void RequestCaller::unregisterAttributeListener(
+        const std::string& attributeName,
+        std::shared_ptr<SubscriptionAttributeListener> attributeListener)
 {
-    getProvider()->unregisterAttributeListener(attributeName, attributeListener);
+    getProvider()->unregisterAttributeListener(attributeName, std::move(attributeListener));
 }
 
-void RequestCaller::registerBroadcastListener(const std::string& broadcastName,
-                                              UnicastBroadcastListener* broadcastListener)
+void RequestCaller::registerBroadcastListener(
+        const std::string& broadcastName,
+        std::shared_ptr<UnicastBroadcastListener> broadcastListener)
 {
-    getProvider()->registerBroadcastListener(broadcastName, broadcastListener);
+    getProvider()->registerBroadcastListener(broadcastName, std::move(broadcastListener));
 }
 
-void RequestCaller::unregisterBroadcastListener(const std::string& broadcastName,
-                                                UnicastBroadcastListener* broadcastListener)
+void RequestCaller::unregisterBroadcastListener(
+        const std::string& broadcastName,
+        std::shared_ptr<UnicastBroadcastListener> broadcastListener)
 {
-    getProvider()->unregisterBroadcastListener(broadcastName, broadcastListener);
+    getProvider()->unregisterBroadcastListener(broadcastName, std::move(broadcastListener));
 }
 
 } // namespace joynr

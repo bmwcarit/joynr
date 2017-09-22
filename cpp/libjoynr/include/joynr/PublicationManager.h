@@ -76,11 +76,11 @@ class SubscriptionQos;
   * Responsible for deleting SubscriptionRequests and PublicationStates (the runnable notifies the
   * SubscriptionManager when it terminates - this triggeres the delete).
   */
-class JOYNR_EXPORT PublicationManager
+class JOYNR_EXPORT PublicationManager : public std::enable_shared_from_this<PublicationManager>
 {
 public:
     PublicationManager(boost::asio::io_service& ioService,
-                       IMessageSender* messageSender,
+                       std::weak_ptr<IMessageSender> messageSender,
                        std::uint64_t ttlUplift = 0,
                        int maxThreads = 1);
     virtual ~PublicationManager();
@@ -94,7 +94,7 @@ public:
              const std::string& providerParticipantId,
              std::shared_ptr<RequestCaller> requestCaller,
              SubscriptionRequest& subscriptionRequest,
-             IPublicationSender* publicationSender);
+             std::weak_ptr<IPublicationSender> publicationSender);
 
     /**
      * @brief Adds SubscriptionRequest when the Provider is not yet registered
@@ -116,7 +116,7 @@ public:
              const std::string& providerParticipantId,
              std::shared_ptr<RequestCaller> requestCaller,
              BroadcastSubscriptionRequest& subscriptionRequest,
-             IPublicationSender* publicationSender);
+             std::weak_ptr<IPublicationSender> publicationSender);
 
     /**
      * @brief Adds MulticastSubscriptionRequest
@@ -128,7 +128,7 @@ public:
     void add(const std::string& proxyParticipantId,
              const std::string& providerParticipantId,
              MulticastSubscriptionRequest& subscriptionRequest,
-             IPublicationSender* publicationSender);
+             std::weak_ptr<IPublicationSender> publicationSender);
 
     /**
      * @brief Adds BroadcastSubscriptionRequest when the Provider is not yet registered
@@ -164,7 +164,7 @@ public:
      */
     void restore(const std::string& providerId,
                  std::shared_ptr<RequestCaller> requestCaller,
-                 IPublicationSender* publicationSender);
+                 std::weak_ptr<IPublicationSender> publicationSender);
 
     /**
       * @brief Publishes an onChange message when an attribute value changes
@@ -214,7 +214,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
 
     // Used for multicast publication
-    IMessageSender* messageSender;
+    std::weak_ptr<IMessageSender> messageSender;
 
     // A class that groups together the information needed for a publication
     class Publication;
@@ -279,17 +279,17 @@ private:
                                     const bool updatePersistenceFile = true);
 
     // Helper functions
-    void sendSubscriptionReply(IPublicationSender* publicationSender,
+    void sendSubscriptionReply(std::weak_ptr<IPublicationSender> publicationSender,
                                const std::string& fromParticipantId,
                                const std::string& toParticipantId,
                                std::int64_t expiryDateMs,
                                const SubscriptionReply& subscriptionReply);
-    void sendSubscriptionReply(IPublicationSender* publicationSender,
+    void sendSubscriptionReply(std::weak_ptr<IPublicationSender> publicationSender,
                                const std::string& fromParticipantId,
                                const std::string& toParticipantId,
                                std::int64_t expiryDateMs,
                                const std::string& subscriptionId);
-    void sendSubscriptionReply(IPublicationSender* publicationSender,
+    void sendSubscriptionReply(std::weak_ptr<IPublicationSender> publicationSender,
                                const std::string& fromParticipantId,
                                const std::string& toParticipantId,
                                std::int64_t expiryDateMs,
@@ -353,12 +353,12 @@ private:
     void handleAttributeSubscriptionRequest(
             std::shared_ptr<SubscriptionRequestInformation> requestInfo,
             std::shared_ptr<RequestCaller> requestCaller,
-            IPublicationSender* publicationSender);
+            std::weak_ptr<IPublicationSender> publicationSender);
 
     void handleBroadcastSubscriptionRequest(
             std::shared_ptr<BroadcastSubscriptionRequestInformation> requestInfo,
             std::shared_ptr<RequestCaller> requestCaller,
-            IPublicationSender* publicationSender);
+            std::weak_ptr<IPublicationSender> publicationSender);
 
     void addOnChangePublication(const std::string& subscriptionId,
                                 std::shared_ptr<SubscriptionRequestInformation> request,
@@ -393,16 +393,16 @@ namespace joynr
 class PublicationManager::Publication
 {
 public:
-    Publication(IPublicationSender* publicationSender,
+    Publication(std::weak_ptr<IPublicationSender> publicationSender,
                 std::shared_ptr<RequestCaller> requestCaller);
     // This class is not responsible for deleting the PublicationSender or AttributeListener
     ~Publication() = default;
 
     std::int64_t timeOfLastPublication;
-    IPublicationSender* sender;
+    std::weak_ptr<IPublicationSender> sender;
     std::shared_ptr<RequestCaller> requestCaller;
-    SubscriptionAttributeListener* attributeListener;
-    UnicastBroadcastListener* broadcastListener;
+    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
+    std::shared_ptr<UnicastBroadcastListener> broadcastListener;
     std::recursive_mutex mutex;
     DelayedScheduler::RunnableHandle publicationEndRunnableHandle;
 
@@ -458,7 +458,13 @@ void PublicationManager::broadcastOccurred(const std::string& broadcastName,
             util::createMulticastId(providerParticipantId, broadcastName, partitions));
     publication.setResponse(values...);
     MessagingQos mQos;
-    messageSender->sendMulticast(providerParticipantId, publication, mQos);
+    if (auto messageSenderSharedPtr = messageSender.lock()) {
+        messageSenderSharedPtr->sendMulticast(providerParticipantId, publication, mQos);
+    } else {
+        JOYNR_LOG_ERROR(logger,
+                        "broadcastOccurred for broadcastName {}, providerParticipantId {} "
+                        "could not be sent because messageSender is not available");
+    }
 }
 
 template <typename... Ts>

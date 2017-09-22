@@ -72,7 +72,7 @@ public:
     void registerSubscriptionManager(
             std::shared_ptr<ISubscriptionManager> subscriptionManager) override;
 
-    void registerPublicationManager(PublicationManager* publicationManager) override;
+    void registerPublicationManager(std::weak_ptr<PublicationManager> publicationManager) override;
 
     void shutdown() override;
 
@@ -93,9 +93,9 @@ private:
     std::shared_ptr<IMessageSender> messageSender;
     RequestCallerDirectory requestCallerDirectory;
     ReplyCallerDirectory replyCallerDirectory;
-    PublicationManager* publicationManager;
+    std::weak_ptr<PublicationManager> publicationManager;
     std::shared_ptr<ISubscriptionManager> subscriptionManager;
-    ThreadPool handleReceivedMessageThreadPool;
+    std::shared_ptr<ThreadPool> handleReceivedMessageThreadPool;
     ADD_LOGGER(Dispatcher);
     std::mutex subscriptionHandlingMutex;
 

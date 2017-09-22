@@ -102,7 +102,8 @@ public:
         singleThreadedIOService(),
         localDomainAccessControllerMock(std::make_shared<MockLocalDomainAccessController>(std::make_unique<LocalDomainAccessStore>(), false)),
         accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
-        localCapabilitiesDirectoryMock(std::make_shared<MockLocalCapabilitiesDirectory>(clusterControllerSettings, singleThreadedIOService.getIOService())),
+        messageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
+        localCapabilitiesDirectoryMock(std::make_shared<MockLocalCapabilitiesDirectory>(clusterControllerSettings, messageRouter, singleThreadedIOService.getIOService())),
         accessController(
                 localCapabilitiesDirectoryMock,
                 localDomainAccessControllerMock
@@ -112,7 +113,11 @@ public:
         singleThreadedIOService.start();
     }
 
-    ~AccessControllerTest() = default;
+    ~AccessControllerTest()
+    {
+        localCapabilitiesDirectoryMock->shutdown();
+        singleThreadedIOService.stop();
+    }
 
     void invokeOnSuccessCallbackFct (std::string participantId,
                             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)> onSuccess,
@@ -190,6 +195,7 @@ protected:
     SingleThreadedIOService singleThreadedIOService;
     std::shared_ptr<MockLocalDomainAccessController> localDomainAccessControllerMock;
     std::shared_ptr<MockConsumerPermissionCallback> accessControllerCallback;
+    std::shared_ptr<MockMessageRouter> messageRouter;
     std::shared_ptr<MockLocalCapabilitiesDirectory> localCapabilitiesDirectoryMock;
     AccessController accessController;
     MutableMessageFactory messageFactory;

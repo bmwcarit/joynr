@@ -43,16 +43,20 @@ public:
     const std::string& getInterfaceName() const;
 
     // Get and set the attribute listeners listening on the provider
-    virtual void registerAttributeListener(const std::string& attributeName,
-                                           SubscriptionAttributeListener* attributeListener);
-    virtual void unregisterAttributeListener(const std::string& attributeName,
-                                             SubscriptionAttributeListener* attributeListener);
+    virtual void registerAttributeListener(
+            const std::string& attributeName,
+            std::shared_ptr<SubscriptionAttributeListener> attributeListener);
+    virtual void unregisterAttributeListener(
+            const std::string& attributeName,
+            std::shared_ptr<SubscriptionAttributeListener> attributeListener);
 
     // Get and set the broadcast listeners listening on the provider
-    virtual void registerBroadcastListener(const std::string& broadcastName,
-                                           UnicastBroadcastListener* broadcastListener);
-    virtual void unregisterBroadcastListener(const std::string& broadcastName,
-                                             UnicastBroadcastListener* broadcastListener);
+    virtual void registerBroadcastListener(
+            const std::string& broadcastName,
+            std::shared_ptr<UnicastBroadcastListener> broadcastListener);
+    virtual void unregisterBroadcastListener(
+            const std::string& broadcastName,
+            std::shared_ptr<UnicastBroadcastListener> broadcastListener);
 
     virtual types::Version getProviderVersion() = 0;
 

@@ -61,7 +61,7 @@ public:
      *      has expired
      * @param defaultDelayMs Default delay used by @ref schedule
      */
-    DelayedScheduler(std::function<void(Runnable*)> onWorkAvailable,
+    DelayedScheduler(std::function<void(std::shared_ptr<Runnable>)> onWorkAvailable,
                      boost::asio::io_service& ioService,
                      std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
 
@@ -83,7 +83,8 @@ public:
      *      is directly submitted to run or the @ref DelayedScheduler is already
      *      shutting down.
      */
-    virtual RunnableHandle schedule(Runnable* runnable, std::chrono::milliseconds delay);
+    virtual RunnableHandle schedule(std::shared_ptr<Runnable> runnable,
+                                    std::chrono::milliseconds delay);
 
     /**
      * @brief Schedule a @ref Runnable to be added to execution queue
@@ -96,7 +97,7 @@ public:
      *      is directly submitted to run or the @ref DelayedScheduler is already
      *      shutting down.
      */
-    virtual RunnableHandle schedule(Runnable* runnable);
+    virtual RunnableHandle schedule(std::shared_ptr<Runnable> runnable);
 
     /**
      * @brief Try to remove a @ref Runnable while waiting
@@ -123,7 +124,7 @@ private:
     const std::chrono::milliseconds defaultDelayMs;
 
     /*! Callback on timer expired */
-    std::function<void(Runnable*)> onWorkAvailable;
+    std::function<void(std::shared_ptr<Runnable>)> onWorkAvailable;
 
     /*! Flag indicating @ref DelayedScheduler will be stopped */
     bool stoppingDelayedScheduler;
