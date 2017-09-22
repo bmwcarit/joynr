@@ -30,6 +30,7 @@
 
 #include "tests/JoynrTest.h"
 #include "tests/utils/MockObjects.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace joynr;
 using ::testing::Mock;
@@ -94,6 +95,11 @@ public:
         runtime->stopExternalCommunication();
         runtime.reset();
 
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt).get()));
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp).get()));
+
+        test::util::resetAndWaitUntilDestroyed(runtime);
+
         std::remove(settingsFilename.c_str());
 
         // Delete persisted files
@@ -101,9 +107,6 @@ public:
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
-
-        EXPECT_TRUE(Mock::VerifyAndClearExpectations(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt).get()));
-        EXPECT_TRUE(Mock::VerifyAndClearExpectations(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp).get()));
     }
 
     void SetUp(){
