@@ -20,12 +20,12 @@
  * #L%
  */
 
-define([
-    "joynr/provisioning/provisioning_cc",
-    "joynr/start/InProcessRuntime",
-    "global/Promise",
-    "global/WaitsFor"
-], function(provisioning, InProcessRuntime, Promise, waitsFor) {
+var provisioningCc = require('../../../test-classes/joynr/provisioning/provisioning_cc');
+var InProcessRuntime = require('../../../classes/joynr/start/InProcessRuntime');
+var Promise = require('../../../classes/global/Promise');
+var WaitsFor = require('../../../test-classes/global/WaitsFor');
+
+(function(provisioning, InProcessRuntime, Promise, waitsFor) {
     function outputPromiseError(error) {
         expect(error.toString()).toBeFalsy();
     }
@@ -131,4 +131,4 @@ define([
             }).catch(fail);
         });
     });
-});
+}(provisioningCc, InProcessRuntime, Promise, WaitsFor));

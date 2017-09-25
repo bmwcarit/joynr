@@ -319,7 +319,7 @@ request.setParams(
 
 			auto future = std::make_shared<Future<std::string>>();
 			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnType»>
-			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
+			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 			subscriptionManager->registerSubscription(
 						attributeName,
 						subscriptionCallback,
@@ -497,7 +497,7 @@ request.setParams(
 		auto future = std::make_shared<Future<std::string>>();
 		«IF broadcast.selective»
 			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
+			>(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 			subscriptionManager->registerSubscription(
 							broadcastName,
 							subscriptionCallback,
@@ -513,7 +513,7 @@ request.setParams(
 			);
 		«ELSE»
 			auto subscriptionCallback = std::make_shared<joynr::MulticastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager.get());
+			>(subscriptionRequest->getSubscriptionId(), future, subscriptionManager);
 			std::function<void()> onSuccess =
 					[messageSender = joynr::util::as_weak_ptr(messageSender),
 					proxyParticipantId = proxyParticipantId,

@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true, node: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,22 +18,13 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "global/Promise",
-            "joynr/system/LoggingManager",
-            "joynr/system/DistributedLoggingAppenderConstructorFactory",
-            "joynr/system/DistributedLoggingAppender",
-            "joynr/system/LoggerFactory",
-            "global/WaitsFor"
-        ],
-        function(
-                Promise,
-                LoggingManager,
-                DistributedLoggingAppenderConstructorFactory,
-                DistributedLoggingAppender,
-                LoggerFactory, waitsFor) {
+var Promise = require('../../../classes/global/Promise');
+var LoggingManager = require('../../../classes/joynr/system/LoggingManager');
+var DistributedLoggingAppenderConstructorFactory = require('../../../classes/joynr/system/DistributedLoggingAppenderConstructorFactory');
+var DistributedLoggingAppender = require('../../../classes/joynr/system/DistributedLoggingAppender');
+var LoggerFactory = require('../../../classes/joynr/system/LoggerFactory');
+var WaitsFor = require('../../../test-classes/global/WaitsFor');
+module.exports = (function (Promise, LoggingManager, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, LoggerFactory, waitsFor) {
             var asyncTimeout = 5000;
 
             var log =
@@ -148,4 +138,4 @@ define(
                                 });
 
                     });
-        });
+}(Promise, LoggingManager, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, LoggerFactory, WaitsFor));

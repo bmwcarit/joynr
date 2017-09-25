@@ -38,8 +38,8 @@ public:
      * Create an attribute listener linked to a subscription
      */
     SubscriptionAttributeListener(const std::string& subscriptionId,
-                                  PublicationManager& publicationManager)
-            : subscriptionId(subscriptionId), publicationManager(publicationManager)
+                                  std::weak_ptr<PublicationManager> publicationManager)
+            : subscriptionId(subscriptionId), publicationManager(std::move(publicationManager))
     {
     }
 
@@ -48,7 +48,7 @@ public:
 
 private:
     std::string subscriptionId;
-    PublicationManager& publicationManager;
+    std::weak_ptr<PublicationManager> publicationManager;
 };
 
 } // namespace joynr
@@ -61,7 +61,9 @@ namespace joynr
 template <typename T>
 void SubscriptionAttributeListener::attributeValueChanged(const T& value)
 {
-    publicationManager.attributeValueChanged(subscriptionId, value);
+    if (auto publicationManagerSharedPtr = publicationManager.lock()) {
+        publicationManagerSharedPtr->attributeValueChanged(subscriptionId, value);
+    }
 }
 
 } // namespace joynr

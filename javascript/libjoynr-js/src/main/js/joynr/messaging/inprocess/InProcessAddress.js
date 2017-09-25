@@ -1,4 +1,4 @@
-/*jslint nomen:true */
+/*jslint nomen:true, node:true */
 /*
  * #%L
  * %%
@@ -17,8 +17,7 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/inprocess/InProcessAddress", [], function() {
+module.exports = (function() {
 
     /**
      * @constructor
@@ -90,4 +89,4 @@ define("joynr/messaging/inprocess/InProcessAddress", [], function() {
     });
     return InProcessAddress;
 
-});
+}());

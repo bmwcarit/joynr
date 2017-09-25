@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/webmessaging/WebMessagingAddress", [ "joynr/util/Typing"
-], function(Typing) {
+var Typing = require('../../util/Typing');
+module.exports = (function(Typing) {
 
     /**
      * @constructor WebMessagingAddress
@@ -55,4 +56,4 @@ define("joynr/messaging/webmessaging/WebMessagingAddress", [ "joynr/util/Typing"
 
     return WebMessagingAddress;
 
-});
+}(Typing));

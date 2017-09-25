@@ -1,5 +1,4 @@
-/*jslint nomen: true */
-
+/*jslint nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,11 +17,9 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/dispatching/types/Reply",
-    "joynr/vehicle/radiotypes/RadioStation"
-], function(Reply, RadioStation) {
+var Reply = require('../../../../classes/joynr/dispatching/types/Reply');
+var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+module.exports = (function(Reply, RadioStation) {
 
     describe("libjoynr-js.joynr.dispatching.types.Reply", function() {
 
@@ -56,5 +53,5 @@ define([
 
     });
 
-}); // require
+}(Reply, RadioStation)); // require
 /*jslint nomen: false */

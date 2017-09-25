@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,14 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/provider/ProviderEvent",
-            "joynr/types/ProviderQos",
-            "joynr/proxy/BroadcastFilterParameters"
-        ],
-        function(ProviderEvent, ProviderQos, BroadcastFilterParameters) {
+var ProviderEvent = require('../../../classes/joynr/provider/ProviderEvent');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var BroadcastFilterParameters = require('../../../classes/joynr/proxy/BroadcastFilterParameters');
+module.exports =
+        (function(ProviderEvent, ProviderQos, BroadcastFilterParameters) {
 
             var safetyTimeoutDelta = 100;
 
@@ -259,4 +258,4 @@ define(
                                     }).toThrow();
                         });
                     });
-        }); // require
+        }(ProviderEvent, ProviderQos, BroadcastFilterParameters)); // require

@@ -1,6 +1,5 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, node: true, nomen: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,34 +18,20 @@
  * limitations under the License.
  * #L%
  */
-
 //TODO: some of this relies on the dummy implementation, change accordingly when implementing
-define([
-    "joynr/proxy/ProxyAttribute",
-    "joynr/proxy/ProxyOperation",
-    "joynr/proxy/ProxyEvent",
-    "joynr/proxy/DiscoveryQos",
-    "joynr/messaging/MessagingQos",
-    "joynr/proxy/MulticastSubscriptionQos",
-    "joynr/types/DiscoveryEntryWithMetaInfo",
-    "joynr/types/Version",
-    "joynr/types/ProviderQos",
-    "joynr/util/UtilInternal",
-    "global/Promise",
-    "global/WaitsFor"
-], function(
-        ProxyAttribute,
-        ProxyOperation,
-        ProxyEvent,
-        DiscoveryQos,
-        MessagingQos,
-        MulticastSubscriptionQos,
-        DiscoveryEntryWithMetaInfo,
-        Version,
-        ProviderQos,
-        Util,
-        Promise,
-        waitsFor) {
+var ProxyAttribute = require('../../../classes/joynr/proxy/ProxyAttribute');
+var ProxyOperation = require('../../../classes/joynr/proxy/ProxyOperation');
+var ProxyEvent = require('../../../classes/joynr/proxy/ProxyEvent');
+var DiscoveryQos = require('../../../classes/joynr/proxy/DiscoveryQos');
+var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
+var MulticastSubscriptionQos = require('../../../classes/joynr/proxy/MulticastSubscriptionQos');
+var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
+var Version = require('../../../classes/joynr/types/Version');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var UtilInternal = require('../../../classes/joynr/util/UtilInternal');
+var Promise = require('../../../classes/global/Promise');
+var WaitsFor = require('../../../test-classes/global/WaitsFor');
+module.exports = (function (ProxyAttribute, ProxyOperation, ProxyEvent, DiscoveryQos, MessagingQos, MulticastSubscriptionQos, DiscoveryEntryWithMetaInfo, Version, ProviderQos, Util, Promise, waitsFor) {
 
     var asyncTimeout = 5000;
 
@@ -387,4 +372,4 @@ define([
         });
     });
 
-}); // require
+}(ProxyAttribute, ProxyOperation, ProxyEvent, DiscoveryQos, MessagingQos, MulticastSubscriptionQos, DiscoveryEntryWithMetaInfo, Version, ProviderQos, UtilInternal, Promise, WaitsFor));    // require

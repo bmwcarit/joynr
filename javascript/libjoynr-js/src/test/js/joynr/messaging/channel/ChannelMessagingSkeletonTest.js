@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/messaging/channel/ChannelMessagingSkeleton",
-    "joynr/system/RoutingTypes/ChannelAddress",
-    "joynr/messaging/JoynrMessage"
-], function(ChannelMessagingSkeleton, ChannelAddress, JoynrMessage) {
+var ChannelMessagingSkeleton =
+        require('../../../../classes/joynr/messaging/channel/ChannelMessagingSkeleton');
+var ChannelAddress = require('../../../../classes/joynr/system/RoutingTypes/ChannelAddress');
+var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
+module.exports = (function(ChannelMessagingSkeleton, ChannelAddress, JoynrMessage) {
 
     describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", function() {
 
@@ -112,4 +113,4 @@ define([
         });
     });
 
-});
+}(ChannelMessagingSkeleton, ChannelAddress, JoynrMessage));

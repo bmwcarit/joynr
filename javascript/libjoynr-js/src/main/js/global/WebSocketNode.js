@@ -25,18 +25,20 @@
  * See: http://dev.w3.org/html5/websockets/#the-websocket-interface
  *
  */
-define([
-    "global/Smrf",
-    "joynr/messaging/JoynrMessage",
-    "joynr/exceptions/JoynrRuntimeException",
-    "joynr/system/LoggerFactory"
-], function(smrf, JoynrMessage, JoynrRuntimeException, LoggerFactory) {
+var Smrf = require('./SmrfNode');
+var JoynrMessage = require('../joynr/messaging/JoynrMessage');
+var JoynrRuntimeException = require('../joynr/exceptions/JoynrRuntimeException');
+var LoggerFactory = require('../joynr/system/LoggerFactory');
+module.exports =
+        global.window !== undefined
+                ? require('./WebSocket')
+                : (function(smrf, JoynrMessage, JoynrRuntimeException, LoggerFactory) {
 
     function WebSocketNodeWrapper(remoteUrl, keychain) {
 
         if (typeof Buffer !== "function") {
             throw new JoynrRuntimeException(
-                    "Decoding of binary websocket messages not possible. Buffer not available.");
+            "Decoding of binary websocket messages not possible. Buffer not available.");
         }
         var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocket");
 
@@ -47,49 +49,44 @@ define([
          * fall back to JS implementation. Temporarily silence error output for first
          * load attempt.
          */
-        var savedOnError = requirejs.onError;
-        requirejs.onError = function() {};
-        ws = requirejs("wscpp");
-        requirejs.onError = savedOnError;
-        if (!ws) {
-            ws = requirejs("ws");
-            if (!ws) {
-                throw new Error("No websocket module available");
-            }
+        try {
+            ws = require("wscpp");
+        } catch (e) {
+            ws = require("ws");
         }
 
         var certs = keychain ? {
-            cert : keychain.tlsCert,
-            key : keychain.tlsKey,
-            ca : keychain.tlsCa
+            cert: keychain.tlsCert,
+            key: keychain.tlsKey,
+            ca: keychain.tlsCa
         } : undefined;
 
         var webSocketObj = new ws(remoteUrl, certs);
 
-        webSocketObj.encodeString = function(string) {
+        webSocketObj.encodeString = function (string) {
             return Buffer.from(string);
         };
-        webSocketObj.decodeEventData = function(data) {
+        webSocketObj.decodeEventData = function (data) {
             return data;
         };
 
         var skipJoynrHeaderKeys = {
-            "contentType" : true,
-            "creator" : true,
-            "effort" : true,
-            "from" : true,
-            "msgId" : true,
-            "replyChannelId" : true,
-            "to" : true,
-            "expiryDate" : true
+            "contentType": true,
+            "creator": true,
+            "effort": true,
+            "from": true,
+            "msgId": true,
+            "replyChannelId": true,
+            "to": true,
+            "expiryDate": true
         };
 
-        var signingCallback = keychain ? function() {
+        var signingCallback = keychain ? function () {
             // set the signature to just be the ownerID
             return Buffer.from(keychain.ownerId);
         } : undefined;
 
-        webSocketObj.marshalJoynrMessage = function(joynrMessage) {
+        webSocketObj.marshalJoynrMessage = function (joynrMessage) {
             var smrfMsg = {};
             var headerKey;
             smrfMsg.sender = joynrMessage.header.from;
@@ -129,20 +126,20 @@ define([
 
         var skipSmrfHeaderKeys = {
             // headers already converted manually
-            't' : true,
-            'id' : true,
-            're' : true,
-            'ef' : true,
+            't': true,
+            'id': true,
+            're': true,
+            'ef': true,
             // reserved headers, prevent overwriting
-            'from' : true,
-            'to' : true,
-            'msgId' : true,
-            'replyChannelId' : true,
-            'expiryDate' : true,
-            'effort' : true
+            'from': true,
+            'to': true,
+            'msgId': true,
+            'replyChannelId': true,
+            'expiryDate': true,
+            'effort': true
         };
 
-        webSocketObj.unmarshalJoynrMessage = function(event, callback) {
+        webSocketObj.unmarshalJoynrMessage = function (event, callback) {
             if (typeof event.data === "object") {
                 var headerKey;
                 var smrfMsg;
@@ -185,9 +182,6 @@ define([
                 log.error("Received unsupported message from websocket.");
             }
         };
-
         return webSocketObj;
     }
-
-    return WebSocketNodeWrapper;
-});
+}(Smrf, JoynrMessage, JoynrRuntimeException, LoggerFactory));

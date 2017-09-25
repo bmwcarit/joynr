@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/system/DefaultLoggerConfiguration", [], function() {
+module.exports = (function() {
     return {
         configuration : {
             appenders : {
@@ -40,4 +41,4 @@ define("joynr/system/DefaultLoggerConfiguration", [], function() {
             }
         }
     };
-});
+}());

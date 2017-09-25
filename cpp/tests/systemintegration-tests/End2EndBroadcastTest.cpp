@@ -674,6 +674,52 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithSameNameAsAttribute) {
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationBroadcast(subscriptionIdBroadcast));
 }
 
+TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider) {
+    if (usesHttpTransport()) {
+        FAIL() << "multicast subscription via HTTP not implemented";
+    }
+    std::int64_t receiveBroadcastWait = 2000;
+
+    std::shared_ptr<MockGpsSubscriptionListener> mockListenerAttribute =
+            std::make_shared<MockGpsSubscriptionListener>();
+
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
+    std::shared_ptr<tests::testProxy> testProxy = buildProxy();
+
+    unregisterProvider();
+
+    std::int64_t minInterval_ms = 50;
+    std::int64_t publicationTtl = 50;
+    auto subscriptionQosAttribute = std::make_shared<OnChangeSubscriptionQos>(
+                500000,   // validity_ms
+                publicationTtl,
+                minInterval_ms);  // minInterval_ms
+
+    // Initial attribute publication on subscription
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation)))
+            .Times(1);
+
+    std::shared_ptr<joynr::Future<std::string>> subscriptionAttributeResult = testProxy->subscribeToLocation(
+                mockListenerAttribute,
+                subscriptionQosAttribute);
+    std::string subscriptionIdAttribute;
+    EXPECT_THROW(subscriptionAttributeResult->get(subscribeToAttributeWait, subscriptionIdAttribute),
+                 joynr::exceptions::JoynrTimeOutException);
+
+    // Register same provider again
+    testProvider = registerProvider();
+
+    JOYNR_EXPECT_NO_THROW(subscriptionAttributeResult->get(subscribeToAttributeWait, subscriptionIdAttribute));
+
+    // Expect to get notified if attribute changed
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation2))).WillOnce(ReleaseSemaphore(&semaphore));
+    testProvider->locationChanged(gpsLocation2);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
+
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocation(subscriptionIdAttribute));
+}
+
 TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions) {
     if (usesHttpTransport()) {
         FAIL() << "multicast subscription via HTTP not implemented";

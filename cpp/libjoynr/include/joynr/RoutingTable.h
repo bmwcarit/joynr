@@ -28,6 +28,7 @@
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/ordered_index.hpp>
 #include <boost/optional.hpp>
 
 #include "joynr/InProcessMessagingAddress.h"
@@ -54,6 +55,7 @@ namespace tags
 // tags for accessing indices
 struct ParticipantId;
 struct Address;
+struct ExpiryDate;
 } // namespace tags
 
 // record to be stored in multi index
@@ -65,10 +67,14 @@ struct RoutingEntry
 
     explicit RoutingEntry(std::string participantId,
                           std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
-                          bool isGloballyVisible)
+                          bool isGloballyVisible,
+                          std::int64_t expiryDateMs,
+                          bool isSticky)
             : participantId(std::move(participantId)),
               address(std::move(address)),
-              isGloballyVisible(isGloballyVisible)
+              isGloballyVisible(isGloballyVisible),
+              expiryDateMs(std::move(expiryDateMs)),
+              isSticky(std::move(isSticky))
     {
     }
 
@@ -88,6 +94,12 @@ struct RoutingEntry
             return false;
         }
         if (this->isGloballyVisible != other.isGloballyVisible) {
+            return false;
+        }
+        if (this->expiryDateMs != other.expiryDateMs) {
+            return false;
+        }
+        if (this->isSticky != other.isSticky) {
             return false;
         }
         if (*(this->address) != *(other.address)) {
@@ -115,6 +127,8 @@ struct RoutingEntry
     std::string participantId;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> address;
     bool isGloballyVisible;
+    std::int64_t expiryDateMs;
+    bool isSticky; // true if entry should be protected from being purged
 };
 } // namespace routingtable
 
@@ -148,12 +162,19 @@ public:
      */
     void add(const std::string& participantId,
              bool isGloballyVisible,
-             std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+             std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+             std::int64_t expiryDateMs,
+             bool isSticky);
 
     /*
      * Remove element identified by participantId
      */
     void remove(const std::string& participantId);
+
+    /*
+     * Remove expired elements
+     */
+    void purge();
 
     template <typename Archive>
     void save(Archive& archive)
@@ -214,7 +235,12 @@ private:
                                     std::shared_ptr<const joynr::system::RoutingTypes::Address>,
                                     address),
                             AddressHash,
-                            AddressEqual>>>;
+                            AddressEqual>,
+                    boost::multi_index::ordered_non_unique<
+                            boost::multi_index::tag<routingtable::tags::ExpiryDate>,
+                            BOOST_MULTI_INDEX_MEMBER(routingtable::RoutingEntry,
+                                                     std::int64_t,
+                                                     expiryDateMs)>>>;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RoutingTable);

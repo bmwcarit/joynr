@@ -1,3 +1,4 @@
+/*jslint node: true*/
 /*global console: true */
 /*
  * #%L
@@ -17,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define([ "joynr/messaging/JoynrMessage"
-], function(JoynrMessage) {
+var JoynrMessage = require('../../../classes/joynr/messaging/JoynrMessage');
+module.exports =
+        (function(JoynrMessage) {
 
     describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
 
@@ -207,4 +208,4 @@ define([ "joynr/messaging/JoynrMessage"
         });
 
     });
-});
+        }(JoynrMessage));

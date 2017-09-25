@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,11 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/types/ArbitrationStrategyCollection",
-        [],
-        function() {
+module.exports =
+        (function() {
 
             /**
              * The ArbitrationStrategyCollection provides three different strategies that can be
@@ -136,4 +135,4 @@ define(
 
             return ArbitrationStrategyCollection;
 
-        });
+        }());

@@ -28,11 +28,6 @@ import io.joynr.runtime.MessageReceiverType;
 public class DummyJoynrApplication extends AbstractJoynrApplication {
 
     @Override
-    public void shutdown() {
-        runtime.shutdown(true);
-    }
-
-    @Override
     public void run() {
 
     }

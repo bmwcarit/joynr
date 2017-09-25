@@ -49,6 +49,8 @@ public:
     {
         const bool deleteChannel = true;
         runtime->stop(deleteChannel);
+        runtime.reset();
+
         // Delete persisted files
         std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());

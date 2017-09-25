@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,11 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/browser/BrowserMessagingStubFactory", [
-    "joynr/util/Typing",
-    "joynr/messaging/browser/BrowserMessagingStub"
-], function(Typing, BrowserMessagingStub) {
+var Typing = require('../../util/Typing');
+var BrowserMessagingStub = require('./BrowserMessagingStub');
+module.exports =
+        (function(Typing, BrowserMessagingStub) {
 
     /**
      * @constructor
@@ -54,4 +55,4 @@ define("joynr/messaging/browser/BrowserMessagingStubFactory", [
 
     return BrowserMessagingStubFactory;
 
-});
+        }(Typing, BrowserMessagingStub));

@@ -20,6 +20,7 @@
 #include <gmock/gmock.h>
 
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Dispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
@@ -55,6 +56,7 @@ public:
     Request request;
     std::string requestId;
     MessagingQos qos;
+    std::shared_ptr<MockDispatcher> dispatcher;
     std::shared_ptr<MockInProcessMessagingSkeleton> inProcessMessagingSkeleton;
     Semaphore semaphore;
     const bool isLocalMessage;
@@ -75,7 +77,8 @@ public:
         request(),
         requestId("requestId"),
         qos(),
-        inProcessMessagingSkeleton(std::make_shared<MockInProcessMessagingSkeleton>()),
+        dispatcher(),
+        inProcessMessagingSkeleton(std::make_shared<MockInProcessMessagingSkeleton>(dispatcher)),
         semaphore(0),
         isLocalMessage(false),
         messageFactory(),
@@ -83,19 +86,21 @@ public:
         mockMessageSender(new MockTransportMessageSender()),
         messagingStubFactory(std::make_shared<MessagingStubFactory>()),
         singleThreadedIOService(),
-        messageRouter(nullptr)
+        messageRouter()
     {
         const std::string globalCCAddress("globalAddress");
         const std::string messageNotificationProviderParticipantId("messageNotificationProviderParticipantId");
 
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
-        messageRouter = std::make_shared<CcMessageRouter>(messagingStubFactory,
+        messageRouter = std::make_shared<CcMessageRouter>(messagingSettings,
+                                                          messagingStubFactory,
                                                           std::make_shared<MulticastMessagingSkeletonDirectory>(),
                                                           nullptr,
                                                           singleThreadedIOService.getIOService(),
                                                           nullptr,
                                                           globalCCAddress,
                                                           messageNotificationProviderParticipantId);
+        messageRouter->init();
         qos.setTtl(10000);
     }
 
@@ -141,7 +146,9 @@ public:
 
         // local messages
         const bool isGloballyVisible = false;
-        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible);
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
+        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 
         messageSender.sendRequest(senderId, receiverId, qos, request, replyCaller, isLocalMessage);
 
@@ -190,8 +197,10 @@ public:
 
         auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
         const bool isGloballyVisible = false;
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
 
-        messageRouter->addNextHop(receiverId, messagingSkeletonEndpointAddr, isGloballyVisible);
+        messageRouter->addNextHop(receiverId, messagingSkeletonEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 
         messageRouter->route(immutableMessage);
 
@@ -217,7 +226,9 @@ public:
                 .Times(1).WillRepeatedly(ReleaseSemaphore(&semaphore));
 
         const bool isGloballyVisible = false;
-        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible);
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
+        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 
         messageRouter->route(immutableMessage);
 
@@ -259,9 +270,11 @@ public:
 
         auto messagingSkeletonEndpointAddr = std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
         const bool isGloballyVisible = false;
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
 
-        messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr, isGloballyVisible);
-        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible);
+        messageRouter->addNextHop(receiverId2, messagingSkeletonEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
+        messageRouter->addNextHop(receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 
         messageRouter->route(immutableMessage1);
         messageRouter->route(immutableMessage2);

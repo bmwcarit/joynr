@@ -125,9 +125,9 @@ public:
 	 * @param address The address
 	 */
 	«interfaceName»InProcessConnector(
-				joynr::ISubscriptionManager* subscriptionManager,
-				joynr::PublicationManager* publicationManager,
-				joynr::InProcessPublicationSender* inProcessPublicationSender,
+				std::weak_ptr<joynr::ISubscriptionManager> subscriptionManager,
+				std::weak_ptr<joynr::PublicationManager> publicationManager,
+				std::weak_ptr<joynr::InProcessPublicationSender> inProcessPublicationSender,
 				std::shared_ptr<joynr::IPlatformSecurityManager> securityManager,
 				const std::string& proxyParticipantId,
 				const std::string& providerParticipantId,
@@ -150,9 +150,9 @@ private:
 	std::string proxyParticipantId;
 	std::string providerParticipantId;
 	std::shared_ptr<joynr::InProcessAddress> address;
-	joynr::ISubscriptionManager* subscriptionManager;
-	joynr::PublicationManager* publicationManager;
-	joynr::InProcessPublicationSender* inProcessPublicationSender;
+	std::weak_ptr<joynr::ISubscriptionManager> subscriptionManager;
+	std::weak_ptr<joynr::PublicationManager> publicationManager;
+	std::weak_ptr<joynr::InProcessPublicationSender> inProcessPublicationSender;
 	std::shared_ptr<joynr::IPlatformSecurityManager> securityManager;
 };
 «getNamespaceEnder(francaIntf)»

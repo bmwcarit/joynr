@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,9 +17,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/channel/ChannelMessagingStub", [ "global/Promise"
-], function(Promise) {
+var Promise = require('../../../global/Promise');
+module.exports =
+        (function(Promise) {
 
     /**
      * @name ChannelMessagingStub
@@ -55,4 +54,4 @@ define("joynr/messaging/channel/ChannelMessagingStub", [ "global/Promise"
     }
 
     return ChannelMessagingStub;
-});
+        }(Promise));

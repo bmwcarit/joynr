@@ -217,6 +217,7 @@ set(
     "utils/MockObjects.h"
     "utils/LibJoynrMockObjects.h"
     "utils/MockLocalCapabilitiesDirectoryCallback.h"
+    "utils/PtrUtils.h"
     "utils/TimeUtils.h"
     "utils/TestRunnable.h"
     "utils/TestLibJoynrWebSocketRuntime.h"

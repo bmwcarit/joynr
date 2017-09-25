@@ -56,7 +56,7 @@ public:
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
             std::shared_ptr<IMessageRouter> messageRouter,
             std::int64_t defaultExpiryIntervalMs,
-            PublicationManager& publicationManager,
+            std::weak_ptr<PublicationManager> publicationManager,
             const std::string& globalAddress);
 
     template <class T>
@@ -70,14 +70,14 @@ public:
 
         std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
 
-        std::string interfaceName = provider->getInterfaceName();
+        std::string interfaceName = T::INTERFACE_NAME();
 
         // Get the provider participant Id - the persisted provider Id has priority
         std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
 
         provider->registerBroadcastListener(
-                new MulticastBroadcastListener(participantId, publicationManager));
+                std::make_shared<MulticastBroadcastListener>(participantId, publicationManager));
 
         for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
@@ -113,9 +113,13 @@ public:
         {
             // add next hop to dispatcher
             if (auto ptr = messageRouter.lock()) {
+                constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+                const bool isSticky = false;
                 ptr->addNextHop(participantId,
                                 dispatcherAddress,
                                 isGloballyVisible,
+                                expiryDateMs,
+                                isSticky,
                                 std::move(onSuccess),
                                 std::move(onError));
             }
@@ -156,7 +160,7 @@ private:
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<IMessageRouter> messageRouter;
     std::int64_t defaultExpiryIntervalMs;
-    PublicationManager& publicationManager;
+    std::weak_ptr<PublicationManager> publicationManager;
     const std::string globalAddress;
     ADD_LOGGER(CapabilitiesRegistrar);
 };

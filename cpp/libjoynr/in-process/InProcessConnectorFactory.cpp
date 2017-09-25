@@ -26,12 +26,12 @@ namespace joynr
 INIT_LOGGER(InProcessConnectorFactory);
 
 InProcessConnectorFactory::InProcessConnectorFactory(
-        ISubscriptionManager* subscriptionManager,
-        PublicationManager* publicationManager,
-        InProcessPublicationSender* inProcessPublicationSender,
+        std::weak_ptr<ISubscriptionManager> subscriptionManager,
+        std::weak_ptr<PublicationManager> publicationManager,
+        std::weak_ptr<InProcessPublicationSender> inProcessPublicationSender,
         std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory)
         : subscriptionManager(subscriptionManager),
-          publicationManager(publicationManager),
+          publicationManager(std::move(publicationManager)),
           inProcessPublicationSender(inProcessPublicationSender),
           requestCallerDirectory(requestCallerDirectory),
           securityManager(std::make_shared<DummyPlatformSecurityManager>())

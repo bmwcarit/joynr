@@ -128,7 +128,7 @@
             // support CommonJS module 1.1.1 spec (`exports` cannot be a function)
             exports.IltStringBroadcastFilter = IltStringBroadcastFilter;
         }
-        var joynr = requirejs("joynr");
+        var joynr = require("joynr");
         IltStringBroadcastFilter.prototype = new joynr.JoynrObject();
         IltStringBroadcastFilter.prototype.constructor = IltStringBroadcastFilter;
 

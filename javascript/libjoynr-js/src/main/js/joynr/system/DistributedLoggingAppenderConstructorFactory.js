@@ -1,4 +1,4 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -17,24 +17,13 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/system/DistributedLoggingAppenderConstructorFactory",
-        [
-            "joynr/system/DistributedLoggingAppender",
-            "joynr/system/LoggingProxy",
-            "joynr/proxy/DiscoveryQos",
-            "joynr/types/DiscoveryScope",
-            "joynr/system/LoggerFactory",
-            "joynr/util/UtilInternal"
-        ],
-        function(
-                DistributedLoggingAppender,
-                LoggingProxy,
-                DiscoveryQos,
-                DiscoveryScope,
-                LoggerFactory,
-                Util) {
+var DistributedLoggingAppender = require('./DistributedLoggingAppender');
+var LoggingProxy = require('./LoggingProxy');
+var DiscoveryQos = require('../proxy/DiscoveryQos');
+var DiscoveryScope = require('../../joynr/types/DiscoveryScope');
+var LoggerFactory = require('./LoggerFactory');
+var UtilInternal = require('../util/UtilInternal');
+module.exports = (function (DistributedLoggingAppender, LoggingProxy, DiscoveryQos, DiscoveryScope, LoggerFactory, Util) {
 
             /**
              * A Factory to create a DistributedLoggingAppender constructor that contains a closure
@@ -86,4 +75,4 @@ define(
 
             return DistributedLoggingAppenderConstructorFactory;
 
-        });
+}(DistributedLoggingAppender, LoggingProxy, DiscoveryQos, DiscoveryScope, LoggerFactory, UtilInternal));

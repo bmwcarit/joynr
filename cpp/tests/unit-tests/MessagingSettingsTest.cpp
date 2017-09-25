@@ -70,17 +70,29 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
     EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()));
     EXPECT_EQ(messagingSettings.getMqttConnectionTimeoutMs().count(), MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
     EXPECT_EQ(messagingSettings.getTtlUpliftMs(), MessagingSettings::DEFAULT_TTL_UPLIFT_MS());
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_ROUTING_TABLE_GRACE_PERIOD_MS()));
+    EXPECT_EQ(messagingSettings.getRoutingTableGracePeriodMs(), MessagingSettings::DEFAULT_ROUTING_TABLE_GRACE_PERIOD_MS());
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS()));
+    EXPECT_EQ(messagingSettings.getRoutingTableCleanupIntervalMs(), MessagingSettings::DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS());
 }
 
 TEST_F(MessagingSettingsTest, overrideDefaultSettings) {
     std::string expectedBrokerUrl("http://custom-bounceproxy-host:8080/bounceproxy/MessagingSettingsTest-overrideDefaultSettings/");
+    std::int64_t expectedRoutingTableGracePeriodMs = 5000;
+    std::int64_t expectedRoutingTableCleanupIntervalMs = 6000;
     Settings testSettings(testSettingsFileNameNonExistent);
 
     testSettings.set(MessagingSettings::SETTING_BROKER_URL(), expectedBrokerUrl);
+    testSettings.set(MessagingSettings::SETTING_ROUTING_TABLE_GRACE_PERIOD_MS(), expectedRoutingTableGracePeriodMs);
+    testSettings.set(MessagingSettings::SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(), expectedRoutingTableCleanupIntervalMs);
     MessagingSettings messagingSettings(testSettings);
 
     std::string brokerUrl = messagingSettings.getBrokerUrlString();
     EXPECT_EQ(expectedBrokerUrl, brokerUrl);
+    std::int64_t routingTableGracePeriodMs = messagingSettings.getRoutingTableGracePeriodMs();
+    EXPECT_EQ(expectedRoutingTableGracePeriodMs, routingTableGracePeriodMs);
+    std::int64_t routingTableCleanupIntervalMs = messagingSettings.getRoutingTableCleanupIntervalMs();
+    EXPECT_EQ(expectedRoutingTableCleanupIntervalMs, routingTableCleanupIntervalMs);
 }
 
 void checkBrokerSettings(

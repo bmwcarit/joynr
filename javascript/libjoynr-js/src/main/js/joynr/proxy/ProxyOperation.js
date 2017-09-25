@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,21 +17,17 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/proxy/ProxyOperation",
-        [
-            "global/Promise",
-            "joynr/util/UtilInternal",
-            "joynr/util/JSONSerializer",
-            "joynr/util/Typing",
-            "joynr/util/MethodUtil",
-            "joynr/types/TypeRegistrySingleton",
-            "joynr/dispatching/types/Request",
-            "joynr/dispatching/types/OneWayRequest",
-            "joynr/messaging/MessagingQos"
-        ],
-        function(
+var Promise = require('../../global/Promise');
+var UtilInternal = require('../util/UtilInternal');
+var JsonSerializer = require('../util/JSONSerializer');
+var Typing = require('../util/Typing');
+var MethodUtil = require('../util/MethodUtil');
+var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var Request = require('../dispatching/types/Request');
+var OneWayRequest = require('../dispatching/types/OneWayRequest');
+var MessagingQos = require('../messaging/MessagingQos');
+module.exports =
+        (function(
                 Promise,
                 Util,
                 JSONSerializer,
@@ -379,4 +374,13 @@ define(
 
             return ProxyOperation;
 
-        });
+        }(
+                Promise,
+                UtilInternal,
+                JsonSerializer,
+                Typing,
+                MethodUtil,
+                TypeRegistrySingleton,
+                Request,
+                OneWayRequest,
+                MessagingQos));

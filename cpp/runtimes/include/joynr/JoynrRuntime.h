@@ -341,7 +341,7 @@ protected:
      * @brief Publication manager receives subscription requests and prepares publications
      * which are send back to the subscription manager.
      */
-    PublicationManager* publicationManager;
+    std::shared_ptr<PublicationManager> publicationManager;
     std::shared_ptr<IKeychain> keyChain;
 
 private:

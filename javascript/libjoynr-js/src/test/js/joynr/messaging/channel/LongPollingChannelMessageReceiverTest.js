@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true, node: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,28 +18,16 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-            "global/Promise",
-            "joynr/messaging/CommunicationModule",
-            "joynr/messaging/channel/LongPollingChannelMessageReceiver",
-            "joynr/messaging/JoynrMessage",
-            "joynr/util/Typing",
-            "joynr/system/LoggerFactory",
-            "global/LocalStorage",
-            "joynr/provisioning/provisioning_root",
-            "global/WaitsFor"
-        ],
-        function(
-                Promise,
-                CommunicationModule,
-                LongPollingChannelMessageReceiver,
-                JoynrMessage,
-                Typing,
-                LoggerFactory,
-                LocalStorage,
-                provisioning,
-                waitsFor) {
+var Promise = require('../../../../classes/global/Promise');
+var CommunicationModule = require('../../../../classes/joynr/messaging/CommunicationModule');
+var LongPollingChannelMessageReceiver = require('../../../../classes/joynr/messaging/channel/LongPollingChannelMessageReceiver');
+var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
+var Typing = require('../../../../classes/joynr/util/Typing');
+var LoggerFactory = require('../../../../classes/joynr/system/LoggerFactory');
+var LocalStorage = require('../../../../test-classes/global/LocalStorageNodeTests');
+var provisioningRoot = require('../../../../test-classes/joynr/provisioning/provisioning_root');
+var WaitsFor = require('../../../../test-classes/global/WaitsFor');
+module.exports = (function (Promise, CommunicationModule, LongPollingChannelMessageReceiver, JoynrMessage, Typing, LoggerFactory, LocalStorage, provisioning, waitsFor) {
 
             var log =
                     LoggerFactory
@@ -289,4 +276,4 @@ define([
                         });
 
                     });
-        });
+}(Promise, CommunicationModule, LongPollingChannelMessageReceiver, JoynrMessage, Typing, LoggerFactory, LocalStorage, provisioningRoot, WaitsFor));

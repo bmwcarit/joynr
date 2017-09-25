@@ -222,7 +222,7 @@ public:
 
     void TearDown() {
         if (!providerParticipantId.empty()) {
-            runtime1->unregisterProvider(providerParticipantId);
+            unregisterProvider();
         }
         bool deleteChannel = true;
         runtime1->stop(deleteChannel);
@@ -262,6 +262,10 @@ protected:
 
     std::shared_ptr<MyTestProvider> registerProvider() {
         return registerProvider(runtime1);
+    }
+
+    void unregisterProvider() {
+        return runtime1->unregisterProvider(providerParticipantId);
     }
 
     std::shared_ptr<MyTestProvider> registerProvider(std::shared_ptr<JoynrClusterControllerRuntime> runtime) {

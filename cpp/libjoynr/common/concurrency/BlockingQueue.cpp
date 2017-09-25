@@ -34,18 +34,18 @@ BlockingQueue::~BlockingQueue()
     shutdown();
 }
 
-void BlockingQueue::add(Runnable* work)
+void BlockingQueue::add(std::shared_ptr<Runnable> work)
 {
     {
         std::lock_guard<std::mutex> lock(conditionMutex);
-        queue.push_front(work);
+        queue.push_front(std::move(work));
     }
 
     // Notify a waiting thread
     condition.notify_one();
 }
 
-Runnable* BlockingQueue::take()
+std::shared_ptr<Runnable> BlockingQueue::take()
 {
     if (stoppingScheduler) {
         JOYNR_LOG_TRACE(logger, "Shuting down and returning NULL");
@@ -66,7 +66,7 @@ Runnable* BlockingQueue::take()
     JOYNR_LOG_TRACE(logger, "Condition released");
 
     // Get the item
-    Runnable* item = queue.back();
+    std::shared_ptr<Runnable> item = queue.back();
     queue.pop_back();
     return item;
 }
@@ -85,11 +85,11 @@ void BlockingQueue::shutdown()
         stoppingScheduler = true;
 
         // delete queued elements if necessary
-        for (Runnable* i : queue) {
-            if (i->isDeleteOnExit()) {
-                delete i;
-            }
-        }
+        // for (std::shared_ptr<Runnable> i : queue) {
+        // if (i->isDeleteOnExit()) {
+        //    delete i;
+        //}
+        //}
         queue.clear();
     }
 

@@ -283,6 +283,18 @@ const std::string& MessagingSettings::SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_M
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_ROUTING_TABLE_GRACE_PERIOD_MS()
+{
+    static const std::string value("messaging/routing-table-grace-period-ms");
+    return value;
+}
+
+const std::string& MessagingSettings::SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS()
+{
+    static const std::string value("messaging/routing-table-cleanup-interval-ms");
+    return value;
+}
+
 std::int64_t MessagingSettings::DEFAULT_BROKER_TIMEOUT_MS()
 {
     // 20 seconds
@@ -323,6 +335,18 @@ std::int64_t MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS()
 {
     // 40 seconds
     return (40 * 1000);
+}
+
+std::int64_t MessagingSettings::DEFAULT_ROUTING_TABLE_GRACE_PERIOD_MS()
+{
+    // 60 seconds
+    return (60 * 1000);
+}
+
+std::int64_t MessagingSettings::DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS()
+{
+    // 60 seconds
+    return (60 * 1000);
 }
 
 const std::string& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
@@ -620,6 +644,26 @@ void MessagingSettings::setDiscoveryDefaultRetryIntervalMs(
     settings.set(SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS(), discoveryDefaultRetryIntervalMs);
 }
 
+std::int64_t MessagingSettings::getRoutingTableGracePeriodMs() const
+{
+    return settings.get<std::int64_t>(SETTING_ROUTING_TABLE_GRACE_PERIOD_MS());
+}
+
+void MessagingSettings::setRoutingTableGracePeriodMs(std::int64_t routingTableGracePeriodMs)
+{
+    settings.set(SETTING_ROUTING_TABLE_GRACE_PERIOD_MS(), routingTableGracePeriodMs);
+}
+
+std::int64_t MessagingSettings::getRoutingTableCleanupIntervalMs() const
+{
+    return settings.get<std::int64_t>(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS());
+}
+
+void MessagingSettings::setRoutingTableCleanupIntervalMs(std::int64_t routingTableCleanupIntervalMs)
+{
+    settings.set(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(), routingTableCleanupIntervalMs);
+}
+
 bool MessagingSettings::contains(const std::string& key) const
 {
     return settings.contains(key);
@@ -702,6 +746,14 @@ void MessagingSettings::checkSettings()
         settings.set(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS(),
                      DEFAULT_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS());
     }
+    if (!settings.contains(SETTING_ROUTING_TABLE_GRACE_PERIOD_MS())) {
+        settings.set(
+                SETTING_ROUTING_TABLE_GRACE_PERIOD_MS(), DEFAULT_ROUTING_TABLE_GRACE_PERIOD_MS());
+    }
+    if (!settings.contains(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS())) {
+        settings.set(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(),
+                     DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS());
+    }
 }
 
 void MessagingSettings::printSettings() const
@@ -772,6 +824,14 @@ void MessagingSettings::printSettings() const
                     settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()));
     JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_MAXIMUM_TTL_MS(), getMaximumTtlMs());
     JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_TTL_UPLIFT_MS(), getTtlUpliftMs());
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {} = {})",
+                    SETTING_ROUTING_TABLE_GRACE_PERIOD_MS(),
+                    settings.get<std::int64_t>(SETTING_ROUTING_TABLE_GRACE_PERIOD_MS()));
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {} = {})",
+                    SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(),
+                    settings.get<std::int64_t>(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS()));
 }
 
 } // namespace joynr

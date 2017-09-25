@@ -106,6 +106,9 @@ void CombinedEnd2EndTest::SetUp()
 
 void CombinedEnd2EndTest::TearDown()
 {
+    runtime1.reset();
+    runtime2.reset();
+
     // Delete the persisted participant ids so that each test uses different participant ids
     std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
 }

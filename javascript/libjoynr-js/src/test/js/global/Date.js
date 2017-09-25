@@ -1,3 +1,4 @@
+/*jslint node: true */
 /*
  * #%L
  * %%
@@ -16,7 +17,6 @@
  * limitations under the License.
  * #L%
  */
-
 /**
  * Requirejs helper function for jasmine-node.
  *
@@ -26,6 +26,4 @@
  *
  * @returns the global Date general-purpose constructor.
  */
-define(function() {
-    return Date;
-});
+module.exports = Date;

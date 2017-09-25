@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,109 +17,57 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/start/WebSocketLibjoynrRuntime", [
-    "global/Promise",
-    "global/WebSocket",
-    "joynr/capabilities/arbitration/Arbitrator",
-    "joynr/provider/ProviderBuilder",
-    "joynr/proxy/ProxyBuilder",
-    "joynr/capabilities/CapabilitiesRegistrar",
-    "joynr/capabilities/ParticipantIdStorage",
-    "joynr/dispatching/RequestReplyManager",
-    "joynr/dispatching/subscription/PublicationManager",
-    "joynr/dispatching/subscription/SubscriptionManager",
-    "joynr/dispatching/Dispatcher",
-    "joynr/exceptions/JoynrException",
-    "joynr/security/PlatformSecurityManager",
-    "joynr/messaging/websocket/SharedWebSocket",
-    "joynr/messaging/websocket/WebSocketMessagingSkeleton",
-    "joynr/messaging/websocket/WebSocketMessagingStubFactory",
-    "joynr/messaging/websocket/WebSocketMulticastAddressCalculator",
-    "joynr/messaging/MessagingSkeletonFactory",
-    "joynr/messaging/MessagingStubFactory",
-    "joynr/messaging/routing/MessageRouter",
-    "joynr/messaging/routing/MessageQueue",
-    "joynr/system/RoutingTypes/WebSocketAddress",
-    "joynr/system/RoutingTypes/WebSocketClientAddress",
-    "joynr/messaging/inprocess/InProcessMessagingStubFactory",
-    "joynr/messaging/inprocess/InProcessMessagingSkeleton",
-    "joynr/messaging/inprocess/InProcessMessagingStub",
-    "joynr/messaging/inprocess/InProcessAddress",
-    "joynr/util/InProcessStub",
-    "joynr/util/InProcessSkeleton",
-    "joynr/messaging/MessagingQos",
-    "joynr/proxy/DiscoveryQos",
-    "joynr/system/DiscoveryProxy",
-    "joynr/system/RoutingProxy",
-    "joynr/types/TypeRegistrySingleton",
-    "joynr/types/DiscoveryScope",
-    "joynr/types/DiscoveryEntry",
-    "joynr/types/DiscoveryEntryWithMetaInfo",
-    "joynr/util/UtilInternal",
-    "joynr/util/CapabilitiesUtil",
-    "joynr/util/Typing",
-    "joynr/system/DistributedLoggingAppenderConstructorFactory",
-    "joynr/system/DistributedLoggingAppender",
-    "joynr/system/WebWorkerMessagingAppender",
-    "uuid",
-    "joynr/system/LoggingManager",
-    "joynr/system/LoggerFactory",
-    "joynr/start/settings/defaultSettings",
-    "joynr/start/settings/defaultWebSocketSettings",
-    "joynr/start/settings/defaultLibjoynrSettings",
-    "global/LocalStorage"
-], function(
-        Promise,
-        WebSocket,
-        Arbitrator,
-        ProviderBuilder,
-        ProxyBuilder,
-        CapabilitiesRegistrar,
-        ParticipantIdStorage,
-        RequestReplyManager,
-        PublicationManager,
-        SubscriptionManager,
-        Dispatcher,
-        JoynrException,
-        PlatformSecurityManager,
-        SharedWebSocket,
-        WebSocketMessagingSkeleton,
-        WebSocketMessagingStubFactory,
-        WebSocketMulticastAddressCalculator,
-        MessagingSkeletonFactory,
-        MessagingStubFactory,
-        MessageRouter,
-        MessageQueue,
-        WebSocketAddress,
-        WebSocketClientAddress,
-        InProcessMessagingStubFactory,
-        InProcessMessagingSkeleton,
-        InProcessMessagingStub,
-        InProcessAddress,
-        InProcessStub,
-        InProcessSkeleton,
-        MessagingQos,
-        DiscoveryQos,
-        DiscoveryProxy,
-        RoutingProxy,
-        TypeRegistrySingleton,
-        DiscoveryScope,
-        DiscoveryEntry,
-        DiscoveryEntryWithMetaInfo,
-        Util,
-        CapabilitiesUtil,
-        Typing,
-        DistributedLoggingAppenderConstructorFactory,
-        DistributedLoggingAppender,
-        WebWorkerMessagingAppender,
-        uuid,
-        LoggingManager,
-        LoggerFactory,
-        defaultSettings,
-        defaultWebSocketSettings,
-        defaultLibjoynrSettings,
-        LocalStorage) {
+var Promise = require('../../global/Promise');
+var WebSocket = require('../../global/WebSocketNode');
+var Arbitrator = require('../capabilities/arbitration/Arbitrator');
+var ProviderBuilder = require('../provider/ProviderBuilder');
+var ProxyBuilder = require('../proxy/ProxyBuilder');
+var CapabilitiesRegistrar = require('../capabilities/CapabilitiesRegistrar');
+var ParticipantIdStorage = require('../capabilities/ParticipantIdStorage');
+var RequestReplyManager = require('../dispatching/RequestReplyManager');
+var PublicationManager = require('../dispatching/subscription/PublicationManager');
+var SubscriptionManager = require('../dispatching/subscription/SubscriptionManager');
+var Dispatcher = require('../dispatching/Dispatcher');
+var JoynrException = require('../exceptions/JoynrException');
+var PlatformSecurityManager = require('../security/PlatformSecurityManagerNode');
+var SharedWebSocket = require('../messaging/websocket/SharedWebSocket');
+var WebSocketMessagingSkeleton = require('../messaging/websocket/WebSocketMessagingSkeleton');
+var WebSocketMessagingStubFactory = require('../messaging/websocket/WebSocketMessagingStubFactory');
+var WebSocketMulticastAddressCalculator = require('../messaging/websocket/WebSocketMulticastAddressCalculator');
+var MessagingSkeletonFactory = require('../messaging/MessagingSkeletonFactory');
+var MessagingStubFactory = require('../messaging/MessagingStubFactory');
+var MessageRouter = require('../messaging/routing/MessageRouter');
+var MessageQueue = require('../messaging/routing/MessageQueue');
+var WebSocketAddress = require('../system/RoutingTypes/WebSocketAddress');
+var WebSocketClientAddress = require('../system/RoutingTypes/WebSocketClientAddress');
+var InProcessMessagingStubFactory = require('../messaging/inprocess/InProcessMessagingStubFactory');
+var InProcessMessagingSkeleton = require('../messaging/inprocess/InProcessMessagingSkeleton');
+var InProcessMessagingStub = require('../messaging/inprocess/InProcessMessagingStub');
+var InProcessAddress = require('../messaging/inprocess/InProcessAddress');
+var InProcessStub = require('../util/InProcessStub');
+var InProcessSkeleton = require('../util/InProcessSkeleton');
+var MessagingQos = require('../messaging/MessagingQos');
+var DiscoveryQos = require('../proxy/DiscoveryQos');
+var DiscoveryProxy = require('../system/DiscoveryProxy');
+var RoutingProxy = require('../system/RoutingProxy');
+var TypeRegistrySingleton = require('../types/TypeRegistrySingleton');
+var DiscoveryScope = require('../types/DiscoveryScope');
+var DiscoveryEntry = require('../types/DiscoveryEntry');
+var DiscoveryEntryWithMetaInfo = require('../types/DiscoveryEntryWithMetaInfo');
+var UtilInternal = require('../util/UtilInternal');
+var CapabilitiesUtil = require('../util/CapabilitiesUtil');
+var Typing = require('../util/Typing');
+var DistributedLoggingAppenderConstructorFactory = require('../system/DistributedLoggingAppenderConstructorFactory');
+var DistributedLoggingAppender = require('../system/DistributedLoggingAppender');
+var WebWorkerMessagingAppender = require('../system/WebWorkerMessagingAppender');
+var uuid = require('../../lib/uuid-annotated');
+var LoggingManager = require('../system/LoggingManager');
+var LoggerFactory = require('../system/LoggerFactory');
+var defaultSettings = require('./settings/defaultSettings');
+var defaultWebSocketSettings = require('./settings/defaultWebSocketSettings');
+var defaultLibjoynrSettings = require('./settings/defaultLibjoynrSettings');
+var LocalStorage = require('../../global/LocalStorageNode');
+module.exports = (function (Promise, WebSocket, Arbitrator, ProviderBuilder, ProxyBuilder, CapabilitiesRegistrar, ParticipantIdStorage, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, JoynrException, PlatformSecurityManager, SharedWebSocket, WebSocketMessagingSkeleton, WebSocketMessagingStubFactory, WebSocketMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, WebSocketAddress, WebSocketClientAddress, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, InProcessStub, InProcessSkeleton, MessagingQos, DiscoveryQos, DiscoveryProxy, RoutingProxy, TypeRegistrySingleton, DiscoveryScope, DiscoveryEntry, DiscoveryEntryWithMetaInfo, Util, CapabilitiesUtil, Typing, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, WebWorkerMessagingAppender, uuid, LoggingManager, LoggerFactory, defaultSettings, defaultWebSocketSettings, defaultLibjoynrSettings, LocalStorage) {
     var JoynrStates = {
         SHUTDOWN : "shut down",
         STARTING : "starting",
@@ -603,4 +550,4 @@ define("joynr/start/WebSocketLibjoynrRuntime", [
 
     return WebSocketLibjoynrRuntime;
 
-});
+}(Promise, WebSocket, Arbitrator, ProviderBuilder, ProxyBuilder, CapabilitiesRegistrar, ParticipantIdStorage, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, JoynrException, PlatformSecurityManager, SharedWebSocket, WebSocketMessagingSkeleton, WebSocketMessagingStubFactory, WebSocketMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, WebSocketAddress, WebSocketClientAddress, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, InProcessStub, InProcessSkeleton, MessagingQos, DiscoveryQos, DiscoveryProxy, RoutingProxy, TypeRegistrySingleton, DiscoveryScope, DiscoveryEntry, DiscoveryEntryWithMetaInfo, UtilInternal, CapabilitiesUtil, Typing, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, WebWorkerMessagingAppender, uuid, LoggingManager, LoggerFactory, defaultSettings, defaultWebSocketSettings, defaultLibjoynrSettings, LocalStorage));

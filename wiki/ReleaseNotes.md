@@ -1,3 +1,30 @@
+# joynr 0.30.0
+
+## Configuration property changes
+
+* **[C++]** Made the following properties configurable. See
+  default-messaging.settings for more details.
+  * `routing-table-grace-period-ms`
+  * `routing-table-cleanup-interval-ms`
+
+## Other changes
+
+* **[C++]** The internal routing table can now be cleaned up.
+  Routing entries which have been created for handling a request from
+  global can be removed when the ttl + grace period has passed.
+
+# joynr 0.29.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Introduced ProviderReregistrationController interface which is implemented
+ by the cluster-controller and can be accessed by creating the corresponding proxy.
+ It allows to trigger the re-registration of globally visible providers which are
+ registered at the corresponding cluster-controller instance.
+* **[JS]** Use require instead of requirejs.
+
 # joynr 0.29.0
 
 ## API relevant changes
@@ -14,7 +41,12 @@
   * `PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`
   * `PROPERTY_ROUTING_MAX_RETRY_COUNT`
 * **[Java]** Renamed property `PROPERTY_MAX_MESSAGES_INQUEUE` to
-  `PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`.
+  `PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`. Please note that
+  joynr will ignore messages if the MQTT queue is full by not sending an PUBACK
+  for the message (QOS 1). joynr requires that the message is resend by the MQTT
+  broker at a later point in time. If the resend time intervall of the broker is
+  too high, an additional delay will be introduced. Please make sure to set the
+  resend intervall of your MQTT broker appropriately.
 * **[JS]** Made default discoveryQos configurable via provisioning. See the
   [Javascript Configuration Reference](JavaScriptTutorial.md) for more details.
 * **[C++]** Made the following properties configurable. See

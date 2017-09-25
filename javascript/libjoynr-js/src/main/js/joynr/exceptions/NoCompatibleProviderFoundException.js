@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,13 +18,12 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/exceptions/NoCompatibleProviderFoundException", [
-    "joynr/types/TypeRegistrySingleton",
-    "joynr/util/UtilInternal",
-    "joynr/exceptions/DiscoveryException",
-    "joynr/system/LoggerFactory"
-], function(TypeRegistrySingleton, Util, DiscoveryException, LoggerFactory) {
+var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var UtilInternal = require('../util/UtilInternal');
+var DiscoveryException = require('./DiscoveryException');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports =
+        (function(TypeRegistrySingleton, Util, DiscoveryException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -105,4 +106,4 @@ define("joynr/exceptions/NoCompatibleProviderFoundException", [
     NoCompatibleProviderFoundException.prototype.name = "NoCompatibleProviderFoundException";
 
     return NoCompatibleProviderFoundException;
-});
+        }(TypeRegistrySingleton, UtilInternal, DiscoveryException, LoggerFactory));

@@ -52,7 +52,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         ClusterControllerSettings& clusterControllerSettings,
         std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
         const std::string& localAddress,
-        IMessageRouter& messageRouter,
+        std::weak_ptr<IMessageRouter> messageRouter,
         boost::asio::io_service& ioService,
         const std::string clusterControllerId)
         : joynr::system::DiscoveryAbstractProvider(),
@@ -140,15 +140,8 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
 
     // register globally
     if (isGloballyVisible) {
-        types::GlobalDiscoveryEntry globalDiscoveryEntry(discoveryEntry.getProviderVersion(),
-                                                         discoveryEntry.getDomain(),
-                                                         discoveryEntry.getInterfaceName(),
-                                                         discoveryEntry.getParticipantId(),
-                                                         discoveryEntry.getQos(),
-                                                         discoveryEntry.getLastSeenDateMs(),
-                                                         discoveryEntry.getExpiryDateMs(),
-                                                         discoveryEntry.getPublicKeyId(),
-                                                         localAddress);
+        types::GlobalDiscoveryEntry globalDiscoveryEntry = toGlobalDiscoveryEntry(discoveryEntry);
+
         if (std::find(registeredGlobalCapabilities.begin(),
                       registeredGlobalCapabilities.end(),
                       globalDiscoveryEntry) == registeredGlobalCapabilities.end()) {
@@ -181,6 +174,20 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
     }
 }
 
+types::GlobalDiscoveryEntry LocalCapabilitiesDirectory::toGlobalDiscoveryEntry(
+        const types::DiscoveryEntry& discoveryEntry) const
+{
+    return types::GlobalDiscoveryEntry(discoveryEntry.getProviderVersion(),
+                                       discoveryEntry.getDomain(),
+                                       discoveryEntry.getInterfaceName(),
+                                       discoveryEntry.getParticipantId(),
+                                       discoveryEntry.getQos(),
+                                       discoveryEntry.getLastSeenDateMs(),
+                                       discoveryEntry.getExpiryDateMs(),
+                                       discoveryEntry.getPublicKeyId(),
+                                       localAddress);
+}
+
 void LocalCapabilitiesDirectory::remove(const std::string& participantId)
 {
     std::lock_guard<std::mutex> lock(cacheLock);
@@ -199,11 +206,16 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
         globalCapabilities.removeByParticipantId(participantId);
         capabilitiesClient->remove(participantId);
     }
-
     JOYNR_LOG_TRACE(logger, "Removing locally registered participantId: {}", participantId);
     localCapabilities.removeByParticipantId(participantId);
     informObserversOnRemove(entry);
-    messageRouter.removeNextHop(participantId);
+    if (auto messageRouterSharedPtr = messageRouter.lock()) {
+        messageRouterSharedPtr->removeNextHop(participantId);
+    } else {
+        JOYNR_LOG_FATAL(logger,
+                        "could not removeNextHop for {} because messageRouter is not available",
+                        participantId);
+    }
     updatePersistedFile();
 }
 
@@ -224,6 +236,41 @@ void LocalCapabilitiesDirectory::removeFromGloballyRegisteredCapabilities(
                                                              compareFunc),
                                               registeredGlobalCapabilities.end()) !=
            registeredGlobalCapabilities.end()) {
+    }
+}
+
+void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::vector<joynr::types::GlobalDiscoveryEntry> convertedGlobalCapabilities;
+
+    {
+        std::lock_guard<std::mutex> lock(cacheLock);
+
+        const std::size_t numOfGlobalCapabilities =
+                std::distance(globalCapabilities.begin(), globalCapabilities.end());
+        convertedGlobalCapabilities.reserve(numOfGlobalCapabilities);
+
+        for (const auto& globalCapability : globalCapabilities) {
+            convertedGlobalCapabilities.push_back(toGlobalDiscoveryEntry(globalCapability));
+        }
+    }
+
+    auto onErrorWrapper = [onError = std::move(onError)](
+            const joynr::exceptions::JoynrRuntimeException& exception)
+    {
+        if (onError) {
+            onError(joynr::exceptions::ProviderRuntimeException(exception.getMessage()));
+        }
+    };
+
+    if (convertedGlobalCapabilities.empty()) {
+        if (onSuccess) {
+            onSuccess();
+        }
+    } else {
+        capabilitiesClient->add(convertedGlobalCapabilities, onSuccess, onErrorWrapper);
     }
 }
 
@@ -535,7 +582,21 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
         const bool isGloballyVisible = isGlobal(currentEntry);
         try {
             joynr::serializer::deserializeFromJson(address, serializedAddress);
-            messageRouter.addNextHop(currentEntry.getParticipantId(), address, isGloballyVisible);
+            if (auto messageRouterSharedPtr = messageRouter.lock()) {
+                constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+                const bool isSticky = false;
+                messageRouterSharedPtr->addNextHop(currentEntry.getParticipantId(),
+                                                   address,
+                                                   isGloballyVisible,
+                                                   expiryDateMs,
+                                                   isSticky);
+            } else {
+                JOYNR_LOG_FATAL(
+                        logger,
+                        "could not addNextHop {} to {} because messageRouter is not available",
+                        currentEntry.getParticipantId(),
+                        serializedAddress);
+            }
             this->insertInCache(currentEntry, false, true);
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger,

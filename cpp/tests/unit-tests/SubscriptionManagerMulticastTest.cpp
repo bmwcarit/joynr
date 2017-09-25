@@ -51,9 +51,9 @@ public:
         mockGpsSubscriptionListener(std::make_shared<MockSubscriptionListenerOneType<types::Localisation::GpsLocation>>()),
         qos(std::make_shared<MulticastSubscriptionQos>()),
         future(std::make_shared<Future<std::string>>()),
-        subscriptionManager(singleThreadedIOService.getIOService(), mockMessageRouter),
+        subscriptionManager(std::make_shared<SubscriptionManager>(singleThreadedIOService.getIOService(), mockMessageRouter)),
         subscriptionCallback(std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-            "testSubscriptionId", future, &subscriptionManager))
+            "testSubscriptionId", future, subscriptionManager))
     {
     }
 
@@ -71,7 +71,7 @@ protected:
     std::shared_ptr<SubscriptionQos> qos;
     std::shared_ptr<Future<std::string>> future;
 
-    SubscriptionManager subscriptionManager;
+    std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::shared_ptr<ISubscriptionCallback> subscriptionCallback;
 };
 
@@ -81,7 +81,7 @@ TEST_F(SubscriptionManagerMulticastTest, registerMulticastSubscription_registrat
     EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(
         multicastId1, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
 
-    subscriptionManager.registerSubscription(
+    subscriptionManager->registerSubscription(
         subscribeToName,
         subscriberParticipantId,
         providerParticipantId1,
@@ -93,7 +93,7 @@ TEST_F(SubscriptionManagerMulticastTest, registerMulticastSubscription_registrat
         [](){},
         [](const joynr::exceptions::ProviderRuntimeException&){});
 
-    auto registeredSubscriptionCallback = subscriptionManager.getMulticastSubscriptionCallback(multicastId1);
+    auto registeredSubscriptionCallback = subscriptionManager->getMulticastSubscriptionCallback(multicastId1);
 
     ASSERT_EQ(subscriptionCallback, registeredSubscriptionCallback);
 }
@@ -104,7 +104,7 @@ TEST_F(SubscriptionManagerMulticastTest, unregisterMulticastSubscription_unregis
     EXPECT_CALL(*mockMessageRouter, removeMulticastReceiver(
         multicastId1, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
 
-    subscriptionManager.registerSubscription(
+    subscriptionManager->registerSubscription(
         subscribeToName,
         subscriberParticipantId,
         providerParticipantId1,
@@ -116,9 +116,9 @@ TEST_F(SubscriptionManagerMulticastTest, unregisterMulticastSubscription_unregis
         [](){},
         [](const joynr::exceptions::ProviderRuntimeException&){});
 
-    subscriptionManager.unregisterSubscription(subscriptionRequest.getSubscriptionId());
+    subscriptionManager->unregisterSubscription(subscriptionRequest.getSubscriptionId());
 
-    auto registeredSubscriptionCallback = subscriptionManager.getMulticastSubscriptionCallback(multicastId1);
+    auto registeredSubscriptionCallback = subscriptionManager->getMulticastSubscriptionCallback(multicastId1);
 
     ASSERT_EQ(nullptr, registeredSubscriptionCallback);
 }
@@ -136,18 +136,18 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
     MulticastSubscriptionRequest subscriptionRequest_Provider3;
 
     auto subscriptionCallback1_1 = std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-        subscriptionRequest_Provider1_1.getSubscriptionId(), future, &subscriptionManager);
+        subscriptionRequest_Provider1_1.getSubscriptionId(), future, subscriptionManager);
 
     auto subscriptionCallback1_2 = std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-        subscriptionRequest_Provider1_2.getSubscriptionId(), future, &subscriptionManager);
+        subscriptionRequest_Provider1_2.getSubscriptionId(), future, subscriptionManager);
 
     auto subscriptionCallback2 = std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-        subscriptionRequest_Provider2.getSubscriptionId(),  future, &subscriptionManager);
+        subscriptionRequest_Provider2.getSubscriptionId(),  future, subscriptionManager);
 
     auto subscriptionCallback3 = std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-        subscriptionRequest_Provider3.getSubscriptionId(), future, &subscriptionManager);
+        subscriptionRequest_Provider3.getSubscriptionId(), future, subscriptionManager);
 
-    subscriptionManager.registerSubscription(
+    subscriptionManager->registerSubscription(
         subscribeToName,
         subscriberParticipantId,
         providerParticipantId1,
@@ -159,7 +159,7 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
         [](){},
         [](const joynr::exceptions::ProviderRuntimeException&){});
 
-    subscriptionManager.registerSubscription(
+    subscriptionManager->registerSubscription(
         subscribeToName,
         subscriberParticipantId,
         providerParticipantId1,
@@ -171,7 +171,7 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
         [](){},
         [](const joynr::exceptions::ProviderRuntimeException&){});
 
-    subscriptionManager.registerSubscription(
+    subscriptionManager->registerSubscription(
         subscribeToName,
         subscriberParticipantId,
         providerParticipantId2,
@@ -183,7 +183,7 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
         [](){},
         [](const joynr::exceptions::ProviderRuntimeException&){});
 
-    subscriptionManager.registerSubscription(
+    subscriptionManager->registerSubscription(
         subscribeToName,
         subscriberParticipantId,
         providerParticipantId3,
@@ -196,11 +196,11 @@ TEST_F(SubscriptionManagerMulticastTest, registerMultipleMulticastSubscription_c
         [](const joynr::exceptions::ProviderRuntimeException&){});
 
     auto registeredSubscriptionCallback_multicast1 =
-        subscriptionManager.getMulticastSubscriptionCallback(multicastId1);
+        subscriptionManager->getMulticastSubscriptionCallback(multicastId1);
     auto registeredSubscriptionCallback_multicast2 =
-        subscriptionManager.getMulticastSubscriptionCallback(multicastId2);
+        subscriptionManager->getMulticastSubscriptionCallback(multicastId2);
     auto registeredSubscriptionCallback_multicast3 =
-        subscriptionManager.getMulticastSubscriptionCallback(multicastId3);
+        subscriptionManager->getMulticastSubscriptionCallback(multicastId3);
 
     ASSERT_TRUE(
                 registeredSubscriptionCallback_multicast1 == subscriptionCallback1_1
@@ -222,7 +222,7 @@ TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_changedPart
     EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(
         multicastId1, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
 
-    subscriptionManager.registerSubscription(
+    subscriptionManager->registerSubscription(
         subscribeToName,
         subscriberParticipantId,
         providerParticipantId1,
@@ -246,7 +246,7 @@ TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_changedPart
     EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(
         multicastId2, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
 
-    subscriptionManager.registerSubscription(
+    subscriptionManager->registerSubscription(
         subscribeToName,
         subscriberParticipantId,
         providerParticipantId1,
@@ -266,7 +266,7 @@ TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_samePartiti
     EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(
         multicastId1, subscriberParticipantId, providerParticipantId1, _, _)).Times(1);
 
-    subscriptionManager.registerSubscription(
+    subscriptionManager->registerSubscription(
         subscribeToName,
         subscriberParticipantId,
         providerParticipantId1,
@@ -286,7 +286,7 @@ TEST_F(SubscriptionManagerMulticastTest, updateMulticastSubscription_samePartiti
     EXPECT_CALL(*mockMessageRouter, removeMulticastReceiver(_, _, _, _, _)).Times(0);
     EXPECT_CALL(*mockMessageRouter, addMulticastReceiver(_, _, _, _, _)).Times(0);
 
-    subscriptionManager.registerSubscription(
+    subscriptionManager->registerSubscription(
         subscribeToName,
         subscriberParticipantId,
         providerParticipantId1,

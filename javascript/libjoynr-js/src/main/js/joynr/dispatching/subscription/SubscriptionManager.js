@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,47 +17,26 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/dispatching/subscription/SubscriptionManager", [
-    "global/Promise",
-    "joynr/messaging/MessagingQos",
-    "joynr/messaging/util/MulticastWildcardRegexFactory",
-    "joynr/start/settings/defaultMessagingSettings",
-    "joynr/proxy/SubscriptionQos",
-    "joynr/dispatching/types/SubscriptionStop",
-    "joynr/dispatching/types/SubscriptionRequest",
-    "joynr/dispatching/types/MulticastSubscriptionRequest",
-    "joynr/dispatching/types/BroadcastSubscriptionRequest",
-    "joynr/dispatching/subscription/SubscriptionListener",
-    "joynr/dispatching/subscription/util/SubscriptionUtil",
-    "joynr/util/LongTimer",
-    "joynr/system/LoggerFactory",
-    "uuid",
-    "joynr/util/UtilInternal",
-    "joynr/util/Typing",
-    "joynr/types/TypeRegistrySingleton",
-    "joynr/exceptions/PublicationMissedException",
-    "joynr/util/JSONSerializer"
-], function(
-        Promise,
-        MessagingQos,
-        MulticastWildcardRegexFactory,
-        defaultMessagingSettings,
-        SubscriptionQos,
-        SubscriptionStop,
-        SubscriptionRequest,
-        MulticastSubscriptionRequest,
-        BroadcastSubscriptionRequest,
-        SubscriptionListener,
-        SubscriptionUtil,
-        LongTimer,
-        LoggerFactory,
-        uuid,
-        Util,
-        Typing,
-        TypeRegistrySingleton,
-        PublicationMissedException,
-        JSONSerializer) {
+var Promise = require('../../../global/Promise');
+var MessagingQos = require('../../messaging/MessagingQos');
+var MulticastWildcardRegexFactory = require('../../messaging/util/MulticastWildcardRegexFactory');
+var defaultMessagingSettings = require('../../start/settings/defaultMessagingSettings');
+var SubscriptionQos = require('../../proxy/SubscriptionQos');
+var SubscriptionStop = require('../types/SubscriptionStop');
+var SubscriptionRequest = require('../types/SubscriptionRequest');
+var MulticastSubscriptionRequest = require('../types/MulticastSubscriptionRequest');
+var BroadcastSubscriptionRequest = require('../types/BroadcastSubscriptionRequest');
+var SubscriptionListener = require('./SubscriptionListener');
+var SubscriptionUtil = require('./util/SubscriptionUtil');
+var LongTimer = require('../../util/LongTimer');
+var LoggerFactory = require('../../system/LoggerFactory');
+var uuid = require('../../../lib/uuid-annotated');
+var UtilInternal = require('../../util/UtilInternal');
+var Typing = require('../../util/Typing');
+var TypeRegistrySingleton = require('../../../joynr/types/TypeRegistrySingleton');
+var PublicationMissedException = require('../../exceptions/PublicationMissedException');
+var JsonSerializer = require('../../util/JSONSerializer');
+module.exports = (function (Promise, MessagingQos, MulticastWildcardRegexFactory, defaultMessagingSettings, SubscriptionQos, SubscriptionStop, SubscriptionRequest, MulticastSubscriptionRequest, BroadcastSubscriptionRequest, SubscriptionListener, SubscriptionUtil, LongTimer, LoggerFactory, uuid, Util, Typing, TypeRegistrySingleton, PublicationMissedException, JSONSerializer) {
     /**
      * @name SubscriptionManager
      * @constructor
@@ -687,4 +665,4 @@ define("joynr/dispatching/subscription/SubscriptionManager", [
     }
 
     return SubscriptionManager;
-});
+}(Promise, MessagingQos, MulticastWildcardRegexFactory, defaultMessagingSettings, SubscriptionQos, SubscriptionStop, SubscriptionRequest, MulticastSubscriptionRequest, BroadcastSubscriptionRequest, SubscriptionListener, SubscriptionUtil, LongTimer, LoggerFactory, uuid, UtilInternal, Typing, TypeRegistrySingleton, PublicationMissedException, JsonSerializer));

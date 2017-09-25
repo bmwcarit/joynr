@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,15 +18,12 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/util/UtilInternal",
-            "joynr/messaging/routing/MessageQueue",
-            "joynr/messaging/JoynrMessage",
-            "Date"
-        ],
-        function(Util, MessageQueue, JoynrMessage, Date) {
+var UtilInternal = require('../../../../classes/joynr/util/UtilInternal');
+var MessageQueue = require('../../../../classes/joynr/messaging/routing/MessageQueue');
+var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
+var Date = require('../../../../test-classes/global/Date');
+module.exports =
+        (function(Util, MessageQueue, JoynrMessage, Date) {
 
             var fakeTime;
 
@@ -202,4 +201,4 @@ define(
                         });
 
                     });
-        });
+        }(UtilInternal, MessageQueue, JoynrMessage, Date));

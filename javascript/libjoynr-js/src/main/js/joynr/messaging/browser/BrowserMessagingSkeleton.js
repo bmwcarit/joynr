@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,14 +18,13 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/browser/BrowserMessagingSkeleton", [
-    "joynr/messaging/JoynrMessage",
-    "joynr/util/Typing",
-    "joynr/util/UtilInternal",
-    "joynr/util/JSONSerializer",
-    "joynr/system/LoggerFactory"
-], function(JoynrMessage, Typing, Util, JSONSerializer, LoggerFactory) {
+var JoynrMessage = require('../JoynrMessage');
+var Typing = require('../../util/Typing');
+var UtilInternal = require('../../util/UtilInternal');
+var JsonSerializer = require('../../util/JSONSerializer');
+var LoggerFactory = require('../../system/LoggerFactory');
+module.exports =
+        (function(JoynrMessage, Typing, Util, JSONSerializer, LoggerFactory) {
 
     /**
      * @constructor BrowserMessagingSkeleton
@@ -84,4 +85,4 @@ define("joynr/messaging/browser/BrowserMessagingSkeleton", [
 
     return BrowserMessagingSkeleton;
 
-});
+        }(JoynrMessage, Typing, UtilInternal, JsonSerializer, LoggerFactory));

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/inprocess/InProcessMessagingStub", [], function() {
+module.exports = (function() {
 
     /**
      * @constructor
@@ -41,4 +42,4 @@ define("joynr/messaging/inprocess/InProcessMessagingStub", [], function() {
     };
     return InProcessMessagingStub;
 
-});
+}());

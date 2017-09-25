@@ -1,5 +1,6 @@
-/*global Buffer: true */
+/*jslint node: true */
 
+/*global Buffer: true */
 /*
  * #%L
  * %%
@@ -19,7 +20,8 @@
  * #L%
  */
 
-define([ "smrf-native"
-], function(smrf) {
-    return smrf;
-});
+if (global.window !== undefined) {
+    console.warn('smrf-native is not available in browser environment');
+}
+
+module.exports = global.window !== undefined ? {} : require('smrf-native');

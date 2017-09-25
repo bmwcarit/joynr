@@ -40,16 +40,22 @@ class InterfaceBroadcastTemplate extends InterfaceTemplate {
 «warning()»
 package «packagePath»;
 
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
-import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
+«IF hasNonSelectiveBroadcast»
+	import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
+«ENDIF»
+«IF hasSelectiveBroadcast»
+	import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
+«ENDIF»
 import io.joynr.dispatcher.rpc.JoynrBroadcastSubscriptionInterface;
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
-import joynr.OnChangeSubscriptionQos;
-import joynr.BroadcastFilterParameters;
+«IF hasSelectiveBroadcast»
+	import joynr.OnChangeSubscriptionQos;
+	import joynr.BroadcastFilterParameters;
+«ENDIF»
 «IF hasNonSelectiveBroadcast»
-import joynr.MulticastSubscriptionQos;
+	import joynr.MulticastSubscriptionQos;
 «ENDIF»
 
 «FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, false, true, false)»

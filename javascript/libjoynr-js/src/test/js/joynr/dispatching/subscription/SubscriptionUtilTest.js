@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,21 +18,22 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/dispatching/subscription/util/SubscriptionUtil",
-            "joynr/dispatching/types/SubscriptionInformation",
-            "joynr/dispatching/types/SubscriptionRequest",
-            "joynr/dispatching/types/SubscriptionStop",
-            "joynr/proxy/PeriodicSubscriptionQos",
-            "joynr/proxy/OnChangeSubscriptionQos",
-            "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
-            "joynr/types/ProviderQos",
-            "uuid",
-            "joynr/system/LoggerFactory"
-        ],
-        function(
+var SubscriptionUtil =
+        require('../../../../classes/joynr/dispatching/subscription/util/SubscriptionUtil');
+var SubscriptionInformation =
+        require('../../../../classes/joynr/dispatching/types/SubscriptionInformation');
+var SubscriptionRequest =
+        require('../../../../classes/joynr/dispatching/types/SubscriptionRequest');
+var SubscriptionStop = require('../../../../classes/joynr/dispatching/types/SubscriptionStop');
+var PeriodicSubscriptionQos = require('../../../../classes/joynr/proxy/PeriodicSubscriptionQos');
+var OnChangeSubscriptionQos = require('../../../../classes/joynr/proxy/OnChangeSubscriptionQos');
+var OnChangeWithKeepAliveSubscriptionQos =
+        require('../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
+var ProviderQos = require('../../../../classes/joynr/types/ProviderQos');
+var uuid = require('../../../../classes/lib/uuid-annotated');
+var LoggerFactory = require('../../../../classes/joynr/system/LoggerFactory');
+module.exports =
+        (function(
                 SubscriptionUtil,
                 SubscriptionInformation,
                 SubscriptionRequest,
@@ -578,4 +581,14 @@ define(
                                     });
                                 });
                     });
-        });
+        }(
+                SubscriptionUtil,
+                SubscriptionInformation,
+                SubscriptionRequest,
+                SubscriptionStop,
+                PeriodicSubscriptionQos,
+                OnChangeSubscriptionQos,
+                OnChangeWithKeepAliveSubscriptionQos,
+                ProviderQos,
+                uuid,
+                LoggerFactory));

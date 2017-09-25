@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,33 +18,29 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/dispatching/Dispatcher",
-        [
-            "global/Promise",
-            "joynr/dispatching/types/Request",
-            "joynr/dispatching/types/Reply",
-            "joynr/dispatching/types/OneWayRequest",
-            "joynr/dispatching/types/BroadcastSubscriptionRequest",
-            "joynr/dispatching/types/MulticastSubscriptionRequest",
-            "joynr/dispatching/types/SubscriptionRequest",
-            "joynr/dispatching/types/SubscriptionReply",
-            "joynr/dispatching/types/SubscriptionStop",
-            "joynr/dispatching/types/SubscriptionPublication",
-            "joynr/dispatching/types/MulticastPublication",
-            "joynr/messaging/JoynrMessage",
-            "joynr/messaging/MessagingQosEffort",
-            "joynr/messaging/inprocess/InProcessAddress",
-            "joynr/start/settings/defaultMessagingSettings",
-            "joynr/system/DiagnosticTags",
-            "joynr/util/UtilInternal",
-            "joynr/util/JSONSerializer",
-            "joynr/util/Typing",
-            "joynr/proxy/SubscriptionQos",
-            "joynr/system/LoggerFactory"
-        ],
-        function(
+var Promise = require('../../global/Promise');
+var Request = require('./types/Request');
+var Reply = require('./types/Reply');
+var OneWayRequest = require('./types/OneWayRequest');
+var BroadcastSubscriptionRequest = require('./types/BroadcastSubscriptionRequest');
+var MulticastSubscriptionRequest = require('./types/MulticastSubscriptionRequest');
+var SubscriptionRequest = require('./types/SubscriptionRequest');
+var SubscriptionReply = require('./types/SubscriptionReply');
+var SubscriptionStop = require('./types/SubscriptionStop');
+var SubscriptionPublication = require('./types/SubscriptionPublication');
+var MulticastPublication = require('./types/MulticastPublication');
+var JoynrMessage = require('../messaging/JoynrMessage');
+var MessagingQosEffort = require('../messaging/MessagingQosEffort');
+var InProcessAddress = require('../messaging/inprocess/InProcessAddress');
+var defaultMessagingSettings = require('../start/settings/defaultMessagingSettings');
+var DiagnosticTags = require('../system/DiagnosticTags');
+var UtilInternal = require('../util/UtilInternal');
+var JsonSerializer = require('../util/JSONSerializer');
+var Typing = require('../util/Typing');
+var SubscriptionQos = require('../proxy/SubscriptionQos');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports =
+        (function(
                 Promise,
                 Request,
                 Reply,
@@ -867,4 +865,25 @@ define(
 
             return Dispatcher;
 
-        });
+        }(
+                Promise,
+                Request,
+                Reply,
+                OneWayRequest,
+                BroadcastSubscriptionRequest,
+                MulticastSubscriptionRequest,
+                SubscriptionRequest,
+                SubscriptionReply,
+                SubscriptionStop,
+                SubscriptionPublication,
+                MulticastPublication,
+                JoynrMessage,
+                MessagingQosEffort,
+                InProcessAddress,
+                defaultMessagingSettings,
+                DiagnosticTags,
+                UtilInternal,
+                JsonSerializer,
+                Typing,
+                SubscriptionQos,
+                LoggerFactory));

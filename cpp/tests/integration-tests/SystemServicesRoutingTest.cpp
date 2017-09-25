@@ -30,8 +30,10 @@
 
 #include "tests/JoynrTest.h"
 #include "tests/utils/MockObjects.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace joynr;
+using ::testing::Mock;
 
 class SystemServicesRoutingTest : public ::testing::Test {
 public:
@@ -71,7 +73,7 @@ public:
 
         EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp).get()), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)), getGlobalClusterControllerAddress())
+        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt).get()), getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRefOfCopy(serializedMqttAddress));
 
         //runtime can only be created, after MockMessageReceiver has been told to return
@@ -79,19 +81,24 @@ public:
         runtime = std::make_unique<JoynrClusterControllerRuntime>(
                 std::move(settings),
                 nullptr,
+                nullptr,
                 mockMessageReceiverHttp,
                 mockMessageSender,
                 mockMessageReceiverMqtt,
                 mockMessageSender);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->init();
-        runtime->registerRoutingProvider();
     }
 
     ~SystemServicesRoutingTest(){
         runtime->deleteChannel();
         runtime->stopExternalCommunication();
         runtime.reset();
+
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt).get()));
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp).get()));
+
+        test::util::resetAndWaitUntilDestroyed(runtime);
 
         std::remove(settingsFilename.c_str());
 

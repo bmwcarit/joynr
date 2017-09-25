@@ -53,6 +53,8 @@ public:
             const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
             bool isGloballyVisible,
+            const std::int64_t expiryDateMs,
+            const bool isSticky,
             std::function<void()> onSuccess = nullptr,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                     onError = nullptr) = 0;

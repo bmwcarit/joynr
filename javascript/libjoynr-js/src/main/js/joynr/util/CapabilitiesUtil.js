@@ -1,6 +1,5 @@
 /*global unescape: true, Blob: true, Array:true */
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -19,12 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/util/CapabilitiesUtil", [
-    "joynr/types/DiscoveryEntry",
-    "joynr/types/GlobalDiscoveryEntry",
-    "joynr/types/DiscoveryEntryWithMetaInfo"
-], function(DiscoveryEntry, GlobalDiscoveryEntry, DiscoveryEntryWithMetaInfo) {
+var DiscoveryEntry = require('../../joynr/types/DiscoveryEntry');
+var GlobalDiscoveryEntry = require('../../joynr/types/GlobalDiscoveryEntry');
+var DiscoveryEntryWithMetaInfo = require('../../joynr/types/DiscoveryEntryWithMetaInfo');
+module.exports =
+        (function(DiscoveryEntry, GlobalDiscoveryEntry, DiscoveryEntryWithMetaInfo) {
 
     /**
      * @name CapabilitiesUtil
@@ -158,4 +156,4 @@ define("joynr/util/CapabilitiesUtil", [
 
     return CapabilitiesUtil;
 
-});
+        }(DiscoveryEntry, GlobalDiscoveryEntry, DiscoveryEntryWithMetaInfo));

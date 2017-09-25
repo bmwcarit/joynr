@@ -90,7 +90,7 @@ private:
     std::atomic_bool keepRunning;
 
     /*! Pointer to the currently running context */
-    Runnable* currentlyRunning;
+    std::shared_ptr<Runnable> currentlyRunning;
 
     /*! Queue of waiting work */
     BlockingQueue queue;

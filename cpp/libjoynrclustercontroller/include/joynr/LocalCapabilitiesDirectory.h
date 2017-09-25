@@ -39,6 +39,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
+#include "joynr/system/ProviderReregistrationControllerProvider.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
@@ -71,14 +72,15 @@ class IMessageRouter;
   * the data.
   */
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
-        : public joynr::system::DiscoveryAbstractProvider
+        : public joynr::system::DiscoveryAbstractProvider,
+          public joynr::system::ProviderReregistrationControllerProvider
 {
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
     LocalCapabilitiesDirectory(ClusterControllerSettings& messagingSettings,
                                std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
                                const std::string& localAddress,
-                               IMessageRouter& messageRouter,
+                               std::weak_ptr<IMessageRouter> messageRouter,
                                boost::asio::io_service& ioService,
                                const std::string clusterControllerId);
 
@@ -200,10 +202,17 @@ public:
      */
     void setAccessController(std::weak_ptr<IAccessController> accessController);
 
+    void triggerGlobalProviderReregistration(
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            final override;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     ClusterControllerSettings& clusterControllerSettings; // to retrieve info about persistency
 
+    types::GlobalDiscoveryEntry toGlobalDiscoveryEntry(
+            const types::DiscoveryEntry& discoveryEntry) const;
     void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
                               std::vector<types::DiscoveryEntry>&& cachedLocalCapabilies,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
@@ -230,8 +239,6 @@ private:
                                                        bool localEntries);
     void removeFromGloballyRegisteredCapabilities(const types::DiscoveryEntry& discoveryEntry);
 
-    void cleanCaches();
-
     ADD_LOGGER(LocalCapabilitiesDirectory);
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient;
     std::string localAddress;
@@ -242,7 +249,7 @@ private:
     capabilities::CachingStorage globalCapabilities;
 
     std::vector<types::GlobalDiscoveryEntry> registeredGlobalCapabilities;
-    IMessageRouter& messageRouter;
+    std::weak_ptr<IMessageRouter> messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
 
     std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>

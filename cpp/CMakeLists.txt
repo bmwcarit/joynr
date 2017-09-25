@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.29.0-SNAPSHOT)
+project(joynr-0.30.0-SNAPSHOT)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 29)
+set(JOYNR_MINOR_VERSION 30)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
@@ -886,8 +886,8 @@ get_target_property(JoynrConfig_MOSQUITTO_INCLUDE_DIRS mosquitto::mosquitto INTE
 get_target_property(JoynrConfig_MOSQUITTO_LIBRARIES mosquitto::mosquitto IMPORTED_LOCATION)
 get_target_property(JoynrConfig_SMRF_INCLUDE_DIRS smrf::smrf INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(JoynrConfig_SMRF_LIBRARIES smrf::smrf IMPORTED_LOCATION)
-get_target_property(JoynrConfig_MOCOCRW_INCLUDE_DIRS mococrw::mococrw INTERFACE_INCLUDE_DIRECTORIES)
-get_target_property(JoynrConfig_MOCOCRW_LIBRARIES mococrw::mococrw IMPORTED_LOCATION)
+get_target_property(JoynrConfig_MOCOCRW_INCLUDE_DIRS MoCOCrW::mococrw INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(JoynrConfig_MOCOCRW_LIBRARIES MoCOCrW::mococrw IMPORTED_LOCATION)
 
 
 set(JoynrConfig_RESOLVE_DEPENDENCIES)

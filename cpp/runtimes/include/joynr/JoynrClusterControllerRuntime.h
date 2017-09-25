@@ -61,10 +61,12 @@ class IDispatcher;
 class InProcessPublicationSender;
 class InProcessMessagingSkeleton;
 class HttpMessagingSkeleton;
-class MqttMessagingSkeleton;
+class IMqttMessagingSkeleton;
+class MqttReceiver;
 class MulticastMessagingSkeletonDirectory;
 class IPlatformSecurityManager;
 class Settings;
+class IMessageRouter;
 class IMessageSender;
 class IWebsocketCcMessagingSkeleton;
 class CcMessageRouter;
@@ -84,9 +86,15 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
           public IClusterControllerSignalHandler
 {
 public:
+    using MqttMessagingSkeletonFactory = std::function<
+            std::shared_ptr<IMqttMessagingSkeleton>(std::weak_ptr<IMessageRouter> messageRouter,
+                                                    std::shared_ptr<MqttReceiver> mqttReceiver,
+                                                    const std::string& multicastTopicPrefix,
+                                                    std::uint64_t ttlUplift)>;
     JoynrClusterControllerRuntime(
             std::unique_ptr<Settings> settings,
             std::shared_ptr<IKeychain> keyChain = nullptr,
+            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
             std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver = nullptr,
             std::shared_ptr<ITransportMessageSender> httpMessageSender = nullptr,
             std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver = nullptr,
@@ -95,12 +103,14 @@ public:
     static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::size_t argc,
             char* argv[],
-            std::shared_ptr<IKeychain> keyChain = nullptr);
+            std::shared_ptr<IKeychain> keyChain = nullptr,
+            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr);
 
     static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::unique_ptr<Settings> settings,
             const std::string& discoveryEntriesFile = "",
-            std::shared_ptr<IKeychain> keyChain = nullptr);
+            std::shared_ptr<IKeychain> keyChain = nullptr,
+            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr);
 
     ~JoynrClusterControllerRuntime() override;
 
@@ -116,14 +126,7 @@ public:
 
     // Functions used by integration tests
     void deleteChannel();
-    void registerRoutingProvider();
-    void registerDiscoveryProvider();
-    void registerMessageNotificationProvider();
-    void registerAccessControlListEditorProvider();
-    void unregisterRoutingProvider();
-    void unregisterDiscoveryProvider();
-    void unregisterMessageNotificationProvider();
-    void unregisterAccessControlListEditorProvider();
+
     void init();
 
     /*
@@ -157,10 +160,11 @@ protected:
     std::shared_ptr<MosquittoConnection> mosquittoConnection;
     std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver;
     std::shared_ptr<ITransportMessageSender> mqttMessageSender;
-    std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
+    MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory;
+    std::shared_ptr<IMqttMessagingSkeleton> mqttMessagingSkeleton;
 
     std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
-    InProcessPublicationSender* inProcessPublicationSender;
+    std::shared_ptr<InProcessPublicationSender> inProcessPublicationSender;
 
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
@@ -183,6 +187,26 @@ protected:
     ADD_LOGGER(JoynrClusterControllerRuntime);
 
 private:
+    template <typename T>
+    std::string registerInternalSystemServiceProvider(std::shared_ptr<T> provider,
+                                                      const std::string& participantId)
+    {
+        const std::string domain(systemServicesSettings.getDomain());
+        const std::string interfaceName(provider->getInterfaceName());
+
+        participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
+
+        joynr::types::ProviderQos systemProviderQos;
+        systemProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
+        systemProviderQos.setPriority(1);
+        systemProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
+        systemProviderQos.setSupportsOnChangeSubscriptions(false);
+
+        return registerProvider(domain, provider, systemProviderQos);
+    }
+
+    void registerInternalSystemServiceProviders();
+    void unregisterInternalSystemServiceProviders();
     void createWsCCMessagingSkeletons();
     std::shared_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
     createGlobalDomainAccessControllerProxy();
@@ -204,6 +228,7 @@ private:
 
     std::string routingProviderParticipantId;
     std::string discoveryProviderParticipantId;
+    std::string providerReregistrationControllerParticipantId;
     std::string messageNotificationProviderParticipantId;
     std::string accessControlListEditorProviderParticipantId;
 };
