@@ -32,9 +32,10 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
         const std::string& caPemFile,
         const std::string& certPemFile,
         const std::string& privateKeyPemFile)
-        : WebSocketCcMessagingSkeleton<websocketpp::config::asio_tls>(ioService,
-                                                                      messageRouter,
-                                                                      messagingStubFactory)
+        : WebSocketCcMessagingSkeleton<websocketpp::config::asio_tls>(
+                  ioService,
+                  std::move(messageRouter),
+                  std::move(messagingStubFactory))
 {
     // ensure that OpenSSL is correctly initialized
     ::SSL_library_init();
@@ -43,7 +44,7 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
 
     endpoint.set_tls_init_handler([this, caPemFile, certPemFile, privateKeyPemFile](
                                           ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
-        return createSSLContext(caPemFile, certPemFile, privateKeyPemFile, hdl);
+        return createSSLContext(caPemFile, certPemFile, privateKeyPemFile, std::move(hdl));
     });
 
     startAccept(serverAddress.getPort());
@@ -116,7 +117,9 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
         sslContext->use_private_key_file(privateKeyPemFile, SSLContext::pem);
 
         using VerifyContext = websocketpp::lib::asio::ssl::verify_context;
-        auto getCNFromCertificate = [this, hdl](bool preverified, VerifyContext& ctx) {
+        auto getCNFromCertificate = [ this, hdl = std::move(hdl) ](
+                bool preverified, VerifyContext& ctx)
+        {
             // getting cert out of the verification context
             X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
 
@@ -134,14 +137,14 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
 
             // mapping the connection handler to the ownerId in clients map
             joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
-            auto certEntry = CertEntry(std::move(clientAddress), ownerId);
+            auto certEntry = CertEntry(std::move(clientAddress), std::move(ownerId));
             std::lock_guard<std::mutex> lock(clientsMutex);
             clients[std::move(hdl)] = std::move(certEntry);
             return preverified;
         };
 
         // read ownerId of client's certificate and store it in clients map
-        sslContext->set_verify_callback(getCNFromCertificate);
+        sslContext->set_verify_callback(std::move(getCNFromCertificate));
 
     } catch (boost::system::system_error& e) {
         JOYNR_LOG_ERROR(logger, "Failed to initialize TLS session {}", e.what());

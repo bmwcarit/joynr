@@ -76,8 +76,8 @@ public:
               clientsMutex(),
               clients(),
               receiver(),
-              messageRouter(messageRouter),
-              messagingStubFactory(messagingStubFactory)
+              messageRouter(std::move(messageRouter)),
+              messagingStubFactory(std::move(messagingStubFactory))
     {
 
         websocketpp::lib::error_code initializationError;
@@ -246,7 +246,7 @@ private:
                 }
             }
 
-            messageRouter->sendMessages(clientAddress);
+            messageRouter->sendMessages(std::move(clientAddress));
         } else {
             JOYNR_LOG_ERROR(
                     logger, "received an initial message with wrong format: \"{}\"", initMessage);
@@ -269,7 +269,7 @@ private:
 
         JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
 
-        if (!validateIncomingMessage(hdl, immutableMessage)) {
+        if (!validateIncomingMessage(std::move(hdl), immutableMessage)) {
             JOYNR_LOG_ERROR(logger, "Dropping message with ID {}", immutableMessage->getId());
             return;
         }
@@ -282,7 +282,7 @@ private:
                             messageId,
                             e.getMessage());
         };
-        transmit(std::move(immutableMessage), onFailure);
+        transmit(std::move(immutableMessage), std::move(onFailure));
     }
 
     bool isInitializationMessage(const std::string& message)
