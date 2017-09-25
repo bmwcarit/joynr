@@ -965,8 +965,8 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
 
 void JoynrClusterControllerRuntime::start()
 {
-    startExternalCommunication();
     singleThreadIOService->start();
+    startExternalCommunication();
 }
 
 void JoynrClusterControllerRuntime::stop(bool deleteChannel)
