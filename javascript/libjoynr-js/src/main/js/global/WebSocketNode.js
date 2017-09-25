@@ -184,4 +184,5 @@ module.exports =
         };
         return webSocketObj;
     }
+    return WebSocketNodeWrapper;
 }(Smrf, JoynrMessage, JoynrRuntimeException, LoggerFactory));

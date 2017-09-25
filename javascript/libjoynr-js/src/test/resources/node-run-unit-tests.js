@@ -1,3 +1,5 @@
+/* jslint global:true*/
+
 /*
  * #%L
  * %%
@@ -32,8 +34,8 @@ console.log("Jasmine version: " + jasmine.version);
 // behavior the require function is adapted here in order to always return the correct joynr while
 // running tests.
 var mod = require('module');
-var joynr = require('../classes/joynr')
-var req = mod.prototype.require;
+var joynr = require('../classes/joynr');
+req = mod.prototype.require;
 
 mod.prototype.require = function (md) {
     if (md === 'joynr') {

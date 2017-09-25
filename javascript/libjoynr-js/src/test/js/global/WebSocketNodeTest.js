@@ -1,5 +1,5 @@
 /*jslint es5: true, node: true, newcap: true */
-/*global Buffer: true, requirejs: true */
+/*global Buffer: true, requirejs: true , req: true*/
 
 /*
  * #%L
@@ -20,79 +20,82 @@
  * #L%
  */
 
-requirejs.undef("global/Smrf");
-define("global/Smrf", {
-    serialize : function(message) {
-        var msg;
-        var callback = message.signingCallback;
-        if (callback && (typeof callback === "function")) {
-            msg = "callback was called";
-        } else {
-            msg = "callback wasn't called";
-        }
-        return msg;
-    }
-});
+var mod = require('module');
 
 var wscppSpy = jasmine.createSpy("wscppSyp");
-
-requirejs.undef("wscpp");
-define("wscpp", [], function() {
-    return wscppSpy;
-});
-
-define([ "global/WebsocketNodeModule"
-], function(WebsocketNode) {
-
-    describe("websocket node", function() {
-
-        var websocketNode;
-        var remoteUrl = "url";
-        var keychain = {
-            ownerId : "ownerId"
+var overriddenRequire = mod.prototype.require;
+mod.prototype.require = function (md) {
+    if (md.endsWith('SmrfNode')) {
+        return {
+            serialize : function(message) {
+                var msg;
+                var callback = message.signingCallback;
+                if (callback && (typeof callback === "function")) {
+                    msg = "callback was called";
+                } else {
+                    msg = "callback wasn't called";
+                }
+                return msg;
+            }
         };
-        var keychainWithCerts = {
-            tlsCert : "tlsCert",
-            tlsKey : "tlsKey",
-            tlsCa : "tlsCa",
-            ownerId : "ownerID"
-        };
+    }
+    if (md.endsWith('wscpp')){
 
-        var joynrMessage = {
-            header : {},
-            payload : "somePayload"
-        };
+        return wscppSpy;
+    }
 
-        it("can be used without ownerId", function() {
 
-            websocketNode = new WebsocketNode(remoteUrl);
+    return overriddenRequire.apply(this, arguments);
+};
 
-            var serializedMessage = websocketNode.marshalJoynrMessage(joynrMessage);
-            expect(serializedMessage).toBe("callback wasn't called");
+// req path starting at: node-run-unit-tests
+var WebsocketNode = req('../classes/global/WebSocketNode');
 
+describe("websocket node", function() {
+
+    var websocketNode;
+    var remoteUrl = "url";
+    var keychain = {
+        ownerId : "ownerId"
+    };
+    var keychainWithCerts = {
+        tlsCert : "tlsCert",
+        tlsKey : "tlsKey",
+        tlsCa : "tlsCa",
+        ownerId : "ownerID"
+    };
+
+    var joynrMessage = {
+        header : {},
+        payload : "somePayload"
+    };
+
+    it("can be used without ownerId", function() {
+
+        websocketNode = new WebsocketNode(remoteUrl);
+
+        var serializedMessage = websocketNode.marshalJoynrMessage(joynrMessage);
+        expect(serializedMessage).toBe("callback wasn't called");
+
+    });
+
+    it("can be used with ownerID", function() {
+
+        websocketNode = new WebsocketNode(remoteUrl, keychain);
+
+        var serializedMessage = websocketNode.marshalJoynrMessage(joynrMessage);
+        expect(serializedMessage).toBe("callback was called");
+    });
+
+    it("calls the wscpp constructor with certs", function() {
+
+        websocketNode = new WebsocketNode(remoteUrl, keychainWithCerts);
+
+        expect(wscppSpy).toHaveBeenCalledWith(remoteUrl, {
+            cert : keychainWithCerts.tlsCert,
+            key : keychainWithCerts.tlsKey,
+            ca : keychainWithCerts.tlsCa
         });
-
-        it("can be used with ownerID", function() {
-
-            websocketNode = new WebsocketNode(remoteUrl, keychain);
-
-            var serializedMessage = websocketNode.marshalJoynrMessage(joynrMessage);
-            expect(serializedMessage).toBe("callback was called");
-        });
-
-        it("calls the wscpp constructor with certs", function() {
-
-            websocketNode = new WebsocketNode(remoteUrl, keychainWithCerts);
-
-            expect(wscppSpy).toHaveBeenCalledWith(remoteUrl, {
-                cert : keychainWithCerts.tlsCert,
-                key : keychainWithCerts.tlsKey,
-                ca : keychainWithCerts.tlsCa
-            });
-
-        });
-
-        // TODO add a Test, what happens if a cert object is incomplete?
 
     });
 });
