@@ -1,0 +1,6 @@
+[lib-joynr]
+participant-ids-persistence-file=systemintegrationtest-provider-ssl.participantids
+message-router-persistence-file=systemintegrationtest-provider-routing-table-ssl.persist
+
+[websocket]
+cluster-controller-messaging-url=wss://localhost:4243
