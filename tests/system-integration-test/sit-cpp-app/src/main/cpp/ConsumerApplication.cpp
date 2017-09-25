@@ -56,9 +56,11 @@ int main(int argc, char* argv[])
     positionalCmdLineOptions.add("domain", 1);
 
     std::string providerDomain;
+    std::string pathToSettings;
 
     po::options_description cmdLineOptions;
-    cmdLineOptions.add_options()("domain,d", po::value(&providerDomain)->required());
+    cmdLineOptions.add_options()("domain,d", po::value(&providerDomain)->required())(
+            "pathtosettings,p", po::value(&pathToSettings));
 
     try {
         po::variables_map variablesMap;
@@ -75,10 +77,12 @@ int main(int argc, char* argv[])
 
     JOYNR_LOG_INFO(logger, "Create proxy for domain {}", providerDomain);
 
-    boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
-    std::string appDirectory =
-            boost::filesystem::system_complete(appFilename).parent_path().string();
-    std::string pathToSettings(appDirectory + "/resources/systemintegrationtest-consumer.settings");
+    if (pathToSettings.empty()) {
+        boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
+        std::string appDirectory =
+                boost::filesystem::system_complete(appFilename).parent_path().string();
+        pathToSettings = appDirectory + "/resources/systemintegrationtest-consumer.settings";
+    }
 
     std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToSettings);
 
