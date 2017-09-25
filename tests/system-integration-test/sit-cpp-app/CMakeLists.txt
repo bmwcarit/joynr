@@ -82,11 +82,13 @@ include_directories(
 set(
     common_HEADERS
     "src/main/cpp/KeychainImpl.h"
+    "src/main/cpp/SitUtil.h"
 )
 
 set(
     common_SOURCES
     "src/main/cpp/KeychainImpl.cpp"
+    "src/main/cpp/SitUtil.cpp"
 )
 
 # Consumer headers

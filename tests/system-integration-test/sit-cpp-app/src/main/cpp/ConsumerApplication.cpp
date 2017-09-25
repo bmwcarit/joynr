@@ -22,6 +22,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <stdexcept>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -33,6 +34,7 @@
 #include "joynr/ProxyBuilder.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/test/SystemIntegrationTestProxy.h"
+#include "SitUtil.h"
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
@@ -57,10 +59,16 @@ int main(int argc, char* argv[])
 
     std::string providerDomain;
     std::string pathToSettings;
+    std::string sslCertFilename;
+    std::string sslPrivateKeyFilename;
+    std::string sslCaCertFilename;
 
     po::options_description cmdLineOptions;
     cmdLineOptions.add_options()("domain,d", po::value(&providerDomain)->required())(
-            "pathtosettings,p", po::value(&pathToSettings));
+            "pathtosettings,p", po::value(&pathToSettings))(
+            "ssl-cert-pem", po::value(&sslCertFilename))(
+            "ssl-privatekey-pem", po::value(&sslPrivateKeyFilename))(
+            "ssl-ca-cert-pem", po::value(&sslCaCertFilename));
 
     try {
         po::variables_map variablesMap;
@@ -84,7 +92,19 @@ int main(int argc, char* argv[])
         pathToSettings = appDirectory + "/resources/systemintegrationtest-consumer.settings";
     }
 
-    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToSettings);
+    const std::string pathToMessagingSettingsDefault("");
+    std::shared_ptr<IKeychain> keychain;
+
+    try {
+        keychain = tryLoadKeychainFromCmdLineArgs(
+                sslCertFilename, sslPrivateKeyFilename, sslCaCertFilename);
+    } catch (const std::invalid_argument& e) {
+        JOYNR_LOG_FATAL(logger, e.what());
+        return -1;
+    }
+
+    std::shared_ptr<JoynrRuntime> runtime =
+            JoynrRuntime::createRuntime(pathToSettings, pathToMessagingSettingsDefault, keychain);
 
     // Create proxy builder
     std::shared_ptr<ProxyBuilder<test::SystemIntegrationTestProxy>> proxyBuilder =
