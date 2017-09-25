@@ -162,8 +162,8 @@ protected:
         }
         explicit CertEntry(
                 const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
-                std::string owenrId)
-                : webSocketClientAddress(webSocketClientAddress), ownerId(std::move(owenrId))
+                std::string ownerId)
+                : webSocketClientAddress(webSocketClientAddress), ownerId(std::move(ownerId))
         {
         }
         CertEntry(CertEntry&&) = default;
