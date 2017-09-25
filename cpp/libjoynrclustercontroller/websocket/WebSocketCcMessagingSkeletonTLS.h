@@ -41,7 +41,8 @@ public:
             const system::RoutingTypes::WebSocketAddress& serverAddress,
             const std::string& caPemFile,
             const std::string& certPemFile,
-            const std::string& privateKeyPemFile);
+            const std::string& privateKeyPemFile,
+            bool useEncryptedTls);
 
 private:
     bool validateIncomingMessage(const ConnectionHandle& hdl,
@@ -51,6 +52,8 @@ private:
                                                  const std::string& certPemFile,
                                                  const std::string& privateKeyPemFile,
                                                  ConnectionHandle hdl);
+
+    bool useEncryptedTls;
 };
 
 } // namespace joynr

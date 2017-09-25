@@ -828,6 +828,8 @@ void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
                     clusterControllerSettings.getWsTLSPort(),
                     "");
 
+            bool useEncryptedTls = wsSettings.getEncryptedTlsUsage();
+
             wsTLSCcMessagingSkeleton = std::make_shared<WebSocketCcMessagingSkeletonTLS>(
                     singleThreadIOService->getIOService(),
                     ccMessageRouter,
@@ -835,7 +837,8 @@ void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
                     wsAddress,
                     certificateAuthorityPemFilename,
                     certificatePemFilename,
-                    privateKeyPemFilename);
+                    privateKeyPemFilename,
+                    useEncryptedTls);
         }
     }
 

@@ -31,11 +31,13 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
         const system::RoutingTypes::WebSocketAddress& serverAddress,
         const std::string& caPemFile,
         const std::string& certPemFile,
-        const std::string& privateKeyPemFile)
+        const std::string& privateKeyPemFile,
+        bool useEncryptedTls)
         : WebSocketCcMessagingSkeleton<websocketpp::config::asio_tls>(
                   ioService,
                   std::move(messageRouter),
-                  std::move(messagingStubFactory))
+                  std::move(messagingStubFactory)),
+          useEncryptedTls{useEncryptedTls}
 {
     // ensure that OpenSSL is correctly initialized
     ::SSL_library_init();
@@ -147,8 +149,16 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
         sslContext->set_verify_callback(std::move(getCNFromCertificate));
 
     } catch (boost::system::system_error& e) {
-        JOYNR_LOG_ERROR(logger, "Failed to initialize TLS session {}", e.what());
+        JOYNR_LOG_FATAL(logger, "Failed to initialize TLS session {}", e.what());
         return nullptr;
+    }
+
+    if (!useEncryptedTls) {
+        int opensslResult = SSL_CTX_set_cipher_list(sslContext->native_handle(), "eNULL");
+        if (opensslResult == 0) {
+            JOYNR_LOG_FATAL(logger, "Failed to initialize TLS session: Could not set NULL cipher");
+            return nullptr;
+        }
     }
 
     return sslContext;
