@@ -24,6 +24,7 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/program_options.hpp>
 
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
@@ -47,21 +48,32 @@ int main(int argc, char* argv[])
     // Get a logger
     Logger logger("ProviderApplication");
 
-    // Check the usage
-    const std::string programName(argv[0]);
+    namespace po = boost::program_options;
+
+    po::positional_options_description positionalCmdLineOptions;
+    positionalCmdLineOptions.add("domain", 1);
+    positionalCmdLineOptions.add("runForever", 1);
+
+    std::string providerDomain;
     bool runForever = false;
 
-    if (argc < 2) {
-        JOYNR_LOG_ERROR(logger, "USAGE: {} <provider-domain> [runForever]", programName);
+    po::options_description cmdLineOptions;
+    cmdLineOptions.add_options()("domain,d", po::value(&providerDomain)->required())(
+            "runForever,r", po::value(&runForever)->default_value(false));
+
+    try {
+        po::variables_map variablesMap;
+        po::store(po::command_line_parser(argc, argv)
+                          .options(cmdLineOptions)
+                          .positional(positionalCmdLineOptions)
+                          .run(),
+                  variablesMap);
+        po::notify(variablesMap);
+    } catch (const std::exception& e) {
+        std::cerr << e.what();
         return -1;
     }
 
-    if (argc == 3) {
-        const std::string runForeverArg(argv[2]);
-        runForever = runForeverArg == "runForever";
-    }
-    // Get the provider domain
-    const std::string providerDomain(argv[1]);
     JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
 
     boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);

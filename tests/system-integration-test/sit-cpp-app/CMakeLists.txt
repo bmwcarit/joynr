@@ -45,6 +45,7 @@ find_package(Boost 1.58.0 REQUIRED
     COMPONENTS
     system
     filesystem
+    program_options
 )
 message(STATUS "variable Boost_LIBRARIES=${Boost_LIBRARIES}")
 message(STATUS "variable Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
