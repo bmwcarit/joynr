@@ -91,7 +91,7 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
             joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
             auto certEntry = CertEntry(std::move(clientAddress), ownerId);
             std::lock_guard<std::mutex> lock(clientsMutex);
-            clients.emplace(hdl, std::move(certEntry));
+            clients[std::move(hdl)] = std::move(certEntry);
             return preverified;
         };
 
