@@ -298,7 +298,7 @@ protected:
      * @brief Constructs a JoynrRuntime instance
      * @param settings The system service settings
      */
-    explicit JoynrRuntime(Settings& settings);
+    explicit JoynrRuntime(Settings& settings, std::shared_ptr<IKeychain> keyChain = nullptr);
 
     static std::unique_ptr<Settings> createSettings(const std::string& pathToLibjoynrSettings,
                                                     const std::string& pathToMessagingSettings);

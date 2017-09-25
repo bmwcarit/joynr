@@ -34,6 +34,7 @@
 #include "joynr/Dispatcher.h"
 #include "joynr/HttpMulticastAddressCalculator.h"
 #include "joynr/IDispatcher.h"
+#include "joynr/IKeychain.h"
 #include "joynr/IMqttMessagingSkeleton.h"
 #include "joynr/ITransportMessageReceiver.h"
 #include "joynr/ITransportMessageSender.h"
@@ -119,7 +120,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::shared_ptr<ITransportMessageSender> httpMessageSender,
         std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver,
         std::shared_ptr<ITransportMessageSender> mqttMessageSender)
-        : JoynrRuntime(*settings),
+        : JoynrRuntime(*settings, std::move(keyChain)),
           joynrDispatcher(),
           inProcessDispatcher(),
           subscriptionManager(),
@@ -158,7 +159,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           aclEditor(nullptr),
           lifetimeSemaphore(0),
           accessController(nullptr),
-          keyChain(std::move(keyChain)),
           routingProviderParticipantId(),
           discoveryProviderParticipantId(),
           providerReregistrationControllerParticipantId(
@@ -215,7 +215,7 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
     }
     return create(std::move(settings),
                   discoveryEntriesFile,
-                  keyChain,
+                  std::move(keyChain),
                   std::move(mqttMessagingSkeletonFactory));
 }
 

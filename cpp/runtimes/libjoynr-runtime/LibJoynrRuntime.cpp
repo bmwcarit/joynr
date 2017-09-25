@@ -24,6 +24,7 @@
 
 #include "joynr/Dispatcher.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/IKeychain.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
@@ -46,8 +47,9 @@
 namespace joynr
 {
 
-LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
-        : JoynrRuntime(*settings),
+LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
+                                 std::shared_ptr<IKeychain> keyChain)
+        : JoynrRuntime(*settings, std::move(keyChain)),
           subscriptionManager(nullptr),
           inProcessPublicationSender(),
           messageSender(nullptr),

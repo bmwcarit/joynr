@@ -25,6 +25,7 @@
 #include <string>
 
 #include "joynr/CapabilitiesRegistrar.h"
+#include "joynr/IKeychain.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -38,18 +39,19 @@ namespace joynr
 {
 
 class IMessageRouter;
-class LibJoynrMessageRouter;
 class IMessageSender;
-class InProcessMessagingSkeleton;
 class IMiddlewareMessagingStubFactory;
 class IMulticastAddressCalculator;
+class InProcessMessagingSkeleton;
+class LibJoynrMessageRouter;
 class Settings;
 
 class LibJoynrRuntime : public JoynrRuntime
 {
 
 public:
-    explicit LibJoynrRuntime(std::unique_ptr<Settings> settings);
+    explicit LibJoynrRuntime(std::unique_ptr<Settings> settings,
+                             std::shared_ptr<IKeychain> keyChain = nullptr);
     ~LibJoynrRuntime() override;
 
 protected:

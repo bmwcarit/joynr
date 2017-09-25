@@ -27,6 +27,7 @@
 #include "joynr/IClusterControllerSignalHandler.h"
 
 #include "joynr/ClusterControllerSettings.h"
+#include "joynr/IKeychain.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
@@ -35,7 +36,6 @@
 #include "joynr/RuntimeConfig.h"
 #include "joynr/Semaphore.h"
 #include "joynr/WebSocketSettings.h"
-#include "joynr/IKeychain.h"
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "joynr/DBusMessageRouterAdapter.h"
@@ -73,7 +73,6 @@ class CcMessageRouter;
 class WebSocketMessagingStubFactory;
 class MosquittoConnection;
 class LocalDomainAccessController;
-class IKeychain;
 
 namespace infrastructure
 {
@@ -224,7 +223,6 @@ private:
     Semaphore lifetimeSemaphore;
 
     std::shared_ptr<joynr::AccessController> accessController;
-    std::shared_ptr<IKeychain> keyChain;
 
     std::string routingProviderParticipantId;
     std::string discoveryProviderParticipantId;

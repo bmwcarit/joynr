@@ -18,6 +18,7 @@
  */
 #include "joynr/JoynrRuntime.h"
 
+#include "joynr/IKeychain.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
 #include "joynr/system/IRouting.h"
@@ -26,7 +27,7 @@
 namespace joynr
 {
 
-JoynrRuntime::JoynrRuntime(Settings& settings)
+JoynrRuntime::JoynrRuntime(Settings& settings, std::shared_ptr<IKeychain> keyChain)
         : singleThreadIOService(std::make_unique<SingleThreadedIOService>()),
           proxyFactory(nullptr),
           requestCallerDirectory(nullptr),
@@ -36,7 +37,8 @@ JoynrRuntime::JoynrRuntime(Settings& settings)
           systemServicesSettings(settings),
           dispatcherAddress(nullptr),
           discoveryProxy(nullptr),
-          publicationManager()
+          publicationManager(nullptr),
+          keyChain(std::move(keyChain))
 {
     messagingSettings.printSettings();
     systemServicesSettings.printSettings();

@@ -41,12 +41,12 @@ INIT_LOGGER(LibJoynrWebSocketRuntime);
 
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings,
                                                    std::shared_ptr<IKeychain> keyChain)
-        : LibJoynrRuntime(std::move(settings)),
+        : LibJoynrRuntime(std::move(settings), std::move(keyChain)),
           wsSettings(*this->settings),
           websocket(nullptr),
           initializationMsg()
 {
-    createWebsocketClient(keyChain);
+    createWebsocketClient();
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
@@ -134,7 +134,7 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
     websocket->send(smrf::ByteArrayView(rawMessage), onFailure);
 }
 
-void LibJoynrWebSocketRuntime::createWebsocketClient(std::shared_ptr<IKeychain> keyChain)
+void LibJoynrWebSocketRuntime::createWebsocketClient()
 {
     system::RoutingTypes::WebSocketAddress webSocketAddress =
             wsSettings.createClusterControllerMessagingAddress();

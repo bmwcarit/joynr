@@ -20,6 +20,7 @@
 #include "joynr/JoynrRuntime.h"
 
 #include "joynr/Future.h"
+#include "joynr/IKeychain.h"
 #include "joynr/Settings.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
