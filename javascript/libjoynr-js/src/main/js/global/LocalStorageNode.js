@@ -20,6 +20,7 @@
 /**
  * @returns constructor for a localStorage object
  */
+
 module.exports =
         global.window !== undefined ? require('./LocalStorage') : (function() {
     var Typing = require('../joynr/util/Typing');
@@ -36,26 +37,27 @@ module.exports =
      * @param {String}
      *            settings.location optional, passed on to node-persist LocalStorage constructor
      */
-    var LocalStorageWrapper =
-            function(settings) {
-                settings = settings || {};
-                //the local storage wrapper uses the optionally given location
-                var location = settings.location || "./localStorageStorage";
+    var LocalStorageWrapper = function(settings) {
+        settings = settings || {};
+        //the local storage wrapper uses the optionally given location
+        var location = settings.location || "./localStorageStorage";
 
-                this._myStorage = storage.create({
-                    dir : location,
-                    ttl : false
-                });
+        this._myStorage = storage.create({
+            dir : location,
+            ttl : false,
+            forgiveParseErrors : true
+        });
 
-                this._myStorage.initSync();
-                Typing.checkPropertyIfDefined(
-                        settings.clearPersistency,
-                        "Boolean",
-                        "settings.clearPersistency");
-                if (settings.clearPersistency) {
-                    this._myStorage.clearSync();
-                }
-            };
+        this._myStorage.initSync();
+
+        Typing.checkPropertyIfDefined(
+            settings.clearPersistency,
+            "Boolean",
+            "settings.clearPersistency");
+        if (settings.clearPersistency) {
+            this._myStorage.clearSync();
+        }
+    };
     LocalStorageWrapper.prototype.setItem = function(key, value) {
         return this._myStorage.setItemSync(key, value);
     };
@@ -74,4 +76,4 @@ module.exports =
     };
 
     return LocalStorageWrapper;
-        }());
+}());
