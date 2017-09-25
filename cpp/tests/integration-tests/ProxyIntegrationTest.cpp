@@ -31,7 +31,6 @@
 
 #include "tests/utils/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
-#include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using ::testing::Return;
 
