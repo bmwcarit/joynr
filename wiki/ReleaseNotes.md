@@ -1,32 +1,25 @@
 # joynr 0.29.2
 
 ## API relevant changes
-* **[C++]** The class Url now accepts IPv6 addresses in hexadecimal format.
+None.
 
-  If the constructor is called with a single URL string then the IPv6 hex part
+## Other changes
+* **[C++]** The class `Url` now accepts IPv6 addresses in hexadecimal format.
+  * If the constructor is called with a single URL string then the IPv6 hex part
   must be enclosed by square brackets as follows:
-
   ```
   Url("https://user:password@[abcd:dcba:0123:3210:4567:7654:3456:6543]:4040/script?query=somequery#fragment")
   ```
-
   Please note: Symbolic hostnames of hosts reachable via IPv6 must be specified
   as usual without square brackets.
-
-  If the constructor is called with multiple parameters, only the address is
+  * If the constructor is called with multiple parameters, only the address is
   to be used without square brackets, example:
-
   ```
   Url("https", "user", "password", "abcd:dcba:0123:3210:4567:7654:3456:6543", ...)
   ```
-
 * **[C++]** Properties whose value is of URL format (e.g. `broker-url`) can now be
   configured with URL strings containing IPv6 addresses in hexadecimal format as
-  accepted by the Url class.
-
-## Other changes
-None.
-
+  accepted by the `Url` class.
 
 # joynr 0.29.1
 
