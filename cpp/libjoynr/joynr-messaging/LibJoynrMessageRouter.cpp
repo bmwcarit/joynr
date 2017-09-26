@@ -144,35 +144,49 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
                         std::dynamic_pointer_cast<LibJoynrMessageRouter>(shared_from_this()))
             ](const bool& resolved)
             {
-                if (resolved) {
-                    JOYNR_LOG_INFO(logger,
-                                   "Got destination address for participant {}",
-                                   destinationPartId);
-                    if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    if (resolved) {
+                        JOYNR_LOG_INFO(logger,
+                                       "Got destination address for participant {}",
+                                       destinationPartId);
                         // save next hop in the routing table
                         thisSharedPtr->addProvisionedNextHop(
                                 destinationPartId,
                                 thisSharedPtr->parentAddress,
                                 thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE);
-                        thisSharedPtr->removeRunningParentResolvers(destinationPartId);
                         thisSharedPtr->sendMessages(
                                 destinationPartId, thisSharedPtr->parentAddress);
                     } else {
                         JOYNR_LOG_ERROR(logger,
-                                        "Failed to resolve next hop for participant {} because "
-                                        "LibJoynrMessageRouter is no longer available",
+                                        "Failed to resolve next hop for participant {}",
                                         destinationPartId);
                     }
+                    thisSharedPtr->removeRunningParentResolvers(destinationPartId);
                 } else {
                     JOYNR_LOG_ERROR(logger,
-                                    "Failed to resolve next hop for participant {}",
+                                    "Failed to resolve next hop for participant {} because "
+                                    "LibJoynrMessageRouter is no longer available",
                                     destinationPartId);
-                    // TODO error handling in case of failing submission (?)
                 }
             };
 
-            // TODO error handling in case of failing submission (?)
-            parentRouter->resolveNextHopAsync(destinationPartId, onSuccess);
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError = [
+                destinationPartId,
+                thisWeakPtr = joynr::util::as_weak_ptr(
+                        std::dynamic_pointer_cast<LibJoynrMessageRouter>(shared_from_this()))
+            ](const joynr::exceptions::JoynrRuntimeException& error)
+            {
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    JOYNR_LOG_ERROR(logger,
+                                    "Failed to resolve next hop for participant {}: {}",
+                                    destinationPartId,
+                                    error.getMessage());
+                    thisSharedPtr->removeRunningParentResolvers(destinationPartId);
+                }
+            };
+
+            parentRouter->resolveNextHopAsync(
+                    destinationPartId, std::move(onSuccess), std::move(onError));
         }
         return;
     }
