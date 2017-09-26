@@ -113,6 +113,7 @@ module.exports = (function (Promise, WebSocket, Arbitrator, ProviderBuilder, Pro
         var persistency;
         var localAddress;
         var TWO_DAYS_IN_MS = 172800000;
+        var keychain = provisioning.keychain;
 
         // this is required at load time of libjoynr
         typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
@@ -229,6 +230,22 @@ module.exports = (function (Promise, WebSocket, Arbitrator, ProviderBuilder, Pro
             DiscoveryQos.setDefaultSettings(discoveryQosSettings);
         }
 
+        if (keychain){
+
+            if (Util.checkNullUndefined(keychain.tlsCert)) {
+                throw new Error("tlsCert not set in keychain.tlsCert");
+            }
+            if (Util.checkNullUndefined(keychain.tlsKey)) {
+                throw new Error("tlsKey not set in keychain.tlsKey");
+            }
+            if (Util.checkNullUndefined(keychain.tlsCa)) {
+                throw new Error("tlsCa not set in keychain.tlsCa");
+            }
+            if (Util.checkNullUndefined(keychain.ownerId)) {
+                throw new Error("ownerId not set in keychain.ownerId");
+            }
+        }
+
         /**
          * Starts up the libjoynr instance
          *
@@ -302,7 +319,8 @@ module.exports = (function (Promise, WebSocket, Arbitrator, ProviderBuilder, Pro
                     sharedWebSocket = new SharedWebSocket({
                         remoteAddress : ccAddress,
                         localAddress : localAddress,
-                        provisioning : provisioning.websocket || {}
+                        provisioning : provisioning.websocket || {},
+                        keychain : keychain
                     });
 
                     webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({

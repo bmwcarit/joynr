@@ -1,3 +1,5 @@
+/* jslint global:true*/
+
 /*
  * #%L
  * %%
@@ -32,8 +34,8 @@ console.log("Jasmine version: " + jasmine.version);
 // behavior the require function is adapted here in order to always return the correct joynr while
 // running tests.
 var mod = require('module');
-var joynr = require('../classes/joynr')
-var req = mod.prototype.require;
+var joynr = require('../classes/joynr');
+req = mod.prototype.require;
 
 mod.prototype.require = function (md) {
     if (md === 'joynr') {
@@ -116,8 +118,9 @@ var DispatcherTest = require('../test-classes/joynr/dispatching/DispatcherTest')
 var TtlUpliftTest = require('../test-classes/joynr/dispatching/TtlUpliftTest');
 var RequestReplyManagerTest = require('../test-classes/joynr/dispatching/RequestReplyManagerTest');
 var LocalStorageNodeTest = require('../test-classes/global/LocalStorageNodeTest');
+var WebSocketNodeTest = require('../test-classes/global/WebSocketNodeTest');
 (function () {
     console.log("all tests modules loaded");
     loadingFinished = true;
     jasmine.execute();
-}(ProviderOperationTest, ProviderTest, BroadcastOutputParametersTest, ProviderAttributeTest, ProviderQosTest, ProviderBuilderTest, ProviderEventTest, WebMessagingSkeletonTest, WebMessagingStubFactoryTest, WebMessagingAddressTest, WebMessagingStubTest, ChannelMessagingStubTest, ChannelMessagingStubFactoryTest, LongPollingChannelMessageReceiverTest, ChannelMessagingSkeletonTest, ChannelMessagingSenderTest, MqttMessagingSkeletonTest, MqttMessagingStubFactoryTest, MqttMessagingStubTest, MessageQueueTest, MessageRouterTest, InProcessMessagingStubFactoryTest, InProcessMessagingSkeletonTest, InProcessAddressTest, InProcessMessagingStubTest, BrowserMessagingStubFactoryTest, BrowserMessagingSkeletonTest, BrowserMessagingStubTest, WebSocketMessagingSkeletonTest, SharedWebSocketTest, WebSocketMessagingStubFactoryTest, WebSocketMessagingStubTest, MessagingStubFactoryTest, JoynrMessageTest, MessagingQosTest, MessageReplyToAddressCalculatorTest, DistributedLoggingAppenderFactoryTest, DistributedLoggingAppenderTest, ProxyAttributeTest, ProxyOperationTest, ProxyTest, ProxyEventTest, SubscriptionQosTest, ProxyBuilderTest, CapabilitiesUtilTest, InProcessStubAndSkeletonTest, UtilTest, JsonSerializerTest, TypingTest, LongTimerTest, TypeGeneratorTest, DiscoveryQosTest, CapabilityDiscoveryTest, CapabilityInformationTest, ArbitrationStrategiesTest, ArbitratorTest, CapabilitiesRegistrarTest, CapabilitiesStoreTest, ParticipantIdStorageTest, MulticastPublicationTest, SubscriptionPublicationTest, RequestTest, SubscriptionRequestTest, ReplyTest, SubscriptionUtilTest, PublicationManagerTest, SubscriptionManagerTest, DispatcherTest, TtlUpliftTest, RequestReplyManagerTest, LocalStorageNodeTest));
+}(ProviderOperationTest, ProviderTest, BroadcastOutputParametersTest, ProviderAttributeTest, ProviderQosTest, ProviderBuilderTest, ProviderEventTest, WebMessagingSkeletonTest, WebMessagingStubFactoryTest, WebMessagingAddressTest, WebMessagingStubTest, ChannelMessagingStubTest, ChannelMessagingStubFactoryTest, LongPollingChannelMessageReceiverTest, ChannelMessagingSkeletonTest, ChannelMessagingSenderTest, MqttMessagingSkeletonTest, MqttMessagingStubFactoryTest, MqttMessagingStubTest, MessageQueueTest, MessageRouterTest, InProcessMessagingStubFactoryTest, InProcessMessagingSkeletonTest, InProcessAddressTest, InProcessMessagingStubTest, BrowserMessagingStubFactoryTest, BrowserMessagingSkeletonTest, BrowserMessagingStubTest, WebSocketMessagingSkeletonTest, SharedWebSocketTest, WebSocketMessagingStubFactoryTest, WebSocketMessagingStubTest, MessagingStubFactoryTest, JoynrMessageTest, MessagingQosTest, MessageReplyToAddressCalculatorTest, DistributedLoggingAppenderFactoryTest, DistributedLoggingAppenderTest, ProxyAttributeTest, ProxyOperationTest, ProxyTest, ProxyEventTest, SubscriptionQosTest, ProxyBuilderTest, CapabilitiesUtilTest, InProcessStubAndSkeletonTest, UtilTest, JsonSerializerTest, TypingTest, LongTimerTest, TypeGeneratorTest, DiscoveryQosTest, CapabilityDiscoveryTest, CapabilityInformationTest, ArbitrationStrategiesTest, ArbitratorTest, CapabilitiesRegistrarTest, CapabilitiesStoreTest, ParticipantIdStorageTest, MulticastPublicationTest, SubscriptionPublicationTest, RequestTest, SubscriptionRequestTest, ReplyTest, SubscriptionUtilTest, PublicationManagerTest, SubscriptionManagerTest, DispatcherTest, TtlUpliftTest, RequestReplyManagerTest, LocalStorageNodeTest, WebSocketNodeTest));

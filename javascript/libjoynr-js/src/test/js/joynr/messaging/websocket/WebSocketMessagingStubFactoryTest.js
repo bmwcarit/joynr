@@ -81,7 +81,7 @@ module.exports =
             var webSocketMessagingStub = webSocketMessagingStubFactory.build(ccAddress);
             webSocketMessagingStub.transmit(joynrMessage);
             expect(websocket.send).toHaveBeenCalledWith(
-                    WebSocket.marshalJoynrMessage(joynrMessage),
+                    websocket.marshalJoynrMessage(joynrMessage),
                     {
                         binary : true
                     });

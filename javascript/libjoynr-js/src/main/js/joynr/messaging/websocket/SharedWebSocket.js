@@ -47,7 +47,7 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
              *            libjoynr
              */
             function initializeConnection(websocket, localAddress) {
-                websocket.send(WebSocket.encodeString(JSON.stringify(localAddress)), {binary: true});
+                websocket.send(websocket.encodeString(JSON.stringify(localAddress)), {binary: true});
             }
 
             /**
@@ -61,7 +61,7 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                 while (queuedMessages.length) {
                     queued = queuedMessages.shift();
                     try {
-                        websocket.send(WebSocket.marshalJoynrMessage(queued.message), {binary: true});
+                        websocket.send(websocket.marshalJoynrMessage(queued.message), {binary: true});
                         queued.resolve();
                         // Error is thrown if the socket is no longer open
                     } catch (e) {
@@ -76,7 +76,7 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                 return new Promise(function(resolve, reject){
                     if (websocket.readyState === WebSocket.OPEN) {
                         try {
-                            websocket.send(WebSocket.marshalJoynrMessage(joynrMessage), {binary: true});
+                            websocket.send(websocket.marshalJoynrMessage(joynrMessage), {binary: true});
                             resolve();
                             // Error is thrown if the socket is no longer open, so requeue to the front
                         } catch (e) {
@@ -110,6 +110,7 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
              *            settings.remoteAddress to which messages are sent on the websocket server.
              * @param {Object} settings.provisioning
              * @param {Number} settings.provisioning.reconnectSleepTimeMs
+             * @param {Object} settings.keychain
              */
             var SharedWebSocket =
                     function SharedWebSocket(settings) {
@@ -141,7 +142,7 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                             if (closed) {
                                 return;
                             }
-                            websocket = new WebSocket(remoteUrl);
+                            websocket = new WebSocket(remoteUrl, settings.keychain);
                             websocket.onopen = onOpen;
                             websocket.onclose = onClose;
                             websocket.onerror = onError;
@@ -224,7 +225,7 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                             set : function(newCallback) {
                                 if (typeof newCallback === "function") {
                                     onmessageCallback = function(data) {
-                                        WebSocket.unmarshalJoynrMessage(data, newCallback);
+                                        websocket.unmarshalJoynrMessage(data, newCallback);
                                     };
                                     websocket.onmessage = onmessageCallback;
                                 } else {
