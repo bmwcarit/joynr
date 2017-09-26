@@ -21,8 +21,9 @@ package io.joynr.runtime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 
 import io.joynr.accesscontrol.AccessControlClientModule;
@@ -36,7 +37,6 @@ import io.joynr.messaging.sender.CcMessageSender;
 import io.joynr.messaging.sender.MessageSender;
 import joynr.system.RoutingProvider;
 import joynr.system.RoutingTypes.Address;
-import com.google.inject.Singleton;
 
 public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModule {
     public static final String GLOBAL_ADDRESS = "clustercontroller_global_address";

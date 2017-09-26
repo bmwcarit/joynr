@@ -19,9 +19,10 @@
 package io.joynr.servlet;
 
 import io.joynr.accesscontrol.global.GlobalDomainAccessControllerModule;
-import com.google.inject.AbstractModule;
 import io.joynr.accesscontrol.global.GlobalDomainAccessStoreAdmin;
 import io.joynr.accesscontrol.global.GlobalDomainAccessStoreAdminEhCache;
+
+import com.google.inject.AbstractModule;
 
 public class ServletModule extends AbstractModule {
 

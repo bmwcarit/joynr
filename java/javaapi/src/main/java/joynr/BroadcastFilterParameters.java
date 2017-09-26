@@ -18,10 +18,12 @@
  */
 package joynr;
 
-import io.joynr.subtypes.JoynrType;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.annotation.Nonnull;
+
+import io.joynr.subtypes.JoynrType;
 
 public class BroadcastFilterParameters implements JoynrType {
     private static final long serialVersionUID = 1L;

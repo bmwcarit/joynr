@@ -18,9 +18,10 @@
  */
 package io.joynr.dispatching.subscription;
 
+import java.util.List;
+
 import io.joynr.pubsub.publication.BroadcastFilter;
 import io.joynr.pubsub.publication.BroadcastListener;
-import java.util.List;
 
 public class BroadcastListenerImpl implements BroadcastListener {
 

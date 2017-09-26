@@ -19,6 +19,7 @@
 package io.joynr.runtime;
 
 import java.util.Map;
+
 import javax.inject.Named;
 
 import com.google.common.collect.Maps;

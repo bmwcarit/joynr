@@ -19,7 +19,6 @@
 package io.joynr.messaging.http;
 
 import com.google.inject.Inject;
-
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.MessagingPropertyKeys;

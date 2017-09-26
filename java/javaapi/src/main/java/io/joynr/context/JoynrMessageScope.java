@@ -19,7 +19,6 @@
 package io.joynr.context;
 
 import java.util.HashMap;
-
 import java.util.Map;
 
 import org.slf4j.Logger;

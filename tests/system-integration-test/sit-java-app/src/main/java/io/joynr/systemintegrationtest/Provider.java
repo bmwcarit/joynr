@@ -18,12 +18,11 @@
  */
 package io.joynr.systemintegrationtest;
 
-import io.joynr.provider.Promise;
-
-import joynr.test.SystemIntegrationTestAbstractProvider;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.provider.Promise;
+import joynr.test.SystemIntegrationTestAbstractProvider;
 
 public class Provider extends SystemIntegrationTestAbstractProvider {
     private static final Logger logger = LoggerFactory.getLogger(Provider.class);

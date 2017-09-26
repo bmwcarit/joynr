@@ -19,7 +19,6 @@
 package io.joynr.generator.js.communicationmodel;
 
 import io.joynr.generator.js.util.JsTemplateFactory;
-
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
 
 import org.franca.core.franca.FField;

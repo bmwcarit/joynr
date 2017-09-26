@@ -19,7 +19,6 @@
 package io.joynr.systemintegrationtest.jee;
 
 import java.util.Map;
-
 import java.util.Properties;
 
 import javax.ejb.Singleton;

@@ -19,7 +19,6 @@
 package io.joynr.android.robolectric;
 
 import com.google.inject.Injector;
-
 import com.google.inject.Module;
 import io.joynr.android.test.TestActivity;
 import io.joynr.arbitration.ArbitrationStrategy;

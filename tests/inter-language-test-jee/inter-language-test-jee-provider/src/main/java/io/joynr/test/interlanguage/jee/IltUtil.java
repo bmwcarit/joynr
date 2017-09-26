@@ -17,6 +17,10 @@
  * #L%
  */
 package io.joynr.test.interlanguage.jee;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import joynr.interlanguagetest.Enumeration;
 import joynr.interlanguagetest.EnumerationWithoutDefinedValues;
 import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
@@ -29,9 +33,6 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumeration
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 import joynr.interlanguagetest.namedTypeCollection2.StructOfPrimitives;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class IltUtil {
     private static final Logger LOG = LoggerFactory.getLogger(IltUtil.class);

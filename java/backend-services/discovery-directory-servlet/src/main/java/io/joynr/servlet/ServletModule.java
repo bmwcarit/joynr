@@ -19,6 +19,7 @@
 package io.joynr.servlet;
 
 import io.joynr.discovery.DiscoveryDirectoriesModule;
+
 import com.google.inject.AbstractModule;
 
 public class ServletModule extends AbstractModule {

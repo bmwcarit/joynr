@@ -19,12 +19,14 @@
 package io.joynr.endpoints;
 
 import java.io.Serializable;
+
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Table;
+
 import joynr.system.RoutingTypes.Address;
 
 @Table(name = "endpointaddresses")

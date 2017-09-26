@@ -19,7 +19,6 @@
 package io.joynr.dispatching.subscription;
 
 import static org.hamcrest.Matchers.contains;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -28,17 +27,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import io.joynr.dispatching.Dispatcher;
-import io.joynr.dispatching.ProviderDirectory;
-import io.joynr.dispatching.RequestCallerFactory;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.provider.Deferred;
-import io.joynr.provider.Promise;
-import io.joynr.provider.ProviderContainer;
-import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.runtime.ShutdownNotifier;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -46,11 +34,6 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import joynr.OnChangeSubscriptionQos;
-import joynr.OnChangeWithKeepAliveSubscriptionQos;
-import joynr.SubscriptionPublication;
-import joynr.SubscriptionRequest;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -67,6 +50,21 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.ProviderDirectory;
+import io.joynr.dispatching.RequestCallerFactory;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.Promise;
+import io.joynr.provider.ProviderContainer;
+import io.joynr.pubsub.SubscriptionQos;
+import io.joynr.runtime.ShutdownNotifier;
+import joynr.OnChangeSubscriptionQos;
+import joynr.OnChangeWithKeepAliveSubscriptionQos;
+import joynr.SubscriptionPublication;
+import joynr.SubscriptionRequest;
 import joynr.tests.testSubscriptionPublisherImpl;
 
 @RunWith(MockitoJUnitRunner.class)

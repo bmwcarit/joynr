@@ -19,7 +19,6 @@
 package io.joynr.proxy.invocation;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
-
 import io.joynr.proxy.Future;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.SubscriptionListener;
