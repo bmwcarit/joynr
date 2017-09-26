@@ -209,6 +209,7 @@ private:
     std::string query;
     std::string fragment;
     bool valid;
+    bool isIPv6HexAddress;
 
     void parseUrl(const std::string& text);
     std::uint16_t portFromProtocol(const std::string& proto);

@@ -37,6 +37,10 @@ The same ```<Type>``` will be used for all elements in the event that this type 
 
 Getter and Setter methods will be created for any element of a struct type. Also a standard constructor, full arguments constructor and object argument constructor will be created automatically.
 
+Note that in order to use an instance of the class directly or indirectly as input or output argument
+for any joynr call (e.g. method call, broadcast publication etc.), all its members must be properly
+initialized; especially any references must be != null (i.e. point to initialized instances).
+
 ### Interface name
 
 The Franca ```<Interface>``` will be used as a prefix to create the following Java classes or interfaces:

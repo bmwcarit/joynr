@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint node: true, stupid: true */
 
 /*
  * #%L
@@ -18,56 +18,116 @@
  * limitations under the License.
  * #L%
  */
-var LocalStorage = require('../../classes/global/LocalStorageNode');
-module.exports = (function(LocalStorage) {
+var LocalStorage = require("../../classes/global/LocalStorageNode");
+var fs = require("fs");
 
-    describe("local storage", function() {
+describe("local storage", function() {
 
-        var storage;
-        var item = {
-            hi : "bla"
-        };
+    var storage;
+    var item = {
+        hi : "bla"
+    };
+    var testNum = 0;
+    var location;
+    var key = "key";
+    var corruptData = "corrupted Data";
 
-        beforeEach(function(done) {
-            storage = new LocalStorage({
-                clearPersistency : true
+    afterEach(function() {
+
+        fs.readdirSync(location).forEach(function(file) {
+            var filePath = location + "/" + file;
+            fs.unlinkSync(filePath);
+        });
+        fs.rmdirSync(location);
+    });
+
+
+    beforeEach(function(done) {
+        testNum++;
+        location = "${project.build.directory}/LocalStorage-" + testNum;
+        storage = new LocalStorage(
+            {
+                clearPersistency : false,
+                location : location
             });
-            done();
+        done();
+    });
+
+    it("can set and load item", function() {
+
+        storage.setItem(key, JSON.stringify(item));
+        var result = JSON.parse(storage.getItem(key));
+        expect(result).toEqual(item);
+    });
+
+    it("can set and load long items", function() {
+
+        var longString = new Array(200).join("a");
+
+        storage.setItem(longString, JSON.stringify(item));
+        var result = JSON.parse(storage.getItem(longString));
+        expect(result).toEqual(item);
+    });
+
+    it("can remove items", function() {
+
+        storage.setItem(key, JSON.stringify(item));
+        storage.removeItem(key);
+        var result = storage.getItem(key);
+        expect(result).toEqual(null);
+    });
+
+    it("can clear items", function() {
+
+        storage.setItem(key, JSON.stringify(item));
+        storage.clear();
+        var result = storage.getItem(key);
+        expect(result).toEqual(null);
+    });
+
+    it("ignores corrupt files", function () {
+
+        storage.setItem(key, JSON.stringify(item));
+        var filename = fs.readdirSync(location)[0];
+        fs.writeFileSync(location + "/" + filename, corruptData);
+
+        storage = new LocalStorage({
+            clearPersistency: false,
+            location        : location
+        });
+        expect(storage.getItem(key)).toBe(null);
+    });
+
+    it("overwrites corrupt files", function() {
+
+        storage.setItem(key, JSON.stringify(item));
+        var filename = fs.readdirSync(location)[0];
+        fs.writeFileSync(location + "/" + filename, corruptData);
+
+        storage = new LocalStorage({
+            clearPersistency: false,
+            location        : location
         });
 
-        it("can set and load item", function() {
-            var key = "key";
-            storage.setItem(key, JSON.stringify(item));
-            var result = JSON.parse(storage.getItem(key));
-            expect(result).toEqual(item);
-        });
-
-        it("can set and load long items", function() {
-
-            var longString = new Array(200).join("a");
-
-            storage.setItem(longString, JSON.stringify(item));
-            var result = JSON.parse(storage.getItem(longString));
-            expect(result).toEqual(item);
-        });
-
-        it("can remove items", function() {
-
-            var key = "key";
-            storage.setItem(key, JSON.stringify(item));
-            storage.removeItem(key);
-            var result = storage.getItem(key);
-            expect(result).toEqual(null);
-        });
-
-        it("can clear items", function() {
-
-            var key = "key";
-            storage.setItem(key, JSON.stringify(item));
-            storage.clear();
-            var result = storage.getItem(key);
-            expect(result).toEqual(null);
-        });
+        storage.setItem(key, JSON.stringify(item));
+        var files = fs.readdirSync(location);
+        expect(files.length).toBe(1);
 
     });
-}(LocalStorage));
+
+    it("ignores other files", function() {
+
+        storage.setItem(key, JSON.stringify(item));
+        fs.writeFileSync(location + "/otherFile", "other Data");
+
+        storage = new LocalStorage({
+            clearPersistency: false,
+            location        : location
+        });
+
+        var files = fs.readdirSync(location);
+        expect(files.length).toBe(2);
+
+    });
+
+});

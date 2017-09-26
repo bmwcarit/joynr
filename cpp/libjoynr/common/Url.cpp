@@ -33,7 +33,16 @@ Url::Url()
 }
 
 Url::Url(const std::string& text)
-        : protocol(), user(), password(), host(), port(), path(), query(), fragment(), valid(false)
+        : protocol(),
+          user(),
+          password(),
+          host(),
+          port(),
+          path(),
+          query(),
+          fragment(),
+          valid(false),
+          isIPv6HexAddress(false)
 {
     parseUrl(text);
 }
@@ -50,7 +59,8 @@ Url::Url(const std::string& protocol,
           path(path),
           query(),
           fragment(),
-          valid(false)
+          valid(false),
+          isIPv6HexAddress(false)
 {
     // Set valid to true if member variables are valid
     validate();
@@ -72,7 +82,8 @@ Url::Url(const std::string& protocol,
           path(path),
           query(query),
           fragment(fragment),
-          valid(false)
+          valid(false),
+          isIPv6HexAddress(false)
 {
     // Set valid to true if member variables are valid
     validate();
@@ -155,6 +166,7 @@ void Url::parseUrl(const std::string& text)
         USER,
         PASSWORD,
         HOST,
+        IPV6,
         PORT,
         PATH,
         QUERY,
@@ -217,6 +229,15 @@ void Url::parseUrl(const std::string& text)
             } else if (ch == '/') {
                 state = State::PATH;
                 path += ch;
+            } else if (ch == '[') {
+                state = State::IPV6;
+            } else {
+                host += ch;
+            }
+            break;
+        case State::IPV6:
+            if (ch == ']') {
+                state = State::HOST;
             } else {
                 host += ch;
             }
@@ -279,7 +300,7 @@ std::string Url::toString() const
         }
         stringBuilder << "@";
     }
-    stringBuilder << host;
+    stringBuilder << (isIPv6HexAddress ? "[" : "") << host << (isIPv6HexAddress ? "]" : "");
     if (port != 0) {
         stringBuilder << ":" << port;
     }
@@ -320,6 +341,15 @@ void Url::validate()
     // Post process the path
     if (path.empty()) {
         path = "/";
+    }
+
+    // only URI string contains [...] in case of IPv6 hexadecimal address
+    if ((host.find("[") != std::string::npos) || (host.find("]") != std::string::npos)) {
+        return;
+    }
+
+    if (host.find(":") != std::string::npos) {
+        isIPv6HexAddress = true;
     }
 
     // Assume success
