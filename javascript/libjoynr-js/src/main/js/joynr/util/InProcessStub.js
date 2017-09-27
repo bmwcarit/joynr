@@ -19,7 +19,6 @@
  * #L%
  */
 var InProcessSkeleton = require('./InProcessSkeleton');
-module.exports = (function(InProcessSkeleton) {
 
     /**
      * Creates a proxy function that calls the proxyObjectFunction with the original arguments
@@ -96,6 +95,4 @@ module.exports = (function(InProcessSkeleton) {
         }
     };
 
-    return InProcessStub;
-
-}(InProcessSkeleton));
+    module.exports = InProcessStub;

@@ -19,11 +19,9 @@
  * #L%
  */
 var Promise = require('../../global/Promise');
-var XmlHttpRequest = require('../../global/XMLHttpRequestNode');
-var atmosphere = require('../../lib/atmosphereNode');
+var XMLHttpRequestDependency = require('../../global/XMLHttpRequestNode');
+var atmosphereDependency = require('../../lib/atmosphereNode');
 var LongTimer = require('../util/LongTimer');
-module.exports =
-        (function(Promise, XMLHttpRequestDependency, atmosphereDependency, LongTimer) {
 
 
     /**
@@ -113,6 +111,4 @@ module.exports =
         });
     };
 
-    return CommunicationModule;
-
-        }(Promise, XmlHttpRequest, atmosphere, LongTimer));
+    module.exports = CommunicationModule;

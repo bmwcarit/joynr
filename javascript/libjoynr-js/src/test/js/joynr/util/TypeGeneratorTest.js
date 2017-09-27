@@ -23,22 +23,12 @@ var MapInsideTypeCollectionWithoutVersion =
         require('../../../test-classes/joynr/types/TestTypesWithoutVersion/MapInsideTypeCollectionWithoutVersion');
 var StructInsideTypeCollectionWithoutVersion =
         require('../../../test-classes/joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion');
-var Tenum = require('../../../test-classes/joynr/types/TestTypes/TEnum');
-var TstringKeyMap = require('../../../test-classes/joynr/types/TestTypes/TStringKeyMap');
-var Tstruct = require('../../../test-classes/joynr/types/TestTypes/TStruct');
-var TstructWithTypedefMembers =
+var TEnum = require('../../../test-classes/joynr/types/TestTypes/TEnum');
+var TStringKeyMap = require('../../../test-classes/joynr/types/TestTypes/TStringKeyMap');
+var TStruct = require('../../../test-classes/joynr/types/TestTypes/TStruct');
+var TStructWithTypedefMembers =
         require('../../../test-classes/joynr/types/TestTypes/TStructWithTypedefMembers');
 var Typing = require('../../../classes/joynr/util/Typing');
-module.exports =
-        (function(
-                EnumInsideTypeCollectionWithoutVersion,
-                MapInsideTypeCollectionWithoutVersion,
-                StructInsideTypeCollectionWithoutVersion,
-                TEnum,
-                TStringKeyMap,
-                TStruct,
-                TStructWithTypedefMembers,
-                Typing) {
 
             describe("libjoynr-js.joynr.TypeGenerator.Enum", function() {
                 it("type collection enum default version is set correctly", function() {
@@ -234,14 +224,4 @@ module.exports =
                                                     "members.arrayOfTypeDefForTEnum is not of type Array. Actual type is TEnum");
                                 });
 
-                    }); // describe Compound
-
-        }(
-                EnumInsideTypeCollectionWithoutVersion,
-                MapInsideTypeCollectionWithoutVersion,
-                StructInsideTypeCollectionWithoutVersion,
-                Tenum,
-                TstringKeyMap,
-                Tstruct,
-                TstructWithTypedefMembers,
-                Typing));
+                    });

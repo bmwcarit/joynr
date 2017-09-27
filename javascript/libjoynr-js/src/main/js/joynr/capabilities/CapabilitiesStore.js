@@ -19,8 +19,6 @@
  * #L%
  */
 var Typing = require('../util/Typing');
-module.exports =
-        (function(Typing) {
 
             /**
              * Private function. This function returns the hashCode of the given discovery entry, this should uniquely identify a
@@ -364,6 +362,4 @@ module.exports =
                         return this;
                     };
 
-            return CapabilitiesStore;
-
-        }(Typing));
+            module.exports = CapabilitiesStore;

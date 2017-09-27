@@ -18,10 +18,8 @@
  * #L%
  */
 var MESSAGE_CUSTOM_HEADER_PREFIX = 'custom-';
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var uuid = require('../../lib/uuid-annotated');
-module.exports =
-        (function(Util, uuid) {
 
             var jmBase = uuid();
             var jmIndex = 0;
@@ -300,19 +298,16 @@ module.exports =
              * @name JoynrMessage#effort
              * @type String
              */
-            (function defineHeaders(headerProperties) {
-                var i;
-                headerProperties.forEach(function(headerProperty) {
-                    Object.defineProperty(JoynrMessage.prototype, headerProperty, {
-                        set : function(value) {
-                            this.header[headerProperty] = value;
-                        },
-                        get : function() {
-                            return this.header[headerProperty];
-                        }
-                    });
+            headerProperties.forEach(function(headerProperty) {
+                Object.defineProperty(JoynrMessage.prototype, headerProperty, {
+                    set : function(value) {
+                        this.header[headerProperty] = value;
+                    },
+                    get : function() {
+                        return this.header[headerProperty];
+                    }
                 });
-            }(headerProperties));
+            });
 
             JoynrMessage.prototype.isReceivedFromGlobal = false;
 
@@ -347,6 +342,4 @@ module.exports =
                 }
             });
 
-            return JoynrMessage;
-
-        }(UtilInternal, uuid));
+            module.exports = JoynrMessage;

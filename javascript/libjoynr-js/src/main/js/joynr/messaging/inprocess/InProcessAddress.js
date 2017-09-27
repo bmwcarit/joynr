@@ -17,7 +17,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * @constructor
@@ -87,6 +86,4 @@ module.exports = (function() {
         return this._inProcessMessagingSkeleton;
     };
 
-    return InProcessAddress;
-
-}());
+    module.exports = InProcessAddress;

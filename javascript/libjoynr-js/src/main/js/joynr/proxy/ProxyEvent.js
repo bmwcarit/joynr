@@ -21,8 +21,6 @@
 var Promise = require('../../global/Promise');
 var BroadcastFilterParameters = require('./BroadcastFilterParameters');
 var SubscriptionUtil = require('../dispatching/subscription/util/SubscriptionUtil');
-module.exports =
-        (function(Promise, BroadcastFilterParameters, SubscriptionUtil) {
 
     /**
      * Checks if the given datatypes and values match the given broadcast parameters
@@ -187,6 +185,4 @@ module.exports =
         return Object.freeze(this);
     }
 
-    return ProxyEvent;
-
-        }(Promise, BroadcastFilterParameters, SubscriptionUtil));
+    module.exports = ProxyEvent;

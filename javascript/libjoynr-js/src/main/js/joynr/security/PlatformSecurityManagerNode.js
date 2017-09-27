@@ -19,7 +19,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * @name PlatformSecurityManager
@@ -49,6 +48,4 @@ module.exports = (function() {
         return process.env.USER;
     };
 
-    return PlatformSecurityManager;
-
-}());
+    module.exports = PlatformSecurityManager;

@@ -19,8 +19,6 @@
  * #L%
  */
 var Promise = require('../../../global/Promise');
-module.exports =
-        (function(Promise) {
 
     /**
      * @name ChannelMessagingStub
@@ -57,5 +55,4 @@ module.exports =
                         this._settings.destinationChannelAddress);
             };
 
-    return ChannelMessagingStub;
-        }(Promise));
+    module.exports = ChannelMessagingStub;

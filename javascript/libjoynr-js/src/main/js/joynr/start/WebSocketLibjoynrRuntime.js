@@ -54,7 +54,7 @@ var TypeRegistrySingleton = require('../types/TypeRegistrySingleton');
 var DiscoveryScope = require('../types/DiscoveryScope');
 var DiscoveryEntry = require('../types/DiscoveryEntry');
 var DiscoveryEntryWithMetaInfo = require('../types/DiscoveryEntryWithMetaInfo');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var CapabilitiesUtil = require('../util/CapabilitiesUtil');
 var Typing = require('../util/Typing');
 var DistributedLoggingAppenderConstructorFactory = require('../system/DistributedLoggingAppenderConstructorFactory');
@@ -67,7 +67,6 @@ var defaultSettings = require('./settings/defaultSettings');
 var defaultWebSocketSettings = require('./settings/defaultWebSocketSettings');
 var defaultLibjoynrSettings = require('./settings/defaultLibjoynrSettings');
 var LocalStorage = require('../../global/LocalStorageNode');
-module.exports = (function (Promise, WebSocket, Arbitrator, ProviderBuilder, ProxyBuilder, CapabilitiesRegistrar, ParticipantIdStorage, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, JoynrException, PlatformSecurityManager, SharedWebSocket, WebSocketMessagingSkeleton, WebSocketMessagingStubFactory, WebSocketMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, WebSocketAddress, WebSocketClientAddress, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, InProcessStub, InProcessSkeleton, MessagingQos, DiscoveryQos, DiscoveryProxy, RoutingProxy, TypeRegistrySingleton, DiscoveryScope, DiscoveryEntry, DiscoveryEntryWithMetaInfo, Util, CapabilitiesUtil, Typing, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, WebWorkerMessagingAppender, uuid, LoggingManager, LoggerFactory, defaultSettings, defaultWebSocketSettings, defaultLibjoynrSettings, LocalStorage) {
     var JoynrStates = {
         SHUTDOWN : "shut down",
         STARTING : "starting",
@@ -565,6 +564,4 @@ module.exports = (function (Promise, WebSocket, Arbitrator, ProviderBuilder, Pro
         return Object.freeze(this);
     }
 
-    return WebSocketLibjoynrRuntime;
-
-}(Promise, WebSocket, Arbitrator, ProviderBuilder, ProxyBuilder, CapabilitiesRegistrar, ParticipantIdStorage, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, JoynrException, PlatformSecurityManager, SharedWebSocket, WebSocketMessagingSkeleton, WebSocketMessagingStubFactory, WebSocketMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, WebSocketAddress, WebSocketClientAddress, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, InProcessStub, InProcessSkeleton, MessagingQos, DiscoveryQos, DiscoveryProxy, RoutingProxy, TypeRegistrySingleton, DiscoveryScope, DiscoveryEntry, DiscoveryEntryWithMetaInfo, UtilInternal, CapabilitiesUtil, Typing, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, WebWorkerMessagingAppender, uuid, LoggingManager, LoggerFactory, defaultSettings, defaultWebSocketSettings, defaultLibjoynrSettings, LocalStorage));
+    module.exports = WebSocketLibjoynrRuntime;

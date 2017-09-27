@@ -17,9 +17,8 @@
  * limitations under the License.
  * #L%
  */
-var JsonSerializer = require('../../../classes/joynr/util/JSONSerializer');
+var JSONSerializer = require('../../../classes/joynr/util/JSONSerializer');
 var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
-module.exports = (function(JSONSerializer, TestEnum) {
 
     describe("libjoynr-js.joynr.JSONSerializer.ensureCorrectSerialization", function() {
 
@@ -32,5 +31,3 @@ module.exports = (function(JSONSerializer, TestEnum) {
         });
 
     });
-
-}(JsonSerializer, TestEnum)); /* jslint nomen: false */

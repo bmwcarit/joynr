@@ -28,10 +28,9 @@ var MulticastSubscriptionQos = require('../../../classes/joynr/proxy/MulticastSu
 var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
 var Version = require('../../../classes/joynr/types/Version');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
-var UtilInternal = require('../../../classes/joynr/util/UtilInternal');
+var Util = require('../../../classes/joynr/util/UtilInternal');
 var Promise = require('../../../classes/global/Promise');
-var WaitsFor = require('../../../test-classes/global/WaitsFor');
-module.exports = (function (ProxyAttribute, ProxyOperation, ProxyEvent, DiscoveryQos, MessagingQos, MulticastSubscriptionQos, DiscoveryEntryWithMetaInfo, Version, ProviderQos, Util, Promise, waitsFor) {
+var waitsFor = require('../../../test-classes/global/WaitsFor');
 
     var asyncTimeout = 5000;
 
@@ -371,5 +370,3 @@ module.exports = (function (ProxyAttribute, ProxyOperation, ProxyEvent, Discover
                     }).toThrow();
         });
     });
-
-}(ProxyAttribute, ProxyOperation, ProxyEvent, DiscoveryQos, MessagingQos, MulticastSubscriptionQos, DiscoveryEntryWithMetaInfo, Version, ProviderQos, UtilInternal, Promise, WaitsFor));    // require

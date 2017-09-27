@@ -20,8 +20,6 @@
  */
 var LoggerFactory = require('../system/LoggerFactory');
 var Promise = require('../../global/Promise');
-module.exports =
-        (function(LoggerFactory, Promise) {
 
             /**
              * The <code>TypeRegistry</code> contains a mapping of type names (which are sent on the wire
@@ -162,6 +160,4 @@ module.exports =
 
             }
 
-            return TypeRegistry;
-
-        }(LoggerFactory, Promise));
+            module.exports = TypeRegistry;

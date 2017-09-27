@@ -18,13 +18,11 @@
  * #L%
  */
 var Promise = require('../../../classes/global/Promise');
-var UtilInternal = require('../../../classes/joynr/util/UtilInternal');
+var Util = require('../../../classes/joynr/util/UtilInternal');
 var JoynrMessage = require('../../../classes/joynr/messaging/JoynrMessage');
 var LoggerFactory = require('../../../classes/joynr/system/LoggerFactory');
 var TypeRegistry = require('../../../classes/joynr/start/TypeRegistry');
 var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
-module.exports =
-        (function(Promise, Util, JoynrMessage, LoggerFactory, TypeRegistry, RadioStation) {
 
             var argument = {
                 someObjectKey : "andValue"
@@ -302,5 +300,3 @@ module.exports =
                     expect(augmentedReceiver.someObject).toBeUndefined();
                 });
             });
-
-  }(Promise, UtilInternal, JoynrMessage, LoggerFactory, TypeRegistry, RadioStation)); /* jslint nomen: false */

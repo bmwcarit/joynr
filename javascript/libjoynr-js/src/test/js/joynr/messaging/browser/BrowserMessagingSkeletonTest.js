@@ -21,8 +21,6 @@
 var BrowserMessagingSkeleton =
         require('../../../../classes/joynr/messaging/browser/BrowserMessagingSkeleton');
 var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
-module.exports =
-        (function(BrowserMessagingSkeleton, JoynrMessage) {
 
     describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", function() {
 
@@ -148,4 +146,3 @@ module.exports =
                 });
 
     });
-        }(BrowserMessagingSkeleton, JoynrMessage));

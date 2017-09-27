@@ -20,11 +20,9 @@
  */
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var JoynrRuntimeException = require('./JoynrRuntimeException');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(TypeRegistrySingleton, Typing, Util, JoynrRuntimeException, LoggerFactory) {
             var defaultSettings;
 
             /**
@@ -83,5 +81,4 @@ module.exports =
             PublicationMissedException.prototype.constructor = PublicationMissedException;
             PublicationMissedException.prototype.name = "PublicationMissedException";
 
-            return PublicationMissedException;
-        }(TypeRegistrySingleton, Typing, UtilInternal, JoynrRuntimeException, LoggerFactory));
+            module.exports = PublicationMissedException;

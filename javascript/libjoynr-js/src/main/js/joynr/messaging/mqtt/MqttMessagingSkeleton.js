@@ -22,8 +22,6 @@ var Typing = require('../../util/Typing');
 var LoggerFactory = require('../../system/LoggerFactory');
 var DiagnosticTags = require('../../system/DiagnosticTags');
 var JoynrException = require('../../exceptions/JoynrException');
-module.exports =
-        (function(Typing, LoggerFactory, DiagnosticTags, JoynrException) {
 
  var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
     /**
@@ -101,6 +99,4 @@ module.exports =
         this._settings.client.close();
     };
 
-    return MqttMessagingSkeleton;
-
-        }(Typing, LoggerFactory, DiagnosticTags, JoynrException));
+    module.exports = MqttMessagingSkeleton;

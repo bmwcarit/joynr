@@ -26,10 +26,9 @@ var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
 var TypeRegistry = require('../../../../classes/joynr/start/TypeRegistry');
 var Promise = require('../../../../classes/global/Promise');
 var Date = require('../../../../test-classes/global/Date');
-var WaitsFor = require('../../../../test-classes/global/WaitsFor');
-var UtilInternal = require('../../../../classes/joynr/util/UtilInternal');
+var waitsFor = require('../../../../test-classes/global/WaitsFor');
+var Util = require('../../../../classes/joynr/util/UtilInternal');
 var uuid = require('../../../../classes/lib/uuid-annotated');
-module.exports = (function (MessageRouter, BrowserAddress, ChannelAddress, InProcessAddress, JoynrMessage, TypeRegistry, Promise, Date, waitsFor, Util, uuid) {
             var fakeTime;
 
             function increaseFakeTime(time_ms) {
@@ -1124,4 +1123,3 @@ module.exports = (function (MessageRouter, BrowserAddress, ChannelAddress, InPro
                         }); // describe ChildMessageRouter
 
                     }); // describe MessageRouter
-}(MessageRouter, BrowserAddress, ChannelAddress, InProcessAddress, JoynrMessage, TypeRegistry, Promise, Date, WaitsFor, UtilInternal, uuid));    // define

@@ -18,9 +18,7 @@
  * #L%
  */
 var Typing = require('./Typing');
-var UtilInternal = require('./UtilInternal');
-module.exports =
-        (function(Typing, Util) {
+var Util = require('./UtilInternal');
     var MethodUtil = {};
 
     MethodUtil.transformParameterMapToArray =
@@ -73,6 +71,4 @@ module.exports =
                 };
             };
 
-    return MethodUtil;
-
-        }(Typing, UtilInternal));
+    module.exports = MethodUtil;

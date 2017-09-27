@@ -20,7 +20,6 @@
 
 var Typing = require('../../util/Typing');
 
-module.exports = (function(Typing) {
 
     /**
      * @constructor BrowserMulticastAddressCalculator
@@ -48,6 +47,4 @@ module.exports = (function(Typing) {
         return this._settings.globalAddress;
     };
 
-    return BrowserMulticastAddressCalculator;
-
-}(Typing));
+    module.exports = BrowserMulticastAddressCalculator;

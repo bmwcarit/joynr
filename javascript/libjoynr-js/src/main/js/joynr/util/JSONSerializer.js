@@ -19,7 +19,6 @@
  * #L%
  */
 var Typing = require('./Typing');
-module.exports = (function(Typing) {
 
     /**
      * @name JSONSerializer
@@ -53,6 +52,4 @@ module.exports = (function(Typing) {
         return JSON.stringify(value, replacerFunction);
     };
 
-    return JSONSerializer;
-
-}(Typing));
+    module.exports = JSONSerializer;

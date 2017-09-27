@@ -19,8 +19,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports =
-        (function() {
             /**
              * @exports SubscriptionUtil
              */
@@ -179,5 +177,4 @@ module.exports =
             SubscriptionUtil.VALID_PARTITION_REGEX = /^[a-zA-Z0-9]+$/;
             SubscriptionUtil.SINGLE_POSITION_WILDCARD = "+";
             SubscriptionUtil.MULTI_LEVEL_WILDCARD = "*";
-            return SubscriptionUtil;
-        }());
+            module.exports = SubscriptionUtil;

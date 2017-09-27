@@ -22,7 +22,7 @@ var MqttMessagingSkeleton =
         require('../../../../classes/joynr/messaging/mqtt/MqttMessagingSkeleton');
 var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
 var MessageRouter = require('../../../../classes/joynr/messaging/routing/MessageRouter');
-module.exports = (function(MqttMessagingSkeleton, JoynrMessage, MessageRouter) {
+
     describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
 
         var sharedMqttClient, mqttMessagingSkeleton;
@@ -91,4 +91,3 @@ module.exports = (function(MqttMessagingSkeleton, JoynrMessage, MessageRouter) {
             setsReceivedFromGlobal(subscriptionRequestMessage);
         });
     });
-}(MqttMessagingSkeleton, JoynrMessage, MessageRouter));

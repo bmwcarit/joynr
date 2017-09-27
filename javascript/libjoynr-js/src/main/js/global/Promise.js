@@ -18,7 +18,4 @@
  * limitations under the License.
  * #L%
  */
-var bluebird = require('bluebird');
-module.exports = (function(promise) {
-    return promise.Promise;
-}(bluebird));
+module.exports = require("bluebird").Promise;

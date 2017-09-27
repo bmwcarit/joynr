@@ -18,11 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
 var OnChangeSubscriptionQos = require('../../proxy/OnChangeSubscriptionQos');
 var BroadcastFilterParameters = require('../../proxy/BroadcastFilterParameters');
-module.exports = (function(Util, Typing, OnChangeSubscriptionQos, BroadcastFilterParameters) {
 
     var defaultSettings = {
         qos : new OnChangeSubscriptionQos()
@@ -105,6 +104,4 @@ module.exports = (function(Util, Typing, OnChangeSubscriptionQos, BroadcastFilte
         enumerable : true,
         configurable : false
     });
-    return BroadcastSubscriptionRequest;
-
-}(UtilInternal, Typing, OnChangeSubscriptionQos, BroadcastFilterParameters));
+    module.exports = BroadcastSubscriptionRequest;

@@ -20,11 +20,9 @@
  */
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var JoynrRuntimeException = require('./JoynrRuntimeException');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(TypeRegistrySingleton, Typing, Util, JoynrRuntimeException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -92,6 +90,4 @@ module.exports =
     MethodInvocationException.prototype.constructor = MethodInvocationException;
     MethodInvocationException.prototype.name = "MethodInvocationException";
 
-    return MethodInvocationException;
-
-        }(TypeRegistrySingleton, Typing, UtilInternal, JoynrRuntimeException, LoggerFactory));
+    module.exports = MethodInvocationException;

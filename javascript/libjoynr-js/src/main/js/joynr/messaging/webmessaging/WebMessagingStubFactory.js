@@ -19,7 +19,6 @@
  * #L%
  */
 var WebMessagingStub = require('./WebMessagingStub');
-module.exports = (function(WebMessagingStub) {
 
             /**
              * @constructor
@@ -42,6 +41,4 @@ module.exports = (function(WebMessagingStub) {
                 });
             };
 
-            return WebMessagingStubFactory;
-
-}(WebMessagingStub));
+            module.exports = WebMessagingStubFactory;

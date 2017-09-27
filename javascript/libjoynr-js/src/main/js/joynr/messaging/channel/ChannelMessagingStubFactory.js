@@ -20,8 +20,6 @@
  */
 var Typing = require('../../util/Typing');
 var ChannelMessagingStub = require('./ChannelMessagingStub');
-module.exports =
-        (function(Typing, ChannelMessagingStub) {
 
     /**
      * @constructor
@@ -75,6 +73,4 @@ module.exports =
         });
     };
 
-    return ChannelMessagingStubFactory;
-
-        }(Typing, ChannelMessagingStub));
+    module.exports = ChannelMessagingStubFactory;

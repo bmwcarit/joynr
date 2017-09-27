@@ -29,18 +29,6 @@ var uuid = require('../../../classes/joynr/util/uuid');
 var TestWithVersionProvider = require('../../../test-classes/joynr/tests/TestWithVersionProvider');
 var TestWithoutVersionProvider =
         require('../../../test-classes/joynr/tests/TestWithoutVersionProvider');
-module.exports =
-        (function(
-                RadioProvider,
-                RadioStation,
-                Country,
-                StringMap,
-                ProviderAttribute,
-                ProviderOperation,
-                ProviderEvent,
-                uuid,
-                TestWithVersionProvider,
-                TestWithoutVersionProvider) {
             describe(
                     "libjoynr-js.joynr.provider.Provider",
                     function() {
@@ -373,15 +361,3 @@ module.exports =
                                 });
 
                     });
-
-        }(
-                RadioProvider,
-                RadioStation,
-                Country,
-                StringMap,
-                ProviderAttribute,
-                ProviderOperation,
-                ProviderEvent,
-                uuid,
-                TestWithVersionProvider,
-                TestWithoutVersionProvider)); // require

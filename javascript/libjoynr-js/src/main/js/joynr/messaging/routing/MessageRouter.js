@@ -28,9 +28,8 @@ var MessageReplyToAddressCalculator = require('../MessageReplyToAddressCalculato
 var JoynrException = require('../../exceptions/JoynrException');
 var JoynrRuntimeException = require('../../exceptions/JoynrRuntimeException');
 var Typing = require('../../util/Typing');
-var UtilInternal = require('../../util/UtilInternal');
-var JsonSerializer = require('../../util/JSONSerializer');
-module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTags, LoggerFactory, InProcessAddress, JoynrMessage, MessageReplyToAddressCalculator, JoynrException, JoynrRuntimeException, Typing, Util, JSONSerializer) {
+var Util = require('../../util/UtilInternal');
+var JSONSerializer = require('../../util/JSONSerializer');
 
             /**
              * Message Router receives a message and forwards it to the correct endpoint, as looked up in the {@link RoutingTable}
@@ -766,5 +765,4 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                 };
             }
 
-            return MessageRouter;
-}(Promise, MulticastWildcardRegexFactory, DiagnosticTags, LoggerFactory, InProcessAddress, JoynrMessage, MessageReplyToAddressCalculator, JoynrException, JoynrRuntimeException, Typing, UtilInternal, JsonSerializer));
+            module.exports = MessageRouter;

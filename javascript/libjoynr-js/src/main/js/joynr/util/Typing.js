@@ -19,8 +19,6 @@
  */
 var joynr = require('joynr');
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-module.exports =
-        (function(joynr, TypeRegistrySingleton) {
 
             /**
              * @name Typing
@@ -264,6 +262,4 @@ module.exports =
                         return result;
                     };
 
-            return Typing;
-
-        }(joynr, TypeRegistrySingleton));
+            module.exports = Typing;

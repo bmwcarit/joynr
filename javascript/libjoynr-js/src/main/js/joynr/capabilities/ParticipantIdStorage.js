@@ -18,7 +18,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * @constructor
@@ -58,6 +57,4 @@ module.exports = (function() {
         return participantId;
     };
 
-    return ParticipantIdStorage;
-
-}());
+    module.exports = ParticipantIdStorage;

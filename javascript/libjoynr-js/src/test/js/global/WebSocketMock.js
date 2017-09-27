@@ -20,11 +20,9 @@
  * #L%
  */
 var JoynrMessage = require('../../classes/joynr/messaging/JoynrMessage');
-var JsonSerializer = require('../../classes/joynr/util/JSONSerializer');
+var JSONSerializer = require('../../classes/joynr/util/JSONSerializer');
 var JoynrRuntimeException = require('../../classes/joynr/exceptions/JoynrRuntimeException');
 var LoggerFactory = require('../../classes/joynr/system/LoggerFactory');
-module.exports =
-        (function(JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
             if (typeof Buffer !== "function" && typeof TextDecoder !== "function") {
                 throw new JoynrRuntimeException(
                         "Encoding/Decoding of binary websocket messages not possible. Buffer and TextEncoder/TextDecoder not available.");
@@ -83,5 +81,4 @@ module.exports =
                 }
             };
 
-            return WebSocket;
-        }(JoynrMessage, JsonSerializer, JoynrRuntimeException, LoggerFactory));
+            module.exports = WebSocket;

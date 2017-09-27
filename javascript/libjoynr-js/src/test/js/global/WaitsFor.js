@@ -22,7 +22,6 @@
  * waitsFor helper function for jasmine 2.x
  */
 var Promise = require('../../classes/global/Promise');
-module.exports = (function(Promise) {
     var originalSetInterval = setInterval;
     var originalClearInterval = clearInterval;
     var originalSetTimeout = setTimeout;
@@ -43,5 +42,4 @@ module.exports = (function(Promise) {
             }, checkIntervalMs);
         });
     }
-    return waitsFor;
-}(Promise));
+    module.exports = waitsFor;

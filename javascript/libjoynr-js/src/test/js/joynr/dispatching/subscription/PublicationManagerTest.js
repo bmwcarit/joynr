@@ -40,9 +40,8 @@ var SubscriptionException = require('../../../../classes/joynr/exceptions/Subscr
 var LongTimer = require('../../../../classes/joynr/util/LongTimer');
 var uuid = require('../../../../classes/lib/uuid-annotated');
 var Date = require('../../../../test-classes/global/Date');
-var WaitsFor = require('../../../../test-classes/global/WaitsFor');
+var waitsFor = require('../../../../test-classes/global/WaitsFor');
 var LocalStorage = require('../../../../test-classes/global/LocalStorageNodeTests');
-module.exports = (function (Promise, PublicationManager, MessagingQos, SubscriptionReply, SubscriptionRequest, BroadcastSubscriptionRequest, MulticastSubscriptionRequest, SubscriptionStop, ProviderAttribute, ProviderEvent, PeriodicSubscriptionQos, SubscriptionQos, OnChangeSubscriptionQos, OnChangeWithKeepAliveSubscriptionQos, ProviderQos, ProviderScope, SubscriptionPublication, SubscriptionUtil, SubscriptionException, LongTimer, uuid, Date, waitsFor, LocalStorage) {
             var localStorage = new LocalStorage();
             var originalSetTimeout = setTimeout;
             describe(
@@ -2163,5 +2162,3 @@ module.exports = (function (Promise, PublicationManager, MessagingQos, Subscript
                                     }).catch(fail);
                                 });
                     });
-
-}(Promise, PublicationManager, MessagingQos, SubscriptionReply, SubscriptionRequest, BroadcastSubscriptionRequest, MulticastSubscriptionRequest, SubscriptionStop, ProviderAttribute, ProviderEvent, PeriodicSubscriptionQos, SubscriptionQos, OnChangeSubscriptionQos, OnChangeWithKeepAliveSubscriptionQos, ProviderQos, ProviderScope, SubscriptionPublication, SubscriptionUtil, SubscriptionException, LongTimer, uuid, Date, WaitsFor, LocalStorage));

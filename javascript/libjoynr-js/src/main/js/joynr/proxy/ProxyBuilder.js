@@ -28,7 +28,6 @@ var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
 var Version = require('../../joynr/types/Version');
 var Typing = require('../util/Typing');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports = (function (Promise, ProxyAttribute, ProxyOperation, ProxyEvent, uuid, DiscoveryQos, MessagingQos, TypeRegistrySingleton, Version, Typing, LoggerFactory) {
 
     var proxyElementTypes = {
         ProxyAttribute               : ProxyAttribute,
@@ -192,5 +191,4 @@ module.exports = (function (Promise, ProxyAttribute, ProxyOperation, ProxyEvent,
             };
     }
 
-    return ProxyBuilder;
-}(Promise, ProxyAttribute, ProxyOperation, ProxyEvent, uuid, DiscoveryQos, MessagingQos, TypeRegistrySingleton, Version, Typing, LoggerFactory));
+    module.exports = ProxyBuilder;

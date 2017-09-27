@@ -24,9 +24,8 @@ var JsonParser = require('../../../lib/JsonParser');
 var MessagingQos = require('../MessagingQos');
 var DiagnosticTags = require('../../system/DiagnosticTags');
 var LoggerFactory = require('../../system/LoggerFactory');
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var LongTimer = require('../../util/LongTimer');
-module.exports = (function (Promise, uuid, JoynrMessage, JsonParser, MessagingQos, DiagnosticTags, LoggerFactory, Util, LongTimer) {
 
 
         var log = LoggerFactory.getLogger("joynr.messaging.LongPollingChannelMessageReceiver");
@@ -319,5 +318,4 @@ module.exports = (function (Promise, uuid, JoynrMessage, JsonParser, MessagingQo
 
             return this._callCreate().catch(_callCreateOnError);
         };
-        return LongPollingChannelMessageReceiver;
-}(Promise, uuid, JoynrMessage, JsonParser, MessagingQos, DiagnosticTags, LoggerFactory, UtilInternal, LongTimer));
+        module.exports = LongPollingChannelMessageReceiver;

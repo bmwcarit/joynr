@@ -21,7 +21,6 @@
 var SubscriptionPublication =
         require('../../../../classes/joynr/dispatching/types/SubscriptionPublication');
 var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
-module.exports = (function(SubscriptionPublication, RadioStation) {
 
     describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", function() {
 
@@ -56,5 +55,3 @@ module.exports = (function(SubscriptionPublication, RadioStation) {
         });
 
     });
-
-}(SubscriptionPublication, RadioStation)); // require

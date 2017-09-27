@@ -18,13 +18,11 @@
  * #L%
  */
 var Promise = require('../../global/Promise');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var Request = require('../dispatching/types/Request');
 var MessagingQos = require('../messaging/MessagingQos');
 var Typing = require('../util/Typing');
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-module.exports =
-        (function(Promise, Util, Request, MessagingQos, Typing, TypeRegistrySingleton) {
 
             var typeRegistry = TypeRegistrySingleton.getInstance();
 
@@ -312,5 +310,4 @@ module.exports =
                         }).then(sendRequestOnSuccess.bind(this));
                     };
 
-            return ProxyAttribute;
-        }(Promise, UtilInternal, Request, MessagingQos, Typing, TypeRegistrySingleton));
+            module.exports = ProxyAttribute;

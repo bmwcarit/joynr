@@ -32,18 +32,7 @@ var OnChangeWithKeepAliveSubscriptionQos =
 var ProviderQos = require('../../../../classes/joynr/types/ProviderQos');
 var uuid = require('../../../../classes/lib/uuid-annotated');
 var LoggerFactory = require('../../../../classes/joynr/system/LoggerFactory');
-module.exports =
-        (function(
-                SubscriptionUtil,
-                SubscriptionInformation,
-                SubscriptionRequest,
-                SubscriptionStop,
-                PeriodicSubscriptionQos,
-                OnChangeSubscriptionQos,
-                OnChangeWithKeepAliveSubscriptionQos,
-                ProviderQosSubscriptionUtil,
-                uuid,
-                LoggerFactory) {
+
             describe(
                     "libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil",
                     function() {
@@ -581,14 +570,3 @@ module.exports =
                                     });
                                 });
                     });
-        }(
-                SubscriptionUtil,
-                SubscriptionInformation,
-                SubscriptionRequest,
-                SubscriptionStop,
-                PeriodicSubscriptionQos,
-                OnChangeSubscriptionQos,
-                OnChangeWithKeepAliveSubscriptionQos,
-                ProviderQos,
-                uuid,
-                LoggerFactory));

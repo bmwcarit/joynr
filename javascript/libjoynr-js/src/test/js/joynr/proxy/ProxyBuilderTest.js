@@ -33,8 +33,7 @@ var InProcessAddress = require('../../../classes/joynr/messaging/inprocess/InPro
 var RadioProxy = require('../../../test-classes/joynr/vehicle/RadioProxy');
 var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
 var Promise = require('../../../classes/global/Promise');
-var WaitsFor = require('../../../test-classes/global/WaitsFor');
-module.exports = (function (ProxyBuilder, ProxyOperation, ProxyEvent, DiscoveryQos, MessagingQos, ProviderQos, ProviderScope, DiscoveryEntryWithMetaInfo, ArbitrationStrategyCollection, DiscoveryScope, Version, InProcessAddress, RadioProxy, RadioStation, Promise, waitsFor) {
+var waitsFor = require('../../../test-classes/global/WaitsFor');
 
             var safetyTimeoutDelta = 100;
 
@@ -429,5 +428,3 @@ module.exports = (function (ProxyBuilder, ProxyOperation, ProxyEvent, DiscoveryQ
                             }).catch(fail);
                         });
                     });
-
-}(ProxyBuilder, ProxyOperation, ProxyEvent, DiscoveryQos, MessagingQos, ProviderQos, ProviderScope, DiscoveryEntryWithMetaInfo, ArbitrationStrategyCollection, DiscoveryScope, Version, InProcessAddress, RadioProxy, RadioStation, Promise, WaitsFor));    // require

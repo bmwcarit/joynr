@@ -23,7 +23,6 @@ var SubscriptionRequest =
 var PeriodicSubscriptionQos = require('../../../../classes/joynr/proxy/PeriodicSubscriptionQos');
 var OnChangeWithKeepAliveSubscriptionQos =
         require('../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
-module.exports = (function(SubscriptionRequest, PeriodicSubscriptionQos) {
 
     describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
 
@@ -127,5 +126,3 @@ module.exports = (function(SubscriptionRequest, PeriodicSubscriptionQos) {
         });
 
     });
-
-}(SubscriptionRequest, PeriodicSubscriptionQos, OnChangeWithKeepAliveSubscriptionQos)); // require

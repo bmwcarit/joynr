@@ -18,11 +18,9 @@
  * #L%
  */
 var Promise = require('../../global/Promise');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var Typing = require('../util/Typing');
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-module.exports =
-        (function(Promise, Util, Typing, TypeRegistrySingleton) {
 
             var typeRegistry = TypeRegistrySingleton.getInstance();
 
@@ -300,6 +298,4 @@ module.exports =
                 return this.hasNotify;
             };
 
-            return ProviderAttribute;
-
-        }(Promise, UtilInternal, Typing, TypeRegistrySingleton));
+            module.exports = ProviderAttribute;

@@ -21,8 +21,6 @@ var JoynrMessage = require('../../../classes/joynr/messaging/JoynrMessage');
 var MqttAddress = require('../../../classes/joynr/system/RoutingTypes/MqttAddress');
 var MessageReplyToAddressCalculator =
         require('../../../classes/joynr/messaging/MessageReplyToAddressCalculator');
-module.exports =
-        (function(JoynrMessage, MqttAddress, MessageReplyToAddressCalculator) {
 
     describe("libjoynr-js.joynr.messaging.MessageReplyToAddressCalculator", function() {
         var messageReplyToAddressCalculator;
@@ -116,4 +114,3 @@ module.exports =
         });
 
     }); // describe MessageReplyToAddressCalculator
-        }(JoynrMessage, MqttAddress, MessageReplyToAddressCalculator)); // define

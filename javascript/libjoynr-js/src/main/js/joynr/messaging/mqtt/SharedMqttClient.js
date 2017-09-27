@@ -21,11 +21,10 @@ var Promise = require('../../../global/Promise');
 var Mqtt = require('../../../global/Mqtt');
 var JoynrMessage = require('../JoynrMessage');
 var MessagingQosEffort = require('../MessagingQosEffort');
-var JsonSerializer = require('../../util/JSONSerializer');
+var JSONSerializer = require('../../util/JSONSerializer');
 var LongTimer = require('../../util/LongTimer');
 var Typing = require('../../util/Typing');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports = (function (Promise, Mqtt, JoynrMessage, MessagingQosEffort, JSONSerializer, LongTimer, Typing, LoggerFactory) {
             var log = LoggerFactory.getLogger("joynr.messaging.mqtt.SharedMqttClient");
 
         /**
@@ -230,5 +229,4 @@ module.exports = (function (Promise, Mqtt, JoynrMessage, MessagingQosEffort, JSO
         SharedMqttClient.DEFAULT_QOS_LEVEL = 1;
         SharedMqttClient.BEST_EFFORT_QOS_LEVEL = 0;
 
-        return SharedMqttClient;
-}(Promise, Mqtt, JoynrMessage, MessagingQosEffort, JsonSerializer, LongTimer, Typing, LoggerFactory));
+        module.exports = SharedMqttClient;

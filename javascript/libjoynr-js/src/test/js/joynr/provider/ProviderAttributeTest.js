@@ -24,8 +24,7 @@ var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
 var ComplexRadioStation = require('../../../test-classes/joynr/datatypes/exampleTypes/ComplexRadioStation');
 var Country = require('../../../test-classes/joynr/datatypes/exampleTypes/Country');
 var Promise = require('../../../classes/global/Promise');
-var WaitsFor = require('../../../test-classes/global/WaitsFor');
-module.exports = (function (ProviderAttribute, ProviderQos, TestEnum, ComplexRadioStation, Country, Promise, waitsFor) {
+var waitsFor = require('../../../test-classes/global/WaitsFor');
 
             var safetyTimeoutDelta = 100;
 
@@ -479,5 +478,3 @@ module.exports = (function (ProviderAttribute, ProviderQos, TestEnum, ComplexRad
                                     }).catch(fail);
                         });
                     });
-
-}(ProviderAttribute, ProviderQos, TestEnum, ComplexRadioStation, Country, Promise, WaitsFor));    // require

@@ -19,11 +19,9 @@
  * #L%
  */
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var OnChangeSubscriptionQos = require('./OnChangeSubscriptionQos');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(Typing, Util, OnChangeSubscriptionQos, LoggerFactory) {
 
             var defaultSettings;
 
@@ -287,6 +285,4 @@ module.exports =
                         maxIntervalMs : OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS
                     };
 
-            return OnChangeWithKeepAliveSubscriptionQos;
-
-        }(Typing, UtilInternal, OnChangeSubscriptionQos, LoggerFactory));
+            module.exports = OnChangeWithKeepAliveSubscriptionQos;

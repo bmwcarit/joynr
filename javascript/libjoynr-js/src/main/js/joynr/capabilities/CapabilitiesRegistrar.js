@@ -19,13 +19,11 @@
  * #L%
  */
 var Promise = require('../../global/Promise');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var DiscoveryEntry = require('../../joynr/types/DiscoveryEntry');
 var ProviderScope = require('../../joynr/types/ProviderScope');
 var ParticipantIdStorage = require('./ParticipantIdStorage');
 var Version = require('../../joynr/types/Version');
-module.exports =
-        (function(Promise, Util, DiscoveryEntry, ProviderScope, ParticipantIdStorage, Version) {
     var defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
     /**
      * The Capabilities Registrar
@@ -274,6 +272,4 @@ module.exports =
         defaultExpiryIntervalMs = delay;
     };
 
-    return CapabilitiesRegistrar;
-
-        }(Promise, UtilInternal, DiscoveryEntry, ProviderScope, ParticipantIdStorage, Version));
+    module.exports = CapabilitiesRegistrar;

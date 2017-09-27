@@ -18,25 +18,15 @@
  * #L%
  */
 var Promise = require('../../global/Promise');
-var UtilInternal = require('../util/UtilInternal');
-var JsonSerializer = require('../util/JSONSerializer');
+var Util = require('../util/UtilInternal');
+var JSONSerializer = require('../util/JSONSerializer');
 var Typing = require('../util/Typing');
 var MethodUtil = require('../util/MethodUtil');
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
 var Request = require('../dispatching/types/Request');
 var OneWayRequest = require('../dispatching/types/OneWayRequest');
 var MessagingQos = require('../messaging/MessagingQos');
-module.exports =
-        (function(
-                Promise,
-                Util,
-                JSONSerializer,
-                Typing,
-                MethodUtil,
-                TypeRegistrySingleton,
-                Request,
-                OneWayRequest,
-                MessagingQos) {
+
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
              * Checks if the given operationSignature is valid to be called for the given operation
@@ -372,15 +362,4 @@ module.exports =
                 return Object.freeze(this);
             }
 
-            return ProxyOperation;
-
-        }(
-                Promise,
-                UtilInternal,
-                JsonSerializer,
-                Typing,
-                MethodUtil,
-                TypeRegistrySingleton,
-                Request,
-                OneWayRequest,
-                MessagingQos));
+            module.exports = ProxyOperation;

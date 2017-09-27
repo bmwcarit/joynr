@@ -44,7 +44,6 @@ var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/Discovery
 var Version = require('../../../classes/joynr/types/Version');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
 var uuid = require('../../../classes/lib/uuid-annotated');
-module.exports = (function (Util, Dispatcher, PublicationManager, SubscriptionManager, RequestReplyManager, InProcessMessagingStub, InProcessMessagingSkeleton, JoynrMessage, MessagingQos, MessagingQosEffort, OneWayRequest, Request, Reply, BroadcastSubscriptionRequest, MulticastSubscriptionRequest, SubscriptionRequest, SubscriptionReply, SubscriptionStop, MulticastPublication, SubscriptionPublication, TestEnum, TypeRegistrySingleton, DiscoveryEntryWithMetaInfo, Version, ProviderQos, uuid) {
 
             var providerId = "providerId";
             var proxyId = "proxyId";
@@ -725,5 +724,3 @@ module.exports = (function (Util, Dispatcher, PublicationManager, SubscriptionMa
                                     done();
                                 });
                     });
-
-}(Util, Dispatcher, PublicationManager, SubscriptionManager, RequestReplyManager, InProcessMessagingStub, InProcessMessagingSkeleton, JoynrMessage, MessagingQos, MessagingQosEffort, OneWayRequest, Request, Reply, BroadcastSubscriptionRequest, MulticastSubscriptionRequest, SubscriptionRequest, SubscriptionReply, SubscriptionStop, MulticastPublication, SubscriptionPublication, TestEnum, TypeRegistrySingleton, DiscoveryEntryWithMetaInfo, Version, ProviderQos, uuid));    // require

@@ -20,7 +20,6 @@
  */
 var BroadcastOutputParameters =
         require('../../../classes/joynr/provider/BroadcastOutputParameters');
-module.exports = (function(BroadcastOutputParameters) {
 
     describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
         it("is instantiable", function() {
@@ -117,5 +116,3 @@ module.exports = (function(BroadcastOutputParameters) {
         });
 
     });
-
-}(BroadcastOutputParameters)); // require

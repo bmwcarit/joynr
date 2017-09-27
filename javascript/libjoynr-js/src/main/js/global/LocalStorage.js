@@ -27,8 +27,6 @@
  */
 var Typing = require("../joynr/util/Typing");
 
-module.exports =
-        (function(Typing) {
     /**
      * constructor for a localStorage object
      * @param {Object}
@@ -51,5 +49,4 @@ module.exports =
                 return localStorage;
             };
 
-    return LocalStorage;
-        }(Typing));
+    module.exports = LocalStorage;

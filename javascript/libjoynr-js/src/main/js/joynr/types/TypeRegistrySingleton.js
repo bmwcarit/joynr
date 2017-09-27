@@ -19,7 +19,6 @@
  * #L%
  */
 var TypeRegistry = require('../start/TypeRegistry');
-module.exports = (function(TypeRegistry) {
     var instance;
 
     /**
@@ -52,5 +51,4 @@ module.exports = (function(TypeRegistry) {
      */
     TypeRegistrySingleton.addType = TypeRegistrySingleton.getInstance().addType;
 
-    return TypeRegistrySingleton;
-}(TypeRegistry));
+    module.exports = TypeRegistrySingleton;

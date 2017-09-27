@@ -18,10 +18,8 @@
  * #L%
  */
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(Typing, Util, LoggerFactory) {
 
     var log = LoggerFactory.getLogger("joynr/messaging/MessagingStubFactory");
     /**
@@ -64,5 +62,4 @@ module.exports =
                 return factory.build(address);
             };
 
-    return MessagingStubFactory;
-        }(Typing, UtilInternal, LoggerFactory));
+    module.exports = MessagingStubFactory;

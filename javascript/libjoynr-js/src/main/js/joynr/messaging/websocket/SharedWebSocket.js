@@ -21,10 +21,9 @@
 var Promise = require('../../../global/Promise');
 var WebSocket = require('../../../global/WebSocketNode');
 var Typing = require('../../util/Typing');
-var JsonSerializer = require('../../util/JSONSerializer');
+var JSONSerializer = require('../../util/JSONSerializer');
 var LongTimer = require('../../util/LongTimer');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTimer, LoggerFactory) {
             var log = LoggerFactory.getLogger("joynr.messaging.websocket.SharedWebSocket");
             /**
              * @param address
@@ -250,5 +249,4 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
 
                     };
             SharedWebSocket.EVENT_CODE_SHUTDOWN = 4000;
-            return SharedWebSocket;
-}(Promise, WebSocket, Typing, JsonSerializer, LongTimer, LoggerFactory));
+            module.exports = SharedWebSocket;

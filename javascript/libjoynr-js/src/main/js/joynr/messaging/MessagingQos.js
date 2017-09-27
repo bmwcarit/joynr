@@ -20,10 +20,8 @@
  */
 var defaultMessagingSettings = require('../start/settings/defaultMessagingSettings');
 var LoggerFactory = require('../system/LoggerFactory');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var MessagingQosEffort = require('./MessagingQosEffort');
-module.exports =
-        (function(defaultMessagingSettings, LoggerFactory, Util, MessagingQosEffort) {
 
             var log = LoggerFactory.getLogger("joynr/messaging/MessagingQos");
             var defaultSettings = {
@@ -191,6 +189,4 @@ module.exports =
              */
             MessagingQos.DEFAULT_COMPRESS = defaultSettings.compress;
 
-            return MessagingQos;
-
-        }(defaultMessagingSettings, LoggerFactory, UtilInternal, MessagingQosEffort));
+            module.exports = MessagingQos;

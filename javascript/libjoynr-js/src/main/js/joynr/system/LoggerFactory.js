@@ -18,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var LoggingManager = require('./LoggingManager');
-var DefaultLoggerConfiguration = require('./DefaultLoggerConfiguration');
-module.exports = (function(LoggingManager, defaultConfig) {
+var LoggingManager = require("./LoggingManager");
+var defaultConfig = require("./DefaultLoggerConfiguration");
+
     /**
      * @name LoggerFactory
      * @class
@@ -47,5 +47,4 @@ module.exports = (function(LoggingManager, defaultConfig) {
         return loggingManager.getLogger(name);
     };
 
-    return LoggerFactory;
-}(LoggingManager, DefaultLoggerConfiguration));
+    module.exports= LoggerFactory;

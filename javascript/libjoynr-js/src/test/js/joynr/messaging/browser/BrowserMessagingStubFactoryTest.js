@@ -21,8 +21,6 @@
 var Util = require('../../../../classes/joynr/util/Util');
 var BrowserMessagingStubFactory =
         require('../../../../classes/joynr/messaging/browser/BrowserMessagingStubFactory');
-module.exports =
-        (function(Util, BrowserMessagingStubFactory) {
 
     describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", function() {
         var returnValue, webMessagingStub, browserMessagingStubFactory;
@@ -113,5 +111,3 @@ module.exports =
         });
 
     });
-
-        }(Util, BrowserMessagingStubFactory));

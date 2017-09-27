@@ -30,10 +30,9 @@ var GlobalCapabilitiesDirectoryProxy = require('../../infrastructure/GlobalCapab
 var TypeRegistrySingleton = require('../../../joynr/types/TypeRegistrySingleton');
 var Typing = require('../../util/Typing');
 var LoggerFactory = require('../../system/LoggerFactory');
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var ProviderRuntimeException = require('../../exceptions/ProviderRuntimeException');
 var CapabilitiesUtil = require('../../util/CapabilitiesUtil');
-module.exports = (function (Promise, GlobalDiscoveryEntry, DiscoveryQos, DiscoveryScope, ProviderScope, GlobalCapabilitiesDirectoryProxy, TypeRegistrySingleton, Typing, LoggerFactory, Util, ProviderRuntimeException, CapabilitiesUtil) {
 
             /**
              * The CapabilitiesDiscovery looks up the local and global capabilities directory
@@ -482,6 +481,4 @@ module.exports = (function (Promise, GlobalDiscoveryEntry, DiscoveryQos, Discove
                         };
             }
 
-            return CapabilityDiscovery;
-
-}(Promise, GlobalDiscoveryEntry, DiscoveryQos, DiscoveryScope, ProviderScope, GlobalCapabilitiesDirectoryProxy, TypeRegistrySingleton, Typing, LoggerFactory, UtilInternal, ProviderRuntimeException, CapabilitiesUtil));
+            module.exports = CapabilityDiscovery;

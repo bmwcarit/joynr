@@ -18,9 +18,7 @@
  * #L%
  */
 var ProviderScope = require('../../../joynr/types/ProviderScope');
-var UtilInternal = require('../../util/UtilInternal');
-module.exports =
-        (function(ProviderScope, Util) {
+var Util = require('../../util/UtilInternal');
     var defaultClusterControllerSettings =
             function(settings) {
                 var defaultSettings = {};
@@ -62,7 +60,6 @@ module.exports =
                 ];
                 return defaultSettings;
             };
-    return function(settings) {
+    module.exports = function(settings) {
         return defaultClusterControllerSettings(settings);
     };
-        }(ProviderScope, UtilInternal));

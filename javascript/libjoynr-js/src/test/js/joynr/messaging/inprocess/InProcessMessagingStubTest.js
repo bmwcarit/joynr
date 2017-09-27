@@ -20,8 +20,6 @@
  */
 var InProcessMessagingStub =
         require('../../../../classes/joynr/messaging/inprocess/InProcessMessagingStub');
-module.exports =
-        (function(InProcessMessagingStub) {
 
     describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub", function() {
         var skeletonCallReturn, inProcessMessagingSkeleton, inProcessMessagingStub, joynrMessage;
@@ -59,5 +57,3 @@ module.exports =
         });
 
     });
-
-        }(InProcessMessagingStub));

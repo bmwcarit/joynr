@@ -19,7 +19,6 @@
  * #L%
  */
 var Typing = require('../../util/Typing');
-module.exports = (function(Typing) {
 
     /**
      * @name BrowserMessagingStub
@@ -47,6 +46,4 @@ module.exports = (function(Typing) {
         });
     };
 
-    return BrowserMessagingStub;
-
-}(Typing));
+    module.exports = BrowserMessagingStub;

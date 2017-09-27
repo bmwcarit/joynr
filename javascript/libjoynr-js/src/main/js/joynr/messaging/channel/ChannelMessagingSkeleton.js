@@ -23,8 +23,6 @@ var LoggerFactory = require('../../system/LoggerFactory');
 var DiagnosticTags = require('../../system/DiagnosticTags');
 var JoynrException = require('../../exceptions/JoynrException');
 var JoynrMessage = require('../JoynrMessage');
-module.exports =
-        (function(Typing, LoggerFactory, DiagnosticTags, JoynrException, JoynrMessage) {
 
  var log = LoggerFactory.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
     /**
@@ -68,6 +66,4 @@ module.exports =
                 }
             };
 
-    return ChannelMessagingSkeleton;
-
-        }(Typing, LoggerFactory, DiagnosticTags, JoynrException, JoynrMessage));
+    module.exports = ChannelMessagingSkeleton;

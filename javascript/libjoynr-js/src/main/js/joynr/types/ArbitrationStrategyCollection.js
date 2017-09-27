@@ -18,8 +18,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports =
-        (function() {
 
             /**
              * The ArbitrationStrategyCollection provides three different strategies that can be
@@ -133,6 +131,4 @@ module.exports =
                 });
             };
 
-            return ArbitrationStrategyCollection;
-
-        }());
+            module.exports = ArbitrationStrategyCollection;

@@ -17,7 +17,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * @name InProcessMessagingSkeleton
@@ -51,6 +50,4 @@ module.exports = (function() {
                 this._onReceive = newOnReceive;
             };
 
-    return InProcessMessagingSkeleton;
-
-}());
+    module.exports = InProcessMessagingSkeleton;

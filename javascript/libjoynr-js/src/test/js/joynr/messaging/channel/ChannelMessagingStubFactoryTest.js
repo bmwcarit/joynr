@@ -21,7 +21,6 @@ var Promise = require('../../../../classes/global/Promise');
 var ChannelAddress = require('../../../../classes/joynr/system/RoutingTypes/ChannelAddress');
 var ChannelMessagingSender = require('../../../../classes/joynr/messaging/channel/ChannelMessagingSender');
 var ChannelMessagingStubFactory = require('../../../../classes/joynr/messaging/channel/ChannelMessagingStubFactory');
-module.exports = (function (Promise, ChannelAddress, ChannelMessagingSender, ChannelMessagingStubFactory) {
 
     describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStubFactory", function() {
         var channelMessagingSender, channelMessagingStubFactory, destChannelId;
@@ -80,5 +79,3 @@ module.exports = (function (Promise, ChannelAddress, ChannelMessagingSender, Cha
         });
 
     });
-
-}(Promise, ChannelAddress, ChannelMessagingSender, ChannelMessagingStubFactory));

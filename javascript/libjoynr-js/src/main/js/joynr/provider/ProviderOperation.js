@@ -22,8 +22,7 @@ var MethodUtil = require('../util/MethodUtil');
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
 var ApplicationException = require('../exceptions/ApplicationException');
 var ProviderRuntimeException = require('../exceptions/ProviderRuntimeException');
-var UtilInternal = require('../util/UtilInternal');
-module.exports = (function (Typing, MethodUtil, TypeRegistrySingleton, ApplicationException, ProviderRuntimeException, Util) {
+var Util = require('../util/UtilInternal');
 
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
@@ -279,6 +278,4 @@ module.exports = (function (Typing, MethodUtil, TypeRegistrySingleton, Applicati
                 return Object.freeze(this);
             }
 
-            return ProviderOperation;
-
-}(Typing, MethodUtil, TypeRegistrySingleton, ApplicationException, ProviderRuntimeException, UtilInternal));
+            module.exports = ProviderOperation;

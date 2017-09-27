@@ -19,7 +19,6 @@
  */
 var Typing = require('./Typing');
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-module.exports = (function(Typing, TypeRegistrySingleton) {
 
     /**
      * @name Util
@@ -56,6 +55,4 @@ module.exports = (function(Typing, TypeRegistrySingleton) {
         return value;
     };
 
-    return Util;
-
-}(Typing, TypeRegistrySingleton));
+    module.exports = Util;

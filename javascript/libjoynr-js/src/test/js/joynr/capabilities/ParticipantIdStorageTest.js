@@ -20,7 +20,7 @@
  */
 //TODO: some of this relies on the dummy implementation, change accordingly when implementating
 var ParticipantIdStorage = require('../../../classes/joynr/capabilities/ParticipantIdStorage');
-module.exports = (function(ParticipantIdStorage) {
+
     describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", function() {
         var participantIdStorage, localStorageSpy, uuidSpy;
         var domain, provider, interfaceName, key, uuid, storedParticipantId;
@@ -82,5 +82,3 @@ module.exports = (function(ParticipantIdStorage) {
             done();
         });
     });
-
-}(ParticipantIdStorage)); // require

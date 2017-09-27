@@ -31,12 +31,11 @@ var SubscriptionUtil = require('./util/SubscriptionUtil');
 var LongTimer = require('../../util/LongTimer');
 var LoggerFactory = require('../../system/LoggerFactory');
 var uuid = require('../../../lib/uuid-annotated');
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
 var TypeRegistrySingleton = require('../../../joynr/types/TypeRegistrySingleton');
 var PublicationMissedException = require('../../exceptions/PublicationMissedException');
-var JsonSerializer = require('../../util/JSONSerializer');
-module.exports = (function (Promise, MessagingQos, MulticastWildcardRegexFactory, defaultMessagingSettings, SubscriptionQos, SubscriptionStop, SubscriptionRequest, MulticastSubscriptionRequest, BroadcastSubscriptionRequest, SubscriptionListener, SubscriptionUtil, LongTimer, LoggerFactory, uuid, Util, Typing, TypeRegistrySingleton, PublicationMissedException, JSONSerializer) {
+var JSONSerializer = require('../../util/JSONSerializer');
     /**
      * @name SubscriptionManager
      * @constructor
@@ -672,5 +671,4 @@ module.exports = (function (Promise, MessagingQos, MulticastWildcardRegexFactory
         };
     }
 
-    return SubscriptionManager;
-}(Promise, MessagingQos, MulticastWildcardRegexFactory, defaultMessagingSettings, SubscriptionQos, SubscriptionStop, SubscriptionRequest, MulticastSubscriptionRequest, BroadcastSubscriptionRequest, SubscriptionListener, SubscriptionUtil, LongTimer, LoggerFactory, uuid, UtilInternal, Typing, TypeRegistrySingleton, PublicationMissedException, JsonSerializer));
+    module.exports = SubscriptionManager;

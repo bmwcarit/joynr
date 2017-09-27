@@ -29,7 +29,6 @@ var DiscoveryQos = require('../../../classes/joynr/proxy/DiscoveryQos');
 var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
 var TestWithVersionProxy = require('../../../test-classes/joynr/tests/TestWithVersionProxy');
 var TestWithoutVersionProxy = require('../../../test-classes/joynr/tests/TestWithoutVersionProxy');
-module.exports = (function (Promise, RadioProxy, RadioStation, ProxyAttribute, ProxyOperation, ProxyEvent, TypeRegistrySingleton, DiscoveryQos, MessagingQos, TestWithVersionProxy, TestWithoutVersionProxy) {
 
             describe(
                     "libjoynr-js.joynr.proxy.Proxy",
@@ -126,5 +125,3 @@ module.exports = (function (Promise, RadioProxy, RadioStation, ProxyAttribute, P
                         });
 
                     });
-
-}(Promise, RadioProxy, RadioStation, ProxyAttribute, ProxyOperation, ProxyEvent, TypeRegistrySingleton, DiscoveryQos, MessagingQos, TestWithVersionProxy, TestWithoutVersionProxy));    // define

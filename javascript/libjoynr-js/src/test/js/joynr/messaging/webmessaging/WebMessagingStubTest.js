@@ -19,9 +19,7 @@
  * #L%
  */
 var WebMessagingStub = require('../../../../classes/joynr/messaging/webmessaging/WebMessagingStub');
-var JsonSerializer = require('../../../../classes/joynr/util/JSONSerializer');
-module.exports =
-        (function(WebMessagingStub, JSONSerializer) {
+var JSONSerializer = require('../../../../classes/joynr/util/JSONSerializer');
 
     describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", function() {
 
@@ -76,4 +74,3 @@ module.exports =
         });
 
     });
-        }(WebMessagingStub, JsonSerializer));

@@ -18,7 +18,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * The messaging QoS effort can be used to define how much effort should
@@ -53,5 +52,4 @@ module.exports = (function() {
         return value === this.NORMAL || value === this.BEST_EFFORT;
     };
 
-    return MessagingQosEffort;
-}());
+    module.exports = MessagingQosEffort;

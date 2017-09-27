@@ -25,8 +25,7 @@ var ChannelAddress = require('../../../../classes/joynr/system/RoutingTypes/Chan
 var Typing = require('../../../../classes/joynr/util/Typing');
 var LoggerFactory = require('../../../../classes/joynr/system/LoggerFactory');
 var provisioningRoot = require('../../../../test-classes/joynr/provisioning/provisioning_root');
-var WaitsFor = require('../../../../test-classes/global/WaitsFor');
-module.exports = (function (Promise, ChannelMessagingSender, JoynrMessage, ChannelAddress, Typing, LoggerFactory, provisioning, waitsFor) {
+var waitsFor = require('../../../../test-classes/global/WaitsFor');
 
             var log = LoggerFactory.getLogger("joynr.messaging.TestChannelMessagingSender");
 
@@ -149,5 +148,3 @@ module.exports = (function (Promise, ChannelMessagingSender, JoynrMessage, Chann
                                 });
 
                     });
-
-}(Promise, ChannelMessagingSender, JoynrMessage, ChannelAddress, Typing, LoggerFactory, provisioningRoot, WaitsFor));

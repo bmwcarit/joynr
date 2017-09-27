@@ -19,14 +19,13 @@
  * #L%
  */
 var Promise = require('../../../global/Promise');
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
-var JsonSerializer = require('../../util/JSONSerializer');
+var JSONSerializer = require('../../util/JSONSerializer');
 var JoynrMessage = require('../JoynrMessage');
 var LongTimer = require('../../util/LongTimer');
 var DiagnosticTags = require('../../system/DiagnosticTags');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports = (function (Promise, Util, Typing, JSONSerializer, JoynrMessage, LongTimer, DiagnosticTags, LoggerFactory) {
 
     /**
      * ChannelMessagingSender sends JoynrMessages to their destinations via Http
@@ -283,6 +282,4 @@ module.exports = (function (Promise, Util, Typing, JSONSerializer, JoynrMessage,
          };
     }
 
-    return ChannelMessagingSender;
-
-}(Promise, UtilInternal, Typing, JsonSerializer, JoynrMessage, LongTimer, DiagnosticTags, LoggerFactory));
+    module.exports = ChannelMessagingSender;

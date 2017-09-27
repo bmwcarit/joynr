@@ -19,8 +19,7 @@
  * #L%
  */
 var Promise = require('../../global/Promise');
-var Util = require('./Util');
-module.exports = (function (Promise, UtilExternal) {
+var UtilExternal = require('./Util');
 
     /**
      * @name UtilInternal
@@ -288,6 +287,4 @@ module.exports = (function (Promise, UtilExternal) {
     };
 
     UtilInternal.extend(UtilInternal, UtilExternal);
-    return UtilInternal;
-
-}(Promise, Util));
+    module.exports = UtilInternal;

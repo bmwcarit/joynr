@@ -21,9 +21,8 @@
 var ArbitrationStrategyCollection =
         require('../../joynr/types/ArbitrationStrategyCollection');
 var DiscoveryScope = require('../../joynr/types/DiscoveryScope');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports = (function(ArbitrationStrategyCollection, DiscoveryScope, Util, LoggerFactory) {
 
     var defaultSettings = {
         discoveryTimeoutMs : 10 * 60 * 1000, // 10 minutes
@@ -108,6 +107,4 @@ module.exports = (function(ArbitrationStrategyCollection, DiscoveryScope, Util, 
         defaultSettings = Util.extend({}, defaultSettings, settings);
     };
 
-    return DiscoveryQos;
-
-}(ArbitrationStrategyCollection, DiscoveryScope, UtilInternal, LoggerFactory));
+    module.exports = DiscoveryQos;

@@ -17,7 +17,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * @constructor
@@ -39,6 +38,4 @@ module.exports = (function() {
     InProcessMessagingStub.prototype.transmit = function transmit(joynrMessage) {
         return this._inProcessMessagingSkeleton.receiveMessage(joynrMessage);
     };
-    return InProcessMessagingStub;
-
-}());
+    module.exports = InProcessMessagingStub;

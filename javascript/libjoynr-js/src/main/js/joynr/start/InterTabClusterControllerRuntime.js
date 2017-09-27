@@ -65,7 +65,7 @@ var DiscoveryScope = require('../types/DiscoveryScope');
 var DiscoveryProvider = require('../system/DiscoveryProvider');
 var RoutingProvider = require('../system/RoutingProvider');
 var TypeRegistrySingleton = require('../types/TypeRegistrySingleton');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var DistributedLoggingAppenderConstructorFactory = require('../system/DistributedLoggingAppenderConstructorFactory');
 var DistributedLoggingAppender = require('../system/DistributedLoggingAppender');
 var WebWorkerMessagingAppender = require('../system/WebWorkerMessagingAppender');
@@ -78,7 +78,6 @@ var defaultClusterControllerSettings = require('./settings/defaultClusterControl
 var Typing = require('../util/Typing');
 var LongTimer = require('../util/LongTimer');
 var LocalStorage = require('../../global/LocalStorageNode');
-module.exports = (function (Promise, Arbitrator, ProviderBuilder, ProxyBuilder, GlobalDiscoveryEntry, CapabilitiesRegistrar, ParticipantIdStorage, CapabilityDiscovery, CapabilitiesStore, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, PlatformSecurityManager, ChannelMessagingSender, ChannelMessagingStubFactory, ChannelMessagingSkeleton, MqttMessagingStubFactory, MqttMessagingSkeleton, MqttAddress, SharedMqttClient, MqttMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, CommunicationModule, InProcessSkeleton, InProcessStub, ChannelAddress, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, BrowserMessagingStubFactory, BrowserMessagingSkeleton, BrowserAddress, WebMessagingStub, WebMessagingSkeleton, LongPollingChannelMessageReceiver, MessagingQos, DiscoveryQos, ProviderQos, ProviderScope, DiscoveryScope, DiscoveryProvider, RoutingProvider, TypeRegistrySingleton, Util, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, WebWorkerMessagingAppender, uuid, LoggingManager, LoggerFactory, defaultSettings, defaultInterTabSettings, defaultClusterControllerSettings, Typing, LongTimer, LocalStorage) {
             var JoynrStates = {
                 SHUTDOWN : "shut down",
                 STARTING : "starting",
@@ -773,6 +772,4 @@ module.exports = (function (Promise, Arbitrator, ProviderBuilder, ProxyBuilder, 
                 return Object.freeze(this);
             }
 
-            return InterTabClusterControllerRuntime;
-
-}(Promise, Arbitrator, ProviderBuilder, ProxyBuilder, GlobalDiscoveryEntry, CapabilitiesRegistrar, ParticipantIdStorage, CapabilityDiscovery, CapabilitiesStore, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, PlatformSecurityManager, ChannelMessagingSender, ChannelMessagingStubFactory, ChannelMessagingSkeleton, MqttMessagingStubFactory, MqttMessagingSkeleton, MqttAddress, SharedMqttClient, MqttMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, CommunicationModule, InProcessSkeleton, InProcessStub, ChannelAddress, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, BrowserMessagingStubFactory, BrowserMessagingSkeleton, BrowserAddress, WebMessagingStub, WebMessagingSkeleton, LongPollingChannelMessageReceiver, MessagingQos, DiscoveryQos, ProviderQos, ProviderScope, DiscoveryScope, DiscoveryProvider, RoutingProvider, TypeRegistrySingleton, UtilInternal, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, WebWorkerMessagingAppender, uuid, LoggingManager, LoggerFactory, defaultSettings, defaultInterTabSettings, defaultClusterControllerSettings, Typing, LongTimer, LocalStorage));
+            module.exports = InterTabClusterControllerRuntime;

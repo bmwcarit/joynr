@@ -19,11 +19,9 @@
  * #L%
  */
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var JoynrRuntimeException = require('./JoynrRuntimeException');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -82,6 +80,4 @@ module.exports =
     IllegalAccessException.prototype.constructor = IllegalAccessException;
     IllegalAccessException.prototype.name = "IllegalAccessException";
 
-    return IllegalAccessException;
-
-        }(TypeRegistrySingleton, UtilInternal, JoynrRuntimeException, LoggerFactory));
+    module.exports = IllegalAccessException;

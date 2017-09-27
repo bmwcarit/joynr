@@ -20,8 +20,6 @@
 
 var Typing = require('../../util/Typing');
 var BrowserMessagingStub = require('./BrowserMessagingStub');
-module.exports =
-        (function(Typing, BrowserMessagingStub) {
 
     /**
      * @constructor
@@ -53,6 +51,4 @@ module.exports =
         });
     };
 
-            return BrowserMessagingStubFactory;
-
-        }(Typing, BrowserMessagingStub));
+            module.exports = BrowserMessagingStubFactory;

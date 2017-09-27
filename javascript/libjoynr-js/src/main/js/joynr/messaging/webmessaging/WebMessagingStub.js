@@ -19,10 +19,8 @@
  * #L%
  */
 var Promise = require('../../../global/Promise');
-var JsonSerializer = require('../../util/JSONSerializer');
+var JSONSerializer = require('../../util/JSONSerializer');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports =
-        (function(Promise, JSONSerializer, LoggerFactory) {
 
     var log = LoggerFactory.getLogger("joynr/messaging/webmessaging/WebMessagingStub");
     /**
@@ -63,6 +61,4 @@ module.exports =
                 return Promise.resolve();
             };
 
-    return WebMessagingStub;
-
-        }(Promise, JsonSerializer, LoggerFactory));
+    module.exports = WebMessagingStub;

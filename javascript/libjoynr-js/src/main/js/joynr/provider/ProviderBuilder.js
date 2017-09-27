@@ -21,11 +21,6 @@
 var ProviderAttribute= require('./ProviderAttribute');
 var ProviderOperation = require('./ProviderOperation');
 var ProviderEvent = require('./ProviderEvent');
-module.exports =
-        (function(
-                ProviderAttribute,
-                ProviderOperation,
-                ProviderEvent) {
 
     var dependencies = {
         ProviderAttribute : ProviderAttribute,
@@ -56,8 +51,4 @@ module.exports =
         };
     };
 
-    return ProviderBuilder;
-        }(
-                ProviderAttribute,
-                ProviderOperation,
-                ProviderEvent));
+    module.exports = ProviderBuilder;

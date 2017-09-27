@@ -25,15 +25,14 @@ var Reply = require('../../../classes/joynr/dispatching/types/Reply');
 var TypeRegistrySingleton = require('../../../classes/joynr/types/TypeRegistrySingleton');
 var Typing = require('../../../classes/joynr/util/Typing');
 var UtilInternal = require('../../../classes/joynr/util/UtilInternal');
-var JsonSerializer = require('../../../classes/joynr/util/JSONSerializer');
+var JSONSerializer = require('../../../classes/joynr/util/JSONSerializer');
 var MethodInvocationException = require('../../../classes/joynr/exceptions/MethodInvocationException');
 var Version = require('../../../classes/joynr/types/Version');
 var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
 var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
 var Promise = require('../../../classes/global/Promise');
-var WaitsFor = require('../../../test-classes/global/WaitsFor');
-module.exports = (function (RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing, UtilInternal, JSONSerializer, MethodInvocationException, Version, DiscoveryEntryWithMetaInfo, ProviderQos, MessagingQos, Promise, waitsFor) {
+var waitsFor = require('../../../test-classes/global/WaitsFor');
             describe(
                     "libjoynr-js.joynr.dispatching.RequestReplyManager",
                     function() {
@@ -917,4 +916,3 @@ module.exports = (function (RequestReplyManager, OneWayRequest, Request, Reply, 
                             done();
                         });
                     });
-}(RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing, UtilInternal, JsonSerializer, MethodInvocationException, Version, DiscoveryEntryWithMetaInfo, ProviderQos, MessagingQos, Promise, WaitsFor));    // require

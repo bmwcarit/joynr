@@ -58,8 +58,7 @@ var CommonApiDbusAddress = require('./joynr/system/RoutingTypes/CommonApiDbusAdd
 var WebSocketAddress = require('./joynr/system/RoutingTypes/WebSocketAddress');
 var WebSocketClientAddress = require('./joynr/system/RoutingTypes/WebSocketClientAddress');
 var Util = require('./joynr/util/Util');
-module.exports =
-        (function() {
+
             // load all external modules
             var nsContext, nsElem, nsElems, i, value;
             var root = {};
@@ -97,5 +96,4 @@ module.exports =
                     nsContext = value;
                 }
             }
-            return root;
-        }());
+            module.exports = root;

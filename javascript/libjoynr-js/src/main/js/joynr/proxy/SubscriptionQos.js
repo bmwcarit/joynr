@@ -19,10 +19,8 @@
  * #L%
  */
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(Typing, Util, LoggerFactory) {
 
             var defaultSettings;
 
@@ -233,6 +231,4 @@ module.exports =
                 publicationTtlMs : SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS
             };
 
-            return SubscriptionQos;
-
-        }(Typing, UtilInternal, LoggerFactory));
+            module.exports = SubscriptionQos;

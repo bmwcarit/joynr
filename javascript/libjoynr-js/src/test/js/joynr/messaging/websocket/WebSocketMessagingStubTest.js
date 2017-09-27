@@ -27,14 +27,6 @@ var WebSocketProtocol = require('../../../../classes/joynr/system/RoutingTypes/W
 var WebSocketClientAddress =
         require('../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress');
 var SharedWebSocket = require('../../../../classes/joynr/messaging/websocket/SharedWebSocket');
-module.exports =
-        (function(
-                WebSocketMessagingStub,
-                WebSocketMessagingStubFactory,
-                WebSocketAddress,
-                WebSocketProtocol,
-                WebSocketClientAddress,
-                SharedWebSocket) {
 
     describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStub", function() {
         var webSocketMessagingStub = null;
@@ -88,10 +80,3 @@ module.exports =
         });
 
     });
-        }(
-                WebSocketMessagingStub,
-                WebSocketMessagingStubFactory,
-                WebSocketAddress,
-                WebSocketProtocol,
-                WebSocketClientAddress,
-                SharedWebSocket));

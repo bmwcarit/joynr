@@ -26,10 +26,8 @@
 var LoggerFactory = require('../../system/LoggerFactory');
 var DiagnosticTags = require('../../system/DiagnosticTags');
 var LongTimer = require('../../util/LongTimer');
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var JoynrMessage = require('../JoynrMessage');
-module.exports =
-        (function(LoggerFactory, DiagnosticTags, LongTimer, Util, JoynrMessage) {
 
             var log = LoggerFactory.getLogger("joynr/messaging/routing/MessageQueue");
             var defaultSettings;
@@ -154,5 +152,4 @@ module.exports =
                 this.currentQueueSize = 0;
             };
 
-            return MessageQueue;
-        }(LoggerFactory, DiagnosticTags, LongTimer, UtilInternal, JoynrMessage));
+            module.exports = MessageQueue;

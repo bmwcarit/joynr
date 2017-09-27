@@ -19,7 +19,6 @@
  * #L%
  */
 var InProcessMessagingStub = require('./InProcessMessagingStub');
-module.exports = (function(InProcessMessagingStub) {
 
             /**
              * @constructor
@@ -39,6 +38,4 @@ module.exports = (function(InProcessMessagingStub) {
                 return new InProcessMessagingStub(address.getSkeleton());
             };
 
-            return InProcessMessagingStubFactory;
-
-}(InProcessMessagingStub));
+            module.exports = InProcessMessagingStubFactory;

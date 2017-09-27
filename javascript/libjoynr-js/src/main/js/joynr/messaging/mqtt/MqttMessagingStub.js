@@ -19,9 +19,8 @@
  * #L%
  */
 var JoynrMessage = require('../JoynrMessage');
-var JsonSerializer = require('../../util/JSONSerializer');
+var JSONSerializer = require('../../util/JSONSerializer');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports = (function(JoynrMessage, JSONSerializer, LoggerFactory) {
 
     var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
     /**
@@ -54,6 +53,4 @@ module.exports = (function(JoynrMessage, JSONSerializer, LoggerFactory) {
 
     MqttMessagingStub.PRIORITY_LOW = "/low/";
 
-    return MqttMessagingStub;
-
-}(JoynrMessage, JsonSerializer, LoggerFactory));
+    module.exports = MqttMessagingStub;

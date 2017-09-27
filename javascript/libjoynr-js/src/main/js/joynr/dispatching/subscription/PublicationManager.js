@@ -33,11 +33,10 @@ var Typing = require('../../util/Typing');
 var SubscriptionUtil = require('./util/SubscriptionUtil');
 var SubscriptionException = require('../../exceptions/SubscriptionException');
 var ProviderRuntimeException = require('../../exceptions/ProviderRuntimeException');
-var JsonSerializer = require('../../util/JSONSerializer');
+var JSONSerializer = require('../../util/JSONSerializer');
 var LongTimer = require('../../util/LongTimer');
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports = (function (Promise, SubscriptionQos, PeriodicSubscriptionQos, BroadcastSubscriptionRequest, SubscriptionRequest, MulticastPublication, SubscriptionPublication, SubscriptionReply, SubscriptionStop, SubscriptionInformation, Reply, ProviderEvent, Typing, SubscriptionUtil, SubscriptionException, ProviderRuntimeException, JSONSerializer, LongTimer, Util, LoggerFactory) {
 
 
             /**
@@ -1595,5 +1594,4 @@ module.exports = (function (Promise, SubscriptionQos, PeriodicSubscriptionQos, B
             }
 
             PublicationManager.SUBSCRIPTIONS_STORAGE_PREFIX = "subscriptions";
-            return PublicationManager;
-}(Promise, SubscriptionQos, PeriodicSubscriptionQos, BroadcastSubscriptionRequest, SubscriptionRequest, MulticastPublication, SubscriptionPublication, SubscriptionReply, SubscriptionStop, SubscriptionInformation, Reply, ProviderEvent, Typing, SubscriptionUtil, SubscriptionException, ProviderRuntimeException, JsonSerializer, LongTimer, UtilInternal, LoggerFactory));
+            module.exports = PublicationManager;

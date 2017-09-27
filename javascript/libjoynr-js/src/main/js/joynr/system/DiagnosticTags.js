@@ -18,8 +18,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports =
-        (function() {
 
     /**
      * @exports DiagnosticTags
@@ -186,5 +184,4 @@ module.exports =
         };
     };
 
-    return DiagnosticTags;
-        }());
+    module.exports = DiagnosticTags;

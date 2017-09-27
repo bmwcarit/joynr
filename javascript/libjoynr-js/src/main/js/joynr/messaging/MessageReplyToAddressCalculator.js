@@ -19,8 +19,6 @@
  * #L%
  */
 var JoynrMessage = require('./JoynrMessage');
-module.exports =
-        (function(JoynrMessage) {
 
             /**
              * @name MessageReplyToAddressCalculator
@@ -70,6 +68,4 @@ module.exports =
                         }
                     };
 
-            return MessageReplyToAddressCalculator;
-
-        }(JoynrMessage));
+            module.exports = MessageReplyToAddressCalculator;

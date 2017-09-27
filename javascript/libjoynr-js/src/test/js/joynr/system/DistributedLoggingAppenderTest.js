@@ -21,7 +21,6 @@
 var LoggingManager = require('../../../classes/joynr/system/LoggingManager');
 var DistributedLoggingAppender =
         require('../../../classes/joynr/system/DistributedLoggingAppender');
-module.exports = (function(LoggingManager, DistributedLoggingAppender) {
     var loggingProxy;
 
     loggingProxy = {
@@ -122,4 +121,3 @@ module.exports = (function(LoggingManager, DistributedLoggingAppender) {
         });
 
     });
-}(LoggingManager, DistributedLoggingAppender));

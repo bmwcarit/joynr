@@ -18,10 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
 var uuid = require('../../../lib/uuid-annotated');
-module.exports = (function(Util, Typing, uuid) {
 
     var defaultSettings = {
         paramDatatypes : [],
@@ -79,6 +78,4 @@ module.exports = (function(Util, Typing, uuid) {
         return settings;
     }
 
-    return Request;
-
-}(UtilInternal, Typing, uuid));
+    module.exports = Request;

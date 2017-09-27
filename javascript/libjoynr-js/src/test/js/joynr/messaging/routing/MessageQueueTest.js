@@ -18,12 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var UtilInternal = require('../../../../classes/joynr/util/UtilInternal');
+var Util = require('../../../../classes/joynr/util/UtilInternal');
 var MessageQueue = require('../../../../classes/joynr/messaging/routing/MessageQueue');
 var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
 var Date = require('../../../../test-classes/global/Date');
-module.exports =
-        (function(Util, MessageQueue, JoynrMessage, Date) {
 
             var fakeTime;
 
@@ -201,4 +199,3 @@ module.exports =
                         });
 
                     });
-        }(UtilInternal, MessageQueue, JoynrMessage, Date));

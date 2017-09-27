@@ -29,11 +29,10 @@ var DiscoveryScope = require('../../../../classes/joynr/types/DiscoveryScope');
 var DiscoveryException = require('../../../../classes/joynr/exceptions/DiscoveryException');
 var NoCompatibleProviderFoundException = require('../../../../classes/joynr/exceptions/NoCompatibleProviderFoundException');
 var Version = require('../../../../classes/joynr/types/Version');
-var UtilInternal = require('../../../../classes/joynr/util/UtilInternal');
+var Util = require('../../../../classes/joynr/util/UtilInternal');
 var Promise = require('../../../../classes/global/Promise');
 var Date = require('../../../../test-classes/global/Date');
-var WaitsFor = require('../../../../test-classes/global/WaitsFor');
-module.exports = (function (Arbitrator, DiscoveryEntryWithMetaInfo, ProviderQos, CustomParameter, DiscoveryQos, ArbitrationStrategyCollection, DiscoveryQosGen, DiscoveryScope, DiscoveryException, NoCompatibleProviderFoundException, Version, Util, Promise, Date, waitsFor) {
+var waitsFor = require('../../../../test-classes/global/WaitsFor');
             var capabilities, fakeTime, staticArbitrationSettings, staticArbitrationSpy, domain;
             var interfaceName, discoveryQos, capDiscoverySpy, arbitrator, discoveryEntries, nrTimes;
             var discoveryEntriesWithDifferentProviderVersions;
@@ -838,4 +837,3 @@ module.exports = (function (Arbitrator, DiscoveryEntryWithMetaInfo, ProviderQos,
                                     arbitrationPromise.then(fail).catch(done);
                                 });
             });
-}(Arbitrator, DiscoveryEntryWithMetaInfo, ProviderQos, CustomParameter, DiscoveryQos, ArbitrationStrategyCollection, DiscoveryQosGen, DiscoveryScope, DiscoveryException, NoCompatibleProviderFoundException, Version, UtilInternal, Promise, Date, WaitsFor));    // require

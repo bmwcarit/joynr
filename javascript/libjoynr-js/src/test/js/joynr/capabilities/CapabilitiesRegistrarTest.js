@@ -27,7 +27,6 @@ var DiscoveryEntry = require('../../../classes/joynr/types/DiscoveryEntry');
 var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
 var Version = require('../../../classes/joynr/types/Version');
 var uuid = require('../../../classes/lib/uuid-annotated');
-module.exports = (function (Promise, CapabilitiesRegistrar, ProviderQos, GlobalDiscoveryEntry, ProviderAttribute, DiscoveryEntry, ProviderScope, Version, uuid) {
             describe(
                     "libjoynr-js.joynr.capabilities.CapabilitiesRegistrar",
                     function() {
@@ -426,5 +425,3 @@ module.exports = (function (Promise, CapabilitiesRegistrar, ProviderQos, GlobalD
                                 });
 
                     });
-
-}(Promise, CapabilitiesRegistrar, ProviderQos, GlobalDiscoveryEntry, ProviderAttribute, DiscoveryEntry, ProviderScope, Version, uuid));    // require

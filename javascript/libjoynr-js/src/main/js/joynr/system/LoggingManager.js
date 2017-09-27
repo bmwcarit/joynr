@@ -18,10 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var log4JavascriptDependency = require('../../lib/log4javascriptNode');
+var log4javascript = require('../../lib/log4javascriptNode');
 var ConsoleAppender = require('./ConsoleAppenderNode');
-module.exports =
-        (function(log4javascript, ConsoleAppender) {
+
             /**
              * @name LoggingManager
              * @class
@@ -358,5 +357,4 @@ module.exports =
             LoggingManager.Appender = log4javascript.Appender;
             LoggingManager.NullLayout = log4javascript.NullLayout;
 
-            return LoggingManager;
-        }(log4JavascriptDependency, ConsoleAppender));
+module.exports = LoggingManager;

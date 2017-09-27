@@ -19,7 +19,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * A log4javascript Appender that sends a logged message from a WebWorker to the main context to
@@ -37,7 +36,8 @@ module.exports = (function() {
      * @function
      */
     WebWorkerMessagingAppender.prototype.append = function(loggingEvent) {
-        var formattedMessage = loggingEvent.getCombinedMessages(), appender = this;
+        var formattedMessage = loggingEvent.getCombinedMessages(),
+            appender = this;
 
         var getFormattedMessage = function() {
             try {
@@ -46,20 +46,16 @@ module.exports = (function() {
                 if (layout.ignoresThrowable() && loggingEvent.exception) {
                     formattedMessage += loggingEvent.getThrowableStrRep();
                 }
-            } catch (e) {
-
-            }
+            } catch (e) {}
             return formattedMessage;
         };
 
         formattedMessage = "[WEBWORKER]" + getFormattedMessage();
         postMessage({
-            type : "log",
-            level : loggingEvent.level.name.toLowerCase(),
-            message : formattedMessage
+            type: "log",
+            level: loggingEvent.level.name.toLowerCase(),
+            message: formattedMessage
         });
     };
 
-    return WebWorkerMessagingAppender;
-
-}());
+    module.exports = WebWorkerMessagingAppender;

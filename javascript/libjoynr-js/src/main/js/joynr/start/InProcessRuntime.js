@@ -56,7 +56,7 @@ var MessagingQos = require('../messaging/MessagingQos');
 var DiscoveryQos = require('../proxy/DiscoveryQos');
 var DiscoveryScope = require('../../joynr/types/DiscoveryScope');
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var CapabilitiesUtil = require('../util/CapabilitiesUtil');
 var DistributedLoggingAppenderConstructorFactory = require('../system/DistributedLoggingAppenderConstructorFactory');
 var WebWorkerMessagingAppender = require('../system/WebWorkerMessagingAppender');
@@ -69,7 +69,6 @@ var defaultClusterControllerSettings = require('./settings/defaultClusterControl
 var Typing = require('../util/Typing');
 var LongTimer = require('../util/LongTimer');
 var LocalStorage = require('../../global/LocalStorageNode');
-module.exports = (function (Promise, Arbitrator, ProviderBuilder, ProxyBuilder, GlobalDiscoveryEntry, CapabilitiesRegistrar, ParticipantIdStorage, CapabilityDiscovery, CapabilitiesStore, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, PlatformSecurityManager, ChannelMessagingSender, ChannelMessagingStubFactory, ChannelMessagingSkeleton, ChannelAddress, MqttMessagingStubFactory, MqttMessagingSkeleton, MqttAddress, SharedMqttClient, MqttMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, CommunicationModule, InProcessSkeleton, InProcessStub, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, LongPollingChannelMessageReceiver, MessagingQos, DiscoveryQos, DiscoveryScope, TypeRegistrySingleton, Util, CapabilitiesUtil, DistributedLoggingAppenderConstructorFactory, WebWorkerMessagingAppender, LoggingManager, uuid, LoggerFactory, defaultSettings, defaultLibjoynrSettings, defaultClusterControllerSettings, Typing, LongTimer, LocalStorage) {
             var JoynrStates = {
                 SHUTDOWN : "shut down",
                 STARTING : "starting",
@@ -626,5 +625,4 @@ module.exports = (function (Promise, Arbitrator, ProviderBuilder, ProxyBuilder, 
                 return Object.freeze(this);
             }
 
-            return InProcessRuntime;
-}(Promise, Arbitrator, ProviderBuilder, ProxyBuilder, GlobalDiscoveryEntry, CapabilitiesRegistrar, ParticipantIdStorage, CapabilityDiscovery, CapabilitiesStore, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, PlatformSecurityManager, ChannelMessagingSender, ChannelMessagingStubFactory, ChannelMessagingSkeleton, ChannelAddress, MqttMessagingStubFactory, MqttMessagingSkeleton, MqttAddress, SharedMqttClient, MqttMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, CommunicationModule, InProcessSkeleton, InProcessStub, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, LongPollingChannelMessageReceiver, MessagingQos, DiscoveryQos, DiscoveryScope, TypeRegistrySingleton, UtilInternal, CapabilitiesUtil, DistributedLoggingAppenderConstructorFactory, WebWorkerMessagingAppender, LoggingManager, uuid, LoggerFactory, defaultSettings, defaultLibjoynrSettings, defaultClusterControllerSettings, Typing, LongTimer, LocalStorage));
+            module.exports = InProcessRuntime;

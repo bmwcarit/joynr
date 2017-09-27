@@ -19,10 +19,8 @@
  * #L%
  */
 var BroadcastOutputParameters = require('./BroadcastOutputParameters');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var SubscriptionUtil = require('../dispatching/subscription/util/SubscriptionUtil');
-module.exports =
-        (function(BroadcastOutputParameters, Util, SubscriptionUtil) {
 
     /**
      * Constructor of ProviderEvent object that is used in the generation of provider objects
@@ -154,6 +152,4 @@ module.exports =
         return Object.freeze(this);
     }
 
-    return ProviderEvent;
-
-        }(BroadcastOutputParameters, UtilInternal, SubscriptionUtil));
+    module.exports = ProviderEvent;

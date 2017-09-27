@@ -20,15 +20,14 @@
  */
 var ProviderOperation = require('../../../classes/joynr/provider/ProviderOperation');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
-var Operation = require('../../../test-classes/test/data/Operation');
+var testDataOperation = require('../../../test-classes/test/data/Operation');
 var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
-var UtilInternal = require('../../../classes/joynr/util/UtilInternal');
+var Util = require('../../../classes/joynr/util/UtilInternal');
 var TypeRegistrySingleton = require('../../../classes/joynr/types/TypeRegistrySingleton');
 var Promise = require('../../../classes/global/Promise');
 var ProviderRuntimeException = require('../../../classes/joynr/exceptions/ProviderRuntimeException');
 var ApplicationException = require('../../../classes/joynr/exceptions/ApplicationException');
-var WaitsFor = require('../../../test-classes/global/WaitsFor');
-module.exports = (function (ProviderOperation, ProviderQos, testDataOperation, TestEnum, Util, TypeRegistrySingleton, Promise, ProviderRuntimeException, ApplicationException, waitsFor) {
+var waitsFor = require('../../../test-classes/global/WaitsFor');
 
     var safetyTimeoutDelta = 100;
 
@@ -382,4 +381,3 @@ module.exports = (function (ProviderOperation, ProviderQos, testDataOperation, T
             }).catch(fail);
         });
     });
-}(ProviderOperation, ProviderQos, Operation, TestEnum, UtilInternal, TypeRegistrySingleton, Promise, ProviderRuntimeException, ApplicationException, WaitsFor));    // require

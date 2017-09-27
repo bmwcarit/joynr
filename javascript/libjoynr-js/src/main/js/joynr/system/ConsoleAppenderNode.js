@@ -19,7 +19,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * A log4javascript Appender that sends a logged message from a WebWorker to the main context to
@@ -62,6 +61,4 @@ module.exports = (function() {
         return "ConsoleAppender";
     };
 
-    return ConsoleAppender;
-
-}());
+    module.exports = ConsoleAppender;

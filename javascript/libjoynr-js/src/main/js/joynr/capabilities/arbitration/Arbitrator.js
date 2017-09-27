@@ -20,11 +20,10 @@
  */
 var Promise = require('../../../global/Promise');
 var DiscoveryQos = require('../../../joynr/types/DiscoveryQos');
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var DiscoveryException = require('../../exceptions/DiscoveryException');
 var NoCompatibleProviderFoundException = require('../../exceptions/NoCompatibleProviderFoundException');
 var LongTimer = require('../../util/LongTimer');
-module.exports = (function (Promise, DiscoveryQos, Util, DiscoveryException, NoCompatibleProviderFoundException, LongTimer) {
 
     /**
      * checks if the provided discoveryEntry supports onChange subscriptions if required
@@ -316,5 +315,4 @@ module.exports = (function (Promise, DiscoveryQos, Util, DiscoveryException, NoC
         this._started = false;
     };
 
-            return Arbitrator;
-}(Promise, DiscoveryQos, UtilInternal, DiscoveryException, NoCompatibleProviderFoundException, LongTimer));
+            module.exports = Arbitrator;

@@ -18,7 +18,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * @name MulticastWildcardRegexFactory
@@ -42,6 +41,4 @@ module.exports = (function() {
         return patternString;
     };
 
-    return MulticastWildcardRegexFactory;
-
-}());
+    module.exports = MulticastWildcardRegexFactory;

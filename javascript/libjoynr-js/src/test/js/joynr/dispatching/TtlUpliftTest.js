@@ -18,7 +18,7 @@
  * limitations under the License.
  * #L%
  */
-var UtilInternal = require('../../../classes/joynr/util/UtilInternal');
+var Util = require('../../../classes/joynr/util/UtilInternal');
 var Dispatcher = require('../../../classes/joynr/dispatching/Dispatcher');
 var JoynrMessage = require('../../../classes/joynr/messaging/JoynrMessage');
 var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
@@ -36,23 +36,6 @@ var MulticastPublication = require('../../../classes/joynr/dispatching/types/Mul
 var SubscriptionPublication =
         require('../../../classes/joynr/dispatching/types/SubscriptionPublication');
 var uuid = require('../../../classes/lib/uuid-annotated');
-module.exports =
-        (function(
-                Util,
-                Dispatcher,
-                JoynrMessage,
-                MessagingQos,
-                DiscoveryEntryWithMetaInfo,
-                Request,
-                Reply,
-                BroadcastSubscriptionRequest,
-                MulticastSubscriptionRequest,
-                SubscriptionRequest,
-                SubscriptionReply,
-                SubscriptionStop,
-                MulticastPublication,
-                SubscriptionPublication,
-                uuid) {
 
     var providerId = "providerId";
     var providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
@@ -805,20 +788,3 @@ module.exports =
         }); // describe "with ttlUplift"
 
     }); // describe ttlUpliftTest
-
-        }(
-                UtilInternal,
-                Dispatcher,
-                JoynrMessage,
-                MessagingQos,
-                DiscoveryEntryWithMetaInfo,
-                Request,
-                Reply,
-                BroadcastSubscriptionRequest,
-                MulticastSubscriptionRequest,
-                SubscriptionRequest,
-                SubscriptionReply,
-                SubscriptionStop,
-                MulticastPublication,
-                SubscriptionPublication,
-                uuid)); // require

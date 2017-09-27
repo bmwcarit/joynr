@@ -21,8 +21,6 @@
 var Typing = require('../../util/Typing');
 var MulticastSubscriptionQos = require('../../proxy/MulticastSubscriptionQos');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports =
-        (function(Typing, MulticastSubscriptionQos, LoggerFactory) {
     var log = LoggerFactory.getLogger("joynr/dispatching/types/MulticastSubscriptionRequest");
     var defaultSettings = {
         qos : new MulticastSubscriptionQos()
@@ -112,6 +110,4 @@ module.exports =
         configurable : false
     });
 
-    return MulticastSubscriptionRequest;
-
-        }(Typing, MulticastSubscriptionQos, LoggerFactory));
+    module.exports = MulticastSubscriptionRequest;

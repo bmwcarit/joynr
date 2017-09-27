@@ -18,7 +18,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * Note: This skeleton is merely the holder of the proxy object and does not get informed about
@@ -51,5 +50,4 @@ module.exports = (function() {
         return this._proxyObject;
     };
 
-    return InProcessSkeleton;
-}());
+    module.exports = InProcessSkeleton;

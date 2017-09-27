@@ -20,7 +20,6 @@
  */
 var Typing = require('../../util/Typing');
 var MqttMessagingStub = require('./MqttMessagingStub');
-module.exports = (function(Typing, MqttMessagingStub) {
 
     /**
      * @constructor
@@ -49,6 +48,4 @@ module.exports = (function(Typing, MqttMessagingStub) {
         });
     };
 
-    return MqttMessagingStubFactory;
-
-}(Typing, MqttMessagingStub));
+    module.exports = MqttMessagingStubFactory;

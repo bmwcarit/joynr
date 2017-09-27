@@ -21,8 +21,6 @@
 var ProviderEvent = require('../../../classes/joynr/provider/ProviderEvent');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
 var BroadcastFilterParameters = require('../../../classes/joynr/proxy/BroadcastFilterParameters');
-module.exports =
-        (function(ProviderEvent, ProviderQos, BroadcastFilterParameters) {
 
             var safetyTimeoutDelta = 100;
 
@@ -258,4 +256,3 @@ module.exports =
                                     }).toThrow();
                         });
                     });
-        }(ProviderEvent, ProviderQos, BroadcastFilterParameters)); // require

@@ -20,7 +20,6 @@
  */
 var Typing = require('../../util/Typing');
 var MqttAddress = require('../../system/RoutingTypes/MqttAddress');
-module.exports = (function(Typing, MqttAddress) {
 
     /**
      * @constructor MqttMulticastAddressCalculator
@@ -50,6 +49,4 @@ module.exports = (function(Typing, MqttAddress) {
         });
     };
 
-    return MqttMulticastAddressCalculator;
-
-}(Typing, MqttAddress));
+    module.exports = MqttMulticastAddressCalculator;

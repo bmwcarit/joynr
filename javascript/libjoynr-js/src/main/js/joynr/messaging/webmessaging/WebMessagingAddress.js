@@ -19,7 +19,6 @@
  * #L%
  */
 var Typing = require('../../util/Typing');
-module.exports = (function(Typing) {
 
     /**
      * @constructor WebMessagingAddress
@@ -55,6 +54,4 @@ module.exports = (function(Typing) {
         };
     }
 
-    return WebMessagingAddress;
-
-}(Typing));
+    module.exports = WebMessagingAddress;

@@ -20,7 +20,6 @@
  */
 var WebMessagingAddress =
         require('../../../../classes/joynr/messaging/webmessaging/WebMessagingAddress');
-module.exports = (function(WebMessagingAddress) {
 
     describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingAddress", function() {
         var window, origin, webMessagingAddress;
@@ -103,5 +102,3 @@ module.exports = (function(WebMessagingAddress) {
         });
 
     });
-
-}(WebMessagingAddress));

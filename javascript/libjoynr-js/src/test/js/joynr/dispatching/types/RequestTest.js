@@ -20,7 +20,6 @@
 var Request = require('../../../../classes/joynr/dispatching/types/Request');
 var TypeRegistrySingleton = require('../../../../classes/joynr/types/TypeRegistrySingleton');
 var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
-module.exports = (function(Request, TypeRegistrySingleton, RadioStation) {
 
     describe("libjoynr-js.joynr.dispatching.types.Request", function() {
 
@@ -54,6 +53,3 @@ module.exports = (function(Request, TypeRegistrySingleton, RadioStation) {
         });
 
     });
-
-}(Request, TypeRegistrySingleton, RadioStation)); // require
-/*jslint nomen: false */

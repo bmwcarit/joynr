@@ -31,7 +31,6 @@ var Promise = require('../../../classes/global/Promise');
 var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
 var Version = require('../../../classes/joynr/types/Version');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
-module.exports = (function (ProxyAttribute, DiscoveryQos, MessagingQos, OnChangeWithKeepAliveSubscriptionQos, RequestReplyManager, Request, TestEnum, ComplexTestType, TypeRegistrySingleton, Promise, DiscoveryEntryWithMetaInfo, Version, ProviderQos) {
 
             var asyncTimeout = 5000;
 
@@ -511,7 +510,4 @@ module.exports = (function (ProxyAttribute, DiscoveryQos, MessagingQos, OnChange
                                     }).toThrow();
                                     done();
                                 });
-                    });
-
-}(ProxyAttribute, DiscoveryQos, MessagingQos, OnChangeWithKeepAliveSubscriptionQos, RequestReplyManager, Request, TestEnum, ComplexTestType, TypeRegistrySingleton, Promise, DiscoveryEntryWithMetaInfo, Version, ProviderQos));    // require
-                                                                                                                                                                                                                                                                                                                                                                                                               /*jslint nomen: false */
+                    }); /*jslint nomen: false */
