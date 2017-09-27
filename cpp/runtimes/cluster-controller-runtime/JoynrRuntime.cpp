@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+#include "joynr/IKeychain.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/Settings.h"
@@ -23,6 +24,7 @@
 
 namespace joynr
 {
+
 std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
         const std::string& pathToLibjoynrSettings,
         const std::string& pathToMessagingSettings,

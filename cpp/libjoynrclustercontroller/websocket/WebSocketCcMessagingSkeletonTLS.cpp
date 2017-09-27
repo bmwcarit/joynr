@@ -32,9 +32,10 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
         const std::string& caPemFile,
         const std::string& certPemFile,
         const std::string& privateKeyPemFile)
-        : WebSocketCcMessagingSkeleton<websocketpp::config::asio_tls>(ioService,
-                                                                      messageRouter,
-                                                                      messagingStubFactory)
+        : WebSocketCcMessagingSkeleton<websocketpp::config::asio_tls>(
+                  ioService,
+                  std::move(messageRouter),
+                  std::move(messagingStubFactory))
 {
     // ensure that OpenSSL is correctly initialized
     ::SSL_library_init();
@@ -43,10 +44,55 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
 
     endpoint.set_tls_init_handler([this, caPemFile, certPemFile, privateKeyPemFile](
                                           ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
-        return createSSLContext(caPemFile, certPemFile, privateKeyPemFile, hdl);
+        return createSSLContext(caPemFile, certPemFile, privateKeyPemFile, std::move(hdl));
     });
 
     startAccept(serverAddress.getPort());
+}
+
+bool WebSocketCcMessagingSkeletonTLS::validateIncomingMessage(
+        const ConnectionHandle& hdl,
+        std::shared_ptr<ImmutableMessage> message)
+{
+    std::lock_guard<std::mutex> lock(clientsMutex);
+
+    auto it = clients.find(hdl);
+    if (it == clients.cend()) {
+        // This should never be the case
+        JOYNR_LOG_FATAL(logger,
+                        "Clients map contains no entry for connection/ConnectionHandle of incoming "
+                        "message with ID {}.",
+                        message->getId());
+        return false;
+    }
+    const std::string& expectedOwnerId = it->second.ownerId;
+    if (expectedOwnerId.empty()) {
+        // This should never happen because the ownerId is already checked in sslContext verify
+        // callback
+        JOYNR_LOG_ERROR(logger, "OwnerId (common name) of the TLS certificate is empty.");
+        return false;
+    }
+    smrf::ByteArrayView signature;
+    try {
+        signature = message->getSignature();
+    } catch (smrf::EncodingException& error) {
+        JOYNR_LOG_ERROR(logger,
+                        "Validation of message with ID {} failed: {}. Message will be dropped.",
+                        message->getId(),
+                        error.what());
+        return false;
+    }
+
+    const std::string signatureString(
+            reinterpret_cast<const char*>(signature.data()), signature.size());
+    if (expectedOwnerId != signatureString) {
+        JOYNR_LOG_ERROR(logger,
+                        "Validation of message with ID {} failed: invalid signature. "
+                        "Message will be dropped.",
+                        message->getId());
+        return false;
+    }
+    return true;
 }
 
 std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagingSkeletonTLS::
@@ -71,7 +117,9 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
         sslContext->use_private_key_file(privateKeyPemFile, SSLContext::pem);
 
         using VerifyContext = websocketpp::lib::asio::ssl::verify_context;
-        auto getCNFromCertificate = [this, hdl](bool preverified, VerifyContext& ctx) {
+        auto getCNFromCertificate = [ this, hdl = std::move(hdl) ](
+                bool preverified, VerifyContext& ctx)
+        {
             // getting cert out of the verification context
             X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
 
@@ -80,16 +128,23 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
             mococrw::DistinguishedName distinguishedName =
                     mococrw::DistinguishedName::fromX509Name(certSubName);
             const std::string ownerId(distinguishedName.commonName());
+            if (ownerId.empty()) {
+                JOYNR_LOG_ERROR(logger,
+                                "Rejecting secure websocket connection because the ownerId "
+                                "(common name) of the TLS client certificate is empty.");
+                return false;
+            }
 
-            // mapping the connetion handler to the ownerId in clients map
+            // mapping the connection handler to the ownerId in clients map
             joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
-            auto certEntry = CertEntry(std::move(clientAddress), ownerId);
-            clients.emplace(hdl, std::move(certEntry));
+            auto certEntry = CertEntry(std::move(clientAddress), std::move(ownerId));
+            std::lock_guard<std::mutex> lock(clientsMutex);
+            clients[std::move(hdl)] = std::move(certEntry);
             return preverified;
         };
 
         // read ownerId of client's certificate and store it in clients map
-        sslContext->set_verify_callback(getCNFromCertificate);
+        sslContext->set_verify_callback(std::move(getCNFromCertificate));
 
     } catch (boost::system::system_error& e) {
         JOYNR_LOG_ERROR(logger, "Failed to initialize TLS session {}", e.what());

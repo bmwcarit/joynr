@@ -16,8 +16,11 @@
  * limitations under the License.
  * #L%
  */
-#include <cassert>
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+
+#include <cassert>
+
+#include <websocketpp/common/connection_hdl.hpp>
 
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
@@ -38,12 +41,12 @@ INIT_LOGGER(LibJoynrWebSocketRuntime);
 
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings,
                                                    std::shared_ptr<IKeychain> keyChain)
-        : LibJoynrRuntime(std::move(settings)),
+        : LibJoynrRuntime(std::move(settings), std::move(keyChain)),
           wsSettings(*this->settings),
           websocket(nullptr),
           initializationMsg()
 {
-    createWebsocketClient(keyChain);
+    createWebsocketClient();
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
@@ -131,7 +134,7 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
     websocket->send(smrf::ByteArrayView(rawMessage), onFailure);
 }
 
-void LibJoynrWebSocketRuntime::createWebsocketClient(std::shared_ptr<IKeychain> keyChain)
+void LibJoynrWebSocketRuntime::createWebsocketClient()
 {
     system::RoutingTypes::WebSocketAddress webSocketAddress =
             wsSettings.createClusterControllerMessagingAddress();
@@ -159,9 +162,12 @@ void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
 {
     auto wsLibJoynrMessagingSkeleton =
             std::make_shared<WebSocketLibJoynrMessagingSkeleton>(util::as_weak_ptr(messageRouter));
-    websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](smrf::ByteVector&& msg) {
-        wsLibJoynrMessagingSkeleton->onMessageReceived(std::move(msg));
-    });
+    using ConnectionHandle = websocketpp::connection_hdl;
+    websocket->registerReceiveCallback(
+            [wsLibJoynrMessagingSkeleton](ConnectionHandle&& hdl, smrf::ByteVector&& msg) {
+                std::ignore = hdl;
+                wsLibJoynrMessagingSkeleton->onMessageReceived(std::move(msg));
+            });
 }
 
 } // namespace joynr

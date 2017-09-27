@@ -73,11 +73,11 @@ public:
             std::shared_ptr<IMessageRouter> messageRouter,
             std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory)
             : endpoint(),
+              clientsMutex(),
               clients(),
               receiver(),
-              clientsMutex(),
-              messageRouter(messageRouter),
-              messagingStubFactory(messagingStubFactory)
+              messageRouter(std::move(messageRouter)),
+              messagingStubFactory(std::move(messagingStubFactory))
     {
 
         websocketpp::lib::error_code initializationError;
@@ -103,8 +103,9 @@ public:
                                                std::placeholders::_1,
                                                std::placeholders::_2));
 
-        receiver.registerReceiveCallback(
-                [this](smrf::ByteVector&& msg) { onMessageReceived(std::move(msg)); });
+        receiver.registerReceiveCallback([this](ConnectionHandle&& hdl, smrf::ByteVector&& msg) {
+            onMessageReceived(std::move(hdl), std::move(msg));
+        });
     }
 
     /**
@@ -142,6 +143,9 @@ protected:
     ADD_LOGGER(WebSocketCcMessagingSkeleton);
     Server endpoint;
 
+    virtual bool validateIncomingMessage(const ConnectionHandle& hdl,
+                                         std::shared_ptr<ImmutableMessage> message) = 0;
+
     void startAccept(std::uint16_t port)
     {
         try {
@@ -161,8 +165,8 @@ protected:
         }
         explicit CertEntry(
                 const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
-                std::string owenrId)
-                : webSocketClientAddress(webSocketClientAddress), ownerId(std::move(owenrId))
+                std::string ownerId)
+                : webSocketClientAddress(webSocketClientAddress), ownerId(std::move(ownerId))
         {
         }
         CertEntry(CertEntry&&) = default;
@@ -171,12 +175,13 @@ protected:
         std::string ownerId;
     };
 
+    std::mutex clientsMutex;
     std::map<ConnectionHandle, CertEntry, std::owner_less<ConnectionHandle>> clients;
 
 private:
     void onConnectionClosed(ConnectionHandle hdl)
     {
-        std::unique_lock<std::mutex> lock(clientsMutex);
+        std::lock_guard<std::mutex> lock(clientsMutex);
         auto it = clients.find(hdl);
         if (it != clients.cend()) {
             messagingStubFactory->onMessagingStubClosed(it->second.webSocketClientAddress);
@@ -226,7 +231,7 @@ private:
                               std::placeholders::_1,
                               std::placeholders::_2));
             {
-                std::unique_lock<std::mutex> lock(clientsMutex);
+                std::lock_guard<std::mutex> lock(clientsMutex);
                 // search whether this connection handler has been mapped to a cert. (secure
                 // connection)
                 // if so, then move the client address to it. Otherwise, make a new entry with an
@@ -241,14 +246,14 @@ private:
                 }
             }
 
-            messageRouter->sendMessages(clientAddress);
+            messageRouter->sendMessages(std::move(clientAddress));
         } else {
             JOYNR_LOG_ERROR(
                     logger, "received an initial message with wrong format: \"{}\"", initMessage);
         }
     }
 
-    void onMessageReceived(smrf::ByteVector&& message)
+    void onMessageReceived(ConnectionHandle&& hdl, smrf::ByteVector&& message)
     {
         // deserialize message and transmit
         std::shared_ptr<ImmutableMessage> immutableMessage;
@@ -264,6 +269,11 @@ private:
 
         JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
 
+        if (!validateIncomingMessage(std::move(hdl), immutableMessage)) {
+            JOYNR_LOG_ERROR(logger, "Dropping message with ID {}", immutableMessage->getId());
+            return;
+        }
+
         auto onFailure = [messageId = immutableMessage->getId()](
                 const exceptions::JoynrRuntimeException& e)
         {
@@ -272,7 +282,7 @@ private:
                             messageId,
                             e.getMessage());
         };
-        transmit(std::move(immutableMessage), onFailure);
+        transmit(std::move(immutableMessage), std::move(onFailure));
     }
 
     bool isInitializationMessage(const std::string& message)
@@ -284,7 +294,6 @@ private:
     WebSocketPpReceiver<Server> receiver;
 
     /*! Router for incoming messages */
-    std::mutex clientsMutex;
     std::shared_ptr<IMessageRouter> messageRouter;
     /*! Factory to build outgoing messaging stubs */
     std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory;

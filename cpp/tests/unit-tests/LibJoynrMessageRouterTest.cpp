@@ -29,7 +29,6 @@
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/LibjoynrSettings.h"
-#include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;

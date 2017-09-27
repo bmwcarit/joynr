@@ -44,6 +44,9 @@ public:
             const std::string& privateKeyPemFile);
 
 private:
+    bool validateIncomingMessage(const ConnectionHandle& hdl,
+                                 std::shared_ptr<ImmutableMessage> message) final;
+
     std::shared_ptr<SSLContext> createSSLContext(const std::string& caPemFile,
                                                  const std::string& certPemFile,
                                                  const std::string& privateKeyPemFile,
