@@ -1,5 +1,3 @@
-package io.joynr.test.interlanguage.jee;
-
 /*
  * #%L
  * %%
@@ -8,9 +6,9 @@ package io.joynr.test.interlanguage.jee;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +16,11 @@ package io.joynr.test.interlanguage.jee;
  * limitations under the License.
  * #L%
  */
+package io.joynr.test.interlanguage.jee;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import joynr.interlanguagetest.Enumeration;
 import joynr.interlanguagetest.EnumerationWithoutDefinedValues;
 import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
@@ -30,9 +33,6 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedInterfaceEnumeration
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 import joynr.interlanguagetest.namedTypeCollection2.StructOfPrimitives;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class IltUtil {
     private static final Logger LOG = LoggerFactory.getLogger(IltUtil.class);
