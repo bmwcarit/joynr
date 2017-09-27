@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,11 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/system/LoggerFactory", [
-    "joynr/system/LoggingManager",
-    "joynr/system/DefaultLoggerConfiguration"
-], function(LoggingManager, defaultConfig) {
+var LoggingManager = require('./LoggingManager');
+var DefaultLoggerConfiguration = require('./DefaultLoggerConfiguration');
+module.exports = (function(LoggingManager, defaultConfig) {
     /**
      * @name LoggerFactory
      * @class
@@ -48,4 +48,4 @@ define("joynr/system/LoggerFactory", [
     };
 
     return LoggerFactory;
-});
+}(LoggingManager, DefaultLoggerConfiguration));

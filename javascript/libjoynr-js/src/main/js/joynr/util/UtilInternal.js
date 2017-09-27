@@ -1,6 +1,5 @@
 /*global unescape: true, Blob: true, Array:true */
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -19,11 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/util/UtilInternal", [
-    "global/Promise",
-    "joynr/util/Util"
-], function(Promise, UtilExternal) {
+var Promise = require('../../global/Promise');
+var Util = require('./Util');
+module.exports = (function (Promise, UtilExternal) {
 
     /**
      * @name UtilInternal
@@ -293,4 +290,4 @@ define("joynr/util/UtilInternal", [
     UtilInternal.extend(UtilInternal, UtilExternal);
     return UtilInternal;
 
-});
+}(Promise, Util));

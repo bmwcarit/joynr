@@ -32,6 +32,7 @@ import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketEndpointFactory;
@@ -183,8 +184,9 @@ public class WebSocketTest {
         MessagingQos messagingQos = new MessagingQos(100000);
         ImmutableMessage msg = messageFactory.createOneWayRequest("fromID", "toID", request, messagingQos)
                                              .getImmutableMessage();
+        SuccessAction successAction = mock(SuccessAction.class);
 
-        webSocketMessagingStub.transmit(msg, new FailureAction() {
+        webSocketMessagingStub.transmit(msg, successAction, new FailureAction() {
             @Override
             public void execute(Throwable error) {
                 Assert.fail(error.getMessage());
@@ -192,6 +194,7 @@ public class WebSocketTest {
         });
         Mockito.verify(messageRouterMock, Mockito.timeout(1000))
                .route(argThat(new SerializedDataOfImmutableMessageMatcher(msg)));
+        Mockito.verify(successAction).execute();
     }
 
     static class SerializedDataOfImmutableMessageMatcher extends ArgumentMatcher<ImmutableMessage> {

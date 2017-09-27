@@ -35,7 +35,6 @@ else(USE_PLATFORM_MOSQUITTO)
     file(MAKE_DIRECTORY ${SOURCE_DIR}/lib/cpp)
 
     set(MOSQUITTO_INCLUDE_DIRS ${SOURCE_DIR}/lib/cpp ${SOURCE_DIR}/lib)
-    set(MOSQUITTO_INCLUDE_DIRS ${SOURCE_DIR}/lib/cpp ${SOURCE_DIR}/lib PARENT_SCOPE)
     message(STATUS "variable MOSQUITTO_INCLUDE_DIRS=${MOSQUITTO_INCLUDE_DIRS}")
 
     ExternalProject_Get_Property(mosquitto BINARY_DIR)
@@ -187,6 +186,7 @@ endif(NOT USE_PLATFORM_MOSQUITTO)
 list(
     APPEND JoynrClusterController_TARGET_LIBRARIES
     mosquitto::mosquitto
+    MoCOCrW::mococrw
 )
 
 

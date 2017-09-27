@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true*/
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,25 +18,14 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/provider/ProviderAttribute",
-            "joynr/types/ProviderQos",
-            "joynr/tests/testTypes/TestEnum",
-            "joynr/datatypes/exampleTypes/ComplexRadioStation",
-            "joynr/datatypes/exampleTypes/Country",
-            "global/Promise",
-            "global/WaitsFor"
-        ],
-        function(
-                ProviderAttribute,
-                ProviderQos,
-                TestEnum,
-                ComplexRadioStation,
-                Country,
-                Promise,
-                waitsFor) {
+var ProviderAttribute = require('../../../classes/joynr/provider/ProviderAttribute');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
+var ComplexRadioStation = require('../../../test-classes/joynr/datatypes/exampleTypes/ComplexRadioStation');
+var Country = require('../../../test-classes/joynr/datatypes/exampleTypes/Country');
+var Promise = require('../../../classes/global/Promise');
+var WaitsFor = require('../../../test-classes/global/WaitsFor');
+module.exports = (function (ProviderAttribute, ProviderQos, TestEnum, ComplexRadioStation, Country, Promise, waitsFor) {
 
             var safetyTimeoutDelta = 100;
 
@@ -492,4 +480,4 @@ define(
                         });
                     });
 
-        }); // require
+}(ProviderAttribute, ProviderQos, TestEnum, ComplexRadioStation, Country, Promise, WaitsFor));    // require

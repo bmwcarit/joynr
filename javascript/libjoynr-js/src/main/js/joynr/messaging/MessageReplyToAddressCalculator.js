@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,12 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/messaging/MessageReplyToAddressCalculator",
-        [ "joynr/messaging/JoynrMessage"
-        ],
-        function(JoynrMessage) {
+var JoynrMessage = require('./JoynrMessage');
+module.exports =
+        (function(JoynrMessage) {
 
             /**
              * @name MessageReplyToAddressCalculator
@@ -75,4 +72,4 @@ define(
 
             return MessageReplyToAddressCalculator;
 
-        });
+        }(JoynrMessage));

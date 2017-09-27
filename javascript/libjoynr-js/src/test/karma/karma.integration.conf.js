@@ -24,9 +24,9 @@ module.exports = function(config) {
             'karma-jasmine',
             'karma-chrome-launcher',
             'karma-phantomjs-launcher',
-            'karma-requirejs',
             'karma-junit-reporter',
-            'karma-verbose-reporter'
+            'karma-verbose-reporter',
+            require('./karma.preprocessor.browserify')()
     ],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -35,7 +35,7 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine', 'requirejs'],
+    frameworks: ['jasmine'],
 
 
     // list of files / patterns to load in the browser
@@ -49,20 +49,21 @@ module.exports = function(config) {
             {pattern: 'classes/joynr/**/*.js', included: false},
             {pattern: 'test-classes/test/**/*.js', included: false},
             {pattern: 'test-classes/joynr/provisioning/*.js', included: false},
-            {pattern: 'test-classes/joynr/start/InProcessRuntimeTest.js', included: false},
+            {pattern: 'test-classes/joynr/start/InProcessRuntimeTest.js', included: true},
             //{pattern: 'test-classes/integration/HttpMessagingTest.js', included: false},
-            'test-classes/test-integration.js'
     ],
 
 
     // list of files to exclude
     exclude: [
+        'test-classes/global/**/*Test.js'
     ],
 
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
+      'test-classes/joynr/start/InProcessRuntimeTest.js': ['browserify']
     },
 
 

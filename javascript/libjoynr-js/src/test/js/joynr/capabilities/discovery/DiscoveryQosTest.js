@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,12 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/proxy/DiscoveryQos",
-    "joynr/types/ArbitrationStrategyCollection",
-    "joynr/types/DiscoveryScope"
-], function(DiscoveryQos, ArbitrationStrategyCollection, DiscoveryScope) {
+var DiscoveryQos = require('../../../../classes/joynr/proxy/DiscoveryQos');
+var ArbitrationStrategyCollection =
+        require('../../../../classes/joynr/types/ArbitrationStrategyCollection');
+var DiscoveryScope = require('../../../../classes/joynr/types/DiscoveryScope');
+module.exports =
+        (function(DiscoveryQos, ArbitrationStrategyCollection, DiscoveryScope) {
 
     describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", function() {
         it("is instantiable", function() {
@@ -59,9 +61,29 @@ define([
 
         it("constructs correct default object", function() {
             expect(new DiscoveryQos()).toEqual(new DiscoveryQos({
+                discoveryTimeoutMs : 600000,
+                discoveryRetryDelayMs : 10000,
+                arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
+                cacheMaxAgeMs : 0,
+                discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
+                additionalParameters : {}
+            }));
+        });
+
+        it("adapts to new default values", function() {
+
+            DiscoveryQos.setDefaultSettings({
                 discoveryTimeoutMs : 30000,
                 discoveryRetryDelayMs : 1000,
-                arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
+                arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
+                cacheMaxAgeMs : 0,
+                discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
+                additionalParameters : {}
+            });
+            expect(new DiscoveryQos()).toEqual(new DiscoveryQos({
+                discoveryTimeoutMs : 30000,
+                discoveryRetryDelayMs : 1000,
+                arbitrationStrategy : ArbitrationStrategyCollection.HighestPriority,
                 cacheMaxAgeMs : 0,
                 discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
                 additionalParameters : {}
@@ -91,4 +113,4 @@ define([
         });
     });
 
-}); // require
+        }(DiscoveryQos, ArbitrationStrategyCollection, DiscoveryScope)); // require

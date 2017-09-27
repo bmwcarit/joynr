@@ -54,6 +54,8 @@
         define("joynr/provisioning/provisioning_root", [], function() {
             return setupProvisionedData({});
         });
+    } else if (typeof exports !== 'undefined') {
+        module.exports = setupProvisionedData({});
     } else {
         window.joynr = window.joynr || {};
         window.joynr.provisioning = window.joynr.provisioning || {};

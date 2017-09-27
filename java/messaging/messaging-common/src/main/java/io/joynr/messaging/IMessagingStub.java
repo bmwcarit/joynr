@@ -24,5 +24,5 @@ import joynr.ImmutableMessage;
  * Common interface for messaging stubs (transmit outgoing messages)
  */
 public interface IMessagingStub {
-    void transmit(ImmutableMessage immutableMessage, FailureAction failureAction);
+    void transmit(ImmutableMessage immutableMessage, SuccessAction successAction, FailureAction failureAction);
 }

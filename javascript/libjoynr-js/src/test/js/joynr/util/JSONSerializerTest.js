@@ -1,5 +1,4 @@
-/*jslint es5: true, nomen: true */
-
+/*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -18,11 +17,9 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/util/JSONSerializer",
-    "joynr/tests/testTypes/TestEnum"
-], function(JSONSerializer, TestEnum) {
+var JsonSerializer = require('../../../classes/joynr/util/JSONSerializer');
+var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
+module.exports = (function(JSONSerializer, TestEnum) {
 
     describe("libjoynr-js.joynr.JSONSerializer.ensureCorrectSerialization", function() {
 
@@ -36,5 +33,4 @@ define([
 
     });
 
-});
-/* jslint nomen: false */
+}(JsonSerializer, TestEnum)); /* jslint nomen: false */

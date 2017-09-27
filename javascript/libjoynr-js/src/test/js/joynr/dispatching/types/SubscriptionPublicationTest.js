@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,11 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/dispatching/types/SubscriptionPublication",
-    "joynr/vehicle/radiotypes/RadioStation"
-], function(SubscriptionPublication, RadioStation) {
+var SubscriptionPublication =
+        require('../../../../classes/joynr/dispatching/types/SubscriptionPublication');
+var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+module.exports = (function(SubscriptionPublication, RadioStation) {
 
     describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", function() {
 
@@ -56,4 +57,4 @@ define([
 
     });
 
-}); // require
+}(SubscriptionPublication, RadioStation)); // require

@@ -158,7 +158,7 @@ class EnumTypeGenerator extends EnumTemplate {
 			// support CommonJS module 1.1.1 spec (`exports` cannot be a function)
 				exports.«type.joynrName» = «type.joynrName»;
 			}
-			var joynr = requirejs("joynr");
+			var joynr = require("joynr");
 			«type.joynrName».prototype = new joynr.JoynrObject();
 			«type.joynrName».prototype.constructor = «type.joynrName»;
 			preparePrototype();

@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,12 +17,10 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "global/Promise",
-    "joynr/system/RoutingTypes/ChannelAddress",
-    "joynr/messaging/channel/ChannelMessagingStub"
-], function(Promise, ChannelAddress, ChannelMessagingStub) {
+var Promise = require('../../../../classes/global/Promise');
+var ChannelAddress = require('../../../../classes/joynr/system/RoutingTypes/ChannelAddress');
+var ChannelMessagingStub = require('../../../../classes/joynr/messaging/channel/ChannelMessagingStub');
+module.exports = (function (Promise, ChannelAddress, ChannelMessagingStub) {
 
     describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() {
         var channelMessagingSender, destinationChannelAddress, myChannelAddress;
@@ -87,4 +84,4 @@ define([
 
     });
 
-});
+}(Promise, ChannelAddress, ChannelMessagingStub));

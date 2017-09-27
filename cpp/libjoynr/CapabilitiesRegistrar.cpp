@@ -25,21 +25,21 @@ namespace joynr
 INIT_LOGGER(CapabilitiesRegistrar);
 
 CapabilitiesRegistrar::CapabilitiesRegistrar(
-        std::vector<IDispatcher*> dispatcherList,
+        std::vector<std::shared_ptr<IDispatcher>> dispatcherList,
         system::IDiscoveryAsync& discoveryProxy,
         std::shared_ptr<ParticipantIdStorage> participantIdStorage,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<IMessageRouter> messageRouter,
         std::int64_t defaultExpiryIntervalMs,
-        PublicationManager& publicationManager,
+        std::weak_ptr<PublicationManager> publicationManager,
         const std::string& globalAddress)
-        : dispatcherList(dispatcherList),
+        : dispatcherList(std::move(dispatcherList)),
           discoveryProxy(discoveryProxy),
           participantIdStorage(participantIdStorage),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
           defaultExpiryIntervalMs(defaultExpiryIntervalMs),
-          publicationManager(publicationManager),
+          publicationManager(std::move(publicationManager)),
           globalAddress(globalAddress)
 {
 }
@@ -49,7 +49,7 @@ void CapabilitiesRegistrar::removeAsync(
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException&)> onError)
 {
-    for (IDispatcher* currentDispatcher : dispatcherList) {
+    for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
 
@@ -68,12 +68,12 @@ void CapabilitiesRegistrar::removeAsync(
     discoveryProxy.removeAsync(participantId, std::move(onSuccessWrapper), std::move(onError));
 }
 
-void CapabilitiesRegistrar::addDispatcher(IDispatcher* dispatcher)
+void CapabilitiesRegistrar::addDispatcher(std::shared_ptr<IDispatcher> dispatcher)
 {
-    dispatcherList.push_back(dispatcher);
+    dispatcherList.push_back(std::move(dispatcher));
 }
 
-void CapabilitiesRegistrar::removeDispatcher(IDispatcher* dispatcher)
+void CapabilitiesRegistrar::removeDispatcher(std::shared_ptr<IDispatcher> dispatcher)
 {
     util::removeAll(dispatcherList, dispatcher);
 }

@@ -19,6 +19,7 @@
 #include "joynr/ClusterControllerSettings.h"
 
 #include "joynr/Logger.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/Settings.h"
 
 namespace joynr
@@ -72,6 +73,39 @@ void ClusterControllerSettings::checkSettings()
     if (!settings.contains(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS())) {
         settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
                      DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS().count());
+    }
+
+    if (!settings.contains(SETTING_MQTT_TLS_ENABLED())) {
+        settings.set(SETTING_MQTT_TLS_ENABLED(), DEFAULT_MQTT_TLS_ENABLED());
+    }
+
+    if (isMqttTlsEnabled()) {
+        if (!isMqttCertificateAuthorityCertificateFolderPathSet() &&
+            !isMqttCertificateAuthorityPemFilenameSet()) {
+            const std::string message =
+                    "MQTT TLS is enabled but no CA certificate filename or folder was provided";
+            JOYNR_LOG_ERROR(logger, message);
+            throw joynr::exceptions::JoynrConfigurationException(message);
+        }
+
+        if (!isMqttCertificatePemFilenameSet()) {
+            const std::string message =
+                    "MQTT TLS is enabled but no mqtt certificate PEM filename was provided";
+            JOYNR_LOG_ERROR(logger, message);
+            throw joynr::exceptions::JoynrConfigurationException(message);
+        }
+
+        if (!isMqttPrivateKeyPemFilenameSet()) {
+            const std::string message =
+                    "MQTT TLS is enabled but no private key PEM filename was provided";
+            JOYNR_LOG_ERROR(logger, message);
+            throw joynr::exceptions::JoynrConfigurationException(message);
+        }
+    } else if (isMqttCertificateAuthorityCertificateFolderPathSet() ||
+               isMqttCertificateAuthorityPemFilenameSet() || isMqttCertificatePemFilenameSet() ||
+               isMqttPrivateKeyPemFilenameSet()) {
+        JOYNR_LOG_WARN(
+                logger, "MQTT TLS is disabled but at least one MQTT TLS property was configured");
     }
 
     if (!settings.contains(SETTING_ACCESS_CONTROL_ENABLE())) {
@@ -175,9 +209,23 @@ const std::string& ClusterControllerSettings::SETTING_MQTT_UNICAST_TOPIC_PREFIX(
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_MQTT_TLS_ENABLED()
+{
+    static const std::string value("cluster-controller/mqtt-tls-enabled");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME()
 {
     static const std::string value("cluster-controller/mqtt-certificate-authority-pem-filename");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::
+        SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH()
+{
+    static const std::string value(
+            "cluster-controller/mqtt-certificate-authority-certificate-folder-path");
     return value;
 }
 
@@ -222,6 +270,11 @@ const std::string& ClusterControllerSettings::DEFAULT_MQTT_CLIENT_ID_PREFIX()
 {
     static const std::string value("joynr");
     return value;
+}
+
+bool ClusterControllerSettings::DEFAULT_MQTT_TLS_ENABLED()
+{
+    return false;
 }
 
 const std::string& ClusterControllerSettings::DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX()
@@ -358,6 +411,16 @@ std::string ClusterControllerSettings::getMqttCertificateAuthorityPemFilename() 
     return settings.get<std::string>(SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
 }
 
+bool ClusterControllerSettings::isMqttCertificateAuthorityCertificateFolderPathSet() const
+{
+    return settings.contains(SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
+}
+
+std::string ClusterControllerSettings::getMqttCertificateAuthorityCertificateFolderPath() const
+{
+    return settings.get<std::string>(SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
+}
+
 bool ClusterControllerSettings::isMqttCertificatePemFilenameSet() const
 {
     return settings.contains(SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
@@ -378,10 +441,14 @@ std::string ClusterControllerSettings::getMqttPrivateKeyPemFilename() const
     return settings.get<std::string>(SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
 }
 
+void ClusterControllerSettings::setMqttTlsEnabled(bool enabled)
+{
+    settings.set<bool>(SETTING_MQTT_TLS_ENABLED(), enabled);
+}
+
 bool ClusterControllerSettings::isMqttTlsEnabled() const
 {
-    return isMqttCertificateAuthorityPemFilenameSet() && isMqttCertificatePemFilenameSet() &&
-           isMqttPrivateKeyPemFilenameSet();
+    return settings.get<bool>(SETTING_MQTT_TLS_ENABLED());
 }
 
 const std::string& ClusterControllerSettings::
@@ -502,6 +569,8 @@ void ClusterControllerSettings::printSettings() const
         JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_WS_PORT());
     }
 
+    JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_MQTT_TLS_ENABLED(), isMqttTlsEnabled());
+
     if (isMqttCertificateAuthorityPemFilenameSet()) {
         JOYNR_LOG_DEBUG(logger,
                         "SETTING: {}  = {}",
@@ -511,6 +580,17 @@ void ClusterControllerSettings::printSettings() const
         JOYNR_LOG_DEBUG(logger,
                         "SETTING: {}  = NOT SET",
                         SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
+    }
+
+    if (isMqttCertificateAuthorityCertificateFolderPathSet()) {
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = {}",
+                        SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH(),
+                        getMqttCertificateAuthorityCertificateFolderPath());
+    } else {
+        JOYNR_LOG_DEBUG(logger,
+                        "SETTING: {}  = NOT SET",
+                        SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
     }
 
     if (isMqttCertificatePemFilenameSet()) {

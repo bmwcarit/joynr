@@ -1,5 +1,4 @@
-/*jslint es5: true, nomen: true */
-
+/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,21 +17,16 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-    "joynr/messaging/mqtt/SharedMqttClient",
-    [
-        "global/Promise",
-        "global/Mqtt",
-        "joynr/messaging/JoynrMessage",
-        "joynr/messaging/MessagingQosEffort",
-        "joynr/util/JSONSerializer",
-        "joynr/util/LongTimer",
-        "joynr/util/Typing",
-        "joynr/system/LoggerFactory"
-    ],
-    function(Promise, Mqtt, JoynrMessage, MessagingQosEffort, JSONSerializer, LongTimer, Typing, LoggerFactory) {
-        var log = LoggerFactory.getLogger("joynr.messaging.mqtt.SharedMqttClient");
+var Promise = require('../../../global/Promise');
+var Mqtt = require('../../../global/Mqtt');
+var JoynrMessage = require('../JoynrMessage');
+var MessagingQosEffort = require('../MessagingQosEffort');
+var JsonSerializer = require('../../util/JSONSerializer');
+var LongTimer = require('../../util/LongTimer');
+var Typing = require('../../util/Typing');
+var LoggerFactory = require('../../system/LoggerFactory');
+module.exports = (function (Promise, Mqtt, JoynrMessage, MessagingQosEffort, JSONSerializer, LongTimer, Typing, LoggerFactory) {
+            var log = LoggerFactory.getLogger("joynr.messaging.mqtt.SharedMqttClient");
 
         /**
      * @param {mqtt}
@@ -237,4 +231,4 @@ define(
         SharedMqttClient.BEST_EFFORT_QOS_LEVEL = 0;
 
         return SharedMqttClient;
-    });
+}(Promise, Mqtt, JoynrMessage, MessagingQosEffort, JsonSerializer, LongTimer, Typing, LoggerFactory));

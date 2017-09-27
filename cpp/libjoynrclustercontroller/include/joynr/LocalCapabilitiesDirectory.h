@@ -29,6 +29,7 @@
 
 #include <boost/asio/steady_timer.hpp>
 
+#include "joynr/CapabilitiesStorage.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/InterfaceAddress.h"
@@ -37,8 +38,8 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
-#include "joynr/TypedClientMultiCache.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
+#include "joynr/system/ProviderReregistrationControllerProvider.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
@@ -71,18 +72,21 @@ class IMessageRouter;
   * the data.
   */
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
-        : public joynr::system::DiscoveryAbstractProvider
+        : public joynr::system::DiscoveryAbstractProvider,
+          public joynr::system::ProviderReregistrationControllerProvider
 {
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
     LocalCapabilitiesDirectory(ClusterControllerSettings& messagingSettings,
                                std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
                                const std::string& localAddress,
-                               IMessageRouter& messageRouter,
+                               std::weak_ptr<IMessageRouter> messageRouter,
                                boost::asio::io_service& ioService,
                                const std::string clusterControllerId);
 
     ~LocalCapabilitiesDirectory() override;
+
+    void shutdown();
 
     /*
      * Remove all capabilities associated to participantId.
@@ -114,9 +118,9 @@ public:
     std::vector<types::DiscoveryEntry> getCachedLocalCapabilities(
             const std::vector<InterfaceAddress>& interfaceAddress);
     /*
-     * Performs maintenance on the cache and removes old entries
+     * removes all discovery entries
      */
-    void cleanCache(std::chrono::milliseconds maxAge);
+    void clear();
 
     /*
      * Call back methods which will update the local capabilities cache and call the
@@ -198,10 +202,17 @@ public:
      */
     void setAccessController(std::weak_ptr<IAccessController> accessController);
 
+    void triggerGlobalProviderReregistration(
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            final override;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     ClusterControllerSettings& clusterControllerSettings; // to retrieve info about persistency
 
+    types::GlobalDiscoveryEntry toGlobalDiscoveryEntry(
+            const types::DiscoveryEntry& discoveryEntry) const;
     void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
                               std::vector<types::DiscoveryEntry>&& cachedLocalCapabilies,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
@@ -223,14 +234,10 @@ private:
             const std::vector<InterfaceAddress>& interfaceAddress,
             std::chrono::milliseconds maxCacheAge,
             bool localEntries);
-    std::vector<types::DiscoveryEntry> searchCache(const std::string& participantId,
-                                                   std::chrono::milliseconds maxCacheAge,
-                                                   bool localEntries);
+    boost::optional<types::DiscoveryEntry> searchCache(const std::string& participantId,
+                                                       std::chrono::milliseconds maxCacheAge,
+                                                       bool localEntries);
     void removeFromGloballyRegisteredCapabilities(const types::DiscoveryEntry& discoveryEntry);
-
-    void cleanCaches();
-
-    std::string serializeLocalCapabilitiesToJson() const;
 
     ADD_LOGGER(LocalCapabilitiesDirectory);
     std::shared_ptr<ICapabilitiesClient> capabilitiesClient;
@@ -238,16 +245,11 @@ private:
     std::mutex cacheLock;
     std::mutex pendingLookupsLock;
 
-    TypedClientMultiCache<InterfaceAddress, types::DiscoveryEntry>
-            interfaceAddress2GlobalCapabilities;
-    TypedClientMultiCache<std::string, types::DiscoveryEntry> participantId2GlobalCapabilities;
-
-    TypedClientMultiCache<InterfaceAddress, types::DiscoveryEntry>
-            interfaceAddress2LocalCapabilities;
-    TypedClientMultiCache<std::string, types::DiscoveryEntry> participantId2LocalCapability;
+    capabilities::Storage localCapabilities;
+    capabilities::CachingStorage globalCapabilities;
 
     std::vector<types::GlobalDiscoveryEntry> registeredGlobalCapabilities;
-    IMessageRouter& messageRouter;
+    std::weak_ptr<IMessageRouter> messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
 
     std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
@@ -259,7 +261,6 @@ private:
 
     void scheduleCleanupTimer();
     void checkExpiredDiscoveryEntries(const boost::system::error_code& errorCode);
-    void remove(const std::vector<types::DiscoveryEntry>& discoveryEntries);
     void remove(const types::DiscoveryEntry& discoveryEntry);
     boost::asio::steady_timer freshnessUpdateTimer;
     std::string clusterControllerId;
@@ -267,7 +268,6 @@ private:
     void sendAndRescheduleFreshnessUpdate(const boost::system::error_code& timerError);
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);
-    bool hasEntryInCache(const types::DiscoveryEntry& entry, bool localEntries);
     void registerPendingLookup(const std::vector<InterfaceAddress>& interfaceAddresses,
                                const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
     bool isCallbackCalled(const std::vector<InterfaceAddress>& interfaceAddresses,
@@ -280,6 +280,9 @@ private:
 
     void addInternal(const joynr::types::DiscoveryEntry& entry);
     bool hasProviderPermission(const types::DiscoveryEntry& discoveryEntry);
+
+    std::vector<types::DiscoveryEntry> optionalToVector(
+            boost::optional<types::DiscoveryEntry> optionalEntry);
 };
 
 class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback

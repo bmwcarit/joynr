@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <functional>
+#include <set>
 
 #include "joynr/Runnable.h"
 
@@ -29,10 +30,19 @@ namespace joynr
 INIT_LOGGER(ThreadPool);
 
 ThreadPool::ThreadPool(const std::string& /*name*/, std::uint8_t numberOfThreads)
-        : threads(), scheduler(), keepRunning(true), currentlyRunning(), mutex()
+        : threads(),
+          scheduler(),
+          keepRunning(true),
+          currentlyRunning(),
+          mutex(),
+          numberOfThreads(numberOfThreads)
+{
+}
+
+void ThreadPool::init()
 {
     for (std::uint8_t i = 0; i < numberOfThreads; ++i) {
-        threads.emplace_back(std::bind(&ThreadPool::threadLifecycle, this));
+        threads.emplace_back(std::bind(&ThreadPool::threadLifecycle, this, shared_from_this()));
     }
 
 #if 0 // This is not working in g_SystemIntegrationTests
@@ -48,7 +58,9 @@ ThreadPool::ThreadPool(const std::string& /*name*/, std::uint8_t numberOfThreads
 
 ThreadPool::~ThreadPool()
 {
-    shutdown();
+    if (keepRunning) {
+        shutdown();
+    }
     assert(keepRunning == false);
     assert(threads.empty());
 }
@@ -63,20 +75,30 @@ void ThreadPool::shutdown()
 
     {
         std::lock_guard<std::mutex> lock(mutex);
-        for (Runnable* runnable : currentlyRunning) {
+        for (std::shared_ptr<Runnable> runnable : currentlyRunning) {
             runnable->shutdown();
         }
     }
 
+    std::set<std::shared_ptr<Runnable>>::size_type maxRunning = 0;
     for (auto thread = threads.begin(); thread != threads.end(); ++thread) {
-        if (thread->joinable()) {
+        // do not cause an abort waiting for ourselves
+        if (std::this_thread::get_id() == thread->get_id()) {
+            thread->detach();
+            maxRunning = 1;
+        } else if (thread->joinable()) {
             thread->join();
         }
     }
     threads.clear();
 
-    // Runnables should be cleaned in the thread loop
-    assert(currentlyRunning.size() == 0);
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        // Runnables should be cleaned in the thread loop
+        // except for the thread that runs this code in case
+        // it was part of the ThreadPool
+        assert(currentlyRunning.size() <= maxRunning);
+    }
 }
 
 bool ThreadPool::isRunning()
@@ -84,36 +106,32 @@ bool ThreadPool::isRunning()
     return keepRunning;
 }
 
-void ThreadPool::execute(Runnable* runnable)
+void ThreadPool::execute(std::shared_ptr<Runnable> runnable)
 {
     scheduler.add(runnable);
 }
 
-void ThreadPool::threadLifecycle()
+void ThreadPool::threadLifecycle(std::shared_ptr<ThreadPool> thisSharedPtr)
 {
     JOYNR_LOG_TRACE(logger, "Thread enters lifecycle");
 
-    while (keepRunning) {
+    while (thisSharedPtr->keepRunning) {
 
         JOYNR_LOG_TRACE(logger, "Thread is waiting");
         // Take a runnable
-        Runnable* runnable = scheduler.take();
+        std::shared_ptr<Runnable> runnable = scheduler.take();
 
-        if (runnable != nullptr) {
+        if (runnable) {
 
             JOYNR_LOG_TRACE(logger, "Thread got runnable and will do work");
 
             // Add runnable to the queue of currently running context
             {
-                std::lock_guard<std::mutex> lock(mutex);
-                if (!keepRunning) {
-                    // Call Dtor of runnable if needed
-                    if (runnable->isDeleteOnExit()) {
-                        delete runnable;
-                    }
+                std::lock_guard<std::mutex> lock(thisSharedPtr->mutex);
+                if (!thisSharedPtr->keepRunning) {
                     break;
                 }
-                currentlyRunning.insert(runnable);
+                thisSharedPtr->currentlyRunning.insert(runnable);
             }
 
             // Run the runnable
@@ -122,13 +140,8 @@ void ThreadPool::threadLifecycle()
             JOYNR_LOG_TRACE(logger, "Thread finished work");
 
             {
-                std::lock_guard<std::mutex> lock(mutex);
-                currentlyRunning.erase(runnable);
-            }
-
-            // Call Dtor of runnable if needed
-            if (runnable->isDeleteOnExit()) {
-                delete runnable;
+                std::lock_guard<std::mutex> lock(thisSharedPtr->mutex);
+                thisSharedPtr->currentlyRunning.erase(runnable);
             }
         }
     }

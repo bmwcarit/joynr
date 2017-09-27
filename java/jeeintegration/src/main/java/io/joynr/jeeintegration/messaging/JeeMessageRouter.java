@@ -21,6 +21,7 @@ package io.joynr.jeeintegration.messaging;
 
 import static java.lang.String.format;
 
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -34,7 +35,6 @@ import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
-import io.joynr.messaging.routing.BoundedDelayQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
@@ -72,7 +72,7 @@ public class JeeMessageRouter extends io.joynr.messaging.routing.CcMessageRouter
                             MulticastReceiverRegistry multicastReceiverRegistry,
                             AccessController accessController,
                             @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl,
-                            BoundedDelayQueue<DelayableImmutableMessage> messageQueue,
+                            DelayQueue<DelayableImmutableMessage> messageQueue,
                             ShutdownNotifier shutdownNotifier) {
         super(routingTable,
               scheduler,

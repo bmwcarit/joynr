@@ -18,13 +18,19 @@
  */
 package joynr;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.google.common.base.Charsets;
 
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.MessageDeserializer;
@@ -44,6 +50,7 @@ public class ImmutableMessage extends Message {
     private final byte[] serializedMessage;
     private transient Map<String, Serializable> context = new HashMap<String, Serializable>();
     private ObjectMapper objectMapper = null;
+    public final static String DUMMY_CREATOR_USER_ID = "creatorUserId";
 
     public ImmutableMessage(byte[] serializedMessage) throws EncodingException, UnsuppportedVersionException {
         this.serializedMessage = serializedMessage.clone();
@@ -84,7 +91,7 @@ public class ImmutableMessage extends Message {
     }
 
     public String getCreatorUserId() {
-        return System.getProperty("user.name");
+        return DUMMY_CREATOR_USER_ID;
     }
 
     public byte[] getUnencryptedBody() throws EncodingException {
@@ -142,6 +149,10 @@ public class ImmutableMessage extends Message {
     public String toLogMessage() {
         if (objectMapper == null) {
             objectMapper = new ObjectMapper();
+
+            SimpleModule module = new SimpleModule();
+            module.addSerializer(byte[].class, new PayloadSerializer(byte[].class));
+            objectMapper.registerModule(module);
         }
 
         try {
@@ -154,5 +165,18 @@ public class ImmutableMessage extends Message {
     @Override
     public String toString() {
         return toLogMessage();
+    }
+
+    private static class PayloadSerializer extends StdSerializer<byte[]> {
+        private static final long serialVersionUID = 1L;
+
+        protected PayloadSerializer(Class<byte[]> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(byte[] value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeString(new String(value, Charsets.UTF_8));
+        }
     }
 }

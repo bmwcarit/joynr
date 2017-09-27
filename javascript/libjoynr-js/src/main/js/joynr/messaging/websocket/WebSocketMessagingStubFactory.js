@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/websocket/WebSocketMessagingStubFactory", [
-    "joynr/util/Typing",
-    "joynr/messaging/websocket/WebSocketMessagingStub",
-    "joynr/system/RoutingTypes/WebSocketAddress"
-], function(Typing, WebSocketMessagingStub, WebSocketAddress) {
+var Typing = require('../../util/Typing');
+var WebSocketMessagingStub = require('./WebSocketMessagingStub');
+var WebSocketAddress = require('../../system/RoutingTypes/WebSocketAddress');
+module.exports = (function(Typing, WebSocketMessagingStub, WebSocketAddress) {
 
     /**
      * @constructor
@@ -54,4 +54,4 @@ define("joynr/messaging/websocket/WebSocketMessagingStubFactory", [
 
     return WebSocketMessagingStubFactory;
 
-});
+}(Typing, WebSocketMessagingStub, WebSocketAddress));

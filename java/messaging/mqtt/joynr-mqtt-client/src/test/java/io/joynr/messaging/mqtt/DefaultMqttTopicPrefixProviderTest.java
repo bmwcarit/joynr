@@ -39,6 +39,7 @@ import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 
 import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
@@ -71,9 +72,12 @@ public class DefaultMqttTopicPrefixProviderTest {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS, "-1");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "10");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, expectedMulticastPrefix);
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, expectedReplyToPrefix);
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, expectedUnicastPrefix);
+        properties.put(ConfigurableMessagingSettings.PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS, "1000");
+        properties.put(ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE, "20");
         Module testModule = Modules.override(new MqttPahoModule()).with(new AbstractModule() {
             @Override
             protected void configure() {

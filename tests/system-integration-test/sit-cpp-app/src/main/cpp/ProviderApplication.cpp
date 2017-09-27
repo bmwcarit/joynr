@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 {
 #ifdef JOYNR_ENABLE_DLT_LOGGING
     // Register app at the dlt-daemon for logging
-    DLT_REGISTER_APP("JOYT", argv[0]);
+    DLT_REGISTER_APP("JYSP", argv[0]);
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
     // Get a logger
@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
             boost::filesystem::system_complete(appFilename).parent_path().string();
     std::string pathToSettings(appDirectory + "/resources/systemintegrationtest-provider.settings");
 
-    std::unique_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToSettings);
+    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToSettings);
 
     joynr::Semaphore semaphore;
 

@@ -16,9 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynrclustercontroller/mqtt/MqttReceiver.h"
-
-#include <chrono>
+#include "joynr/MqttReceiver.h"
 
 #include "joynr/MessagingSettings.h"
 #include "joynr/serializer/Serializer.h"

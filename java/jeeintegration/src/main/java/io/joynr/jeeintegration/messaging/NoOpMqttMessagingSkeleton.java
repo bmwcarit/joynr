@@ -22,7 +22,7 @@ package io.joynr.jeeintegration.messaging;
 import com.google.inject.Inject;
 
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 
@@ -31,18 +31,19 @@ import io.joynr.messaging.mqtt.MqttClientFactory;
  * for the MqttAddress type, we bind a dummy implementation in this module which simply does nothing (no operation -
  * NoOp).
  */
-public class NoOpMessagingSkeleton implements IMessagingSkeleton {
+public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
 
     private MqttClientFactory mqttClientFactory;
     private JoynrMqttClient mqttClient;
 
     @Inject
-    public NoOpMessagingSkeleton(MqttClientFactory mqttClientFactory) {
+    public NoOpMqttMessagingSkeleton(MqttClientFactory mqttClientFactory) {
         this.mqttClientFactory = mqttClientFactory;
     }
 
     @Override
-    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage, int mqttId, int mqttQos, FailureAction failureAction) {
+        mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
     }
 
     @Override
@@ -55,6 +56,14 @@ public class NoOpMessagingSkeleton implements IMessagingSkeleton {
     @Override
     public void shutdown() {
         mqttClient.shutdown();
+    }
+
+    @Override
+    public void registerMulticastSubscription(String multicastId) {
+    }
+
+    @Override
+    public void unregisterMulticastSubscription(String multicastId) {
     }
 
 }

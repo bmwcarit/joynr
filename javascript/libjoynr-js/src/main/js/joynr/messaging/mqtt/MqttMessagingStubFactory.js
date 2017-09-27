@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,11 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/mqtt/MqttMessagingStubFactory", [
-    "joynr/util/Typing",
-    "joynr/messaging/mqtt/MqttMessagingStub"
-], function(Typing, MqttMessagingStub) {
+var Typing = require('../../util/Typing');
+var MqttMessagingStub = require('./MqttMessagingStub');
+module.exports = (function(Typing, MqttMessagingStub) {
 
     /**
      * @constructor
@@ -53,4 +51,4 @@ define("joynr/messaging/mqtt/MqttMessagingStubFactory", [
 
     return MqttMessagingStubFactory;
 
-});
+}(Typing, MqttMessagingStub));

@@ -29,8 +29,8 @@ interface VehicleDataCommon {
 	attribute String vin readonly
 
 	<**
-        @see: Vehicle data manager for 2018 head units
-    **>
+	@see: Vehicle data manager for 2018 head units
+	**>
 	attribute Double actualSpeedKmh readonly
 
 

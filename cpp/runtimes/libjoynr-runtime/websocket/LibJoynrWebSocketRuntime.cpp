@@ -25,6 +25,7 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/IKeychain.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketPpClientNonTLS.h"
@@ -35,13 +36,14 @@ namespace joynr
 
 INIT_LOGGER(LibJoynrWebSocketRuntime);
 
-LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings)
+LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings,
+                                                   std::shared_ptr<IKeychain> keyChain)
         : LibJoynrRuntime(std::move(settings)),
           wsSettings(*this->settings),
           websocket(nullptr),
           initializationMsg()
 {
-    createWebsocketClient();
+    createWebsocketClient(keyChain);
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
@@ -129,7 +131,7 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
     websocket->send(smrf::ByteArrayView(rawMessage), onFailure);
 }
 
-void LibJoynrWebSocketRuntime::createWebsocketClient()
+void LibJoynrWebSocketRuntime::createWebsocketClient(std::shared_ptr<IKeychain> keyChain)
 {
     system::RoutingTypes::WebSocketAddress webSocketAddress =
             wsSettings.createClusterControllerMessagingAddress();
@@ -139,22 +141,9 @@ void LibJoynrWebSocketRuntime::createWebsocketClient()
     std::string privateKeyPemFilename = wsSettings.getPrivateKeyPemFilename();
 
     if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS) {
-        if (checkAndLogCryptoFileExistence(certificateAuthorityPemFilename,
-                                           certificatePemFilename,
-                                           privateKeyPemFilename,
-                                           logger)) {
-            JOYNR_LOG_INFO(logger, "Using TLS connection");
-            websocket =
-                    std::make_shared<WebSocketPpClientTLS>(wsSettings,
-                                                           singleThreadIOService->getIOService(),
-                                                           certificateAuthorityPemFilename,
-                                                           certificatePemFilename,
-                                                           privateKeyPemFilename);
-        } else {
-            throw exceptions::JoynrRuntimeException(
-                    "Settings property 'cluster-controller-messaging-url' uses TLS "
-                    "but not all TLS properties were configured");
-        }
+        JOYNR_LOG_INFO(logger, "Using TLS connection");
+        websocket = std::make_shared<WebSocketPpClientTLS>(
+                wsSettings, singleThreadIOService->getIOService(), keyChain);
     } else if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WS) {
         JOYNR_LOG_INFO(logger, "Using non-TLS connection");
         websocket = std::make_shared<WebSocketPpClientNonTLS>(

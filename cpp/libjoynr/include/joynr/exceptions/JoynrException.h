@@ -132,6 +132,17 @@ public:
     }
 };
 
+class JOYNR_EXPORT JoynrConfigurationException : public JoynrRuntimeException
+{
+public:
+    explicit JoynrConfigurationException(const std::string& message) noexcept;
+
+    const std::string& getTypeName() const override;
+    JoynrConfigurationException* clone() const override;
+
+    static const std::string& TYPE_NAME();
+};
+
 /**
  * @brief Joynr exception to report timeouts.
  */

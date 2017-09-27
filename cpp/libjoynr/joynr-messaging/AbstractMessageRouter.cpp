@@ -47,6 +47,7 @@ INIT_LOGGER(AbstractMessageRouter);
 
 //------ AbstractMessageRouter ---------------------------------------------------------
 AbstractMessageRouter::AbstractMessageRouter(
+        MessagingSettings& messagingSettings,
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
@@ -54,13 +55,12 @@ AbstractMessageRouter::AbstractMessageRouter(
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
-        : routingTable("AbstractMessageRouter-RoutingTable",
-                       ioService,
-                       std::bind(&AbstractMessageRouter::routingTableSaveFilterFunc,
-                                 this,
-                                 std::placeholders::_1)),
+        : IMessageRouter(),
+          enable_shared_from_this<AbstractMessageRouter>(),
+          routingTable(),
           routingTableLock(),
           multicastReceiverDirectory(),
+          messagingSettings(messagingSettings),
           messagingStubFactory(std::move(messagingStubFactory)),
           messageScheduler(maxThreads, "AbstractMessageRouter", ioService),
           messageQueue(std::move(messageQueue)),
@@ -69,27 +69,33 @@ AbstractMessageRouter::AbstractMessageRouter(
           addressCalculator(std::move(addressCalculator)),
           messageQueueCleanerTimer(ioService),
           messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000)),
+          routingTableCleanerTimer(ioService),
           transportStatuses(std::move(transportStatuses))
 {
-    activateMessageCleanerTimer();
-    registerTransportStatusCallbacks();
 }
 
 AbstractMessageRouter::~AbstractMessageRouter()
 {
-    messageQueueCleanerTimer.cancel();
-    messageScheduler.shutdown();
+    // make sure this gets called in any case,
+    // even if we might have called shutdown before manually
+    shutdown();
 }
 
-bool AbstractMessageRouter::routingTableSaveFilterFunc(std::shared_ptr<RoutingEntry> routingEntry)
+void AbstractMessageRouter::init()
 {
-    if (!routingEntry) {
-        return false;
+    activateMessageCleanerTimer();
+    activateRoutingTableCleanerTimer();
+    registerTransportStatusCallbacks();
+}
+
+void AbstractMessageRouter::shutdown()
+{
+    messageQueueCleanerTimer.cancel();
+    routingTableCleanerTimer.cancel();
+    messageScheduler.shutdown();
+    if (messagingStubFactory) {
+        messagingStubFactory->shutdown();
     }
-    const auto destAddress = routingEntry->address;
-    const joynr::InProcessMessagingAddress* inprocessAddress =
-            dynamic_cast<const joynr::InProcessMessagingAddress*>(destAddress.get());
-    return inprocessAddress == nullptr;
 }
 
 void AbstractMessageRouter::addProvisionedNextHop(
@@ -98,18 +104,21 @@ void AbstractMessageRouter::addProvisionedNextHop(
         bool isGloballyVisible)
 {
     assert(address);
-    const auto routingEntry = std::make_shared<RoutingEntry>(std::move(address), isGloballyVisible);
-    addToRoutingTable(participantId, std::move(routingEntry));
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = true;
+    addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
 }
 
 AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::lookupAddresses(
         const std::unordered_set<std::string>& participantIds)
 {
+    // Caution: Do not lock routingTableLock here, it must have been locked from outside
+    // this method gets called from getDestinationAddresses()
     AbstractMessageRouter::AddressUnorderedSet addresses;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
     for (const auto& participantId : participantIds) {
-        const auto routingEntry = routingTable.lookup(participantId);
+        const auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
         if (routingEntry) {
             destAddress = routingEntry->address;
             addresses.insert(destAddress);
@@ -122,6 +131,7 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::lookupAddresse
 AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestinationAddresses(
         const ImmutableMessage& message)
 {
+    ReadLocker lock(routingTableLock);
     AbstractMessageRouter::AddressUnorderedSet addresses;
     if (message.getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
         const std::string& multicastId = message.getRecipient();
@@ -142,7 +152,7 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
         }
     } else {
         const std::string& destinationPartId = message.getRecipient();
-        const auto routingEntry = routingTable.lookup(destinationPartId);
+        const auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(destinationPartId);
         if (routingEntry) {
             addresses.insert(routingEntry->address);
         }
@@ -192,7 +202,16 @@ void AbstractMessageRouter::registerGlobalRoutingEntryIfRequired(const Immutable
             // because the message is received via global transport (isGloballyVisible=true),
             // isGloballyVisible must be true
             const bool isGloballyVisible = true;
-            addNextHop(message.getSender(), address, isGloballyVisible);
+            std::int64_t expiryDateMs =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                            message.getExpiryDate().time_since_epoch()).count() +
+                    messagingSettings.getRoutingTableGracePeriodMs();
+            if (expiryDateMs < 0) {
+                expiryDateMs = std::numeric_limits<std::int64_t>::max();
+            }
+
+            const bool isSticky = false;
+            addNextHop(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky);
         } catch (const std::invalid_argument& e) {
             std::string errorMessage("could not deserialize Address from " + replyTo +
                                      " - error: " + e.what());
@@ -212,9 +231,29 @@ void AbstractMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std
 }
 
 void AbstractMessageRouter::sendMessages(
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+{
+    JOYNR_LOG_TRACE(logger, "sendMessages: sending messages for {}", address->toString());
+    std::unordered_set<std::string> participantIdSet;
+    {
+        ReadLocker lock(routingTableLock);
+        participantIdSet = routingTable.lookupParticipantIdsByAddress(address);
+    }
+    if (participantIdSet.size() > 0) {
+        for (const auto& participantId : participantIdSet) {
+            sendMessages(participantId, address);
+        }
+    }
+}
+
+void AbstractMessageRouter::sendMessages(
         const std::string& destinationPartId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
+    JOYNR_LOG_TRACE(logger,
+                    "sendMessages: sending messages for destinationPartId {} and {}",
+                    destinationPartId,
+                    address->toString());
     while (true) {
         // We have to check all the time whether the messaging stub is still available because
         // it will be deleted if a disconnect occurs (this may happen while this method
@@ -233,10 +272,12 @@ void AbstractMessageRouter::sendMessages(
 
         try {
             const std::uint32_t tryCount = 0;
-            messageScheduler.schedule(
-                    new MessageRunnable(
-                            item->getContent(), std::move(messagingStub), address, *this, tryCount),
-                    std::chrono::milliseconds(0));
+            messageScheduler.schedule(std::make_shared<MessageRunnable>(item->getContent(),
+                                                                        std::move(messagingStub),
+                                                                        address,
+                                                                        shared_from_this(),
+                                                                        tryCount),
+                                      std::chrono::milliseconds(0));
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger,
                             "Message with Id {} could not be sent. Error: {}",
@@ -267,11 +308,11 @@ void AbstractMessageRouter::scheduleMessage(
 
     auto stub = messagingStubFactory->create(destAddress);
     if (stub) {
-        messageScheduler.schedule(new MessageRunnable(std::move(message),
-                                                      std::move(stub),
-                                                      std::move(destAddress),
-                                                      *this,
-                                                      tryCount),
+        messageScheduler.schedule(std::make_shared<MessageRunnable>(std::move(message),
+                                                                    std::move(stub),
+                                                                    std::move(destAddress),
+                                                                    shared_from_this(),
+                                                                    tryCount),
                                   delay);
     } else {
         JOYNR_LOG_WARN(
@@ -288,18 +329,36 @@ void AbstractMessageRouter::scheduleMessage(
 void AbstractMessageRouter::activateMessageCleanerTimer()
 {
     messageQueueCleanerTimer.expiresFromNow(messageQueueCleanerTimerPeriodMs);
-    messageQueueCleanerTimer.asyncWait(std::bind(
-            &AbstractMessageRouter::onMessageCleanerTimerExpired, this, std::placeholders::_1));
+    messageQueueCleanerTimer.asyncWait([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
+            const boost::system::error_code& errorCode) {
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            thisSharedPtr->onMessageCleanerTimerExpired(thisSharedPtr, errorCode);
+        }
+    });
+}
+
+void AbstractMessageRouter::activateRoutingTableCleanerTimer()
+{
+    routingTableCleanerTimer.expiresFromNow(
+            std::chrono::milliseconds(messagingSettings.getRoutingTableCleanupIntervalMs()));
+    routingTableCleanerTimer.asyncWait(
+            std::bind(&AbstractMessageRouter::onRoutingTableCleanerTimerExpired,
+                      this,
+                      std::placeholders::_1));
 }
 
 void AbstractMessageRouter::registerTransportStatusCallbacks()
 {
     for (auto& transportStatus : transportStatuses) {
-        transportStatus->setAvailabilityChangedCallback([this, transportStatus](bool isAvailable) {
-            if (isAvailable) {
-                rescheduleQueuedMessagesForTransport(transportStatus);
-            }
-        });
+        transportStatus->setAvailabilityChangedCallback(
+                [ thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()), transportStatus ](
+                        bool isAvailable) {
+                    if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                        if (isAvailable) {
+                            thisSharedPtr->rescheduleQueuedMessagesForTransport(transportStatus);
+                        }
+                    }
+                });
     }
 }
 
@@ -308,18 +367,44 @@ void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
 {
     while (auto nextImmutableMessage =
                    transportNotAvailableQueue->getNextMessageFor(transportStatus)) {
-        route(nextImmutableMessage->getContent());
+        std::shared_ptr<ImmutableMessage> message = nextImmutableMessage->getContent();
+        try {
+            route(message);
+        } catch (const exceptions::JoynrRuntimeException& e) {
+            JOYNR_LOG_DEBUG(logger,
+                            "could not route queued message '{}' due to '{}'",
+                            message->toLogMessage(),
+                            e.getMessage());
+        }
     }
 }
 
-void AbstractMessageRouter::onMessageCleanerTimerExpired(const boost::system::error_code& errorCode)
+void AbstractMessageRouter::onMessageCleanerTimerExpired(
+        std::shared_ptr<AbstractMessageRouter> thisSharedPtr,
+        const boost::system::error_code& errorCode)
 {
     if (!errorCode) {
-        messageQueue->removeOutdatedMessages();
-        activateMessageCleanerTimer();
+        thisSharedPtr->messageQueue->removeOutdatedMessages();
+        thisSharedPtr->activateMessageCleanerTimer();
     } else if (errorCode != boost::system::errc::operation_canceled) {
         JOYNR_LOG_ERROR(logger,
                         "Failed to schedule timer to remove outdated messages: {}",
+                        errorCode.message());
+    }
+}
+
+void AbstractMessageRouter::onRoutingTableCleanerTimerExpired(
+        const boost::system::error_code& errorCode)
+{
+    JOYNR_LOG_DEBUG(logger, "AbstractMessageRouter::onRoutingTableCleanerTimerExpired");
+
+    if (!errorCode) {
+        WriteLocker lock(routingTableLock);
+        routingTable.purge();
+        activateRoutingTableCleanerTimer();
+    } else if (errorCode != boost::system::errc::operation_canceled) {
+        JOYNR_LOG_ERROR(logger,
+                        "Failed to schedule timer to remove outdated routing table entries: {}",
                         errorCode.message());
     }
 }
@@ -364,15 +449,45 @@ void AbstractMessageRouter::saveRoutingTable()
     }
 }
 
-void AbstractMessageRouter::addToRoutingTable(std::string participantId,
-                                              std::shared_ptr<RoutingEntry> routingEntry)
+void AbstractMessageRouter::addToRoutingTable(
+        std::string participantId,
+        bool isGloballyVisible,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+        std::int64_t expiryDateMs,
+        bool isSticky)
 {
     {
         WriteLocker lock(routingTableLock);
-        routingTable.add(participantId, routingEntry);
+        auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
+        if (routingEntry) {
+            if ((*(routingEntry->address) != *address) ||
+                (routingEntry->isGloballyVisible != isGloballyVisible)) {
+                JOYNR_LOG_WARN(logger,
+                               "unable to update (participantId={}, address={}, "
+                               "isGloballyVisible={}, expiryDateMs={}) into routing table, since "
+                               "the participantId is already associated with routing entry {}",
+                               participantId,
+                               routingEntry->toString());
+                return;
+            }
+            // keep longest lifetime
+            if (routingEntry->expiryDateMs > expiryDateMs) {
+                expiryDateMs = routingEntry->expiryDateMs;
+            }
+            if (routingEntry->isSticky) {
+                isSticky = true;
+            }
+            // manual removal of old entry is not required here since
+            // routingTable.add() automatically calls replace
+            // in case insert fails
+        }
+
+        routingTable.add(
+                std::move(participantId), isGloballyVisible, address, expiryDateMs, isSticky);
     }
-    if (routingTableSaveFilterFunc(std::move(routingEntry))) {
-        // preventing acccess to writing to the disk for inprocess messaging address
+    const joynr::InProcessMessagingAddress* inprocessAddress =
+            dynamic_cast<const joynr::InProcessMessagingAddress*>(address.get());
+    if (!inprocessAddress) {
         saveRoutingTable();
     }
 }
@@ -387,9 +502,9 @@ MessageRunnable::MessageRunnable(
         std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<IMessagingStub> messagingStub,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
-        AbstractMessageRouter& messageRouter,
+        std::weak_ptr<AbstractMessageRouter> messageRouter,
         std::uint32_t tryCount)
-        : Runnable(true),
+        : Runnable(),
           ObjectWithDecayTime(message->getExpiryDate()),
           message(message),
           messagingStub(messagingStub),
@@ -407,25 +522,45 @@ void MessageRunnable::run()
 {
     if (!isExpired()) {
         // TODO is it safe to capture (this) here? rather capture members by value!
-        auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
-            try {
-                exceptions::JoynrDelayMessageException& delayException =
-                        dynamic_cast<exceptions::JoynrDelayMessageException&>(
-                                const_cast<exceptions::JoynrRuntimeException&>(e));
-                std::chrono::milliseconds delay = delayException.getDelayMs();
+        auto onFailure = [thisWeakPtr = joynr::util::as_weak_ptr(
+                                  std::dynamic_pointer_cast<MessageRunnable>(shared_from_this()))](
+                const exceptions::JoynrRuntimeException& e)
+        {
+            if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                try {
+                    exceptions::JoynrDelayMessageException& delayException =
+                            dynamic_cast<exceptions::JoynrDelayMessageException&>(
+                                    const_cast<exceptions::JoynrRuntimeException&>(e));
+                    std::chrono::milliseconds delay = delayException.getDelayMs();
 
-                JOYNR_LOG_TRACE(logger,
+                    if (auto messageRouterSharedPtr = thisSharedPtr->messageRouter.lock()) {
+                        JOYNR_LOG_TRACE(
+                                logger,
                                 "Rescheduling message after error: messageId: {}, new delay {}ms, "
                                 "reason: {}",
-                                message->getId(),
+                                thisSharedPtr->message->getId(),
                                 delay.count(),
                                 e.getMessage());
-                messageRouter.scheduleMessage(message, destAddress, tryCount + 1, delay);
-            } catch (const std::bad_cast&) {
-                JOYNR_LOG_ERROR(logger,
-                                "Message with ID {} could not be sent! reason: {}",
-                                message->getId(),
-                                e.getMessage());
+                        messageRouterSharedPtr->scheduleMessage(thisSharedPtr->message,
+                                                                thisSharedPtr->destAddress,
+                                                                thisSharedPtr->tryCount + 1,
+                                                                delay);
+                    } else {
+                        JOYNR_LOG_ERROR(
+                                logger,
+                                "Message with ID {} could not be sent! reason: messageRouter "
+                                "not available",
+                                thisSharedPtr->message->getId());
+                    }
+                } catch (const std::bad_cast&) {
+                    JOYNR_LOG_ERROR(logger,
+                                    "Message with ID {} could not be sent! reason: {}",
+                                    thisSharedPtr->message->getId(),
+                                    e.getMessage());
+                }
+            } else {
+                JOYNR_LOG_ERROR(
+                        logger, "Message could not be sent! reason: MessageRunnable not available");
             }
         };
         messagingStub->transmit(message, onFailure);

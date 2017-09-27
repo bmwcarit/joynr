@@ -19,12 +19,13 @@
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 
 #include "joynr/IDispatcher.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
 
-InProcessMessagingSkeleton::InProcessMessagingSkeleton(IDispatcher* dispatcher)
-        : dispatcher(dispatcher)
+InProcessMessagingSkeleton::InProcessMessagingSkeleton(std::weak_ptr<IDispatcher> dispatcher)
+        : dispatcher(std::move(dispatcher))
 {
 }
 
@@ -33,7 +34,13 @@ void InProcessMessagingSkeleton::transmit(
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     std::ignore = onFailure;
-    dispatcher->receive(message);
+    if (auto dispatcherSharedPtr = dispatcher.lock()) {
+        dispatcherSharedPtr->receive(message);
+    } else {
+        onFailure(exceptions::JoynrRuntimeException(
+                "InProcessMessagingSkeleton: cannot transmit message because dispatcher is not "
+                "available"));
+    }
 }
 
 } // namespace joynr

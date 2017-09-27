@@ -1,5 +1,6 @@
-/*global Buffer: true, FileReader: true, TextDecoder: true, TextEncoder: true */
+/*jslint node: true */
 
+/*global Buffer: true, FileReader: true, TextDecoder: true, TextEncoder: true */
 /*
  * #%L
  * %%
@@ -18,15 +19,12 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/messaging/JoynrMessage",
-            "joynr/util/JSONSerializer",
-            "joynr/exceptions/JoynrRuntimeException",
-            "joynr/system/LoggerFactory"
-        ],
-        function(JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
+var JoynrMessage = require('../../classes/joynr/messaging/JoynrMessage');
+var JsonSerializer = require('../../classes/joynr/util/JSONSerializer');
+var JoynrRuntimeException = require('../../classes/joynr/exceptions/JoynrRuntimeException');
+var LoggerFactory = require('../../classes/joynr/system/LoggerFactory');
+module.exports =
+        (function(JoynrMessage, JSONSerializer, JoynrRuntimeException, LoggerFactory) {
             if (typeof Buffer !== "function" && typeof TextDecoder !== "function") {
                 throw new JoynrRuntimeException(
                         "Encoding/Decoding of binary websocket messages not possible. Buffer and TextEncoder/TextDecoder not available.");
@@ -48,14 +46,14 @@ define(
             WebSocket.CLOSING = 2;
             WebSocket.CLOSED = 3;
 
-            WebSocket.encodeString = function(string) {
+            websocket.encodeString = function(string) {
                 if (typeof Buffer !== "function" && typeof TextDecoder === "function") {
                     var textEncoder = new TextEncoder();
                     return textEncoder.encode(string);
                 }
                 return string;
             };
-            WebSocket.decodeEventData = function(event, callback) {
+            websocket.decodeEventData = function(event, callback) {
                 if (typeof Buffer !== "function" && typeof TextDecoder === "function") {
                     var textDecoder = new TextDecoder();
                     callback(textDecoder.decode(event.data));
@@ -64,11 +62,11 @@ define(
                 }
             };
 
-            WebSocket.marshalJoynrMessage = function(joynrMessage) {
-                return WebSocket.encodeString(JSONSerializer.stringify(joynrMessage));
+            websocket.marshalJoynrMessage = function(joynrMessage) {
+                return this.encodeString(JSONSerializer.stringify(joynrMessage));
             };
 
-            WebSocket.unmarshalJoynrMessage = function(event, callback) {
+            websocket.unmarshalJoynrMessage = function(event, callback) {
                 if (typeof event.data === "object") {
                     if (typeof Buffer === "function") {
                         callback(new JoynrMessage(JSON.parse(event.data.toString())));
@@ -78,7 +76,7 @@ define(
                                 callback(new JoynrMessage(JSON.parse(joynrMessageData)));
                             }
                         };
-                        WebSocket.decodeEventData(event, callbackWrapper);
+                        this.decodeEventData(event, callbackWrapper);
                     }
                 } else {
                     log.error("Received unsupported message from websocket.");
@@ -86,4 +84,4 @@ define(
             };
 
             return WebSocket;
-        });
+        }(JoynrMessage, JsonSerializer, JoynrRuntimeException, LoggerFactory));

@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,18 +18,13 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-"joynr/capabilities/arbitration/Arbitrator",
-[
-    "global/Promise",
-    "joynr/types/DiscoveryQos",
-    "joynr/util/UtilInternal",
-    "joynr/exceptions/DiscoveryException",
-    "joynr/exceptions/NoCompatibleProviderFoundException",
-    "joynr/util/LongTimer"
-],
-function(Promise, DiscoveryQos, Util, DiscoveryException, NoCompatibleProviderFoundException, LongTimer) {
+var Promise = require('../../../global/Promise');
+var DiscoveryQos = require('../../../joynr/types/DiscoveryQos');
+var UtilInternal = require('../../util/UtilInternal');
+var DiscoveryException = require('../../exceptions/DiscoveryException');
+var NoCompatibleProviderFoundException = require('../../exceptions/NoCompatibleProviderFoundException');
+var LongTimer = require('../../util/LongTimer');
+module.exports = (function (Promise, DiscoveryQos, Util, DiscoveryException, NoCompatibleProviderFoundException, LongTimer) {
 
     /**
      * checks if the provided discoveryEntry supports onChange subscriptions if required
@@ -321,6 +316,5 @@ function(Promise, DiscoveryQos, Util, DiscoveryException, NoCompatibleProviderFo
         this._started = false;
     };
 
-
-    return Arbitrator;
-});
+            return Arbitrator;
+}(Promise, DiscoveryQos, UtilInternal, DiscoveryException, NoCompatibleProviderFoundException, LongTimer));

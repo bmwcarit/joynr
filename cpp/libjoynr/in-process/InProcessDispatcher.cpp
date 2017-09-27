@@ -92,9 +92,16 @@ void InProcessDispatcher::registerSubscriptionManager(
     this->subscriptionManager = subscriptionManager;
 }
 
-void InProcessDispatcher::registerPublicationManager(PublicationManager* publicationManager)
+void InProcessDispatcher::registerPublicationManager(
+        std::weak_ptr<PublicationManager> publicationManager)
 {
-    this->publicationManager = publicationManager;
+    this->publicationManager = std::move(publicationManager);
+}
+
+void InProcessDispatcher::shutdown()
+{
+    requestCallerDirectory.shutdown();
+    replyCallerDirectory.shutdown();
 }
 
 } // namespace joynr

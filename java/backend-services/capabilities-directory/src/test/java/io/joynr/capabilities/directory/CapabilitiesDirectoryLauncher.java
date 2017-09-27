@@ -53,18 +53,12 @@ class MockChannelAddressFactory extends GlobalAddressFactory<ChannelAddress> {
 public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
     private static CapabilitiesDirectoryImpl capabilitiesDirectory;
-
     private static JoynrApplication capabilitiesDirectoryLauncher;
 
     @Inject
     private GlobalCapabilitiesDirectoryAbstractProvider capabilitiesDirectoryProvider;
 
     private PersistService persistService;
-
-    public static void main(String[] args) {
-
-        start(new Properties());
-    }
 
     public static void start(Properties joynrConfig) {
 
@@ -82,6 +76,10 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
     public static void stop() {
         capabilitiesDirectoryLauncher.shutdown();
+    }
+
+    static CapabilitiesDirectoryImpl getCapabilitiesDirectory() {
+        return capabilitiesDirectory;
     }
 
     @Inject
@@ -102,8 +100,7 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
         runtime.shutdown(true);
     }
 
-    static CapabilitiesDirectoryImpl getCapabilitiesDirctory() {
-        return capabilitiesDirectory;
+    public static void main(String[] args) {
+        start(new Properties());
     }
-
 }

@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -23,16 +23,13 @@
  * The <code>MessageQueue</code> is a joynr internal data structure. The Message Queue caches incoming messages, which cannot be shipped
  * to the correct participant. Once a participant with the matching participantId is registered, the incoming message is forwarded to him
  */
-define(
-        "joynr/messaging/routing/MessageQueue",
-        [
-            "joynr/system/LoggerFactory",
-            "joynr/system/DiagnosticTags",
-            "joynr/util/LongTimer",
-            "joynr/util/UtilInternal",
-            "joynr/messaging/JoynrMessage"
-        ],
-        function(LoggerFactory, DiagnosticTags, LongTimer, Util, JoynrMessage) {
+var LoggerFactory = require('../../system/LoggerFactory');
+var DiagnosticTags = require('../../system/DiagnosticTags');
+var LongTimer = require('../../util/LongTimer');
+var UtilInternal = require('../../util/UtilInternal');
+var JoynrMessage = require('../JoynrMessage');
+module.exports =
+        (function(LoggerFactory, DiagnosticTags, LongTimer, Util, JoynrMessage) {
 
             var log = LoggerFactory.getLogger("joynr/messaging/routing/MessageQueue");
             var defaultSettings;
@@ -158,4 +155,4 @@ define(
             };
 
             return MessageQueue;
-        });
+        }(LoggerFactory, DiagnosticTags, LongTimer, UtilInternal, JoynrMessage));

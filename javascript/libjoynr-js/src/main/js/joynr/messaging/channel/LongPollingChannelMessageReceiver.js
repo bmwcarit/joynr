@@ -1,5 +1,4 @@
-/*jslint es5: true, nomen: true */
-
+/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,30 +17,16 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-    "joynr/messaging/channel/LongPollingChannelMessageReceiver",
-    [
-        "global/Promise",
-        "uuid",
-        "joynr/messaging/JoynrMessage",
-        "JsonParser",
-        "joynr/messaging/MessagingQos",
-        "joynr/system/DiagnosticTags",
-        "joynr/system/LoggerFactory",
-        "joynr/util/UtilInternal",
-        "joynr/util/LongTimer"
-    ],
-    function(
-        Promise,
-        uuid,
-        JoynrMessage,
-        JsonParser,
-        MessagingQos,
-        DiagnosticTags,
-        LoggerFactory,
-        Util,
-        LongTimer) {
+var Promise = require('../../../global/Promise');
+var uuid = require('../../../lib/uuid-annotated');
+var JoynrMessage = require('../JoynrMessage');
+var JsonParser = require('../../../lib/JsonParser');
+var MessagingQos = require('../MessagingQos');
+var DiagnosticTags = require('../../system/DiagnosticTags');
+var LoggerFactory = require('../../system/LoggerFactory');
+var UtilInternal = require('../../util/UtilInternal');
+var LongTimer = require('../../util/LongTimer');
+module.exports = (function (Promise, uuid, JoynrMessage, JsonParser, MessagingQos, DiagnosticTags, LoggerFactory, Util, LongTimer) {
 
 
         var log = LoggerFactory.getLogger("joynr.messaging.LongPollingChannelMessageReceiver");
@@ -335,4 +320,4 @@ define(
             return this._callCreate().catch(_callCreateOnError);
         };
         return LongPollingChannelMessageReceiver;
-    });
+}(Promise, uuid, JoynrMessage, JsonParser, MessagingQos, DiagnosticTags, LoggerFactory, UtilInternal, LongTimer));

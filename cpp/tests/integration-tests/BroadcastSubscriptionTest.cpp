@@ -62,7 +62,7 @@ public:
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         messageFactory(),
-        messageSender(std::make_shared<MessageSender>(mockMessageRouter)),
+        messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
         dispatcher(messageSender, singleThreadIOService.getIOService()),
         subscriptionManager(nullptr)
     {
@@ -127,7 +127,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -178,7 +178,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback= std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation, double>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(

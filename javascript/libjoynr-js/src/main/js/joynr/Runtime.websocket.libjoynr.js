@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -17,9 +19,4 @@
  * #L%
  */
 
-define("joynr/Runtime", [ "joynr/start/WebSocketLibjoynrRuntime"
-], function(WebSocketLibjoynrRuntime) {
-
-    return WebSocketLibjoynrRuntime;
-
-});
+module.exports = require('./start/WebSocketLibjoynrRuntime');

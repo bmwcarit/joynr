@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,12 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/messaging/webmessaging/WebMessagingStubFactory",
-        [ "joynr/messaging/webmessaging/WebMessagingStub"
-        ],
-        function(WebMessagingStub) {
+var WebMessagingStub = require('./WebMessagingStub');
+module.exports = (function(WebMessagingStub) {
 
             /**
              * @constructor
@@ -48,4 +44,4 @@ define(
 
             return WebMessagingStubFactory;
 
-        });
+}(WebMessagingStub));

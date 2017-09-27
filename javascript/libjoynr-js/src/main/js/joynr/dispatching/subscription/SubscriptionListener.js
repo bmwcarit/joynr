@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/dispatching/subscription/SubscriptionListener", [], function() {
+module.exports = (function() {
 
     /**
      * @name SubscriptionListener
@@ -57,4 +58,4 @@ define("joynr/dispatching/subscription/SubscriptionListener", [], function() {
 
     return SubscriptionListener;
 
-});
+}());

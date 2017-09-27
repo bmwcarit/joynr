@@ -1,12 +1,105 @@
+# joynr 0.30.0
+
+## Configuration property changes
+
+* **[C++]** Made the following properties configurable. See
+  default-messaging.settings for more details.
+  * `routing-table-grace-period-ms`
+  * `routing-table-cleanup-interval-ms`
+
+## Other changes
+
+* **[C++]** The internal routing table can now be cleaned up.
+  Routing entries which have been created for handling a request from
+  global can be removed when the ttl + grace period has passed.
+
+# joynr 0.29.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Introduced ProviderReregistrationController interface which is implemented
+ by the cluster-controller and can be accessed by creating the corresponding proxy.
+ It allows to trigger the re-registration of globally visible providers which are
+ registered at the corresponding cluster-controller instance.
+* **[JS]** Use require instead of requirejs.
+
+# joynr 0.29.0
+
+## API relevant changes
+* **[C++]** JoynrRuntime::createRuntimeAsync and JoynrRuntime::createRuntime now accept an
+  optional IKeychain argument. See the [C++ Documentation](cplusplus.md) for more information.
+
+## Configuration property changes
+* **[Java]** See the [Java Configuration Reference](JavaSettings.md) for
+  details about these newly introduced properties:
+  * `PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS`
+  * `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS`
+  * `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`
+  * `PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS`
+  * `PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`
+  * `PROPERTY_ROUTING_MAX_RETRY_COUNT`
+* **[Java]** Renamed property `PROPERTY_MAX_MESSAGES_INQUEUE` to
+  `PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`. Please note that
+  joynr will ignore messages if the MQTT queue is full by not sending an PUBACK
+  for the message (QOS 1). joynr requires that the message is resend by the MQTT
+  broker at a later point in time. If the resend time intervall of the broker is
+  too high, an additional delay will be introduced. Please make sure to set the
+  resend intervall of your MQTT broker appropriately.
+* **[JS]** Made default discoveryQos configurable via provisioning. See the
+  [Javascript Configuration Reference](JavaScriptTutorial.md) for more details.
+* **[C++]** Made the following properties configurable. See
+  default-messaging.settings for more details.
+  * `discovery-default-retry-interval-ms`
+  * `discovery-default-timeout-ms`
+  * `mqtt-max-message-size-bytes`
+* **[C++, Java, JS]** Changed default values for the following properties:
+  * Discovery expiry interval set to 6 weeks
+  * Discovery timeout interval set to 10 minutes
+  * Discovery retry interval set to 10 seconds
+
+## Other changes
+None.
+
+# joynr 0.28.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[JS]** Changed node node-localstorage to node-persist to avoid too long filenames
+* **[C++]** LocalCapabilitiesDirectory does not store multiple entries for a single participantId
+
 # joynr 0.28.0
 
 ## API relevant changes
 * **[C++, API]** Ease implementation of SubscriptionListener for empty broadcasts.
+* **[C++, API]** createJoynrRuntime*(...) APIs now return shared_ptr instead of unique_ptr
+* **[C++, API]** createProxyBuilder*(...) APIs now return shared_ptr instead of unique_ptr
+* **[C++, API]** proxyBuilder->build*(...) APIs now return shared_ptr instead of unique_ptr
+
+## Other changes
+* **[C++]** joynr accepts files which have size at most 2 GB.
+* **[Java, Properties]** Changed default values of joynr.messaging.mqtt.keepalivetimersec (new value: 30s) and
+ joynr.messaging.mqtt.connectiontimeoutsec (new value: 60s)
+* **[JS]** Updated wscpp version to 0.2.4
+* **[C++, Java, JS]** Updated smrf version ot 0.2.1
+* **[C++]** Add cluster-controller property for MQTT CA certificate folder path.
+* **[C++, Java]** Always log MQTT client ID.
+
+# joynr 0.27.4
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Fixed crash which can occur when a queued message cannot be routed due to expired timeout.
 
 # joynr 0.27.3
 
 ## API relevant changes
-none
+None.
 
 ## Other changes
 * **[C++]** Fixed crash which occurs when a LibJoynrRuntime is destroyed before the init method was called.
@@ -14,7 +107,7 @@ none
 # joynr 0.27.2
 
 ## API relevant changes
-none
+None.
 
 ## Other changes
 * **[JEE]** Applications can inject a MqttClientIdProvider to generate an id for the mqtt client.
@@ -25,6 +118,7 @@ none
 # joynr 0.27.1
 
 ## API relevant changes
+None.
 
 ## Other changes
 * **[JEE]** Fixed cleanup of thread pool when application is undeployed
@@ -85,6 +179,7 @@ This version of joynr is NOT compatible with previous versions due to internal c
 # joynr 0.25.3
 
 ## API relevant changes
+None.
 
 ## Other changes
 * **[C++]** setting "discovery-entry-expiry-interval-ms" can now store values up to 2^63-1
@@ -92,6 +187,7 @@ This version of joynr is NOT compatible with previous versions due to internal c
 # joynr 0.25.2
 
 ## API relevant changes
+None.
 
 ## Other changes
 * **[C++]** libCommon has been moved to libJoynr. This fixes issues with static linking with libjoynr.
@@ -100,6 +196,7 @@ This version of joynr is NOT compatible with previous versions due to internal c
 # joynr 0.25.1
 
 ## API relevant changes
+None.
 
 ## Other changes
 * **[C++]** Fixed a race condition in DelayedScheduler potentially leading to an assertion.
@@ -123,6 +220,7 @@ See [Joynr C++ configuration reference](CppConfigurationReference.md) for more i
 # joynr 0.24.1
 
 ## API relevant changes
+None.
 
 ## Other changes
 * **[Java]** Fixed a bug where enumeration parameters in fire and forget method calls
@@ -131,7 +229,6 @@ See [Joynr C++ configuration reference](CppConfigurationReference.md) for more i
 # joynr 0.24.0
 
 ## API relevant changes
-
 * **[All]** Added 'encrypt' to MessagingQos (incl. additional constructors, getter/setter),
   existing MessagingQos APIs remain working
 * **[C++]** Providers can be (un)registered asynchronously through `(un)registerProviderAsync`
@@ -180,7 +277,7 @@ See [Joynr C++ configuration reference](CppConfigurationReference.md) for more i
 # joynr 0.23.2
 
 ## API relevant changes
-none
+None.
 
 ## Other changes
 * **[JEE]** Fixed issue that caused joynr not to start correctly with debug logging enabled
@@ -200,7 +297,6 @@ none
 # joynr 0.23.0
 
 ## API relevant changes
-
 * **[JEE]** Providers are no longer deregistered automatically when the application is shutdown.
 * **[C++]** Proxy builder returns a std::unique_ptr to the created proxy instead of a raw pointer.
 * **[C++]** Joynr runtime returns a std::unique_ptr to a created proxy builder instead of a raw pointer.
@@ -229,7 +325,6 @@ none
 None.
 
 ## Other changes
-
 * **[C++, JS, Java]** Apply configurable Time To Live (TTL) Uplift to each outgoing message and to
   the expiry date of subscriptions
 
@@ -239,7 +334,6 @@ None.
 None.
 
 ## Other changes
-
 * **[C++]** fix MQTT connection to broker blocked after first message was sent
 * **[JS]** fix typing issues with maps of structs
 * **[JS]** fix receiving too many multicast publications when provider and proxy are in same
@@ -248,20 +342,23 @@ None.
 
 # joynr 0.22.2
 
-## Other changes
+## API relevant changes
+None.
 
+## Other changes
 * **[C++]** Bugfix: MQTT sender blocks message router thread in case of connection to broker not
   established.
 
 # joynr 0.22.1
 
-## Other changes
+## API relevant changes
+None.
 
+## Other changes
 * **[JS]** Bugfix: For non-selective broadcast subscriptions the listeners could be called too
   often if multiple matching listeners were found.
 
 # joynr 0.21.4
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -325,7 +422,6 @@ None.
   messaging layer to joynr version 0.21.x.
 
 # joynr 0.21.3
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -335,7 +431,6 @@ None.
   requests
 
 # joynr 0.21.2
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -344,7 +439,6 @@ None.
 * **[C++]** Fix cluster controller crash if many persisted discovery entries are present
 
 # joynr 0.21.1
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -380,14 +474,15 @@ None.
 * **[C++]** The dependency to Qt is now fully removed.
 
 # joynr 0.20.4
-This is a minor bug fix release.
+
+## API relevant changes
+None.
 
 ## Other changes
 * **[C++]** Fixed an issue which caused a high CPU load when a client disconnected from a
   cluster controller.
 
 # joynr 0.20.3
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -396,7 +491,6 @@ None.
 * **[JS]** Fix bug which resulted in improper shutdown of joynr.
 
 # joynr 0.20.2
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -406,7 +500,6 @@ None.
   subscriptions during startup.
 
 # joynr 0.20.1
-This is a minor bug fix release.
 
 ## API relevant changes
 * **[Java]** The BroadcastSubscriptionListener is now able to get informed about succeeded
@@ -480,7 +573,6 @@ This is a minor bug fix release.
 * **[C++]** muesli is now used as serializer; it can be found at https://github.com/bmwcarit/muesli
 
 # joynr 0.19.5
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -489,7 +581,6 @@ None.
 * **[C++]** Fix multi-threading issue in LocalCapabilitiesDirectory.
 
 # joynr 0.19.4
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -498,7 +589,6 @@ None.
 * **[C++]** Correctly load persisted routing table in the LibJoynrRuntime.
 
 # joynr 0.19.3
-This is a minor bug fix release.
 
 ## API relevant changes
 * **[C++]** Add new API to create joynr runtime with settings object.
@@ -507,7 +597,6 @@ This is a minor bug fix release.
 * **[JS]** Support attributes starting with capital letters.
 
 # joynr 0.19.2
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -516,7 +605,6 @@ None.
 * **[C++]** Do not crash joynr runtime if writing persistency files fails.
 
 # joynr 0.19.1
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -550,7 +638,6 @@ None.
   MQTT for communication.
 
 # joynr 0.18.5
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -561,7 +648,6 @@ None.
   `ProviderWrapper`.
 
 # joynr 0.18.4
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -573,8 +659,16 @@ None.
 * **[JS]** Added reconnect after connection loss for websockets
 * **[JS]** Support to clear local storage when loading joynr library
 
+# joynr 0.18.3
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Enabled Discovery and ACL addresses to use MQTT
+* **[JEE]** Introduced example radio JEE app
+
 # joynr 0.18.2
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -583,7 +677,6 @@ None.
 * **[JS]** Fixed bug when using joynr with node version >= 6
 
 # joynr 0.18.1
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -617,7 +710,6 @@ None.
    revised its required dependencies.
 
 # joynr 0.17.2
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -627,7 +719,6 @@ None.
   joynr has no native dependencies in its npm package.
 
 # joynr 0.17.1
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -682,7 +773,7 @@ None.
  * Subscription QoS allows to specify the validity (relative from current time) instead of
    an absolute expiry date. The clearExpiryDate() function removes a previously set expiry date.
  * The clearAlertAfterInterval function removes a previously set alert after interval.
- * Add suffix "_MS" to timing related subscription QoS constants (default, min and max values).
+ * Add suffix "_Ms_" to timing related subscription QoS constants (default, min and max values).
  * Add missing default values and min/max limits for the QoS parameters.
  * The old interface is deprecated but still available for backward compatibility reasons and might
    be removed by end of 2016.
@@ -728,8 +819,6 @@ None.
 
 # joynr 0.15.1
 
-This is a minor bug fix release.
-
 ## API relevant changes
 None.
 
@@ -748,8 +837,8 @@ None.
 * **[C++]** There is a new build and runtime dependency for the clustercontroller to mosquitto 1.4.7
 * **[Java]** Handling of different transport middlewares has been refactored to be much more
   extensible. Using Guice Multibinders, it is now possible for external projects to add transport
-  middleware implementations and inject these into the runtime. See the ```
-joynr-mqtt-client``` project for an example of how this can be done.
+  middleware implementations and inject these into the runtime. See the ```joynr-mqtt-client```
+  project for an example of how this can be done.
 * **[C++]** libjoynr uses libwebsockets of the libwebsockets project (http://libwebsockets.org)
   to communicate with the cluster-controller. Due to an incompatibility with Mac OS X,
   the C++-Websocket-Runtime currently does not work on Mac OS X.
@@ -769,8 +858,6 @@ joynr-mqtt-client``` project for an example of how this can be done.
 
 # joynr 0.14.3
 
-This is a minor bug fix release.
-
 ## API relevant changes
 None.
 
@@ -782,8 +869,6 @@ None.
 
 # joynr 0.14.2
 
-This is a minor bug fix release.
-
 ## API relevant changes
 None.
 
@@ -791,8 +876,6 @@ None.
 * **[C++]** Fix dependency resolution in the CMake package config file for joynr.
 
 # joynr 0.14.1
-
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -890,8 +973,6 @@ None.
 
 # joynr 0.12.3
 
-This is a minor bug fix release.
-
 ## API relevant changes
 None.
 
@@ -899,8 +980,6 @@ None.
 * **[C++]** Selective broadcasts of basic types generate compilable code.
 
 # joynr 0.12.2
-
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -910,8 +989,6 @@ None.
   unresolved value.
 
 # joynr 0.12.1
-
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -961,8 +1038,6 @@ None.
   the console.
 
 # joynr 0.11.1
-
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -1023,8 +1098,6 @@ None.
 
 # joynr 0.10.2
 
-This is a minor bug fix release.
-
 ## API relevant changes
 None.
 
@@ -1034,8 +1107,6 @@ None.
   methods in JavaScript.
 
 # joynr 0.10.1
-
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -1087,8 +1158,6 @@ JavaScript, and try out the radio app examples to see it all in action.
 
 # joynr 0.9.4
 
-This is a minor bug fix release.
-
 ## API relevant changes
 * **[Java, C++, JS]** Use spelling of Franca element names (packages, type collections,
   interfaces, ...) as defined in the model (.fidl files) in generated code. I.e. perform
@@ -1120,8 +1189,6 @@ None.
 
 # joynr 0.9.2
 
-This is a minor bug fix release.
-
 ## API relevant changes
 None.
 
@@ -1130,8 +1197,6 @@ None.
 * **[Java, C++]** Default domain for backend services is now "io.joynr".
 
 # joynr 0.9.1
-
-This is a minor bug fix release.
 
 ## API relevant changes
 None.
@@ -1181,6 +1246,9 @@ None.
   scripts are also used by the joynr project itself in its own CI (Jenkins-based) environment.
 * **[Java]** Capability Directory entries on the global directory are now persisted using JPA.
 
+## Other changes
+None.
+
 # joynr 0.8.0
 
 ## API relevant changes
@@ -1224,6 +1292,7 @@ None.
   are no longer supported.
 
 # joynr 0.7.0
+
 ## API relevant changes
 * **[Java]** SubscriptionListener is now called AttributeSubscriptionListener, and
   unregisterSubscription renamed unregisterAttributeSubcription (change required to differentiate

@@ -17,20 +17,23 @@
  * #L%
  */
 #include "joynr/ProxyBase.h"
-#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include <tuple>
-
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/Util.h"
 
 namespace joynr
 {
 
+class JoynrRuntime;
+
 INIT_LOGGER(ProxyBase);
 
-ProxyBase::ProxyBase(ConnectorFactory* connectorFactory,
+ProxyBase::ProxyBase(std::weak_ptr<JoynrRuntime> runtime,
+                     ConnectorFactory* connectorFactory,
                      const std::string& domain,
                      const MessagingQos& qosSettings)
-        : connectorFactory(connectorFactory),
+        : runtime(std::move(runtime)),
+          connectorFactory(connectorFactory),
           domain(domain),
           qosSettings(qosSettings),
           proxyParticipantId(""),

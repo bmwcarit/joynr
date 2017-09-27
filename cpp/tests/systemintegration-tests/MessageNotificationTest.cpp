@@ -50,13 +50,14 @@ public:
         settingsPath("test-resources/websocket-cc-tls.settings"),
         semaphore()
     {
-        clusterControllerRuntime = std::make_unique<JoynrClusterControllerRuntime>(std::make_unique<Settings>(settingsPath));
+        clusterControllerRuntime = std::make_shared<JoynrClusterControllerRuntime>(std::make_unique<Settings>(settingsPath));
+        clusterControllerRuntime->init();
         clusterControllerRuntime->start();
 
-        libjoynrProviderRuntime = std::make_unique<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"));
+        libjoynrProviderRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"), nullptr);
         EXPECT_TRUE(libjoynrProviderRuntime->connect(std::chrono::milliseconds(2000)));
 
-        libjoynrProxyRuntime = std::make_unique<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration2.settings"));
+        libjoynrProxyRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration2.settings"), nullptr);
         EXPECT_TRUE(libjoynrProxyRuntime->connect(std::chrono::milliseconds(2000)));
     }
 
@@ -76,9 +77,9 @@ public:
     }
 
 protected:
-    std::unique_ptr<JoynrClusterControllerRuntime> clusterControllerRuntime;
-    std::unique_ptr<TestLibJoynrWebSocketRuntime> libjoynrProviderRuntime;
-    std::unique_ptr<TestLibJoynrWebSocketRuntime> libjoynrProxyRuntime;
+    std::shared_ptr<JoynrClusterControllerRuntime> clusterControllerRuntime;
+    std::shared_ptr<TestLibJoynrWebSocketRuntime> libjoynrProviderRuntime;
+    std::shared_ptr<TestLibJoynrWebSocketRuntime> libjoynrProxyRuntime;
 
     const std::string testDomain;
     std::string settingsPath;

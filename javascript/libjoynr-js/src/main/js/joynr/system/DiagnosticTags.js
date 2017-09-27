@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,8 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/system/DiagnosticTags", [], function() {
+module.exports =
+        (function() {
 
     /**
      * @exports DiagnosticTags
@@ -185,4 +187,4 @@ define("joynr/system/DiagnosticTags", [], function() {
     };
 
     return DiagnosticTags;
-});
+        }());

@@ -52,11 +52,11 @@ CapabilitiesClient::CapabilitiesClient()
 {
 }
 
-std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> CapabilitiesClient::
+std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> CapabilitiesClient::
         getGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl)
 {
     assert(capabilitiesProxyBuilder);
-    return std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>(
+    return std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>(
             capabilitiesProxyBuilder->setMessagingQos(MessagingQos(messagingTtl))->build());
 }
 
@@ -67,6 +67,15 @@ void CapabilitiesClient::add(
 {
     assert(defaultCapabilitiesProxy);
     defaultCapabilitiesProxy->addAsync(entry, onSuccess, onError);
+}
+
+void CapabilitiesClient::add(
+        const std::vector<joynr::types::GlobalDiscoveryEntry>& globalDiscoveryEntries,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError)
+{
+    assert(defaultCapabilitiesProxy);
+    defaultCapabilitiesProxy->addAsync(globalDiscoveryEntries, onSuccess, onRuntimeError);
 }
 
 void CapabilitiesClient::remove(const std::string& participantId)
@@ -86,7 +95,7 @@ std::vector<types::GlobalDiscoveryEntry> CapabilitiesClient::lookup(
         const std::string& interfaceName,
         std::int64_t messagingTtl)
 {
-    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> proxy =
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> proxy =
             getGlobalCapabilitiesDirectoryProxy(messagingTtl);
     std::vector<types::GlobalDiscoveryEntry> result;
     proxy->lookup(result, domains, interfaceName);
@@ -100,7 +109,7 @@ void CapabilitiesClient::lookup(
         std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
 {
-    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> proxy =
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> proxy =
             getGlobalCapabilitiesDirectoryProxy(messagingTtl);
     proxy->lookupAsync(domains, interfaceName, std::move(onSuccess), std::move(onError));
 }
@@ -133,7 +142,7 @@ void CapabilitiesClient::touch(
             clusterControllerId, std::move(onSuccess), std::move(onError));
 }
 
-void CapabilitiesClient::setProxyBuilder(std::unique_ptr<
+void CapabilitiesClient::setProxyBuilder(std::shared_ptr<
         IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> inCapabilitiesProxyBuilder)
 {
     assert(inCapabilitiesProxyBuilder);

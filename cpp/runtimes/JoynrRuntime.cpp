@@ -36,7 +36,7 @@ JoynrRuntime::JoynrRuntime(Settings& settings)
           systemServicesSettings(settings),
           dispatcherAddress(nullptr),
           discoveryProxy(nullptr),
-          publicationManager(nullptr)
+          publicationManager()
 {
     messagingSettings.printSettings();
     systemServicesSettings.printSettings();

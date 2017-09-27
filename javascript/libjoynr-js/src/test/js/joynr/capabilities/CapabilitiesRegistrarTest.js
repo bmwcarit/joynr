@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true*/
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,28 +18,16 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-            "global/Promise",
-            "joynr/capabilities/CapabilitiesRegistrar",
-            "joynr/types/ProviderQos",
-            "joynr/types/GlobalDiscoveryEntry",
-            "joynr/provider/ProviderAttribute",
-            "joynr/types/DiscoveryEntry",
-            "joynr/types/ProviderScope",
-            "joynr/types/Version",
-            "uuid",
-        ],
-        function(
-                Promise,
-                CapabilitiesRegistrar,
-                ProviderQos,
-                GlobalDiscoveryEntry,
-                ProviderAttribute,
-                DiscoveryEntry,
-                ProviderScope,
-                Version,
-                uuid) {
+var Promise = require('../../../classes/global/Promise');
+var CapabilitiesRegistrar = require('../../../classes/joynr/capabilities/CapabilitiesRegistrar');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var GlobalDiscoveryEntry = require('../../../classes/joynr/types/GlobalDiscoveryEntry');
+var ProviderAttribute = require('../../../classes/joynr/provider/ProviderAttribute');
+var DiscoveryEntry = require('../../../classes/joynr/types/DiscoveryEntry');
+var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
+var Version = require('../../../classes/joynr/types/Version');
+var uuid = require('../../../classes/lib/uuid-annotated');
+module.exports = (function (Promise, CapabilitiesRegistrar, ProviderQos, GlobalDiscoveryEntry, ProviderAttribute, DiscoveryEntry, ProviderScope, Version, uuid) {
             describe(
                     "libjoynr-js.joynr.capabilities.CapabilitiesRegistrar",
                     function() {
@@ -182,6 +169,34 @@ define([
                             });
                             expect(provider.checkImplementation).toHaveBeenCalled();
                             done();
+                        });
+
+                        it("defaultDelayMs can be configured", function(done) {
+
+                            var overwrittenDelay = 100000;
+
+                            jasmine.clock().install();
+                            var baseTime = new Date();
+                            jasmine.clock().mockDate(baseTime);
+
+                            CapabilitiesRegistrar.setDefaultExpiryIntervalMs(overwrittenDelay);
+
+                            capabilitiesRegistrar.registerProvider(
+                            domain,
+                            provider,
+                            providerQos).then(function() {
+                                return null;
+                            }).catch(function() {
+                                return null;
+                            });
+
+                            expect(discoveryStubSpy.add).toHaveBeenCalledWith(jasmine.objectContaining({
+                                expiryDateMs: baseTime.getTime() + overwrittenDelay
+                            }));
+
+                            jasmine.clock().uninstall();
+                            done();
+
                         });
 
                         it(
@@ -412,4 +427,4 @@ define([
 
                     });
 
-        }); // require
+}(Promise, CapabilitiesRegistrar, ProviderQos, GlobalDiscoveryEntry, ProviderAttribute, DiscoveryEntry, ProviderScope, Version, uuid));    // require

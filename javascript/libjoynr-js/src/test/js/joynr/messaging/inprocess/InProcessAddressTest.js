@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define([ "joynr/messaging/inprocess/InProcessAddress"
-], function(InProcessAddress) {
+var InProcessAddress = require('../../../../classes/joynr/messaging/inprocess/InProcessAddress');
+module.exports = (function(InProcessAddress) {
 
     describe("libjoynr-js.joynr.messaging.inprocess.InProcessAddress", function() {
         var skeleton, inProcessAddress;
@@ -53,4 +54,4 @@ define([ "joynr/messaging/inprocess/InProcessAddress"
 
     });
 
-});
+}(InProcessAddress));

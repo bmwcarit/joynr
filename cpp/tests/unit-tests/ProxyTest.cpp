@@ -49,14 +49,14 @@ public:
 
     ProxyTest() :
         mockConnectorFactory(),
-        mockInProcessConnectorFactory()
+        mockInProcessConnectorFactory(std::make_shared<MockInProcessConnectorFactory>())
     {}
     void SetUp() override {
         AbstractSyncAsyncTest::SetUp();
-        auto mockInProcessConnectorFactoryPtr = std::make_unique<MockInProcessConnectorFactory>();
-        mockInProcessConnectorFactory = mockInProcessConnectorFactoryPtr.get();
         auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(mockMessageSender, nullptr);
-        mockConnectorFactory = new ConnectorFactory(std::move(mockInProcessConnectorFactoryPtr), std::move(joynrMessagingConnectorFactory));
+        mockConnectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, std::move(joynrMessagingConnectorFactory));
+        auto settings = std::make_unique<Settings>();
+        runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
     }
 
     void TearDown() override {
@@ -89,6 +89,7 @@ public:
     tests::testProxy* createFixture() override {
         EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
         tests::testProxy* proxy = new tests::testProxy(
+                    runtime,
                     mockConnectorFactory,
                     "myDomain",
                     MessagingQos());
@@ -102,7 +103,8 @@ public:
 
 protected:
     ConnectorFactory* mockConnectorFactory;
-    MockInProcessConnectorFactory* mockInProcessConnectorFactory;
+    std::shared_ptr<MockInProcessConnectorFactory> mockInProcessConnectorFactory;
+    std::shared_ptr<JoynrRuntime> runtime;
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyTest);
 };

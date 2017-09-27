@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,19 +18,20 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/messaging/websocket/WebSocketMessagingStubFactory",
-    "joynr/system/RoutingTypes/WebSocketAddress",
-    "joynr/system/RoutingTypes/WebSocketClientAddress",
-    "joynr/messaging/websocket/SharedWebSocket",
-    "global/WebSocket"
-], function(
-        WebSocketMessagingStubFactory,
-        WebSocketAddress,
-        WebSocketClientAddress,
-        SharedWebSocket,
-        WebSocket) {
+var WebSocketMessagingStubFactory =
+        require('../../../../classes/joynr/messaging/websocket/WebSocketMessagingStubFactory');
+var WebSocketAddress = require('../../../../classes/joynr/system/RoutingTypes/WebSocketAddress');
+var WebSocketClientAddress =
+        require('../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress');
+var SharedWebSocket = require('../../../../classes/joynr/messaging/websocket/SharedWebSocket');
+var WebSocket = require('../../../../test-classes/global/WebSocketMock');
+module.exports =
+        (function(
+                WebSocketMessagingStubFactory,
+                WebSocketAddress,
+                WebSocketClientAddress,
+                SharedWebSocket,
+                WebSocket) {
 
     describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStubFactory", function() {
         var webSocketMessagingStubFactory = null;
@@ -78,7 +81,7 @@ define([
             var webSocketMessagingStub = webSocketMessagingStubFactory.build(ccAddress);
             webSocketMessagingStub.transmit(joynrMessage);
             expect(websocket.send).toHaveBeenCalledWith(
-                    WebSocket.marshalJoynrMessage(joynrMessage),
+                    websocket.marshalJoynrMessage(joynrMessage),
                     {
                         binary : true
                     });
@@ -93,4 +96,9 @@ define([
 
     });
 
-});
+        }(
+                WebSocketMessagingStubFactory,
+                WebSocketAddress,
+                WebSocketClientAddress,
+                SharedWebSocket,
+                WebSocket));

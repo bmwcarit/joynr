@@ -1,3 +1,4 @@
+/*jslint node: true*/
 /*
  * #%L
  * %%
@@ -17,11 +18,14 @@
  * #L%
  */
 
-define("joynr/start/settings/defaultInterTabSettings", [], function() {
-    var defaultSettings = {};
-    defaultSettings.window = window;
-    defaultSettings.parentWindow = window.opener || window.top;
-    defaultSettings.parentOrigin =
-            location.origin || (window.location.protocol + '//' + window.location.host);
-    return defaultSettings;
-});
+module.exports =
+        (function() {
+            var window = global.window || {location: {}};
+            var location = global.location || {};
+            var defaultSettings = {};
+            defaultSettings.window = window;
+            defaultSettings.parentWindow = window.opener || window.top;
+            defaultSettings.parentOrigin =
+                    location.origin || (window.location.protocol + '//' + window.location.host);
+            return defaultSettings;
+        }());

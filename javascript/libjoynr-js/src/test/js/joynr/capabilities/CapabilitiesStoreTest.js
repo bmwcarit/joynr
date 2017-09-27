@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,27 +18,26 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/capabilities/CapabilitiesStore",
-    "joynr/types/DiscoveryEntry",
-    "joynr/types/DiscoveryQos",
-    "joynr/types/DiscoveryScope",
-    "joynr/types/ProviderScope",
-    "joynr/types/ProviderQos",
-    "joynr/types/CustomParameter",
-    "joynr/types/Version",
-    "Date"
-], function(
-        CapabilitiesStore,
-        DiscoveryEntry,
-        DiscoveryQos,
-        DiscoveryScope,
-        ProviderScope,
-        ProviderQos,
-        CustomParameter,
-        Version,
-        Date) {
+var CapabilitiesStore = require('../../../classes/joynr/capabilities/CapabilitiesStore');
+var DiscoveryEntry = require('../../../classes/joynr/types/DiscoveryEntry');
+var DiscoveryQos = require('../../../classes/joynr/types/DiscoveryQos');
+var DiscoveryScope = require('../../../classes/joynr/types/DiscoveryScope');
+var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var CustomParameter = require('../../../classes/joynr/types/CustomParameter');
+var Version = require('../../../classes/joynr/types/Version');
+var Date = require('../../../test-classes/global/Date');
+module.exports =
+        (function(
+                CapabilitiesStore,
+                DiscoveryEntry,
+                DiscoveryQos,
+                DiscoveryScope,
+                ProviderScope,
+                ProviderQos,
+                CustomParameter,
+                Version,
+                Date) {
     describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         var fakeTime = 0, cacheMaxAge, directory, discoveryQos, discoveryEntry1;
         var discoveryEntry2, discoveryEntry3, discoveryEntry4;
@@ -327,4 +328,13 @@ define([
         });
     });
 
-}); // require
+        }(
+                CapabilitiesStore,
+                DiscoveryEntry,
+                DiscoveryQos,
+                DiscoveryScope,
+                ProviderScope,
+                ProviderQos,
+                CustomParameter,
+                Version,
+                Date)); // require

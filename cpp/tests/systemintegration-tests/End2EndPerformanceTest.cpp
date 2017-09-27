@@ -45,8 +45,8 @@ using namespace joynr;
 class End2EndPerformanceTest : public TestWithParam< std::tuple<std::string, std::string> > {
 public:
     ADD_LOGGER(End2EndPerformanceTest);
-    JoynrClusterControllerRuntime* runtime1;
-    JoynrClusterControllerRuntime* runtime2;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
     std::unique_ptr<Settings> settings1;
     std::unique_ptr<Settings> settings2;
     std::string baseUuid;
@@ -54,8 +54,8 @@ public:
     std::string domain;
 
     End2EndPerformanceTest() :
-        runtime1(nullptr),
-        runtime2(nullptr),
+        runtime1(),
+        runtime2(),
         settings1(std::make_unique<Settings>(std::get<0>(GetParam()))),
         settings2(std::make_unique<Settings>(std::get<1>(GetParam()))),
         baseUuid(util::createUuid()),
@@ -65,10 +65,12 @@ public:
 
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
-        runtime1 = new JoynrClusterControllerRuntime(std::move(settings1));
+        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings1));
+        runtime1->init();
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings2, false);
-        runtime2 = new JoynrClusterControllerRuntime(std::move(settings2));
+        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings2));
+        runtime2->init();
     }
 
     void SetUp() {
@@ -79,7 +81,9 @@ public:
     void TearDown() {
         bool deleteChannel = true;
         runtime1->stop(deleteChannel);
+        runtime1.reset();
         runtime2->stop(deleteChannel);
+        runtime2.reset();
 
         // Delete persisted files
         std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
@@ -88,10 +92,7 @@ public:
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
-    ~End2EndPerformanceTest(){
-        delete runtime1;
-        delete runtime2;
-    }
+    ~End2EndPerformanceTest() = default;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(End2EndPerformanceTest);
@@ -106,12 +107,12 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     providerQos.setPriority(2);
     auto testProvider = std::make_shared<MockTestProvider>();
 
-    runtime1->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
+    std::string participantId = runtime1->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domain);
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -120,7 +121,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     std::int64_t qosRoundTripTTL = 50000;
 
     // Send a message and expect to get a result
-    std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy = testProxyBuilder
                      ->setMessagingQos(MessagingQos(qosRoundTripTTL))
                      ->setDiscoveryQos(discoveryQos)
                      ->build();
@@ -151,6 +152,9 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     //check if all Requests were successful
     EXPECT_EQ(numberOfRequests, successfulRequests);
     JOYNR_LOG_INFO(logger, "Required Time for 1000 Requests: {}",(stopTime - startTime));
+
+    runtime1->unregisterProvider(participantId);
+
     // to silence unused-variable compiler warnings
     std::ignore = startTime;
     std::ignore = stopTime;

@@ -33,6 +33,7 @@
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "tests/JoynrTest.h"
 
 using namespace ::testing;
 
@@ -42,16 +43,17 @@ using namespace joynr;
 class End2EndRPCTest : public TestWithParam< std::string >{
 public:
     std::string domain;
-    JoynrClusterControllerRuntime* runtime;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     std::shared_ptr<vehicle::GpsProvider> gpsProvider;
 
     End2EndRPCTest() :
         domain(),
-        runtime(nullptr)
+        runtime()
     {
-        runtime = new JoynrClusterControllerRuntime(
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(
                     std::make_unique<Settings>(GetParam())
         );
+        runtime->init();
         domain = "cppEnd2EndRPCTest_Domain_" + util::createUuid();
 
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -66,6 +68,7 @@ public:
     void TearDown(){
         bool deleteChannel = true;
         runtime->stop(deleteChannel);
+        runtime.reset();
 
         // Delete persisted files
         std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
@@ -76,9 +79,7 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(550));
     }
 
-    ~End2EndRPCTest(){
-        delete runtime;
-    }
+    ~End2EndRPCTest() = default;
 protected:
 
     joynr::DiscoveryQos discoveryQos;
@@ -100,14 +101,14 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
+    std::string participantId = runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
-    std::unique_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
+    std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
             runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::unique_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
+    std::shared_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -119,6 +120,7 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     EXPECT_EQ(expectedValue, actualValue);
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    runtime->unregisterProvider(participantId);
 }
 
 TEST_P(End2EndRPCTest, call_void_operation)
@@ -132,14 +134,14 @@ TEST_P(End2EndRPCTest, call_void_operation)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
+    std::string participantId = runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy = testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -147,6 +149,7 @@ TEST_P(End2EndRPCTest, call_void_operation)
 //    EXPECT_EQ(expectedValue, gpsFuture->getValue());
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    runtime->unregisterProvider(participantId);
 }
 
 // tests in process subscription
@@ -160,15 +163,15 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
+    std::string participantId = runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
-    std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     std::int64_t qosRoundTripTTL = 40000;
-    std::unique_ptr<tests::testProxy> testProxy = testProxyBuilder
+    std::shared_ptr<tests::testProxy> testProxy = testProxyBuilder
             ->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setDiscoveryQos(discoveryQos)
             ->build();
@@ -187,10 +190,14 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
                 200, // maxInterval_ms
                 1000 // alertInterval_ms
     );
-    testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     // This is not yet implemented in CapabilitiesClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
+    std::string subscriptionId;
+    JOYNR_ASSERT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionId));
+    JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocation(subscriptionId));
+    runtime->unregisterProvider(participantId);
 }
 
 INSTANTIATE_TEST_CASE_P(Http,

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,21 +18,19 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "joynr/vehicle/RadioProvider",
-            "joynr/vehicle/radiotypes/RadioStation",
-            "joynr/datatypes/exampleTypes/Country",
-            "joynr/datatypes/exampleTypes/StringMap",
-            "joynr/provider/ProviderAttribute",
-            "joynr/provider/ProviderOperation",
-            "joynr/provider/ProviderEvent",
-            "joynr/util/uuid",
-            "joynr/tests/TestWithVersionProvider",
-            "joynr/tests/TestWithoutVersionProvider"
-        ],
-        function(
+var RadioProvider = require('../../../test-classes/joynr/vehicle/RadioProvider');
+var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+var Country = require('../../../test-classes/joynr/datatypes/exampleTypes/Country');
+var StringMap = require('../../../test-classes/joynr/datatypes/exampleTypes/StringMap');
+var ProviderAttribute = require('../../../classes/joynr/provider/ProviderAttribute');
+var ProviderOperation = require('../../../classes/joynr/provider/ProviderOperation');
+var ProviderEvent = require('../../../classes/joynr/provider/ProviderEvent');
+var uuid = require('../../../classes/joynr/util/uuid');
+var TestWithVersionProvider = require('../../../test-classes/joynr/tests/TestWithVersionProvider');
+var TestWithoutVersionProvider =
+        require('../../../test-classes/joynr/tests/TestWithoutVersionProvider');
+module.exports =
+        (function(
                 RadioProvider,
                 RadioStation,
                 Country,
@@ -374,4 +374,14 @@ define(
 
                     });
 
-        }); // require
+        }(
+                RadioProvider,
+                RadioStation,
+                Country,
+                StringMap,
+                ProviderAttribute,
+                ProviderOperation,
+                ProviderEvent,
+                uuid,
+                TestWithVersionProvider,
+                TestWithoutVersionProvider)); // require

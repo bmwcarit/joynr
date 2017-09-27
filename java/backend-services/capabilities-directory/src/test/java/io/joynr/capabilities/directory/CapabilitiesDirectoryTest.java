@@ -111,7 +111,7 @@ public class CapabilitiesDirectoryTest {
 
     private static CapabilitiesDirectoryImpl startCapabilitiesDirectory() {
         CapabilitiesDirectoryLauncher.start(new Properties());
-        return CapabilitiesDirectoryLauncher.getCapabilitiesDirctory();
+        return CapabilitiesDirectoryLauncher.getCapabilitiesDirectory();
     }
 
     @AfterClass

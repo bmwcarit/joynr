@@ -79,6 +79,7 @@ public:
 template <>
 class SubscriptionListener<void> : public ISubscriptionListener<void>
 {
+public:
     SubscriptionListener() = default;
     ~SubscriptionListener() override = default;
 

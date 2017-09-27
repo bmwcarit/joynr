@@ -1,5 +1,4 @@
-/*jslint es5: true, nomen: true */
-
+/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -19,8 +18,9 @@
  * #L%
  */
 
-define("joynr/messaging/browser/BrowserMulticastAddressCalculator", [ "joynr/util/Typing"
-], function(Typing) {
+var Typing = require('../../util/Typing');
+
+module.exports = (function(Typing) {
 
     /**
      * @constructor BrowserMulticastAddressCalculator
@@ -50,4 +50,4 @@ define("joynr/messaging/browser/BrowserMulticastAddressCalculator", [ "joynr/uti
 
     return BrowserMulticastAddressCalculator;
 
-});
+}(Typing));

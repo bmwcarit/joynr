@@ -191,6 +191,7 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsNextHopToCcMessageRouter) {
     } catch (exceptions::JoynrException& e) {
         ADD_FAILURE()<< "resolveNextHop was not successful";
     }
+    runtime->unregisterProvider(participantId);
 }
 
 TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
@@ -216,6 +217,7 @@ TEST_F(LibJoynrRuntimeTest, unregisterProviderRemovesNextHopToCcMessageRouter) {
     } catch (exceptions::JoynrException& e) {
         ADD_FAILURE()<< "resolveNextHop after unregisterProvider was not successful";
     }
+    runtime->unregisterProvider(participantId);
 }
 
 TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
@@ -245,6 +247,7 @@ TEST_F(LibJoynrRuntimeTest, registerProviderAddsEntryToLocalCapDir) {
     } catch (exceptions::JoynrException& e) {
         ADD_FAILURE()<< "lookup was not successful";
     }
+    runtime->unregisterProvider(participantId);
 }
 
 TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
@@ -272,6 +275,7 @@ TEST_F(LibJoynrRuntimeTest, arbitrateRegisteredProvider) {
 
     delete testProxyBuilder;
     delete testProxy;
+    runtime->unregisterProvider(participantId);
 }
 
 TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
@@ -316,6 +320,7 @@ TEST_F(LibJoynrRuntimeTest, callAsyncFunctionOnProvider) {
 
     delete testProxyBuilder;
     delete testProxy;
+    runtime->unregisterProvider(participantId);
 }
 
 TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
@@ -356,4 +361,5 @@ TEST_F(LibJoynrRuntimeTest, callSyncFunctionOnProvider) {
 
     delete testProxyBuilder;
     delete testProxy;
+    runtime->unregisterProvider(participantId);
 }

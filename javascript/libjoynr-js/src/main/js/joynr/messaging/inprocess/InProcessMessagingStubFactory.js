@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/messaging/inprocess/InProcessMessagingStubFactory",
-        [ "joynr/messaging/inprocess/InProcessMessagingStub"
-        ],
-        function(InProcessMessagingStub) {
+var InProcessMessagingStub = require('./InProcessMessagingStub');
+module.exports = (function(InProcessMessagingStub) {
 
             /**
              * @constructor
@@ -43,4 +41,4 @@ define(
 
             return InProcessMessagingStubFactory;
 
-        });
+}(InProcessMessagingStub));

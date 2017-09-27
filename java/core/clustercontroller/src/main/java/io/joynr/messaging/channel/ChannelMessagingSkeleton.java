@@ -71,12 +71,6 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
     }
 
     @Override
-    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public void init() {
         messageReceiver.start(new MessageArrivedListener() {
 

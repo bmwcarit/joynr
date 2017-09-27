@@ -1,5 +1,4 @@
 /*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -18,16 +17,15 @@
  * limitations under the License.
  * #L%
  */
-
 /**
  * Setups a dummy DOM environment for node.
  *
  * @returns object with properties window and document.
  */
-define([ "xmlhttprequest"
-], function(xmlhttprequest) {
+var xmlhttprequest = require('xmlhttprequest');
+module.exports = global.window !== undefined ? require('./XMLHttpRequest') : (function(xmlhttprequest) {
     var XMLHttpRequest = xmlhttprequest.XMLHttpRequest;
 
     global.XMLHttpRequest = XMLHttpRequest;
     return XMLHttpRequest;
-});
+}(xmlhttprequest));

@@ -61,16 +61,18 @@ public:
      * @param attributeListener The listener object containing the callbacks for publications and
      * failures
      */
-    void registerAttributeListener(const std::string& attributeName,
-                                   SubscriptionAttributeListener* attributeListener) override;
+    void registerAttributeListener(
+            const std::string& attributeName,
+            std::shared_ptr<SubscriptionAttributeListener> attributeListener) override;
 
     /**
      * @brief Unregister and delete an attribute listener
      * @param attributeName The name of the attribute for which publications shall be stopped
      * @param attributeListener The listener object to be unregisterd
      */
-    void unregisterAttributeListener(const std::string& attributeName,
-                                     SubscriptionAttributeListener* attributeListener) override;
+    void unregisterAttributeListener(
+            const std::string& attributeName,
+            std::shared_ptr<SubscriptionAttributeListener> attributeListener) override;
 
     /**
      * @brief Register a listener for unicast broadcasts
@@ -78,15 +80,17 @@ public:
      * @param broadcastListener The listener object containing the callbacks for publications and
      * failures
      */
-    void registerBroadcastListener(const std::string& broadcastName,
-                                   UnicastBroadcastListener* broadcastListener) override;
+    void registerBroadcastListener(
+            const std::string& broadcastName,
+            std::shared_ptr<UnicastBroadcastListener> broadcastListener) override;
 
     /**
      * @brief Register a listener for multicast broadcasts
      * @param broadcastListener The listener object containing the callbacks for publications and
      * failures
      */
-    void registerBroadcastListener(MulticastBroadcastListener* broadcastListener) override;
+    void registerBroadcastListener(
+            std::shared_ptr<MulticastBroadcastListener> broadcastListener) override;
 
     /**
      * @brief Unregister and delete a broadcast listener
@@ -94,8 +98,9 @@ public:
      * @param broadcastListener The listener object containing the callbacks for publications and
      * failures
      */
-    void unregisterBroadcastListener(const std::string& broadcastName,
-                                     UnicastBroadcastListener* broadcastListener) override;
+    void unregisterBroadcastListener(
+            const std::string& broadcastName,
+            std::shared_ptr<UnicastBroadcastListener> broadcastListener) override;
 
 protected:
     /**
@@ -109,11 +114,11 @@ protected:
         ReadLocker locker(lockAttributeListeners);
 
         if (attributeListeners.find(attributeName) != attributeListeners.cend()) {
-            std::vector<SubscriptionAttributeListener*>& listeners =
+            std::vector<std::shared_ptr<SubscriptionAttributeListener>>& listeners =
                     attributeListeners[attributeName];
 
             // Inform all the attribute listeners for this attribute
-            for (SubscriptionAttributeListener* listener : listeners) {
+            for (std::shared_ptr<SubscriptionAttributeListener> listener : listeners) {
                 listener->attributeValueChanged(value);
             }
         }
@@ -132,10 +137,10 @@ protected:
     {
 
         ReadLocker locker(lockSelectiveBroadcastListeners);
-        const std::vector<UnicastBroadcastListener*>& listeners =
+        const std::vector<std::shared_ptr<UnicastBroadcastListener>>& listeners =
                 selectiveBroadcastListeners[broadcastName];
         // Inform all the broadcast listeners for this broadcast
-        for (UnicastBroadcastListener* listener : listeners) {
+        for (std::shared_ptr<UnicastBroadcastListener> listener : listeners) {
             listener->selectiveBroadcastOccurred(filters, values...);
         }
     }
@@ -154,7 +159,7 @@ protected:
 
         ReadLocker locker(lockBroadcastListeners);
         // Inform all the broadcast listeners for this broadcast
-        for (MulticastBroadcastListener* listener : broadcastListeners) {
+        for (std::shared_ptr<MulticastBroadcastListener> listener : broadcastListeners) {
             listener->broadcastOccurred(broadcastName, partitions, values...);
         }
     }
@@ -179,9 +184,11 @@ private:
     ReadWriteLock lockAttributeListeners;
     ReadWriteLock lockBroadcastListeners;
     ReadWriteLock lockSelectiveBroadcastListeners;
-    std::map<std::string, std::vector<SubscriptionAttributeListener*>> attributeListeners;
-    std::map<std::string, std::vector<UnicastBroadcastListener*>> selectiveBroadcastListeners;
-    std::vector<MulticastBroadcastListener*> broadcastListeners;
+    std::map<std::string, std::vector<std::shared_ptr<SubscriptionAttributeListener>>>
+            attributeListeners;
+    std::map<std::string, std::vector<std::shared_ptr<UnicastBroadcastListener>>>
+            selectiveBroadcastListeners;
+    std::vector<std::shared_ptr<MulticastBroadcastListener>> broadcastListeners;
 
     friend class End2EndBroadcastTest;
     friend class End2EndSubscriptionTest;

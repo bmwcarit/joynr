@@ -1,10 +1,4 @@
-/**
- *
- */
 package test.io.joynr.jeeintegration.messaging;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /*
  * #%L
@@ -25,9 +19,12 @@ import static org.junit.Assert.assertTrue;
  * #L%
  */
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -36,7 +33,6 @@ import io.joynr.jeeintegration.messaging.JeeMessageRouter;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
-import io.joynr.messaging.routing.BoundedDelayQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
@@ -78,7 +74,7 @@ public class JeeMessageRouterTest {
     private MulticastReceiverRegistry multicastReceiverRegistry;
 
     @Mock
-    BoundedDelayQueue<DelayableImmutableMessage> messageQueue;
+    DelayQueue<DelayableImmutableMessage> messageQueue;
 
     @Mock
     private ShutdownNotifier shutdownNotifier;
@@ -110,10 +106,9 @@ public class JeeMessageRouterTest {
         subject.route(message);
 
         ArgumentCaptor<DelayableImmutableMessage> passedDelaybleMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
-        verify(messageQueue).putBounded(passedDelaybleMessage.capture());
+        verify(messageQueue).put(passedDelaybleMessage.capture());
         assertEquals(message, passedDelaybleMessage.getValue().getMessage());
         assertTrue(passedDelaybleMessage.getValue().getDelay(TimeUnit.MILLISECONDS) <= 0);
-
     }
 
     @Test

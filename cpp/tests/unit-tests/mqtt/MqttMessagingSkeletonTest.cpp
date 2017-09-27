@@ -24,8 +24,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "libjoynrclustercontroller/mqtt/MqttMessagingSkeleton.h"
-#include "libjoynrclustercontroller/mqtt/MqttReceiver.h"
+#include "joynr/MqttMessagingSkeleton.h"
+#include "joynr/MqttReceiver.h"
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
 #include "joynr/BroadcastSubscriptionRequest.h"
@@ -70,7 +70,7 @@ class MqttMessagingSkeletonTest : public ::testing::Test {
 public:
     MqttMessagingSkeletonTest() :
         singleThreadedIOService(),
-        mockMessageRouter(singleThreadedIOService.getIOService()),
+        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
         isLocalMessage(false),
         settings(),
         ccSettings(settings)
@@ -106,7 +106,7 @@ public:
 protected:
     void transmitSetsIsReceivedFromGlobal();
     SingleThreadedIOService singleThreadedIOService;
-    MockMessageRouter mockMessageRouter;
+    std::shared_ptr<MockMessageRouter> mockMessageRouter;
     MutableMessageFactory messageFactory;
     MutableMessage mutableMessage;
     std::string senderID;
@@ -132,7 +132,7 @@ MATCHER_P(pointerToMqttAddressWithChannelId, channelId, "") {
 TEST_F(MqttMessagingSkeletonTest, transmitTest) {
     MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix());
     std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
-    EXPECT_CALL(mockMessageRouter, route(immutableMessage,_)).Times(1);
+    EXPECT_CALL(*mockMessageRouter, route(immutableMessage,_)).Times(1);
 
     auto onFailure = [](const exceptions::JoynrRuntimeException& e) {
         FAIL() << "onFailure called";
@@ -219,7 +219,7 @@ TEST_F(MqttMessagingSkeletonTest, onMessageReceivedTest) {
     MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix());
     std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
 
-    EXPECT_CALL(mockMessageRouter, route(
+    EXPECT_CALL(*mockMessageRouter, route(
                     AllOf(
                         MessageHasType(mutableMessage.getType()),
                         ImmutableMessageHasPayload(mutableMessage.getPayload())

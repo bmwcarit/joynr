@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,16 +18,12 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/messaging/MessagingQos",
-        [
-            "joynr/start/settings/defaultMessagingSettings",
-            "joynr/system/LoggerFactory",
-            "joynr/util/UtilInternal",
-            "joynr/messaging/MessagingQosEffort"
-        ],
-        function(defaultMessagingSettings, LoggerFactory, Util, MessagingQosEffort) {
+var defaultMessagingSettings = require('../start/settings/defaultMessagingSettings');
+var LoggerFactory = require('../system/LoggerFactory');
+var UtilInternal = require('../util/UtilInternal');
+var MessagingQosEffort = require('./MessagingQosEffort');
+module.exports =
+        (function(defaultMessagingSettings, LoggerFactory, Util, MessagingQosEffort) {
 
             var log = LoggerFactory.getLogger("joynr/messaging/MessagingQos");
             var defaultSettings = {
@@ -197,4 +193,4 @@ define(
 
             return MessagingQos;
 
-        });
+        }(defaultMessagingSettings, LoggerFactory, UtilInternal, MessagingQosEffort));

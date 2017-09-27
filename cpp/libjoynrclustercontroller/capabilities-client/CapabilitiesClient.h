@@ -64,6 +64,11 @@ public:
              std::function<void()> onSuccess,
              std::function<void(const exceptions::JoynrRuntimeException& error)> onError) override;
 
+    void add(const std::vector<joynr::types::GlobalDiscoveryEntry>& globalDiscoveryEntries,
+             std::function<void()> onSuccess,
+             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                     onRuntimeError) override;
+
     /*
       Remove previously created capabilities directory entries.
       */
@@ -104,17 +109,17 @@ public:
                        nullptr) override;
 
     void setProxyBuilder(
-            std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
+            std::shared_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
                     capabilitiesProxyBuilder) override;
 
 private:
-    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>
     getGlobalCapabilitiesDirectoryProxy(std::int64_t messagingTtl);
 
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
 
-    std::unique_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> defaultCapabilitiesProxy;
-    std::unique_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> defaultCapabilitiesProxy;
+    std::shared_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
             capabilitiesProxyBuilder;
     ADD_LOGGER(CapabilitiesClient);
 };

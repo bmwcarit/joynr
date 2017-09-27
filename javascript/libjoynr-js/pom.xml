@@ -7,9 +7,9 @@
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-  
+
        http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,12 +30,11 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.28.0-SNAPSHOT</version>
+		<version>0.30.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<atmosphere.javascript.version>2.0.9</atmosphere.javascript.version>
-		<requirejs.version>2.1.22</requirejs.version>
 		<bluebird.version>3.1.1</bluebird.version>
 		<text-encoding.version>0.6.4</text-encoding.version>
 		<log4javascript.version>1.4.10</log4javascript.version>
@@ -370,25 +369,6 @@
 							</artifactItems>
 						</configuration>
 					</execution>
-					<execution>
-						<id>unpack-public-js-test-dependencies</id>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<phase>generate-test-resources</phase>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.webjars</groupId>
-									<artifactId>requirejs</artifactId>
-									<version>${requirejs.version}</version>
-									<type>jar</type>
-									<outputDirectory>${project.build.directory}/test-lib/requirejs</outputDirectory>
-									<includes>META-INF/resources/webjars/requirejs/${requirejs.version}/require.js</includes>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
 				</executions>
 			</plugin>
 			<!--
@@ -511,11 +491,14 @@
 										<include>require.config.node.js</include>
 										<include>joynr/**</include>
 										<include>global/LocalStorageNode.js</include>
+										<include>global/LocalStorage.js</include>
 										<include>global/Mqtt.js</include>
 										<include>global/Promise.js</include>
 										<include>global/SmrfNode.js</include>
 										<include>global/WebSocketNode.js</include>
+										<include>global/WebSocket.js</include>
 										<include>global/XMLHttpRequestNode.js</include>
+										<include>global/XMLHttpRequest.js</include>
 										<include>lib/atmosphereNode.js</include>
 										<include>lib/JsonParser.js</include>
 										<include>lib/log4javascriptNode.js</include>
@@ -540,90 +523,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<!-- the nodejs plugin is used to temp-install node.js to speed up performance of the
-				requirejs optimizer step -->
-			<plugin>
-				<groupId>com.github.skwakman.nodejs-maven-plugin</groupId>
-				<artifactId>nodejs-maven-plugin</artifactId>
-				<version>1.0.5-node-0.10.25</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>extract</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<targetDirectory>
-						${project.build.directory}/nodejs/
-					</targetDirectory>
-				</configuration>
-			</plugin>
-			<!-- The require.js optimizer builds the single libjoynr.js that includes
-				all exported require.js modules and their dependencies -->
-			<plugin>
-				<groupId>com.github.bringking</groupId>
-				<artifactId>requirejs-maven-plugin</artifactId>
-				<version>2.0.4</version>
-				<executions>
-					<execution>
-						<id>generate-libjoynr-js</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>optimize</goal>
-						</goals>
-						<configuration>
-							<runner>nodejs</runner>
-							<nodeExecutable>${project.build.directory}/nodejs/node</nodeExecutable>
-							<!-- path to optimizer json config file -->
-							<configFile>${basedir}/src/main/optimizer/config/require.optimizer.inprocess.js</configFile>
-						</configuration>
-					</execution>
-					<execution>
-						<id>generate-libjoynr-intertab-libjoynr-js</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>optimize</goal>
-						</goals>
-						<configuration>
-							<runner>nodejs</runner>
-							<nodeExecutable>${project.build.directory}/nodejs/node</nodeExecutable>
-							<!-- path to optimizer json config file -->
-							<configFile>${basedir}/src/main/optimizer/config/require.optimizer.intertab.libjoynr.js</configFile>
-						</configuration>
-					</execution>
-					<execution>
-						<id>generate-libjoynr-intertab-clustercontroller-js</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>optimize</goal>
-						</goals>
-						<configuration>
-							<!-- path to optimizer json config file -->
-							<configFile>${basedir}/src/main/optimizer/config/require.optimizer.intertab.clustercontroller.js</configFile>
-						</configuration>
-					</execution>
-					<execution>
-						<id>generate-libjoynr-websocket-libjoynr-js</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>optimize</goal>
-						</goals>
-						<configuration>
-							<runner>nodejs</runner>
-							<nodeExecutable>${project.build.directory}/nodejs/node</nodeExecutable>
-							<!-- path to optimizer json config file -->
-							<configFile>${basedir}/src/main/optimizer/config/require.optimizer.websocket.libjoynr.js</configFile>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<!-- Whether or not to process configFile with maven filters. If you
-						use this option, some options in your configFile must resolve to
-						absolutepaths (see below) -->
-					<filterConfig>true</filterConfig>
-				</configuration>
 			</plugin>
 
 			<!-- Configure packaging of production version matter libjoynr-js -->
@@ -685,6 +584,158 @@
 						<exclude>src/test/resources/spec/support/jasmine.json</exclude>
 					</excludes>
 				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<configuration>
+							<executable>${project.build.directory}/node-classes/node_modules/.bin/browserify</executable>
+							<arguments>
+								<argument>${project.build.directory}/node-classes/joynr.js</argument>
+								<argument>-u</argument>
+								<argument>smrf-native-cpp.node</argument>
+								<argument>-u</argument>
+								<argument>wscpp-client.node</argument>
+								<argument>-u</argument>
+								<argument>utf-8-validate</argument>
+								<argument>-u</argument>
+								<argument>node-persist</argument>
+								<argument>-u</argument>
+								<argument>bufferutil</argument>
+								<argument>-r</argument>
+								<argument>${project.build.directory}/node-classes/joynr.js:joynr</argument>
+								<argument>-r</argument>
+								<argument>./joynr/Runtime.inprocess.js:./joynr/Runtime</argument>
+								<argument>-o</argument>
+								<argument>${project.build.directory}/jar-classes/joynr.js</argument>
+							</arguments>
+							<environmentVariables>
+								<NODE_PATH>
+									${project.build.directory}/node-classes/node_modules
+								</NODE_PATH>
+							</environmentVariables>
+							<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
+						</configuration>
+						<id>generate-libjoynr-js</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<configuration>
+							<executable>${project.build.directory}/node-classes/node_modules/.bin/browserify</executable>
+							<arguments>
+								<argument>${project.build.directory}/node-classes/joynr.js</argument>
+								<argument>-u</argument>
+								<argument>smrf-native-cpp.node</argument>
+								<argument>-u</argument>
+								<argument>wscpp-client.node</argument>
+								<argument>-u</argument>
+								<argument>utf-8-validate</argument>
+								<argument>-u</argument>
+								<argument>node-persist</argument>
+								<argument>-u</argument>
+								<argument>bufferutil</argument>
+								<argument>-r</argument>
+								<argument>${project.build.directory}/node-classes/joynr.js:joynr</argument>
+								<argument>-r</argument>
+								<argument>./joynr/Runtime.intertab.clustercontroller.js:./joynr/Runtime</argument>
+								<argument>-r</argument>
+								<argument>./libjoynr-deps.intertab.clustercontroller.js:./libjoynr-deps</argument>
+								<argument>-o</argument>
+								<argument>${project.build.directory}/jar-classes/joynr.intertab.clustercontroller.js</argument>
+							</arguments>
+							<environmentVariables>
+								<NODE_PATH>
+									${project.build.directory}/node-classes/node_modules
+								</NODE_PATH>
+							</environmentVariables>
+							<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
+						</configuration>
+						<id>generate-libjoynr-intertab-clustercontroller-js</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<configuration>
+							<executable>${project.build.directory}/node-classes/node_modules/.bin/browserify</executable>
+							<arguments>
+								<argument>${project.build.directory}/node-classes/joynr.js</argument>
+								<argument>-u</argument>
+								<argument>smrf-native-cpp.node</argument>
+								<argument>-u</argument>
+								<argument>wscpp-client.node</argument>
+								<argument>-u</argument>
+								<argument>bufferutil</argument>
+								<argument>-u</argument>
+								<argument>utf-8-validate</argument>
+								<argument>-u</argument>
+								<argument>node-persist</argument>
+								<argument>-r</argument>
+								<argument>${project.build.directory}/node-classes/joynr.js:joynr</argument>
+								<argument>-r</argument>
+								<argument>./joynr/Runtime.intertab.libjoynr.js:./joynr/Runtime</argument>
+								<argument>-o</argument>
+								<argument>${project.build.directory}/jar-classes/joynr.intertab.libjoynr.js</argument>
+							</arguments>
+							<environmentVariables>
+								<NODE_PATH>
+									${project.build.directory}/node-classes/node_modules
+								</NODE_PATH>
+							</environmentVariables>
+							<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
+						</configuration>
+						<id>generate-libjoynr-intertab-libjoynr-js</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<configuration>
+							<executable>${project.build.directory}/node-classes/node_modules/.bin/browserify</executable>
+							<arguments>
+								<argument>${project.build.directory}/node-classes/joynr.js</argument>
+								<argument>-u</argument>
+								<argument>smrf-native-cpp.node</argument>
+								<argument>-u</argument>
+								<argument>wscpp-client.node</argument>
+								<argument>-u</argument>
+								<argument>utf-8-validate</argument>
+								<argument>-u</argument>
+								<argument>node-persist</argument>
+								<argument>-u</argument>
+								<argument>bufferutil</argument>
+								<argument>-r</argument>
+								<argument>${project.build.directory}/node-classes/joynr.js:joynr</argument>
+								<argument>-r</argument>
+								<argument>./joynr/Runtime.websocket.libjoynr.js:./joynr/Runtime</argument>
+								<argument>-o</argument>
+								<argument>${project.build.directory}/jar-classes/joynr.websocket.libjoynr.js</argument>
+							</arguments>
+							<environmentVariables>
+								<NODE_PATH>
+									${project.build.directory}/node-classes/node_modules
+								</NODE_PATH>
+							</environmentVariables>
+							<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
+						</configuration>
+						<id>generate-libjoynr-websocket-libjoynr-js</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 
@@ -862,6 +913,7 @@
 									<executable>npm</executable>
 									<arguments>
 										<argument>install</argument>
+										<argument>--ignore-scripts</argument>
 									</arguments>
 									<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
 								</configuration>
@@ -889,7 +941,12 @@
 							<execution>
 								<configuration>
 									<executable>${project.build.testOutputDirectory}/node_run_unit_tests.sh</executable>
-									<commandlineArgs>--captureExceptions --verbose</commandlineArgs>
+									<commandlineArgs>node-run-unit-tests.js --captureExceptions --verbose</commandlineArgs>
+									<environmentVariables>
+										<LD_LIBRARY_PATH>
+											/usr/lib
+										</LD_LIBRARY_PATH>
+									</environmentVariables>
 								</configuration>
 								<id>run-unit-tests-nodejs</id>
 								<phase>test</phase>
@@ -925,25 +982,15 @@
 									<goal>exec</goal>
 								</goals>
 							</execution>
-
 						</executions>
 					</plugin>
+
 					<!-- run karma -->
 					<plugin>
 						<groupId>com.kelveden</groupId>
 						<artifactId>maven-karma-plugin</artifactId>
 						<version>1.8</version>
 						<executions>
-							<execution>
-								<phase>test</phase>
-								<id>karma-unit-tests</id>
-								<goals>
-									<goal>start</goal>
-								</goals>
-								<configuration>
-									<configFile>${basedir}/src/test/karma/karma.conf.js</configFile>
-								</configuration>
-							</execution>
 							<execution>
 								<phase>integration-test</phase>
 								<id>karma-integration-tests</id>
@@ -1001,6 +1048,20 @@
 						<!-- configuration options documentation:
 							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
 						<executions>
+							<execution>
+								<id>npm-install</id>
+								<phase>generate-test-resources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+									</arguments>
+									<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
 							<execution>
 								<id>install browserify</id>
 								<phase>process-sources</phase>

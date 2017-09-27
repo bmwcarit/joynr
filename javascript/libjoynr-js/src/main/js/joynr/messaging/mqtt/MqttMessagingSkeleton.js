@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,16 +18,14 @@
  * limitations under the License.
  * #L%
  */
+var Typing = require('../../util/Typing');
+var LoggerFactory = require('../../system/LoggerFactory');
+var DiagnosticTags = require('../../system/DiagnosticTags');
+var JoynrException = require('../../exceptions/JoynrException');
+module.exports =
+        (function(Typing, LoggerFactory, DiagnosticTags, JoynrException) {
 
-define("joynr/messaging/mqtt/MqttMessagingSkeleton", [
-    "joynr/util/Typing",
-    "joynr/system/LoggerFactory",
-    "joynr/system/DiagnosticTags",
-    "joynr/exceptions/JoynrException"
-], function(Typing, LoggerFactory, DiagnosticTags, JoynrException) {
-
-    var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
-
+ var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
     /**
      * @constructor MqttMessagingSkeleton
      * @param {Object} settings
@@ -105,4 +103,4 @@ define("joynr/messaging/mqtt/MqttMessagingSkeleton", [
 
     return MqttMessagingSkeleton;
 
-});
+        }(Typing, LoggerFactory, DiagnosticTags, JoynrException));

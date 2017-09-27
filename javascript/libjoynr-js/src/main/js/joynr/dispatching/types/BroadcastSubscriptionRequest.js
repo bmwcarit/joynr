@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,13 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
-    "joynr/util/UtilInternal",
-    "joynr/util/Typing",
-    "joynr/proxy/OnChangeSubscriptionQos",
-    "joynr/proxy/BroadcastFilterParameters"
-], function(Util, Typing, OnChangeSubscriptionQos, BroadcastFilterParameters) {
+var UtilInternal = require('../../util/UtilInternal');
+var Typing = require('../../util/Typing');
+var OnChangeSubscriptionQos = require('../../proxy/OnChangeSubscriptionQos');
+var BroadcastFilterParameters = require('../../proxy/BroadcastFilterParameters');
+module.exports = (function(Util, Typing, OnChangeSubscriptionQos, BroadcastFilterParameters) {
 
     var defaultSettings = {
         qos : new OnChangeSubscriptionQos()
@@ -107,4 +107,4 @@ define("joynr/dispatching/types/BroadcastSubscriptionRequest", [
     });
     return BroadcastSubscriptionRequest;
 
-});
+}(UtilInternal, Typing, OnChangeSubscriptionQos, BroadcastFilterParameters));

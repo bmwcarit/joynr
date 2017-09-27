@@ -73,10 +73,10 @@ public:
     };
 
     /**
-     * @brief Gets the default timeout value
-     * @return the default timeout value in milliseconds
+     * @brief Gets the undefined value
+     * @return The value signalizing that this value is yet undefined
      */
-    static std::int64_t DEFAULT_DISCOVERYTIMEOUT_MS();
+    static std::int64_t NO_VALUE();
 
     /**
      * @brief Gets the value signalling that no timeout has been selected
@@ -107,12 +107,6 @@ public:
      * @return the default discovery scope value
      */
     static joynr::types::DiscoveryScope::Enum& DEFAULT_DISCOVERYSCOPE();
-
-    /**
-     * @brief Gets the default retry interval value
-     * @return the default retry interval value
-     */
-    static std::int64_t DEFAULT_RETRYINTERVAL_MS();
 
     /**
      * @brief Sets the arbitration strategy for the discovery process

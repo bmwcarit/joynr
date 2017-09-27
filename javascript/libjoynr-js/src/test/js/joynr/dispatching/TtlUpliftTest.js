@@ -1,6 +1,5 @@
 /*global fail: true */
-/*jslint es5: true, nomen: true */
-
+/*jslint es5: true, node: true, nomen: true */
 /*
  * #%L
  * %%
@@ -19,39 +18,41 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-    "joynr/util/UtilInternal",
-    "joynr/dispatching/Dispatcher",
-    "joynr/messaging/JoynrMessage",
-    "joynr/messaging/MessagingQos",
-    "joynr/types/DiscoveryEntryWithMetaInfo",
-    "joynr/dispatching/types/Request",
-    "joynr/dispatching/types/Reply",
-    "joynr/dispatching/types/BroadcastSubscriptionRequest",
-    "joynr/dispatching/types/MulticastSubscriptionRequest",
-    "joynr/dispatching/types/SubscriptionRequest",
-    "joynr/dispatching/types/SubscriptionReply",
-    "joynr/dispatching/types/SubscriptionStop",
-    "joynr/dispatching/types/MulticastPublication",
-    "joynr/dispatching/types/SubscriptionPublication",
-    "uuid"
-], function(
-        Util,
-        Dispatcher,
-        JoynrMessage,
-        MessagingQos,
-        DiscoveryEntryWithMetaInfo,
-        Request,
-        Reply,
-        BroadcastSubscriptionRequest,
-        MulticastSubscriptionRequest,
-        SubscriptionRequest,
-        SubscriptionReply,
-        SubscriptionStop,
-        MulticastPublication,
-        SubscriptionPublication,
-        uuid) {
+var UtilInternal = require('../../../classes/joynr/util/UtilInternal');
+var Dispatcher = require('../../../classes/joynr/dispatching/Dispatcher');
+var JoynrMessage = require('../../../classes/joynr/messaging/JoynrMessage');
+var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
+var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
+var Request = require('../../../classes/joynr/dispatching/types/Request');
+var Reply = require('../../../classes/joynr/dispatching/types/Reply');
+var BroadcastSubscriptionRequest =
+        require('../../../classes/joynr/dispatching/types/BroadcastSubscriptionRequest');
+var MulticastSubscriptionRequest =
+        require('../../../classes/joynr/dispatching/types/MulticastSubscriptionRequest');
+var SubscriptionRequest = require('../../../classes/joynr/dispatching/types/SubscriptionRequest');
+var SubscriptionReply = require('../../../classes/joynr/dispatching/types/SubscriptionReply');
+var SubscriptionStop = require('../../../classes/joynr/dispatching/types/SubscriptionStop');
+var MulticastPublication = require('../../../classes/joynr/dispatching/types/MulticastPublication');
+var SubscriptionPublication =
+        require('../../../classes/joynr/dispatching/types/SubscriptionPublication');
+var uuid = require('../../../classes/lib/uuid-annotated');
+module.exports =
+        (function(
+                Util,
+                Dispatcher,
+                JoynrMessage,
+                MessagingQos,
+                DiscoveryEntryWithMetaInfo,
+                Request,
+                Reply,
+                BroadcastSubscriptionRequest,
+                MulticastSubscriptionRequest,
+                SubscriptionRequest,
+                SubscriptionReply,
+                SubscriptionStop,
+                MulticastPublication,
+                SubscriptionPublication,
+                uuid) {
 
     var providerId = "providerId";
     var providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
@@ -805,4 +806,19 @@ define([
 
     }); // describe ttlUpliftTest
 
-}); // require
+        }(
+                UtilInternal,
+                Dispatcher,
+                JoynrMessage,
+                MessagingQos,
+                DiscoveryEntryWithMetaInfo,
+                Request,
+                Reply,
+                BroadcastSubscriptionRequest,
+                MulticastSubscriptionRequest,
+                SubscriptionRequest,
+                SubscriptionReply,
+                SubscriptionStop,
+                MulticastPublication,
+                SubscriptionPublication,
+                uuid)); // require

@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,17 +18,16 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/proxy/DiscoveryQos", [
-    "joynr/types/ArbitrationStrategyCollection",
-    "joynr/types/DiscoveryScope",
-    "joynr/util/UtilInternal",
-    "joynr/system/LoggerFactory"
-], function(ArbitrationStrategyCollection, DiscoveryScope, Util, LoggerFactory) {
+var ArbitrationStrategyCollection =
+        require('../../joynr/types/ArbitrationStrategyCollection');
+var DiscoveryScope = require('../../joynr/types/DiscoveryScope');
+var UtilInternal = require('../util/UtilInternal');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports = (function(ArbitrationStrategyCollection, DiscoveryScope, Util, LoggerFactory) {
 
     var defaultSettings = {
-        discoveryTimeoutMs : 30000,
-        discoveryRetryDelayMs : 1000,
+        discoveryTimeoutMs : 10 * 60 * 1000, // 10 minutes
+        discoveryRetryDelayMs : 10 * 1000, // 10 seconds
         arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
         cacheMaxAgeMs : 0,
         discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
@@ -103,6 +104,10 @@ define("joynr/proxy/DiscoveryQos", [
         this.additionalParameters = settings.additionalParameters;
     }
 
+    DiscoveryQos.setDefaultSettings = function(settings) {
+        defaultSettings = Util.extend({}, defaultSettings, settings);
+    };
+
     return DiscoveryQos;
 
-});
+}(ArbitrationStrategyCollection, DiscoveryScope, UtilInternal, LoggerFactory));

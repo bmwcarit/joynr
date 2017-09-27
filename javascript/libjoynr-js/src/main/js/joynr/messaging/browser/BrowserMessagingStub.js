@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,9 +18,8 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/browser/BrowserMessagingStub", [ "joynr/util/Typing"
-], function(Typing) {
+var Typing = require('../../util/Typing');
+module.exports = (function(Typing) {
 
     /**
      * @name BrowserMessagingStub
@@ -50,4 +49,4 @@ define("joynr/messaging/browser/BrowserMessagingStub", [ "joynr/util/Typing"
 
     return BrowserMessagingStub;
 
-});
+}(Typing));

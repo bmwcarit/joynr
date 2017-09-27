@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,17 +18,15 @@
  * limitations under the License.
  * #L%
  */
+var Typing = require('../../util/Typing');
+var LoggerFactory = require('../../system/LoggerFactory');
+var DiagnosticTags = require('../../system/DiagnosticTags');
+var JoynrException = require('../../exceptions/JoynrException');
+var JoynrMessage = require('../JoynrMessage');
+module.exports =
+        (function(Typing, LoggerFactory, DiagnosticTags, JoynrException, JoynrMessage) {
 
-define("joynr/messaging/channel/ChannelMessagingSkeleton", [
-    "joynr/util/Typing",
-    "joynr/system/LoggerFactory",
-    "joynr/system/DiagnosticTags",
-    "joynr/exceptions/JoynrException",
-    "joynr/messaging/JoynrMessage"
-], function(Typing, LoggerFactory, DiagnosticTags, JoynrException, JoynrMessage) {
-
-    var log = LoggerFactory.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
-
+ var log = LoggerFactory.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
     /**
      * @name ChannelMessagingSkeleton
      * @constructor
@@ -72,4 +70,4 @@ define("joynr/messaging/channel/ChannelMessagingSkeleton", [
 
     return ChannelMessagingSkeleton;
 
-});
+        }(Typing, LoggerFactory, DiagnosticTags, JoynrException, JoynrMessage));

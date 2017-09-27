@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynrclustercontroller/mqtt/MqttMessagingSkeleton.h"
+#include "joynr/MqttMessagingSkeleton.h"
 
 #include <smrf/exceptions.h>
 
@@ -26,7 +26,7 @@
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 
-#include "libjoynrclustercontroller/mqtt/MqttReceiver.h"
+#include "joynr/MqttReceiver.h"
 
 namespace joynr
 {
@@ -42,12 +42,12 @@ std::string MqttMessagingSkeleton::translateMulticastWildcard(std::string topic)
     return topic;
 }
 
-MqttMessagingSkeleton::MqttMessagingSkeleton(IMessageRouter& messageRouter,
+MqttMessagingSkeleton::MqttMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter,
                                              std::shared_ptr<MqttReceiver> mqttReceiver,
                                              const std::string& multicastTopicPrefix,
                                              uint64_t ttlUplift)
-        : messageRouter(messageRouter),
-          mqttReceiver(mqttReceiver),
+        : messageRouter(std::move(messageRouter)),
+          mqttReceiver(std::move(mqttReceiver)),
           ttlUplift(ttlUplift),
           multicastSubscriptionCount(),
           multicastSubscriptionCountMutex(),
@@ -90,7 +90,14 @@ void MqttMessagingSkeleton::transmit(
     message->setReceivedFromGlobal(true);
 
     try {
-        messageRouter.route(std::move(message));
+        if (auto messageRouterSharedPtr = messageRouter.lock()) {
+            messageRouterSharedPtr->route(std::move(message));
+        } else {
+            std::string errorMessage(
+                    "unable to transmit message because messageRouter unavailable: " +
+                    message->toLogMessage());
+            onFailure(exceptions::JoynrMessageNotSentException(std::move(errorMessage)));
+        }
     } catch (const exceptions::JoynrRuntimeException& e) {
         onFailure(e);
     }

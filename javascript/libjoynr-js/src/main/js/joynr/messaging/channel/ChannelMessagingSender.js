@@ -1,5 +1,5 @@
-/*jslint es5: true, undef: true */// problem with functions postMessage and resend calling each other => it is not possible to bring them in an order without having the jslint "was not defined" error 
-
+/*jslint es5: true, node: true, undef: true */
+// problem with functions postMessage and resend calling each other => it is not possible to bring them in an order without having the jslint "was not defined" error
 /*
  * #%L
  * %%
@@ -18,17 +18,15 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/channel/ChannelMessagingSender", [
-    "global/Promise",
-    "joynr/util/UtilInternal",
-    "joynr/util/Typing",
-    "joynr/util/JSONSerializer",
-    "joynr/messaging/JoynrMessage",
-    "joynr/util/LongTimer",
-    "joynr/system/DiagnosticTags",
-    "joynr/system/LoggerFactory"
-], function(Promise, Util, Typing, JSONSerializer, JoynrMessage, LongTimer, DiagnosticTags, LoggerFactory) {
+var Promise = require('../../../global/Promise');
+var UtilInternal = require('../../util/UtilInternal');
+var Typing = require('../../util/Typing');
+var JsonSerializer = require('../../util/JSONSerializer');
+var JoynrMessage = require('../JoynrMessage');
+var LongTimer = require('../../util/LongTimer');
+var DiagnosticTags = require('../../system/DiagnosticTags');
+var LoggerFactory = require('../../system/LoggerFactory');
+module.exports = (function (Promise, Util, Typing, JSONSerializer, JoynrMessage, LongTimer, DiagnosticTags, LoggerFactory) {
 
     /**
      * ChannelMessagingSender sends JoynrMessages to their destinations via Http
@@ -287,4 +285,4 @@ define("joynr/messaging/channel/ChannelMessagingSender", [
 
     return ChannelMessagingSender;
 
-});
+}(Promise, UtilInternal, Typing, JsonSerializer, JoynrMessage, LongTimer, DiagnosticTags, LoggerFactory));

@@ -45,10 +45,10 @@ struct InProcessTraits;
 class JOYNR_EXPORT InProcessConnectorFactory
 {
 public:
-    InProcessConnectorFactory(ISubscriptionManager* subscriptionManager,
-                              PublicationManager* publicationManager,
-                              InProcessPublicationSender* inProcessPublicationSender,
-                              IRequestCallerDirectory* requestCallerDirectory);
+    InProcessConnectorFactory(std::weak_ptr<ISubscriptionManager> subscriptionManager,
+                              std::weak_ptr<PublicationManager> publicationManager,
+                              std::weak_ptr<InProcessPublicationSender> inProcessPublicationSender,
+                              std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory);
 
     virtual ~InProcessConnectorFactory() = default;
 
@@ -79,10 +79,10 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessConnectorFactory);
-    ISubscriptionManager* subscriptionManager;
-    PublicationManager* publicationManager;
-    InProcessPublicationSender* inProcessPublicationSender;
-    IRequestCallerDirectory* requestCallerDirectory;
+    std::weak_ptr<ISubscriptionManager> subscriptionManager;
+    std::weak_ptr<PublicationManager> publicationManager;
+    std::weak_ptr<InProcessPublicationSender> inProcessPublicationSender;
+    std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
     std::shared_ptr<IPlatformSecurityManager> securityManager;
     ADD_LOGGER(InProcessConnectorFactory);
 };

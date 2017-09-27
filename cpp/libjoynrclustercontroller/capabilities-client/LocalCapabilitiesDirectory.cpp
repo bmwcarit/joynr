@@ -52,7 +52,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         ClusterControllerSettings& clusterControllerSettings,
         std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
         const std::string& localAddress,
-        IMessageRouter& messageRouter,
+        std::weak_ptr<IMessageRouter> messageRouter,
         boost::asio::io_service& ioService,
         const std::string clusterControllerId)
         : joynr::system::DiscoveryAbstractProvider(),
@@ -61,10 +61,6 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           localAddress(localAddress),
           cacheLock(),
           pendingLookupsLock(),
-          interfaceAddress2GlobalCapabilities(),
-          participantId2GlobalCapabilities(),
-          interfaceAddress2LocalCapabilities(),
-          participantId2LocalCapability(),
           registeredGlobalCapabilities(),
           messageRouter(messageRouter),
           observers(),
@@ -76,6 +72,12 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
 {
     scheduleCleanupTimer();
     scheduleFreshnessUpdate();
+}
+
+void LocalCapabilitiesDirectory::shutdown()
+{
+    checkExpiredDiscoveryEntriesTimer.cancel();
+    freshnessUpdateTimer.cancel();
 }
 
 void LocalCapabilitiesDirectory::scheduleFreshnessUpdate()
@@ -123,13 +125,7 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
 {
     freshnessUpdateTimer.cancel();
     checkExpiredDiscoveryEntriesTimer.cancel();
-    cleanCaches();
-}
-
-void LocalCapabilitiesDirectory::cleanCaches()
-{
-    const auto zero = std::chrono::milliseconds::zero();
-    cleanCache(zero);
+    clear();
 }
 
 void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discoveryEntry)
@@ -144,15 +140,8 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
 
     // register globally
     if (isGloballyVisible) {
-        types::GlobalDiscoveryEntry globalDiscoveryEntry(discoveryEntry.getProviderVersion(),
-                                                         discoveryEntry.getDomain(),
-                                                         discoveryEntry.getInterfaceName(),
-                                                         discoveryEntry.getParticipantId(),
-                                                         discoveryEntry.getQos(),
-                                                         discoveryEntry.getLastSeenDateMs(),
-                                                         discoveryEntry.getExpiryDateMs(),
-                                                         discoveryEntry.getPublicKeyId(),
-                                                         localAddress);
+        types::GlobalDiscoveryEntry globalDiscoveryEntry = toGlobalDiscoveryEntry(discoveryEntry);
+
         if (std::find(registeredGlobalCapabilities.begin(),
                       registeredGlobalCapabilities.end(),
                       globalDiscoveryEntry) == registeredGlobalCapabilities.end()) {
@@ -185,48 +174,49 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
     }
 }
 
+types::GlobalDiscoveryEntry LocalCapabilitiesDirectory::toGlobalDiscoveryEntry(
+        const types::DiscoveryEntry& discoveryEntry) const
+{
+    return types::GlobalDiscoveryEntry(discoveryEntry.getProviderVersion(),
+                                       discoveryEntry.getDomain(),
+                                       discoveryEntry.getInterfaceName(),
+                                       discoveryEntry.getParticipantId(),
+                                       discoveryEntry.getQos(),
+                                       discoveryEntry.getLastSeenDateMs(),
+                                       discoveryEntry.getExpiryDateMs(),
+                                       discoveryEntry.getPublicKeyId(),
+                                       localAddress);
+}
+
 void LocalCapabilitiesDirectory::remove(const std::string& participantId)
 {
+    std::lock_guard<std::mutex> lock(cacheLock);
 
-    std::vector<types::DiscoveryEntry> entries =
-            searchCache(participantId, std::chrono::milliseconds(-1), true);
-    remove(entries);
-}
-
-void LocalCapabilitiesDirectory::remove(const std::vector<types::DiscoveryEntry>& discoveryEntries)
-{
-    for (const auto& entry : discoveryEntries) {
-        remove(entry);
+    boost::optional<types::DiscoveryEntry> optionalEntry =
+            localCapabilities.lookupByParticipantId(participantId);
+    if (!optionalEntry) {
+        JOYNR_LOG_INFO(logger, "participantId '{}' not found, cannot be removed", participantId);
+        return;
     }
+    const types::DiscoveryEntry& entry = *optionalEntry;
 
+    if (isGlobal(entry)) {
+        JOYNR_LOG_TRACE(logger, "Removing globally registered participantId: {}", participantId);
+        removeFromGloballyRegisteredCapabilities(entry);
+        globalCapabilities.removeByParticipantId(participantId);
+        capabilitiesClient->remove(participantId);
+    }
+    JOYNR_LOG_TRACE(logger, "Removing locally registered participantId: {}", participantId);
+    localCapabilities.removeByParticipantId(participantId);
+    informObserversOnRemove(entry);
+    if (auto messageRouterSharedPtr = messageRouter.lock()) {
+        messageRouterSharedPtr->removeNextHop(participantId);
+    } else {
+        JOYNR_LOG_FATAL(logger,
+                        "could not removeNextHop for {} because messageRouter is not available",
+                        participantId);
+    }
     updatePersistedFile();
-}
-
-void LocalCapabilitiesDirectory::remove(const types::DiscoveryEntry& discoveryEntry)
-{
-    // first, update cache
-    {
-        std::lock_guard<std::mutex> lock(cacheLock);
-        participantId2LocalCapability.remove(discoveryEntry.getParticipantId(), discoveryEntry);
-        interfaceAddress2LocalCapabilities.remove(
-                InterfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()),
-                discoveryEntry);
-        if (isGlobal(discoveryEntry)) {
-            removeFromGloballyRegisteredCapabilities(discoveryEntry);
-            participantId2GlobalCapabilities.remove(
-                    discoveryEntry.getParticipantId(), discoveryEntry);
-            interfaceAddress2GlobalCapabilities.remove(
-                    InterfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()),
-                    discoveryEntry);
-        }
-    }
-
-    // second, do final cleanup and observer call
-    if (isGlobal(discoveryEntry)) {
-        capabilitiesClient->remove(discoveryEntry.getParticipantId());
-    }
-    informObserversOnRemove(discoveryEntry);
-    messageRouter.removeNextHop(discoveryEntry.getParticipantId());
 }
 
 void LocalCapabilitiesDirectory::removeFromGloballyRegisteredCapabilities(
@@ -246,6 +236,41 @@ void LocalCapabilitiesDirectory::removeFromGloballyRegisteredCapabilities(
                                                              compareFunc),
                                               registeredGlobalCapabilities.end()) !=
            registeredGlobalCapabilities.end()) {
+    }
+}
+
+void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::vector<joynr::types::GlobalDiscoveryEntry> convertedGlobalCapabilities;
+
+    {
+        std::lock_guard<std::mutex> lock(cacheLock);
+
+        const std::size_t numOfGlobalCapabilities =
+                std::distance(globalCapabilities.begin(), globalCapabilities.end());
+        convertedGlobalCapabilities.reserve(numOfGlobalCapabilities);
+
+        for (const auto& globalCapability : globalCapabilities) {
+            convertedGlobalCapabilities.push_back(toGlobalDiscoveryEntry(globalCapability));
+        }
+    }
+
+    auto onErrorWrapper = [onError = std::move(onError)](
+            const joynr::exceptions::JoynrRuntimeException& exception)
+    {
+        if (onError) {
+            onError(joynr::exceptions::ProviderRuntimeException(exception.getMessage()));
+        }
+    };
+
+    if (convertedGlobalCapabilities.empty()) {
+        if (onSuccess) {
+            onSuccess();
+        }
+    } else {
+        capabilitiesClient->add(convertedGlobalCapabilities, onSuccess, onErrorWrapper);
     }
 }
 
@@ -274,14 +299,12 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
 {
     joynr::types::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
-    std::vector<types::DiscoveryEntry> localCapabilities =
-            searchCache(participantId, std::chrono::milliseconds(-1), true);
-    std::vector<types::DiscoveryEntry> globalCapabilities = searchCache(
+    boost::optional<types::DiscoveryEntry> globalCapability = searchCache(
             participantId, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()), false);
 
     return callReceiverIfPossible(scope,
-                                  std::move(localCapabilities),
-                                  std::move(globalCapabilities),
+                                  getCachedLocalCapabilities(participantId),
+                                  optionalToVector(std::move(globalCapability)),
                                   std::move(callback));
 }
 
@@ -534,7 +557,7 @@ void LocalCapabilitiesDirectory::callbackCalled(
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilities(
         const std::string& participantId)
 {
-    return searchCache(participantId, std::chrono::milliseconds(-1), true);
+    return optionalToVector(localCapabilities.lookupByParticipantId(participantId));
 }
 
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilities(
@@ -543,13 +566,10 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedLocalCap
     return searchCache(interfaceAddresses, std::chrono::milliseconds(-1), true);
 }
 
-void LocalCapabilitiesDirectory::cleanCache(std::chrono::milliseconds maxAge)
+void LocalCapabilitiesDirectory::clear()
 {
-    std::lock_guard<std::mutex> lock(cacheLock);
-    interfaceAddress2GlobalCapabilities.cleanup(maxAge);
-    participantId2GlobalCapabilities.cleanup(maxAge);
-    interfaceAddress2LocalCapabilities.cleanup(maxAge);
-    participantId2LocalCapability.cleanup(maxAge);
+    localCapabilities.clear();
+    globalCapabilities.clear();
 }
 
 void LocalCapabilitiesDirectory::registerReceivedCapabilities(
@@ -562,7 +582,21 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
         const bool isGloballyVisible = isGlobal(currentEntry);
         try {
             joynr::serializer::deserializeFromJson(address, serializedAddress);
-            messageRouter.addNextHop(currentEntry.getParticipantId(), address, isGloballyVisible);
+            if (auto messageRouterSharedPtr = messageRouter.lock()) {
+                constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+                const bool isSticky = false;
+                messageRouterSharedPtr->addNextHop(currentEntry.getParticipantId(),
+                                                   address,
+                                                   isGloballyVisible,
+                                                   expiryDateMs,
+                                                   isSticky);
+            } else {
+                JOYNR_LOG_FATAL(
+                        logger,
+                        "could not addNextHop {} to {} because messageRouter is not available",
+                        currentEntry.getParticipantId(),
+                        serializedAddress);
+            }
             this->insertInCache(currentEntry, false, true);
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger,
@@ -606,6 +640,16 @@ bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEnt
 
     // return false in case AC ptr and setting do not match
     return false;
+}
+
+std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::optionalToVector(
+        boost::optional<types::DiscoveryEntry> optionalEntry)
+{
+    std::vector<types::DiscoveryEntry> vec;
+    if (optionalEntry) {
+        vec.push_back(std::move(*optionalEntry));
+    }
+    return vec;
 }
 
 void LocalCapabilitiesDirectory::setAccessController(
@@ -697,28 +741,11 @@ void LocalCapabilitiesDirectory::updatePersistedFile()
 void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& fileName)
 {
     try {
-        joynr::util::saveStringToFile(fileName, serializeLocalCapabilitiesToJson());
+        joynr::util::saveStringToFile(
+                fileName, joynr::serializer::serializeToJson(localCapabilities));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
     }
-}
-
-std::string LocalCapabilitiesDirectory::serializeLocalCapabilitiesToJson() const
-{
-    const std::vector<std::string>& capEntriesKeys = participantId2LocalCapability.getKeys();
-
-    // put all entries in a vector to be serialized
-    std::vector<types::DiscoveryEntry> toBeSerialized;
-
-    // convert each entry with Joynr::serialize
-    for (const auto& key : capEntriesKeys) {
-        auto capEntriesAtKey = participantId2LocalCapability.lookUpAll(key);
-        toBeSerialized.insert(toBeSerialized.end(),
-                              std::make_move_iterator(capEntriesAtKey.begin()),
-                              std::make_move_iterator(capEntriesAtKey.end()));
-    }
-
-    return joynr::serializer::serializeToJson(toBeSerialized);
 }
 
 void LocalCapabilitiesDirectory::loadPersistedFile()
@@ -736,20 +763,15 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
         return;
     }
 
-    std::vector<types::DiscoveryEntry> persistedCapabilities;
     try {
-        joynr::serializer::deserializeFromJson(persistedCapabilities, jsonString);
+        joynr::serializer::deserializeFromJson(localCapabilities, jsonString);
     } catch (const std::invalid_argument& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
     }
 
-    if (persistedCapabilities.empty()) {
-        return;
-    }
-
-    // move all capability entries into local cache and avoid duplicates
-    for (const auto& entry : persistedCapabilities) {
-        insertInCache(entry, true, isGlobal(entry));
+    // insert all global capability entries into global cache
+    for (const auto& entry : localCapabilities) {
+        globalCapabilities.insert(entry);
     }
 }
 
@@ -773,7 +795,14 @@ void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::str
     }
 
     std::vector<joynr::types::GlobalDiscoveryEntry> injectedGlobalCapabilities;
-    joynr::serializer::deserializeFromJson(injectedGlobalCapabilities, jsonString);
+    try {
+        joynr::serializer::deserializeFromJson(injectedGlobalCapabilities, jsonString);
+    } catch (const std::invalid_argument& e) {
+        std::string errorMessage("could not deserialize injected global capabilities from " +
+                                 jsonString + " - error: " + e.what());
+        JOYNR_LOG_FATAL(logger, errorMessage);
+        return;
+    }
 
     if (injectedGlobalCapabilities.empty()) {
         return;
@@ -797,32 +826,17 @@ void LocalCapabilitiesDirectory::insertInCache(const types::DiscoveryEntry& entr
                                                bool localCache,
                                                bool globalCache)
 {
-    bool insertLocal = localCache && !hasEntryInCache(entry, localCache);
     std::lock_guard<std::mutex> lock(cacheLock);
-    InterfaceAddress addr(entry.getDomain(), entry.getInterfaceName());
 
     // add entry to local cache
-    if (insertLocal) {
-        interfaceAddress2LocalCapabilities.insert(addr, entry);
-        participantId2LocalCapability.insert(entry.getParticipantId(), entry);
+    if (localCache) {
+        localCapabilities.insert(entry);
     }
 
     // add entry to global cache
     if (globalCache) {
-        interfaceAddress2GlobalCapabilities.insert(addr, entry);
-        participantId2GlobalCapabilities.insert(entry.getParticipantId(), entry);
+        globalCapabilities.insert(entry);
     }
-}
-
-bool LocalCapabilitiesDirectory::hasEntryInCache(const types::DiscoveryEntry& entry,
-                                                 bool localEntries)
-{
-    // the combination participantId is unique for [domain, interfaceName]
-    std::vector<types::DiscoveryEntry> entryList =
-            searchCache(entry.getParticipantId(), std::chrono::milliseconds(-1), localEntries);
-
-    bool found = std::find(entryList.cbegin(), entryList.cend(), entry) != entryList.cend();
-    return found;
 }
 
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchCache(
@@ -834,12 +848,14 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchCache(
 
     std::vector<types::DiscoveryEntry> result;
     for (std::size_t i = 0; i < interfaceAddresses.size(); i++) {
-        // search in local
+        const InterfaceAddress& interfaceAddress = interfaceAddresses.at(i);
+        const std::string& domain = interfaceAddress.getDomain();
+        const std::string& interface = interfaceAddress.getInterface();
+
         std::vector<types::DiscoveryEntry> entries =
-                localEntries
-                        ? interfaceAddress2LocalCapabilities.lookUpAll(interfaceAddresses.at(i))
-                        : interfaceAddress2GlobalCapabilities.lookUp(
-                                  interfaceAddresses.at(i), maxCacheAge);
+                localEntries ? localCapabilities.lookupByDomainAndInterface(domain, interface)
+                             : globalCapabilities.lookupCacheByDomainAndInterface(
+                                       domain, interface, maxCacheAge);
         result.insert(result.end(),
                       std::make_move_iterator(entries.begin()),
                       std::make_move_iterator(entries.end()));
@@ -847,7 +863,7 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchCache(
     return result;
 }
 
-std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchCache(
+boost::optional<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchCache(
         const std::string& participantId,
         std::chrono::milliseconds maxCacheAge,
         bool localEntries)
@@ -856,9 +872,12 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchCache(
 
     // search in local
     if (localEntries) {
-        return participantId2LocalCapability.lookUpAll(participantId);
+        return localCapabilities.lookupByParticipantId(participantId);
     } else {
-        return participantId2GlobalCapabilities.lookUp(participantId, maxCacheAge);
+        if (maxCacheAge == std::chrono::milliseconds(-1)) {
+            return globalCapabilities.lookupByParticipantId(participantId);
+        }
+        return globalCapabilities.lookupCacheByParticipantId(participantId, maxCacheAge);
     }
 }
 
@@ -904,9 +923,8 @@ void LocalCapabilitiesDirectory::scheduleCleanupTimer()
 void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
         const boost::system::error_code& errorCode)
 {
-    bool doUpdatePersistenceFile = false;
     if (errorCode == boost::asio::error::operation_aborted) {
-        // Assume Desctructor has been called
+        // Assume Destructor has been called
         JOYNR_LOG_DEBUG(logger,
                         "expired discovery entries check aborted after shutdown, error code from "
                         "expired discovery entries timer: {}",
@@ -918,21 +936,12 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
                         errorCode.message());
     }
 
-    TypedClientMultiCache<std::string, types::DiscoveryEntry>* caches[] = {
-            &participantId2LocalCapability, &participantId2GlobalCapabilities};
-    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                       std::chrono::system_clock::now().time_since_epoch()).count();
-    for (auto& cache : caches) {
-        for (auto& key : cache->getKeys()) {
-            for (auto& discoveryEntry : participantId2LocalCapability.lookUpAll(key)) {
-                if (discoveryEntry.getExpiryDateMs() < now) {
-                    remove(discoveryEntry);
-                    doUpdatePersistenceFile = true;
-                }
-            }
-        }
-    }
-    if (doUpdatePersistenceFile) {
+    std::lock_guard<std::mutex> lock(cacheLock);
+
+    std::size_t removedCount = localCapabilities.removeExpired();
+    removedCount += globalCapabilities.removeExpired();
+
+    if (removedCount > 0) {
         updatePersistedFile();
     }
 

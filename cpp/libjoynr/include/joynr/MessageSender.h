@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "joynr/IMessageSender.h"
 #include "joynr/JoynrExport.h"
@@ -34,6 +35,7 @@ namespace joynr
 class IMessageRouter;
 class IReplyCaller;
 class IDispatcher;
+class IKeychain;
 class Request;
 class Reply;
 class MessagingQos;
@@ -71,7 +73,9 @@ class SubscriptionPublication;
 class JOYNR_EXPORT MessageSender : public IMessageSender
 {
 public:
-    MessageSender(std::shared_ptr<IMessageRouter> messagingRouter, std::uint64_t ttlUpliftMs = 0);
+    MessageSender(std::shared_ptr<IMessageRouter> messagingRouter,
+                  std::shared_ptr<IKeychain> keyChain,
+                  std::uint64_t ttlUpliftMs = 0);
 
     ~MessageSender() override = default;
 
@@ -80,7 +84,7 @@ public:
     /*
       * registers Dispatcher. See above comment why this is necessary.
       */
-    void registerDispatcher(IDispatcher* dispatcher) override;
+    void registerDispatcher(std::weak_ptr<IDispatcher> dispatcher) override;
 
     void sendRequest(const std::string& senderParticipantId,
                      const std::string& receiverParticipantId,
@@ -102,6 +106,7 @@ public:
     void sendReply(const std::string& senderParticipantId,
                    const std::string& receiverParticipantId,
                    const MessagingQos& qos,
+                   std::unordered_map<std::string, std::string> prefixedCustomHeaders,
                    const Reply& reply) override;
 
     void sendSubscriptionRequest(const std::string& senderParticipantId,
@@ -143,7 +148,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageSender);
-    IDispatcher* dispatcher;
+    std::weak_ptr<IDispatcher> dispatcher;
     std::shared_ptr<IMessageRouter> messageRouter;
     MutableMessageFactory messageFactory;
     std::string replyToAddress;

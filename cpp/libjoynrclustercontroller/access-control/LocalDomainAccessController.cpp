@@ -247,7 +247,7 @@ LocalDomainAccessController::LocalDomainAccessController(
 }
 
 void LocalDomainAccessController::setGlobalDomainAccessControllerProxy(
-        std::unique_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
+        std::shared_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
 {
     this->globalDomainAccessControllerProxy = std::move(globalDomainAccessControllerProxy);
 

@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,12 +18,11 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/webmessaging/WebMessagingStub", [
-    "global/Promise",
-    "joynr/util/JSONSerializer",
-    "joynr/system/LoggerFactory"
-], function(Promise, JSONSerializer, LoggerFactory) {
+var Promise = require('../../../global/Promise');
+var JsonSerializer = require('../../util/JSONSerializer');
+var LoggerFactory = require('../../system/LoggerFactory');
+module.exports =
+        (function(Promise, JSONSerializer, LoggerFactory) {
 
     var log = LoggerFactory.getLogger("joynr/messaging/webmessaging/WebMessagingStub");
     /**
@@ -66,4 +65,4 @@ define("joynr/messaging/webmessaging/WebMessagingStub", [
 
     return WebMessagingStub;
 
-});
+        }(Promise, JsonSerializer, LoggerFactory));

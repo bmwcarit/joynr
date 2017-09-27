@@ -70,7 +70,8 @@ class ProviderRuntimeException;
   * This listener is notified (via the callback) when a subscription is missed or when a publication
   * arrives.
   */
-class JOYNR_EXPORT SubscriptionManager : public ISubscriptionManager
+class JOYNR_EXPORT SubscriptionManager : public ISubscriptionManager,
+                                         public std::enable_shared_from_this<SubscriptionManager>
 {
 
 public:
@@ -180,6 +181,8 @@ public:
     std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> getMulticastSubscriptionListeners(
             const std::string& multicastId) override;
 
+    void shutdown() override;
+
 private:
     //    void checkMissedPublication(const Timer::TimerId id);
     DISALLOW_COPY_AND_ASSIGN(SubscriptionManager);
@@ -208,7 +211,7 @@ private:
                                   std::int64_t expectedIntervalMSecs,
                                   const std::string& subscriptionId,
                                   std::shared_ptr<Subscription> subscription,
-                                  SubscriptionManager& subscriptionManager,
+                                  std::weak_ptr<SubscriptionManager> subscriptionManager,
                                   std::int64_t alertAfterInterval);
 
         void shutdown() override;
@@ -227,7 +230,7 @@ private:
         std::shared_ptr<Subscription> subscription;
         const std::string subscriptionId;
         std::int64_t alertAfterInterval;
-        SubscriptionManager& subscriptionManager;
+        std::weak_ptr<SubscriptionManager> subscriptionManager;
         ADD_LOGGER(MissedPublicationRunnable);
     };
     /**
@@ -238,7 +241,7 @@ private:
     {
     public:
         SubscriptionEndRunnable(const std::string& subscriptionId,
-                                SubscriptionManager& subscriptionManager);
+                                std::weak_ptr<SubscriptionManager> subscriptionManager);
 
         void shutdown() override;
         /**
@@ -250,7 +253,7 @@ private:
     private:
         DISALLOW_COPY_AND_ASSIGN(SubscriptionEndRunnable);
         std::string subscriptionId;
-        SubscriptionManager& subscriptionManager;
+        std::weak_ptr<SubscriptionManager> subscriptionManager;
         ADD_LOGGER(SubscriptionEndRunnable);
     };
 };

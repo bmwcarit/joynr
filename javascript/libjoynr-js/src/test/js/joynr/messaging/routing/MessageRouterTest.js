@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true, node: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,32 +18,18 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-            "joynr/messaging/routing/MessageRouter",
-            "joynr/system/RoutingTypes/BrowserAddress",
-            "joynr/system/RoutingTypes/ChannelAddress",
-            "joynr/messaging/inprocess/InProcessAddress",
-            "joynr/messaging/JoynrMessage",
-            "joynr/start/TypeRegistry",
-            "global/Promise",
-            "Date",
-            "global/WaitsFor",
-            "joynr/util/UtilInternal",
-            "uuid"
-        ],
-        function(
-                MessageRouter,
-                BrowserAddress,
-                ChannelAddress,
-                InProcessAddress,
-                JoynrMessage,
-                TypeRegistry,
-                Promise,
-                Date,
-                waitsFor,
-                Util,
-                uuid) {
+var MessageRouter = require('../../../../classes/joynr/messaging/routing/MessageRouter');
+var BrowserAddress = require('../../../../classes/joynr/system/RoutingTypes/BrowserAddress');
+var ChannelAddress = require('../../../../classes/joynr/system/RoutingTypes/ChannelAddress');
+var InProcessAddress = require('../../../../classes/joynr/messaging/inprocess/InProcessAddress');
+var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
+var TypeRegistry = require('../../../../classes/joynr/start/TypeRegistry');
+var Promise = require('../../../../classes/global/Promise');
+var Date = require('../../../../test-classes/global/Date');
+var WaitsFor = require('../../../../test-classes/global/WaitsFor');
+var UtilInternal = require('../../../../classes/joynr/util/UtilInternal');
+var uuid = require('../../../../classes/lib/uuid-annotated');
+module.exports = (function (MessageRouter, BrowserAddress, ChannelAddress, InProcessAddress, JoynrMessage, TypeRegistry, Promise, Date, waitsFor, Util, uuid) {
             var fakeTime;
 
             function increaseFakeTime(time_ms) {
@@ -1139,4 +1124,4 @@ define([
                         }); // describe ChildMessageRouter
 
                     }); // describe MessageRouter
-        }); // define
+}(MessageRouter, BrowserAddress, ChannelAddress, InProcessAddress, JoynrMessage, TypeRegistry, Promise, Date, WaitsFor, UtilInternal, uuid));    // define

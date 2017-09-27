@@ -261,7 +261,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 					// support CommonJS module 1.1.1 spec (`exports` cannot be a function)
 					exports.«type.joynrName» = «type.joynrName»;
 				}
-				var joynr = requirejs("joynr");
+				var joynr = require("joynr");
 				preparePrototype(joynr);
 
 				joynr.addType("«type.joynrTypeName»", «type.joynrName»);

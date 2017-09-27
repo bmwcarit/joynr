@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,116 +17,59 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/start/InProcessRuntime",
-        [
-            "global/Promise",
-            "joynr/capabilities/arbitration/Arbitrator",
-            "joynr/provider/ProviderBuilder",
-            "joynr/proxy/ProxyBuilder",
-            "joynr/types/GlobalDiscoveryEntry",
-            "joynr/capabilities/CapabilitiesRegistrar",
-            "joynr/capabilities/ParticipantIdStorage",
-            "joynr/capabilities/discovery/CapabilityDiscovery",
-            "joynr/capabilities/CapabilitiesStore",
-            "joynr/dispatching/RequestReplyManager",
-            "joynr/dispatching/subscription/PublicationManager",
-            "joynr/dispatching/subscription/SubscriptionManager",
-            "joynr/dispatching/Dispatcher",
-            "joynr/security/PlatformSecurityManager",
-            "joynr/messaging/channel/ChannelMessagingSender",
-            "joynr/messaging/channel/ChannelMessagingStubFactory",
-            "joynr/messaging/channel/ChannelMessagingSkeleton",
-            "joynr/system/RoutingTypes/ChannelAddress",
-            "joynr/messaging/mqtt/MqttMessagingStubFactory",
-            "joynr/messaging/mqtt/MqttMessagingSkeleton",
-            "joynr/system/RoutingTypes/MqttAddress",
-            "joynr/messaging/mqtt/SharedMqttClient",
-            "joynr/messaging/mqtt/MqttMulticastAddressCalculator",
-            "joynr/messaging/MessagingSkeletonFactory",
-            "joynr/messaging/MessagingStubFactory",
-            "joynr/messaging/routing/MessageRouter",
-            "joynr/messaging/routing/MessageQueue",
-            "joynr/messaging/CommunicationModule",
-            "joynr/util/InProcessSkeleton",
-            "joynr/util/InProcessStub",
-            "joynr/messaging/inprocess/InProcessMessagingStubFactory",
-            "joynr/messaging/inprocess/InProcessMessagingSkeleton",
-            "joynr/messaging/inprocess/InProcessMessagingStub",
-            "joynr/messaging/inprocess/InProcessAddress",
-            "joynr/messaging/channel/LongPollingChannelMessageReceiver",
-            "joynr/messaging/MessagingQos",
-            "joynr/proxy/DiscoveryQos",
-            "joynr/types/DiscoveryScope",
-            "joynr/types/TypeRegistrySingleton",
-            "joynr/util/UtilInternal",
-            "joynr/util/CapabilitiesUtil",
-            "joynr/system/DistributedLoggingAppenderConstructorFactory",
-            "joynr/system/WebWorkerMessagingAppender",
-            "joynr/system/LoggingManager",
-            "uuid",
-            "joynr/system/LoggerFactory",
-            "joynr/start/settings/defaultSettings",
-            "joynr/start/settings/defaultLibjoynrSettings",
-            "joynr/start/settings/defaultClusterControllerSettings",
-            "joynr/util/Typing",
-            "joynr/util/LongTimer",
-            "global/LocalStorage"
-        ],
-        function(
-                Promise,
-                Arbitrator,
-                ProviderBuilder,
-                ProxyBuilder,
-                GlobalDiscoveryEntry,
-                CapabilitiesRegistrar,
-                ParticipantIdStorage,
-                CapabilityDiscovery,
-                CapabilitiesStore,
-                RequestReplyManager,
-                PublicationManager,
-                SubscriptionManager,
-                Dispatcher,
-                PlatformSecurityManager,
-                ChannelMessagingSender,
-                ChannelMessagingStubFactory,
-                ChannelMessagingSkeleton,
-                ChannelAddress,
-                MqttMessagingStubFactory,
-                MqttMessagingSkeleton,
-                MqttAddress,
-                SharedMqttClient,
-                MqttMulticastAddressCalculator,
-                MessagingSkeletonFactory,
-                MessagingStubFactory,
-                MessageRouter,
-                MessageQueue,
-                CommunicationModule,
-                InProcessSkeleton,
-                InProcessStub,
-                InProcessMessagingStubFactory,
-                InProcessMessagingSkeleton,
-                InProcessMessagingStub,
-                InProcessAddress,
-                LongPollingChannelMessageReceiver,
-                MessagingQos,
-                DiscoveryQos,
-                DiscoveryScope,
-                TypeRegistrySingleton,
-                Util,
-                CapabilitiesUtil,
-                DistributedLoggingAppenderConstructorFactory,
-                WebWorkerMessagingAppender,
-                LoggingManager,
-                uuid,
-                LoggerFactory,
-                defaultSettings,
-                defaultLibjoynrSettings,
-                defaultClusterControllerSettings,
-                Typing,
-                LongTimer,
-                LocalStorage) {
+var Promise = require('../../global/Promise');
+var Arbitrator = require('../capabilities/arbitration/Arbitrator');
+var ProviderBuilder = require('../provider/ProviderBuilder');
+var ProxyBuilder = require('../proxy/ProxyBuilder');
+var GlobalDiscoveryEntry = require('../../joynr/types/GlobalDiscoveryEntry');
+var CapabilitiesRegistrar = require('../capabilities/CapabilitiesRegistrar');
+var ParticipantIdStorage = require('../capabilities/ParticipantIdStorage');
+var CapabilityDiscovery = require('../capabilities/discovery/CapabilityDiscovery');
+var CapabilitiesStore = require('../capabilities/CapabilitiesStore');
+var RequestReplyManager = require('../dispatching/RequestReplyManager');
+var PublicationManager = require('../dispatching/subscription/PublicationManager');
+var SubscriptionManager = require('../dispatching/subscription/SubscriptionManager');
+var Dispatcher = require('../dispatching/Dispatcher');
+var PlatformSecurityManager = require('../security/PlatformSecurityManagerNode');
+var ChannelMessagingSender = require('../messaging/channel/ChannelMessagingSender');
+var ChannelMessagingStubFactory = require('../messaging/channel/ChannelMessagingStubFactory');
+var ChannelMessagingSkeleton = require('../messaging/channel/ChannelMessagingSkeleton');
+var ChannelAddress = require('../system/RoutingTypes/ChannelAddress');
+var MqttMessagingStubFactory = require('../messaging/mqtt/MqttMessagingStubFactory');
+var MqttMessagingSkeleton = require('../messaging/mqtt/MqttMessagingSkeleton');
+var MqttAddress = require('../system/RoutingTypes/MqttAddress');
+var SharedMqttClient = require('../messaging/mqtt/SharedMqttClient');
+var MqttMulticastAddressCalculator = require('../messaging/mqtt/MqttMulticastAddressCalculator');
+var MessagingSkeletonFactory = require('../messaging/MessagingSkeletonFactory');
+var MessagingStubFactory = require('../messaging/MessagingStubFactory');
+var MessageRouter = require('../messaging/routing/MessageRouter');
+var MessageQueue = require('../messaging/routing/MessageQueue');
+var CommunicationModule = require('../messaging/CommunicationModule');
+var InProcessSkeleton = require('../util/InProcessSkeleton');
+var InProcessStub = require('../util/InProcessStub');
+var InProcessMessagingStubFactory = require('../messaging/inprocess/InProcessMessagingStubFactory');
+var InProcessMessagingSkeleton = require('../messaging/inprocess/InProcessMessagingSkeleton');
+var InProcessMessagingStub = require('../messaging/inprocess/InProcessMessagingStub');
+var InProcessAddress = require('../messaging/inprocess/InProcessAddress');
+var LongPollingChannelMessageReceiver = require('../messaging/channel/LongPollingChannelMessageReceiver');
+var MessagingQos = require('../messaging/MessagingQos');
+var DiscoveryQos = require('../proxy/DiscoveryQos');
+var DiscoveryScope = require('../../joynr/types/DiscoveryScope');
+var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var UtilInternal = require('../util/UtilInternal');
+var CapabilitiesUtil = require('../util/CapabilitiesUtil');
+var DistributedLoggingAppenderConstructorFactory = require('../system/DistributedLoggingAppenderConstructorFactory');
+var WebWorkerMessagingAppender = require('../system/WebWorkerMessagingAppender');
+var LoggingManager = require('../system/LoggingManager');
+var uuid = require('../../lib/uuid-annotated');
+var LoggerFactory = require('../system/LoggerFactory');
+var defaultSettings = require('./settings/defaultSettings');
+var defaultLibjoynrSettings = require('./settings/defaultLibjoynrSettings');
+var defaultClusterControllerSettings = require('./settings/defaultClusterControllerSettings');
+var Typing = require('../util/Typing');
+var LongTimer = require('../util/LongTimer');
+var LocalStorage = require('../../global/LocalStorageNode');
+module.exports = (function (Promise, Arbitrator, ProviderBuilder, ProxyBuilder, GlobalDiscoveryEntry, CapabilitiesRegistrar, ParticipantIdStorage, CapabilityDiscovery, CapabilitiesStore, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, PlatformSecurityManager, ChannelMessagingSender, ChannelMessagingStubFactory, ChannelMessagingSkeleton, ChannelAddress, MqttMessagingStubFactory, MqttMessagingSkeleton, MqttAddress, SharedMqttClient, MqttMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, CommunicationModule, InProcessSkeleton, InProcessStub, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, LongPollingChannelMessageReceiver, MessagingQos, DiscoveryQos, DiscoveryScope, TypeRegistrySingleton, Util, CapabilitiesUtil, DistributedLoggingAppenderConstructorFactory, WebWorkerMessagingAppender, LoggingManager, uuid, LoggerFactory, defaultSettings, defaultLibjoynrSettings, defaultClusterControllerSettings, Typing, LongTimer, LocalStorage) {
             var JoynrStates = {
                 SHUTDOWN : "shut down",
                 STARTING : "starting",
@@ -268,6 +210,25 @@ define(
                 LoggerFactory.init(loggingManager);
 
                 var joynrState = JoynrStates.SHUTDOWN;
+
+                if (provisioning.capabilities && provisioning.capabilities.discoveryQos){
+                    var discoveryQos = provisioning.capabilities.discoveryQos;
+
+                    if (discoveryQos.discoveryExpiryIntervalMs){
+                        CapabilitiesRegistrar.setDefaultExpiryIntervalMs(discoveryQos.discoveryExpiryIntervalMs);
+                    }
+
+                    var discoveryQosSettings = {};
+
+                    if (discoveryQos.discoveryRetryDelayMs){
+                        discoveryQosSettings.discoveryRetryDelayMs = discoveryQos.discoveryRetryDelayMs;
+                    }
+                    if (discoveryQos.discoveryTimeoutMs){
+                        discoveryQosSettings.discoveryTimeoutMs = discoveryQos.discoveryTimeoutMs;
+                    }
+
+                    DiscoveryQos.setDefaultSettings(discoveryQosSettings);
+                }
 
                 /**
                  * Starts up the libjoynr instance
@@ -666,4 +627,4 @@ define(
             }
 
             return InProcessRuntime;
-        });
+}(Promise, Arbitrator, ProviderBuilder, ProxyBuilder, GlobalDiscoveryEntry, CapabilitiesRegistrar, ParticipantIdStorage, CapabilityDiscovery, CapabilitiesStore, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, PlatformSecurityManager, ChannelMessagingSender, ChannelMessagingStubFactory, ChannelMessagingSkeleton, ChannelAddress, MqttMessagingStubFactory, MqttMessagingSkeleton, MqttAddress, SharedMqttClient, MqttMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, CommunicationModule, InProcessSkeleton, InProcessStub, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, LongPollingChannelMessageReceiver, MessagingQos, DiscoveryQos, DiscoveryScope, TypeRegistrySingleton, UtilInternal, CapabilitiesUtil, DistributedLoggingAppenderConstructorFactory, WebWorkerMessagingAppender, LoggingManager, uuid, LoggerFactory, defaultSettings, defaultLibjoynrSettings, defaultClusterControllerSettings, Typing, LongTimer, LocalStorage));

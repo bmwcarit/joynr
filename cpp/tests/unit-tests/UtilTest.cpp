@@ -16,8 +16,9 @@
  * limitations under the License.
  * #L%
  */
-#include <vector>
+#include <limits>
 #include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -124,4 +125,17 @@ TEST(UtilTest, extractParticipantIdFromMulticastId)
     EXPECT_EQ("participantId", util::extractParticipantIdFromMulticastId("participantId/multicastname/partition1/partition2"));
     EXPECT_EQ("participantId", util::extractParticipantIdFromMulticastId("participantId/"));
     EXPECT_THROW(util::extractParticipantIdFromMulticastId("participantId"), std::invalid_argument);
+}
+
+TEST(UtilTest, isAdditionOnPointerSafe)
+{
+    constexpr std::uintptr_t address = std::numeric_limits<std::uintptr_t>::max() - 1;
+
+    // no overflow
+    int payloadLength = 0x1;
+    EXPECT_FALSE(util::isAdditionOnPointerSafe(address, payloadLength));
+
+    // overflow
+    payloadLength = 0x2;
+    EXPECT_TRUE(util::isAdditionOnPointerSafe(address, payloadLength));
 }

@@ -111,11 +111,13 @@ public:
         const bool useLocalDomainAccessStoreOnly = false;
         localDomainAccessController = std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore), useLocalDomainAccessStoreOnly);
 
-        auto mockGdacProxy = std::make_unique<MockGlobalDomainAccessControllerProxy>();
+        auto settings = std::make_unique<Settings>();
+        runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
+        auto mockGdacProxy = std::make_shared<MockGlobalDomainAccessControllerProxy>(runtime);
         mockGdacProxyMock = mockGdacProxy.get();
         localDomainAccessController->setGlobalDomainAccessControllerProxy(std::move(mockGdacProxy));
 
-        mockGdrcProxy = std::make_shared<MockGlobalDomainRoleControllerProxy>();
+        mockGdrcProxy = std::make_shared<MockGlobalDomainRoleControllerProxy>(runtime);
         localDomainAccessController->setGlobalDomainRoleControllerProxy(mockGdrcProxy);
 
         userDre = DomainRoleEntry(TEST_USER, DOMAINS, Role::OWNER);
@@ -176,6 +178,7 @@ protected:
 
     MockGlobalDomainAccessControllerProxy* mockGdacProxyMock;
     std::shared_ptr<MockGlobalDomainRoleControllerProxy> mockGdrcProxy;
+    std::shared_ptr<MockJoynrRuntime> runtime;
     OwnerAccessControlEntry ownerAce;
     MasterAccessControlEntry masterAce;
     OwnerRegistrationControlEntry ownerRce;
@@ -514,7 +517,9 @@ INSTANTIATE_TEST_CASE_P(WithOrWithoutPersistFile,
 );
 
 TEST(LocalDomainAccessControllerPersistedTest, persistedAcesAreUsed) {
-    auto mockGdacProxyPtr = std::make_unique<MockGlobalDomainAccessControllerProxy>();
+    auto settings = std::make_unique<Settings>();
+    auto runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
+    auto mockGdacProxyPtr = std::make_shared<MockGlobalDomainAccessControllerProxy>(runtime);
     auto mockGdacProxy = mockGdacProxyPtr.get();
 
     // Do not contact GDAC (do not perform any get* operation) for persisted ACEs
@@ -745,7 +750,9 @@ TEST_P(LocalDomainAccessControllerTest, providerPermissionCommunicationFailure) 
 }
 
 TEST(LocalDomainAccessControllerTest, onlyLdasUsed) {
-    auto mockGdacProxy = std::make_unique<MockGlobalDomainAccessControllerProxy>();
+    auto settings = std::make_unique<Settings>();
+    auto runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
+    auto mockGdacProxy = std::make_shared<MockGlobalDomainAccessControllerProxy>(runtime);
 
     // Expect zero interactions with the backend because only the LDAS shall be used
     EXPECT_CALL(*mockGdacProxy, getMasterAccessControlEntriesAsync(_, _, _, _)).Times(0);
@@ -898,7 +905,9 @@ TEST_P(LocalDomainAccessControllerTest, providerPermissionQueuedRequests) {
 }
 
 TEST(LocalDomainAccessControllerPersistedTest, persistedRcesAreUsed) {
-    auto mockGdacProxyPtr = std::make_unique<MockGlobalDomainAccessControllerProxy>();
+    auto settings = std::make_unique<Settings>();
+    auto runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
+    auto mockGdacProxyPtr = std::make_shared<MockGlobalDomainAccessControllerProxy>(runtime);
     auto mockGdacProxy = mockGdacProxyPtr.get();
 
     // Do not contact GDAC (do not perform any get* operation) for persisted ACEs

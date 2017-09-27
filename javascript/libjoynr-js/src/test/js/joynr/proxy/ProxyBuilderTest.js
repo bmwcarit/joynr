@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true, node: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,42 +18,23 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-            "joynr/proxy/ProxyBuilder",
-            "joynr/proxy/ProxyOperation",
-            "joynr/proxy/ProxyEvent",
-            "joynr/proxy/DiscoveryQos",
-            "joynr/messaging/MessagingQos",
-            "joynr/types/ProviderQos",
-            "joynr/types/ProviderScope",
-            "joynr/types/DiscoveryEntryWithMetaInfo",
-            "joynr/types/ArbitrationStrategyCollection",
-            "joynr/types/DiscoveryScope",
-            "joynr/types/Version",
-            "joynr/messaging/inprocess/InProcessAddress",
-            "joynr/vehicle/RadioProxy",
-            "joynr/vehicle/radiotypes/RadioStation",
-            "global/Promise",
-            "global/WaitsFor"
-        ],
-        function(
-                ProxyBuilder,
-                ProxyOperation,
-                ProxyEvent,
-                DiscoveryQos,
-                MessagingQos,
-                ProviderQos,
-                ProviderScope,
-                DiscoveryEntryWithMetaInfo,
-                ArbitrationStrategyCollection,
-                DiscoveryScope,
-                Version,
-                InProcessAddress,
-                RadioProxy,
-                RadioStation,
-                Promise,
-                waitsFor) {
+var ProxyBuilder = require('../../../classes/joynr/proxy/ProxyBuilder');
+var ProxyOperation = require('../../../classes/joynr/proxy/ProxyOperation');
+var ProxyEvent = require('../../../classes/joynr/proxy/ProxyEvent');
+var DiscoveryQos = require('../../../classes/joynr/proxy/DiscoveryQos');
+var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
+var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
+var ArbitrationStrategyCollection = require('../../../classes/joynr/types/ArbitrationStrategyCollection');
+var DiscoveryScope = require('../../../classes/joynr/types/DiscoveryScope');
+var Version = require('../../../classes/joynr/types/Version');
+var InProcessAddress = require('../../../classes/joynr/messaging/inprocess/InProcessAddress');
+var RadioProxy = require('../../../test-classes/joynr/vehicle/RadioProxy');
+var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+var Promise = require('../../../classes/global/Promise');
+var WaitsFor = require('../../../test-classes/global/WaitsFor');
+module.exports = (function (ProxyBuilder, ProxyOperation, ProxyEvent, DiscoveryQos, MessagingQos, ProviderQos, ProviderScope, DiscoveryEntryWithMetaInfo, ArbitrationStrategyCollection, DiscoveryScope, Version, InProcessAddress, RadioProxy, RadioStation, Promise, waitsFor) {
 
             var safetyTimeoutDelta = 100;
 
@@ -450,4 +430,4 @@ define([
                         });
                     });
 
-        }); // require
+}(ProxyBuilder, ProxyOperation, ProxyEvent, DiscoveryQos, MessagingQos, ProviderQos, ProviderScope, DiscoveryEntryWithMetaInfo, ArbitrationStrategyCollection, DiscoveryScope, Version, InProcessAddress, RadioProxy, RadioStation, Promise, WaitsFor));    // require

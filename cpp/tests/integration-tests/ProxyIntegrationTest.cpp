@@ -30,6 +30,8 @@
 #include "joynr/vehicle/GpsProxy.h"
 
 #include "tests/utils/MockObjects.h"
+#include "joynr/LibjoynrSettings.h"
+#include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using ::testing::Return;
 
@@ -39,14 +41,12 @@ using namespace joynr;
 class ProxyIntegrationTest : public ::testing::Test {
 public:
     ProxyIntegrationTest() :
-        mockInProcessConnectorFactory(nullptr),
+        mockInProcessConnectorFactory(std::make_shared<MockInProcessConnectorFactory>()),
         connectorFactory(nullptr)
     {
-        auto mockInProcessConnectorFactoryPtr = std::make_unique<MockInProcessConnectorFactory>();
-        mockInProcessConnectorFactory = mockInProcessConnectorFactoryPtr.get();
         auto mockMessageSender = std::make_shared<MockMessageSender>();
         auto joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(std::move(mockMessageSender), nullptr);
-        connectorFactory = new ConnectorFactory(std::move(mockInProcessConnectorFactoryPtr), std::move(joynrMessagingConnectorFactory));
+        connectorFactory = new ConnectorFactory(mockInProcessConnectorFactory, std::move(joynrMessagingConnectorFactory));
     }
 
     ~ProxyIntegrationTest() override{
@@ -56,7 +56,7 @@ public:
     }
 
 protected:
-    MockInProcessConnectorFactory* mockInProcessConnectorFactory;
+    std::shared_ptr<MockInProcessConnectorFactory> mockInProcessConnectorFactory;
     ConnectorFactory* connectorFactory;
 
 private:
@@ -69,6 +69,8 @@ TEST_F(ProxyIntegrationTest, proxyInitialisation)
     MessagingQos messagingQos;
 
     EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-    auto proxy =  std::make_unique<vehicle::GpsProxy>(connectorFactory, domain, messagingQos);
+    auto settings = std::make_unique<Settings>();
+    auto runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
+    auto proxy =  std::make_unique<vehicle::GpsProxy>(runtime, connectorFactory, domain, messagingQos);
     ASSERT_TRUE(proxy != nullptr);
 }

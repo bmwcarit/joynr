@@ -47,7 +47,10 @@ public:
 
     virtual void registerSubscriptionManager(
             std::shared_ptr<ISubscriptionManager> subscriptionManager) = 0;
-    virtual void registerPublicationManager(PublicationManager* publicationManager) = 0;
+    virtual void registerPublicationManager(
+            std::weak_ptr<PublicationManager> publicationManager) = 0;
+
+    virtual void shutdown() = 0;
 };
 
 } // namespace joynr

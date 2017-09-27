@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/capabilities/ParticipantIdStorage", [], function() {
+module.exports = (function() {
 
     /**
      * @constructor
@@ -61,4 +60,4 @@ define("joynr/capabilities/ParticipantIdStorage", [], function() {
 
     return ParticipantIdStorage;
 
-});
+}());

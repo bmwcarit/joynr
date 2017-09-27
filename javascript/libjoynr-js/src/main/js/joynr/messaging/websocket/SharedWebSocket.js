@@ -1,4 +1,4 @@
-/*jslint es5: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,18 +18,13 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/messaging/websocket/SharedWebSocket",
-        [
-            "global/Promise",
-            "global/WebSocket",
-            "joynr/util/Typing",
-            "joynr/util/JSONSerializer",
-            "joynr/util/LongTimer",
-            "joynr/system/LoggerFactory"
-        ],
-        function(Promise, WebSocket, Typing, JSONSerializer, LongTimer, LoggerFactory) {
+var Promise = require('../../../global/Promise');
+var WebSocket = require('../../../global/WebSocketNode');
+var Typing = require('../../util/Typing');
+var JsonSerializer = require('../../util/JSONSerializer');
+var LongTimer = require('../../util/LongTimer');
+var LoggerFactory = require('../../system/LoggerFactory');
+module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTimer, LoggerFactory) {
             var log = LoggerFactory.getLogger("joynr.messaging.websocket.SharedWebSocket");
             /**
              * @param address
@@ -53,7 +48,7 @@ define(
              *            libjoynr
              */
             function initializeConnection(websocket, localAddress) {
-                websocket.send(WebSocket.encodeString(JSON.stringify(localAddress)), { binary: true });
+                websocket.send(websocket.encodeString(JSON.stringify(localAddress)), {binary: true});
             }
 
             /**
@@ -67,7 +62,7 @@ define(
                 while (queuedMessages.length) {
                     queued = queuedMessages.shift();
                     try {
-                        websocket.send(WebSocket.marshalJoynrMessage(queued.message), { binary: true });
+                        websocket.send(websocket.marshalJoynrMessage(queued.message), {binary: true});
                         queued.resolve();
                         // Error is thrown if the socket is no longer open
                     } catch (e) {
@@ -83,7 +78,7 @@ define(
                 function sendMessageResolver(resolve, reject){
                     if (websocket.readyState === WebSocket.OPEN) {
                         try {
-                            websocket.send(WebSocket.marshalJoynrMessage(joynrMessage), { binary: true });
+                            websocket.send(websocket.marshalJoynrMessage(joynrMessage), {binary: true});
                             resolve();
                             // Error is thrown if the socket is no longer open, so requeue to the front
                         } catch (e) {
@@ -119,6 +114,7 @@ define(
              *            settings.remoteAddress to which messages are sent on the websocket server.
              * @param {Object} settings.provisioning
              * @param {Number} settings.provisioning.reconnectSleepTimeMs
+             * @param {Object} settings.keychain
              */
             var SharedWebSocket =
                     function SharedWebSocket(settings) {
@@ -150,7 +146,7 @@ define(
                             if (closed) {
                                 return;
                             }
-                            websocket = new WebSocket(remoteUrl);
+                            websocket = new WebSocket(remoteUrl, settings.keychain);
                             websocket.onopen = onOpen;
                             websocket.onclose = onClose;
                             websocket.onerror = onError;
@@ -236,7 +232,7 @@ define(
                             set: function(newCallback) {
                                 if (typeof newCallback === "function") {
                                     onmessageCallback = function(data) {
-                                        WebSocket.unmarshalJoynrMessage(data, newCallback);
+                                        websocket.unmarshalJoynrMessage(data, newCallback);
                                     };
                                     websocket.onmessage = onmessageCallback;
                                 } else {
@@ -255,4 +251,4 @@ define(
                     };
             SharedWebSocket.EVENT_CODE_SHUTDOWN = 4000;
             return SharedWebSocket;
-        });
+}(Promise, WebSocket, Typing, JsonSerializer, LongTimer, LoggerFactory));

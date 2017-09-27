@@ -65,6 +65,8 @@ public class LocalDomainAccessControllerTest {
     private static final String INTERFACE1 = "interface1";
     private static final String OPEARATION1 = "operation1";
     private static final long MAX_TTL = 2592000000L;
+    private static final long DISCOVERY_TIMEOUT_MS = 30000L;
+    private static final long RETRY_INTERVAL_MS = 2000L;
 
     private CacheManager cacheManager;
     private DomainAccessControlStore domainAccessControlStore;
@@ -100,7 +102,9 @@ public class LocalDomainAccessControllerTest {
                                                                           domainAccessControlStore,
                                                                           new ProxyBuilderFactoryImpl(localDiscoveryAggregator,
                                                                                                       proxyInvocationHandlerFactoryMock,
-                                                                                                      MAX_TTL),
+                                                                                                      MAX_TTL,
+                                                                                                      DISCOVERY_TIMEOUT_MS,
+                                                                                                      RETRY_INTERVAL_MS),
                                                                           "systemServiceDomain");
 
         // instantiate some template objects

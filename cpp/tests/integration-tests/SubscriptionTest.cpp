@@ -71,10 +71,11 @@ public:
         proxyParticipantId("proxyParticipantId"),
         requestReplyId("requestReplyId"),
         messageFactory(),
-        messageSender(std::make_shared<MessageSender>(mockMessageRouter)),
+        messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
         dispatcher(messageSender, singleThreadedIOService.getIOService()),
-        subscriptionManager(nullptr),
+        subscriptionManager(),
         provider(new MockTestProvider),
+        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender)),
         requestCaller(new joynr::tests::testRequestCaller(provider)),
         isLocalMessage(true)
     {
@@ -84,10 +85,15 @@ public:
     void SetUp(){
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored subscriptions
         subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadedIOService.getIOService(), mockMessageRouter);
-        publicationManager = new PublicationManager(singleThreadedIOService.getIOService(), messageSender.get());
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
+    }
+
+    ~SubscriptionTest()
+    {
+        publicationManager->shutdown();
+        singleThreadedIOService.stop();
     }
 
 protected:
@@ -113,7 +119,7 @@ protected:
     Dispatcher dispatcher;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::shared_ptr<MockTestProvider> provider;
-    PublicationManager* publicationManager;
+    std::shared_ptr<PublicationManager> publicationManager;
     std::shared_ptr<joynr::tests::testRequestCaller> requestCaller;
     const bool isLocalMessage;
 private:
@@ -199,7 +205,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -255,7 +261,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
     subscriptionPublication.setResponse(tests::testTypes::TestEnum::ZERO);
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>
-            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager.get());
+            >(subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(
@@ -371,7 +377,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam) {
                 providerParticipantId,
                 requestCaller,
                 subscriptionRequest,
-                messageSender.get());
+                messageSender);
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(15)));
 

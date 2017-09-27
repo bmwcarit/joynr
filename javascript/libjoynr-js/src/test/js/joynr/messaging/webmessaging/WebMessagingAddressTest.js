@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define([ "joynr/messaging/webmessaging/WebMessagingAddress"
-], function(WebMessagingAddress) {
+var WebMessagingAddress =
+        require('../../../../classes/joynr/messaging/webmessaging/WebMessagingAddress');
+module.exports = (function(WebMessagingAddress) {
 
     describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingAddress", function() {
         var window, origin, webMessagingAddress;
@@ -102,4 +104,4 @@ define([ "joynr/messaging/webmessaging/WebMessagingAddress"
 
     });
 
-});
+}(WebMessagingAddress));

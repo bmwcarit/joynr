@@ -29,7 +29,7 @@ namespace joynr
 
 INIT_LOGGER(DelayedScheduler);
 
-DelayedScheduler::DelayedScheduler(std::function<void(Runnable*)> onWorkAvailable,
+DelayedScheduler::DelayedScheduler(std::function<void(std::shared_ptr<Runnable>)> onWorkAvailable,
                                    boost::asio::io_service& ioService,
                                    std::chrono::milliseconds defaultDelayMs)
         : defaultDelayMs(defaultDelayMs),
@@ -49,7 +49,7 @@ DelayedScheduler::~DelayedScheduler()
     assert(delayedRunnables.empty());
 }
 
-DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable,
+DelayedScheduler::RunnableHandle DelayedScheduler::schedule(std::shared_ptr<Runnable> runnable,
                                                             std::chrono::milliseconds delay)
 {
     std::lock_guard<std::mutex> lock(writeLock);
@@ -57,9 +57,9 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable,
     JOYNR_LOG_TRACE(logger, "schedule: enter with {} ms delay", delay.count());
 
     if (stoppingDelayedScheduler) {
-        if (runnable->isDeleteOnExit()) {
-            delete runnable;
-        }
+        // if (runnable->isDeleteOnExit()) {
+        //    delete runnable;
+        //}
         return INVALID_RUNNABLE_HANDLE;
     }
 
@@ -77,7 +77,7 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable,
             std::piecewise_construct,
             std::forward_as_tuple(newRunnableHandle),
             std::forward_as_tuple(
-                    std::unique_ptr<Runnable>(runnable),
+                    runnable,
                     ioService,
                     std::chrono::milliseconds(delay),
                     [this, newRunnableHandle](const boost::system::error_code& errorCode) {
@@ -96,7 +96,7 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable,
                                 }
 
                                 if (!this->stoppingDelayedScheduler) {
-                                    Runnable* runnable = it->second.takeRunnable();
+                                    std::shared_ptr<Runnable> runnable = it->second.takeRunnable();
                                     this->onWorkAvailable(runnable);
                                 }
                                 this->delayedRunnables.erase(it);
@@ -113,9 +113,9 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable,
     return newRunnableHandle;
 }
 
-DelayedScheduler::RunnableHandle DelayedScheduler::schedule(Runnable* runnable)
+DelayedScheduler::RunnableHandle DelayedScheduler::schedule(std::shared_ptr<Runnable> runnable)
 {
-    return schedule(runnable, defaultDelayMs);
+    return schedule(std::move(runnable), defaultDelayMs);
 }
 
 void DelayedScheduler::unschedule(const RunnableHandle runnableHandle)

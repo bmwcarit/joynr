@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,10 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/util/uuid", [ "uuid"
-], function(uuid) {
+var uuid = require('../../lib/uuid-annotated');
+module.exports = (function(uuid) {
 
     return uuid;
 
-});
+}(uuid));

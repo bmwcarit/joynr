@@ -1,6 +1,5 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, node: true, nomen: true */
 /*global fail: true */
-
 /*
  * #%L
  * %%
@@ -19,36 +18,20 @@
  * limitations under the License.
  * #L%
  */
-
-define([
-            "joynr/proxy/ProxyAttribute",
-            "joynr/proxy/DiscoveryQos",
-            "joynr/messaging/MessagingQos",
-            "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
-            "joynr/dispatching/RequestReplyManager",
-            "joynr/dispatching/types/Request",
-            "joynr/tests/testTypes/TestEnum",
-            "joynr/tests/testTypes/ComplexTestType",
-            "joynr/types/TypeRegistrySingleton",
-            "global/Promise",
-            "joynr/types/DiscoveryEntryWithMetaInfo",
-            "joynr/types/Version",
-            "joynr/types/ProviderQos"
-        ],
-        function(
-                ProxyAttribute,
-                DiscoveryQos,
-                MessagingQos,
-                OnChangeWithKeepAliveSubscriptionQos,
-                RequestReplyManager,
-                Request,
-                TestEnum,
-                ComplexTestType,
-                TypeRegistrySingleton,
-                Promise,
-                DiscoveryEntryWithMetaInfo,
-                Version,
-                ProviderQos) {
+var ProxyAttribute = require('../../../classes/joynr/proxy/ProxyAttribute');
+var DiscoveryQos = require('../../../classes/joynr/proxy/DiscoveryQos');
+var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
+var OnChangeWithKeepAliveSubscriptionQos = require('../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
+var RequestReplyManager = require('../../../classes/joynr/dispatching/RequestReplyManager');
+var Request = require('../../../classes/joynr/dispatching/types/Request');
+var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
+var ComplexTestType = require('../../../test-classes/joynr/tests/testTypes/ComplexTestType');
+var TypeRegistrySingleton = require('../../../classes/joynr/types/TypeRegistrySingleton');
+var Promise = require('../../../classes/global/Promise');
+var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
+var Version = require('../../../classes/joynr/types/Version');
+var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
+module.exports = (function (ProxyAttribute, DiscoveryQos, MessagingQos, OnChangeWithKeepAliveSubscriptionQos, RequestReplyManager, Request, TestEnum, ComplexTestType, TypeRegistrySingleton, Promise, DiscoveryEntryWithMetaInfo, Version, ProviderQos) {
 
             var asyncTimeout = 5000;
 
@@ -530,5 +513,5 @@ define([
                                 });
                     });
 
-        }); // require
-/*jslint nomen: false */
+}(ProxyAttribute, DiscoveryQos, MessagingQos, OnChangeWithKeepAliveSubscriptionQos, RequestReplyManager, Request, TestEnum, ComplexTestType, TypeRegistrySingleton, Promise, DiscoveryEntryWithMetaInfo, Version, ProviderQos));    // require
+                                                                                                                                                                                                                                                                                                                                                                                                               /*jslint nomen: false */

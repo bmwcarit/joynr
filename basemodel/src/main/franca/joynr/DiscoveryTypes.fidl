@@ -39,12 +39,12 @@ typeCollection {
 	<** @description: the scope in which the provider is registered **>
 	enumeration ProviderScope{
 		<** @description: indicates that the provider is for use with the local and global cluster
-      controller
-      **>
+			controller
+		**>
 		GLOBAL
 		<** @description: indicates that the provider is only for use with the local cluster
-      controller
-      **>
+			controller
+		**>
 		LOCAL
 	}
 
@@ -84,8 +84,8 @@ typeCollection {
 		<** @description: Consider only entries from local cache **>
 		LOCAL_ONLY
 		<** @description: Consider only entries from local cache, in no results are found, query
-      global cache as well
-      **>
+			global cache as well
+		**>
 		LOCAL_THEN_GLOBAL
 		<** @description: Consider both local and global entries **>
 		LOCAL_AND_GLOBAL
@@ -107,7 +107,7 @@ typeCollection {
 
 	<**
 		@description: Stores information about a provider instance and is used to communicate
-      capabilities between a cluster controller and a lib-joynr instance.
+		capabilities between a cluster controller and a lib-joynr instance.
 	**>
 	struct DiscoveryEntry polymorphic {
 		<** @description: semantic version information **>
@@ -121,10 +121,10 @@ typeCollection {
 		<** @description: the qos of the provider **>
 		ProviderQos qos
 		<** @description: the date in millis since epoch when the source for this provider last
-      contacted the directory **>
+			contacted the directory **>
 		Int64 lastSeenDateMs
 		<** @description: the date in millis since epoch when this entry can be purged from the
-      directory and caches **>
+			directory and caches **>
 		Int64 expiryDateMs
 		<** @description: the ID of the public key to be used to encrypt messages to
 		this provider **>
@@ -133,15 +133,15 @@ typeCollection {
 
 	<**
 		@description: GlobalDiscoveryEntry stores information about a provider instance and extends
-      DiscoveryEntry by adding transport middleware specific address information.
-      GlobalDiscoveryEntry objects are used to register a new provider instance with the backend.
-      In addition, objects of GlobalDiscoveryEntry will be returned by the backend during the
-      arbitration process in order to select a suitable provider for a proxy.
+			DiscoveryEntry by adding transport middleware specific address information.
+			GlobalDiscoveryEntry objects are used to register a new provider instance with the backend.
+			In addition, objects of GlobalDiscoveryEntry will be returned by the backend during the
+			arbitration process in order to select a suitable provider for a proxy.
 		@see: DiscoveryEntry
 	**>
 	struct GlobalDiscoveryEntry extends DiscoveryEntry {
 		<** @description: the serialized transport-middleware-specific address where the provider can
-      be reached. The address is a subclass of <code>Address</code> and is stored as a JSON string.
+			be reached. The address is a subclass of <code>Address</code> and is stored as a JSON string.
 		**>
 		String address
 	}

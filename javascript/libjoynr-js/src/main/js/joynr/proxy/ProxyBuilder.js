@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true, node: true */
 /*
  * #%L
  * %%
@@ -18,31 +17,18 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/proxy/ProxyBuilder", [
-    "global/Promise",
-    "joynr/proxy/ProxyAttribute",
-    "joynr/proxy/ProxyOperation",
-    "joynr/proxy/ProxyEvent",
-    "uuid",
-    "joynr/proxy/DiscoveryQos",
-    "joynr/messaging/MessagingQos",
-    "joynr/types/TypeRegistrySingleton",
-    "joynr/types/Version",
-    "joynr/util/Typing",
-    "joynr/system/LoggerFactory"
-], function(
-        Promise,
-        ProxyAttribute,
-        ProxyOperation,
-        ProxyEvent,
-        uuid,
-        DiscoveryQos,
-        MessagingQos,
-        TypeRegistrySingleton,
-        Version,
-        Typing,
-        LoggerFactory) {
+var Promise = require('../../global/Promise');
+var ProxyAttribute = require('./ProxyAttribute');
+var ProxyOperation = require('./ProxyOperation');
+var ProxyEvent = require('./ProxyEvent');
+var uuid = require('../../lib/uuid-annotated');
+var DiscoveryQos = require('./DiscoveryQos');
+var MessagingQos = require('../messaging/MessagingQos');
+var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var Version = require('../../joynr/types/Version');
+var Typing = require('../util/Typing');
+var LoggerFactory = require('../system/LoggerFactory');
+module.exports = (function (Promise, ProxyAttribute, ProxyOperation, ProxyEvent, uuid, DiscoveryQos, MessagingQos, TypeRegistrySingleton, Version, Typing, LoggerFactory) {
 
     var proxyElementTypes = {
         ProxyAttribute               : ProxyAttribute,
@@ -207,4 +193,4 @@ define("joynr/proxy/ProxyBuilder", [
     }
 
     return ProxyBuilder;
-});
+}(Promise, ProxyAttribute, ProxyOperation, ProxyEvent, uuid, DiscoveryQos, MessagingQos, TypeRegistrySingleton, Version, Typing, LoggerFactory));

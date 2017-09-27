@@ -1,5 +1,4 @@
-/*jslint es5: true */
-
+/*jslint es5: true, node: true */
 /*
  * #%L
  * %%
@@ -18,134 +17,68 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/start/InterTabClusterControllerRuntime",
-        [
-            "global/Promise",
-            "joynr/capabilities/arbitration/Arbitrator",
-            "joynr/provider/ProviderBuilder",
-            "joynr/proxy/ProxyBuilder",
-            "joynr/types/GlobalDiscoveryEntry",
-            "joynr/capabilities/CapabilitiesRegistrar",
-            "joynr/capabilities/ParticipantIdStorage",
-            "joynr/capabilities/discovery/CapabilityDiscovery",
-            "joynr/capabilities/CapabilitiesStore",
-            "joynr/dispatching/RequestReplyManager",
-            "joynr/dispatching/subscription/PublicationManager",
-            "joynr/dispatching/subscription/SubscriptionManager",
-            "joynr/dispatching/Dispatcher",
-            "joynr/security/PlatformSecurityManager",
-            "joynr/messaging/channel/ChannelMessagingSender",
-            "joynr/messaging/channel/ChannelMessagingStubFactory",
-            "joynr/messaging/channel/ChannelMessagingSkeleton",
-            "joynr/messaging/mqtt/MqttMessagingStubFactory",
-            "joynr/messaging/mqtt/MqttMessagingSkeleton",
-            "joynr/system/RoutingTypes/MqttAddress",
-            "joynr/messaging/mqtt/SharedMqttClient",
-            "joynr/messaging/mqtt/MqttMulticastAddressCalculator",
-            "joynr/messaging/MessagingSkeletonFactory",
-            "joynr/messaging/MessagingStubFactory",
-            "joynr/messaging/routing/MessageRouter",
-            "joynr/messaging/routing/MessageQueue",
-            "joynr/messaging/CommunicationModule",
-            "joynr/util/InProcessSkeleton",
-            "joynr/util/InProcessStub",
-            "joynr/system/RoutingTypes/ChannelAddress",
-            "joynr/messaging/inprocess/InProcessMessagingStubFactory",
-            "joynr/messaging/inprocess/InProcessMessagingSkeleton",
-            "joynr/messaging/inprocess/InProcessMessagingStub",
-            "joynr/messaging/inprocess/InProcessAddress",
-            "joynr/messaging/browser/BrowserMessagingStubFactory",
-            "joynr/messaging/browser/BrowserMessagingSkeleton",
-            "joynr/system/RoutingTypes/BrowserAddress",
-            "joynr/messaging/webmessaging/WebMessagingStub",
-            "joynr/messaging/webmessaging/WebMessagingSkeleton",
-            "joynr/messaging/channel/LongPollingChannelMessageReceiver",
-            "joynr/messaging/MessagingQos",
-            "joynr/proxy/DiscoveryQos",
-            "joynr/types/ProviderQos",
-            "joynr/types/ProviderScope",
-            "joynr/types/DiscoveryScope",
-            "joynr/system/DiscoveryProvider",
-            "joynr/system/RoutingProvider",
-            "joynr/types/TypeRegistrySingleton",
-            "joynr/util/UtilInternal",
-            "joynr/system/DistributedLoggingAppenderConstructorFactory",
-            "joynr/system/DistributedLoggingAppender",
-            "joynr/system/WebWorkerMessagingAppender",
-            "uuid",
-            "joynr/system/LoggingManager",
-            "joynr/system/LoggerFactory",
-            "joynr/start/settings/defaultSettings",
-            "joynr/start/settings/defaultInterTabSettings",
-            "joynr/start/settings/defaultClusterControllerSettings",
-            "joynr/util/Typing",
-            "joynr/util/LongTimer",
-            "global/LocalStorage"
-        ],
-        function(
-                Promise,
-                Arbitrator,
-                ProviderBuilder,
-                ProxyBuilder,
-                GlobalDiscoveryEntry,
-                CapabilitiesRegistrar,
-                ParticipantIdStorage,
-                CapabilityDiscovery,
-                CapabilitiesStore,
-                RequestReplyManager,
-                PublicationManager,
-                SubscriptionManager,
-                Dispatcher,
-                PlatformSecurityManager,
-                ChannelMessagingSender,
-                ChannelMessagingStubFactory,
-                ChannelMessagingSkeleton,
-                MqttMessagingStubFactory,
-                MqttMessagingSkeleton,
-                MqttAddress,
-                SharedMqttClient,
-                MqttMulticastAddressCalculator,
-                MessagingSkeletonFactory,
-                MessagingStubFactory,
-                MessageRouter,
-                MessageQueue,
-                CommunicationModule,
-                InProcessSkeleton,
-                InProcessStub,
-                ChannelAddress,
-                InProcessMessagingStubFactory,
-                InProcessMessagingSkeleton,
-                InProcessMessagingStub,
-                InProcessAddress,
-                BrowserMessagingStubFactory,
-                BrowserMessagingSkeleton,
-                BrowserAddress,
-                WebMessagingStub,
-                WebMessagingSkeleton,
-                LongPollingChannelMessageReceiver,
-                MessagingQos,
-                DiscoveryQos,
-                ProviderQos,
-                ProviderScope,
-                DiscoveryScope,
-                DiscoveryProvider,
-                RoutingProvider,
-                TypeRegistrySingleton,
-                Util,
-                DistributedLoggingAppenderConstructorFactory,
-                DistributedLoggingAppender,
-                WebWorkerMessagingAppender,
-                uuid,
-                LoggingManager,
-                LoggerFactory,
-                defaultSettings,
-                defaultInterTabSettings,
-                defaultClusterControllerSettings,
-                Typing,
-                LongTimer,
-                LocalStorage) {
+var Promise = require('../../global/Promise');
+var Arbitrator = require('../capabilities/arbitration/Arbitrator');
+var ProviderBuilder = require('../provider/ProviderBuilder');
+var ProxyBuilder = require('../proxy/ProxyBuilder');
+var GlobalDiscoveryEntry = require('../types/GlobalDiscoveryEntry');
+var CapabilitiesRegistrar = require('../capabilities/CapabilitiesRegistrar');
+var ParticipantIdStorage = require('../capabilities/ParticipantIdStorage');
+var CapabilityDiscovery = require('../capabilities/discovery/CapabilityDiscovery');
+var CapabilitiesStore = require('../capabilities/CapabilitiesStore');
+var RequestReplyManager = require('../dispatching/RequestReplyManager');
+var PublicationManager = require('../dispatching/subscription/PublicationManager');
+var SubscriptionManager = require('../dispatching/subscription/SubscriptionManager');
+var Dispatcher = require('../dispatching/Dispatcher');
+var PlatformSecurityManager = require('../security/PlatformSecurityManagerNode');
+var ChannelMessagingSender = require('../messaging/channel/ChannelMessagingSender');
+var ChannelMessagingStubFactory = require('../messaging/channel/ChannelMessagingStubFactory');
+var ChannelMessagingSkeleton = require('../messaging/channel/ChannelMessagingSkeleton');
+var MqttMessagingStubFactory = require('../messaging/mqtt/MqttMessagingStubFactory');
+var MqttMessagingSkeleton = require('../messaging/mqtt/MqttMessagingSkeleton');
+var MqttAddress = require('../system/RoutingTypes/MqttAddress');
+var SharedMqttClient = require('../messaging/mqtt/SharedMqttClient');
+var MqttMulticastAddressCalculator = require('../messaging/mqtt/MqttMulticastAddressCalculator');
+var MessagingSkeletonFactory = require('../messaging/MessagingSkeletonFactory');
+var MessagingStubFactory = require('../messaging/MessagingStubFactory');
+var MessageRouter = require('../messaging/routing/MessageRouter');
+var MessageQueue = require('../messaging/routing/MessageQueue');
+var CommunicationModule = require('../messaging/CommunicationModule');
+var InProcessSkeleton = require('../util/InProcessSkeleton');
+var InProcessStub = require('../util/InProcessStub');
+var ChannelAddress = require('../system/RoutingTypes/ChannelAddress');
+var InProcessMessagingStubFactory = require('../messaging/inprocess/InProcessMessagingStubFactory');
+var InProcessMessagingSkeleton = require('../messaging/inprocess/InProcessMessagingSkeleton');
+var InProcessMessagingStub = require('../messaging/inprocess/InProcessMessagingStub');
+var InProcessAddress = require('../messaging/inprocess/InProcessAddress');
+var BrowserMessagingStubFactory = require('../messaging/browser/BrowserMessagingStubFactory');
+var BrowserMessagingSkeleton = require('../messaging/browser/BrowserMessagingSkeleton');
+var BrowserAddress = require('../system/RoutingTypes/BrowserAddress');
+var WebMessagingStub = require('../messaging/webmessaging/WebMessagingStub');
+var WebMessagingSkeleton = require('../messaging/webmessaging/WebMessagingSkeleton');
+var LongPollingChannelMessageReceiver = require('../messaging/channel/LongPollingChannelMessageReceiver');
+var MessagingQos = require('../messaging/MessagingQos');
+var DiscoveryQos = require('../proxy/DiscoveryQos');
+var ProviderQos = require('../types/ProviderQos');
+var ProviderScope = require('../types/ProviderScope');
+var DiscoveryScope = require('../types/DiscoveryScope');
+var DiscoveryProvider = require('../system/DiscoveryProvider');
+var RoutingProvider = require('../system/RoutingProvider');
+var TypeRegistrySingleton = require('../types/TypeRegistrySingleton');
+var UtilInternal = require('../util/UtilInternal');
+var DistributedLoggingAppenderConstructorFactory = require('../system/DistributedLoggingAppenderConstructorFactory');
+var DistributedLoggingAppender = require('../system/DistributedLoggingAppender');
+var WebWorkerMessagingAppender = require('../system/WebWorkerMessagingAppender');
+var uuid = require('../../lib/uuid-annotated');
+var LoggingManager = require('../system/LoggingManager');
+var LoggerFactory = require('../system/LoggerFactory');
+var defaultSettings = require('./settings/defaultSettings');
+var defaultInterTabSettings = require('./settings/defaultInterTabSettings');
+var defaultClusterControllerSettings = require('./settings/defaultClusterControllerSettings');
+var Typing = require('../util/Typing');
+var LongTimer = require('../util/LongTimer');
+var LocalStorage = require('../../global/LocalStorageNode');
+module.exports = (function (Promise, Arbitrator, ProviderBuilder, ProxyBuilder, GlobalDiscoveryEntry, CapabilitiesRegistrar, ParticipantIdStorage, CapabilityDiscovery, CapabilitiesStore, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, PlatformSecurityManager, ChannelMessagingSender, ChannelMessagingStubFactory, ChannelMessagingSkeleton, MqttMessagingStubFactory, MqttMessagingSkeleton, MqttAddress, SharedMqttClient, MqttMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, CommunicationModule, InProcessSkeleton, InProcessStub, ChannelAddress, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, BrowserMessagingStubFactory, BrowserMessagingSkeleton, BrowserAddress, WebMessagingStub, WebMessagingSkeleton, LongPollingChannelMessageReceiver, MessagingQos, DiscoveryQos, ProviderQos, ProviderScope, DiscoveryScope, DiscoveryProvider, RoutingProvider, TypeRegistrySingleton, Util, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, WebWorkerMessagingAppender, uuid, LoggingManager, LoggerFactory, defaultSettings, defaultInterTabSettings, defaultClusterControllerSettings, Typing, LongTimer, LocalStorage) {
             var JoynrStates = {
                 SHUTDOWN : "shut down",
                 STARTING : "starting",
@@ -295,6 +228,25 @@ define(
                 LoggerFactory.init(loggingManager);
 
                 var joynrState = JoynrStates.SHUTDOWN;
+
+                if (provisioning.capabilities && provisioning.capabilities.discoveryQos){
+                    var discoveryQos = provisioning.capabilities.discoveryQos;
+
+                    if (discoveryQos.discoveryExpiryIntervalMs){
+                        CapabilitiesRegistrar.setDefaultExpiryIntervalMs(discoveryQos.discoveryExpiryIntervalMs);
+                    }
+
+                    var discoveryQosSettings = {};
+
+                    if (discoveryQos.discoveryRetryDelayMs){
+                        discoveryQosSettings.discoveryRetryDelayMs = discoveryQos.discoveryRetryDelayMs;
+                    }
+                    if (discoveryQos.discoveryTimeoutMs){
+                        discoveryQosSettings.discoveryTimeoutMs = discoveryQos.discoveryTimeoutMs;
+                    }
+
+                    DiscoveryQos.setDefaultSettings(discoveryQosSettings);
+                }
 
                 /**
                  * Starts up the libjoynr instance
@@ -677,7 +629,7 @@ define(
                                         addNextHop : function(opArgs) {
                                             var address;
                                             if (opArgs.channelAddress !== undefined) {
-                                                address = opArgs.channelAddress; 
+                                                address = opArgs.channelAddress;
                                             } else if (opArgs.commonApiDbusAddress !== undefined) {
                                                 address = opArgs.commonApiDbusAddress;
                                             } else if (opArgs.browserAddress !== undefined) {
@@ -823,4 +775,4 @@ define(
 
             return InterTabClusterControllerRuntime;
 
-        });
+}(Promise, Arbitrator, ProviderBuilder, ProxyBuilder, GlobalDiscoveryEntry, CapabilitiesRegistrar, ParticipantIdStorage, CapabilityDiscovery, CapabilitiesStore, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, PlatformSecurityManager, ChannelMessagingSender, ChannelMessagingStubFactory, ChannelMessagingSkeleton, MqttMessagingStubFactory, MqttMessagingSkeleton, MqttAddress, SharedMqttClient, MqttMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, CommunicationModule, InProcessSkeleton, InProcessStub, ChannelAddress, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, BrowserMessagingStubFactory, BrowserMessagingSkeleton, BrowserAddress, WebMessagingStub, WebMessagingSkeleton, LongPollingChannelMessageReceiver, MessagingQos, DiscoveryQos, ProviderQos, ProviderScope, DiscoveryScope, DiscoveryProvider, RoutingProvider, TypeRegistrySingleton, UtilInternal, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, WebWorkerMessagingAppender, uuid, LoggingManager, LoggerFactory, defaultSettings, defaultInterTabSettings, defaultClusterControllerSettings, Typing, LongTimer, LocalStorage));

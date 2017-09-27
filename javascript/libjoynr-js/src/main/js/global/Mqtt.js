@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-
-define([ "mqtt"
-], function(mqtt) {
+var mqtt = require('mqtt');
+module.exports = (function(mqtt) {
     return mqtt;
-});
+}(mqtt));

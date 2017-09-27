@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.28.0-SNAPSHOT)
+project(joynr-0.30.0-SNAPSHOT)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 28)
+set(JOYNR_MINOR_VERSION 30)
 set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
@@ -169,6 +169,14 @@ option(
     "Use DBUS and CommonAPI to communicate between libjoynr and cluster-controller?"
     OFF
 )
+
+option(
+    USE_PLATFORM_MOCOCRW
+    "Resolve dependency to MOCOCRW from the system?"
+    ON
+)
+message(STATUS "option USE_PLATFORM_MOCOCRW=" ${USE_PLATFORM_MOCOCRW})
+
 message(STATUS "option USE_DBUS_COMMONAPI_COMMUNICATION=" ${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 option(
@@ -214,10 +222,10 @@ include(AddClangFormat)
 # Following dependencies must be installed by the user beforehand because they either
 # use a shared object or are included through joynr header files into the user's code.
 set (CHECK_DLT (JOYNR_ENABLE_DLT_LOGGING AND USE_PLATFORM_DLT OR NOT JOYNR_ENABLE_DLT_LOGGING))
-if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND USE_PLATFORM_MOSQUITTO AND USE_PLATFORM_SMRF))
+if(NOT (USE_PLATFORM_SPDLOG AND CHECK_DLT AND USE_PLATFORM_MOSQUITTO AND USE_PLATFORM_SMRF AND USE_PLATFORM_MOCOCRW))
     set(codeMsg "message(FATAL_ERROR \"Install target is not available as long as external platform")
     set(codeMsg "${codeMsg} dependencies are used. For more information see USE_PLATFORM_SPDLOG,")
-    set(codeMsg "${codeMsg} USE_PLATFORM_DLT, USE_PLATFORM_MOSQUITTO and USE_PLATFORM_SMRF.\")")
+    set(codeMsg "${codeMsg} USE_PLATFORM_DLT, USE_PLATFORM_MOSQUITTO and USE_PLATFORM_SMRF and USE_PLATFORM_MOCOCRW.\")")
     install(CODE "${codeMsg}")
 endif()
 
@@ -365,6 +373,7 @@ endif(ENABLE_DOXYGEN)
 
 set(JOYNR_BOOST_REQUIRED_COMPONENTS
     system
+    filesystem
     thread)
 set(JOYNR_BOOST_REQUIRED_VERSION 1.58.0)
 find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
@@ -719,8 +728,14 @@ get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_
 
 message(STATUS "variable muesli_INCLUDE_DIRECTORIES= ${muesli_INCLUDE_DIRECTORIES}")
 
+if (USE_PLATFORM_MOCOCRW)
+    find_package(MoCOCrW 0.1.0 REQUIRED CONFIG)
+else(USE_PLATFORM_MOCOCRW)
+    message(ERROR "Retrieving mococrw from an external source is not supported yet.")
+endif(USE_PLATFORM_MOCOCRW)
+
 if (USE_PLATFORM_SMRF)
-    find_package(smrf 0.2.0 REQUIRED CONFIG)
+    find_package(smrf 0.2.1 REQUIRED CONFIG)
 else(USE_PLATFORM_SMRF)
     message(STATUS "############ Download: smrf ############")
 
@@ -731,7 +746,7 @@ else(USE_PLATFORM_SMRF)
     AddExternalProject(
         smrf
         GIT_REPOSITORY https://github.com/bmwcarit/smrf
-        GIT_TAG 0.2.0
+        GIT_TAG 0.2.1
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
@@ -871,6 +886,9 @@ get_target_property(JoynrConfig_MOSQUITTO_INCLUDE_DIRS mosquitto::mosquitto INTE
 get_target_property(JoynrConfig_MOSQUITTO_LIBRARIES mosquitto::mosquitto IMPORTED_LOCATION)
 get_target_property(JoynrConfig_SMRF_INCLUDE_DIRS smrf::smrf INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(JoynrConfig_SMRF_LIBRARIES smrf::smrf IMPORTED_LOCATION)
+get_target_property(JoynrConfig_MOCOCRW_INCLUDE_DIRS MoCOCrW::mococrw INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(JoynrConfig_MOCOCRW_LIBRARIES MoCOCrW::mococrw IMPORTED_LOCATION)
+
 
 set(JoynrConfig_RESOLVE_DEPENDENCIES)
 
@@ -900,6 +918,12 @@ else(USE_PLATFORM_SMRF)
     FillJoynrConfigDependencies("ExternalProjectSmrf")
 endif(USE_PLATFORM_SMRF)
 
+if(USE_PLATFORM_MOCOCRW)
+    FillJoynrConfigDependencies("PlatformMococrw")
+else(USE_PLATFORM_MOCOCRW)
+    FillJoynrConfigDependencies("ExternalProjectMococrw")
+endif(USE_PLATFORM_MOCOCRW)
+
 if(JOYNR_ENABLE_DLT_LOGGING)
 if(USE_PLATFORM_DLT)
     FillJoynrConfigDependencies("PlatformDltlog")
@@ -920,6 +944,7 @@ file(
         "CMake/CheckMosquittoImportTargets.cmake"
         "CMake/CheckDltImportTargets.cmake"
         "CMake/CheckSMRFImportTargets.cmake"
+        "CMake/CheckMOCOCRWImportTargets.cmake"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
 # ... for the install tree
@@ -971,6 +996,7 @@ install(
         "CMake/CheckMosquittoImportTargets.cmake"
         "CMake/CheckDltImportTargets.cmake"
         "CMake/CheckSMRFImportTargets.cmake"
+        "CMake/CheckMOCOCRWImportTargets.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}"
 )
 

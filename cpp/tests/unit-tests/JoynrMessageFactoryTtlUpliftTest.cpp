@@ -105,7 +105,7 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_Request)
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_Reply_noUplift)
 {
     Reply reply;
-    MutableMessage message = factoryWithTtlUplift.createReply(senderID, receiverID, messagingQos, reply);
+    MutableMessage message = factoryWithTtlUplift.createReply(senderID, receiverID, messagingQos, {}, reply);
 
     checkMessageExpiryDate(message, ttl);
 }

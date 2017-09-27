@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,11 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/messaging/mqtt/MqttMulticastAddressCalculator", [
-    "joynr/util/Typing",
-    "joynr/system/RoutingTypes/MqttAddress"
-], function(Typing, MqttAddress) {
+var Typing = require('../../util/Typing');
+var MqttAddress = require('../../system/RoutingTypes/MqttAddress');
+module.exports = (function(Typing, MqttAddress) {
 
     /**
      * @constructor MqttMulticastAddressCalculator
@@ -54,4 +52,4 @@ define("joynr/messaging/mqtt/MqttMulticastAddressCalculator", [
 
     return MqttMulticastAddressCalculator;
 
-});
+}(Typing, MqttAddress));

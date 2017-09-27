@@ -1,3 +1,5 @@
+/*jslint node: true */
+
 /*
  * #%L
  * %%
@@ -16,12 +18,14 @@
  * limitations under the License.
  * #L%
  */
-
-define("joynr/provider/ProviderBuilder", [
-    "joynr/provider/ProviderAttribute",
-    "joynr/provider/ProviderOperation",
-    "joynr/provider/ProviderEvent"
-], function(ProviderAttribute, ProviderOperation, ProviderEvent) {
+var ProviderAttribute= require('./ProviderAttribute');
+var ProviderOperation = require('./ProviderOperation');
+var ProviderEvent = require('./ProviderEvent');
+module.exports =
+        (function(
+                ProviderAttribute,
+                ProviderOperation,
+                ProviderEvent) {
 
     var dependencies = {
         ProviderAttribute : ProviderAttribute,
@@ -53,4 +57,7 @@ define("joynr/provider/ProviderBuilder", [
     };
 
     return ProviderBuilder;
-});
+        }(
+                ProviderAttribute,
+                ProviderOperation,
+                ProviderEvent));

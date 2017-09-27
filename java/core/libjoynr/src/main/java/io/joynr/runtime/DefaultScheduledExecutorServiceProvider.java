@@ -68,7 +68,7 @@ public class DefaultScheduledExecutorServiceProvider implements Provider<Schedul
         scheduler.shutdown();
         try {
             if (!scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS)) {
-                logger.error("Message Scheduler did not shut down in time. Timedout out waiting for executor service to shutdown after {}ms.",
+                logger.error("Message Scheduler did not shut down in time. Timed out waiting for executor service to shutdown after {}ms.",
                              TERMINATION_TIMEOUT);
                 logger.debug("Attempting to shutdown scheduler {} forcibly.", scheduler);
                 scheduler.shutdownNow();

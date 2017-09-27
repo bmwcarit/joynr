@@ -1,6 +1,5 @@
-/*jslint es5: true */
+/*jslint es5: true, node: true, node: true */
 /*global fail: true, xit: true */
-
 /*
  * #%L
  * %%
@@ -19,59 +18,31 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        [
-            "global/Promise",
-            "joynr/dispatching/subscription/PublicationManager",
-            "joynr/messaging/MessagingQos",
-            "joynr/dispatching/types/SubscriptionReply",
-            "joynr/dispatching/types/SubscriptionRequest",
-            "joynr/dispatching/types/BroadcastSubscriptionRequest",
-            "joynr/dispatching/types/MulticastSubscriptionRequest",
-            "joynr/dispatching/types/SubscriptionStop",
-            "joynr/provider/ProviderAttribute",
-            "joynr/provider/ProviderEvent",
-            "joynr/proxy/PeriodicSubscriptionQos",
-            "joynr/proxy/SubscriptionQos",
-            "joynr/proxy/OnChangeSubscriptionQos",
-            "joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
-            "joynr/types/ProviderQos",
-            "joynr/types/ProviderScope",
-            "joynr/dispatching/types/SubscriptionPublication",
-            "joynr/dispatching/subscription/util/SubscriptionUtil",
-            "joynr/exceptions/SubscriptionException",
-            "joynr/util/LongTimer",
-            "uuid",
-            "Date",
-            "global/WaitsFor",
-            "global/LocalStorage"
-        ],
-        function(
-                Promise,
-                PublicationManager,
-                MessagingQos,
-                SubscriptionReply,
-                SubscriptionRequest,
-                BroadcastSubscriptionRequest,
-                MulticastSubscriptionRequest,
-                SubscriptionStop,
-                ProviderAttribute,
-                ProviderEvent,
-                PeriodicSubscriptionQos,
-                SubscriptionQos,
-                OnChangeSubscriptionQos,
-                OnChangeWithKeepAliveSubscriptionQos,
-                ProviderQos,
-                ProviderScope,
-                SubscriptionPublication,
-                SubscriptionUtil,
-                SubscriptionException,
-                LongTimer,
-                uuid,
-                Date,
-                waitsFor,
-                LocalStorage) {
+var Promise = require('../../../../classes/global/Promise');
+var PublicationManager = require('../../../../classes/joynr/dispatching/subscription/PublicationManager');
+var MessagingQos = require('../../../../classes/joynr/messaging/MessagingQos');
+var SubscriptionReply = require('../../../../classes/joynr/dispatching/types/SubscriptionReply');
+var SubscriptionRequest = require('../../../../classes/joynr/dispatching/types/SubscriptionRequest');
+var BroadcastSubscriptionRequest = require('../../../../classes/joynr/dispatching/types/BroadcastSubscriptionRequest');
+var MulticastSubscriptionRequest = require('../../../../classes/joynr/dispatching/types/MulticastSubscriptionRequest');
+var SubscriptionStop = require('../../../../classes/joynr/dispatching/types/SubscriptionStop');
+var ProviderAttribute = require('../../../../classes/joynr/provider/ProviderAttribute');
+var ProviderEvent = require('../../../../classes/joynr/provider/ProviderEvent');
+var PeriodicSubscriptionQos = require('../../../../classes/joynr/proxy/PeriodicSubscriptionQos');
+var SubscriptionQos = require('../../../../classes/joynr/proxy/SubscriptionQos');
+var OnChangeSubscriptionQos = require('../../../../classes/joynr/proxy/OnChangeSubscriptionQos');
+var OnChangeWithKeepAliveSubscriptionQos = require('../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
+var ProviderQos = require('../../../../classes/joynr/types/ProviderQos');
+var ProviderScope = require('../../../../classes/joynr/types/ProviderScope');
+var SubscriptionPublication = require('../../../../classes/joynr/dispatching/types/SubscriptionPublication');
+var SubscriptionUtil = require('../../../../classes/joynr/dispatching/subscription/util/SubscriptionUtil');
+var SubscriptionException = require('../../../../classes/joynr/exceptions/SubscriptionException');
+var LongTimer = require('../../../../classes/joynr/util/LongTimer');
+var uuid = require('../../../../classes/lib/uuid-annotated');
+var Date = require('../../../../test-classes/global/Date');
+var WaitsFor = require('../../../../test-classes/global/WaitsFor');
+var LocalStorage = require('../../../../test-classes/global/LocalStorageNodeTests');
+module.exports = (function (Promise, PublicationManager, MessagingQos, SubscriptionReply, SubscriptionRequest, BroadcastSubscriptionRequest, MulticastSubscriptionRequest, SubscriptionStop, ProviderAttribute, ProviderEvent, PeriodicSubscriptionQos, SubscriptionQos, OnChangeSubscriptionQos, OnChangeWithKeepAliveSubscriptionQos, ProviderQos, ProviderScope, SubscriptionPublication, SubscriptionUtil, SubscriptionException, LongTimer, uuid, Date, waitsFor, LocalStorage) {
             var localStorage = new LocalStorage();
             var originalSetTimeout = setTimeout;
             describe(
@@ -2193,4 +2164,4 @@ define(
                                 });
                     });
 
-        });
+}(Promise, PublicationManager, MessagingQos, SubscriptionReply, SubscriptionRequest, BroadcastSubscriptionRequest, MulticastSubscriptionRequest, SubscriptionStop, ProviderAttribute, ProviderEvent, PeriodicSubscriptionQos, SubscriptionQos, OnChangeSubscriptionQos, OnChangeWithKeepAliveSubscriptionQos, ProviderQos, ProviderScope, SubscriptionPublication, SubscriptionUtil, SubscriptionException, LongTimer, uuid, Date, WaitsFor, LocalStorage));

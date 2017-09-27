@@ -1,3 +1,4 @@
+/*jslint stupid: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -16,14 +17,13 @@
  * limitations under the License.
  * #L%
  */
-
 /**
  * @returns constructor for a localStorage object
  */
-define([
-    "node-localstorage",
-    "joynr/util/Typing"
-], function(LocalStorage, Typing) {
+module.exports =
+        global.window !== undefined ? require('./LocalStorage') : (function() {
+    var Typing = require('../joynr/util/Typing');
+    var storage = require('node-persist');
     /**
      * LocalStorage constructor (node wrapper for LocalStorage)
      * @constructor LocalStorageWrapper
@@ -34,24 +34,44 @@ define([
      * @param {Boolean}
      *            settings.clearPersistency localStorage is cleared if set to true
      * @param {String}
-     *            settings.location optional, passed on to node-localstorage LocalStorage constructor
-     * @param {Number}
-     *            settings.quota optional, passed on to node-localstorage LocalStorage constructor
+     *            settings.location optional, passed on to node-persist LocalStorage constructor
      */
     var LocalStorageWrapper =
             function(settings) {
                 settings = settings || {};
                 //the local storage wrapper uses the optionally given location
                 var location = settings.location || "./localStorageStorage";
-                var localStorage = new LocalStorage.LocalStorage(location, settings.quota);
+
+                this._myStorage = storage.create({
+                    dir : location,
+                    ttl : false
+                });
+
+                this._myStorage.initSync();
                 Typing.checkPropertyIfDefined(
                         settings.clearPersistency,
                         "Boolean",
                         "settings.clearPersistency");
                 if (settings.clearPersistency) {
-                    localStorage.clear();
+                    this._myStorage.clearSync();
                 }
-                return localStorage;
             };
+    LocalStorageWrapper.prototype.setItem = function(key, value) {
+        return this._myStorage.setItemSync(key, value);
+    };
+    LocalStorageWrapper.prototype.getItem = function(key) {
+        var item = this._myStorage.getItemSync(key);
+        if (item === undefined) {
+            return null;
+        }
+        return item;
+    };
+    LocalStorageWrapper.prototype.removeItem = function(key) {
+        return this._myStorage.removeItemSync(key);
+    };
+    LocalStorageWrapper.prototype.clear = function() {
+        return this._myStorage.clearSync();
+    };
+
     return LocalStorageWrapper;
-});
+        }());

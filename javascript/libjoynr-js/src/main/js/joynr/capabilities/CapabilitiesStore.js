@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,12 +18,9 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/capabilities/CapabilitiesStore",
-        [ "joynr/util/Typing"
-        ],
-        function(Typing) {
+var Typing = require('../util/Typing');
+module.exports =
+        (function(Typing) {
 
             /**
              * Private function. This function returns the hashCode of the given discovery entry, this should uniquely identify a
@@ -369,4 +366,4 @@ define(
 
             return CapabilitiesStore;
 
-        });
+        }(Typing));

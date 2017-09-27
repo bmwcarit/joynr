@@ -35,51 +35,55 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
-    public static final String MQTT_PRIO = "low";
-
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClient.class);
     private MqttClient mqttClient;
-    private IMessagingSkeleton messagingSkeleton;
+    private IMqttMessagingSkeleton messagingSkeleton;
     private int reconnectSleepMs;
     private int keepAliveTimerSec;
     private int connectionTimeoutSec;
     private int timeToWaitMs;
     private int maxMsgsInflight;
+    private int maxMsgSizeBytes;
 
     private Set<String> subscribedTopics = new HashSet<>();
 
-    private boolean shutdown = false;
+    private volatile boolean shutdown = false;
 
     public MqttPahoClient(MqttClient mqttClient,
                           int reconnectSleepMS,
                           int keepAliveTimerSec,
                           int connectionTimeoutSec,
                           int timeToWaitMs,
-                          int maxMsgsInflight) throws MqttException {
+                          int maxMsgsInflight,
+                          int maxMsgSizeBytes) throws MqttException {
         this.mqttClient = mqttClient;
         this.reconnectSleepMs = reconnectSleepMS;
         this.keepAliveTimerSec = keepAliveTimerSec;
         this.connectionTimeoutSec = connectionTimeoutSec;
         this.timeToWaitMs = timeToWaitMs;
         this.maxMsgsInflight = maxMsgsInflight;
+        this.maxMsgSizeBytes = maxMsgSizeBytes;
     }
 
     @Override
+    @SuppressFBWarnings("SWL_SLEEP_WITH_LOCK_HELD")
     public synchronized void start() {
         while (!shutdown && !mqttClient.isConnected()) {
             try {
                 mqttClient.setCallback(this);
                 mqttClient.setTimeToWait(timeToWaitMs);
+                mqttClient.setManualAcks(true);
                 mqttClient.connect(getConnectOptions());
                 logger.debug("MQTT Connected client");
                 for (String topic : subscribedTopics) {
@@ -134,12 +138,16 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     @Override
     public void subscribe(String topic) {
         boolean subscribed = false;
-        while (!subscribed) {
-            logger.debug("MQTT subscribed to: {}", topic);
+        while (!subscribed && !shutdown) {
+            logger.debug("MQTT subscribing to: {}", topic);
             try {
-                mqttClient.subscribe(topic);
-                subscribed = true;
-                subscribedTopics.add(topic);
+                synchronized (subscribedTopics) {
+                    if (!subscribedTopics.contains(topic)) {
+                        mqttClient.subscribe(topic);
+                        subscribedTopics.add(topic);
+                    }
+                    subscribed = true;
+                }
             } catch (MqttException mqttError) {
                 logger.debug("MQTT subscribe to {} failed: {}. Error code {}",
                              topic,
@@ -157,6 +165,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 case MqttException.REASON_CODE_SUBSCRIBE_FAILED:
                 case MqttException.REASON_CODE_UNEXPECTED_ERROR:
                 case MqttException.REASON_CODE_WRITE_TIMEOUT:
+                case MqttException.REASON_CODE_CONNECTION_LOST:
+                case MqttException.REASON_CODE_CLIENT_NOT_CONNECTED:
+                case MqttException.REASON_CODE_CLIENT_DISCONNECTING:
                     try {
                         Thread.sleep(reconnectSleepMs);
                     } catch (InterruptedException e) {
@@ -164,10 +175,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                         return;
                     }
                     continue;
-                case MqttException.REASON_CODE_CONNECTION_LOST:
-                case MqttException.REASON_CODE_CLIENT_NOT_CONNECTED:
-                case MqttException.REASON_CODE_CLIENT_DISCONNECTING:
-                    throw new JoynrIllegalStateException("client is not connected");
+                default:
+                    throw new JoynrIllegalStateException("Unexpected exception while subscribing to " + topic
+                            + ", error: " + mqttError);
                 }
 
             } catch (Exception e) {
@@ -179,7 +189,11 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     @Override
     public void unsubscribe(String topic) {
         try {
-            mqttClient.unsubscribe(topic);
+            synchronized (subscribedTopics) {
+                if (subscribedTopics.remove(topic)) {
+                    mqttClient.unsubscribe(topic);
+                }
+            }
         } catch (MqttException e) {
             throw new JoynrRuntimeException("Unable to unsubscribe from " + topic, e);
         }
@@ -206,6 +220,10 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
         if (messagingSkeleton == null) {
             throw new JoynrDelayMessageException("MQTT Publish failed: messagingSkeleton has not been set yet");
+        }
+        if (maxMsgSizeBytes != 0 && serializedMessage.length > maxMsgSizeBytes) {
+            throw new JoynrMessageNotSentException("MQTT Publish failed: maximum allowed message size of "
+                    + maxMsgSizeBytes + " bytes exceeded, actual size is " + serializedMessage.length + " bytes");
         }
         try {
             MqttMessage message = new MqttMessage();
@@ -249,6 +267,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void connectionLost(Throwable error) {
+        logger.debug("connectionLost: {}", error.getMessage());
+
         if (error instanceof MqttException) {
             MqttException mqttError = (MqttException) error;
             int reason = mqttError.getReasonCode();
@@ -327,18 +347,29 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             logger.error("MQTT message not processed: messagingSkeleton has not been set yet");
             return;
         }
-        messagingSkeleton.transmit(mqttMessage.getPayload(), new FailureAction() {
+        messagingSkeleton.transmit(mqttMessage.getPayload(),
+                                   mqttMessage.getId(),
+                                   mqttMessage.getQos(),
+                                   new FailureAction() {
 
-            @Override
-            public void execute(Throwable error) {
-                logger.error("MQTT message not processed");
-            }
-        });
+                                       @Override
+                                       public void execute(Throwable error) {
+                                           logger.error("MQTT message not processed");
+                                       }
+                                   });
     }
 
     @Override
-    public void setMessageListener(IMessagingSkeleton messaging) {
+    public void setMessageListener(IMqttMessagingSkeleton messaging) {
         this.messagingSkeleton = messaging;
+    }
 
+    @Override
+    public void messageReceivedAndProcessingFinished(int mqttId, int mqttQos) {
+        try {
+            mqttClient.messageArrivedComplete(mqttId, mqttQos);
+        } catch (MqttException e) {
+            logger.error("Sending Mqtt Ack failed for message with mqtt id " + mqttId, e);
+        }
     }
 }

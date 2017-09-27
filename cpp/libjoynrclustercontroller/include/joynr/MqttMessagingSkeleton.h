@@ -26,7 +26,8 @@
 
 #include <smrf/ByteVector.h>
 
-#include "joynr/IMessagingMulticastSubscriber.h"
+#include "joynr/IMqttMessagingSkeleton.h"
+#include "JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
@@ -41,7 +42,7 @@ class ImmutableMessage;
 class IMessageRouter;
 class MqttReceiver;
 
-class MqttMessagingSkeleton : public IMessagingMulticastSubscriber
+class JOYNRCLUSTERCONTROLLER_EXPORT MqttMessagingSkeleton : public IMqttMessagingSkeleton
 {
 public:
     /*
@@ -50,7 +51,7 @@ public:
      */
     static std::string translateMulticastWildcard(std::string multicastId);
 
-    MqttMessagingSkeleton(IMessageRouter& messageRouter,
+    MqttMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter,
                           std::shared_ptr<MqttReceiver> mqttReceiver,
                           const std::string& multicastTopicPrefix,
                           std::uint64_t ttlUplift = 0);
@@ -58,18 +59,19 @@ public:
     ~MqttMessagingSkeleton() override = default;
 
     void transmit(std::shared_ptr<joynr::ImmutableMessage> message,
-                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+            override;
 
     void registerMulticastSubscription(const std::string& multicastId) override;
     void unregisterMulticastSubscription(const std::string& multicastId) override;
 
-    void onMessageReceived(smrf::ByteVector&& rawMessage);
+    void onMessageReceived(smrf::ByteVector&& rawMessage) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingSkeleton);
     ADD_LOGGER(MqttMessagingSkeleton);
 
-    IMessageRouter& messageRouter;
+    std::weak_ptr<IMessageRouter> messageRouter;
     std::shared_ptr<MqttReceiver> mqttReceiver;
 
     std::uint64_t ttlUplift;

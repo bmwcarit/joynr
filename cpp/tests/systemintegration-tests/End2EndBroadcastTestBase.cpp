@@ -117,8 +117,8 @@ public:
 
 class End2EndBroadcastTestBase : public TestWithParam< std::tuple<std::string, std::string> > {
 public:
-    JoynrClusterControllerRuntime* runtime1;
-    JoynrClusterControllerRuntime* runtime2;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
+    std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
     std::unique_ptr<Settings> settings1;
     std::unique_ptr<Settings> settings2;
     MessagingSettings messagingSettings1;
@@ -139,8 +139,8 @@ public:
     joynr::types::Localisation::GpsLocation gpsLocation4;
 
     End2EndBroadcastTestBase() :
-        runtime1(nullptr),
-        runtime2(nullptr),
+        runtime1(),
+        runtime2(),
         settings1(std::make_unique<Settings>(std::get<0>(GetParam()))),
         settings2(std::make_unique<Settings>(std::get<1>(GetParam()))),
         messagingSettings1(*settings1),
@@ -203,11 +203,13 @@ public:
 
         Settings::merge(integration1Settings, *settings1, false);
 
-        runtime1 = new JoynrClusterControllerRuntime(std::move(settings1));
+        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings1));
+        runtime1->init();
 
         Settings::merge(integration2Settings, *settings2, false);
 
-        runtime2 = new JoynrClusterControllerRuntime(std::move(settings2));
+        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings2));
+        runtime2->init();
 
         filterParameters.setCountry("Germany");
         filterParameters.setStartTime("4.00 pm");
@@ -220,7 +222,7 @@ public:
 
     void TearDown() {
         if (!providerParticipantId.empty()) {
-            runtime1->unregisterProvider(providerParticipantId);
+            unregisterProvider();
         }
         bool deleteChannel = true;
         runtime1->stop(deleteChannel);
@@ -236,8 +238,8 @@ public:
     }
 
     ~End2EndBroadcastTestBase(){
-        delete runtime1;
-        delete runtime2;
+        runtime1.reset();
+        runtime2.reset();
         // because the destructor of PublicationManager persists the active subscriptions
         // the persistence files have to be removed after calling delete runtime
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
@@ -259,10 +261,14 @@ protected:
     }
 
     std::shared_ptr<MyTestProvider> registerProvider() {
-        return registerProvider(*runtime1);
+        return registerProvider(runtime1);
     }
 
-    std::shared_ptr<MyTestProvider> registerProvider(JoynrClusterControllerRuntime& runtime) {
+    void unregisterProvider() {
+        return runtime1->unregisterProvider(providerParticipantId);
+    }
+
+    std::shared_ptr<MyTestProvider> registerProvider(std::shared_ptr<JoynrClusterControllerRuntime> runtime) {
         auto testProvider = std::make_shared<MyTestProvider>();
         types::ProviderQos providerQos;
         std::chrono::milliseconds millisSinceEpoch =
@@ -271,7 +277,7 @@ protected:
         providerQos.setPriority(millisSinceEpoch.count());
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
         providerQos.setSupportsOnChangeSubscriptions(true);
-        providerParticipantId = runtime.registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
+        providerParticipantId = runtime->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
         // This wait is necessary, because registerProvider is async, and a lookup could occur
         // before the register has finished.
@@ -281,12 +287,12 @@ protected:
     }
 
     std::shared_ptr<tests::testProxy> buildProxy() {
-        return buildProxy(*runtime2);
+        return buildProxy(runtime2);
     }
 
-    std::shared_ptr<tests::testProxy> buildProxy(JoynrClusterControllerRuntime& runtime) {
-        std::unique_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder
-                = runtime.createProxyBuilder<tests::testProxy>(domainName);
+    std::shared_ptr<tests::testProxy> buildProxy(std::shared_ptr<JoynrClusterControllerRuntime> runtime) {
+        std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder
+                = runtime->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(3000);
@@ -302,9 +308,10 @@ protected:
         return testProxy;
     }
 
-    template <typename FireBroadcast, typename SubscribeTo, typename T>
+    template <typename FireBroadcast, typename SubscribeTo, typename UnsubscribeFrom, typename T>
     void testOneShotBroadcastSubscription(const T& expectedValue,
                                           SubscribeTo subscribeTo,
+                                          UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
                                           const std::string& broadcastName) {
         MockSubscriptionListenerOneType<T>* mockListener =
@@ -318,14 +325,16 @@ protected:
                         mockListener);
         testOneShotBroadcastSubscription(subscriptionListener,
                                          subscribeTo,
+                                         unsubscribeFrom,
                                          fireBroadcast,
                                          broadcastName,
                                          expectedValue);
     }
 
-    template <typename FireBroadcast, typename SubscribeTo, typename ...T>
+    template <typename FireBroadcast, typename SubscribeTo, typename UnsubscribeFrom, typename ...T>
     void testOneShotBroadcastSubscription(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
                                           SubscribeTo subscribeTo,
+                                          UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
                                           const std::string& broadcastName,
                                           T... expectedValues) {
@@ -337,12 +346,14 @@ protected:
         auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
         subscriptionQos->setValidityMs(500000);
 
-        subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos);
+        std::string subscriptionId;
+        subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos, subscriptionId);
 
         (*testProvider.*fireBroadcast)(expectedValues..., partitions);
 
         // Wait for a subscription message to arrive
         ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+        unsubscribeFrom(testProxy.get(), subscriptionId);
     }
 
     template <typename BroadcastFilter>
@@ -359,9 +370,10 @@ protected:
         std::ignore = filter;
     }
 
-    template <typename FireBroadcast, typename SubscribeTo, typename BroadcastFilterPtr, typename ...T>
+    template <typename FireBroadcast, typename SubscribeTo, typename UnsubscribeFrom, typename BroadcastFilterPtr, typename ...T>
     void testOneShotBroadcastSubscriptionWithFiltering(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
                                           SubscribeTo subscribeTo,
+                                          UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
                                           const std::string& broadcastName,
                                           BroadcastFilterPtr filter,
@@ -372,17 +384,19 @@ protected:
         std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
         std::int64_t minInterval_ms = 50;
+        std::string subscriptionId;
         auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                     500000,   // validity_ms
                     1000,     // publication ttl
                     minInterval_ms);  // minInterval_ms
 
-        subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos);
+        subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos, subscriptionId);
 
         (*testProvider.*fireBroadcast)(expectedValues...);
 
         // Wait for a subscription message to arrive
         ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+        unsubscribeFrom(testProxy.get(), subscriptionId);
     }
 };
 

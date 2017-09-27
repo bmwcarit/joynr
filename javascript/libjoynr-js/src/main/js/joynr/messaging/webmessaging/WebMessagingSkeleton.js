@@ -1,4 +1,4 @@
-/*jslint es5: true, nomen: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,14 +18,10 @@
  * limitations under the License.
  * #L%
  */
-
-define(
-        "joynr/messaging/webmessaging/WebMessagingSkeleton",
-        [
-            "joynr/util/Typing",
-            "joynr/util/UtilInternal"
-        ],
-        function(Typing, Util) {
+var Typing = require('../../util/Typing');
+var UtilInternal = require('../../util/UtilInternal');
+module.exports =
+        (function(Typing, Util) {
 
             /**
              * @constructor WebMessagingSkeleton
@@ -45,49 +41,47 @@ define(
                     throw new Error(
                             "WebMessagingSkeleton constructor parameter window does not provide the expected functions \"addEventListener\" and \"removeEventListener\"");
                 }
-                this._settings = settings;
-                this._receiverCallbacks = [];
 
-                settings.window.addEventListener("message", this._callbackFct.bind(this));
+                var receiverCallbacks = [];
+                var callbackFct = function(event) {
+                    Util.fire(receiverCallbacks, event.data);
+                };
+
+                settings.window.addEventListener("message", callbackFct);
+
+                /**
+                 * Registers a listener for web messaging
+                 * @function WebMessagingSkeleton#registerListener
+                 *
+                 * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
+                 */
+                this.registerListener = function registerListener(listener) {
+                    Typing.checkPropertyIfDefined(listener, "Function", "listener");
+
+                    receiverCallbacks.push(listener);
+                };
+
+                /**
+                 * Unregisters a listener for web messaging
+                 * @function WebMessagingSkeleton#unregisterListener
+                 *
+                 * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
+                 */
+                this.unregisterListener = function unregisterListener(listener) {
+                    Typing.checkPropertyIfDefined(listener, "Function", "listener");
+
+                    Util.removeElementFromArray(receiverCallbacks, listener);
+                };
+
+                /**
+                 * @function WebMessagingSkeleton#shutdown
+                 */
+                this.shutdown = function shutdown() {
+                    settings.window.removeEventListener("message", callbackFct);
+                };
 
             }
 
-            WebMessagingSkeleton.prototype._callbackFct = function(event) {
-                Util.fire(this._receiverCallbacks, event.data);
-            };
-
-            /**
-             * Registers a listener for web messaging
-             * @function WebMessagingSkeleton#registerListener
-             *
-             * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
-             */
-            WebMessagingSkeleton.prototype.registerListener = function registerListener(listener) {
-                Typing.checkPropertyIfDefined(listener, "Function", "listener");
-
-                this._receiverCallbacks.push(listener);
-            };
-
-            /**
-             * Unregisters a listener for web messaging
-             * @function WebMessagingSkeleton#unregisterListener
-             *
-             * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
-             */
-            WebMessagingSkeleton.prototype.unregisterListener =
-                    function unregisterListener(listener) {
-                        Typing.checkPropertyIfDefined(listener, "Function", "listener");
-
-                        Util.removeElementFromArray(this._receiverCallbacks, listener);
-                    };
-
-            /**
-             * @function WebMessagingSkeleton#shutdown
-             */
-            WebMessagingSkeleton.prototype.shutdown = function shutdown() {
-                this._settings.window.removeEventListener("message", this._callbackFct);
-            };
-
             return WebMessagingSkeleton;
 
-        });
+        }(Typing, UtilInternal));

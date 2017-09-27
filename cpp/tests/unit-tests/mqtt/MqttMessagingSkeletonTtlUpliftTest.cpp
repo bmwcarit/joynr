@@ -22,7 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "libjoynrclustercontroller/mqtt/MqttMessagingSkeleton.h"
+#include "joynr/MqttMessagingSkeleton.h"
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/DispatcherUtils.h"
@@ -46,7 +46,7 @@ class MqttMessagingSkeletonTtlUpliftTest : public ::testing::Test {
 public:
     MqttMessagingSkeletonTtlUpliftTest() :
         singleThreadedIOService(),
-        mockMessageRouter(singleThreadedIOService.getIOService()),
+        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
         senderID("senderId"),
         receiverID("receiverId"),
         ttlUpliftMs(10000),
@@ -65,7 +65,7 @@ public:
 protected:
     void transmitCallsAddNextHop();
     SingleThreadedIOService singleThreadedIOService;
-    MockMessageRouter mockMessageRouter;
+    std::shared_ptr<MockMessageRouter> mockMessageRouter;
     MutableMessageFactory messageFactory;
     std::string replyAddressSerialized;
     std::string senderID;
@@ -90,7 +90,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, testDefaultTtlUplift) {
 
     JoynrTimePoint expectedExpiryDate = mutableMessage.getExpiryDate();
 
-    EXPECT_CALL(mockMessageRouter, route(
+    EXPECT_CALL(*mockMessageRouter, route(
                     MessageHasExpiryDate(expectedExpiryDate),
                     _)
                 );
@@ -115,7 +115,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUplift) {
 
     JoynrTimePoint expectedExpiryDate = mutableMessage.getExpiryDate() + std::chrono::milliseconds(ttlUpliftMs);
 
-    EXPECT_CALL(mockMessageRouter, route(
+    EXPECT_CALL(*mockMessageRouter, route(
                     MessageHasExpiryDate(expectedExpiryDate),
                     _)
                 );
@@ -143,7 +143,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl) {
     mutableMessage.setExpiryDate(expiryDate);
     JoynrTimePoint expectedExpiryDate = maxAbsoluteTime;
 
-    EXPECT_CALL(mockMessageRouter,
+    EXPECT_CALL(*mockMessageRouter,
                 route(MessageHasExpiryDate(expectedExpiryDate),_)
                 );
 
@@ -158,7 +158,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl) {
     mutableMessage.setExpiryDate(expiryDate);
     expectedExpiryDate = maxAbsoluteTime;
 
-    EXPECT_CALL(mockMessageRouter,
+    EXPECT_CALL(*mockMessageRouter,
                 route(MessageHasExpiryDate(expectedExpiryDate),_)
                 );
 
@@ -172,7 +172,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl) {
     mutableMessage.setExpiryDate(expiryDate);
     expectedExpiryDate = mutableMessage.getExpiryDate() + std::chrono::milliseconds(ttlUpliftMs);
 
-    EXPECT_CALL(mockMessageRouter,
+    EXPECT_CALL(*mockMessageRouter,
                 route(MessageHasExpiryDate(expectedExpiryDate),_)
                 );
 

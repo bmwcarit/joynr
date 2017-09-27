@@ -60,7 +60,7 @@ public:
      * @brief Submit task to be done
      * @param task Task to be added to the queue
      */
-    void add(Runnable* task);
+    void add(std::shared_ptr<Runnable> task);
 
     /**
      * @brief Does an ordinary shutdown of @ref BlockingQueue
@@ -75,7 +75,7 @@ public:
      * @note This method will block until work is available or the scheduler is
      *      going to shutdown. If so, this method will return @c nullptr.
      */
-    Runnable* take();
+    std::shared_ptr<Runnable> take();
 
     /**
      * @brief Returns the current size of the queue
@@ -95,7 +95,7 @@ private:
     std::atomic_bool stoppingScheduler;
 
     /*! Queue of waiting work */
-    std::deque<Runnable*> queue;
+    std::deque<std::shared_ptr<Runnable>> queue;
 
     /*! Cond to wait for task on calling @ref take */
     std::condition_variable condition;
