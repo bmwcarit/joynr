@@ -139,11 +139,14 @@ void LibJoynrWebSocketRuntime::createWebsocketClient()
     system::RoutingTypes::WebSocketAddress webSocketAddress =
             wsSettings.createClusterControllerMessagingAddress();
 
-    std::string certificateAuthorityPemFilename = wsSettings.getCertificateAuthorityPemFilename();
-    std::string certificatePemFilename = wsSettings.getCertificatePemFilename();
-    std::string privateKeyPemFilename = wsSettings.getPrivateKeyPemFilename();
-
     if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS) {
+        if (keyChain == nullptr) {
+            const std::string message(
+                    "TLS websocket connection was configured for but no keychain was provided");
+            JOYNR_LOG_FATAL(logger, message);
+            throw exceptions::JoynrRuntimeException(message);
+        }
+
         JOYNR_LOG_INFO(logger, "Using TLS connection");
         websocket = std::make_shared<WebSocketPpClientTLS>(
                 wsSettings, singleThreadIOService->getIOService(), keyChain);

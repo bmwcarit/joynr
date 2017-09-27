@@ -21,9 +21,11 @@
 #include <chrono>
 #include <memory>
 #include <string>
+#include <stdexcept>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/program_options.hpp>
 
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
@@ -31,6 +33,7 @@
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/ProviderScope.h"
 #include "SystemIntegrationTestProvider.h"
+#include "SitUtil.h"
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
@@ -47,29 +50,62 @@ int main(int argc, char* argv[])
     // Get a logger
     Logger logger("ProviderApplication");
 
-    // Check the usage
-    const std::string programName(argv[0]);
-    bool runForever = false;
+    namespace po = boost::program_options;
 
-    if (argc < 2) {
-        JOYNR_LOG_ERROR(logger, "USAGE: {} <provider-domain> [runForever]", programName);
+    po::positional_options_description positionalCmdLineOptions;
+    positionalCmdLineOptions.add("domain", 1);
+    positionalCmdLineOptions.add("runForever", 1);
+
+    std::string providerDomain;
+    bool runForever = false;
+    std::string pathToSettings;
+    std::string sslCertFilename;
+    std::string sslPrivateKeyFilename;
+    std::string sslCaCertFilename;
+
+    po::options_description cmdLineOptions;
+    cmdLineOptions.add_options()("domain,d", po::value(&providerDomain)->required())(
+            "runForever,r", po::value(&runForever)->default_value(false))(
+            "pathtosettings,p", po::value(&pathToSettings))(
+            "ssl-cert-pem", po::value(&sslCertFilename))(
+            "ssl-privatekey-pem", po::value(&sslPrivateKeyFilename))(
+            "ssl-ca-cert-pem", po::value(&sslCaCertFilename));
+
+    try {
+        po::variables_map variablesMap;
+        po::store(po::command_line_parser(argc, argv)
+                          .options(cmdLineOptions)
+                          .positional(positionalCmdLineOptions)
+                          .run(),
+                  variablesMap);
+        po::notify(variablesMap);
+    } catch (const std::exception& e) {
+        std::cerr << e.what();
         return -1;
     }
 
-    if (argc == 3) {
-        const std::string runForeverArg(argv[2]);
-        runForever = runForeverArg == "runForever";
-    }
-    // Get the provider domain
-    const std::string providerDomain(argv[1]);
     JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
 
-    boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
-    std::string appDirectory =
-            boost::filesystem::system_complete(appFilename).parent_path().string();
-    std::string pathToSettings(appDirectory + "/resources/systemintegrationtest-provider.settings");
+    if (pathToSettings.empty()) {
+        boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
+        std::string appDirectory =
+                boost::filesystem::system_complete(appFilename).parent_path().string();
+        pathToSettings = appDirectory + "/resources/systemintegrationtest-provider.settings";
+    }
 
-    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToSettings);
+    const std::string pathToMessagingSettingsDefault("");
+    std::shared_ptr<IKeychain> keychain;
+
+    try {
+        keychain = tryLoadKeychainFromCmdLineArgs(
+                sslCertFilename, sslPrivateKeyFilename, sslCaCertFilename);
+    } catch (const std::invalid_argument& e) {
+        JOYNR_LOG_FATAL(logger, e.what());
+        return -1;
+    }
+
+    std::shared_ptr<JoynrRuntime> runtime =
+            JoynrRuntime::createRuntime(pathToSettings, pathToMessagingSettingsDefault, keychain);
 
     joynr::Semaphore semaphore;
 

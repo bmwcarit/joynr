@@ -45,6 +45,7 @@ find_package(Boost 1.58.0 REQUIRED
     COMPONENTS
     system
     filesystem
+    program_options
 )
 message(STATUS "variable Boost_LIBRARIES=${Boost_LIBRARIES}")
 message(STATUS "variable Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
@@ -76,6 +77,18 @@ set(
 include_directories(
     ${GENERATED_INCLUDE_DIRS}
     ${Joynr_LIB_COMMON_INCLUDE_DIRS}
+)
+
+set(
+    common_HEADERS
+    "src/main/cpp/KeychainImpl.h"
+    "src/main/cpp/SitUtil.h"
+)
+
+set(
+    common_SOURCES
+    "src/main/cpp/KeychainImpl.cpp"
+    "src/main/cpp/SitUtil.cpp"
 )
 
 # Consumer headers
@@ -126,6 +139,8 @@ add_executable(
     jsit-provider-ws
     ${jsit-provider_HEADERS}
     ${jsit-provider_SOURCES}
+    ${common_HEADERS}
+    ${common_SOURCES}
     ${GENERATED_HEADERS}
     ${GENERATED_SOURCES}
 )
@@ -143,6 +158,8 @@ add_executable(
     jsit-consumer-ws
     ${jsit-consumer_HEADERS}
     ${jsit-consumer_SOURCES}
+    ${common_HEADERS}
+    ${common_SOURCES}
     ${GENERATED_HEADERS}
     ${GENERATED_SOURCES}
 )
@@ -175,5 +192,8 @@ install(
     FILES
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-consumer.settings
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-provider.settings
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-consumer-ssl.settings
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-provider-ssl.settings
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-clustercontroller-ssl.settings
     DESTINATION ${INSTALL_TEST_DIR}/resources
 )

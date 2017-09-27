@@ -15,6 +15,9 @@ None.
   global can be removed when the ttl + grace period has passed.
 * **[C++]** TLS client certificates for secure websocket connections with empty common name (CN)
   field are not accepted any longer.
+* **[C++]** If a LibJoynr instance was configured to use SSL but no keychain
+ was provided to the JoynrRuntime::create method, it will report a fatal error
+ and throw a JoynrRuntimeException.
 
 # joynr 0.29.1
 
