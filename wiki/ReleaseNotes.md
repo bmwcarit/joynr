@@ -1,7 +1,14 @@
 # joynr 0.30.0
 
 ## API relevant changes
-None.
+* **[Java]** Setters for class members of Java classes
+  representing Franca structs no longer accept null
+  values. An InvalidArgumentException will be thrown
+  in case a setter is called with null.
+
+  The reason is that null values cause incomplete JSON
+  objects to be serialized which cannot be deserialized
+  on C++ side.
 
 ## Configuration property changes
 * **[C++]** Made the following properties configurable. See
