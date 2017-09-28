@@ -21,8 +21,6 @@
 var JoynrMessage = require('../JoynrMessage');
 var Typing = require('../../util/Typing');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports =
-        (function(JoynrMessage, Typing, LoggerFactory) {
 
     /**
      * @constructor WebSocketMessagingSkeleton
@@ -90,6 +88,4 @@ module.exports =
                 };
             };
 
-    return WebSocketMessagingSkeleton;
-
-        }(JoynrMessage, Typing, LoggerFactory));
+    module.exports = WebSocketMessagingSkeleton;

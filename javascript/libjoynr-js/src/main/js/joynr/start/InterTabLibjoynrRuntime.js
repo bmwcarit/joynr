@@ -52,7 +52,7 @@ var RoutingProxy = require('../system/RoutingProxy');
 var TypeRegistrySingleton = require('../types/TypeRegistrySingleton');
 var DiscoveryScope = require('../types/DiscoveryScope');
 var DiscoveryEntryWithMetaInfo = require('../types/DiscoveryEntryWithMetaInfo');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var CapabilitiesUtil = require('../util/CapabilitiesUtil');
 var DistributedLoggingAppenderConstructorFactory = require('../system/DistributedLoggingAppenderConstructorFactory');
 var DistributedLoggingAppender = require('../system/DistributedLoggingAppender');
@@ -64,7 +64,6 @@ var defaultSettings = require('./settings/defaultSettings');
 var defaultInterTabSettings = require('./settings/defaultInterTabSettings');
 var defaultLibjoynrSettings = require('./settings/defaultLibjoynrSettings');
 var LocalStorage = require('../../global/LocalStorageNode');
-module.exports = (function (Promise, Arbitrator, ProviderBuilder, ProxyBuilder, CapabilitiesRegistrar, ParticipantIdStorage, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, JoynrException, PlatformSecurityManager, WebMessagingStub, WebMessagingSkeleton, BrowserMessagingStubFactory, BrowserMessagingSkeleton, BrowserMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, BrowserAddress, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, InProcessStub, InProcessSkeleton, MessagingQos, DiscoveryQos, DiscoveryProxy, RoutingProxy, TypeRegistrySingleton, DiscoveryScope, DiscoveryEntryWithMetaInfo, Util, CapabilitiesUtil, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, WebWorkerMessagingAppender, uuid, LoggingManager, LoggerFactory, defaultSettings, defaultInterTabSettings, defaultLibjoynrSettings, LocalStorage) {
             var JoynrStates = {
                 SHUTDOWN : "shut down",
                 STARTING : "starting",
@@ -360,10 +359,12 @@ module.exports = (function (Promise, Arbitrator, ProviderBuilder, ProxyBuilder, 
                             libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                             libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
-                            messagingSkeletonFactory.setSkeletons({
-                                InProcessAddress : libjoynrMessagingSkeleton,
-                                BrowserAddress : browserMessagingSkeleton
-                            });
+                            var messagingSkeletons = {};
+                            /*jslint nomen: true */
+                            messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
+                            messagingSkeletons[BrowserAddress._typeName] = browserMessagingSkeleton;
+                            /*jslint nomen: false */
+                            messagingSkeletonFactory.setSkeletons(messagingSkeletons);
 
                             requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                             subscriptionManager = new SubscriptionManager(dispatcher);
@@ -559,6 +560,4 @@ module.exports = (function (Promise, Arbitrator, ProviderBuilder, ProxyBuilder, 
                 return Object.freeze(this);
             }
 
-            return InterTabLibjoynrRuntime;
-
-}(Promise, Arbitrator, ProviderBuilder, ProxyBuilder, CapabilitiesRegistrar, ParticipantIdStorage, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, JoynrException, PlatformSecurityManager, WebMessagingStub, WebMessagingSkeleton, BrowserMessagingStubFactory, BrowserMessagingSkeleton, BrowserMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, BrowserAddress, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, InProcessStub, InProcessSkeleton, MessagingQos, DiscoveryQos, DiscoveryProxy, RoutingProxy, TypeRegistrySingleton, DiscoveryScope, DiscoveryEntryWithMetaInfo, UtilInternal, CapabilitiesUtil, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, WebWorkerMessagingAppender, uuid, LoggingManager, LoggerFactory, defaultSettings, defaultInterTabSettings, defaultLibjoynrSettings, LocalStorage));
+            module.exports = InterTabLibjoynrRuntime;

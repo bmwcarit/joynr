@@ -20,7 +20,6 @@
  */
 var BrowserMessagingStub =
         require('../../../../classes/joynr/messaging/browser/BrowserMessagingStub');
-module.exports = (function(BrowserMessagingStub) {
 
     describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() {
 
@@ -71,5 +70,3 @@ module.exports = (function(BrowserMessagingStub) {
         });
 
     });
-
-}(BrowserMessagingStub));

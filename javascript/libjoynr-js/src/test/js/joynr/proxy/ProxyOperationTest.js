@@ -25,15 +25,14 @@ var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
 var Request = require('../../../classes/joynr/dispatching/types/Request');
 var OneWayRequest = require('../../../classes/joynr/dispatching/types/OneWayRequest');
 var TypeRegistrySingleton = require('../../../classes/joynr/types/TypeRegistrySingleton');
-var Operation = require('../../../test-classes/test/data/Operation');
+var testDataOperation = require('../../../test-classes/test/data/Operation');
 var Promise = require('../../../classes/global/Promise');
 var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
 var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
-var WaitsFor = require('../../../test-classes/global/WaitsFor');
+var waitsFor = require('../../../test-classes/global/WaitsFor');
 var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
 var Version = require('../../../classes/joynr/types/Version');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
-module.exports = (function (ProxyAttribute, ProxyOperation, ProxyEvent, MessagingQos, Request, OneWayRequest, TypeRegistrySingleton, testDataOperation, Promise, TestEnum, RadioStation, waitsFor, DiscoveryEntryWithMetaInfo, Version, ProviderQos) {
 
             var asyncTimeout = 5000;
 
@@ -586,5 +585,3 @@ module.exports = (function (ProxyAttribute, ProxyOperation, ProxyEvent, Messagin
                             }).catch(fail);
                         });
                     });
-
-}(ProxyAttribute, ProxyOperation, ProxyEvent, MessagingQos, Request, OneWayRequest, TypeRegistrySingleton, Operation, Promise, TestEnum, RadioStation, WaitsFor, DiscoveryEntryWithMetaInfo, Version, ProviderQos));    // define

@@ -19,10 +19,8 @@
  * #L%
  */
 var BroadcastOutputParameters = require('./BroadcastOutputParameters');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var SubscriptionUtil = require('../dispatching/subscription/util/SubscriptionUtil');
-module.exports =
-        (function(BroadcastOutputParameters, Util, SubscriptionUtil) {
 
     /**
      * Constructor of ProviderEvent object that is used in the generation of provider objects
@@ -98,7 +96,7 @@ module.exports =
         /**
          * Registers an Observer for value changes
          *
-         * @name ProviderAttributeNotify#registerObserver
+         * @name ProviderAttribute#registerObserver
          * @function
          *
          * @param {Function}
@@ -112,7 +110,7 @@ module.exports =
         /**
          * Unregisters an Observer for value changes
          *
-         * @name ProviderAttributeNotify#unregisterObserver
+         * @name ProviderAttribute#unregisterObserver
          * @function
          *
          * @param {Function}
@@ -140,7 +138,7 @@ module.exports =
         /**
          * Unregisters an Observer for value changes
          *
-         * @name ProviderAttributeNotify#deleteBroadcastFilter
+         * @name ProviderAttribute#deleteBroadcastFilter
          * @function
          *
          * @param {Function}
@@ -154,6 +152,4 @@ module.exports =
         return Object.freeze(this);
     }
 
-    return ProviderEvent;
-
-        }(BroadcastOutputParameters, UtilInternal, SubscriptionUtil));
+    module.exports = ProviderEvent;

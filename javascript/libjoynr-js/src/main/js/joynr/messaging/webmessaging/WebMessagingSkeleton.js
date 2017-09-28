@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -19,9 +19,7 @@
  * #L%
  */
 var Typing = require('../../util/Typing');
-var UtilInternal = require('../../util/UtilInternal');
-module.exports =
-        (function(Typing, Util) {
+var Util = require('../../util/UtilInternal');
 
             /**
              * @constructor WebMessagingSkeleton
@@ -82,6 +80,4 @@ module.exports =
 
             }
 
-            return WebMessagingSkeleton;
-
-        }(Typing, UtilInternal));
+            module.exports = WebMessagingSkeleton;

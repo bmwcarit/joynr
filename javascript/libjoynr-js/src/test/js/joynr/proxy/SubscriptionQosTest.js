@@ -24,13 +24,6 @@ var OnChangeSubscriptionQos = require('../../../classes/joynr/proxy/OnChangeSubs
 var OnChangeWithKeepAliveSubscriptionQos =
         require('../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
 var Date = require('../../../test-classes/global/Date');
-module.exports =
-        (function(
-                SubscriptionQos,
-                PeriodicSubscriptionQos,
-                OnChangeSubscriptionQos,
-                OnChangeWithKeepAliveSubscriptionQos,
-                Date) {
             describe(
                     "libjoynr-js.joynr.proxy.SubscriptionQos",
                     function() {
@@ -435,10 +428,3 @@ module.exports =
 
                         });
                     });
-
-        }(
-                SubscriptionQos,
-                PeriodicSubscriptionQos,
-                OnChangeSubscriptionQos,
-                OnChangeWithKeepAliveSubscriptionQos,
-                Date)); // require

@@ -22,7 +22,6 @@ var SharedMqttClient = require('../../../../classes/joynr/messaging/mqtt/SharedM
 var MqttAddress = require('../../../../classes/joynr/system/RoutingTypes/MqttAddress');
 var MqttMessagingStub = require('../../../../classes/joynr/messaging/mqtt/MqttMessagingStub');
 var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
-module.exports = (function(Promise, SharedMqttClient, MqttAddress, MqttMessagingStub, JoynrMessage) {
 
     describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", function() {
         var destinationMqttAddress, topic;
@@ -82,5 +81,3 @@ module.exports = (function(Promise, SharedMqttClient, MqttAddress, MqttMessaging
         });
 
     });
-
-}(Promise, SharedMqttClient, MqttAddress, MqttMessagingStub, JoynrMessage));

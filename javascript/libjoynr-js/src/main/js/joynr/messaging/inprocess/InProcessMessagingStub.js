@@ -1,5 +1,4 @@
-/*jslint node: true */
-
+/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,7 +17,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * @constructor
@@ -27,7 +25,7 @@ module.exports = (function() {
      * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton to send the joynr messages to
      */
     function InProcessMessagingStub(inProcessMessagingSkeleton) {
-        this.inProcessMessagingSkeleton = inProcessMessagingSkeleton;
+        this._inProcessMessagingSkeleton = inProcessMessagingSkeleton;
     }
 
     /**
@@ -38,8 +36,6 @@ module.exports = (function() {
      * @returns {Object} A+ promise object
      */
     InProcessMessagingStub.prototype.transmit = function transmit(joynrMessage) {
-        return this.inProcessMessagingSkeleton.receiveMessage(joynrMessage);
+        return this._inProcessMessagingSkeleton.receiveMessage(joynrMessage);
     };
-    return InProcessMessagingStub;
-
-}());
+    module.exports = InProcessMessagingStub;

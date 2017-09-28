@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -19,48 +19,46 @@
  * #L%
  */
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(Typing, Util, LoggerFactory) {
 
+    var log = LoggerFactory.getLogger("joynr/messaging/MessagingSkeletonFactory");
     /**
      * @name MessagingSkeletonFactory
      * @constructor
      *
      */
     function MessagingSkeletonFactory() {
-        var log = LoggerFactory.getLogger("joynr/messaging/MessagingSkeletonFactory");
-        var messagingSkeletons;
+        this._messagingSkeletons = undefined;
 
-        this.setSkeletons = function setSkeletons(newMessagingSkeletons) {
-            messagingSkeletons = newMessagingSkeletons;
-        };
-
-        /**
-         * @name MessagingSkeletonFactory#getSkeleton
-         * @function
-         *
-         * return {MessagingSkeleton} the skeleton matching the address
-         */
-        this.getSkeleton =
-                function getSkeleton(address) {
-                    var className = Typing.getObjectType(address);
-                    var skeleton = messagingSkeletons[className];
-
-                    if (Util.checkNullUndefined(skeleton)) {
-                        var errorMsg =
-                                "Could not find a messaging skeleton for \""
-                                    + className
-                                    + "\" within messagingSkeletons ["
-                                    + Object.keys(messagingSkeletons).join(",")
-                                    + "]";
-                        log.debug(errorMsg);
-                        throw new Error(errorMsg);
-                    }
-                    return skeleton;
-                };
     }
 
-    return MessagingSkeletonFactory;
-        }(Typing, UtilInternal, LoggerFactory));
+    MessagingSkeletonFactory.prototype.setSkeletons = function setSkeletons(newMessagingSkeletons) {
+        this._messagingSkeletons = newMessagingSkeletons;
+    };
+
+    /**
+     * @name MessagingSkeletonFactory#getSkeleton
+     * @function
+     *
+     * return {MessagingSkeleton} the skeleton matching the address
+     */
+    MessagingSkeletonFactory.prototype.getSkeleton =
+            function getSkeleton(address) {
+                var className = address._typeName;
+                var skeleton = this._messagingSkeletons[className];
+
+                if (Util.checkNullUndefined(skeleton)) {
+                    var errorMsg =
+                            "Could not find a messaging skeleton for \""
+                                + className
+                                + "\" within messagingSkeletons ["
+                                + Object.keys(this._messagingSkeletons).join(",")
+                                + "]";
+                    log.debug(errorMsg);
+                    throw new Error(errorMsg);
+                }
+                return skeleton;
+            };
+
+    module.exports = MessagingSkeletonFactory;

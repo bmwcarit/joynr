@@ -22,53 +22,19 @@ var RadioProvider = require('../../../test-classes/joynr/vehicle/RadioProvider')
 var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
 var Country = require('../../../test-classes/joynr/datatypes/exampleTypes/Country');
 var StringMap = require('../../../test-classes/joynr/datatypes/exampleTypes/StringMap');
-var ProviderAttributeNotifyReadWrite =
-        require('../../../classes/joynr/provider/ProviderAttributeNotifyReadWrite');
-var ProviderAttributeNotifyRead =
-        require('../../../classes/joynr/provider/ProviderAttributeNotifyRead');
-var ProviderAttributeNotifyWrite =
-        require('../../../classes/joynr/provider/ProviderAttributeNotifyWrite');
-var ProviderAttributeNotify = require('../../../classes/joynr/provider/ProviderAttributeNotify');
-var ProviderAttributeReadWrite =
-        require('../../../classes/joynr/provider/ProviderAttributeReadWrite');
-var ProviderAttributeRead = require('../../../classes/joynr/provider/ProviderAttributeRead');
-var ProviderAttributeWrite = require('../../../classes/joynr/provider/ProviderAttributeWrite');
+var ProviderAttribute = require('../../../classes/joynr/provider/ProviderAttribute');
 var ProviderOperation = require('../../../classes/joynr/provider/ProviderOperation');
 var ProviderEvent = require('../../../classes/joynr/provider/ProviderEvent');
 var uuid = require('../../../classes/joynr/util/uuid');
 var TestWithVersionProvider = require('../../../test-classes/joynr/tests/TestWithVersionProvider');
 var TestWithoutVersionProvider =
         require('../../../test-classes/joynr/tests/TestWithoutVersionProvider');
-module.exports =
-        (function(
-                RadioProvider,
-                RadioStation,
-                Country,
-                StringMap,
-                ProviderAttributeNotifyReadWrite,
-                ProviderAttributeNotifyRead,
-                ProviderAttributeNotifyWrite,
-                ProviderAttributeNotify,
-                ProviderAttributeReadWrite,
-                ProviderAttributeRead,
-                ProviderAttributeWrite,
-                ProviderOperation,
-                ProviderEvent,
-                uuid,
-                TestWithVersionProvider,
-                TestWithoutVersionProvider) {
             describe(
                     "libjoynr-js.joynr.provider.Provider",
                     function() {
                         var implementation = null;
                         var dependencies = {
-                            ProviderAttributeNotifyReadWrite : ProviderAttributeNotifyReadWrite,
-                            ProviderAttributeNotifyRead : ProviderAttributeNotifyRead,
-                            ProviderAttributeNotifyWrite : ProviderAttributeNotifyWrite,
-                            ProviderAttributeNotify : ProviderAttributeNotify,
-                            ProviderAttributeReadWrite : ProviderAttributeReadWrite,
-                            ProviderAttributeRead : ProviderAttributeRead,
-                            ProviderAttributeWrite : ProviderAttributeWrite,
+                            ProviderAttribute : ProviderAttribute,
                             ProviderOperation : ProviderOperation,
                             ProviderEvent : ProviderEvent,
                             uuid : uuid
@@ -324,17 +290,8 @@ module.exports =
                                 function() {
                                     var radioProvider = new RadioProvider({}, dependencies);
                                     expect(radioProvider.isOn).toBeDefined();
-                                    expect(
-                                            radioProvider.isOn instanceof ProviderAttributeNotifyReadWrite)
-                                            .toBeTruthy();
                                     expect(radioProvider.enumAttribute).toBeDefined();
-                                    expect(
-                                            radioProvider.enumAttribute instanceof ProviderAttributeNotifyReadWrite)
-                                            .toBeTruthy();
                                     expect(radioProvider.enumArrayAttribute).toBeDefined();
-                                    expect(
-                                            radioProvider.enumArrayAttribute instanceof ProviderAttributeNotifyReadWrite)
-                                            .toBeTruthy();
                                     expect(radioProvider.addFavoriteStation).toBeDefined();
                                     expect(
                                             radioProvider.addFavoriteStation instanceof ProviderOperation)
@@ -404,21 +361,3 @@ module.exports =
                                 });
 
                     });
-
-        }(
-                RadioProvider,
-                RadioStation,
-                Country,
-                StringMap,
-                ProviderAttributeNotifyReadWrite,
-                ProviderAttributeNotifyRead,
-                ProviderAttributeNotifyWrite,
-                ProviderAttributeNotify,
-                ProviderAttributeReadWrite,
-                ProviderAttributeRead,
-                ProviderAttributeWrite,
-                ProviderOperation,
-                ProviderEvent,
-                uuid,
-                TestWithVersionProvider,
-                TestWithoutVersionProvider)); // require

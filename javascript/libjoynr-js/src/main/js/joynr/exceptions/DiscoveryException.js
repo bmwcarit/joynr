@@ -19,11 +19,9 @@
  * #L%
  */
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var JoynrRuntimeException = require('./JoynrRuntimeException');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -81,6 +79,4 @@ module.exports =
     DiscoveryException.prototype.constructor = DiscoveryException;
     DiscoveryException.prototype.name = "DiscoveryException";
 
-    return DiscoveryException;
-
-        }(TypeRegistrySingleton, UtilInternal, JoynrRuntimeException, LoggerFactory));
+    module.exports = DiscoveryException;

@@ -92,7 +92,7 @@ var CommonApiDbusAddress = require('./joynr/system/RoutingTypes/CommonApiDbusAdd
 var WebSocketAddress = require('./joynr/system/RoutingTypes/WebSocketAddress');
 var WebSocketClientAddress = require('./joynr/system/RoutingTypes/WebSocketClientAddress');
 var LongTimer = require('./joynr/util/LongTimer');
-module.exports = (function() {
+
     // load all external modules
     var nsContext, nsElem, nsElems, i, value;
     var root = {};
@@ -128,5 +128,4 @@ module.exports = (function() {
             nsContext = value;
         }
     }
-    return root;
-}());
+module.exports = root;

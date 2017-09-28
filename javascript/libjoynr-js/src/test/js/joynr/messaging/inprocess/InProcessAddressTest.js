@@ -19,7 +19,6 @@
  * #L%
  */
 var InProcessAddress = require('../../../../classes/joynr/messaging/inprocess/InProcessAddress');
-module.exports = (function(InProcessAddress) {
 
     describe("libjoynr-js.joynr.messaging.inprocess.InProcessAddress", function() {
         var skeleton, inProcessAddress;
@@ -53,5 +52,3 @@ module.exports = (function(InProcessAddress) {
         });
 
     });
-
-}(InProcessAddress));

@@ -133,8 +133,8 @@ class ProviderGenerator extends InterfaceJsTemplate {
 				 * @summary The «attributeName» attribute is GENERATED FROM THE INTERFACE DESCRIPTION
 				 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
 				 */
-				this.«attributeName» = new dependencies.ProviderAttribute«getAttributeCaps(attribute)»
-					(this, implementation.«attributeName», "«attributeName»", "«attribute.joynrTypeName»");
+				this.«attributeName» = new dependencies.ProviderAttribute
+					(this, implementation.«attributeName», "«attributeName»", "«attribute.joynrTypeName»", "«getAttributeCaps(attribute)»");
 				if (implementation.«attributeName») {
 					implementation.«attributeName».valueChanged = this.«attributeName».valueChanged;
 				}

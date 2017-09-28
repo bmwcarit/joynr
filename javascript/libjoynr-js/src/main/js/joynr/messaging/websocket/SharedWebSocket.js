@@ -1,4 +1,5 @@
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, nomen: true, node: true */
+
 /*
  * #%L
  * %%
@@ -20,10 +21,9 @@
 var Promise = require('../../../global/Promise');
 var WebSocket = require('../../../global/WebSocketNode');
 var Typing = require('../../util/Typing');
-var JsonSerializer = require('../../util/JSONSerializer');
+var JSONSerializer = require('../../util/JSONSerializer');
 var LongTimer = require('../../util/LongTimer');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTimer, LoggerFactory) {
             var log = LoggerFactory.getLogger("joynr.messaging.websocket.SharedWebSocket");
             /**
              * @param address
@@ -73,7 +73,8 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
             }
 
             function sendMessage(websocket, joynrMessage, queuedMessages) {
-                return new Promise(function(resolve, reject){
+
+                function sendMessageResolver(resolve, reject){
                     if (websocket.readyState === WebSocket.OPEN) {
                         try {
                             websocket.send(websocket.marshalJoynrMessage(joynrMessage), {binary: true});
@@ -82,19 +83,21 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                         } catch (e) {
                             // add the message back to the front of the queue
                             queuedMessages.unshift({
-                                message : joynrMessage,
-                                resolve : resolve
+                                message: joynrMessage,
+                                resolve: resolve
                             });
                             throw e;
                         }
                     } else {
                         // push new messages onto the back of the queue
                         queuedMessages.push({
-                            message : joynrMessage,
-                            resolve : resolve
+                            message: joynrMessage,
+                            resolve: resolve
                         });
                     }
-                });
+                }
+
+                return new Promise(sendMessageResolver);
             }
 
             /**
@@ -198,9 +201,12 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                          *            joynrMessage the joynr message to transmit
                          */
                         this.send = function send(joynrMessage) {
-                            return sendMessage(websocket, joynrMessage, queuedMessages).catch(function(e1) {
-                                    resetConnection();
-                                });
+
+                            function sendMessageOnError(e1) {
+                                resetConnection();
+                            }
+
+                            return sendMessage(websocket, joynrMessage, queuedMessages).catch(sendMessageOnError);
                         };
 
                         /**
@@ -222,7 +228,7 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                         // the same API as WebSocket but have a setter function called when
                         // the attribute is set.
                         Object.defineProperty(this, "onmessage", {
-                            set : function(newCallback) {
+                            set: function(newCallback) {
                                 if (typeof newCallback === "function") {
                                     onmessageCallback = function(data) {
                                         websocket.unmarshalJoynrMessage(data, newCallback);
@@ -234,14 +240,13 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                                                 + typeof newCallback);
                                 }
                             },
-                            get : function() {
+                            get: function() {
                                 return onmessageCallback;
                             },
-                            enumerable : false,
-                            configurable : false
+                            enumerable  : false,
+                            configurable: false
                         });
 
                     };
             SharedWebSocket.EVENT_CODE_SHUTDOWN = 4000;
-            return SharedWebSocket;
-}(Promise, WebSocket, Typing, JsonSerializer, LongTimer, LoggerFactory));
+            module.exports = SharedWebSocket;

@@ -18,35 +18,12 @@
  * limitations under the License.
  * #L%
  */
-var ProviderAttributeNotifyReadWrite = require('./ProviderAttributeNotifyReadWrite');
-var ProviderAttributeNotifyRead = require('./ProviderAttributeNotifyRead');
-var ProviderAttributeNotifyWrite = require('./ProviderAttributeNotifyWrite');
-var ProviderAttributeNotify = require('./ProviderAttributeNotify');
-var ProviderAttributeReadWrite = require('./ProviderAttributeReadWrite');
-var ProviderAttributeRead = require('./ProviderAttributeRead');
-var ProviderAttributeWrite = require('./ProviderAttributeWrite');
+var ProviderAttribute= require('./ProviderAttribute');
 var ProviderOperation = require('./ProviderOperation');
 var ProviderEvent = require('./ProviderEvent');
-module.exports =
-        (function(
-                ProviderAttributeNotifyReadWrite,
-                ProviderAttributeNotifyRead,
-                ProviderAttributeNotifyWrite,
-                ProviderAttributeNotify,
-                ProviderAttributeReadWrite,
-                ProviderAttributeRead,
-                ProviderAttributeWrite,
-                ProviderOperation,
-                ProviderEvent) {
 
     var dependencies = {
-        ProviderAttributeNotifyReadWrite : ProviderAttributeNotifyReadWrite,
-        ProviderAttributeNotifyRead : ProviderAttributeNotifyRead,
-        ProviderAttributeNotifyWrite : ProviderAttributeNotifyWrite,
-        ProviderAttributeNotify : ProviderAttributeNotify,
-        ProviderAttributeReadWrite : ProviderAttributeReadWrite,
-        ProviderAttributeRead : ProviderAttributeRead,
-        ProviderAttributeWrite : ProviderAttributeWrite,
+        ProviderAttribute : ProviderAttribute,
         ProviderOperation : ProviderOperation,
         ProviderEvent : ProviderEvent
     };
@@ -74,14 +51,4 @@ module.exports =
         };
     };
 
-    return ProviderBuilder;
-        }(
-                ProviderAttributeNotifyReadWrite,
-                ProviderAttributeNotifyRead,
-                ProviderAttributeNotifyWrite,
-                ProviderAttributeNotify,
-                ProviderAttributeReadWrite,
-                ProviderAttributeRead,
-                ProviderAttributeWrite,
-                ProviderOperation,
-                ProviderEvent));
+    module.exports = ProviderBuilder;

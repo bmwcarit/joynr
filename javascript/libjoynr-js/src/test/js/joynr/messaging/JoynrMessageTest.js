@@ -19,8 +19,6 @@
  * #L%
  */
 var JoynrMessage = require('../../../classes/joynr/messaging/JoynrMessage');
-module.exports =
-        (function(JoynrMessage) {
 
     describe("libjoynr-js.joynr.messaging.JoynrMessage", function() {
 
@@ -208,4 +206,3 @@ module.exports =
         });
 
     });
-        }(JoynrMessage));

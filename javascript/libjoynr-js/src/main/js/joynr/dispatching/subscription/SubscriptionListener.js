@@ -18,7 +18,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * @name SubscriptionListener
@@ -56,6 +55,4 @@ module.exports = (function() {
 
     }
 
-    return SubscriptionListener;
-
-}());
+    module.exports = SubscriptionListener;

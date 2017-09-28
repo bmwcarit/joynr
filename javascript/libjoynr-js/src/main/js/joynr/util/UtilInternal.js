@@ -19,8 +19,7 @@
  * #L%
  */
 var Promise = require('../../global/Promise');
-var Util = require('./Util');
-module.exports = (function (Promise, UtilExternal) {
+var UtilExternal = require('./Util');
 
     /**
      * @name UtilInternal
@@ -68,6 +67,24 @@ module.exports = (function (Promise, UtilExternal) {
             extend(out, args[i], false);
         }
         return out;
+    };
+
+    /**
+     * Forwards all methods from provider to receiver and thus creating privacy
+     * @param receiver
+     * @param provider
+     * @returns {*}
+     */
+    UtilInternal.forward = function forward (receiver, provider) {
+
+        var methodName;
+        for (methodName in provider) {
+            if (provider.hasOwnProperty(methodName) && (typeof provider[methodName] === "function")) {
+                receiver[methodName] = provider[methodName].bind(provider);
+            }
+        }
+
+        return receiver;
     };
 
     /**
@@ -270,6 +287,4 @@ module.exports = (function (Promise, UtilExternal) {
     };
 
     UtilInternal.extend(UtilInternal, UtilExternal);
-    return UtilInternal;
-
-}(Promise, Util));
+    module.exports = UtilInternal;

@@ -20,11 +20,9 @@
  */
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var JoynrException = require('./JoynrException');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(TypeRegistrySingleton, Typing, Util, JoynrException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -89,6 +87,4 @@ module.exports =
     ApplicationException.prototype.constructor = ApplicationException;
     ApplicationException.prototype.name = "ApplicationException";
 
-    return ApplicationException;
-
-        }(TypeRegistrySingleton, Typing, UtilInternal, JoynrException, LoggerFactory));
+    module.exports = ApplicationException;

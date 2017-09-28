@@ -21,8 +21,6 @@
 var DiscoveryEntry = require('../../joynr/types/DiscoveryEntry');
 var GlobalDiscoveryEntry = require('../../joynr/types/GlobalDiscoveryEntry');
 var DiscoveryEntryWithMetaInfo = require('../../joynr/types/DiscoveryEntryWithMetaInfo');
-module.exports =
-        (function(DiscoveryEntry, GlobalDiscoveryEntry, DiscoveryEntryWithMetaInfo) {
 
     /**
      * @name CapabilitiesUtil
@@ -154,6 +152,4 @@ module.exports =
                 return result;
             };
 
-    return CapabilitiesUtil;
-
-        }(DiscoveryEntry, GlobalDiscoveryEntry, DiscoveryEntryWithMetaInfo));
+    module.exports = CapabilitiesUtil;

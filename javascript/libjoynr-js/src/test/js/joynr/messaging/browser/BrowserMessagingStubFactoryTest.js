@@ -21,8 +21,6 @@
 var Util = require('../../../../classes/joynr/util/Util');
 var BrowserMessagingStubFactory =
         require('../../../../classes/joynr/messaging/browser/BrowserMessagingStubFactory');
-module.exports =
-        (function(Util, BrowserMessagingStubFactory) {
 
     describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", function() {
         var returnValue, webMessagingStub, browserMessagingStubFactory;
@@ -94,12 +92,6 @@ module.exports =
                 browserMessagingStubFactory.build();
             }).toThrow(); // address is undefined
             expect(function() {
-                browserMessagingStubFactory.build("");
-            }).toThrow(); // address is of wrong type
-            expect(function() {
-                browserMessagingStubFactory.build({});
-            }).toThrow(); // address is of wrong type
-            expect(function() {
                 browserMessagingStubFactory.build(browserAddress);
             }).not.toThrow(); // correct call
             done();
@@ -119,5 +111,3 @@ module.exports =
         });
 
     });
-
-        }(Util, BrowserMessagingStubFactory));

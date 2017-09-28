@@ -18,8 +18,8 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
-    return {
+module.exports =
+     {
         configuration : {
             appenders : {
                 appender : [ {
@@ -41,4 +41,3 @@ module.exports = (function() {
             }
         }
     };
-}());

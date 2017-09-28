@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -20,7 +20,6 @@
  */
 var Typing = require('../../util/Typing');
 var MqttMessagingStub = require('./MqttMessagingStub');
-module.exports = (function(Typing, MqttMessagingStub) {
 
     /**
      * @constructor
@@ -33,21 +32,20 @@ module.exports = (function(Typing, MqttMessagingStub) {
     var MqttMessagingStubFactory = function MqttMessagingStubFactory(settings) {
         Typing.checkProperty(settings, "Object", "settings");
         Typing.checkProperty(settings.client, "SharedMqttClient", "client");
-
-        /**
-         * @name MqttMessagingStubFactory#build
-         * @function
-         */
-        this.build = function build(address) {
-            Typing.checkProperty(address, "MqttAddress", "address");
-
-            return new MqttMessagingStub({
-                address : address,
-                client : settings.client
-            });
-        };
+        this._settings = settings;
     };
 
-    return MqttMessagingStubFactory;
+    /**
+     * @name MqttMessagingStubFactory#build
+     * @function
+     */
+    MqttMessagingStubFactory.prototype.build = function build(address) {
+        Typing.checkProperty(address, "MqttAddress", "address");
 
-}(Typing, MqttMessagingStub));
+        return new MqttMessagingStub({
+            address : address,
+            client : this._settings.client
+        });
+    };
+
+    module.exports = MqttMessagingStubFactory;

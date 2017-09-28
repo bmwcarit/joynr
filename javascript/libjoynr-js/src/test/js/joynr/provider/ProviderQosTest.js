@@ -21,8 +21,6 @@
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
 var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
 var CustomParameter = require('../../../classes/joynr/types/CustomParameter');
-module.exports =
-        (function(ProviderQos, ProviderScope, CustomParameter) {
 
     describe("libjoynr-js.joynr.types.ProviderQos", function() {
         it("is instantiable", function() {
@@ -118,5 +116,3 @@ module.exports =
             ], 123, 1234, ProviderScope.GLOBAL);
         });
     });
-
-        }(ProviderQos, ProviderScope, CustomParameter)); // require

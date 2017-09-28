@@ -19,8 +19,7 @@
  * #L%
  */
 var ProviderScope = require('../../../joynr/types/ProviderScope');
-var UtilInternal = require('../../util/UtilInternal');
-module.exports = (function(ProviderScope, Util) {
+var Util = require('../../util/UtilInternal');
     var defaultSettings = {};
     var discoveryCapability = {
         providerVersion : {
@@ -66,5 +65,4 @@ module.exports = (function(ProviderScope, Util) {
         discoveryCapability,
         routingCapability
     ];
-    return defaultSettings;
-}(ProviderScope, UtilInternal));
+    module.exports = defaultSettings;

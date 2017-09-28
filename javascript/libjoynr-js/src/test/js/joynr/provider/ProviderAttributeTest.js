@@ -1,4 +1,4 @@
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, node: true*/
 /*global fail: true */
 /*
  * #%L
@@ -19,20 +19,12 @@
  * #L%
  */
 var ProviderAttribute = require('../../../classes/joynr/provider/ProviderAttribute');
-var ProviderAttributeNotifyReadWrite = require('../../../classes/joynr/provider/ProviderAttributeNotifyReadWrite');
-var ProviderAttributeNotifyRead = require('../../../classes/joynr/provider/ProviderAttributeNotifyRead');
-var ProviderAttributeNotifyWrite = require('../../../classes/joynr/provider/ProviderAttributeNotifyWrite');
-var ProviderAttributeNotify = require('../../../classes/joynr/provider/ProviderAttributeNotify');
-var ProviderAttributeReadWrite = require('../../../classes/joynr/provider/ProviderAttributeReadWrite');
-var ProviderAttributeRead = require('../../../classes/joynr/provider/ProviderAttributeRead');
-var ProviderAttributeWrite = require('../../../classes/joynr/provider/ProviderAttributeWrite');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
 var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
 var ComplexRadioStation = require('../../../test-classes/joynr/datatypes/exampleTypes/ComplexRadioStation');
 var Country = require('../../../test-classes/joynr/datatypes/exampleTypes/Country');
 var Promise = require('../../../classes/global/Promise');
-var WaitsFor = require('../../../test-classes/global/WaitsFor');
-module.exports = (function (ProviderAttribute, ProviderAttributeNotifyReadWrite, ProviderAttributeNotifyRead, ProviderAttributeNotifyWrite, ProviderAttributeNotify, ProviderAttributeReadWrite, ProviderAttributeRead, ProviderAttributeWrite, ProviderQos, TestEnum, ComplexRadioStation, Country, Promise, waitsFor) {
+var waitsFor = require('../../../test-classes/global/WaitsFor');
 
             var safetyTimeoutDelta = 100;
 
@@ -42,10 +34,7 @@ module.exports = (function (ProviderAttribute, ProviderAttributeNotifyReadWrite,
 
                         var i, implementation, isOn, isOnNotifyReadOnly, isOnNotifyWriteOnly;
                         var isOnNotify, isOnReadWrite, isOnReadOnly, isOnWriteOnly;
-                        var isOnProviderAttributeNotifyReadWrite, isOnProviderAttributeNotifyRead;
-                        var isOnProviderAttributeNotifyWrite, isOnProviderAttributeNotify;
-                        var isOnProviderAttributeReadWrite, isOnProviderAttributeRead;
-                        var isOnProviderAttributeWrite, allAttributes, allNotifyAttributes;
+                        var allAttributes, allNotifyAttributes;
 
                         beforeEach(function(done) {
                             implementation = {
@@ -115,49 +104,6 @@ module.exports = (function (ProviderAttribute, ProviderAttributeNotifyReadWrite,
                                             "Boolean",
                                             "WRITEONLY");
 
-                            isOnProviderAttributeNotifyReadWrite =
-                                    new ProviderAttributeNotifyReadWrite(
-                                            provider,
-                                            implementation,
-                                            "isOnProviderAttributeNotifyReadWrite",
-                                            "Boolean");
-                            isOnProviderAttributeNotifyRead =
-                                    new ProviderAttributeNotifyRead(
-                                            provider,
-                                            implementation,
-                                            "isOnProviderAttributeNotifyRead",
-                                            "Boolean");
-                            isOnProviderAttributeNotifyWrite =
-                                    new ProviderAttributeNotifyWrite(
-                                            provider,
-                                            implementation,
-                                            "isOnProviderAttributeNotifyWrite",
-                                            "Boolean");
-                            isOnProviderAttributeNotify =
-                                    new ProviderAttributeNotify(
-                                            provider,
-                                            implementation,
-                                            "isOnProviderAttributeNotify",
-                                            "Boolean");
-                            isOnProviderAttributeReadWrite =
-                                    new ProviderAttributeReadWrite(
-                                            provider,
-                                            implementation,
-                                            "isOnProviderAttributeReadWrite",
-                                            "Boolean");
-                            isOnProviderAttributeRead =
-                                    new ProviderAttributeRead(
-                                            provider,
-                                            implementation,
-                                            "isOnProviderAttributeRead",
-                                            "Boolean");
-                            isOnProviderAttributeWrite =
-                                    new ProviderAttributeWrite(
-                                            provider,
-                                            implementation,
-                                            "isOnProviderAttributeWrite",
-                                            "Boolean");
-
                             allAttributes = [
                                 isOn,
                                 isOnNotifyReadOnly,
@@ -165,34 +111,22 @@ module.exports = (function (ProviderAttribute, ProviderAttributeNotifyReadWrite,
                                 isOnNotify,
                                 isOnReadWrite,
                                 isOnReadOnly,
-                                isOnWriteOnly,
-                                isOnProviderAttributeNotifyReadWrite,
-                                isOnProviderAttributeNotifyRead,
-                                isOnProviderAttributeNotifyWrite,
-                                isOnProviderAttributeNotify,
-                                isOnProviderAttributeReadWrite,
-                                isOnProviderAttributeRead,
-                                isOnProviderAttributeWrite
+                                isOnWriteOnly
                             ];
 
                             allNotifyAttributes = [
                                 isOn,
                                 isOnNotifyReadOnly,
                                 isOnNotifyWriteOnly,
-                                isOnNotify,
-                                isOnProviderAttributeNotifyReadWrite,
-                                isOnProviderAttributeNotifyRead,
-                                isOnProviderAttributeNotifyWrite,
-                                isOnProviderAttributeNotify
+                                isOnNotify
                             ];
                             done();
                         });
 
-                        it("is of correct type (ProviderAttribute)", function(done) {
+                        it("got initialized", function(done) {
                             expect(isOn).toBeDefined();
                             expect(isOn).not.toBeNull();
                             expect(typeof isOn === "object").toBeTruthy();
-                            expect(isOn instanceof ProviderAttribute).toBeTruthy();
                             done();
                         });
 
@@ -262,103 +196,6 @@ module.exports = (function (ProviderAttribute, ProviderAttributeNotifyReadWrite,
                             expect(isOnWriteOnly.valueChanged).toBeUndefined();
                             expect(isOnWriteOnly.registerObserver).toBeUndefined();
                             expect(isOnWriteOnly.unregisterObserver).toBeUndefined();
-                            done();
-                        });
-
-                        it(
-                                "has correct members (ProviderAttributeNotifyReadWrite)",
-                                function(done) {
-                                    expect(
-                                            isOnProviderAttributeNotifyReadWrite instanceof ProviderAttributeNotifyReadWrite)
-                                            .toBeTruthy();
-                                    expect(isOnProviderAttributeNotifyReadWrite.registerGetter)
-                                            .toBeDefined();
-                                    expect(isOnProviderAttributeNotifyReadWrite.registerSetter)
-                                            .toBeDefined();
-                                    expect(isOnProviderAttributeNotifyReadWrite.valueChanged)
-                                            .toBeDefined();
-                                    expect(isOnProviderAttributeNotifyReadWrite.registerObserver)
-                                            .toBeDefined();
-                                    expect(isOnProviderAttributeNotifyReadWrite.unregisterObserver)
-                                            .toBeDefined();
-                                    done();
-                                });
-
-                        it(
-                                "has correct members (ProviderAttributeNotifyRead)",
-                                function(done) {
-                                    expect(
-                                            isOnProviderAttributeNotifyRead instanceof ProviderAttributeNotifyRead)
-                                            .toBeTruthy();
-                                    expect(isOnProviderAttributeNotifyRead.registerGetter)
-                                            .toBeDefined();
-                                    expect(isOnProviderAttributeNotifyRead.registerSetter)
-                                            .toBeUndefined();
-                                    expect(isOnProviderAttributeNotifyRead.valueChanged)
-                                            .toBeDefined();
-                                    expect(isOnProviderAttributeNotifyRead.registerObserver)
-                                            .toBeDefined();
-                                    expect(isOnProviderAttributeNotifyRead.unregisterObserver)
-                                            .toBeDefined();
-                                    done();
-                                });
-
-                        it(
-                                "has correct members (ProviderAttributeNotifyWrite)",
-                                function(done) {
-                                    expect(
-                                            isOnProviderAttributeNotifyWrite instanceof ProviderAttributeNotifyWrite)
-                                            .toBeTruthy();
-                                    expect(isOnProviderAttributeNotifyWrite.registerGetter)
-                                            .toBeUndefined();
-                                    expect(isOnProviderAttributeNotifyWrite.registerSetter)
-                                            .toBeDefined();
-                                    expect(isOnProviderAttributeNotifyWrite.valueChanged)
-                                            .toBeDefined();
-                                    expect(isOnProviderAttributeNotifyWrite.registerObserver)
-                                            .toBeDefined();
-                                    expect(isOnProviderAttributeNotifyWrite.unregisterObserver)
-                                            .toBeDefined();
-                                    done();
-                                });
-
-                        it("has correct members (ProviderAttributeNotify)", function(done) {
-                            expect(isOnProviderAttributeNotify instanceof ProviderAttributeNotify)
-                                    .toBeTruthy();
-                            expect(isOnProviderAttributeNotify.registerGetter).toBeUndefined();
-                            expect(isOnProviderAttributeNotify.registerSetter).toBeUndefined();
-                            expect(isOnProviderAttributeNotify.valueChanged).toBeDefined();
-                            expect(isOnProviderAttributeNotify.registerObserver).toBeDefined();
-                            expect(isOnProviderAttributeNotify.unregisterObserver).toBeDefined();
-                            done();
-                        });
-
-                        it(
-                                "has correct members (ProviderAttributeReadWrite)",
-                                function(done) {
-                                    expect(
-                                            isOnProviderAttributeReadWrite instanceof ProviderAttributeReadWrite)
-                                            .toBeTruthy();
-                                    expect(isOnProviderAttributeReadWrite.registerGetter)
-                                            .toBeDefined();
-                                    expect(isOnProviderAttributeReadWrite.registerSetter)
-                                            .toBeDefined();
-                                    done();
-                                });
-
-                        it("has correct members (ProviderAttributeRead)", function(done) {
-                            expect(isOnProviderAttributeRead instanceof ProviderAttributeRead)
-                                    .toBeTruthy();
-                            expect(isOnProviderAttributeRead.registerGetter).toBeDefined();
-                            expect(isOnProviderAttributeRead.registerSetter).toBeUndefined();
-                            done();
-                        });
-
-                        it("has correct members (ProviderAttributeWrite)", function(done) {
-                            expect(isOnProviderAttributeWrite instanceof ProviderAttributeWrite)
-                                    .toBeTruthy();
-                            expect(isOnProviderAttributeWrite.registerGetter).toBeUndefined();
-                            expect(isOnProviderAttributeWrite.registerSetter).toBeDefined();
                             done();
                         });
 
@@ -641,5 +478,3 @@ module.exports = (function (ProviderAttribute, ProviderAttributeNotifyReadWrite,
                                     }).catch(fail);
                         });
                     });
-
-}(ProviderAttribute, ProviderAttributeNotifyReadWrite, ProviderAttributeNotifyRead, ProviderAttributeNotifyWrite, ProviderAttributeNotify, ProviderAttributeReadWrite, ProviderAttributeRead, ProviderAttributeWrite, ProviderQos, TestEnum, ComplexRadioStation, Country, Promise, WaitsFor));    // require

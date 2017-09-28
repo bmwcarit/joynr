@@ -19,8 +19,6 @@
  * #L%
  */
 var Typing = require('../../util/Typing');
-module.exports =
-        (function(Typing) {
 
     /**
      * @constructor WebSocketMulticastAddressCalculator
@@ -50,6 +48,4 @@ module.exports =
                 };
             };
 
-    return WebSocketMulticastAddressCalculator;
-
-        }(Typing));
+    module.exports = WebSocketMulticastAddressCalculator;

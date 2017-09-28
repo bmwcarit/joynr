@@ -20,10 +20,8 @@
  * #L%
  */
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(Typing, Util, LoggerFactory) {
 
     /**
      * Constructor of BroadcastFilterParameters object used for subscriptions in generated proxy objects
@@ -101,5 +99,4 @@ module.exports =
 
     }
 
-    return BroadcastFilterParameters;
-        }(Typing, UtilInternal, LoggerFactory));
+    module.exports = BroadcastFilterParameters;

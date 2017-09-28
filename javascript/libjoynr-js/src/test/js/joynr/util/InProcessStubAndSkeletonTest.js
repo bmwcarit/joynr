@@ -26,16 +26,6 @@ var Version = require('../../../classes/joynr/types/Version');
 var InProcessAddress = require('../../../classes/joynr/messaging/inprocess/InProcessAddress');
 var InProcessStub = require('../../../classes/joynr/util/InProcessStub');
 var InProcessSkeleton = require('../../../classes/joynr/util/InProcessSkeleton');
-module.exports =
-        (function(
-                GlobalDiscoveryEntry,
-                ProviderQos,
-                ProviderScope,
-                CustomParameter,
-                Version,
-                InProcessAddress,
-                InProcessStub,
-                InProcessSkeleton) {
 
             describe("libjoynr-js.joynr.util.InProcessStubAndSkeleton", function() {
                 it("InProcessSkeleton is instantiable", function(done) {
@@ -324,13 +314,3 @@ module.exports =
                         });
 
                     });
-
-        }(
-                GlobalDiscoveryEntry,
-                ProviderQos,
-                ProviderScope,
-                CustomParameter,
-                Version,
-                InProcessAddress,
-                InProcessStub,
-                InProcessSkeleton)); // require

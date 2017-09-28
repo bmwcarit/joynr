@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -19,7 +19,6 @@
  * #L%
  */
 var InProcessSkeleton = require('./InProcessSkeleton');
-module.exports = (function(InProcessSkeleton) {
 
     /**
      * Creates a proxy function that calls the proxyObjectFunction with the original arguments
@@ -53,49 +52,47 @@ module.exports = (function(InProcessSkeleton) {
             return new InProcessStub(inProcessSkeleton);
         }
 
-        /**
-         * Can set (new) inProcess Skeleton, overwrites members
-         *
-         * @name InProcessStub#setSkeleton
-         * @function
-         *
-         * @param {InProcessSkeleton} inProcessSkeleton
-         * @throws {Error} if type of inProcessSkeleton is wrong
-         */
-        this.setSkeleton = function(inProcessSkeleton) {
-            if (inProcessSkeleton === undefined || inProcessSkeleton === null) {
-                throw new Error("InProcessStub is undefined or null");
-            }
-
-            if (!(inProcessSkeleton instanceof InProcessSkeleton)) {
-                throw new Error("InProcessStub should be of type InProcessSkeleton");
-            }
-
-            // get proxy object from skeleton
-            var key, proxyObject = inProcessSkeleton.getProxyObject();
-
-            // cycle over all members in the proxy object
-            for (key in proxyObject) {
-                if (proxyObject.hasOwnProperty(key)) {
-                    // get the member of the proxy object
-                    var proxyObjectMember = proxyObject[key];
-                    // if it is a function
-                    if (typeof proxyObjectMember === "function") {
-                        // attach a function to this object
-                        this[key] = createProxyFunction(proxyObject, proxyObjectMember);
-                    }
-                    // else: not a function, do not proxy member, maybe implement this here using
-                    // getter/setter with Object.defineProperty not required until now
-                }
-            }
-        };
-
         if (inProcessSkeleton !== undefined) {
             this.setSkeleton(inProcessSkeleton);
         }
 
     }
 
-    return InProcessStub;
+    /**
+     * Can set (new) inProcess Skeleton, overwrites members
+     *
+     * @name InProcessStub#setSkeleton
+     * @function
+     *
+     * @param {InProcessSkeleton} inProcessSkeleton
+     * @throws {Error} if type of inProcessSkeleton is wrong
+     */
+    InProcessStub.prototype.setSkeleton = function(inProcessSkeleton) {
+        if (inProcessSkeleton === undefined || inProcessSkeleton === null) {
+            throw new Error("InProcessStub is undefined or null");
+        }
 
-}(InProcessSkeleton));
+        if (!(inProcessSkeleton instanceof InProcessSkeleton)) {
+            throw new Error("InProcessStub should be of type InProcessSkeleton");
+        }
+
+        // get proxy object from skeleton
+        var key, proxyObject = inProcessSkeleton.getProxyObject();
+
+        // cycle over all members in the proxy object
+        for (key in proxyObject) {
+            if (proxyObject.hasOwnProperty(key)) {
+                // get the member of the proxy object
+                var proxyObjectMember = proxyObject[key];
+                // if it is a function
+                if (typeof proxyObjectMember === "function") {
+                    // attach a function to this object
+                    this[key] = createProxyFunction(proxyObject, proxyObjectMember);
+                }
+                // else: not a function, do not proxy member, maybe implement this here using
+                // getter/setter with Object.defineProperty not required until now
+            }
+        }
+    };
+
+    module.exports = InProcessStub;

@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,11 +18,10 @@
  * #L%
  */
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(Typing, Util, LoggerFactory) {
 
+    var log = LoggerFactory.getLogger("joynr/messaging/MessagingStubFactory");
     /**
      * @name MessagingStubFactory
      * @constructor
@@ -33,36 +32,34 @@ module.exports =
      * @param {Function} settings.messagingStubFactories.KEY.build the factory method of the
      */
     function MessagingStubFactory(settings) {
-        var log = LoggerFactory.getLogger("joynr/messaging/MessagingStubFactory");
-        var messagingStubFactories = settings.messagingStubFactories;
 
-        /**
-         * @name MessagingStubFactory#createMessagingStub
-         * @function
-         *
-         * @param {MessagingStub} address the address to create a messaging stub for
-         */
-        this.createMessagingStub =
-                function createMessagingStub(address) {
-                    /*jslint nomen: true */
-                    var className = address._typeName;
-                    /*jslint nomen: false */
-                    var factory = messagingStubFactories[className];
+        this._messagingStubFactories = settings.messagingStubFactories;
 
-                    if (Util.checkNullUndefined(factory)) {
-                        var errorMsg =
-                                "Could not find a MessagingStubFactory for \""
-                                    + className
-                                    + "\" within messagingStubFactories ["
-                                    + Object.keys(messagingStubFactories).join(",")
-                                    + "]";
-                        log.debug(errorMsg);
-                        throw new Error(errorMsg);
-                    }
-
-                    return factory.build(address);
-                };
     }
 
-    return MessagingStubFactory;
-        }(Typing, UtilInternal, LoggerFactory));
+    /**
+     * @name MessagingStubFactory#createMessagingStub
+     * @function
+     *
+     * @param {MessagingStub} address the address to create a messaging stub for
+     */
+    MessagingStubFactory.prototype.createMessagingStub =
+            function createMessagingStub(address) {
+                var className = address._typeName;
+                var factory = this._messagingStubFactories[className];
+
+                if (Util.checkNullUndefined(factory)) {
+                    var errorMsg =
+                            "Could not find a MessagingStubFactory for \""
+                                + className
+                                + "\" within messagingStubFactories ["
+                                + Object.keys(this._messagingStubFactories).join(",")
+                                + "]";
+                    log.debug(errorMsg);
+                    throw new Error(errorMsg);
+                }
+
+                return factory.build(address);
+            };
+
+    module.exports = MessagingStubFactory;

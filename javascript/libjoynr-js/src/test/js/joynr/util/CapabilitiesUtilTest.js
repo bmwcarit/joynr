@@ -25,16 +25,6 @@ var GlobalDiscoveryEntry = require('../../../classes/joynr/types/GlobalDiscovery
 var Version = require('../../../classes/joynr/types/Version');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
 var MqttAddress = require('../../../classes/joynr/system/RoutingTypes/MqttAddress');
-module.exports =
-        (function(
-                Promise,
-                CapabilitiesUtil,
-                DiscoveryEntry,
-                DiscoveryEntryWithMetaInfo,
-                GlobalDiscoveryEntry,
-                Version,
-                ProviderQos,
-                MqttAddress) {
 
     describe("libjoynr-js.joynr.CapabilitiesUtil", function() {
         it("is of correct type and has all members", function() {
@@ -300,13 +290,3 @@ module.exports =
         });
 
     });
-
-        }(
-                Promise,
-                CapabilitiesUtil,
-                DiscoveryEntry,
-                DiscoveryEntryWithMetaInfo,
-                GlobalDiscoveryEntry,
-                Version,
-                ProviderQos,
-                MqttAddress)); /* jslint nomen: false */

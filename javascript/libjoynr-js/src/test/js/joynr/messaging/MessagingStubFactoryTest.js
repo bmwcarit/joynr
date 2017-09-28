@@ -18,7 +18,6 @@
  * #L%
  */
 var MessagingStubFactory = require('../../../classes/joynr/messaging/MessagingStubFactory');
-module.exports = (function(MessagingStubFactory) {
 
     describe("libjoynr-js.joynr.messaging.MessagingStubFactory", function() {
         var messagingStub1, messagingStub2, factory1, factory2;
@@ -100,5 +99,3 @@ module.exports = (function(MessagingStubFactory) {
         });
 
     });
-
-}(MessagingStubFactory)); /*jslint nomen: false */

@@ -20,7 +20,6 @@
 var Promise = require('../../../../classes/global/Promise');
 var ChannelAddress = require('../../../../classes/joynr/system/RoutingTypes/ChannelAddress');
 var ChannelMessagingStub = require('../../../../classes/joynr/messaging/channel/ChannelMessagingStub');
-module.exports = (function (Promise, ChannelAddress, ChannelMessagingStub) {
 
     describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() {
         var channelMessagingSender, destinationChannelAddress, myChannelAddress;
@@ -83,5 +82,3 @@ module.exports = (function (Promise, ChannelAddress, ChannelMessagingStub) {
         });
 
     });
-
-}(Promise, ChannelAddress, ChannelMessagingStub));

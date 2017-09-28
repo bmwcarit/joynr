@@ -23,8 +23,7 @@ var LoggingManager = require('../../../classes/joynr/system/LoggingManager');
 var DistributedLoggingAppenderConstructorFactory = require('../../../classes/joynr/system/DistributedLoggingAppenderConstructorFactory');
 var DistributedLoggingAppender = require('../../../classes/joynr/system/DistributedLoggingAppender');
 var LoggerFactory = require('../../../classes/joynr/system/LoggerFactory');
-var WaitsFor = require('../../../test-classes/global/WaitsFor');
-module.exports = (function (Promise, LoggingManager, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, LoggerFactory, waitsFor) {
+var waitsFor = require('../../../test-classes/global/WaitsFor');
             var asyncTimeout = 5000;
 
             var log =
@@ -138,4 +137,3 @@ module.exports = (function (Promise, LoggingManager, DistributedLoggingAppenderC
                                 });
 
                     });
-}(Promise, LoggingManager, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, LoggerFactory, WaitsFor));

@@ -18,8 +18,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
     var defaultSettings = {};
     // do nothing
-    return defaultSettings;
-}());
+    module.exports = defaultSettings;

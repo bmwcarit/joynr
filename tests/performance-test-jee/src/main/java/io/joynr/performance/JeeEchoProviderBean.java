@@ -44,4 +44,16 @@ public class JeeEchoProviderBean implements EchoSync {
     public ComplexStruct echoComplexStruct(ComplexStruct data) {
         return data;
     }
+
+    @Override
+    public String getSimpleAttribute() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setSimpleAttribute(String simpleAttribute) {
+        // TODO Auto-generated method stub
+
+    }
 }

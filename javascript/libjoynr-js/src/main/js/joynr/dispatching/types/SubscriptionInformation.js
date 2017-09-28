@@ -20,8 +20,6 @@
  */
 var Typing = require('../../util/Typing');
 var SubscriptionRequest = require('./SubscriptionRequest');
-module.exports =
-        (function(Typing, SubscriptionRequest) {
 
     /**
      * @name SubscriptionInformation
@@ -84,6 +82,4 @@ module.exports =
     SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST = "subscription_type_broadcast";
     SubscriptionInformation.SUBSCRIPTION_TYPE_MULTICAST = "subscription_type_multicast";
 
-    return SubscriptionInformation;
-
-        }(Typing, SubscriptionRequest));
+    module.exports = SubscriptionInformation;

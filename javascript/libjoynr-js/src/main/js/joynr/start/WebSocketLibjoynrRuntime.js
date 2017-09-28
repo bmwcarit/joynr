@@ -54,7 +54,7 @@ var TypeRegistrySingleton = require('../types/TypeRegistrySingleton');
 var DiscoveryScope = require('../types/DiscoveryScope');
 var DiscoveryEntry = require('../types/DiscoveryEntry');
 var DiscoveryEntryWithMetaInfo = require('../types/DiscoveryEntryWithMetaInfo');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var CapabilitiesUtil = require('../util/CapabilitiesUtil');
 var Typing = require('../util/Typing');
 var DistributedLoggingAppenderConstructorFactory = require('../system/DistributedLoggingAppenderConstructorFactory');
@@ -67,7 +67,6 @@ var defaultSettings = require('./settings/defaultSettings');
 var defaultWebSocketSettings = require('./settings/defaultWebSocketSettings');
 var defaultLibjoynrSettings = require('./settings/defaultLibjoynrSettings');
 var LocalStorage = require('../../global/LocalStorageNode');
-module.exports = (function (Promise, WebSocket, Arbitrator, ProviderBuilder, ProxyBuilder, CapabilitiesRegistrar, ParticipantIdStorage, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, JoynrException, PlatformSecurityManager, SharedWebSocket, WebSocketMessagingSkeleton, WebSocketMessagingStubFactory, WebSocketMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, WebSocketAddress, WebSocketClientAddress, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, InProcessStub, InProcessSkeleton, MessagingQos, DiscoveryQos, DiscoveryProxy, RoutingProxy, TypeRegistrySingleton, DiscoveryScope, DiscoveryEntry, DiscoveryEntryWithMetaInfo, Util, CapabilitiesUtil, Typing, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, WebWorkerMessagingAppender, uuid, LoggingManager, LoggerFactory, defaultSettings, defaultWebSocketSettings, defaultLibjoynrSettings, LocalStorage) {
     var JoynrStates = {
         SHUTDOWN : "shut down",
         STARTING : "starting",
@@ -372,10 +371,12 @@ module.exports = (function (Promise, WebSocket, Arbitrator, ProviderBuilder, Pro
                     libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
                     libjoynrMessagingSkeleton.registerListener(dispatcher.receive);
 
-                    messagingSkeletonFactory.setSkeletons({
-                        InProcessAddress : libjoynrMessagingSkeleton,
-                        WebSocketAddress : webSocketMessagingSkeleton
-                    });
+                    var messagingSkeletons = {};
+                    /*jslint nomen: true */
+                    messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
+                    messagingSkeletons[WebSocketAddress._typeName] = webSocketMessagingSkeleton;
+                    /*jslint nomen: false */
+                    messagingSkeletonFactory.setSkeletons(messagingSkeletons);
 
                     requestReplyManager = new RequestReplyManager(dispatcher, typeRegistry);
                     subscriptionManager = new SubscriptionManager(dispatcher);
@@ -418,6 +419,46 @@ module.exports = (function (Promise, WebSocket, Arbitrator, ProviderBuilder, Pro
 
                     var internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
 
+                    function buildDiscoveryProxyOnSuccess(newDiscoveryProxy) {
+                        discovery.setSkeleton(new InProcessSkeleton({
+                            lookup: function lookup(domains, interfaceName, discoveryQos) {
+                                return newDiscoveryProxy.lookup({
+                                    domains      : domains,
+                                    interfaceName: interfaceName,
+                                    discoveryQos : discoveryQos
+                                }).then(function(opArgs){
+                                    return opArgs.result;
+                                });
+                            },
+                            add: function add(discoveryEntry) {
+                                return newDiscoveryProxy.add({
+                                    discoveryEntry: discoveryEntry
+                                });
+                            },
+                            remove: function remove(participantId) {
+                                return newDiscoveryProxy.remove({
+                                    participantId: participantId
+                                });
+                            }
+                        }));
+                        return;
+                    }
+
+                    function buildDiscoveryProxyOnError(error) {
+                        throw new Error("Failed to create discovery proxy: " + error);
+                    }
+
+                    function buildRoutingProxyOnError(error) {
+                        throw new Error("Failed to create routing proxy: "
+                        + error
+                        + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                    }
+
+                    function buildRoutingProxyOnSuccess(newRoutingProxy) {
+                        messageRouter.setRoutingProxy(newRoutingProxy);
+                        return newRoutingProxy;
+                    }
+
                     discoveryProxyPromise = proxyBuilder.build(DiscoveryProxy, {
                             domain : "io.joynr",
                             messagingQos : internalMessagingQos,
@@ -425,32 +466,9 @@ module.exports = (function (Promise, WebSocket, Arbitrator, ProviderBuilder, Pro
                                 discoveryScope : DiscoveryScope.LOCAL_ONLY
                             }),
                             staticArbitration : true
-                        }).then(function(newDiscoveryProxy) {
-                            discovery.setSkeleton(new InProcessSkeleton({
-                                lookup : function lookup(domains, interfaceName, discoveryQos) {
-                                    return newDiscoveryProxy.lookup({
-                                        domains : domains,
-                                        interfaceName : interfaceName,
-                                        discoveryQos : discoveryQos
-                                    }).then(function(opArgs){
-                                        return opArgs.result;
-                                    });
-                                },
-                                add : function add(discoveryEntry) {
-                                    return newDiscoveryProxy.add({
-                                        discoveryEntry : discoveryEntry
-                                    });
-                                },
-                                remove : function remove(participantId) {
-                                    return newDiscoveryProxy.remove({
-                                        participantId : participantId
-                                    });
-                                }
-                            }));
-                            return;
-                        }).catch(function(error) {
-                            throw new Error("Failed to create discovery proxy: " + error);
-                        });
+                        })
+                    .then(buildDiscoveryProxyOnSuccess)
+                    .catch(buildDiscoveryProxyOnError);
 
                     routingProxyPromise = proxyBuilder.build(RoutingProxy, {
                             domain : "io.joynr",
@@ -459,28 +477,26 @@ module.exports = (function (Promise, WebSocket, Arbitrator, ProviderBuilder, Pro
                                 discoveryScope : DiscoveryScope.LOCAL_ONLY
                             }),
                             staticArbitration : true
-                        }).catch(function(error) {
-                            throw new Error("Failed to create routing proxy: "
-                                    + error
-                                    + (error instanceof JoynrException ? " " + error.detailMessage : ""));
-                        }).then(function(newRoutingProxy) {
-                            messageRouter.setRoutingProxy(newRoutingProxy);
-                            return newRoutingProxy;
-                        });
+                        })
+                    .then(buildRoutingProxyOnSuccess)
+                    .catch(buildRoutingProxyOnError);
+
+                    function startOnSuccess() {
+                        joynrState = JoynrStates.STARTED;
+                        publicationManager.restore();
+                        log.debug("joynr web socket initialized");
+                        return;
+                    }
+
+                    function startOnFailure(error) {
+                        log.error("error starting up joynr: " + error);
+                        throw error;
+                    }
 
                     // when everything's ready we can trigger the app
-                    return Promise.all([
-                                        discoveryProxyPromise,
-                                        routingProxyPromise
-                                    ]).then(function() {
-                            joynrState = JoynrStates.STARTED;
-                            publicationManager.restore();
-                            log.debug("joynr web socket initialized");
-                            return;
-                        }).catch(function(error) {
-                            log.error("error starting up joynr: " + error);
-                            throw error;
-                        });
+                    return Promise.all([discoveryProxyPromise, routingProxyPromise])
+                    .then(startOnSuccess)
+                    .catch(startOnFailure);
                 };
 
         /**
@@ -548,6 +564,4 @@ module.exports = (function (Promise, WebSocket, Arbitrator, ProviderBuilder, Pro
         return Object.freeze(this);
     }
 
-    return WebSocketLibjoynrRuntime;
-
-}(Promise, WebSocket, Arbitrator, ProviderBuilder, ProxyBuilder, CapabilitiesRegistrar, ParticipantIdStorage, RequestReplyManager, PublicationManager, SubscriptionManager, Dispatcher, JoynrException, PlatformSecurityManager, SharedWebSocket, WebSocketMessagingSkeleton, WebSocketMessagingStubFactory, WebSocketMulticastAddressCalculator, MessagingSkeletonFactory, MessagingStubFactory, MessageRouter, MessageQueue, WebSocketAddress, WebSocketClientAddress, InProcessMessagingStubFactory, InProcessMessagingSkeleton, InProcessMessagingStub, InProcessAddress, InProcessStub, InProcessSkeleton, MessagingQos, DiscoveryQos, DiscoveryProxy, RoutingProxy, TypeRegistrySingleton, DiscoveryScope, DiscoveryEntry, DiscoveryEntryWithMetaInfo, UtilInternal, CapabilitiesUtil, Typing, DistributedLoggingAppenderConstructorFactory, DistributedLoggingAppender, WebWorkerMessagingAppender, uuid, LoggingManager, LoggerFactory, defaultSettings, defaultWebSocketSettings, defaultLibjoynrSettings, LocalStorage));
+    module.exports = WebSocketLibjoynrRuntime;

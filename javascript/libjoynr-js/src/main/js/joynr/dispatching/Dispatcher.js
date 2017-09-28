@@ -34,34 +34,11 @@ var MessagingQosEffort = require('../messaging/MessagingQosEffort');
 var InProcessAddress = require('../messaging/inprocess/InProcessAddress');
 var defaultMessagingSettings = require('../start/settings/defaultMessagingSettings');
 var DiagnosticTags = require('../system/DiagnosticTags');
-var UtilInternal = require('../util/UtilInternal');
-var JsonSerializer = require('../util/JSONSerializer');
+var Util = require('../util/UtilInternal');
+var JSONSerializer = require('../util/JSONSerializer');
 var Typing = require('../util/Typing');
 var SubscriptionQos = require('../proxy/SubscriptionQos');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(
-                Promise,
-                Request,
-                Reply,
-                OneWayRequest,
-                BroadcastSubscriptionRequest,
-                MulticastSubscriptionRequest,
-                SubscriptionRequest,
-                SubscriptionReply,
-                SubscriptionStop,
-                SubscriptionPublication,
-                MulticastPublication,
-                JoynrMessage,
-                MessagingQosEffort,
-                InProcessAddress,
-                defaultMessagingSettings,
-                DiagnosticTags,
-                Util,
-                JSONSerializer,
-                Typing,
-                SubscriptionQos,
-                LoggerFactory) {
 
             /**
              * @name Dispatcher
@@ -863,27 +840,4 @@ module.exports =
                 };
             }
 
-            return Dispatcher;
-
-        }(
-                Promise,
-                Request,
-                Reply,
-                OneWayRequest,
-                BroadcastSubscriptionRequest,
-                MulticastSubscriptionRequest,
-                SubscriptionRequest,
-                SubscriptionReply,
-                SubscriptionStop,
-                SubscriptionPublication,
-                MulticastPublication,
-                JoynrMessage,
-                MessagingQosEffort,
-                InProcessAddress,
-                defaultMessagingSettings,
-                DiagnosticTags,
-                UtilInternal,
-                JsonSerializer,
-                Typing,
-                SubscriptionQos,
-                LoggerFactory));
+            module.exports = Dispatcher;

@@ -21,13 +21,7 @@
 var Promise = require('../../../classes/global/Promise');
 var RadioProxy = require('../../../test-classes/joynr/vehicle/RadioProxy');
 var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
-var ProxyAttributeNotifyReadWrite = require('../../../classes/joynr/proxy/ProxyAttributeNotifyReadWrite');
-var ProxyAttributeNotifyRead = require('../../../classes/joynr/proxy/ProxyAttributeNotifyRead');
-var ProxyAttributeNotifyWrite = require('../../../classes/joynr/proxy/ProxyAttributeNotifyWrite');
-var ProxyAttributeNotify = require('../../../classes/joynr/proxy/ProxyAttributeNotify');
-var ProxyAttributeReadWrite = require('../../../classes/joynr/proxy/ProxyAttributeReadWrite');
-var ProxyAttributeRead = require('../../../classes/joynr/proxy/ProxyAttributeRead');
-var ProxyAttributeWrite = require('../../../classes/joynr/proxy/ProxyAttributeWrite');
+var ProxyAttribute = require('../../../classes/joynr/proxy/ProxyAttribute');
 var ProxyOperation = require('../../../classes/joynr/proxy/ProxyOperation');
 var ProxyEvent = require('../../../classes/joynr/proxy/ProxyEvent');
 var TypeRegistrySingleton = require('../../../classes/joynr/types/TypeRegistrySingleton');
@@ -35,7 +29,6 @@ var DiscoveryQos = require('../../../classes/joynr/proxy/DiscoveryQos');
 var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
 var TestWithVersionProxy = require('../../../test-classes/joynr/tests/TestWithVersionProxy');
 var TestWithoutVersionProxy = require('../../../test-classes/joynr/tests/TestWithoutVersionProxy');
-module.exports = (function (Promise, RadioProxy, RadioStation, ProxyAttributeNotifyReadWrite, ProxyAttributeNotifyRead, ProxyAttributeNotifyWrite, ProxyAttributeNotify, ProxyAttributeReadWrite, ProxyAttributeRead, ProxyAttributeWrite, ProxyOperation, ProxyEvent, TypeRegistrySingleton, DiscoveryQos, MessagingQos, TestWithVersionProxy, TestWithoutVersionProxy) {
 
             describe(
                     "libjoynr-js.joynr.proxy.Proxy",
@@ -51,13 +44,7 @@ module.exports = (function (Promise, RadioProxy, RadioStation, ProxyAttributeNot
                                 discoveryQos : new DiscoveryQos(),
                                 messagingQos : new MessagingQos(),
                                 proxyElementTypes : {
-                                    ProxyAttributeNotifyReadWrite : ProxyAttributeNotifyReadWrite,
-                                    ProxyAttributeNotifyRead : ProxyAttributeNotifyRead,
-                                    ProxyAttributeNotifyWrite : ProxyAttributeNotifyWrite,
-                                    ProxyAttributeNotify : ProxyAttributeNotify,
-                                    ProxyAttributeReadWrite : ProxyAttributeReadWrite,
-                                    ProxyAttributeRead : ProxyAttributeRead,
-                                    ProxyAttributeWrite : ProxyAttributeWrite,
+                                    ProxyAttribute : ProxyAttribute,
                                     ProxyOperation : ProxyOperation,
                                     ProxyEvent : ProxyEvent
                                 },
@@ -129,8 +116,6 @@ module.exports = (function (Promise, RadioProxy, RadioStation, ProxyAttributeNot
 
                         it("RadioProxy has all members", function(done) {
                             expect(radioProxy.isOn).toBeDefined();
-                            expect(radioProxy.isOn instanceof ProxyAttributeNotifyReadWrite)
-                                    .toBeTruthy();
                             expect(radioProxy.addFavoriteStation).toBeDefined();
                             expect(typeof radioProxy.addFavoriteStation === "function")
                                     .toBeTruthy();
@@ -140,5 +125,3 @@ module.exports = (function (Promise, RadioProxy, RadioStation, ProxyAttributeNot
                         });
 
                     });
-
-}(Promise, RadioProxy, RadioStation, ProxyAttributeNotifyReadWrite, ProxyAttributeNotifyRead, ProxyAttributeNotifyWrite, ProxyAttributeNotify, ProxyAttributeReadWrite, ProxyAttributeRead, ProxyAttributeWrite, ProxyOperation, ProxyEvent, TypeRegistrySingleton, DiscoveryQos, MessagingQos, TestWithVersionProxy, TestWithoutVersionProxy));    // define

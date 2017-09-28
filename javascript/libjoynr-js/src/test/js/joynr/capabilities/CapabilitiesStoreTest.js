@@ -27,17 +27,7 @@ var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
 var CustomParameter = require('../../../classes/joynr/types/CustomParameter');
 var Version = require('../../../classes/joynr/types/Version');
 var Date = require('../../../test-classes/global/Date');
-module.exports =
-        (function(
-                CapabilitiesStore,
-                DiscoveryEntry,
-                DiscoveryQos,
-                DiscoveryScope,
-                ProviderScope,
-                ProviderQos,
-                CustomParameter,
-                Version,
-                Date) {
+
     describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         var fakeTime = 0, cacheMaxAge, directory, discoveryQos, discoveryEntry1;
         var discoveryEntry2, discoveryEntry3, discoveryEntry4;
@@ -327,14 +317,3 @@ module.exports =
             expect(result).toBeUndefined();
         });
     });
-
-        }(
-                CapabilitiesStore,
-                DiscoveryEntry,
-                DiscoveryQos,
-                DiscoveryScope,
-                ProviderScope,
-                ProviderQos,
-                CustomParameter,
-                Version,
-                Date)); // require

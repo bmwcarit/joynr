@@ -21,7 +21,6 @@
 var RadioProvider = require('../../../test-classes/joynr/vehicle/RadioProvider');
 var ProviderBuilder = require('../../../classes/joynr/provider/ProviderBuilder');
 var ProviderOperation = require('../../../classes/joynr/provider/ProviderOperation');
-module.exports = (function(RadioProvider, ProviderBuilder, ProviderOperation) {
 
     describe("libjoynr-js.joynr.provider.ProviderBuilder", function() {
         var providerBuilder = null;
@@ -95,5 +94,3 @@ module.exports = (function(RadioProvider, ProviderBuilder, ProviderOperation) {
         });
 
     });
-
-}(RadioProvider, ProviderBuilder, ProviderOperation)); // require

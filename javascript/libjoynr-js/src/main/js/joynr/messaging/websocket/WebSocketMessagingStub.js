@@ -18,7 +18,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * @name WebSocketMessagingStub
@@ -42,5 +41,4 @@ module.exports = (function() {
         };
     };
 
-    return WebSocketMessagingStub;
-}());
+    module.exports = WebSocketMessagingStub;

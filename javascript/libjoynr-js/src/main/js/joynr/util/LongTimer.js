@@ -20,7 +20,6 @@
  */
 // max value for timeout, see
 // http://stackoverflow.com/questions/3468607/why-does-settimeout-break-for-large-millisecond-delay-values
-module.exports = (function() {
 
     /**
      * Implementation for long (>2^31-1 ms) timer functions that only allows timeouts or intervals
@@ -201,6 +200,4 @@ module.exports = (function() {
         delete intervalMap[intervalId];
     };
 
-    return LongTimer;
-
-}());
+    module.exports = LongTimer;

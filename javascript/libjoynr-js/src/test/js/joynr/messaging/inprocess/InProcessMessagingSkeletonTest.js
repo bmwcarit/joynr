@@ -20,7 +20,6 @@
  */
 var InProcessMessagingSkeleton =
         require('../../../../classes/joynr/messaging/inprocess/InProcessMessagingSkeleton');
-module.exports = (function(InProcessMessagingSkeleton) {
 
     describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingSkeleton", function() {
         var listener, inProcessMessagingSkeleton, joynrMessage;
@@ -51,5 +50,3 @@ module.exports = (function(InProcessMessagingSkeleton) {
         });
 
     });
-
-}(InProcessMessagingSkeleton));

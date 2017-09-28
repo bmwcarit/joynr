@@ -55,4 +55,3 @@ define([
     });
 
 }); // require
-/*jslint nomen: false */

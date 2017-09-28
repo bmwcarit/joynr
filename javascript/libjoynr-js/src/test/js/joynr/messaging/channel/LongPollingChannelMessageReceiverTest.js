@@ -25,9 +25,8 @@ var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
 var Typing = require('../../../../classes/joynr/util/Typing');
 var LoggerFactory = require('../../../../classes/joynr/system/LoggerFactory');
 var LocalStorage = require('../../../../test-classes/global/LocalStorageNodeTests');
-var provisioningRoot = require('../../../../test-classes/joynr/provisioning/provisioning_root');
-var WaitsFor = require('../../../../test-classes/global/WaitsFor');
-module.exports = (function (Promise, CommunicationModule, LongPollingChannelMessageReceiver, JoynrMessage, Typing, LoggerFactory, LocalStorage, provisioning, waitsFor) {
+var provisioning = require('../../../../test-classes/joynr/provisioning/provisioning_root');
+var waitsFor = require('../../../../test-classes/global/WaitsFor');
 
             var log =
                     LoggerFactory
@@ -276,4 +275,3 @@ module.exports = (function (Promise, CommunicationModule, LongPollingChannelMess
                         });
 
                     });
-}(Promise, CommunicationModule, LongPollingChannelMessageReceiver, JoynrMessage, Typing, LoggerFactory, LocalStorage, provisioningRoot, WaitsFor));

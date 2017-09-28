@@ -1,4 +1,4 @@
-/*jslint node: true*/
+/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -20,7 +20,6 @@
 
 var Typing = require('../../util/Typing');
 
-module.exports = (function(Typing) {
 
     /**
      * @constructor BrowserMulticastAddressCalculator
@@ -32,20 +31,20 @@ module.exports = (function(Typing) {
     var BrowserMulticastAddressCalculator = function BrowserMulticastAddressCalculator(settings) {
         Typing.checkProperty(settings, "Object", "settings");
         Typing.checkProperty(settings.globalAddress, "BrowserAddress", "settings.globalAddress");
+        this._settings = settings;
 
-        /**
-         * Calculates the multicast address for the submitted joynr message
-         * @function BrowserMulticastAddressCalculator#calculate
-         *
-         * @param {JoynrMessage}
-         *            message
-         * @return {Address} the multicast address
-         */
-        this.calculate = function calculate(message) {
-            return settings.globalAddress;
-        };
     };
 
-    return BrowserMulticastAddressCalculator;
+    /**
+     * Calculates the multicast address for the submitted joynr message
+     * @function BrowserMulticastAddressCalculator#calculate
+     *
+     * @param {JoynrMessage}
+     *            message
+     * @return {Address} the multicast address
+     */
+    BrowserMulticastAddressCalculator.prototype.calculate = function calculate(message) {
+        return this._settings.globalAddress;
+    };
 
-}(Typing));
+    module.exports = BrowserMulticastAddressCalculator;

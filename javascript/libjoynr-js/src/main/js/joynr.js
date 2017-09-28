@@ -92,8 +92,7 @@ var joynr = {
     load : function load(provisioning, capabilitiesWritable) {
         return new Promise(function(resolve, reject) {
             joynr.loaded = true;
-            var libjoynrDeps = require('./libjoynr-deps');
-            (function (joynrapi) {
+            var joynrapi = require('./libjoynr-deps');
                 var runtime;
                 runtime = new joynrapi.Runtime(provisioning);
                 runtime.start().then(function() {
@@ -108,7 +107,6 @@ var joynr = {
                     reject(error);
                     return error;
                 });
-            }(libjoynrDeps));
         });
     },
     /**

@@ -19,11 +19,9 @@
  * #L%
  */
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var DiscoveryException = require('./DiscoveryException');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(TypeRegistrySingleton, Util, DiscoveryException, LoggerFactory) {
     var defaultSettings;
 
     /**
@@ -105,5 +103,4 @@ module.exports =
     NoCompatibleProviderFoundException.prototype.constructor = NoCompatibleProviderFoundException;
     NoCompatibleProviderFoundException.prototype.name = "NoCompatibleProviderFoundException";
 
-    return NoCompatibleProviderFoundException;
-        }(TypeRegistrySingleton, UtilInternal, DiscoveryException, LoggerFactory));
+    module.exports = NoCompatibleProviderFoundException;

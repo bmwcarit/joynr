@@ -20,7 +20,6 @@
  */
 var WebMessagingSkeleton =
         require('../../../../classes/joynr/messaging/webmessaging/WebMessagingSkeleton');
-module.exports = (function(WebMessagingSkeleton) {
 
     describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingSkeleton", function() {
 
@@ -156,4 +155,3 @@ module.exports = (function(WebMessagingSkeleton) {
         });
 
     });
-}(WebMessagingSkeleton));

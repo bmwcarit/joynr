@@ -30,9 +30,8 @@ var GlobalDiscoveryEntry = require('../../../../classes/joynr/types/GlobalDiscov
 var ChannelAddress = require('../../../../classes/joynr/system/RoutingTypes/ChannelAddress');
 var Version = require('../../../../classes/joynr/types/Version');
 var Promise = require('../../../../classes/global/Promise');
-var WaitsFor = require('../../../../test-classes/global/WaitsFor');
+var waitsFor = require('../../../../test-classes/global/WaitsFor');
 var CapabilitiesUtil = require('../../../../classes/joynr/util/CapabilitiesUtil');
-module.exports = (function (CapabilityDiscovery, DiscoveryQos, ArbitrationStrategyCollection, ProviderQos, CustomParameter, ProviderScope, DiscoveryScope, DiscoveryEntry, GlobalDiscoveryEntry, ChannelAddress, Version, Promise, waitsFor, CapabilitiesUtil) {
 
             var domain, interfaceName, discoveryQos;
             var discoveryEntries, discoveryEntriesReturned, globalDiscoveryEntries, globalDiscoveryEntriesReturned;
@@ -895,5 +894,3 @@ module.exports = (function (CapabilityDiscovery, DiscoveryQos, ArbitrationStrate
                                 });
 
                     });
-
-}(CapabilityDiscovery, DiscoveryQos, ArbitrationStrategyCollection, ProviderQos, CustomParameter, ProviderScope, DiscoveryScope, DiscoveryEntry, GlobalDiscoveryEntry, ChannelAddress, Version, Promise, WaitsFor, CapabilitiesUtil));    // require

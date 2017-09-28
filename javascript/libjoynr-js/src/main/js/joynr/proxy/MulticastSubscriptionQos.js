@@ -19,9 +19,8 @@
  * #L%
  */
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var SubscriptionQos = require('./SubscriptionQos');
-module.exports = (function(Typing, Util, SubscriptionQos) {
 
     var defaultSettings;
 
@@ -80,6 +79,4 @@ module.exports = (function(Typing, Util, SubscriptionQos) {
 
     defaultSettings = {};
 
-    return MulticastSubscriptionQos;
-
-}(Typing, UtilInternal, SubscriptionQos));
+    module.exports = MulticastSubscriptionQos;

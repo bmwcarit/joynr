@@ -22,8 +22,7 @@ var MethodUtil = require('../util/MethodUtil');
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
 var ApplicationException = require('../exceptions/ApplicationException');
 var ProviderRuntimeException = require('../exceptions/ProviderRuntimeException');
-var UtilInternal = require('../util/UtilInternal');
-module.exports = (function (Typing, MethodUtil, TypeRegistrySingleton, ApplicationException, ProviderRuntimeException, Util) {
+var Util = require('../util/UtilInternal');
 
             var typeRegistry = TypeRegistrySingleton.getInstance();
             /**
@@ -163,111 +162,109 @@ module.exports = (function (Typing, MethodUtil, TypeRegistrySingleton, Applicati
                  * @returns {?} the return type of the called operation function
                  */
                 this.callOperation =
-                        function callOperation(operationArguments, operationArgumentTypes) {
-                            var i, j;
-                            var argument, namedArguments, signature;
-                            var result;
-                            var errorEnumType;
-                            var exception;
+                    function callOperation(operationArguments, operationArgumentTypes) {
+                        var i, j;
+                        var argument, namedArguments, signature;
+                        var result;
+                        var errorEnumType;
+                        var exception;
 
-                            // cycle through multiple available operation signatures
-                            for (i = 0; i < operationSignatures.length
-                                && namedArguments === undefined; ++i) {
-                                signature = operationSignatures[i];
-                                // check if the parameters from the operation signature is valid for
-                                // the provided arguments
-                                namedArguments =
-                                        getNamedArguments(
-                                                operationArguments,
-                                                operationArgumentTypes,
-                                                signature);
+                        // cycle through multiple available operation signatures
+                        for (i = 0; i < operationSignatures.length
+                            && namedArguments === undefined; ++i) {
+                            signature = operationSignatures[i];
+                            // check if the parameters from the operation signature is valid for
+                            // the provided arguments
+                            namedArguments = getNamedArguments( operationArguments, operationArgumentTypes, signature);
+                        }
+
+                        function privateOperationOnSuccess(returnValue) {
+                            return returnValueToResponseArray(returnValue, signature.outputParameter || []);
+                        }
+
+                        function privateOperationOnError(exceptionOrErrorEnumValue) {
+                            if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
+                                exception = exceptionOrErrorEnumValue;
+                            } else if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
+                                exception = new ApplicationException({
+                                    detailMessage: "Application exception, details see error enum",
+                                    error        : exceptionOrErrorEnumValue
+                                });
+                            } else if (exceptionOrErrorEnumValue instanceof Error){
+                                exception = new ProviderRuntimeException({
+                                    detailMessage: "Implementation causes unknown error: " + exceptionOrErrorEnumValue.message
+                                });
+                            } else {
+                                exception = new ProviderRuntimeException({
+                                    detailMessage: "Implementation causes unknown error"
+                                });
+                            }
+                            throw exception;
+                        }
+
+                        if (namedArguments) {
+                            if (signature.error
+                                && signature.error.type) {
+                                errorEnumType = signature.error.type;
+                            }
+                            // augment types
+                            for (j = 0; j < signature.inputParameter.length; ++j) {
+                                argument = signature.inputParameter[j];
+                                namedArguments[argument.name] =
+                                        Typing.augmentTypes(
+                                                namedArguments[argument.name],
+                                                typeRegistry,
+                                                argument.type);
                             }
 
-                            if (namedArguments) {
-                                if (signature.error
-                                    && signature.error.type) {
-                                    errorEnumType = signature.error.type;
-                                }
-                                // augment types
-                                for (j = 0; j < signature.inputParameter.length; ++j) {
-                                    argument = signature.inputParameter[j];
-                                    namedArguments[argument.name] =
-                                            Typing.augmentTypes(
-                                                    namedArguments[argument.name],
-                                                    typeRegistry,
-                                                    argument.type);
+                            try {
+                                /*
+                                 * call the operation function
+                                 * may return either promise (preferred) or direct result
+                                 * and may possibly also throw exception in the latter case.
+                                 */
+                                result = privateOperationFunc(namedArguments);
+                                if (Util.isPromise(result)) {
+                                    // return promise
+                                    return result
+                                    .then(privateOperationOnSuccess)
+                                    .catch(privateOperationOnError);
                                 }
 
-                                try {
-                                    /*
-                                     * call the operation function
-                                     * may return either promise (preferred) or direct result
-                                     * and may possibly also throw exception in the latter case.
-                                     */
-                                    result = privateOperationFunc(namedArguments);
-                                    if (Util.isPromise(result)) {
-                                        // return promise
-                                        return result.then(function(returnValue) {
-                                            return returnValueToResponseArray(returnValue, signature.outputParameter || []);
-                                        }).catch(function(exceptionOrErrorEnumValue) {
-                                            if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
-                                                exception = exceptionOrErrorEnumValue;
-                                            } else {
-                                                if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
-                                                    exception = new ApplicationException({
-                                                        detailMessage: "Application exception, details see error enum",
-                                                        error: exceptionOrErrorEnumValue
-                                                    });
-                                                } else if (exceptionOrErrorEnumValue instanceof Error){
-                                                    exception = new ProviderRuntimeException({
-                                                        detailMessage: "Implementation causes unknown error: " + exceptionOrErrorEnumValue.message
-                                                    });
-                                                } else {
-                                                    exception = new ProviderRuntimeException({
-                                                        detailMessage: "Implementation causes unknown error"
-                                                    });
-                                                }
-                                            }
-                                            throw exception;
+                                // return direct result
+                                return returnValueToResponseArray(result, signature.outputParameter || []);
+                            } catch (exceptionOrErrorEnumValue) {
+                                /*
+                                 * If the method was implemented synchronously, we can get an
+                                 * exception. The content of the exception is either an instance
+                                 * of ProviderRuntimeException or an error enumeration value. In
+                                 * the latter case, it must be wrapped into an ApplicationException.
+                                 */
+                                if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
+                                    exception = exceptionOrErrorEnumValue;
+                                } else if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
+                                        exception = new ApplicationException({
+                                            detailMessage: "Application exception, details see error enum",
+                                            error        : exceptionOrErrorEnumValue
+                                        });
+                                    } else {
+                                        exception = new ProviderRuntimeException({
+                                            detailMessage: "Implementation references unknown error enum value"
                                         });
                                     }
-
-                                    // return direct result
-                                    return returnValueToResponseArray(result, signature.outputParameter || []);
-                                } catch(exceptionOrErrorEnumValue) {
-                                    /*
-                                     * If the method was implemented synchronously, we can get an
-                                     * exception. The content of the exception is either an instance
-                                     * of ProviderRuntimeException or an error enumeration value. In
-                                     * the latter case, it must be wrapped into an ApplicationException.
-                                     */
-                                    if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
-                                        exception = exceptionOrErrorEnumValue;
-                                    } else {
-                                        if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
-                                            exception = new ApplicationException({
-                                                detailMessage: "Application exception, details see error enum",
-                                                error: exceptionOrErrorEnumValue
-                                            });
-                                        } else {
-                                            exception = new ProviderRuntimeException({
-                                                detailMessage: "Implementation references unknown error enum value"
-                                            });
-                                        }
-                                    }
-                                    throw exception;
-                                }
+                                throw exception;
                             }
+                        }
 
-                            // TODO: proper error handling
-                            throw new Error("Could not find a valid operation signature in '"
-                                + JSON.stringify(operationSignatures)
-                                + "' for a call to operation '"
-                                + operationName
-                                + "' with the arguments: '"
-                                + JSON.stringify(operationArguments)
-                                + "'");
-                        };
+                        // TODO: proper error handling
+                        throw new Error("Could not find a valid operation signature in '"
+                            + JSON.stringify(operationSignatures)
+                            + "' for a call to operation '"
+                            + operationName
+                            + "' with the arguments: '"
+                            + JSON.stringify(operationArguments)
+                            + "'");
+                    };
 
                 /**
                  * Check if the registered operation is defined.
@@ -281,6 +278,4 @@ module.exports = (function (Typing, MethodUtil, TypeRegistrySingleton, Applicati
                 return Object.freeze(this);
             }
 
-            return ProviderOperation;
-
-}(Typing, MethodUtil, TypeRegistrySingleton, ApplicationException, ProviderRuntimeException, UtilInternal));
+            module.exports = ProviderOperation;

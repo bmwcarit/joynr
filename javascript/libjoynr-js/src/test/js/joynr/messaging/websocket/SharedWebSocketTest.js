@@ -24,8 +24,6 @@ var WebSocketAddress = require('../../../../classes/joynr/system/RoutingTypes/We
 var WebSocketClientAddress =
         require('../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress');
 var WebSocket = require('../../../../test-classes/global/WebSocketMock');
-module.exports =
-        (function(SharedWebSocket, JoynrMessage, WebSocketAddress, WebSocketClientAddress, WebSocket) {
 
     describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() {
 
@@ -128,5 +126,3 @@ module.exports =
             done();
         });
     });
-
-        }(SharedWebSocket, JoynrMessage, WebSocketAddress, WebSocketClientAddress, WebSocket));

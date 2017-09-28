@@ -19,7 +19,6 @@
  */
 var Reply = require('../../../../classes/joynr/dispatching/types/Reply');
 var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
-module.exports = (function(Reply, RadioStation) {
 
     describe("libjoynr-js.joynr.dispatching.types.Reply", function() {
 
@@ -52,6 +51,3 @@ module.exports = (function(Reply, RadioStation) {
         });
 
     });
-
-}(Reply, RadioStation)); // require
-/*jslint nomen: false */

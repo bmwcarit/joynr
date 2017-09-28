@@ -22,7 +22,6 @@ var GlobalDiscoveryEntry = require('../../../classes/joynr/types/GlobalDiscovery
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
 var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
 var Version = require('../../../classes/joynr/types/Version');
-module.exports = (function(GlobalDiscoveryEntry, ProviderQos, ProviderScope, Version) {
 
     var capInfo;
     beforeEach(function() {
@@ -55,5 +54,3 @@ module.exports = (function(GlobalDiscoveryEntry, ProviderQos, ProviderScope, Ver
             expect(capInfo.providerVersion instanceof Version).toBeTruthy();
         });
     });
-
-}(GlobalDiscoveryEntry, ProviderQos, ProviderScope, Version)); // require

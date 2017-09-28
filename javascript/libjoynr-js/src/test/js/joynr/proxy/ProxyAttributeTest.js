@@ -19,13 +19,6 @@
  * #L%
  */
 var ProxyAttribute = require('../../../classes/joynr/proxy/ProxyAttribute');
-var ProxyAttributeNotifyReadWrite = require('../../../classes/joynr/proxy/ProxyAttributeNotifyReadWrite');
-var ProxyAttributeNotifyRead = require('../../../classes/joynr/proxy/ProxyAttributeNotifyRead');
-var ProxyAttributeNotifyWrite = require('../../../classes/joynr/proxy/ProxyAttributeNotifyWrite');
-var ProxyAttributeNotify = require('../../../classes/joynr/proxy/ProxyAttributeNotify');
-var ProxyAttributeReadWrite = require('../../../classes/joynr/proxy/ProxyAttributeReadWrite');
-var ProxyAttributeRead = require('../../../classes/joynr/proxy/ProxyAttributeRead');
-var ProxyAttributeWrite = require('../../../classes/joynr/proxy/ProxyAttributeWrite');
 var DiscoveryQos = require('../../../classes/joynr/proxy/DiscoveryQos');
 var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
 var OnChangeWithKeepAliveSubscriptionQos = require('../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
@@ -38,7 +31,6 @@ var Promise = require('../../../classes/global/Promise');
 var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
 var Version = require('../../../classes/joynr/types/Version');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
-module.exports = (function (ProxyAttribute, ProxyAttributeNotifyReadWrite, ProxyAttributeNotifyRead, ProxyAttributeNotifyWrite, ProxyAttributeNotify, ProxyAttributeReadWrite, ProxyAttributeRead, ProxyAttributeWrite, DiscoveryQos, MessagingQos, OnChangeWithKeepAliveSubscriptionQos, RequestReplyManager, Request, TestEnum, ComplexTestType, TypeRegistrySingleton, Promise, DiscoveryEntryWithMetaInfo, Version, ProviderQos) {
 
             var asyncTimeout = 5000;
 
@@ -53,13 +45,6 @@ module.exports = (function (ProxyAttribute, ProxyAttributeNotifyReadWrite, Proxy
                         var isOnReadWrite;
                         var isOnReadOnly;
                         var isOnWriteOnly;
-                        var isOnProxyAttributeNotifyReadWrite;
-                        var isOnProxyAttributeNotifyRead;
-                        var isOnProxyAttributeNotifyWrite;
-                        var isOnProxyAttributeNotify;
-                        var isOnProxyAttributeReadWrite;
-                        var isOnProxyAttributeRead;
-                        var isOnProxyAttributeWrite;
                         var subscriptionQos;
                         var messagingQos;
                         var requestReplyManagerSpy;
@@ -187,59 +172,16 @@ module.exports = (function (ProxyAttribute, ProxyAttributeNotifyReadWrite, Proxy
                                             "Boolean",
                                             "WRITEONLY");
 
-                            isOnProxyAttributeNotifyReadWrite =
-                                    new ProxyAttributeNotifyReadWrite(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeNotifyReadWrite",
-                                            "Boolean");
-                            isOnProxyAttributeNotifyRead =
-                                    new ProxyAttributeNotifyRead(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeNotifyRead",
-                                            "Boolean");
-                            isOnProxyAttributeNotifyWrite =
-                                    new ProxyAttributeNotifyWrite(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeNotifyWrite",
-                                            "Boolean");
-                            isOnProxyAttributeNotify =
-                                    new ProxyAttributeNotify(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeNotify",
-                                            "Boolean");
-                            isOnProxyAttributeReadWrite =
-                                    new ProxyAttributeReadWrite(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeReadWrite",
-                                            "Boolean");
-                            isOnProxyAttributeRead =
-                                    new ProxyAttributeRead(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeRead",
-                                            "Boolean");
-                            isOnProxyAttributeWrite =
-                                    new ProxyAttributeWrite(
-                                            proxy,
-                                            settings,
-                                            "isOnProxyAttributeWrite",
-                                            "Boolean");
                             TypeRegistrySingleton.getInstance().getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000).then(function() {
                                 done();
                                 return null;
                             }).catch(fail);
                         });
 
-                        it("is of correct type (ProxyAttribute)", function(done) {
+                        it("got initialized", function(done) {
                             expect(isOn).toBeDefined();
                             expect(isOn).not.toBeNull();
                             expect(typeof isOn === "object").toBeTruthy();
-                            expect(isOn instanceof ProxyAttribute).toBeTruthy();
                             done();
                         });
 
@@ -296,62 +238,6 @@ module.exports = (function (ProxyAttribute, ProxyAttributeNotifyReadWrite, Proxy
                             expect(isOnWriteOnly.set).toBeDefined();
                             expect(isOnWriteOnly.subscribe).toBeUndefined();
                             expect(isOnWriteOnly.unsubscribe).toBeUndefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeNotifyReadWrite)", function(done) {
-                            expect(isOnProxyAttributeNotifyReadWrite.get).toBeDefined();
-                            expect(isOnProxyAttributeNotifyReadWrite.set).toBeDefined();
-                            expect(isOnProxyAttributeNotifyReadWrite.subscribe).toBeDefined();
-                            expect(isOnProxyAttributeNotifyReadWrite.unsubscribe).toBeDefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeNotifyRead)", function(done) {
-                            expect(isOnProxyAttributeNotifyRead.get).toBeDefined();
-                            expect(isOnProxyAttributeNotifyRead.set).toBeUndefined();
-                            expect(isOnProxyAttributeNotifyRead.subscribe).toBeDefined();
-                            expect(isOnProxyAttributeNotifyRead.unsubscribe).toBeDefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeNotifyWrite)", function(done) {
-                            expect(isOnProxyAttributeNotifyWrite.get).toBeUndefined();
-                            expect(isOnProxyAttributeNotifyWrite.set).toBeDefined();
-                            expect(isOnProxyAttributeNotifyWrite.subscribe).toBeDefined();
-                            expect(isOnProxyAttributeNotifyWrite.unsubscribe).toBeDefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeNotify)", function(done) {
-                            expect(isOnProxyAttributeNotify.get).toBeUndefined();
-                            expect(isOnProxyAttributeNotify.set).toBeUndefined();
-                            expect(isOnProxyAttributeNotify.subscribe).toBeDefined();
-                            expect(isOnProxyAttributeNotify.unsubscribe).toBeDefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeReadWrite)", function(done) {
-                            expect(isOnProxyAttributeReadWrite.get).toBeDefined();
-                            expect(isOnProxyAttributeReadWrite.set).toBeDefined();
-                            expect(isOnProxyAttributeReadWrite.subscribe).toBeUndefined();
-                            expect(isOnProxyAttributeReadWrite.unsubscribe).toBeUndefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeRead)", function(done) {
-                            expect(isOnProxyAttributeRead.get).toBeDefined();
-                            expect(isOnProxyAttributeRead.set).toBeUndefined();
-                            expect(isOnProxyAttributeRead.subscribe).toBeUndefined();
-                            expect(isOnProxyAttributeRead.unsubscribe).toBeUndefined();
-                            done();
-                        });
-
-                        it("has correct members (ProxyAttributeWrite)", function(done) {
-                            expect(isOnProxyAttributeWrite.get).toBeUndefined();
-                            expect(isOnProxyAttributeWrite.set).toBeDefined();
-                            expect(isOnProxyAttributeWrite.subscribe).toBeUndefined();
-                            expect(isOnProxyAttributeWrite.unsubscribe).toBeUndefined();
                             done();
                         });
 
@@ -607,11 +493,12 @@ module.exports = (function (ProxyAttribute, ProxyAttributeNotifyReadWrite, Proxy
                                 function(done) {
                                     var proxy = {};
                                     var radioStationProxyAttributeWrite =
-                                            new ProxyAttributeWrite(
+                                            new ProxyAttribute(
                                                     proxy,
                                                     settings,
                                                     "radioStationProxyAttributeWrite",
-                                                    RadioStation);
+                                                    RadioStation,
+                                                    "WRITE");
 
                                     expect(function() {
                                         radioStationProxyAttributeWrite.set({
@@ -623,7 +510,4 @@ module.exports = (function (ProxyAttribute, ProxyAttributeNotifyReadWrite, Proxy
                                     }).toThrow();
                                     done();
                                 });
-                    });
-
-}(ProxyAttribute, ProxyAttributeNotifyReadWrite, ProxyAttributeNotifyRead, ProxyAttributeNotifyWrite, ProxyAttributeNotify, ProxyAttributeReadWrite, ProxyAttributeRead, ProxyAttributeWrite, DiscoveryQos, MessagingQos, OnChangeWithKeepAliveSubscriptionQos, RequestReplyManager, Request, TestEnum, ComplexTestType, TypeRegistrySingleton, Promise, DiscoveryEntryWithMetaInfo, Version, ProviderQos));    // require
-                                                                                                                                                                                                                                                                                                                                                                                                               /*jslint nomen: false */
+                    }); /*jslint nomen: false */

@@ -21,7 +21,6 @@
 var Typing = require('../../util/Typing');
 var WebSocketMessagingStub = require('./WebSocketMessagingStub');
 var WebSocketAddress = require('../../system/RoutingTypes/WebSocketAddress');
-module.exports = (function(Typing, WebSocketMessagingStub, WebSocketAddress) {
 
     /**
      * @constructor
@@ -52,6 +51,4 @@ module.exports = (function(Typing, WebSocketMessagingStub, WebSocketAddress) {
         };
     };
 
-    return WebSocketMessagingStubFactory;
-
-}(Typing, WebSocketMessagingStub, WebSocketAddress));
+    module.exports = WebSocketMessagingStubFactory;

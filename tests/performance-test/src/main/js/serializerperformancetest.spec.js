@@ -20,24 +20,24 @@
  */
 
 var PerformanceUtilities = require("./performanceutilities.js");
-var btoa = require('btoa');
-var atob = require('atob');
-var uuid = require('uuid')
-var numWarmups = 1000
-var numRuns = 1000
+var btoa = require("btoa");
+var atob = require("atob");
+var uuid = require("uuid");
+var numWarmups = 1000;
+var numRuns = 1000;
 
 describe("Serializer Performance Test", function() {
     var toMicro = function(highResTime) {
         return highResTime[0] * 1000000 + highResTime[1] / 1000;
-    }
+    };
 
     var executeTest = function(testName, testRunner) {
-        for(var i=0 ; i < numWarmups ; i++) {
-            testRunner()
+        for (var i = 0 ; i < numWarmups ; i++) {
+            testRunner();
         }
 
         var startTimeHighRes = process.hrtime();
-        for(var i=0 ; i < numRuns ; i++) {
+        for (var i = 0 ; i < numRuns ; i++) {
             testRunner();
         }
         var endTimeHighRes = process.hrtime();
@@ -52,21 +52,21 @@ describe("Serializer Performance Test", function() {
         var byteArray = PerformanceUtilities.createByteArray(byteArraySize, byteArrayInitValue);
 
         var testProcedure = function() {
-             JSON.stringify(byteArray)
-        }
+             JSON.stringify(byteArray);
+        };
 
-        executeTest(nameTest("Non-Base64", "encode", byteArraySize, byteArrayInitValue), testProcedure)
-    }
+        executeTest(nameTest("Non-Base64", "encode", byteArraySize, byteArrayInitValue), testProcedure);
+    };
 
     var runNonBase64_decode = function(byteArraySize, byteArrayInitValue) {
         var jsonString = JSON.stringify(PerformanceUtilities.createByteArray(byteArraySize, byteArrayInitValue));
 
         var testProcedure = function() {
-            JSON.parse(jsonString)
-        }
+            JSON.parse(jsonString);
+        };
 
-        executeTest(nameTest("Non-Base64", "decode", byteArraySize, byteArrayInitValue), testProcedure)
-    }
+        executeTest(nameTest("Non-Base64", "decode", byteArraySize, byteArrayInitValue), testProcedure);
+    };
 
     var runBase64_encode = function(byteArraySize, byteArrayInitValue) {
         var byteArray = PerformanceUtilities.createByteArray(byteArraySize, byteArrayInitValue);
@@ -74,64 +74,64 @@ describe("Serializer Performance Test", function() {
         var testProcedure = function() {
             var base64ByteArray = btoa(byteArray);
             JSON.stringify(base64ByteArray);
-        }
+        };
 
-        executeTest(nameTest("Base64", "encode", byteArraySize, byteArrayInitValue), testProcedure)
-    }
+        executeTest(nameTest("Base64", "encode", byteArraySize, byteArrayInitValue), testProcedure);
+    };
 
     var runBase64_decode = function(byteArraySize, byteArrayInitValue) {
         var jsonString = JSON.stringify(btoa(PerformanceUtilities.createByteArray(byteArraySize, byteArrayInitValue)));
 
         var testProcedure = function() {
-            var byteArray = JSON.parse(jsonString)
-            atob(byteArray)
-        }
+            var byteArray = JSON.parse(jsonString);
+            atob(byteArray);
+        };
 
-        executeTest(nameTest("Base64", "decode", byteArraySize, byteArrayInitValue), testProcedure)
-    }
+        executeTest(nameTest("Base64", "decode", byteArraySize, byteArrayInitValue), testProcedure);
+    };
 
     var nameTest = function(baseMode, encodeMode, byteArraySize, byteArrayInitValue) {
-        return baseMode + ", " + encodeMode + ", " + byteArraySize + " bytes, " + "array content: " + byteArrayInitValue
-    }
+        return baseMode + ", " + encodeMode + ", " + byteArraySize + " bytes, " + "array content: " + byteArrayInitValue;
+    };
 
     it("Non-Base64 - encode", function() {
-        console.log("Runs: " + numRuns + ", Warmups: " + numWarmups)
-        runNonBase64_encode(1000, 123)
-        runNonBase64_encode(1000, 1)
-        runNonBase64_encode(10000, 123)
-        runNonBase64_encode(10000, 1)
-        runNonBase64_encode(100000, 123)
-        runNonBase64_encode(100000, 1)
+        console.log("Runs: " + numRuns + ", Warmups: " + numWarmups);
+        runNonBase64_encode(1000, 123);
+        runNonBase64_encode(1000, 1);
+        runNonBase64_encode(10000, 123);
+        runNonBase64_encode(10000, 1);
+        runNonBase64_encode(100000, 123);
+        runNonBase64_encode(100000, 1);
     });
 
     it("Base64 - encode", function() {
-        console.log("Runs: " + numRuns + ", Warmups: " + numWarmups)
-        runBase64_encode(1000, 123)
-        runBase64_encode(1000, 1)
-        runBase64_encode(10000, 123)
-        runBase64_encode(10000, 1)
-        runBase64_encode(100000, 123)
-        runBase64_encode(100000, 1)
+        console.log("Runs: " + numRuns + ", Warmups: " + numWarmups);
+        runBase64_encode(1000, 123);
+        runBase64_encode(1000, 1);
+        runBase64_encode(10000, 123);
+        runBase64_encode(10000, 1);
+        runBase64_encode(100000, 123);
+        runBase64_encode(100000, 1);
     });
 
     it("Non-Base64 - decode", function() {
-        console.log("Runs: " + numRuns + ", Warmups: " + numWarmups)
-        runNonBase64_decode(1000, 123)
-        runNonBase64_decode(1000, 1)
-        runNonBase64_decode(10000, 123)
-        runNonBase64_decode(10000, 1)
-        runNonBase64_decode(100000, 123)
-        runNonBase64_decode(100000, 1)
+        console.log("Runs: " + numRuns + ", Warmups: " + numWarmups);
+        runNonBase64_decode(1000, 123);
+        runNonBase64_decode(1000, 1);
+        runNonBase64_decode(10000, 123);
+        runNonBase64_decode(10000, 1);
+        runNonBase64_decode(100000, 123);
+        runNonBase64_decode(100000, 1);
     });
 
     it("Base64 - decode", function() {
-        console.log("Runs: " + numRuns + ", Warmups: " + numWarmups)
-        runBase64_decode(1000, 123)
-        runBase64_decode(1000, 1)
-        runBase64_decode(10000, 123)
-        runBase64_decode(10000, 1)
-        runBase64_decode(100000, 123)
-        runBase64_decode(100000, 1)
+        console.log("Runs: " + numRuns + ", Warmups: " + numWarmups);
+        runBase64_decode(1000, 123);
+        runBase64_decode(1000, 1);
+        runBase64_decode(10000, 123);
+        runBase64_decode(10000, 1);
+        runBase64_decode(100000, 123);
+        runBase64_decode(100000, 1);
     });
 
     // Measure how passing a simple replacer function affects the performance.
@@ -142,18 +142,18 @@ describe("Serializer Performance Test", function() {
         };
 
         var testProcedure = function() {
-            var testType = { testKey : uuid() };
-            JSON.stringify(testType, replacerFunction)
-        }
+            var testType = { testKey: uuid() };
+            JSON.stringify(testType, replacerFunction);
+        };
 
         executeTest("Serializer with replacement", testProcedure);
     });
 
     it("Serialize Without Replacement", function() {
         var testProcedure = function() {
-            var testType = { testKey : uuid() };
-            JSON.stringify(testType)
-        }
+            var testType = { testKey: uuid() };
+            JSON.stringify(testType);
+        };
 
         executeTest("Serializer without replacement", testProcedure);
     });

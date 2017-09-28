@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -22,9 +22,8 @@ var Typing = require('../../util/Typing');
 var LoggerFactory = require('../../system/LoggerFactory');
 var DiagnosticTags = require('../../system/DiagnosticTags');
 var JoynrException = require('../../exceptions/JoynrException');
-module.exports =
-        (function(Typing, LoggerFactory, DiagnosticTags, JoynrException) {
 
+ var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
     /**
      * @constructor MqttMessagingSkeleton
      * @param {Object} settings
@@ -42,9 +41,8 @@ module.exports =
                         "settings.messageRouter");
                 Typing.checkProperty(settings.address, "MqttAddress", "settings.address");
 
-                var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
-
-                var multicastSubscriptionCount = {};
+                this._multicastSubscriptionCount = {};
+                this._settings = settings;
 
                 settings.client.onmessage =
                         function(topic, message) {
@@ -55,51 +53,50 @@ module.exports =
                                 log.error("unable to process message: "
                                     + e
                                     + (e instanceof JoynrException ? " " + e.detailMessage : "")
-                                    + " \nmessge: "
+                                    + " \nmessage: "
                                     + DiagnosticTags.forJoynrMessage(message));
                             }
                         };
 
                 settings.client.subscribe(settings.address.topic + "/#");
 
-                function translateWildcard(multicastId) {
-                    if (multicastId.match(/[\w\W]*\/[*]$/)) {
-                        return multicastId.replace(/\/\*/g, '/#');
-                    }
-                    return multicastId;
-                }
-
-                this.registerMulticastSubscription =
-                        function(multicastId) {
-                            if (multicastSubscriptionCount[multicastId] === undefined) {
-                                multicastSubscriptionCount[multicastId] = 0;
-                            }
-                            settings.client.subscribe(translateWildcard(multicastId));
-                            multicastSubscriptionCount[multicastId] =
-                                    multicastSubscriptionCount[multicastId] + 1;
-                        };
-
-                this.unregisterMulticastSubscription = function(multicastId) {
-                    var subscribersCount = multicastSubscriptionCount[multicastId];
-                    if (subscribersCount !== undefined) {
-                        subscribersCount--;
-                        if (subscribersCount === 0) {
-                            settings.client.unsubscribe(translateWildcard(multicastId));
-                            delete multicastSubscriptionCount[multicastId];
-                        } else {
-                            multicastSubscriptionCount[multicastId] = subscribersCount;
-                        }
-                    }
-                };
-
-                /**
-                 * @function MqttMessagingSkeleton#shutdown
-                 */
-                this.shutdown = function shutdown() {
-                    settings.client.close();
-                };
             };
 
-    return MqttMessagingSkeleton;
+    MqttMessagingSkeleton.prototype._translateWildcard = function(multicastId) {
+        if (multicastId.match(/[\w\W]*\/[*]$/)) {
+            return multicastId.replace(/\/\*/g, "/#");
+        }
+        return multicastId;
+    };
 
-        }(Typing, LoggerFactory, DiagnosticTags, JoynrException));
+    MqttMessagingSkeleton.prototype.registerMulticastSubscription =
+            function(multicastId) {
+                if (this._multicastSubscriptionCount[multicastId] === undefined) {
+                    this._multicastSubscriptionCount[multicastId] = 0;
+                }
+                this._settings.client.subscribe(this._translateWildcard(multicastId));
+                this._multicastSubscriptionCount[multicastId] =
+                        this._multicastSubscriptionCount[multicastId] + 1;
+            };
+
+    MqttMessagingSkeleton.prototype.unregisterMulticastSubscription = function(multicastId) {
+        var subscribersCount = this._multicastSubscriptionCount[multicastId];
+        if (subscribersCount !== undefined) {
+            subscribersCount--;
+            if (subscribersCount === 0) {
+                this._settings.client.unsubscribe(this._translateWildcard(multicastId));
+                delete this._multicastSubscriptionCount[multicastId];
+            } else {
+                this._multicastSubscriptionCount[multicastId] = subscribersCount;
+            }
+        }
+    };
+
+    /**
+     * @function MqttMessagingSkeleton#shutdown
+     */
+    MqttMessagingSkeleton.prototype.shutdown = function shutdown() {
+        this._settings.client.close();
+    };
+
+    module.exports = MqttMessagingSkeleton;

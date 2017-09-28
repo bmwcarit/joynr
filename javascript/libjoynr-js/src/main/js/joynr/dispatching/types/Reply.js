@@ -18,9 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
-module.exports = (function(Util, Typing) {
 
     /**
      * @name Reply
@@ -83,6 +82,4 @@ module.exports = (function(Util, Typing) {
         return Object.freeze(this);
     }
 
-    return Reply;
-
-}(UtilInternal, Typing));
+    module.exports = Reply;

@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -19,7 +19,6 @@
  * #L%
  */
 var Typing = require('../../util/Typing');
-module.exports = (function(Typing) {
 
     /**
      * @name BrowserMessagingStub
@@ -30,21 +29,21 @@ module.exports = (function(Typing) {
      * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
      */
     function BrowserMessagingStub(settings) {
-        /**
-         * @name BrowserMessagingStub#transmit
-         * @function
-         *
-         * @param {JoynrMessage} joynrMessage the joynr message to transmit
-         */
-        this.transmit = function transmit(joynrMessage) {
-            return settings.webMessagingStub.transmit({
-                windowId : settings.windowId,
-                message : joynrMessage
-            });
-        };
+
+        this._settings = settings;
 
     }
+    /**
+     * @name BrowserMessagingStub#transmit
+     * @function
+     *
+     * @param {JoynrMessage} joynrMessage the joynr message to transmit
+     */
+    BrowserMessagingStub.prototype.transmit = function transmit(joynrMessage) {
+        return this._settings.webMessagingStub.transmit({
+            windowId : this._settings.windowId,
+            message : joynrMessage
+        });
+    };
 
-    return BrowserMessagingStub;
-
-}(Typing));
+    module.exports = BrowserMessagingStub;

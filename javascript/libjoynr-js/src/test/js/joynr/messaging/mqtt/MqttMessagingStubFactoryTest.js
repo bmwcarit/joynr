@@ -21,7 +21,6 @@ var Promise = require('../../../../classes/global/Promise');
 var SharedMqttClient = require('../../../../classes/joynr/messaging/mqtt/SharedMqttClient');
 var MqttAddress = require('../../../../classes/joynr/system/RoutingTypes/MqttAddress');
 var MqttMessagingStubFactory = require('../../../../classes/joynr/messaging/mqtt/MqttMessagingStubFactory');
-module.exports = (function (Promise, SharedMqttClient, MqttAddress, MqttMessagingStubFactory) {
 
     describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStubFactory", function() {
         var mqttMessagingStubFactory, mqttClient;
@@ -70,5 +69,3 @@ module.exports = (function (Promise, SharedMqttClient, MqttAddress, MqttMessagin
         });
 
     });
-
-}(Promise, SharedMqttClient, MqttAddress, MqttMessagingStubFactory));

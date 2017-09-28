@@ -18,7 +18,4 @@
  * limitations under the License.
  * #L%
  */
-var mqtt = require('mqtt');
-module.exports = (function(mqtt) {
-    return mqtt;
-}(mqtt));
+module.exports = require("mqtt");

@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,6 +18,7 @@
  * limitations under the License.
  * #L%
  */
+
 /**
  * The <code>MessageQueue</code> is a joynr internal data structure. The Message Queue caches incoming messages, which cannot be shipped
  * to the correct participant. Once a participant with the matching participantId is registered, the incoming message is forwarded to him
@@ -25,11 +26,10 @@
 var LoggerFactory = require('../../system/LoggerFactory');
 var DiagnosticTags = require('../../system/DiagnosticTags');
 var LongTimer = require('../../util/LongTimer');
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var JoynrMessage = require('../JoynrMessage');
-module.exports =
-        (function(LoggerFactory, DiagnosticTags, LongTimer, Util, JoynrMessage) {
 
+            var log = LoggerFactory.getLogger("joynr/messaging/routing/MessageQueue");
             var defaultSettings;
             /**
              * MessageQueue caches incoming messages, and cached messages can be retrieved in case the destination participant becomes visible
@@ -46,106 +46,10 @@ module.exports =
              * to the correct participant. Once a participant with the matching participantId is registered, the incoming message is forwarded to him
              */
             function MessageQueue(settings) {
-                var log = LoggerFactory.getLogger("joynr/messaging/routing/MessageQueue");
-                var messageQueues = {};
-                var self = this;
 
-                Util.extend(self, defaultSettings, settings);
-
-                self.currentQueueSize = 0;
-
-                /**
-                 * resets the queue
-                 *
-                 * @name MessageQueue#reset()
-                 * @function
-                 *
-                 */
-                self.reset = function reset() {
-                    self.currentQueueSize = 0;
-                    messageQueues = {};
-                };
-
-                function removeExpiredMessage(message) {
-                    var index, queue;
-                    queue = messageQueues[message.to];
-
-                    if (queue === undefined) {
-                        return;
-                    }
-
-                    index = queue.indexOf(message);
-                    if (index !== -1) {
-                        queue.splice(index, 1);
-                    }
-                }
-
-                function removeMessageWhenTtlExpired(message) {
-                    var ttl;
-                    ttl = message.expiryDate - Date.now();
-                    // some browsers do not support negative timeout times.
-                    ttl = ttl > 0 ? ttl : 0;
-                    LongTimer.setTimeout(function() {
-                        removeExpiredMessage(message);
-                    }, ttl);
-                }
-
-                /**
-                 * @name MessageQueue#putMessage
-                 * @function
-                 *
-                 * @param {JoynrMessage}
-                 *            joynrMessage
-                 */
-                self.putMessage =
-                        function putMessage(message) {
-                            // drop message if maximum queue size has been reached
-                            if (message.payload !== undefined) {
-                                var messageSize = Util.getLengthInBytes(message.payload);
-                                if ((self.currentQueueSize + messageSize) <= (self.maxQueueSizeInKBytes * 1024)) {
-                                    self.currentQueueSize = self.currentQueueSize + messageSize;
-                                    if (messageQueues[message.to] === undefined) {
-                                        messageQueues[message.to] = [];
-                                    }
-                                    messageQueues[message.to].push(message);
-                                    removeMessageWhenTtlExpired(message);
-                                } else {
-                                    log
-                                            .error(
-                                                    "message cannot be added to message queue, as the queue buffer size has been exceeded",
-                                                    DiagnosticTags.forJoynrMessage(message));
-                                }
-                            }
-                        };
-
-                /**
-                 * gets the queue messages for the participant
-                 *
-                 * @name MessageQueue#getAndRemoveMessages
-                 * @function
-                 *
-                 * @param {String}
-                 *            participantId
-                 */
-                self.getAndRemoveMessages = function getAndRemoveMessages(participantId) {
-                    var result = [];
-                    if (messageQueues[participantId] !== undefined) {
-                        result = messageQueues[participantId];
-                        delete messageQueues[participantId];
-                    }
-                    return result;
-                };
-
-                /**
-                 * Shutdown the message queue
-                 *
-                 * @function
-                 * @name MessageQueue#shutdown
-                 */
-                self.shutdown = function shutdown() {
-                    messageQueues = {};
-                    self.currentQueueSize = 0;
-                };
+                this._messageQueues = {};
+                Util.extend(this, defaultSettings, settings);
+                this.currentQueueSize = 0;
             }
 
             MessageQueue.CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS = 5000;
@@ -155,5 +59,97 @@ module.exports =
                 maxQueueSizeInKBytes : MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES
             };
 
-            return MessageQueue;
-        }(LoggerFactory, DiagnosticTags, LongTimer, UtilInternal, JoynrMessage));
+            /**
+             * resets the queue
+             *
+             * @name MessageQueue#reset()
+             * @function
+             *
+             */
+            MessageQueue.prototype.reset = function reset() {
+                this.currentQueueSize = 0;
+                this._messageQueues = {};
+            };
+
+            MessageQueue.prototype._removeExpiredMessage = function(message) {
+                var index, queue;
+                queue = this._messageQueues[message.to];
+
+                if (queue === undefined) {
+                    return;
+                }
+
+                index = queue.indexOf(message);
+                if (index !== -1) {
+                    queue.splice(index, 1);
+                }
+            };
+
+            MessageQueue.prototype._removeMessageWhenTtlExpired = function(message) {
+                var ttl;
+                ttl = message.expiryDate - Date.now();
+                // some browsers do not support negative timeout times.
+                ttl = ttl > 0 ? ttl : 0;
+
+                LongTimer.setTimeout(this._removeExpiredMessage.bind(this, message), ttl);
+            };
+
+            /**
+             * @name MessageQueue#putMessage
+             * @function
+             *
+             * @param {JoynrMessage}
+             *            joynrMessage
+             */
+            MessageQueue.prototype.putMessage =
+                    function putMessage(message) {
+                        // drop message if maximum queue size has been reached
+                        if (message.payload !== undefined) {
+                            var messageSize = Util.getLengthInBytes(message.payload);
+                            if ((this.currentQueueSize + messageSize) <= (this.maxQueueSizeInKBytes * 1024)) {
+                                this.currentQueueSize = this.currentQueueSize + messageSize;
+                                if (this._messageQueues[message.to] === undefined) {
+                                    this._messageQueues[message.to] = [];
+                                }
+                                this._messageQueues[message.to].push(message);
+                                this._removeMessageWhenTtlExpired(message);
+                            } else {
+                                log
+                                        .error(
+                                                "message cannot be added to message queue, as the queue buffer size has been exceeded",
+                                                DiagnosticTags.forJoynrMessage(message));
+                            }
+                        }
+                    };
+
+            /**
+             * gets the queue messages for the participant
+             *
+             * @name MessageQueue#getAndRemoveMessages
+             * @function
+             *
+             * @param {String}
+             *            participantId
+             */
+            MessageQueue.prototype.getAndRemoveMessages =
+                    function getAndRemoveMessages(participantId) {
+                        var result = [];
+                        if (this._messageQueues[participantId] !== undefined) {
+                            result = this._messageQueues[participantId];
+                            delete this._messageQueues[participantId];
+                        }
+                        return result;
+                    };
+
+            /**
+             * Shutdown the message queue
+             *
+             * @function
+             * @name MessageQueue#shutdown
+             */
+            MessageQueue.prototype.shutdown = function shutdown() {
+                this._messageQueues = {};
+                this.currentQueueSize = 0;
+            };
+
+            module.exports = MessageQueue;

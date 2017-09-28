@@ -18,8 +18,6 @@
  * #L%
  */
 
-module.exports =
-        (function() {
             var window = global.window || {location: {}};
             var location = global.location || {};
             var defaultSettings = {};
@@ -27,5 +25,4 @@ module.exports =
             defaultSettings.parentWindow = window.opener || window.top;
             defaultSettings.parentOrigin =
                     location.origin || (window.location.protocol + '//' + window.location.host);
-            return defaultSettings;
-        }());
+            module.exports = defaultSettings;

@@ -18,7 +18,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * @name MulticastWildcardRegexFactory
@@ -26,21 +25,20 @@ module.exports = (function() {
      */
     function MulticastWildcardRegexFactory() {
 
-        this.createIdPattern = function(multicastId) {
-            var patternString = multicastId.replace(/^\+\//g, "[^/]+/");
-            patternString = patternString.replace(/\/\+\//g, "/[^/]+/");
-            patternString = patternString.replace(/([\w\W]*)\/[\\+]$/, "$1/[^/]+$");
-            patternString = patternString.replace(/([\w\W]*)\/[\\*]$/, "$1(/.*)?$");
-            if (patternString.length === 0 || patternString[patternString.length - 1] !== '$') {
-                patternString += "$";
-            }
-            if (patternString.length === 0 || patternString[0] !== '^') {
-                patternString = "^" + patternString;
-            }
-            return patternString;
-        };
     }
 
-    return MulticastWildcardRegexFactory;
+    MulticastWildcardRegexFactory.prototype.createIdPattern = function(multicastId) {
+        var patternString = multicastId.replace(/^\+\//g, "[^/]+/");
+        patternString = patternString.replace(/\/\+\//g, "/[^/]+/");
+        patternString = patternString.replace(/([\w\W]*)\/[\\+]$/, "$1/[^/]+$");
+        patternString = patternString.replace(/([\w\W]*)\/[\\*]$/, "$1(/.*)?$");
+        if (patternString.length === 0 || patternString[patternString.length - 1] !== "$") {
+            patternString += "$";
+        }
+        if (patternString.length === 0 || patternString[0] !== "^") {
+            patternString = "^" + patternString;
+        }
+        return patternString;
+    };
 
-}());
+    module.exports = MulticastWildcardRegexFactory;

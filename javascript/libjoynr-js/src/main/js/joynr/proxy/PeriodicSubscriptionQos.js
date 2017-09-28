@@ -19,11 +19,9 @@
  * #L%
  */
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var SubscriptionQos = require('./SubscriptionQos');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(Typing, Util, SubscriptionQos, LoggerFactory) {
 
             var defaultSettings;
 
@@ -247,6 +245,4 @@ module.exports =
                 alertAfterIntervalMs : PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS
             };
 
-            return PeriodicSubscriptionQos;
-
-        }(Typing, UtilInternal, SubscriptionQos, LoggerFactory));
+            module.exports = PeriodicSubscriptionQos;

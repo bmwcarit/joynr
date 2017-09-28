@@ -1,5 +1,4 @@
-/*jslint node: true */
-
+/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,10 +17,9 @@
  * limitations under the License.
  * #L%
  */
+
 var Typing = require('../../util/Typing');
 var BrowserMessagingStub = require('./BrowserMessagingStub');
-module.exports =
-        (function(Typing, BrowserMessagingStub) {
 
     /**
      * @constructor
@@ -37,22 +35,20 @@ module.exports =
                 "WebMessagingStub",
                 "settings.webMessagingStub");
 
-        /**
-         * @name BrowserMessagingStubFactory#build
-         * @function
-         *
-         * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
-         */
-        this.build = function build(address) {
-            Typing.checkProperty(address, "BrowserAddress", "address");
-
-            return new BrowserMessagingStub({
-                windowId : address.windowId,
-                webMessagingStub : settings.webMessagingStub
-            });
-        };
+        this._settings = settings;
     }
 
-    return BrowserMessagingStubFactory;
+    /**
+     * @name BrowserMessagingStubFactory#build
+     * @function
+     *
+     * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
+     */
+    BrowserMessagingStubFactory.prototype.build = function build(address) {
+        return new BrowserMessagingStub({
+            windowId : address.windowId,
+            webMessagingStub : this._settings.webMessagingStub
+        });
+    };
 
-        }(Typing, BrowserMessagingStub));
+            module.exports = BrowserMessagingStubFactory;

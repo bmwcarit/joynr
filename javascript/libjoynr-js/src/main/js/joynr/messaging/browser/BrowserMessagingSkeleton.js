@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -20,11 +20,9 @@
  */
 var JoynrMessage = require('../JoynrMessage');
 var Typing = require('../../util/Typing');
-var UtilInternal = require('../../util/UtilInternal');
-var JsonSerializer = require('../../util/JSONSerializer');
+var Util = require('../../util/UtilInternal');
+var JSONSerializer = require('../../util/JSONSerializer');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports =
-        (function(JoynrMessage, Typing, Util, JSONSerializer, LoggerFactory) {
 
     /**
      * @constructor BrowserMessagingSkeleton
@@ -41,48 +39,49 @@ module.exports =
                         Object,
                         "settings.webMessagingSkeleton");
 
-        var receiverCallbacks = [];
+        var that = this;
+        this.receiverCallbacks = [];
 
-        settings.webMessagingSkeleton.registerListener(function(message) {
+        function webMessagingSkeletonListener(message) {
             if (message !== undefined) {
                 var joynrMessage = new JoynrMessage(message);
 
-                Util.fire(receiverCallbacks, joynrMessage);
+                Util.fire(that.receiverCallbacks, joynrMessage);
             } else {
                 log.warn("message with content \""
                     + JSONSerializer.stringify(message)
                     + "\" could not be processed");
             }
-        });
+        }
 
-        /**
-         * Registers the listener function
-         *
-         * @function BrowserMessagingSkeleton#registerListener
-         *
-         * @param {Function} listener a listener function that should be added and should receive messages
-         */
-        this.registerListener = function(listener) {
-            Typing.checkProperty(listener, "Function", "listener");
-
-            receiverCallbacks.push(listener);
-        };
-
-        /**
-         * Unregisters the listener function
-         *
-         * @function BrowserMessagingSkeleton#unregisterListener
-         *
-         * @param {Function} listener the listener function that should re removed and shouldn't receive messages any more
-         */
-        this.unregisterListener = function(listener) {
-            Typing.checkProperty(listener, "Function", "listener");
-
-            Util.removeElementFromArray(receiverCallbacks, listener);
-        };
+        settings.webMessagingSkeleton.registerListener(webMessagingSkeletonListener);
 
     }
 
-    return BrowserMessagingSkeleton;
+    /**
+     * Registers the listener function
+     *
+     * @function BrowserMessagingSkeleton#registerListener
+     *
+     * @param {Function} listener a listener function that should be added and should receive messages
+     */
+    BrowserMessagingSkeleton.prototype.registerListener = function(listener) {
+        Typing.checkProperty(listener, "Function", "listener");
 
-        }(JoynrMessage, Typing, UtilInternal, JsonSerializer, LoggerFactory));
+        this.receiverCallbacks.push(listener);
+    };
+
+    /**
+     * Unregisters the listener function
+     *
+     * @function BrowserMessagingSkeleton#unregisterListener
+     *
+     * @param {Function} listener the listener function that should re removed and shouldn't receive messages any more
+     */
+    BrowserMessagingSkeleton.prototype.unregisterListener = function(listener) {
+        Typing.checkProperty(listener, "Function", "listener");
+
+        Util.removeElementFromArray(this.receiverCallbacks, listener);
+    };
+
+    module.exports = BrowserMessagingSkeleton;

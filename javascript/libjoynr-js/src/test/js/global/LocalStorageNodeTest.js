@@ -19,7 +19,6 @@
  * #L%
  */
 var LocalStorage = require('../../classes/global/LocalStorageNode');
-module.exports = (function(LocalStorage) {
 
     describe("local storage", function() {
 
@@ -70,4 +69,3 @@ module.exports = (function(LocalStorage) {
         });
 
     });
-}(LocalStorage));

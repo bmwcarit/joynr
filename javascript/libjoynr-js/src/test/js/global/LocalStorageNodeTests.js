@@ -26,10 +26,8 @@
  *
  * @returns constructor for a localStorage object
  */
-var LocalStorageNode = require('../../classes/global/LocalStorageNode');
+var LocalStorage = require('../../classes/global/LocalStorageNode');
 var uuid = require('../../classes/joynr/util/uuid');
-module.exports =
-        (function(LocalStorage, uuid) {
     /**
      * LocalStorage constructor (node wrapper for LocalStorage)
      * @constructor LocalStorageWrapper
@@ -51,5 +49,4 @@ module.exports =
                         settings.location || "${project.build.directory}/LocalStorage-" + uuid();
                 return new LocalStorage(settings);
             };
-    return LocalStorageWrapper;
-        }(LocalStorageNode, uuid));
+    module.exports = LocalStorageWrapper;

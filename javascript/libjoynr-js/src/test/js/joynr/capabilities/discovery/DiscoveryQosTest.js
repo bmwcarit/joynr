@@ -22,8 +22,6 @@ var DiscoveryQos = require('../../../../classes/joynr/proxy/DiscoveryQos');
 var ArbitrationStrategyCollection =
         require('../../../../classes/joynr/types/ArbitrationStrategyCollection');
 var DiscoveryScope = require('../../../../classes/joynr/types/DiscoveryScope');
-module.exports =
-        (function(DiscoveryQos, ArbitrationStrategyCollection, DiscoveryScope) {
 
     describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", function() {
         it("is instantiable", function() {
@@ -112,5 +110,3 @@ module.exports =
             });
         });
     });
-
-        }(DiscoveryQos, ArbitrationStrategyCollection, DiscoveryScope)); // require

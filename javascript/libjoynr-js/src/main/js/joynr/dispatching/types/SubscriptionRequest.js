@@ -18,19 +18,11 @@
  * limitations under the License.
  * #L%
  */
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
 var PeriodicSubscriptionQos = require('../../proxy/PeriodicSubscriptionQos');
 var OnChangeSubscriptionQos = require('../../proxy/OnChangeSubscriptionQos');
-var OnChangeWithKeepAliveSubscriptionQos =
-        require('../../proxy/OnChangeWithKeepAliveSubscriptionQos');
-module.exports =
-        (function(
-                Util,
-                Typing,
-                PeriodicSubscriptionQos,
-                OnChangeSubscriptionQos,
-                OnChangeWithKeepAliveSubscriptionQos) {
+var OnChangeWithKeepAliveSubscriptionQos =  require('../../proxy/OnChangeWithKeepAliveSubscriptionQos');
 
     var defaultSettings = {
         qos : new PeriodicSubscriptionQos()
@@ -104,11 +96,4 @@ module.exports =
         configurable : false
     });
 
-    return SubscriptionRequest;
-
-        }(
-                UtilInternal,
-                Typing,
-                PeriodicSubscriptionQos,
-                OnChangeSubscriptionQos,
-                OnChangeWithKeepAliveSubscriptionQos));
+    module.exports = SubscriptionRequest;

@@ -22,10 +22,9 @@
 var JoynrLogEvent = require('./JoynrLogEvent');
 var JoynrLoggingContextTag = require('./JoynrLoggingContextTag');
 var LoggingManager = require('./LoggingManager');
-var UtilInternal = require('../util/UtilInternal');
-var JsonSerializer = require('../util/JSONSerializer');
-module.exports =
-        (function(JoynrLogEvent, JoynrLoggingContextTag, LoggingManager, Util, JSONSerializer) {
+var Util = require('../util/UtilInternal');
+var JSONSerializer = require('../util/JSONSerializer');
+
     var DEFAULT_FLUSH_INTERVAL_MS = 60000;
     var DEFAULT_FLUSH_MAX_LOGEVENTS_COUNT = 20;
     /**
@@ -198,6 +197,4 @@ module.exports =
         };
     }
 
-    return DistributedLoggingAppender;
-
-        }(JoynrLogEvent, JoynrLoggingContextTag, LoggingManager, UtilInternal, JsonSerializer));
+    module.exports = DistributedLoggingAppender;

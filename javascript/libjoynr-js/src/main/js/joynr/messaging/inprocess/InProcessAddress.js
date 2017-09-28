@@ -1,4 +1,4 @@
-/*jslint nomen:true, node:true */
+/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -17,7 +17,6 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
     /**
      * @constructor
@@ -26,31 +25,19 @@ module.exports = (function() {
      * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton that should be addressed in process
      */
     function InProcessAddress(inProcessMessagingSkeleton) {
+        this._inProcessMessagingSkeleton = inProcessMessagingSkeleton;
 
         /**
          * @name InProcessAddress#_typeName
          * @type String
          * @readonly
          */
-        /*jslint nomen: true */
         Object.defineProperty(this, "_typeName", {
             configurable : false,
             writable : false,
             enumerable : false,
             value : InProcessAddress._typeName
         });
-        /*jslint nomen: false */
-
-        /**
-         * The receive function from the corresponding local messaging receiver
-         * @name InProcessAddress#getSkeleton
-         * @function
-         *
-         * @returns {InProcessMessagingSkeleton} the skeleton that should be addressed
-         */
-        this.getSkeleton = function getSkeleton() {
-            return inProcessMessagingSkeleton;
-        };
     }
 
     /**
@@ -65,7 +52,7 @@ module.exports = (function() {
         value : "joynr.system.RoutingTypes.InProcessAddress"
     });
 
-    Object.defineProperty(InProcessAddress.prototype, 'equals', {
+    Object.defineProperty(InProcessAddress.prototype, "equals", {
         enumerable : false,
         configurable : false,
         writable : false,
@@ -87,6 +74,16 @@ module.exports = (function() {
             return true;
         }
     });
-    return InProcessAddress;
 
-}());
+    /**
+     * The receive function from the corresponding local messaging receiver
+     * @name InProcessAddress#getSkeleton
+     * @function
+     *
+     * @returns {InProcessMessagingSkeleton} the skeleton that should be addressed
+     */
+    InProcessAddress.prototype.getSkeleton = function getSkeleton() {
+        return this._inProcessMessagingSkeleton;
+    };
+
+    module.exports = InProcessAddress;

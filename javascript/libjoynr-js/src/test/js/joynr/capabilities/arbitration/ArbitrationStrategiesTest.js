@@ -26,15 +26,7 @@ var ProviderQos = require('../../../../classes/joynr/types/ProviderQos');
 var CustomParameter = require('../../../../classes/joynr/types/CustomParameter');
 var Version = require('../../../../classes/joynr/types/Version');
 var InProcessAddress = require('../../../../classes/joynr/messaging/inprocess/InProcessAddress');
-module.exports =
-        (function(
-                ArbitrationStrategyCollection,
-                DiscoveryEntry,
-                ProviderScope,
-                ProviderQos,
-                CustomParameter,
-                Version,
-                InProcessAddress) {
+
             describe(
                     "libjoynr-js.joynr.types.ArbitrationStrategyCollection",
                     function() {
@@ -288,12 +280,3 @@ module.exports =
                                 });
 
                     });
-
-        }(
-                ArbitrationStrategyCollection,
-                DiscoveryEntry,
-                ProviderScope,
-                ProviderQos,
-                CustomParameter,
-                Version,
-                InProcessAddress)); // require

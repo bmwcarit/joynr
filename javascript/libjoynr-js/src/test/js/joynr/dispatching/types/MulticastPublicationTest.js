@@ -21,7 +21,6 @@
 var MulticastPublication =
         require('../../../../classes/joynr/dispatching/types/MulticastPublication');
 var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
-module.exports = (function(MulticastPublication, RadioStation) {
 
     describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", function() {
 
@@ -56,5 +55,3 @@ module.exports = (function(MulticastPublication, RadioStation) {
         });
 
     });
-
-}(MulticastPublication, RadioStation)); // require
