@@ -819,38 +819,26 @@ private:
     boost::optional<Value> lookupOptionalWithWildcard(const Table& table,
                                                       const std::string& uid,
                                                       const std::string& domain,
-                                                      const std::string& interfaceName,
-                                                      const std::string& operation) const
-    {
-        boost::optional<Value> entry;
-        entry = lookupOptional(table, uid, domain, interfaceName, operation);
-        if (!entry) {
-            entry = lookupOptional(table, uid, domain, interfaceName, access_control::WILDCARD);
-        }
-        if (!entry) {
-            entry = lookupOptional(
-                    table, access_control::WILDCARD, domain, interfaceName, operation);
-        }
-        if (!entry) {
-            entry = lookupOptional(table,
-                                   access_control::WILDCARD,
-                                   domain,
-                                   interfaceName,
-                                   access_control::WILDCARD);
-        }
-        return entry;
-    }
-
-    template <typename Table, typename Value = typename Table::value_type>
-    boost::optional<Value> lookupOptionalWithWildcard(const Table& table,
-                                                      const std::string& uid,
-                                                      const std::string& domain,
                                                       const std::string& interfaceName) const
     {
+        // Exact match
         boost::optional<Value> entry = lookupOptional(table, uid, domain, interfaceName);
+
         if (!entry) {
+            // try to match with wildcarded userId
             entry = lookupOptional(table, access_control::WILDCARD, domain, interfaceName);
         }
+
+        if (!entry) {
+            // try to match with wildcarded domain and/or interface
+            entry = lookupOptional(table, uid, domain, interfaceName);
+        }
+
+        if (!entry) {
+            // try to match with wildcarded domain and/or interface and uid wildcarded
+            entry = lookupOptional(table, uid, domain, interfaceName);
+        }
+
         return entry;
     }
 

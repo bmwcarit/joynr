@@ -158,7 +158,9 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAcces
         const std::string& interfaceName,
         const std::string& operation)
 {
-    return lookupOptionalWithWildcard(masterAccessTable, uid, domain, interfaceName, operation);
+    // ignoring operation as not yet supported
+    std::ignore = operation;
+    return lookupOptionalWithWildcard(masterAccessTable, uid, domain, interfaceName);
 }
 
 bool LocalDomainAccessStore::updateMasterAccessControlEntry(
@@ -216,7 +218,9 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAcc
         const std::string& interfaceName,
         const std::string& operation)
 {
-    return lookupOptionalWithWildcard(mediatorAccessTable, uid, domain, interfaceName, operation);
+    // ignoring operation as not yet supported
+    std::ignore = operation;
+    return lookupOptionalWithWildcard(mediatorAccessTable, uid, domain, interfaceName);
 }
 
 bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
@@ -297,7 +301,9 @@ boost::optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessC
         const std::string& interfaceName,
         const std::string& operation)
 {
-    return lookupOptionalWithWildcard(ownerAccessTable, userId, domain, interfaceName, operation);
+    // ignoring operation as not yet supported
+    std::ignore = operation;
+    return lookupOptionalWithWildcard(ownerAccessTable, userId, domain, interfaceName);
 }
 
 bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
