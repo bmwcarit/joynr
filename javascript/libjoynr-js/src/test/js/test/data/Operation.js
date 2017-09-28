@@ -21,7 +21,7 @@
 var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
 var ErrorList = require('../../../test-classes/joynr/vehicle/radiotypes/ErrorList');
 var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
-module.exports = (function (RadioStation, ErrorList, TestEnum) {
+
     var radioStationVar = new RadioStation({
         name : "asdf"
     });
@@ -276,5 +276,4 @@ module.exports = (function (RadioStation, ErrorList, TestEnum) {
         }
     ];
 
-    return testData;
-}(RadioStation, ErrorList, TestEnum));
+module.exports = testData;
