@@ -27,13 +27,11 @@ namespace joynr
 
 KeychainImpl::KeychainImpl(std::shared_ptr<const mococrw::X509Certificate> tlsCertificate,
                            std::shared_ptr<const mococrw::AsymmetricPrivateKey> tlsKey,
-                           std::shared_ptr<const mococrw::X509Certificate> tlsRootCertificate,
-                           const std::string& ownerId)
+                           std::shared_ptr<const mococrw::X509Certificate> tlsRootCertificate)
 {
     this->tlsCertificate = tlsCertificate;
     this->tlsKey = tlsKey;
     this->tlsRootCertificate = tlsRootCertificate;
-    this->ownerId = ownerId;
 }
 
 std::shared_ptr<const mococrw::X509Certificate> KeychainImpl::getTlsCertificate() const
@@ -53,14 +51,13 @@ std::shared_ptr<const mococrw::X509Certificate> KeychainImpl::getTlsRootCertific
 
 std::string KeychainImpl::getOwnerId() const
 {
-    return ownerId;
+    return tlsCertificate->getSubjectDistinguishedName().commonName();
 }
 
 std::shared_ptr<IKeychain> KeychainImpl::createFromPEMFiles(
         const std::string& tlsCertificatePEMFilename,
         const std::string& tlsKeyPEMFilename,
         const std::string& tlsRootCertificatePEMFilename,
-        const std::string& ownerId,
         const std::string& privateKeyPassword)
 {
     auto tlsCertificate = std::make_shared<const mococrw::X509Certificate>(
@@ -71,8 +68,7 @@ std::shared_ptr<IKeychain> KeychainImpl::createFromPEMFiles(
     auto tlsRootCertificate = std::make_shared<const mococrw::X509Certificate>(
             mococrw::X509Certificate::fromPEMFile(tlsRootCertificatePEMFilename));
 
-    auto result =
-            std::make_shared<KeychainImpl>(tlsCertificate, tlsKey, tlsRootCertificate, ownerId);
+    auto result = std::make_shared<KeychainImpl>(tlsCertificate, tlsKey, tlsRootCertificate);
 
     return result;
 }

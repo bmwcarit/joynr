@@ -41,14 +41,10 @@ std::shared_ptr<IKeychain> tryLoadKeychainFromCmdLineArgs(const std::string& cer
     }
 
     if (allSSLCmdLineArgsProvided) {
-        const std::string ownerId("");
         const std::string privateKeyPassword("");
 
-        return KeychainImpl::createFromPEMFiles(certPemFilename,
-                                                privateKeyPemFilename,
-                                                caCertPemFilename,
-                                                ownerId,
-                                                privateKeyPassword);
+        return KeychainImpl::createFromPEMFiles(
+                certPemFilename, privateKeyPemFilename, caCertPemFilename, privateKeyPassword);
     }
 
     return nullptr;

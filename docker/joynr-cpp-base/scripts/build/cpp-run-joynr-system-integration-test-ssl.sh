@@ -38,7 +38,7 @@ function createCertAndPrivateKey() {
     KEYPEM_FILENAME=$2
     CERT_OUT_FILENAME=$3
 
-    openssl req -nodes -keyout $KEYPEM_FILENAME -new -days 1024 -subj '/C=DE/ST=Bavaria/L=Munich/CN=$CN' -out $CN.csr.pem
+    openssl req -nodes -keyout $KEYPEM_FILENAME -new -days 1024 -subj "/C=DE/ST=Bavaria/L=Munich/CN=$CN" -out $CN.csr.pem
     openssl x509 -req -days 1024 -CA ca.cert.pem -CAkey ca.key.pem -set_serial 01 -in $CN.csr.pem -out $CERT_OUT_FILENAME
 }
 

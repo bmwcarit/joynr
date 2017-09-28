@@ -32,8 +32,7 @@ class KeychainImpl : public IKeychain
 public:
     KeychainImpl(std::shared_ptr<const mococrw::X509Certificate> tlsCertificate,
                  std::shared_ptr<const mococrw::AsymmetricPrivateKey> tlsKey,
-                 std::shared_ptr<const mococrw::X509Certificate> tlsRootCertificate,
-                 const std::string& ownerId);
+                 std::shared_ptr<const mococrw::X509Certificate> tlsRootCertificate);
 
     std::shared_ptr<const mococrw::X509Certificate> getTlsCertificate() const final;
     std::shared_ptr<const mococrw::AsymmetricPrivateKey> getTlsKey() const final;
@@ -44,14 +43,12 @@ public:
             const std::string& tlsCertificatePEMFilename,
             const std::string& tlsKeyPEMFilename,
             const std::string& tlsRootCertificatePEMFilename,
-            const std::string& ownerId,
             const std::string& privateKeyPassword);
 
 private:
     std::shared_ptr<const mococrw::X509Certificate> tlsCertificate;
     std::shared_ptr<const mococrw::AsymmetricPrivateKey> tlsKey;
     std::shared_ptr<const mococrw::X509Certificate> tlsRootCertificate;
-    std::string ownerId;
 };
 } // namespace joynr
 
