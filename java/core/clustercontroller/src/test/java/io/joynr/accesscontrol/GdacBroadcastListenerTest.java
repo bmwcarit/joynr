@@ -84,7 +84,6 @@ public class GdacBroadcastListenerTest {
 
     @Test
     public void testDreChangedListenerForRemoveDre() {
-        userDre.setDomains(null);
         LdacDomainRoleEntryChangedBroadcastListener dreChangedListener = new LdacDomainRoleEntryChangedBroadcastListener(domainAccessControlStore);
         dreChangedListener.onReceive(ChangeType.REMOVE, userDre);
         verify(domainAccessControlStore).removeDomainRole(eq(userDre.getUid()), eq(userDre.getRole()));
@@ -99,12 +98,6 @@ public class GdacBroadcastListenerTest {
 
     @Test
     public void testMasterAceChangedListenerForRemoveAce() {
-        masterAce.setDefaultConsumerPermission(null);
-        masterAce.setPossibleConsumerPermissions(null);
-        masterAce.setDefaultRequiredTrustLevel(null);
-        masterAce.setPossibleRequiredTrustLevels(null);
-        masterAce.setDefaultRequiredControlEntryChangeTrustLevel(null);
-        masterAce.setPossibleRequiredControlEntryChangeTrustLevels(null);
         LdacMasterAccessControlEntryChangedBroadcastListener dreChangedListener = new LdacMasterAccessControlEntryChangedBroadcastListener(domainAccessControlStore);
         dreChangedListener.onReceive(ChangeType.REMOVE, masterAce);
         verify(domainAccessControlStore).removeMasterAccessControlEntry(masterAce.getUid(),
@@ -122,12 +115,6 @@ public class GdacBroadcastListenerTest {
 
     @Test
     public void testMediatorAceChangedListenerForRemoveAce() {
-        masterAce.setDefaultConsumerPermission(null);
-        masterAce.setPossibleConsumerPermissions(null);
-        masterAce.setDefaultRequiredTrustLevel(null);
-        masterAce.setPossibleRequiredTrustLevels(null);
-        masterAce.setDefaultRequiredControlEntryChangeTrustLevel(null);
-        masterAce.setPossibleRequiredControlEntryChangeTrustLevels(null);
         LdacMediatorAccessControlEntryChangedBroadcastListener dreChangedListener = new LdacMediatorAccessControlEntryChangedBroadcastListener(domainAccessControlStore);
         dreChangedListener.onReceive(ChangeType.REMOVE, masterAce);
         verify(domainAccessControlStore).removeMediatorAccessControlEntry(masterAce.getUid(),
@@ -145,9 +132,6 @@ public class GdacBroadcastListenerTest {
 
     @Test
     public void testOnwerAceChangedListenerForRemoveAce() {
-        ownerAce.setConsumerPermission(null);
-        ownerAce.setRequiredAceChangeTrustLevel(null);
-        ownerAce.setRequiredTrustLevel(null);
         LdacOwnerAccessControlEntryChangedBroadcastListener dreChangedListener = new LdacOwnerAccessControlEntryChangedBroadcastListener(domainAccessControlStore);
         dreChangedListener.onReceive(ChangeType.REMOVE, ownerAce);
         verify(domainAccessControlStore).removeOwnerAccessControlEntry(ownerAce.getUid(),
