@@ -39,7 +39,6 @@
 		<text-encoding.version>0.6.4</text-encoding.version>
 		<log4javascript.version>1.4.10</log4javascript.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
-		<mqtt.version>2.0.1</mqtt.version>
 		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
 		<project.build.optimizerResources>${project.build.directory}/build-resources/almond</project.build.optimizerResources>
 		<joynr.provisioning.brokerUri>tcp://127.0.0.1:9001</joynr.provisioning.brokerUri>
@@ -376,7 +375,7 @@
 									<version>${text-encoding.version}</version>
 									<outputDirectory>${project.build.directory}/dependencies/text-encoding</outputDirectory>
 									<includes>META-INF/resources/webjars/text-encoding/${text-encoding.version}/lib/encoding.js</includes>
-                                </artifactItem>
+								</artifactItem>
 							</artifactItems>
 						</configuration>
 					</execution>
@@ -409,6 +408,24 @@
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>2.6</version>
 				<executions>
+					<execution>
+						<id>copy-npm-config</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/node-classes/</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>package.json</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 					<execution>
 						<id>copy-source-dependencies</id>
 						<phase>process-sources</phase>
@@ -523,12 +540,6 @@
 								</resource>
 								<resource>
 									<directory>${basedir}/wiki/npm</directory>
-								</resource>
-								<resource>
-									<directory>${basedir}</directory>
-									<includes>
-										<include>package.json</include>
-									</includes>
 								</resource>
 							</resources>
 						</configuration>
@@ -825,9 +836,67 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
 	<profiles>
 		<profile>
-			<id>my-test-plugins</id>
+			<id>build-with-skippped-tests</id>
+			<activation>
+				<property>
+					<!-- Tests are disabled by default
+						 even if skipTests is not set -->
+					<name>skipTests</name>
+					<value>!false</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>npm-install-ignore-scripts-production</id>
+								<phase>generate-resources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+										<argument>--prefix=${project.build.directory}/node-classes</argument>
+										<!-- ignore-scripts speeds the build up a lot -->
+										<argument>--ignore-scripts</argument>
+										<!-- do not install devDependencies used only for testing -->
+										<argument>--production</argument>
+									</arguments>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>npm-install-ignore-scripts-browserify</id>
+								<phase>generate-resources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+										<argument>--prefix=${project.build.directory}/node-classes</argument>
+										<!-- ignore-scripts speeds the build up a lot -->
+										<argument>--ignore-scripts</argument>
+										<argument>browserify</argument>
+									</arguments>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>build-with-tests</id>
 
 			<activation>
 				<property>
@@ -910,7 +979,6 @@
 					-->
 
 					<!-- run the tests -->
-					<!-- do the "npm install" to get karma and dependencies -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
@@ -919,14 +987,13 @@
 						<executions>
 							<execution>
 								<id>npm-install</id>
-								<phase>generate-test-resources</phase>
+								<phase>generate-resources</phase>
 								<configuration>
 									<executable>npm</executable>
 									<arguments>
 										<argument>install</argument>
-										<argument>--ignore-scripts</argument>
+										<argument>--prefix=${project.build.directory}/node-classes</argument>
 									</arguments>
-									<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
 								</configuration>
 								<goals>
 									<goal>exec</goal>
@@ -1044,6 +1111,7 @@
 				</plugins>
 			</build>
 		</profile>
+
 		<profile>
 			<id>create-mqtt-module</id>
 			<activation>
@@ -1060,52 +1128,8 @@
 							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
 						<executions>
 							<execution>
-								<id>npm-install</id>
-								<phase>generate-test-resources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>install</argument>
-									</arguments>
-									<workingDirectory>${project.build.directory}/node-classes</workingDirectory>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>install browserify</id>
-								<phase>process-sources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>install</argument>
-										<argument>--prefix=${project.build.directory}/node-classes</argument>
-										<argument>browserify@13.3.0</argument>
-									</arguments>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>install mqtt</id>
-								<phase>process-sources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>install</argument>
-										<argument>mqtt@${mqtt.version}</argument>
-										<argument>--prefix=${project.build.directory}/node-classes</argument>
-									</arguments>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-							<execution>
 								<id>browserify mqtt</id>
-								<phase>process-sources</phase>
+								<phase>process-resources</phase>
 								<configuration>
 									<executable>./cmd.js</executable>
 									<arguments>
