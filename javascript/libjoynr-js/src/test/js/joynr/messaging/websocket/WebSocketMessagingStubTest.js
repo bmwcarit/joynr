@@ -28,55 +28,55 @@ var WebSocketClientAddress =
         require('../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress');
 var SharedWebSocket = require('../../../../classes/joynr/messaging/websocket/SharedWebSocket');
 
-    describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStub", function() {
-        var webSocketMessagingStub = null;
-        var factory = null;
-        var joynrMessage = null;
-        var sharedWebSocket = null;
-        var ccAddress = new WebSocketAddress({
-            protocol : WebSocketProtocol.WS,
-            host : "host",
-            port : 1234,
-            path : "/test"
-        });
-        var localAddress = new WebSocketClientAddress({
-            id : "1234"
-        });
-
-        beforeEach(function(done) {
-            sharedWebSocket = new SharedWebSocket({
-                remoteAddress : ccAddress,
-                localAddress : localAddress
-            });
-            spyOn(sharedWebSocket, "send").and.callThrough();
-            sharedWebSocket.addEventListener = jasmine.createSpy("addEventListener");
-
-            factory = new WebSocketMessagingStubFactory({
-                address : ccAddress,
-                sharedWebSocket : sharedWebSocket
-            });
-
-            webSocketMessagingStub = factory.build(ccAddress);
-
-            function JoynrMessage() {}
-            joynrMessage = new JoynrMessage();
-            done();
-        });
-
-        it("is of correct type and has all members", function(done) {
-            expect(WebSocketMessagingStub).toBeDefined();
-            expect(typeof WebSocketMessagingStub === "function").toBeTruthy();
-            expect(webSocketMessagingStub).toBeDefined();
-            expect(webSocketMessagingStub instanceof WebSocketMessagingStub).toBeTruthy();
-            expect(webSocketMessagingStub.transmit).toBeDefined();
-            expect(typeof webSocketMessagingStub.transmit === "function").toBeTruthy();
-            done();
-        });
-
-        it("calls websocket.send correctly", function(done) {
-            webSocketMessagingStub.transmit(joynrMessage);
-            expect(sharedWebSocket.send).toHaveBeenCalledWith(joynrMessage);
-            done();
-        });
-
+describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStub", function() {
+    var webSocketMessagingStub = null;
+    var factory = null;
+    var joynrMessage = null;
+    var sharedWebSocket = null;
+    var ccAddress = new WebSocketAddress({
+        protocol : WebSocketProtocol.WS,
+        host : "host",
+        port : 1234,
+        path : "/test"
     });
+    var localAddress = new WebSocketClientAddress({
+        id : "1234"
+    });
+
+    beforeEach(function(done) {
+        sharedWebSocket = new SharedWebSocket({
+            remoteAddress : ccAddress,
+            localAddress : localAddress
+        });
+        spyOn(sharedWebSocket, "send").and.callThrough();
+        sharedWebSocket.addEventListener = jasmine.createSpy("addEventListener");
+
+        factory = new WebSocketMessagingStubFactory({
+            address : ccAddress,
+            sharedWebSocket : sharedWebSocket
+        });
+
+        webSocketMessagingStub = factory.build(ccAddress);
+
+        function JoynrMessage() {}
+        joynrMessage = new JoynrMessage();
+        done();
+    });
+
+    it("is of correct type and has all members", function(done) {
+        expect(WebSocketMessagingStub).toBeDefined();
+        expect(typeof WebSocketMessagingStub === "function").toBeTruthy();
+        expect(webSocketMessagingStub).toBeDefined();
+        expect(webSocketMessagingStub instanceof WebSocketMessagingStub).toBeTruthy();
+        expect(webSocketMessagingStub.transmit).toBeDefined();
+        expect(typeof webSocketMessagingStub.transmit === "function").toBeTruthy();
+        done();
+    });
+
+    it("calls websocket.send correctly", function(done) {
+        webSocketMessagingStub.transmit(joynrMessage);
+        expect(sharedWebSocket.send).toHaveBeenCalledWith(joynrMessage);
+        done();
+    });
+
+});

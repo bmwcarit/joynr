@@ -28,25 +28,23 @@
  */
 var LocalStorage = require('../../classes/global/LocalStorageNode');
 var uuid = require('../../classes/joynr/util/uuid');
-    /**
-     * LocalStorage constructor (node wrapper for LocalStorage)
-     * @constructor LocalStorageWrapper
-     * @classdesc node wrapper for LocalStorage
-     *
-     * @param {Object}
-     *            settings the settings object
-     * @param {Boolean}
-     *            settings.clearPersistency localStorage is cleared if set to true
-     * @param {String}
-     *            settings.location optional, passed on to node-localstorage LocalStorage constructor
-     * @param {Number}
-     *            settings.quota optional, passed on to node-localstorage LocalStorage constructor
-     */
-    var LocalStorageWrapper =
-            function(settings) {
-                settings = settings || {};
-                settings.location =
-                        settings.location || "${project.build.directory}/LocalStorage-" + uuid();
-                return new LocalStorage(settings);
-            };
-    module.exports = LocalStorageWrapper;
+/**
+ * LocalStorage constructor (node wrapper for LocalStorage)
+ * @constructor LocalStorageWrapper
+ * @classdesc node wrapper for LocalStorage
+ *
+ * @param {Object}
+ *            settings the settings object
+ * @param {Boolean}
+ *            settings.clearPersistency localStorage is cleared if set to true
+ * @param {String}
+ *            settings.location optional, passed on to node-localstorage LocalStorage constructor
+ * @param {Number}
+ *            settings.quota optional, passed on to node-localstorage LocalStorage constructor
+ */
+var LocalStorageWrapper = function(settings) {
+    settings = settings || {};
+    settings.location = settings.location || "${project.build.directory}/LocalStorage-" + uuid();
+    return new LocalStorage(settings);
+};
+module.exports = LocalStorageWrapper;

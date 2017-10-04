@@ -23,80 +23,78 @@ var Typing = require('../util/Typing');
 var Util = require('../util/UtilInternal');
 var LoggerFactory = require('../system/LoggerFactory');
 
-    /**
-     * Constructor of BroadcastFilterParameters object used for subscriptions in generated proxy objects
-     *
-     * @constructor
-     * @name BroadcastFilterParameters
-     *
-     * @param {Object}
-     *            [filterParameters] the filterParameters object for the constructor call
-     *
-     * @returns {BroadcastFilterParameters} a BroadcastFilterParameters Object for subscriptions on broadcasts
-     */
-    function BroadcastFilterParameters(filterParameterProperties) {
-        if (!(this instanceof BroadcastFilterParameters)) {
-            // in case someone calls constructor without new keyword (e.g. var c
-            // = Constructor({..}))
-            return new BroadcastFilterParameters(filterParameterProperties);
-        }
-
-        var log = LoggerFactory.getLogger("joynr.proxy.BroadcastFilterParameters");
-
-        /**
-         * @name BroadcastFilterParameters#_typeName
-         * @type String
-         */
-        Util.objectDefineProperty(this, "_typeName", "joynr.BroadcastFilterParameters");
-        Typing.checkPropertyIfDefined(filterParameterProperties, "Object", "filterParameters");
-
-        function makeSetterFunction(obj, parameterName) {
-            return function(arg) {
-                obj.filterParameters[parameterName] = arg;
-                return obj;
-            };
-        }
-
-        var parameterName;
-        var funcName;
-
-        if (filterParameterProperties === undefined) {
-            var filterParameters = null;
-            Object.defineProperty(this, 'filterParameters', {
-                readable : true,
-                enumerable : true,
-                configurable : false,
-                get : function() {
-                    return filterParameters;
-                },
-                set : function(value) {
-                    filterParameters = value;
-                }
-            });
-        } else {
-            for (parameterName in filterParameterProperties) {
-                if (filterParameterProperties.hasOwnProperty(parameterName)) {
-                    funcName =
-                            "set"
-                                + parameterName.charAt(0).toUpperCase()
-                                + parameterName.substring(1);
-                    //filter[funcName] = makeSetterFunction(filter, parameterName);
-                    Object.defineProperty(this, funcName, {
-                        configurable : false,
-                        writable : false,
-                        enumerable : false,
-                        value : makeSetterFunction(this, parameterName)
-                    });
-                }
-            }
-
-            /**
-             * @name BroadcastFilterParameters#filterParameters
-             * @type Object
-             */
-            this.filterParameters = {};
-        }
-
+/**
+ * Constructor of BroadcastFilterParameters object used for subscriptions in generated proxy objects
+ *
+ * @constructor
+ * @name BroadcastFilterParameters
+ *
+ * @param {Object}
+ *            [filterParameters] the filterParameters object for the constructor call
+ *
+ * @returns {BroadcastFilterParameters} a BroadcastFilterParameters Object for subscriptions on broadcasts
+ */
+function BroadcastFilterParameters(filterParameterProperties) {
+    if (!(this instanceof BroadcastFilterParameters)) {
+        // in case someone calls constructor without new keyword (e.g. var c
+        // = Constructor({..}))
+        return new BroadcastFilterParameters(filterParameterProperties);
     }
 
-    module.exports = BroadcastFilterParameters;
+    var log = LoggerFactory.getLogger("joynr.proxy.BroadcastFilterParameters");
+
+    /**
+     * @name BroadcastFilterParameters#_typeName
+     * @type String
+     */
+    Util.objectDefineProperty(this, "_typeName", "joynr.BroadcastFilterParameters");
+    Typing.checkPropertyIfDefined(filterParameterProperties, "Object", "filterParameters");
+
+    function makeSetterFunction(obj, parameterName) {
+        return function(arg) {
+            obj.filterParameters[parameterName] = arg;
+            return obj;
+        };
+    }
+
+    var parameterName;
+    var funcName;
+
+    if (filterParameterProperties === undefined) {
+        var filterParameters = null;
+        Object.defineProperty(this, 'filterParameters', {
+            readable : true,
+            enumerable : true,
+            configurable : false,
+            get : function() {
+                return filterParameters;
+            },
+            set : function(value) {
+                filterParameters = value;
+            }
+        });
+    } else {
+        for (parameterName in filterParameterProperties) {
+            if (filterParameterProperties.hasOwnProperty(parameterName)) {
+                funcName =
+                        "set" + parameterName.charAt(0).toUpperCase() + parameterName.substring(1);
+                //filter[funcName] = makeSetterFunction(filter, parameterName);
+                Object.defineProperty(this, funcName, {
+                    configurable : false,
+                    writable : false,
+                    enumerable : false,
+                    value : makeSetterFunction(this, parameterName)
+                });
+            }
+        }
+
+        /**
+         * @name BroadcastFilterParameters#filterParameters
+         * @type Object
+         */
+        this.filterParameters = {};
+    }
+
+}
+
+module.exports = BroadcastFilterParameters;

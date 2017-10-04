@@ -18,24 +18,24 @@
  * #L%
  */
 
-    /**
-     * @constructor
-     * @name InProcessMessagingStub
-     *
-     * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton to send the joynr messages to
-     */
-    function InProcessMessagingStub(inProcessMessagingSkeleton) {
-        this._inProcessMessagingSkeleton = inProcessMessagingSkeleton;
-    }
+/**
+ * @constructor
+ * @name InProcessMessagingStub
+ *
+ * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton to send the joynr messages to
+ */
+function InProcessMessagingStub(inProcessMessagingSkeleton) {
+    this._inProcessMessagingSkeleton = inProcessMessagingSkeleton;
+}
 
-    /**
-     * @name InProcessMessagingStub#transmit
-     * @function
-     *
-     * @param {JoynrMessage} message the message to transmit
-     * @returns {Object} A+ promise object
-     */
-    InProcessMessagingStub.prototype.transmit = function transmit(joynrMessage) {
-        return this._inProcessMessagingSkeleton.receiveMessage(joynrMessage);
-    };
-    module.exports = InProcessMessagingStub;
+/**
+ * @name InProcessMessagingStub#transmit
+ * @function
+ *
+ * @param {JoynrMessage} message the message to transmit
+ * @returns {Object} A+ promise object
+ */
+InProcessMessagingStub.prototype.transmit = function transmit(joynrMessage) {
+    return this._inProcessMessagingSkeleton.receiveMessage(joynrMessage);
+};
+module.exports = InProcessMessagingStub;

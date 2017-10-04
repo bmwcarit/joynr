@@ -19,36 +19,36 @@
  * #L%
  */
 var TypeRegistry = require('../start/TypeRegistry');
-    var instance;
+var instance;
 
-    /**
-     * A singleton Implementation for the Type Registry.
-     *
-     * Cannot be instantiated.
-     *
-     * @name TypeRegistrySingleton
-     * @constructor
-     * @throws {Error} Can not instantiate this type
-     */
-    function TypeRegistrySingleton() {
-        throw new Error("Can not instantiate this type");
+/**
+ * A singleton Implementation for the Type Registry.
+ *
+ * Cannot be instantiated.
+ *
+ * @name TypeRegistrySingleton
+ * @constructor
+ * @throws {Error} Can not instantiate this type
+ */
+function TypeRegistrySingleton() {
+    throw new Error("Can not instantiate this type");
+}
+
+/**
+ * @function TypeRegistrySingleton#getInstance
+ * @returns {TypeRegistry} the TypeRegistry singleton instance
+ */
+TypeRegistrySingleton.getInstance = function() {
+    if (instance === undefined) {
+        instance = new TypeRegistry();
     }
+    return instance;
+};
 
-    /**
-     * @function TypeRegistrySingleton#getInstance
-     * @returns {TypeRegistry} the TypeRegistry singleton instance
-     */
-    TypeRegistrySingleton.getInstance = function() {
-        if (instance === undefined) {
-            instance = new TypeRegistry();
-        }
-        return instance;
-    };
+/**
+ * forward addType call to the TypeRegistry instance
+ * @function TypeRegistrySingleton#addType
+ */
+TypeRegistrySingleton.addType = TypeRegistrySingleton.getInstance().addType;
 
-    /**
-     * forward addType call to the TypeRegistry instance
-     * @function TypeRegistrySingleton#addType
-     */
-    TypeRegistrySingleton.addType = TypeRegistrySingleton.getInstance().addType;
-
-    module.exports = TypeRegistrySingleton;
+module.exports = TypeRegistrySingleton;

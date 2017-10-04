@@ -21,52 +21,52 @@
 var BrowserMessagingStub =
         require('../../../../classes/joynr/messaging/browser/BrowserMessagingStub');
 
-    describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() {
+describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() {
 
-        var webMessagingStub, browserMessagingStub, windowId, joynrMessage;
+    var webMessagingStub, browserMessagingStub, windowId, joynrMessage;
 
-        beforeEach(function() {
-            function WebMessagingStub() {}
-            webMessagingStub = new WebMessagingStub();
-            webMessagingStub.transmit = jasmine.createSpy("transmit");
+    beforeEach(function() {
+        function WebMessagingStub() {}
+        webMessagingStub = new WebMessagingStub();
+        webMessagingStub.transmit = jasmine.createSpy("transmit");
 
-            browserMessagingStub = new BrowserMessagingStub({
-                webMessagingStub : webMessagingStub
-            });
-
-            windowId = "mywindowId";
-            function JoynrMessage() {}
-            joynrMessage = new JoynrMessage();
+        browserMessagingStub = new BrowserMessagingStub({
+            webMessagingStub : webMessagingStub
         });
 
-        it("is of correct type and has all members", function() {
-            expect(BrowserMessagingStub).toBeDefined();
-            expect(typeof BrowserMessagingStub === "function").toBeTruthy();
-            expect(browserMessagingStub).toBeDefined();
-            expect(browserMessagingStub instanceof BrowserMessagingStub).toBeTruthy();
-            expect(browserMessagingStub.transmit).toBeDefined();
-            expect(typeof browserMessagingStub.transmit === "function").toBeTruthy();
-        });
-
-        it("calls correctly webMessagingStub.transmit correctly", function() {
-            browserMessagingStub.transmit(joynrMessage);
-            expect(webMessagingStub.transmit).toHaveBeenCalledWith({
-                windowId : undefined,
-                message : joynrMessage
-            });
-        });
-
-        it("calls correctly webMessagingStub.transmit with windowId correctly", function() {
-            browserMessagingStub = new BrowserMessagingStub({
-                windowId : windowId,
-                webMessagingStub : webMessagingStub
-            });
-
-            browserMessagingStub.transmit(joynrMessage);
-            expect(webMessagingStub.transmit).toHaveBeenCalledWith({
-                windowId : windowId,
-                message : joynrMessage
-            });
-        });
-
+        windowId = "mywindowId";
+        function JoynrMessage() {}
+        joynrMessage = new JoynrMessage();
     });
+
+    it("is of correct type and has all members", function() {
+        expect(BrowserMessagingStub).toBeDefined();
+        expect(typeof BrowserMessagingStub === "function").toBeTruthy();
+        expect(browserMessagingStub).toBeDefined();
+        expect(browserMessagingStub instanceof BrowserMessagingStub).toBeTruthy();
+        expect(browserMessagingStub.transmit).toBeDefined();
+        expect(typeof browserMessagingStub.transmit === "function").toBeTruthy();
+    });
+
+    it("calls correctly webMessagingStub.transmit correctly", function() {
+        browserMessagingStub.transmit(joynrMessage);
+        expect(webMessagingStub.transmit).toHaveBeenCalledWith({
+            windowId : undefined,
+            message : joynrMessage
+        });
+    });
+
+    it("calls correctly webMessagingStub.transmit with windowId correctly", function() {
+        browserMessagingStub = new BrowserMessagingStub({
+            windowId : windowId,
+            webMessagingStub : webMessagingStub
+        });
+
+        browserMessagingStub.transmit(joynrMessage);
+        expect(webMessagingStub.transmit).toHaveBeenCalledWith({
+            windowId : windowId,
+            message : joynrMessage
+        });
+    });
+
+});

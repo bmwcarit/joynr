@@ -20,22 +20,22 @@
  */
 var InProcessMessagingStub = require('./InProcessMessagingStub');
 
-            /**
-             * @constructor
-             * @name InProcessMessagingStubFactory
-             */
-            function InProcessMessagingStubFactory() {
+/**
+ * @constructor
+ * @name InProcessMessagingStubFactory
+ */
+function InProcessMessagingStubFactory() {
 
-            }
+}
 
-            /**
-             * @name InProcessMessagingStubFactory#build
-             * @function
-             *
-             * @param {InProcessAddress} address the address to generate a messaging stub for
-             */
-            InProcessMessagingStubFactory.prototype.build = function build(address) {
-                return new InProcessMessagingStub(address.getSkeleton());
-            };
+/**
+ * @name InProcessMessagingStubFactory#build
+ * @function
+ *
+ * @param {InProcessAddress} address the address to generate a messaging stub for
+ */
+InProcessMessagingStubFactory.prototype.build = function build(address) {
+    return new InProcessMessagingStub(address.getSkeleton());
+};
 
-            module.exports = InProcessMessagingStubFactory;
+module.exports = InProcessMessagingStubFactory;

@@ -21,63 +21,62 @@
 var Typing = require('../../util/Typing');
 var Util = require('../../util/UtilInternal');
 
-            /**
-             * @constructor WebMessagingSkeleton
-             * @param {Object} settings the settings object for this constructor call
-             * @param {Window} settings.window the window to register the event handler at
-             */
-            function WebMessagingSkeleton(settings) {
-                Typing.checkProperty(settings, "Object", "settings");
+/**
+ * @constructor WebMessagingSkeleton
+ * @param {Object} settings the settings object for this constructor call
+ * @param {Window} settings.window the window to register the event handler at
+ */
+function WebMessagingSkeleton(settings) {
+    Typing.checkProperty(settings, "Object", "settings");
 
-                if (settings.window === undefined) {
-                    throw new Error(
-                            "WebMessagingSkeleton constructor parameter windows is undefined");
-                }
+    if (settings.window === undefined) {
+        throw new Error("WebMessagingSkeleton constructor parameter windows is undefined");
+    }
 
-                if (settings.window.addEventListener === undefined
-                    || settings.window.removeEventListener === undefined) {
-                    throw new Error(
-                            "WebMessagingSkeleton constructor parameter window does not provide the expected functions \"addEventListener\" and \"removeEventListener\"");
-                }
+    if (settings.window.addEventListener === undefined
+        || settings.window.removeEventListener === undefined) {
+        throw new Error(
+                "WebMessagingSkeleton constructor parameter window does not provide the expected functions \"addEventListener\" and \"removeEventListener\"");
+    }
 
-                var receiverCallbacks = [];
-                var callbackFct = function(event) {
-                    Util.fire(receiverCallbacks, event.data);
-                };
+    var receiverCallbacks = [];
+    var callbackFct = function(event) {
+        Util.fire(receiverCallbacks, event.data);
+    };
 
-                settings.window.addEventListener("message", callbackFct);
+    settings.window.addEventListener("message", callbackFct);
 
-                /**
-                 * Registers a listener for web messaging
-                 * @function WebMessagingSkeleton#registerListener
-                 *
-                 * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
-                 */
-                this.registerListener = function registerListener(listener) {
-                    Typing.checkPropertyIfDefined(listener, "Function", "listener");
+    /**
+     * Registers a listener for web messaging
+     * @function WebMessagingSkeleton#registerListener
+     *
+     * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
+     */
+    this.registerListener = function registerListener(listener) {
+        Typing.checkPropertyIfDefined(listener, "Function", "listener");
 
-                    receiverCallbacks.push(listener);
-                };
+        receiverCallbacks.push(listener);
+    };
 
-                /**
-                 * Unregisters a listener for web messaging
-                 * @function WebMessagingSkeleton#unregisterListener
-                 *
-                 * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
-                 */
-                this.unregisterListener = function unregisterListener(listener) {
-                    Typing.checkPropertyIfDefined(listener, "Function", "listener");
+    /**
+     * Unregisters a listener for web messaging
+     * @function WebMessagingSkeleton#unregisterListener
+     *
+     * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
+     */
+    this.unregisterListener = function unregisterListener(listener) {
+        Typing.checkPropertyIfDefined(listener, "Function", "listener");
 
-                    Util.removeElementFromArray(receiverCallbacks, listener);
-                };
+        Util.removeElementFromArray(receiverCallbacks, listener);
+    };
 
-                /**
-                 * @function WebMessagingSkeleton#shutdown
-                 */
-                this.shutdown = function shutdown() {
-                    settings.window.removeEventListener("message", callbackFct);
-                };
+    /**
+     * @function WebMessagingSkeleton#shutdown
+     */
+    this.shutdown = function shutdown() {
+        settings.window.removeEventListener("message", callbackFct);
+    };
 
-            }
+}
 
-            module.exports = WebMessagingSkeleton;
+module.exports = WebMessagingSkeleton;

@@ -21,47 +21,47 @@
 var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
 
-    /**
-     * @name SubscriptionPublication
-     * @constructor
-     *
-     * @param {String}
-     *            settings.subscriptionId
-     * @param {Object}
-     *            settings.response
-     * @param {Object}
-     *            settings.error The exception object in case of publication failure
-     */
-    function SubscriptionPublication(settings) {
-        if (settings.response) {
-            settings.response = Util.ensureTypedValues(settings.response);
-        }
-
-        /**
-         * @name SubscriptionPublication#subscriptionId
-         * @type String
-         */
-        this.subscriptionId = settings.subscriptionId;
-        /**
-         * @name SubscriptionPublication#response
-         * @type Object
-         */
-        this.response = settings.response;
-        /**
-         * @name SubscriptionPublication#error
-         * @type Object
-         */
-        this.error = settings.error;
-
-        /**
-         * The joynr type name
-         *
-         * @name SubscriptionPublication#_typeName
-         * @type String
-         */
-        Typing.augmentTypeName(this, "joynr");
-
-        return Object.freeze(this);
+/**
+ * @name SubscriptionPublication
+ * @constructor
+ *
+ * @param {String}
+ *            settings.subscriptionId
+ * @param {Object}
+ *            settings.response
+ * @param {Object}
+ *            settings.error The exception object in case of publication failure
+ */
+function SubscriptionPublication(settings) {
+    if (settings.response) {
+        settings.response = Util.ensureTypedValues(settings.response);
     }
 
-    module.exports = SubscriptionPublication;
+    /**
+     * @name SubscriptionPublication#subscriptionId
+     * @type String
+     */
+    this.subscriptionId = settings.subscriptionId;
+    /**
+     * @name SubscriptionPublication#response
+     * @type Object
+     */
+    this.response = settings.response;
+    /**
+     * @name SubscriptionPublication#error
+     * @type Object
+     */
+    this.error = settings.error;
+
+    /**
+     * The joynr type name
+     *
+     * @name SubscriptionPublication#_typeName
+     * @type String
+     */
+    Typing.augmentTypeName(this, "joynr");
+
+    return Object.freeze(this);
+}
+
+module.exports = SubscriptionPublication;

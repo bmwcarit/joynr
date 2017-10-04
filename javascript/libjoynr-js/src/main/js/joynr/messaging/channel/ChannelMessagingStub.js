@@ -20,39 +20,39 @@
  */
 var Promise = require('../../../global/Promise');
 
-    /**
-     * @name ChannelMessagingStub
-     * @constructor
-     *
-     * @param {Object} settings
-     * @param {ChannelMessagingSender|Object} settings.channelMessagingSender the channel message sender to send the messages with
-     * @param {String} settings.channelId the destination channelId
-     */
-    function ChannelMessagingStub(settings) {
+/**
+ * @name ChannelMessagingStub
+ * @constructor
+ *
+ * @param {Object} settings
+ * @param {ChannelMessagingSender|Object} settings.channelMessagingSender the channel message sender to send the messages with
+ * @param {String} settings.channelId the destination channelId
+ */
+function ChannelMessagingStub(settings) {
 
-        this._settings = settings;
-    }
-    /**
-     * @name ChannelMessagingStub#transmit
-     * @function
-     *
-     * @param {JoynrMessage} message the message to transmit
-     */
-    ChannelMessagingStub.prototype.transmit =
-            function transmit(joynrMessage) {
+    this._settings = settings;
+}
+/**
+ * @name ChannelMessagingStub#transmit
+ * @function
+ *
+ * @param {JoynrMessage} message the message to transmit
+ */
+ChannelMessagingStub.prototype.transmit =
+        function transmit(joynrMessage) {
 
-                if (this._settings.destinationChannelAddress === this._settings.myChannelAddress) {
-                    var errorMsg =
-                            "Discarding message "
-                                + joynrMessage.msgId
-                                + ": message marked as outgoing, but channel address "
-                                + this._settings.destinationChannelAddress
-                                + " is the local channel address.";
-                    return Promise.reject(new Error(errorMsg));
-                }
-                return this._settings.channelMessagingSender.send(
-                        joynrMessage,
-                        this._settings.destinationChannelAddress);
-            };
+            if (this._settings.destinationChannelAddress === this._settings.myChannelAddress) {
+                var errorMsg =
+                        "Discarding message "
+                            + joynrMessage.msgId
+                            + ": message marked as outgoing, but channel address "
+                            + this._settings.destinationChannelAddress
+                            + " is the local channel address.";
+                return Promise.reject(new Error(errorMsg));
+            }
+            return this._settings.channelMessagingSender.send(
+                    joynrMessage,
+                    this._settings.destinationChannelAddress);
+        };
 
-    module.exports = ChannelMessagingStub;
+module.exports = ChannelMessagingStub;

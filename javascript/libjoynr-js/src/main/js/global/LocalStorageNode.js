@@ -23,57 +23,58 @@
 
 module.exports =
         global.window !== undefined ? require('./LocalStorage') : (function() {
-    var Typing = require('../joynr/util/Typing');
-    var storage = require('node-persist');
-    /**
-     * LocalStorage constructor (node wrapper for LocalStorage)
-     * @constructor LocalStorageWrapper
-     * @classdesc node wrapper for LocalStorage
-     *
-     * @param {Object}
-     *            settings the settings object
-     * @param {Boolean}
-     *            settings.clearPersistency localStorage is cleared if set to true
-     * @param {String}
-     *            settings.location optional, passed on to node-persist LocalStorage constructor
-     */
-    var LocalStorageWrapper = function(settings) {
-        settings = settings || {};
-        //the local storage wrapper uses the optionally given location
-        var location = settings.location || "./localStorageStorage";
+            var Typing = require('../joynr/util/Typing');
+            var storage = require('node-persist');
+            /**
+             * LocalStorage constructor (node wrapper for LocalStorage)
+             * @constructor LocalStorageWrapper
+             * @classdesc node wrapper for LocalStorage
+             *
+             * @param {Object}
+             *            settings the settings object
+             * @param {Boolean}
+             *            settings.clearPersistency localStorage is cleared if set to true
+             * @param {String}
+             *            settings.location optional, passed on to node-persist LocalStorage constructor
+             */
+            var LocalStorageWrapper =
+                    function(settings) {
+                        settings = settings || {};
+                        //the local storage wrapper uses the optionally given location
+                        var location = settings.location || "./localStorageStorage";
 
-        this._myStorage = storage.create({
-            dir : location,
-            ttl : false,
-            forgiveParseErrors : true
-        });
+                        this._myStorage = storage.create({
+                            dir : location,
+                            ttl : false,
+                            forgiveParseErrors : true
+                        });
 
-        this._myStorage.initSync();
+                        this._myStorage.initSync();
 
-        Typing.checkPropertyIfDefined(
-            settings.clearPersistency,
-            "Boolean",
-            "settings.clearPersistency");
-        if (settings.clearPersistency) {
-            this._myStorage.clearSync();
-        }
-    };
-    LocalStorageWrapper.prototype.setItem = function(key, value) {
-        return this._myStorage.setItemSync(key, value);
-    };
-    LocalStorageWrapper.prototype.getItem = function(key) {
-        var item = this._myStorage.getItemSync(key);
-        if (item === undefined) {
-            return null;
-        }
-        return item;
-    };
-    LocalStorageWrapper.prototype.removeItem = function(key) {
-        return this._myStorage.removeItemSync(key);
-    };
-    LocalStorageWrapper.prototype.clear = function() {
-        return this._myStorage.clearSync();
-    };
+                        Typing.checkPropertyIfDefined(
+                                settings.clearPersistency,
+                                "Boolean",
+                                "settings.clearPersistency");
+                        if (settings.clearPersistency) {
+                            this._myStorage.clearSync();
+                        }
+                    };
+            LocalStorageWrapper.prototype.setItem = function(key, value) {
+                return this._myStorage.setItemSync(key, value);
+            };
+            LocalStorageWrapper.prototype.getItem = function(key) {
+                var item = this._myStorage.getItemSync(key);
+                if (item === undefined) {
+                    return null;
+                }
+                return item;
+            };
+            LocalStorageWrapper.prototype.removeItem = function(key) {
+                return this._myStorage.removeItemSync(key);
+            };
+            LocalStorageWrapper.prototype.clear = function() {
+                return this._myStorage.clearSync();
+            };
 
-    return LocalStorageWrapper;
-}());
+            return LocalStorageWrapper;
+        }());

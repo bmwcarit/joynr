@@ -21,47 +21,49 @@
 var InProcessMessagingStubFactory =
         require('../../../../classes/joynr/messaging/inprocess/InProcessMessagingStubFactory');
 
-    describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStubFactory", function() {
-        var skeletonCallReturn, inProcessMessagingSkeleton, inProcessAddress;
-        var inProcessMessagingStubFactory, joynrMessage;
+describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStubFactory", function() {
+    var skeletonCallReturn, inProcessMessagingSkeleton, inProcessAddress;
+    var inProcessMessagingStubFactory, joynrMessage;
 
-        beforeEach(function(done) {
-            skeletonCallReturn = {
-                key : "skeletonCallReturn"
-            };
-            inProcessMessagingSkeleton =
-                    jasmine.createSpyObj("inProcessMessagingSkeleton", [ "receiveMessage"
-                    ]);
-            inProcessMessagingSkeleton.receiveMessage.and.returnValue(skeletonCallReturn);
-            inProcessAddress = jasmine.createSpyObj("inProcessAddress", [ "getSkeleton"
-            ]);
-            inProcessAddress.getSkeleton.and.returnValue(inProcessMessagingSkeleton);
-            inProcessMessagingStubFactory = new InProcessMessagingStubFactory({});
-            joynrMessage = {
-                key : "joynrMessage"
-            };
-            done();
-        });
-
-        it("is instantiable and of correct type", function(done) {
-            expect(InProcessMessagingStubFactory).toBeDefined();
-            expect(typeof InProcessMessagingStubFactory === "function").toBeTruthy();
-            expect(inProcessMessagingStubFactory).toBeDefined();
-            expect(inProcessMessagingStubFactory instanceof InProcessMessagingStubFactory)
-                    .toBeTruthy();
-            expect(inProcessMessagingStubFactory.build).toBeDefined();
-            expect(typeof inProcessMessagingStubFactory.build === "function").toBeTruthy();
-            done();
-        });
-
-        it("creates a messaging stub and uses it correctly", function(done) {
-            var inProcessMessagingStub = inProcessMessagingStubFactory.build(inProcessAddress);
-            expect(inProcessAddress.getSkeleton).toHaveBeenCalledWith();
-
-            var result = inProcessMessagingStub.transmit(joynrMessage);
-            expect(inProcessMessagingSkeleton.receiveMessage).toHaveBeenCalledWith(joynrMessage);
-            expect(result).toEqual(skeletonCallReturn);
-            done();
-        });
-
+    beforeEach(function(done) {
+        skeletonCallReturn = {
+            key : "skeletonCallReturn"
+        };
+        inProcessMessagingSkeleton =
+                jasmine.createSpyObj("inProcessMessagingSkeleton", [ "receiveMessage"
+                ]);
+        inProcessMessagingSkeleton.receiveMessage.and.returnValue(skeletonCallReturn);
+        inProcessAddress = jasmine.createSpyObj("inProcessAddress", [ "getSkeleton"
+        ]);
+        inProcessAddress.getSkeleton.and.returnValue(inProcessMessagingSkeleton);
+        inProcessMessagingStubFactory = new InProcessMessagingStubFactory({});
+        joynrMessage = {
+            key : "joynrMessage"
+        };
+        done();
     });
+
+    it(
+            "is instantiable and of correct type",
+            function(done) {
+                expect(InProcessMessagingStubFactory).toBeDefined();
+                expect(typeof InProcessMessagingStubFactory === "function").toBeTruthy();
+                expect(inProcessMessagingStubFactory).toBeDefined();
+                expect(inProcessMessagingStubFactory instanceof InProcessMessagingStubFactory)
+                        .toBeTruthy();
+                expect(inProcessMessagingStubFactory.build).toBeDefined();
+                expect(typeof inProcessMessagingStubFactory.build === "function").toBeTruthy();
+                done();
+            });
+
+    it("creates a messaging stub and uses it correctly", function(done) {
+        var inProcessMessagingStub = inProcessMessagingStubFactory.build(inProcessAddress);
+        expect(inProcessAddress.getSkeleton).toHaveBeenCalledWith();
+
+        var result = inProcessMessagingStub.transmit(joynrMessage);
+        expect(inProcessMessagingSkeleton.receiveMessage).toHaveBeenCalledWith(joynrMessage);
+        expect(result).toEqual(skeletonCallReturn);
+        done();
+    });
+
+});

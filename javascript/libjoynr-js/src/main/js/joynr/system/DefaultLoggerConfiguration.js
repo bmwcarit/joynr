@@ -18,26 +18,25 @@
  * limitations under the License.
  * #L%
  */
-module.exports =
-     {
-        configuration : {
-            appenders : {
-                appender : [ {
-                    type : "Console",
-                    name : "STDOUT",
-                    PatternLayout : {
-                        pattern : "%m%n"
-                    }
+module.exports = {
+    configuration : {
+        appenders : {
+            appender : [ {
+                type : "Console",
+                name : "STDOUT",
+                PatternLayout : {
+                    pattern : "%m%n"
                 }
-                ]
-            },
-            loggers : {
-                root : {
-                    level : "debug",
-                    AppenderRef : {
-                        ref : "STDOUT"
-                    }
+            }
+            ]
+        },
+        loggers : {
+            root : {
+                level : "debug",
+                AppenderRef : {
+                    ref : "STDOUT"
                 }
             }
         }
-    };
+    }
+};

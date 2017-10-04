@@ -24,105 +24,105 @@ var PeriodicSubscriptionQos = require('../../../../classes/joynr/proxy/PeriodicS
 var OnChangeWithKeepAliveSubscriptionQos =
         require('../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
 
-    describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
+describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
 
-        var qosSettings = {
-            periodMs : 50,
-            expiryDateMs : 3,
-            alertAfterIntervalMs : 80,
-            publicationTtlMs : 100
-        };
+    var qosSettings = {
+        periodMs : 50,
+        expiryDateMs : 3,
+        alertAfterIntervalMs : 80,
+        publicationTtlMs : 100
+    };
 
-        it("is defined", function() {
-            expect(SubscriptionRequest).toBeDefined();
+    it("is defined", function() {
+        expect(SubscriptionRequest).toBeDefined();
+    });
+
+    it("is instantiable", function() {
+        var subscriptionRequest = new SubscriptionRequest({
+            subscribedToName : "attributeName",
+            subscriptionId : "testSubscriptionId"
         });
+        expect(subscriptionRequest).toBeDefined();
+        expect(subscriptionRequest).not.toBeNull();
+        expect(typeof subscriptionRequest === "object").toBeTruthy();
+        expect(subscriptionRequest instanceof SubscriptionRequest).toBeTruthy();
+    });
 
-        it("is instantiable", function() {
-            var subscriptionRequest = new SubscriptionRequest({
+    it("handles missing parameters correctly", function() {
+        // does not throw, with qos
+        expect(function() {
+            var subReq = new SubscriptionRequest({
+                subscribedToName : "attributeName",
+                subscriptionId : "testSubscriptionId",
+                subscriptionQos : new PeriodicSubscriptionQos(qosSettings)
+            });
+        }).not.toThrow();
+
+        // does not throw, without qos
+        expect(function() {
+            var subReq = new SubscriptionRequest({
                 subscribedToName : "attributeName",
                 subscriptionId : "testSubscriptionId"
             });
-            expect(subscriptionRequest).toBeDefined();
-            expect(subscriptionRequest).not.toBeNull();
-            expect(typeof subscriptionRequest === "object").toBeTruthy();
-            expect(subscriptionRequest instanceof SubscriptionRequest).toBeTruthy();
-        });
+        }).not.toThrow();
 
-        it("handles missing parameters correctly", function() {
-            // does not throw, with qos
-            expect(function() {
-                var subReq = new SubscriptionRequest({
-                    subscribedToName : "attributeName",
-                    subscriptionId : "testSubscriptionId",
-                    subscriptionQos : new PeriodicSubscriptionQos(qosSettings)
-                });
-            }).not.toThrow();
-
-            // does not throw, without qos
-            expect(function() {
-                var subReq = new SubscriptionRequest({
-                    subscribedToName : "attributeName",
-                    subscriptionId : "testSubscriptionId"
-                });
-            }).not.toThrow();
-
-            // throws on wrongly typed attributeName
-            expect(function() {
-                var subReq = new SubscriptionRequest({
-                    subscribedToName : {},
-                    subscriptionId : "testSubscriptionId"
-                });
-            }).toThrow();
-
-            // throws on missing attributeName
-            expect(function() {
-                var subReq = new SubscriptionRequest({
-                    subscriptionId : "testSubscriptionId"
-                });
-            }).toThrow();
-
-            // throws on missing subscriptionId
-            expect(function() {
-                var subReq = new SubscriptionRequest({
-                    subscribedToName : "attributeName",
-                    subscriptionQos : new PeriodicSubscriptionQos(qosSettings)
-                });
-            }).toThrow();
-
-            // throws on missing settings object type
-            expect(function() {
-                var subReq = new SubscriptionRequest();
-            }).toThrow();
-
-            // throws on wrong settings object type
-            expect(function() {
-                var subReq = new SubscriptionRequest("wrong type");
-            }).toThrow();
-
-            // throws on incorrect qos
-            // expect(function() {
-            // var subReq = new SubscriptionRequest({
-            // subscribedToName : "attributeName",
-            // subscriptionId : "testSubscriptionId",
-            // qos : {}
-            // });
-            // }).toThrow();
-        });
-
-        it("is constructs with correct member values", function() {
-            var subscribedToName = "attributeName";
-            var subscriptionQos = new PeriodicSubscriptionQos(qosSettings);
-            var subscriptionId = "testSubscriptionId";
-
-            var subscriptionRequest = new SubscriptionRequest({
-                subscribedToName : subscribedToName,
-                subscriptionQos : subscriptionQos,
-                subscriptionId : subscriptionId
+        // throws on wrongly typed attributeName
+        expect(function() {
+            var subReq = new SubscriptionRequest({
+                subscribedToName : {},
+                subscriptionId : "testSubscriptionId"
             });
+        }).toThrow();
 
-            expect(subscriptionRequest.subscribedToName).toEqual(subscribedToName);
-            expect(subscriptionRequest.subscriptionQos).toEqual(subscriptionQos);
-            expect(subscriptionRequest.subscriptionId).toEqual(subscriptionId);
+        // throws on missing attributeName
+        expect(function() {
+            var subReq = new SubscriptionRequest({
+                subscriptionId : "testSubscriptionId"
+            });
+        }).toThrow();
+
+        // throws on missing subscriptionId
+        expect(function() {
+            var subReq = new SubscriptionRequest({
+                subscribedToName : "attributeName",
+                subscriptionQos : new PeriodicSubscriptionQos(qosSettings)
+            });
+        }).toThrow();
+
+        // throws on missing settings object type
+        expect(function() {
+            var subReq = new SubscriptionRequest();
+        }).toThrow();
+
+        // throws on wrong settings object type
+        expect(function() {
+            var subReq = new SubscriptionRequest("wrong type");
+        }).toThrow();
+
+        // throws on incorrect qos
+        // expect(function() {
+        // var subReq = new SubscriptionRequest({
+        // subscribedToName : "attributeName",
+        // subscriptionId : "testSubscriptionId",
+        // qos : {}
+        // });
+        // }).toThrow();
+    });
+
+    it("is constructs with correct member values", function() {
+        var subscribedToName = "attributeName";
+        var subscriptionQos = new PeriodicSubscriptionQos(qosSettings);
+        var subscriptionId = "testSubscriptionId";
+
+        var subscriptionRequest = new SubscriptionRequest({
+            subscribedToName : subscribedToName,
+            subscriptionQos : subscriptionQos,
+            subscriptionId : subscriptionId
         });
 
+        expect(subscriptionRequest.subscribedToName).toEqual(subscribedToName);
+        expect(subscriptionRequest.subscriptionQos).toEqual(subscriptionQos);
+        expect(subscriptionRequest.subscriptionId).toEqual(subscriptionId);
     });
+
+});

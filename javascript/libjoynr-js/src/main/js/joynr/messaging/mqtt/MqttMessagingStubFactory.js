@@ -21,31 +21,31 @@
 var Typing = require('../../util/Typing');
 var MqttMessagingStub = require('./MqttMessagingStub');
 
-    /**
-     * @constructor
-     * @name MqttMessagingStubFactory
-     * @param {Object}
-     *            settings
-     * @param {SharedMqttClient}
-     *            settings.client the mqtt client
-     */
-    var MqttMessagingStubFactory = function MqttMessagingStubFactory(settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkProperty(settings.client, "SharedMqttClient", "client");
-        this._settings = settings;
-    };
+/**
+ * @constructor
+ * @name MqttMessagingStubFactory
+ * @param {Object}
+ *            settings
+ * @param {SharedMqttClient}
+ *            settings.client the mqtt client
+ */
+var MqttMessagingStubFactory = function MqttMessagingStubFactory(settings) {
+    Typing.checkProperty(settings, "Object", "settings");
+    Typing.checkProperty(settings.client, "SharedMqttClient", "client");
+    this._settings = settings;
+};
 
-    /**
-     * @name MqttMessagingStubFactory#build
-     * @function
-     */
-    MqttMessagingStubFactory.prototype.build = function build(address) {
-        Typing.checkProperty(address, "MqttAddress", "address");
+/**
+ * @name MqttMessagingStubFactory#build
+ * @function
+ */
+MqttMessagingStubFactory.prototype.build = function build(address) {
+    Typing.checkProperty(address, "MqttAddress", "address");
 
-        return new MqttMessagingStub({
-            address : address,
-            client : this._settings.client
-        });
-    };
+    return new MqttMessagingStub({
+        address : address,
+        client : this._settings.client
+    });
+};
 
-    module.exports = MqttMessagingStubFactory;
+module.exports = MqttMessagingStubFactory;

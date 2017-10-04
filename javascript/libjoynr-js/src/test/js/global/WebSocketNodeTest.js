@@ -24,7 +24,7 @@ var mod = require('module');
 
 var wscppSpy = jasmine.createSpy("wscppSyp");
 var overriddenRequire = mod.prototype.require;
-mod.prototype.require = function (md) {
+mod.prototype.require = function(md) {
     if (md.endsWith('SmrfNode')) {
         return {
             serialize : function(message) {
@@ -39,7 +39,7 @@ mod.prototype.require = function (md) {
             }
         };
     }
-    if (md.endsWith('wscpp')){
+    if (md.endsWith('wscpp')) {
 
         return wscppSpy;
     }
@@ -94,7 +94,7 @@ describe("websocket node", function() {
             cert : keychainWithCerts.tlsCert,
             key : keychainWithCerts.tlsKey,
             ca : keychainWithCerts.tlsCa,
-            rejectUnauthorized: true
+            rejectUnauthorized : true
         });
 
     });

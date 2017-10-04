@@ -31,4 +31,3 @@ var availableRuntimes = {
 var defaultRuntime = 'websocket.libjoynr';
 
 module.exports = availableRuntimes[joynr._selectedRuntime || defaultRuntime];
-

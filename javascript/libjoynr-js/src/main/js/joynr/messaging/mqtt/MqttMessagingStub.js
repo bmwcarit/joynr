@@ -22,35 +22,35 @@ var JoynrMessage = require('../JoynrMessage');
 var JSONSerializer = require('../../util/JSONSerializer');
 var LoggerFactory = require('../../system/LoggerFactory');
 
-    var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
-    /**
-     * @name MqttMessagingStub
-     * @constructor
+var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
+/**
+ * @name MqttMessagingStub
+ * @constructor
 
-     * @param {Object} settings the settings object for this constructor call
-     * @param {MqttAddress} settings.address the mqtt address of the message destination
-     * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
-     */
-    function MqttMessagingStub(settings) {
-        this._settings = settings;
+ * @param {Object} settings the settings object for this constructor call
+ * @param {MqttAddress} settings.address the mqtt address of the message destination
+ * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
+ */
+function MqttMessagingStub(settings) {
+    this._settings = settings;
+}
+
+/**
+ * @name MqttMessagingStub#transmit
+ * @function
+ *
+ * @param {Object|JoynrMessage} message the message to transmit
+ */
+MqttMessagingStub.prototype.transmit = function transmit(message) {
+    log.debug("transmit message: \"" + JSONSerializer.stringify(message) + "\"");
+    var topic = this._settings.address.topic;
+    if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
+        topic += MqttMessagingStub.PRIORITY_LOW + message.to;
     }
 
-    /**
-     * @name MqttMessagingStub#transmit
-     * @function
-     *
-     * @param {Object|JoynrMessage} message the message to transmit
-     */
-    MqttMessagingStub.prototype.transmit = function transmit(message) {
-        log.debug("transmit message: \"" + JSONSerializer.stringify(message) + "\"");
-        var topic = this._settings.address.topic;
-        if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
-            topic += MqttMessagingStub.PRIORITY_LOW + message.to;
-        }
+    return this._settings.client.send(topic, message);
+};
 
-        return this._settings.client.send(topic, message);
-    };
+MqttMessagingStub.PRIORITY_LOW = "/low/";
 
-    MqttMessagingStub.PRIORITY_LOW = "/low/";
-
-    module.exports = MqttMessagingStub;
+module.exports = MqttMessagingStub;

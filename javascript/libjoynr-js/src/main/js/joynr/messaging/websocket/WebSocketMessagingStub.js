@@ -19,26 +19,26 @@
  * #L%
  */
 
+/**
+ * @name WebSocketMessagingStub
+ * @constructor
+ * @param {Object}
+ *            settings
+ * @param {SharedWebSocket}
+ *            settings.sharedWebSocket to which messages are sent on the clustercontroller.
+ */
+var WebSocketMessagingStub = function WebSocketMessagingStub(settings) {
+    var sharedWebSocket = settings.sharedWebSocket;
+
     /**
-     * @name WebSocketMessagingStub
-     * @constructor
-     * @param {Object}
-     *            settings
-     * @param {SharedWebSocket}
-     *            settings.sharedWebSocket to which messages are sent on the clustercontroller.
+     * @name WebSocketMessagingStub#transmit
+     * @function
+     * @param {JoynrMessage}
+     *            joynrMessage the joynr message to transmit
      */
-    var WebSocketMessagingStub = function WebSocketMessagingStub(settings) {
-        var sharedWebSocket = settings.sharedWebSocket;
-
-        /**
-         * @name WebSocketMessagingStub#transmit
-         * @function
-         * @param {JoynrMessage}
-         *            joynrMessage the joynr message to transmit
-         */
-        this.transmit = function transmit(joynrMessage) {
-            return sharedWebSocket.send(joynrMessage);
-        };
+    this.transmit = function transmit(joynrMessage) {
+        return sharedWebSocket.send(joynrMessage);
     };
+};
 
-    module.exports = WebSocketMessagingStub;
+module.exports = WebSocketMessagingStub;

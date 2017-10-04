@@ -21,34 +21,35 @@
 var Typing = require('../../util/Typing');
 var BrowserMessagingStub = require('./BrowserMessagingStub');
 
-    /**
-     * @constructor
-     * @name BrowserMessagingStubFactory
-     *
-     * @param {Object} settings
-     * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
-     */
-    function BrowserMessagingStubFactory(settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkProperty(
-                settings.webMessagingStub,
-                "WebMessagingStub",
-                "settings.webMessagingStub");
+/**
+ * @constructor
+ * @name BrowserMessagingStubFactory
+ *
+ * @param {Object} settings
+ * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
+ */
+function BrowserMessagingStubFactory(settings) {
+    Typing.checkProperty(settings, "Object", "settings");
+    Typing
+            .checkProperty(
+                    settings.webMessagingStub,
+                    "WebMessagingStub",
+                    "settings.webMessagingStub");
 
-        this._settings = settings;
-    }
+    this._settings = settings;
+}
 
-    /**
-     * @name BrowserMessagingStubFactory#build
-     * @function
-     *
-     * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
-     */
-    BrowserMessagingStubFactory.prototype.build = function build(address) {
-        return new BrowserMessagingStub({
-            windowId : address.windowId,
-            webMessagingStub : this._settings.webMessagingStub
-        });
-    };
+/**
+ * @name BrowserMessagingStubFactory#build
+ * @function
+ *
+ * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
+ */
+BrowserMessagingStubFactory.prototype.build = function build(address) {
+    return new BrowserMessagingStub({
+        windowId : address.windowId,
+        webMessagingStub : this._settings.webMessagingStub
+    });
+};
 
-            module.exports = BrowserMessagingStubFactory;
+module.exports = BrowserMessagingStubFactory;

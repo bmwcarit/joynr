@@ -18,37 +18,37 @@
  * limitations under the License.
  * #L%
  */
-var ProviderAttribute= require('./ProviderAttribute');
+var ProviderAttribute = require('./ProviderAttribute');
 var ProviderOperation = require('./ProviderOperation');
 var ProviderEvent = require('./ProviderEvent');
 
-    var dependencies = {
-        ProviderAttribute : ProviderAttribute,
-        ProviderOperation : ProviderOperation,
-        ProviderEvent : ProviderEvent
-    };
+var dependencies = {
+    ProviderAttribute : ProviderAttribute,
+    ProviderOperation : ProviderOperation,
+    ProviderEvent : ProviderEvent
+};
+/**
+ * @name ProviderBuilder
+ * @constructor
+ */
+var ProviderBuilder = function ProviderBuilder() {
     /**
-     * @name ProviderBuilder
-     * @constructor
+     * @name ProviderBuilder#build
+     * @function
+     * @param {Function}
+     *            ProviderConstructor - the constructor function of the generated Provider that
+     *            creates a new provider instance
+     * @param {Object}
+     *            implementation - an object containing the same fields and public functions as
+     *            exposed int he provider that implements the actual functionaltiy of the
+     *            provider
+     * @returns {Object} a provider of the given type
+     * @throws {Error}
+     *             if correct implementation was not provided
      */
-    var ProviderBuilder = function ProviderBuilder() {
-        /**
-         * @name ProviderBuilder#build
-         * @function
-         * @param {Function}
-         *            ProviderConstructor - the constructor function of the generated Provider that
-         *            creates a new provider instance
-         * @param {Object}
-         *            implementation - an object containing the same fields and public functions as
-         *            exposed int he provider that implements the actual functionaltiy of the
-         *            provider
-         * @returns {Object} a provider of the given type
-         * @throws {Error}
-         *             if correct implementation was not provided
-         */
-        this.build = function build(ProviderConstructor, implementation) {
-            return new ProviderConstructor(implementation, dependencies);
-        };
+    this.build = function build(ProviderConstructor, implementation) {
+        return new ProviderConstructor(implementation, dependencies);
     };
+};
 
-    module.exports = ProviderBuilder;
+module.exports = ProviderBuilder;

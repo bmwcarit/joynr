@@ -23,62 +23,59 @@ var Typing = require('../util/Typing');
 var Util = require('../util/UtilInternal');
 var JoynrRuntimeException = require('./JoynrRuntimeException');
 var LoggerFactory = require('../system/LoggerFactory');
-            var defaultSettings;
+var defaultSettings;
 
-            /**
-             * @classdesc
-             *
-             * @summary
-             * Constructor of PublicationMissedException object used to report
-             * when a publication has not been received within the expected
-             * time period.
-             *
-             * @constructor
-             * @name PublicationMissedException
-             *
-             * @param {Object}
-             *            [settings] the settings object for the constructor call
-             * @param {String}
-             *            [settings.detailMessage] message containing details
-             *            about the error
-             * @param {String}
-             *            [settings.subscriptionId] the id of the subscription
-             * @returns {PublicationMissedException}
-             *            The newly created PublicationMissedException object
-             */
-            function PublicationMissedException(settings) {
-                if (!(this instanceof PublicationMissedException)) {
-                    // in case someone calls constructor without new keyword (e.g. var c
-                    // = Constructor({..}))
-                    return new PublicationMissedException(settings);
-                }
+/**
+ * @classdesc
+ *
+ * @summary
+ * Constructor of PublicationMissedException object used to report
+ * when a publication has not been received within the expected
+ * time period.
+ *
+ * @constructor
+ * @name PublicationMissedException
+ *
+ * @param {Object}
+ *            [settings] the settings object for the constructor call
+ * @param {String}
+ *            [settings.detailMessage] message containing details
+ *            about the error
+ * @param {String}
+ *            [settings.subscriptionId] the id of the subscription
+ * @returns {PublicationMissedException}
+ *            The newly created PublicationMissedException object
+ */
+function PublicationMissedException(settings) {
+    if (!(this instanceof PublicationMissedException)) {
+        // in case someone calls constructor without new keyword (e.g. var c
+        // = Constructor({..}))
+        return new PublicationMissedException(settings);
+    }
 
-                var log = LoggerFactory.getLogger("joynr.exceptions.PublicationMissedException");
-                var runtimeException = new JoynrRuntimeException(settings);
+    var log = LoggerFactory.getLogger("joynr.exceptions.PublicationMissedException");
+    var runtimeException = new JoynrRuntimeException(settings);
 
-                Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+    Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
 
-                /**
-                 * Used for serialization.
-                 * @name PublicationMissedException#_typeName
-                 * @type String
-                 */
-                Util.objectDefineProperty(
-                        this,
-                        "_typeName",
-                        "joynr.exceptions.PublicationMissedException");
+    /**
+     * Used for serialization.
+     * @name PublicationMissedException#_typeName
+     * @type String
+     */
+    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.PublicationMissedException");
 
-                Util.extend(this, defaultSettings, settings, runtimeException);
-            }
+    Util.extend(this, defaultSettings, settings, runtimeException);
+}
 
-            defaultSettings = {};
+defaultSettings = {};
 
-            TypeRegistrySingleton.getInstance().addType(
-                    "joynr.exceptions.PublicationMissedException",
-                    PublicationMissedException);
+TypeRegistrySingleton.getInstance().addType(
+        "joynr.exceptions.PublicationMissedException",
+        PublicationMissedException);
 
-            PublicationMissedException.prototype = new Error();
-            PublicationMissedException.prototype.constructor = PublicationMissedException;
-            PublicationMissedException.prototype.name = "PublicationMissedException";
+PublicationMissedException.prototype = new Error();
+PublicationMissedException.prototype.constructor = PublicationMissedException;
+PublicationMissedException.prototype.name = "PublicationMissedException";
 
-            module.exports = PublicationMissedException;
+module.exports = PublicationMissedException;

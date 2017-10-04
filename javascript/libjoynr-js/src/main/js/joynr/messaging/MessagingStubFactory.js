@@ -21,45 +21,45 @@ var Typing = require('../util/Typing');
 var Util = require('../util/UtilInternal');
 var LoggerFactory = require('../system/LoggerFactory');
 
-    var log = LoggerFactory.getLogger("joynr/messaging/MessagingStubFactory");
-    /**
-     * @name MessagingStubFactory
-     * @constructor
-     *
-     * @param {Object} settings
-     * @param {Object} settings.messagingStubFactories a hash mapping addresses to the equivalent message sender
-     * @param {MessagingStubFactory} settings.messagingStubFactories.KEY the key of the map is the className of the address provided in createMessagingStub, the value is the concrete MessagingStubFactory
-     * @param {Function} settings.messagingStubFactories.KEY.build the factory method of the
-     */
-    function MessagingStubFactory(settings) {
+var log = LoggerFactory.getLogger("joynr/messaging/MessagingStubFactory");
+/**
+ * @name MessagingStubFactory
+ * @constructor
+ *
+ * @param {Object} settings
+ * @param {Object} settings.messagingStubFactories a hash mapping addresses to the equivalent message sender
+ * @param {MessagingStubFactory} settings.messagingStubFactories.KEY the key of the map is the className of the address provided in createMessagingStub, the value is the concrete MessagingStubFactory
+ * @param {Function} settings.messagingStubFactories.KEY.build the factory method of the
+ */
+function MessagingStubFactory(settings) {
 
-        this._messagingStubFactories = settings.messagingStubFactories;
+    this._messagingStubFactories = settings.messagingStubFactories;
 
-    }
+}
 
-    /**
-     * @name MessagingStubFactory#createMessagingStub
-     * @function
-     *
-     * @param {MessagingStub} address the address to create a messaging stub for
-     */
-    MessagingStubFactory.prototype.createMessagingStub =
-            function createMessagingStub(address) {
-                var className = address._typeName;
-                var factory = this._messagingStubFactories[className];
+/**
+ * @name MessagingStubFactory#createMessagingStub
+ * @function
+ *
+ * @param {MessagingStub} address the address to create a messaging stub for
+ */
+MessagingStubFactory.prototype.createMessagingStub =
+        function createMessagingStub(address) {
+            var className = address._typeName;
+            var factory = this._messagingStubFactories[className];
 
-                if (Util.checkNullUndefined(factory)) {
-                    var errorMsg =
-                            "Could not find a MessagingStubFactory for \""
-                                + className
-                                + "\" within messagingStubFactories ["
-                                + Object.keys(this._messagingStubFactories).join(",")
-                                + "]";
-                    log.debug(errorMsg);
-                    throw new Error(errorMsg);
-                }
+            if (Util.checkNullUndefined(factory)) {
+                var errorMsg =
+                        "Could not find a MessagingStubFactory for \""
+                            + className
+                            + "\" within messagingStubFactories ["
+                            + Object.keys(this._messagingStubFactories).join(",")
+                            + "]";
+                log.debug(errorMsg);
+                throw new Error(errorMsg);
+            }
 
-                return factory.build(address);
-            };
+            return factory.build(address);
+        };
 
-    module.exports = MessagingStubFactory;
+module.exports = MessagingStubFactory;

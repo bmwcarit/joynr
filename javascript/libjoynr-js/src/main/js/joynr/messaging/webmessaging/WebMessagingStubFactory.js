@@ -20,25 +20,25 @@
  */
 var WebMessagingStub = require('./WebMessagingStub');
 
-            /**
-             * @constructor
-             * @name WebMessagingStubFactory
-             */
-            function WebMessagingStubFactory() {
+/**
+ * @constructor
+ * @name WebMessagingStubFactory
+ */
+function WebMessagingStubFactory() {
 
-            }
+}
 
-            /**
-             * @name WebMessagingStubFactory#build
-             * @function
-             *
-             * @param {WebMessagingAddress} address the address to generate a messaging stub for
-             */
-            WebMessagingStubFactory.prototype.build = function build(address) {
-                return new WebMessagingStub({
-                    window : address.getWindow(),
-                    origin : address.getOrigin()
-                });
-            };
+/**
+ * @name WebMessagingStubFactory#build
+ * @function
+ *
+ * @param {WebMessagingAddress} address the address to generate a messaging stub for
+ */
+WebMessagingStubFactory.prototype.build = function build(address) {
+    return new WebMessagingStub({
+        window : address.getWindow(),
+        origin : address.getOrigin()
+    });
+};
 
-            module.exports = WebMessagingStubFactory;
+module.exports = WebMessagingStubFactory;

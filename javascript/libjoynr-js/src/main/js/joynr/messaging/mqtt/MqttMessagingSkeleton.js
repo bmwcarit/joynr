@@ -23,80 +23,77 @@ var LoggerFactory = require('../../system/LoggerFactory');
 var DiagnosticTags = require('../../system/DiagnosticTags');
 var JoynrException = require('../../exceptions/JoynrException');
 
- var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
-    /**
-     * @constructor MqttMessagingSkeleton
-     * @param {Object} settings
-     * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
-     * @param {MessageRouter} settings.messageRouter the message router
-     * @param {MqttAddress} settings.address own address of joynr client
-     */
-    var MqttMessagingSkeleton =
-            function MqttMessagingSkeleton(settings) {
-                Typing.checkProperty(settings, "Object", "settings");
-                Typing.checkProperty(settings.client, "SharedMqttClient", "settings.client");
-                Typing.checkProperty(
-                        settings.messageRouter,
-                        "MessageRouter",
-                        "settings.messageRouter");
-                Typing.checkProperty(settings.address, "MqttAddress", "settings.address");
+var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
+/**
+ * @constructor MqttMessagingSkeleton
+ * @param {Object} settings
+ * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
+ * @param {MessageRouter} settings.messageRouter the message router
+ * @param {MqttAddress} settings.address own address of joynr client
+ */
+var MqttMessagingSkeleton =
+        function MqttMessagingSkeleton(settings) {
+            Typing.checkProperty(settings, "Object", "settings");
+            Typing.checkProperty(settings.client, "SharedMqttClient", "settings.client");
+            Typing.checkProperty(settings.messageRouter, "MessageRouter", "settings.messageRouter");
+            Typing.checkProperty(settings.address, "MqttAddress", "settings.address");
 
-                this._multicastSubscriptionCount = {};
-                this._settings = settings;
+            this._multicastSubscriptionCount = {};
+            this._settings = settings;
 
-                settings.client.onmessage =
-                        function(topic, message) {
-                            message.setReceivedFromGlobal(true);
-                            try {
-                                settings.messageRouter.route(message);
-                            } catch (e) {
-                                log.error("unable to process message: "
-                                    + e
-                                    + (e instanceof JoynrException ? " " + e.detailMessage : "")
-                                    + " \nmessage: "
-                                    + DiagnosticTags.forJoynrMessage(message));
-                            }
-                        };
+            settings.client.onmessage =
+                    function(topic, message) {
+                        message.setReceivedFromGlobal(true);
+                        try {
+                            settings.messageRouter.route(message);
+                        } catch (e) {
+                            log.error("unable to process message: "
+                                + e
+                                + (e instanceof JoynrException ? " " + e.detailMessage : "")
+                                + " \nmessage: "
+                                + DiagnosticTags.forJoynrMessage(message));
+                        }
+                    };
 
-                settings.client.subscribe(settings.address.topic + "/#");
+            settings.client.subscribe(settings.address.topic + "/#");
 
-            };
+        };
 
-    MqttMessagingSkeleton.prototype._translateWildcard = function(multicastId) {
-        if (multicastId.match(/[\w\W]*\/[*]$/)) {
-            return multicastId.replace(/\/\*/g, "/#");
-        }
-        return multicastId;
-    };
+MqttMessagingSkeleton.prototype._translateWildcard = function(multicastId) {
+    if (multicastId.match(/[\w\W]*\/[*]$/)) {
+        return multicastId.replace(/\/\*/g, "/#");
+    }
+    return multicastId;
+};
 
-    MqttMessagingSkeleton.prototype.registerMulticastSubscription =
-            function(multicastId) {
-                if (this._multicastSubscriptionCount[multicastId] === undefined) {
-                    this._multicastSubscriptionCount[multicastId] = 0;
-                }
-                this._settings.client.subscribe(this._translateWildcard(multicastId));
-                this._multicastSubscriptionCount[multicastId] =
-                        this._multicastSubscriptionCount[multicastId] + 1;
-            };
-
-    MqttMessagingSkeleton.prototype.unregisterMulticastSubscription = function(multicastId) {
-        var subscribersCount = this._multicastSubscriptionCount[multicastId];
-        if (subscribersCount !== undefined) {
-            subscribersCount--;
-            if (subscribersCount === 0) {
-                this._settings.client.unsubscribe(this._translateWildcard(multicastId));
-                delete this._multicastSubscriptionCount[multicastId];
-            } else {
-                this._multicastSubscriptionCount[multicastId] = subscribersCount;
+MqttMessagingSkeleton.prototype.registerMulticastSubscription =
+        function(multicastId) {
+            if (this._multicastSubscriptionCount[multicastId] === undefined) {
+                this._multicastSubscriptionCount[multicastId] = 0;
             }
+            this._settings.client.subscribe(this._translateWildcard(multicastId));
+            this._multicastSubscriptionCount[multicastId] =
+                    this._multicastSubscriptionCount[multicastId] + 1;
+        };
+
+MqttMessagingSkeleton.prototype.unregisterMulticastSubscription = function(multicastId) {
+    var subscribersCount = this._multicastSubscriptionCount[multicastId];
+    if (subscribersCount !== undefined) {
+        subscribersCount--;
+        if (subscribersCount === 0) {
+            this._settings.client.unsubscribe(this._translateWildcard(multicastId));
+            delete this._multicastSubscriptionCount[multicastId];
+        } else {
+            this._multicastSubscriptionCount[multicastId] = subscribersCount;
         }
-    };
+    }
+};
 
-    /**
-     * @function MqttMessagingSkeleton#shutdown
-     */
-    MqttMessagingSkeleton.prototype.shutdown = function shutdown() {
-        this._settings.client.close();
-    };
+/**
+ * @function MqttMessagingSkeleton#shutdown
+ */
+MqttMessagingSkeleton.prototype.shutdown = function shutdown() {
+    this._settings.client.close();
+};
 
-    module.exports = MqttMessagingSkeleton;
+module.exports = MqttMessagingSkeleton;

@@ -20,39 +20,39 @@
 var Typing = require('./Typing');
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
 
-    /**
-     * @name Util
-     * @class
-     */
-    var Util = {};
+/**
+ * @name Util
+ * @class
+ */
+var Util = {};
 
-    /**
-     * @function Util#ensureTypedValues
-     * @param {Object} value
-     * @param {Object} typeRegistry
-     */
-    Util.ensureTypedValues = function(value, typeRegistry) {
-        var i;
+/**
+ * @function Util#ensureTypedValues
+ * @param {Object} value
+ * @param {Object} typeRegistry
+ */
+Util.ensureTypedValues = function(value, typeRegistry) {
+    var i;
 
-        typeRegistry = typeRegistry || TypeRegistrySingleton.getInstance();
+    typeRegistry = typeRegistry || TypeRegistrySingleton.getInstance();
 
-        if (value !== undefined && value !== null) {
-            if (value.constructor.name === "Array") {
-                for (i = 0; i < value.length; i++) {
-                    value[i] = Util.ensureTypedValues(value[i]);
-                }
-            } else if (typeof value === "object" && !Typing.isComplexJoynrObject(value)) {
-                value = Typing.augmentTypes(value, typeRegistry);
-                /*jslint nomen: true */
-                var Constructor = typeRegistry.getConstructor(value._typeName);
-                /*jslint nomen: false */
-                if (Constructor.checkMembers) {
-                    Constructor.checkMembers(value, Typing.checkPropertyIfDefined);
-                }
+    if (value !== undefined && value !== null) {
+        if (value.constructor.name === "Array") {
+            for (i = 0; i < value.length; i++) {
+                value[i] = Util.ensureTypedValues(value[i]);
+            }
+        } else if (typeof value === "object" && !Typing.isComplexJoynrObject(value)) {
+            value = Typing.augmentTypes(value, typeRegistry);
+            /*jslint nomen: true */
+            var Constructor = typeRegistry.getConstructor(value._typeName);
+            /*jslint nomen: false */
+            if (Constructor.checkMembers) {
+                Constructor.checkMembers(value, Typing.checkPropertyIfDefined);
             }
         }
+    }
 
-        return value;
-    };
+    return value;
+};
 
-    module.exports = Util;
+module.exports = Util;

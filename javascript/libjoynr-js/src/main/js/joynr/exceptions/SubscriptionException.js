@@ -23,65 +23,62 @@ var Typing = require('../util/Typing');
 var Util = require('../util/UtilInternal');
 var JoynrRuntimeException = require('./JoynrRuntimeException');
 var LoggerFactory = require('../system/LoggerFactory');
-    var defaultSettings;
+var defaultSettings;
 
-    /**
-     * @classdesc
-     *
-     * @summary
-     * Constructor of SubscriptionException object used for reporting
-     * error conditions when creating a subscription (e.g. the
-     * provided subscription parameters are not correct etc.) that should
-     * be transmitted back to consumer side.
-     *
-     * @constructor
-     * @name SubscriptionException
-     *
-     * @param {Object}
-     *            settings - the settings object for the constructor call
-     * @param {String}
-     *            [settings.detailMessage] message containing details
-     *            about the error
-     * @param {String}
-     *            settings.subscriptionId - Id of the subscription
-     * @returns {SubscriptionException}
-     *            The newly created SubscriptionException object
-     */
-    function SubscriptionException(settings) {
-        if (!(this instanceof SubscriptionException)) {
-            // in case someone calls constructor without new keyword (e.g. var c
-            // = Constructor({..}))
-            return new SubscriptionException(settings);
-        }
-
-        var log = LoggerFactory.getLogger("joynr.exceptions.SubscriptionException");
-        var runtimeException = new JoynrRuntimeException(settings);
-
-        /**
-         * Used for serialization.
-         * @name SubscriptionException#_typeName
-         * @type String
-         */
-        Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.SubscriptionException");
-
-        if (settings) {
-            Typing.checkPropertyIfDefined(
-                    settings.subscriptionId,
-                    "String",
-                    "settings.subscriptionId");
-        }
-
-        Util.extend(this, defaultSettings, settings, runtimeException);
+/**
+ * @classdesc
+ *
+ * @summary
+ * Constructor of SubscriptionException object used for reporting
+ * error conditions when creating a subscription (e.g. the
+ * provided subscription parameters are not correct etc.) that should
+ * be transmitted back to consumer side.
+ *
+ * @constructor
+ * @name SubscriptionException
+ *
+ * @param {Object}
+ *            settings - the settings object for the constructor call
+ * @param {String}
+ *            [settings.detailMessage] message containing details
+ *            about the error
+ * @param {String}
+ *            settings.subscriptionId - Id of the subscription
+ * @returns {SubscriptionException}
+ *            The newly created SubscriptionException object
+ */
+function SubscriptionException(settings) {
+    if (!(this instanceof SubscriptionException)) {
+        // in case someone calls constructor without new keyword (e.g. var c
+        // = Constructor({..}))
+        return new SubscriptionException(settings);
     }
 
-    defaultSettings = {};
+    var log = LoggerFactory.getLogger("joynr.exceptions.SubscriptionException");
+    var runtimeException = new JoynrRuntimeException(settings);
 
-    TypeRegistrySingleton.getInstance().addType(
-            "joynr.exceptions.SubscriptionException",
-            SubscriptionException);
+    /**
+     * Used for serialization.
+     * @name SubscriptionException#_typeName
+     * @type String
+     */
+    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.SubscriptionException");
 
-    SubscriptionException.prototype = new Error();
-    SubscriptionException.prototype.constructor = SubscriptionException;
-    SubscriptionException.prototype.name = "SubscriptionException";
+    if (settings) {
+        Typing.checkPropertyIfDefined(settings.subscriptionId, "String", "settings.subscriptionId");
+    }
 
-    module.exports = SubscriptionException;
+    Util.extend(this, defaultSettings, settings, runtimeException);
+}
+
+defaultSettings = {};
+
+TypeRegistrySingleton.getInstance().addType(
+        "joynr.exceptions.SubscriptionException",
+        SubscriptionException);
+
+SubscriptionException.prototype = new Error();
+SubscriptionException.prototype.constructor = SubscriptionException;
+SubscriptionException.prototype.name = "SubscriptionException";
+
+module.exports = SubscriptionException;

@@ -18,93 +18,92 @@
  * limitations under the License.
  * #L%
  */
-var ArbitrationStrategyCollection =
-        require('../../joynr/types/ArbitrationStrategyCollection');
+var ArbitrationStrategyCollection = require('../../joynr/types/ArbitrationStrategyCollection');
 var DiscoveryScope = require('../../joynr/types/DiscoveryScope');
 var Util = require('../util/UtilInternal');
 var LoggerFactory = require('../system/LoggerFactory');
 
-    var defaultSettings = {
-        discoveryTimeoutMs : 10 * 60 * 1000, // 10 minutes
-        discoveryRetryDelayMs : 10 * 1000, // 10 seconds
-        arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
-        cacheMaxAgeMs : 0,
-        discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
-        providerMustSupportOnChange : false,
-        additionalParameters : {}
-    };
+var defaultSettings = {
+    discoveryTimeoutMs : 10 * 60 * 1000, // 10 minutes
+    discoveryRetryDelayMs : 10 * 1000, // 10 seconds
+    arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
+    cacheMaxAgeMs : 0,
+    discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
+    providerMustSupportOnChange : false,
+    additionalParameters : {}
+};
 
-    /**
-     * Constructor of DiscoveryQos object that is used in the generation of proxy objects
-     *
-     * @constructor
-     * @name DiscoveryQos
-     *
-     * @param {Object} [settings] the settings object for the constructor call
-     * @param {Number} [settings.discoveryTimeoutMs] for rpc calls to wait for arbitration to finish.
-     * @param {Number} [settings.discoveryRetryDelayMs] the minimum delay between two arbitration retries
-     * @param {Function} [settings.arbitrationStrategy] Strategy for choosing the appropriate provider from the list returned by the capabilities directory with the function signature "function(CapabilityInfos[])" that returns an array of CapabilityInfos
-     * @param {Number} [settings.cacheMaxAgeMs] Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the local capabilities directory a lookup in the global capabilitiesDirectory will take place.
-     * @param {DiscoveryScope} [settings.discoveryScope] default  is LOCAL_AND_GLOBAL
-     * @param {Boolean} [settings.providerMustSupportOnChange] default false
-     * @param {Object} [settings.additionalParameters] a map holding additional parameters in the form of key value pairs in the javascript object, e.g.: {"myKey": "myValue", "myKey2": 5}
-     *
-     * @returns {DiscoveryQos} a discovery Qos Object
-     */
-    function DiscoveryQos(settings) {
-        if (!(this instanceof DiscoveryQos)) {
-            // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-            return new DiscoveryQos(settings);
-        }
-
-        var log = LoggerFactory.getLogger("joynr.proxy.DiscoveryQos");
-
-        settings = Util.extend({}, defaultSettings, settings);
-
-        /**
-         * @name DiscoveryQos#discoveryTimeoutMs
-         * @type Number
-         */
-        this.discoveryTimeoutMs = settings.discoveryTimeoutMs;
-
-        /**
-         * @name DiscoveryQos#discoveryRetryDelayMs
-         * @type Number
-         */
-        this.discoveryRetryDelayMs = settings.discoveryRetryDelayMs;
-
-        /**
-         * @name DiscoveryQos#arbitrationStrategy
-         * @type Function
-         * @see ArbitrationStrategyCollection
-         */
-        this.arbitrationStrategy = settings.arbitrationStrategy;
-
-        /**
-         * @name DiscoveryQos#cacheMaxAgeMs
-         * @type Number
-         */
-        this.cacheMaxAgeMs = settings.cacheMaxAgeMs;
-
-        /**
-         * @name DiscoveryQos#discoveryScope
-         */
-        this.discoveryScope = settings.discoveryScope;
-
-        /**
-         * @name DiscoveryQos#providerMustSupportOnChange
-         */
-        this.providerMustSupportOnChange = settings.providerMustSupportOnChange;
-
-        /**
-         * @name DiscoveryQos#additionalParameters
-         * @type Object
-         */
-        this.additionalParameters = settings.additionalParameters;
+/**
+ * Constructor of DiscoveryQos object that is used in the generation of proxy objects
+ *
+ * @constructor
+ * @name DiscoveryQos
+ *
+ * @param {Object} [settings] the settings object for the constructor call
+ * @param {Number} [settings.discoveryTimeoutMs] for rpc calls to wait for arbitration to finish.
+ * @param {Number} [settings.discoveryRetryDelayMs] the minimum delay between two arbitration retries
+ * @param {Function} [settings.arbitrationStrategy] Strategy for choosing the appropriate provider from the list returned by the capabilities directory with the function signature "function(CapabilityInfos[])" that returns an array of CapabilityInfos
+ * @param {Number} [settings.cacheMaxAgeMs] Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the local capabilities directory a lookup in the global capabilitiesDirectory will take place.
+ * @param {DiscoveryScope} [settings.discoveryScope] default  is LOCAL_AND_GLOBAL
+ * @param {Boolean} [settings.providerMustSupportOnChange] default false
+ * @param {Object} [settings.additionalParameters] a map holding additional parameters in the form of key value pairs in the javascript object, e.g.: {"myKey": "myValue", "myKey2": 5}
+ *
+ * @returns {DiscoveryQos} a discovery Qos Object
+ */
+function DiscoveryQos(settings) {
+    if (!(this instanceof DiscoveryQos)) {
+        // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
+        return new DiscoveryQos(settings);
     }
 
-    DiscoveryQos.setDefaultSettings = function(settings) {
-        defaultSettings = Util.extend({}, defaultSettings, settings);
-    };
+    var log = LoggerFactory.getLogger("joynr.proxy.DiscoveryQos");
 
-    module.exports = DiscoveryQos;
+    settings = Util.extend({}, defaultSettings, settings);
+
+    /**
+     * @name DiscoveryQos#discoveryTimeoutMs
+     * @type Number
+     */
+    this.discoveryTimeoutMs = settings.discoveryTimeoutMs;
+
+    /**
+     * @name DiscoveryQos#discoveryRetryDelayMs
+     * @type Number
+     */
+    this.discoveryRetryDelayMs = settings.discoveryRetryDelayMs;
+
+    /**
+     * @name DiscoveryQos#arbitrationStrategy
+     * @type Function
+     * @see ArbitrationStrategyCollection
+     */
+    this.arbitrationStrategy = settings.arbitrationStrategy;
+
+    /**
+     * @name DiscoveryQos#cacheMaxAgeMs
+     * @type Number
+     */
+    this.cacheMaxAgeMs = settings.cacheMaxAgeMs;
+
+    /**
+     * @name DiscoveryQos#discoveryScope
+     */
+    this.discoveryScope = settings.discoveryScope;
+
+    /**
+     * @name DiscoveryQos#providerMustSupportOnChange
+     */
+    this.providerMustSupportOnChange = settings.providerMustSupportOnChange;
+
+    /**
+     * @name DiscoveryQos#additionalParameters
+     * @type Object
+     */
+    this.additionalParameters = settings.additionalParameters;
+}
+
+DiscoveryQos.setDefaultSettings = function(settings) {
+    defaultSettings = Util.extend({}, defaultSettings, settings);
+};
+
+module.exports = DiscoveryQos;

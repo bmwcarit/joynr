@@ -21,33 +21,33 @@
 var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
 
+/**
+ * @name SubscriptionStop
+ * @constructor
+ *
+ * @param settings
+ *            {Object}
+ * @param settings.subscriptionId
+ *            {String}
+ */
+function SubscriptionStop(settings) {
+    Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+
     /**
-     * @name SubscriptionStop
-     * @constructor
-     *
-     * @param settings
-     *            {Object}
-     * @param settings.subscriptionId
-     *            {String}
+     * @name SubscriptionStop#subscriptionId
+     * @type String
      */
-    function SubscriptionStop(settings) {
-        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+    Util.extend(this, settings);
 
-        /**
-         * @name SubscriptionStop#subscriptionId
-         * @type String
-         */
-        Util.extend(this, settings);
+    /**
+     * The joynr type name
+     *
+     * @name SubscriptionStop#_typeName
+     * @type String
+     */
+    Typing.augmentTypeName(this, "joynr");
 
-        /**
-         * The joynr type name
-         *
-         * @name SubscriptionStop#_typeName
-         * @type String
-         */
-        Typing.augmentTypeName(this, "joynr");
+    return Object.freeze(this);
+}
 
-        return Object.freeze(this);
-    }
-
-    module.exports = SubscriptionStop;
+module.exports = SubscriptionStop;

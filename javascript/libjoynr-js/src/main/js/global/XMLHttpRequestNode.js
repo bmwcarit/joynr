@@ -22,7 +22,7 @@
  *
  * @returns object with properties window and document.
  */
-if (global.window !== undefined){
+if (global.window !== undefined) {
     module.exports = require("./XMLHttpRequest");
 } else {
     var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;

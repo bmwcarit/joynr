@@ -23,71 +23,71 @@ var MqttMessagingSkeleton =
 var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
 var MessageRouter = require('../../../../classes/joynr/messaging/routing/MessageRouter');
 
-    describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
+describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
 
-        var sharedMqttClient, mqttMessagingSkeleton;
-        var messageRouterSpy;
+    var sharedMqttClient, mqttMessagingSkeleton;
+    var messageRouterSpy;
 
-        beforeEach(function() {
-            function SharedMqttClient() {
-                this.subscribe = function() {};
-            }
-
-            messageRouterSpy = Object.create(MessageRouter.prototype);
-            messageRouterSpy.route = jasmine.createSpy("messageRouterSpy.route");
-
-            function MqttAddress() {}
-
-            sharedMqttClient = new SharedMqttClient();
-
-            spyOn(sharedMqttClient, "subscribe");
-
-            mqttMessagingSkeleton = new MqttMessagingSkeleton({
-                address : new MqttAddress(),
-                client : sharedMqttClient,
-                messageRouter : messageRouterSpy
-            });
-
-            sharedMqttClient.subscribe.calls.reset();
-        });
-
-        function testCorrectMulticastIdTransformation(multicastId, expectedTopic) {
-            mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
-            expect(sharedMqttClient.subscribe).toHaveBeenCalled();
-            expect(sharedMqttClient.subscribe).toHaveBeenCalledWith(expectedTopic);
-            sharedMqttClient.subscribe.calls.reset();
+    beforeEach(function() {
+        function SharedMqttClient() {
+            this.subscribe = function() {};
         }
 
-        it("correctly transform multicastIds to mqtt topics", function() {
-            testCorrectMulticastIdTransformation("a/b", "a/b");
-            testCorrectMulticastIdTransformation("a/+/b", "a/+/b");
-            testCorrectMulticastIdTransformation("a/*", "a/#");
-            testCorrectMulticastIdTransformation("x/y/z/*", "x/y/z/#");
+        messageRouterSpy = Object.create(MessageRouter.prototype);
+        messageRouterSpy.route = jasmine.createSpy("messageRouterSpy.route");
+
+        function MqttAddress() {}
+
+        sharedMqttClient = new SharedMqttClient();
+
+        spyOn(sharedMqttClient, "subscribe");
+
+        mqttMessagingSkeleton = new MqttMessagingSkeleton({
+            address : new MqttAddress(),
+            client : sharedMqttClient,
+            messageRouter : messageRouterSpy
         });
 
-        function setsReceivedFromGlobal(message) {
-            messageRouterSpy.route.calls.reset();
-            expect(message.isReceivedFromGlobal).toEqual(false);
-            expect(messageRouterSpy.route).not.toHaveBeenCalled();
-            sharedMqttClient.onmessage("", message);
-            expect(messageRouterSpy.route).toHaveBeenCalledTimes(1);
-            expect(messageRouterSpy.route.calls.argsFor(0)[0].isReceivedFromGlobal).toEqual(true);
-        }
-
-        it("sets receivedFromGlobal", function() {
-            var requestMessage = new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
-            });
-            setsReceivedFromGlobal(requestMessage);
-
-            var multicastMessage = new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
-            });
-            setsReceivedFromGlobal(multicastMessage);
-
-            var subscriptionRequestMessage = new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
-            });
-            setsReceivedFromGlobal(subscriptionRequestMessage);
-        });
+        sharedMqttClient.subscribe.calls.reset();
     });
+
+    function testCorrectMulticastIdTransformation(multicastId, expectedTopic) {
+        mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
+        expect(sharedMqttClient.subscribe).toHaveBeenCalled();
+        expect(sharedMqttClient.subscribe).toHaveBeenCalledWith(expectedTopic);
+        sharedMqttClient.subscribe.calls.reset();
+    }
+
+    it("correctly transform multicastIds to mqtt topics", function() {
+        testCorrectMulticastIdTransformation("a/b", "a/b");
+        testCorrectMulticastIdTransformation("a/+/b", "a/+/b");
+        testCorrectMulticastIdTransformation("a/*", "a/#");
+        testCorrectMulticastIdTransformation("x/y/z/*", "x/y/z/#");
+    });
+
+    function setsReceivedFromGlobal(message) {
+        messageRouterSpy.route.calls.reset();
+        expect(message.isReceivedFromGlobal).toEqual(false);
+        expect(messageRouterSpy.route).not.toHaveBeenCalled();
+        sharedMqttClient.onmessage("", message);
+        expect(messageRouterSpy.route).toHaveBeenCalledTimes(1);
+        expect(messageRouterSpy.route.calls.argsFor(0)[0].isReceivedFromGlobal).toEqual(true);
+    }
+
+    it("sets receivedFromGlobal", function() {
+        var requestMessage = new JoynrMessage({
+            type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+        });
+        setsReceivedFromGlobal(requestMessage);
+
+        var multicastMessage = new JoynrMessage({
+            type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+        });
+        setsReceivedFromGlobal(multicastMessage);
+
+        var subscriptionRequestMessage = new JoynrMessage({
+            type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
+        });
+        setsReceivedFromGlobal(subscriptionRequestMessage);
+    });
+});

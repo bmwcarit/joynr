@@ -22,66 +22,63 @@ var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
 var Typing = require('../util/Typing');
 var Util = require('../util/UtilInternal');
 var LoggerFactory = require('../system/LoggerFactory');
-    var defaultSettings;
+var defaultSettings;
 
-    /**
-     * @classdesc
-     *
-     * @summary
-     * Constructor of JoynrException object used for reporting
-     * error conditions. This serves as superobject for the underlying
-     * ApplicationException and JoynrRuntimeException.
-     *
-     * @constructor
-     * @name JoynrException
-     *
-     * @param {Object}
-     *            [settings] the settings object for the constructor call
-     * @param {String}
-     *            [settings.detailMessage] message containing details
-     *            about the error
-     * @returns {JoynrException}
-     *            The newly created JoynrException object
-     */
-    function JoynrException(settings) {
-        if (!(this instanceof JoynrException)) {
-            // in case someone calls constructor without new keyword (e.g. var c
-            // = Constructor({..}))
-            return new JoynrException(settings);
-        }
-
-        var log = LoggerFactory.getLogger("joynr.exceptions.JoynrException");
-
-        /**
-         * Used for serialization.
-         * @name JoynrException#_typeName
-         * @type String
-         */
-        Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrException");
-        Typing.checkPropertyIfDefined(settings, "Object", "settings");
-        if (settings && settings.detailMessage) {
-            Typing.checkPropertyIfDefined(
-                    settings.detailMessage,
-                    "String",
-                    "settings.detailMessage");
-            this.detailMessage = settings.detailMessage;
-        } else {
-            /**
-             * See [constructor description]{@link JoynrException}.
-             * @name JoynrException#detailMessage
-             * @type String
-             */
-            this.detailMessage = undefined;
-        }
-        Util.extend(this, defaultSettings, settings);
+/**
+ * @classdesc
+ *
+ * @summary
+ * Constructor of JoynrException object used for reporting
+ * error conditions. This serves as superobject for the underlying
+ * ApplicationException and JoynrRuntimeException.
+ *
+ * @constructor
+ * @name JoynrException
+ *
+ * @param {Object}
+ *            [settings] the settings object for the constructor call
+ * @param {String}
+ *            [settings.detailMessage] message containing details
+ *            about the error
+ * @returns {JoynrException}
+ *            The newly created JoynrException object
+ */
+function JoynrException(settings) {
+    if (!(this instanceof JoynrException)) {
+        // in case someone calls constructor without new keyword (e.g. var c
+        // = Constructor({..}))
+        return new JoynrException(settings);
     }
 
-    defaultSettings = {};
+    var log = LoggerFactory.getLogger("joynr.exceptions.JoynrException");
 
-    TypeRegistrySingleton.getInstance().addType("joynr.exceptions.JoynrException", JoynrException);
+    /**
+     * Used for serialization.
+     * @name JoynrException#_typeName
+     * @type String
+     */
+    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrException");
+    Typing.checkPropertyIfDefined(settings, "Object", "settings");
+    if (settings && settings.detailMessage) {
+        Typing.checkPropertyIfDefined(settings.detailMessage, "String", "settings.detailMessage");
+        this.detailMessage = settings.detailMessage;
+    } else {
+        /**
+         * See [constructor description]{@link JoynrException}.
+         * @name JoynrException#detailMessage
+         * @type String
+         */
+        this.detailMessage = undefined;
+    }
+    Util.extend(this, defaultSettings, settings);
+}
 
-    JoynrException.prototype = new Error();
-    JoynrException.prototype.constructor = JoynrException;
-    JoynrException.prototype.name = "JoynrException";
+defaultSettings = {};
 
-    module.exports = JoynrException;
+TypeRegistrySingleton.getInstance().addType("joynr.exceptions.JoynrException", JoynrException);
+
+JoynrException.prototype = new Error();
+JoynrException.prototype.constructor = JoynrException;
+JoynrException.prototype.name = "JoynrException";
+
+module.exports = JoynrException;

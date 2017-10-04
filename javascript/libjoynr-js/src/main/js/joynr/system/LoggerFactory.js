@@ -21,30 +21,30 @@
 var LoggingManager = require("./LoggingManager");
 var defaultConfig = require("./DefaultLoggerConfiguration");
 
-    /**
-     * @name LoggerFactory
-     * @class
-     * @classdesc Global factory to create logger instances
-     */
-    var LoggerFactory = {};
-    var loggingManager;
-    LoggerFactory.init = function init(newLoggingManager) {
-        loggingManager = newLoggingManager;
-    };
+/**
+ * @name LoggerFactory
+ * @class
+ * @classdesc Global factory to create logger instances
+ */
+var LoggerFactory = {};
+var loggingManager;
+LoggerFactory.init = function init(newLoggingManager) {
+    loggingManager = newLoggingManager;
+};
 
-    /**
-     * @name LoggerFactory#getLogger
-     * @function
-     * @param {Object} name - The logger's name
-     */
-    LoggerFactory.getLogger = function getLogger(name) {
-        if (loggingManager === undefined) {
-            var newLoggingManager = new LoggingManager();
-            newLoggingManager.configure(defaultConfig);
-            LoggerFactory.init(newLoggingManager);
-        }
+/**
+ * @name LoggerFactory#getLogger
+ * @function
+ * @param {Object} name - The logger's name
+ */
+LoggerFactory.getLogger = function getLogger(name) {
+    if (loggingManager === undefined) {
+        var newLoggingManager = new LoggingManager();
+        newLoggingManager.configure(defaultConfig);
+        LoggerFactory.init(newLoggingManager);
+    }
 
-        return loggingManager.getLogger(name);
-    };
+    return loggingManager.getLogger(name);
+};
 
-    module.exports= LoggerFactory;
+module.exports = LoggerFactory;

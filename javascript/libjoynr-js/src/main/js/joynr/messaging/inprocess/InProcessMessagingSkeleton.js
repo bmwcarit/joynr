@@ -18,36 +18,35 @@
  * #L%
  */
 
-    /**
-     * @name InProcessMessagingSkeleton
-     * @constructor
-     */
-    function InProcessMessagingSkeleton() {
+/**
+ * @name InProcessMessagingSkeleton
+ * @constructor
+ */
+function InProcessMessagingSkeleton() {
 
-    }
+}
 
-    /**
-     * @name InProcessMessagingSkeleton#receiveMessage
-     * @function
-     *
-     * @param {JoynrMessage} joynrMessage
-     * @returns {Object} A+ promise object
-     */
-    InProcessMessagingSkeleton.prototype.receiveMessage = function receiveMessage(joynrMessage) {
-        return this._onReceive(joynrMessage);
-    };
+/**
+ * @name InProcessMessagingSkeleton#receiveMessage
+ * @function
+ *
+ * @param {JoynrMessage} joynrMessage
+ * @returns {Object} A+ promise object
+ */
+InProcessMessagingSkeleton.prototype.receiveMessage = function receiveMessage(joynrMessage) {
+    return this._onReceive(joynrMessage);
+};
 
-    /**
-     * A setter for the callback function that will receive the incoming messages
-     *
-     * @name InProcessMessagingSkeleton#registerListener
-     * @function
-     *
-     * @param {Function} newOnReceive the function that is called with the incoming JoynrMessage
-     */
-    InProcessMessagingSkeleton.prototype.registerListener =
-            function registerListener(newOnReceive) {
-                this._onReceive = newOnReceive;
-            };
+/**
+ * A setter for the callback function that will receive the incoming messages
+ *
+ * @name InProcessMessagingSkeleton#registerListener
+ * @function
+ *
+ * @param {Function} newOnReceive the function that is called with the incoming JoynrMessage
+ */
+InProcessMessagingSkeleton.prototype.registerListener = function registerListener(newOnReceive) {
+    this._onReceive = newOnReceive;
+};
 
-    module.exports = InProcessMessagingSkeleton;
+module.exports = InProcessMessagingSkeleton;

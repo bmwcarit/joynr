@@ -24,46 +24,46 @@ var DiagnosticTags = require('../../system/DiagnosticTags');
 var JoynrException = require('../../exceptions/JoynrException');
 var JoynrMessage = require('../JoynrMessage');
 
- var log = LoggerFactory.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
-    /**
-     * @name ChannelMessagingSkeleton
-     * @constructor
-     *
-     * @param {Function}
-     *            receiveFunction
-     */
-    function ChannelMessagingSkeleton(settings) {
+var log = LoggerFactory.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
+/**
+ * @name ChannelMessagingSkeleton
+ * @constructor
+ *
+ * @param {Function}
+ *            receiveFunction
+ */
+function ChannelMessagingSkeleton(settings) {
 
-        Typing.checkProperty(settings, "Object", "settings");
-        if (settings.messageRouter === undefined) {
-            throw new Error("messageRouter is undefined");
-        }
-
-        this._messageRouter = settings.messageRouter;
-
+    Typing.checkProperty(settings, "Object", "settings");
+    if (settings.messageRouter === undefined) {
+        throw new Error("messageRouter is undefined");
     }
 
-    /**
-     * Lets all listeners receive a message
-     *
-     * @name ChannelMessagingSkeleton#receiveMessage
-     * @function
-     *
-     * @param {JoynrMessage} joynrMessage
-     */
-    ChannelMessagingSkeleton.prototype.receiveMessage =
-            function receiveMessage(joynrMessage) {
-                joynrMessage = new JoynrMessage(joynrMessage);
-                joynrMessage.setReceivedFromGlobal(true);
-                try {
-                    this._messageRouter.route(joynrMessage);
-                } catch (e) {
-                    log.error("unable to process message: "
-                        + e
-                        + (e instanceof JoynrException ? " " + e.detailMessage : "")
-                        + " \nmessage: "
-                        + DiagnosticTags.forJoynrMessage(joynrMessage));
-                }
-            };
+    this._messageRouter = settings.messageRouter;
 
-    module.exports = ChannelMessagingSkeleton;
+}
+
+/**
+ * Lets all listeners receive a message
+ *
+ * @name ChannelMessagingSkeleton#receiveMessage
+ * @function
+ *
+ * @param {JoynrMessage} joynrMessage
+ */
+ChannelMessagingSkeleton.prototype.receiveMessage =
+        function receiveMessage(joynrMessage) {
+            joynrMessage = new JoynrMessage(joynrMessage);
+            joynrMessage.setReceivedFromGlobal(true);
+            try {
+                this._messageRouter.route(joynrMessage);
+            } catch (e) {
+                log.error("unable to process message: "
+                    + e
+                    + (e instanceof JoynrException ? " " + e.detailMessage : "")
+                    + " \nmessage: "
+                    + DiagnosticTags.forJoynrMessage(joynrMessage));
+            }
+        };
+
+module.exports = ChannelMessagingSkeleton;

@@ -20,30 +20,30 @@
  */
 var Typing = require('../../util/Typing');
 
-    /**
-     * @name BrowserMessagingStub
-     * @constructor
-     *
-     * @param {Object} settings
-     * @param {String} [settings.windowId] the destination windowId to send the messages to, defaults to defaultWindowId of master tab
-     * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
-     */
-    function BrowserMessagingStub(settings) {
+/**
+ * @name BrowserMessagingStub
+ * @constructor
+ *
+ * @param {Object} settings
+ * @param {String} [settings.windowId] the destination windowId to send the messages to, defaults to defaultWindowId of master tab
+ * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
+ */
+function BrowserMessagingStub(settings) {
 
-        this._settings = settings;
+    this._settings = settings;
 
-    }
-    /**
-     * @name BrowserMessagingStub#transmit
-     * @function
-     *
-     * @param {JoynrMessage} joynrMessage the joynr message to transmit
-     */
-    BrowserMessagingStub.prototype.transmit = function transmit(joynrMessage) {
-        return this._settings.webMessagingStub.transmit({
-            windowId : this._settings.windowId,
-            message : joynrMessage
-        });
-    };
+}
+/**
+ * @name BrowserMessagingStub#transmit
+ * @function
+ *
+ * @param {JoynrMessage} joynrMessage the joynr message to transmit
+ */
+BrowserMessagingStub.prototype.transmit = function transmit(joynrMessage) {
+    return this._settings.webMessagingStub.transmit({
+        windowId : this._settings.windowId,
+        message : joynrMessage
+    });
+};
 
-    module.exports = BrowserMessagingStub;
+module.exports = BrowserMessagingStub;

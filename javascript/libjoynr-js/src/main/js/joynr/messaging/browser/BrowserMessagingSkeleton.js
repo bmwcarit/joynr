@@ -24,64 +24,60 @@ var Util = require('../../util/UtilInternal');
 var JSONSerializer = require('../../util/JSONSerializer');
 var LoggerFactory = require('../../system/LoggerFactory');
 
-    /**
-     * @constructor BrowserMessagingSkeleton
-     *
-     * @param {Object} settings
-     * @param {WebMessagingSkeleton} settings.webMessagingSkeleton a web messaging skeleton receiving web messages
-     */
-    function BrowserMessagingSkeleton(settings) {
-        var log = LoggerFactory.getLogger("joynr/messaging/browser/BrowserMessagingSkeleton");
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing
-                .checkProperty(
-                        settings.webMessagingSkeleton,
-                        Object,
-                        "settings.webMessagingSkeleton");
+/**
+ * @constructor BrowserMessagingSkeleton
+ *
+ * @param {Object} settings
+ * @param {WebMessagingSkeleton} settings.webMessagingSkeleton a web messaging skeleton receiving web messages
+ */
+function BrowserMessagingSkeleton(settings) {
+    var log = LoggerFactory.getLogger("joynr/messaging/browser/BrowserMessagingSkeleton");
+    Typing.checkProperty(settings, "Object", "settings");
+    Typing.checkProperty(settings.webMessagingSkeleton, Object, "settings.webMessagingSkeleton");
 
-        var that = this;
-        this.receiverCallbacks = [];
+    var that = this;
+    this.receiverCallbacks = [];
 
-        function webMessagingSkeletonListener(message) {
-            if (message !== undefined) {
-                var joynrMessage = new JoynrMessage(message);
+    function webMessagingSkeletonListener(message) {
+        if (message !== undefined) {
+            var joynrMessage = new JoynrMessage(message);
 
-                Util.fire(that.receiverCallbacks, joynrMessage);
-            } else {
-                log.warn("message with content \""
-                    + JSONSerializer.stringify(message)
-                    + "\" could not be processed");
-            }
+            Util.fire(that.receiverCallbacks, joynrMessage);
+        } else {
+            log.warn("message with content \""
+                + JSONSerializer.stringify(message)
+                + "\" could not be processed");
         }
-
-        settings.webMessagingSkeleton.registerListener(webMessagingSkeletonListener);
-
     }
 
-    /**
-     * Registers the listener function
-     *
-     * @function BrowserMessagingSkeleton#registerListener
-     *
-     * @param {Function} listener a listener function that should be added and should receive messages
-     */
-    BrowserMessagingSkeleton.prototype.registerListener = function(listener) {
-        Typing.checkProperty(listener, "Function", "listener");
+    settings.webMessagingSkeleton.registerListener(webMessagingSkeletonListener);
 
-        this.receiverCallbacks.push(listener);
-    };
+}
 
-    /**
-     * Unregisters the listener function
-     *
-     * @function BrowserMessagingSkeleton#unregisterListener
-     *
-     * @param {Function} listener the listener function that should re removed and shouldn't receive messages any more
-     */
-    BrowserMessagingSkeleton.prototype.unregisterListener = function(listener) {
-        Typing.checkProperty(listener, "Function", "listener");
+/**
+ * Registers the listener function
+ *
+ * @function BrowserMessagingSkeleton#registerListener
+ *
+ * @param {Function} listener a listener function that should be added and should receive messages
+ */
+BrowserMessagingSkeleton.prototype.registerListener = function(listener) {
+    Typing.checkProperty(listener, "Function", "listener");
 
-        Util.removeElementFromArray(this.receiverCallbacks, listener);
-    };
+    this.receiverCallbacks.push(listener);
+};
 
-    module.exports = BrowserMessagingSkeleton;
+/**
+ * Unregisters the listener function
+ *
+ * @function BrowserMessagingSkeleton#unregisterListener
+ *
+ * @param {Function} listener the listener function that should re removed and shouldn't receive messages any more
+ */
+BrowserMessagingSkeleton.prototype.unregisterListener = function(listener) {
+    Typing.checkProperty(listener, "Function", "listener");
+
+    Util.removeElementFromArray(this.receiverCallbacks, listener);
+};
+
+module.exports = BrowserMessagingSkeleton;

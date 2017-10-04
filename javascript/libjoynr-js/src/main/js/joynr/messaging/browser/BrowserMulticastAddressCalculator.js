@@ -20,31 +20,30 @@
 
 var Typing = require('../../util/Typing');
 
+/**
+ * @constructor BrowserMulticastAddressCalculator
+ * @param {Object}
+ *            settings
+ * @param {BrowserAddress}
+ *            settings.globalAddress
+ */
+var BrowserMulticastAddressCalculator = function BrowserMulticastAddressCalculator(settings) {
+    Typing.checkProperty(settings, "Object", "settings");
+    Typing.checkProperty(settings.globalAddress, "BrowserAddress", "settings.globalAddress");
+    this._settings = settings;
 
-    /**
-     * @constructor BrowserMulticastAddressCalculator
-     * @param {Object}
-     *            settings
-     * @param {BrowserAddress}
-     *            settings.globalAddress
-     */
-    var BrowserMulticastAddressCalculator = function BrowserMulticastAddressCalculator(settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkProperty(settings.globalAddress, "BrowserAddress", "settings.globalAddress");
-        this._settings = settings;
+};
 
-    };
+/**
+ * Calculates the multicast address for the submitted joynr message
+ * @function BrowserMulticastAddressCalculator#calculate
+ *
+ * @param {JoynrMessage}
+ *            message
+ * @return {Address} the multicast address
+ */
+BrowserMulticastAddressCalculator.prototype.calculate = function calculate(message) {
+    return this._settings.globalAddress;
+};
 
-    /**
-     * Calculates the multicast address for the submitted joynr message
-     * @function BrowserMulticastAddressCalculator#calculate
-     *
-     * @param {JoynrMessage}
-     *            message
-     * @return {Address} the multicast address
-     */
-    BrowserMulticastAddressCalculator.prototype.calculate = function calculate(message) {
-        return this._settings.globalAddress;
-    };
-
-    module.exports = BrowserMulticastAddressCalculator;
+module.exports = BrowserMulticastAddressCalculator;

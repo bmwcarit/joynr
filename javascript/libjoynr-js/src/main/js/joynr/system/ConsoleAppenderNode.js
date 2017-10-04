@@ -20,45 +20,45 @@
  * #L%
  */
 
-    /**
-     * A log4javascript Appender that sends a logged message from a WebWorker to the main context to
-     * log it there
-     *
-     * @name ConsoleAppender
-     * @constructor
-     */
-    function ConsoleAppender() {}
+/**
+ * A log4javascript Appender that sends a logged message from a WebWorker to the main context to
+ * log it there
+ *
+ * @name ConsoleAppender
+ * @constructor
+ */
+function ConsoleAppender() {}
 
-    /**
-     * Implementing the appender function of log4javascript appenders
-     *
-     * @name ConsoleAppender#append
-     * @function
-     */
-    ConsoleAppender.prototype.append = function(loggingEvent) {
-        var formattedMessage = loggingEvent.getCombinedMessages(), appender = this;
+/**
+ * Implementing the appender function of log4javascript appenders
+ *
+ * @name ConsoleAppender#append
+ * @function
+ */
+ConsoleAppender.prototype.append = function(loggingEvent) {
+    var formattedMessage = loggingEvent.getCombinedMessages(), appender = this;
 
-        var getFormattedMessage = function() {
-            try {
-                var layout = appender.getLayout();
-                formattedMessage = layout.format(loggingEvent);
-                if (layout.ignoresThrowable() && loggingEvent.exception) {
-                    formattedMessage += loggingEvent.getThrowableStrRep();
-                }
-            } catch (e) {
-
+    var getFormattedMessage = function() {
+        try {
+            var layout = appender.getLayout();
+            formattedMessage = layout.format(loggingEvent);
+            if (layout.ignoresThrowable() && loggingEvent.exception) {
+                formattedMessage += loggingEvent.getThrowableStrRep();
             }
-            return formattedMessage;
-        };
+        } catch (e) {
 
-        var logLevel = loggingEvent.level.name.toLowerCase();
-        formattedMessage = getFormattedMessage();
-        console[logLevel] = console[logLevel] || console.log;
-        console[logLevel](formattedMessage);
+        }
+        return formattedMessage;
     };
 
-    ConsoleAppender.prototype.toString = function toString() {
-        return "ConsoleAppender";
-    };
+    var logLevel = loggingEvent.level.name.toLowerCase();
+    formattedMessage = getFormattedMessage();
+    console[logLevel] = console[logLevel] || console.log;
+    console[logLevel](formattedMessage);
+};
 
-    module.exports = ConsoleAppender;
+ConsoleAppender.prototype.toString = function toString() {
+    return "ConsoleAppender";
+};
+
+module.exports = ConsoleAppender;

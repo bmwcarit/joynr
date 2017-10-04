@@ -22,33 +22,33 @@ var Typing = require('../../util/Typing');
 var WebSocketMessagingStub = require('./WebSocketMessagingStub');
 var WebSocketAddress = require('../../system/RoutingTypes/WebSocketAddress');
 
+/**
+ * @constructor
+ * @name WebSocketMessagingStubFactory
+ * @param {Object}
+ *            settings
+ * @param {SharedWebSocket}
+ *            settings.sharedWebSocket to the websocket server
+ * @param {WebSocketAddress}
+ *            settings.address of the websocket for the websocket server
+ */
+var WebSocketMessagingStubFactory = function WebSocketMessagingStubFactory(settings) {
+    Typing.checkProperty(settings, "Object", "settings");
+    Typing.checkProperty(settings.address, "WebSocketAddress", "address");
+    Typing.checkProperty(settings.sharedWebSocket, "SharedWebSocket", "sharedWebSocket");
+
+    var addresses = {};
+    addresses[settings.address] = new WebSocketMessagingStub({
+        sharedWebSocket : settings.sharedWebSocket
+    });
+
     /**
-     * @constructor
-     * @name WebSocketMessagingStubFactory
-     * @param {Object}
-     *            settings
-     * @param {SharedWebSocket}
-     *            settings.sharedWebSocket to the websocket server
-     * @param {WebSocketAddress}
-     *            settings.address of the websocket for the websocket server
+     * @name WebSocketMessagingStubFactory#build
+     * @function
      */
-    var WebSocketMessagingStubFactory = function WebSocketMessagingStubFactory(settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkProperty(settings.address, "WebSocketAddress", "address");
-        Typing.checkProperty(settings.sharedWebSocket, "SharedWebSocket", "sharedWebSocket");
-
-        var addresses = {};
-        addresses[settings.address] = new WebSocketMessagingStub({
-            sharedWebSocket : settings.sharedWebSocket
-        });
-
-        /**
-         * @name WebSocketMessagingStubFactory#build
-         * @function
-         */
-        this.build = function build(address) {
-            return addresses[address];
-        };
+    this.build = function build(address) {
+        return addresses[address];
     };
+};
 
-    module.exports = WebSocketMessagingStubFactory;
+module.exports = WebSocketMessagingStubFactory;

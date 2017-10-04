@@ -21,103 +21,103 @@
 var LoggingManager = require('../../../classes/joynr/system/LoggingManager');
 var DistributedLoggingAppender =
         require('../../../classes/joynr/system/DistributedLoggingAppender');
-    var loggingProxy;
+var loggingProxy;
 
-    loggingProxy = {
-        log : function(value) {},
-        providerDiscoveryEntry : {}
-    };
+loggingProxy = {
+    log : function(value) {},
+    providerDiscoveryEntry : {}
+};
 
-    describe("libjoynr-js.joynr.system.DistributedLoggingAppender", function() {
+describe("libjoynr-js.joynr.system.DistributedLoggingAppender", function() {
 
-        beforeEach(function(done) {
-            jasmine.clock().install();
-            done();
-        });
-
-        afterEach(function(done) {
-            jasmine.clock().uninstall();
-            done();
-        });
-
-        it("is instantiable", function(done) {
-            expect(new DistributedLoggingAppender()).toBeDefined();
-            done();
-        });
-
-        it("uses the correct interval", function(done) {
-            var config, context, appender, loggingEvent;
-
-            context = {};
-            config = {
-                flushInterval : 1000,
-                flushMaxLogEventsCount : 3
-            };
-
-            spyOn(loggingProxy, "log");
-
-            appender = new DistributedLoggingAppender(config, context);
-            appender.setProxy(loggingProxy);
-
-            expect(loggingProxy.log).not.toHaveBeenCalled();
-
-            loggingEvent = {
-                logger : {
-                    name : "loggerName"
-                },
-                timeStampInMilliseconds : 10000000,
-                messages : [ "log message"
-                ],
-                level : {
-                    name : "DEBUG"
-                }
-            };
-            appender.append(loggingEvent);
-
-            expect(loggingProxy.log).not.toHaveBeenCalled();
-
-            jasmine.clock().tick(1000);
-
-            expect(loggingProxy.log).toHaveBeenCalled();
-            done();
-        });
-
-        it("flushes when the max number of events has been reached", function(done) {
-            var config, context, appender, loggingEvent;
-
-            context = {};
-            config = {
-                flushInterval : 1000,
-                flushMaxLogEventsCount : 3
-
-            };
-
-            spyOn(loggingProxy, "log");
-
-            appender = new DistributedLoggingAppender(config, context);
-            appender.setProxy(loggingProxy);
-
-            expect(loggingProxy.log).not.toHaveBeenCalled();
-            loggingEvent = {
-                logger : {
-                    name : "loggerName"
-                },
-                timeStampInMilliseconds : 10000000,
-                messages : [ "log message"
-                ],
-                level : {
-                    name : "DEBUG"
-                }
-            };
-            appender.append(loggingEvent);
-            expect(loggingProxy.log).not.toHaveBeenCalled();
-
-            appender.append(loggingEvent);
-            expect(loggingProxy.log).not.toHaveBeenCalled();
-
-            appender.append(loggingEvent);
-            expect(loggingProxy.log).toHaveBeenCalled();
-            done();
-        });
-
+    beforeEach(function(done) {
+        jasmine.clock().install();
+        done();
     });
+
+    afterEach(function(done) {
+        jasmine.clock().uninstall();
+        done();
+    });
+
+    it("is instantiable", function(done) {
+        expect(new DistributedLoggingAppender()).toBeDefined();
+        done();
+    });
+
+    it("uses the correct interval", function(done) {
+        var config, context, appender, loggingEvent;
+
+        context = {};
+        config = {
+            flushInterval : 1000,
+            flushMaxLogEventsCount : 3
+        };
+
+        spyOn(loggingProxy, "log");
+
+        appender = new DistributedLoggingAppender(config, context);
+        appender.setProxy(loggingProxy);
+
+        expect(loggingProxy.log).not.toHaveBeenCalled();
+
+        loggingEvent = {
+            logger : {
+                name : "loggerName"
+            },
+            timeStampInMilliseconds : 10000000,
+            messages : [ "log message"
+            ],
+            level : {
+                name : "DEBUG"
+            }
+        };
+        appender.append(loggingEvent);
+
+        expect(loggingProxy.log).not.toHaveBeenCalled();
+
+        jasmine.clock().tick(1000);
+
+        expect(loggingProxy.log).toHaveBeenCalled();
+        done();
+    });
+
+    it("flushes when the max number of events has been reached", function(done) {
+        var config, context, appender, loggingEvent;
+
+        context = {};
+        config = {
+            flushInterval : 1000,
+            flushMaxLogEventsCount : 3
+
+        };
+
+        spyOn(loggingProxy, "log");
+
+        appender = new DistributedLoggingAppender(config, context);
+        appender.setProxy(loggingProxy);
+
+        expect(loggingProxy.log).not.toHaveBeenCalled();
+        loggingEvent = {
+            logger : {
+                name : "loggerName"
+            },
+            timeStampInMilliseconds : 10000000,
+            messages : [ "log message"
+            ],
+            level : {
+                name : "DEBUG"
+            }
+        };
+        appender.append(loggingEvent);
+        expect(loggingProxy.log).not.toHaveBeenCalled();
+
+        appender.append(loggingEvent);
+        expect(loggingProxy.log).not.toHaveBeenCalled();
+
+        appender.append(loggingEvent);
+        expect(loggingProxy.log).toHaveBeenCalled();
+        done();
+    });
+
+});

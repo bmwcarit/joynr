@@ -22,24 +22,24 @@
  * waitsFor helper function for jasmine 2.x
  */
 var Promise = require('../../classes/global/Promise');
-    var originalSetInterval = setInterval;
-    var originalClearInterval = clearInterval;
-    var originalSetTimeout = setTimeout;
-    function waitsFor(checker, message, delayMs, checkIntervalMs) {
-        return new Promise(function(resolve, reject) {
-            delayMs = delayMs || 5000;
-            checkIntervalMs = checkIntervalMs || 10;
-            var intervalId = originalSetInterval(function() {
-                if (checker() === true) {
-                    originalClearInterval(intervalId);
-                    resolve();
-                }
-                delayMs -= checkIntervalMs;
-                if (delayMs <= 0) {
-                    originalClearInterval(intervalId);
-                    reject(new Error(message));
-                }
-            }, checkIntervalMs);
-        });
-    }
-    module.exports = waitsFor;
+var originalSetInterval = setInterval;
+var originalClearInterval = clearInterval;
+var originalSetTimeout = setTimeout;
+function waitsFor(checker, message, delayMs, checkIntervalMs) {
+    return new Promise(function(resolve, reject) {
+        delayMs = delayMs || 5000;
+        checkIntervalMs = checkIntervalMs || 10;
+        var intervalId = originalSetInterval(function() {
+            if (checker() === true) {
+                originalClearInterval(intervalId);
+                resolve();
+            }
+            delayMs -= checkIntervalMs;
+            if (delayMs <= 0) {
+                originalClearInterval(intervalId);
+                reject(new Error(message));
+            }
+        }, checkIntervalMs);
+    });
+}
+module.exports = waitsFor;

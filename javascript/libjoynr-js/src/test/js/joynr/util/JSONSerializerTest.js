@@ -20,14 +20,14 @@
 var JSONSerializer = require('../../../classes/joynr/util/JSONSerializer');
 var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
 
-    describe("libjoynr-js.joynr.JSONSerializer.ensureCorrectSerialization", function() {
+describe("libjoynr-js.joynr.JSONSerializer.ensureCorrectSerialization", function() {
 
-        it("Test enum serialization", function() {
-            var fixture = TestEnum.ZERO, actual;
+    it("Test enum serialization", function() {
+        var fixture = TestEnum.ZERO, actual;
 
-            actual = JSONSerializer.stringify(fixture);
+        actual = JSONSerializer.stringify(fixture);
 
-            expect(actual).toBe("\"" + fixture.name + "\"");
-        });
-
+        expect(actual).toBe("\"" + fixture.name + "\"");
     });
+
+});

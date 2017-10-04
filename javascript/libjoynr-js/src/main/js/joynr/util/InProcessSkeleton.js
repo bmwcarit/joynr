@@ -19,35 +19,35 @@
  * #L%
  */
 
-    /**
-     * Note: This skeleton is merely the holder of the proxy object and does not get informed about
-     * calls from the stub to the proxy object (stub calls methods directly on proxy object).
-     *
-     * @name InProcessSkeleton
-     * @constructor
-     *
-     * @param {Object} proxyObject the proxy object that can be accessed through the Stub
-     */
-    function InProcessSkeleton(proxyObject) {
-        if (!(this instanceof InProcessSkeleton)) {
-            // in case someone calls constructor without new keyword
-            // (e.g. var c = Constructor({..}))
-            return new InProcessSkeleton(proxyObject);
-        }
-        this._proxyObject = proxyObject;
-
+/**
+ * Note: This skeleton is merely the holder of the proxy object and does not get informed about
+ * calls from the stub to the proxy object (stub calls methods directly on proxy object).
+ *
+ * @name InProcessSkeleton
+ * @constructor
+ *
+ * @param {Object} proxyObject the proxy object that can be accessed through the Stub
+ */
+function InProcessSkeleton(proxyObject) {
+    if (!(this instanceof InProcessSkeleton)) {
+        // in case someone calls constructor without new keyword
+        // (e.g. var c = Constructor({..}))
+        return new InProcessSkeleton(proxyObject);
     }
+    this._proxyObject = proxyObject;
 
-    /**
-     * Getter for the proxy object
-     *
-     * @name InProcessSkeleton#getProxyObject
-     * @function
-     *
-     * @returns the proxy object this is the skeleton for
-     */
-    InProcessSkeleton.prototype.getProxyObject = function() {
-        return this._proxyObject;
-    };
+}
 
-    module.exports = InProcessSkeleton;
+/**
+ * Getter for the proxy object
+ *
+ * @name InProcessSkeleton#getProxyObject
+ * @function
+ *
+ * @returns the proxy object this is the skeleton for
+ */
+InProcessSkeleton.prototype.getProxyObject = function() {
+    return this._proxyObject;
+};
+
+module.exports = InProcessSkeleton;

@@ -20,36 +20,36 @@
  */
 var Typing = require('./Typing');
 
-    /**
-     * @name JSONSerializer
-     * @class
-     * @classdesc Provides functions for the serialization from arbitrary objects
-     *            to Strings in JSON notation
-     */
-    var JSONSerializer = {};
+/**
+ * @name JSONSerializer
+ * @class
+ * @classdesc Provides functions for the serialization from arbitrary objects
+ *            to Strings in JSON notation
+ */
+var JSONSerializer = {};
 
-    /**
-     * This function wraps the JSON.stringify call, by altering the stringification process
-     * for joynr types
-     * @function JSONSerializer#stringify
-     * @param {Object}
-     *          value to be stringified
-     * @param {Boolean} omitJoynrStringReplacement an optional member. If set to false,
-     *                  special string replacement for joynr objects is omitted
-     * @returns {String}
-     *          the value in JSON notation
-     */
-    JSONSerializer.stringify = function stringify(value, omitJoynrStringReplacement) {
-        var replacerFunction; /* undefined by default */
-        if (omitJoynrStringReplacement === undefined || !omitJoynrStringReplacement) {
-            replacerFunction = function replacerFunction(key, src) {
-                if (Typing.isEnumType(src)) {
-                    return src.name;
-                }
-                return src;
-            };
-        }
-        return JSON.stringify(value, replacerFunction);
-    };
+/**
+ * This function wraps the JSON.stringify call, by altering the stringification process
+ * for joynr types
+ * @function JSONSerializer#stringify
+ * @param {Object}
+ *          value to be stringified
+ * @param {Boolean} omitJoynrStringReplacement an optional member. If set to false,
+ *                  special string replacement for joynr objects is omitted
+ * @returns {String}
+ *          the value in JSON notation
+ */
+JSONSerializer.stringify = function stringify(value, omitJoynrStringReplacement) {
+    var replacerFunction; /* undefined by default */
+    if (omitJoynrStringReplacement === undefined || !omitJoynrStringReplacement) {
+        replacerFunction = function replacerFunction(key, src) {
+            if (Typing.isEnumType(src)) {
+                return src.name;
+            }
+            return src;
+        };
+    }
+    return JSON.stringify(value, replacerFunction);
+};
 
-    module.exports = JSONSerializer;
+module.exports = JSONSerializer;

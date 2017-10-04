@@ -21,35 +21,35 @@ var Request = require('../../../../classes/joynr/dispatching/types/Request');
 var TypeRegistrySingleton = require('../../../../classes/joynr/types/TypeRegistrySingleton');
 var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
 
-    describe("libjoynr-js.joynr.dispatching.types.Request", function() {
+describe("libjoynr-js.joynr.dispatching.types.Request", function() {
 
-        it("is instantiable", function() {
-            var methodName = "myMethodName";
-            var request = new Request({
-                methodName : methodName
-            });
-            expect(request).toBeDefined();
-            expect(request instanceof Request).toBeTruthy();
-            expect(request._typeName).toEqual("joynr.Request");
-            expect(request.methodName).toEqual(methodName);
+    it("is instantiable", function() {
+        var methodName = "myMethodName";
+        var request = new Request({
+            methodName : methodName
         });
-
-        it("converts an untyped param to typed", function() {
-
-            var methodName = "myMethodName";
-            var request = new Request({
-                methodName : methodName,
-                paramDatatypes : [ "joynr.vehicle.radiotypes.RadioStation"
-                ],
-                params : [ {
-                    _typeName : "joynr.vehicle.radiotypes.RadioStation",
-                    name : "myRadioStation"
-                }
-                ]
-            });
-            expect(request).toBeDefined();
-            expect(request instanceof Request).toBeTruthy();
-            expect(request.params[0] instanceof RadioStation).toBeTruthy();
-        });
-
+        expect(request).toBeDefined();
+        expect(request instanceof Request).toBeTruthy();
+        expect(request._typeName).toEqual("joynr.Request");
+        expect(request.methodName).toEqual(methodName);
     });
+
+    it("converts an untyped param to typed", function() {
+
+        var methodName = "myMethodName";
+        var request = new Request({
+            methodName : methodName,
+            paramDatatypes : [ "joynr.vehicle.radiotypes.RadioStation"
+            ],
+            params : [ {
+                _typeName : "joynr.vehicle.radiotypes.RadioStation",
+                name : "myRadioStation"
+            }
+            ]
+        });
+        expect(request).toBeDefined();
+        expect(request instanceof Request).toBeTruthy();
+        expect(request.params[0] instanceof RadioStation).toBeTruthy();
+    });
+
+});

@@ -20,42 +20,41 @@
  * #L%
  */
 
-    /**
-     * A log4javascript Appender that sends a logged message from a WebWorker to the main context to
-     * log it there
-     *
-     * @name WebWorkerMessagingAppender
-     * @constructor
-     */
-    function WebWorkerMessagingAppender() {}
+/**
+ * A log4javascript Appender that sends a logged message from a WebWorker to the main context to
+ * log it there
+ *
+ * @name WebWorkerMessagingAppender
+ * @constructor
+ */
+function WebWorkerMessagingAppender() {}
 
-    /**
-     * Implementing the appender function of log4javascript appenders
-     *
-     * @name WebWorkerMessagingAppender#append
-     * @function
-     */
-    WebWorkerMessagingAppender.prototype.append = function(loggingEvent) {
-        var formattedMessage = loggingEvent.getCombinedMessages(),
-            appender = this;
+/**
+ * Implementing the appender function of log4javascript appenders
+ *
+ * @name WebWorkerMessagingAppender#append
+ * @function
+ */
+WebWorkerMessagingAppender.prototype.append = function(loggingEvent) {
+    var formattedMessage = loggingEvent.getCombinedMessages(), appender = this;
 
-        var getFormattedMessage = function() {
-            try {
-                var layout = appender.getLayout();
-                formattedMessage = layout.format(loggingEvent);
-                if (layout.ignoresThrowable() && loggingEvent.exception) {
-                    formattedMessage += loggingEvent.getThrowableStrRep();
-                }
-            } catch (e) {}
-            return formattedMessage;
-        };
-
-        formattedMessage = "[WEBWORKER]" + getFormattedMessage();
-        postMessage({
-            type: "log",
-            level: loggingEvent.level.name.toLowerCase(),
-            message: formattedMessage
-        });
+    var getFormattedMessage = function() {
+        try {
+            var layout = appender.getLayout();
+            formattedMessage = layout.format(loggingEvent);
+            if (layout.ignoresThrowable() && loggingEvent.exception) {
+                formattedMessage += loggingEvent.getThrowableStrRep();
+            }
+        } catch (e) {}
+        return formattedMessage;
     };
 
-    module.exports = WebWorkerMessagingAppender;
+    formattedMessage = "[WEBWORKER]" + getFormattedMessage();
+    postMessage({
+        type : "log",
+        level : loggingEvent.level.name.toLowerCase(),
+        message : formattedMessage
+    });
+};
+
+module.exports = WebWorkerMessagingAppender;

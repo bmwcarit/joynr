@@ -21,72 +21,72 @@
 var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
 
-    var defaultSettings = {
-        paramDatatypes : [],
-        params : []
-    };
+var defaultSettings = {
+    paramDatatypes : [],
+    params : []
+};
 
-    /**
-     * @name OneWayRequest
-     * @constructor
-     *
-     * @param {Object}
-     *            settings
-     * @param {String}
-     *            settings.methodName
-     * @param {Array}
-     *            [settings.paramDatatypes] parameter datatypes
-     * @param {String}
-     *            settings.paramDatatypes.array
-     * @param {Array}
-     *            [settings.params] parameters
-     * @param {?}
-     *            settings.params.array
-     */
-    function OneWayRequest(settings) {
-        if (!(this instanceof OneWayRequest)) {
-            // in case someone calls constructor without new keyword (e.g. var c
-            // = Constructor({..}))
-            return new OneWayRequest(settings);
+/**
+ * @name OneWayRequest
+ * @constructor
+ *
+ * @param {Object}
+ *            settings
+ * @param {String}
+ *            settings.methodName
+ * @param {Array}
+ *            [settings.paramDatatypes] parameter datatypes
+ * @param {String}
+ *            settings.paramDatatypes.array
+ * @param {Array}
+ *            [settings.params] parameters
+ * @param {?}
+ *            settings.params.array
+ */
+function OneWayRequest(settings) {
+    if (!(this instanceof OneWayRequest)) {
+        // in case someone calls constructor without new keyword (e.g. var c
+        // = Constructor({..}))
+        return new OneWayRequest(settings);
+    }
+    var i;
+
+    if (settings.params) {
+        for (i = 0; i < settings.params.length; i++) {
+            settings.params[i] = Util.ensureTypedValues(settings.params[i]);
         }
-        var i;
-
-        if (settings.params) {
-            for (i = 0; i < settings.params.length; i++) {
-                settings.params[i] = Util.ensureTypedValues(settings.params[i]);
-            }
-        }
-
-        /**
-         * @name OneWayRequest#methodName
-         * @type String
-         */
-        this.methodName = settings.methodName;
-        /**
-         * @name OneWayRequest#paramDatatypes
-         * @type Array
-         */
-        this.paramDatatypes = settings.paramDatatypes;
-        /**
-         * @name OneWayRequest#params
-         * @type Array
-         */
-        this.params = settings.params;
-
-        /**
-         * The joynr type name
-         *
-         * @name OneWayRequest#_typeName
-         * @type String
-         */
-        Object.defineProperty(this, "_typeName", {
-            value : "joynr.OneWayRequest",
-            readable : true,
-            writable : false,
-            enumerable : true,
-            configurable : false
-        });
-        return Object.freeze(this);
     }
 
-    module.exports = OneWayRequest;
+    /**
+     * @name OneWayRequest#methodName
+     * @type String
+     */
+    this.methodName = settings.methodName;
+    /**
+     * @name OneWayRequest#paramDatatypes
+     * @type Array
+     */
+    this.paramDatatypes = settings.paramDatatypes;
+    /**
+     * @name OneWayRequest#params
+     * @type Array
+     */
+    this.params = settings.params;
+
+    /**
+     * The joynr type name
+     *
+     * @name OneWayRequest#_typeName
+     * @type String
+     */
+    Object.defineProperty(this, "_typeName", {
+        value : "joynr.OneWayRequest",
+        readable : true,
+        writable : false,
+        enumerable : true,
+        configurable : false
+    });
+    return Object.freeze(this);
+}
+
+module.exports = OneWayRequest;
