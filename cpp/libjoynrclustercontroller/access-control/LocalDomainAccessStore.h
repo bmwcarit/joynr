@@ -26,11 +26,13 @@
 #include <vector>
 
 #include <boost/optional.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/serializer/Serializer.h"
 
+#include "libjoynrclustercontroller/access-control/WildcardStorage.h"
 #include "libjoynrclustercontroller/access-control/AccessControlUtils.h"
 
 namespace joynr
@@ -620,6 +622,9 @@ private:
     using DomainRoleTable = access_control::domain_role::Table;
     DomainRoleTable domainRoleTable;
 
+    joynr::access_control::WildcardStorage domainWildcardStorage;
+    joynr::access_control::WildcardStorage interfaceWildcardStorage;
+
     template <typename Table, typename Value = typename Table::value_type, typename... Args>
     std::vector<Value> getEqualRange(const Table& table, Args&&... args) const
     {
@@ -660,7 +665,10 @@ private:
     }
 
     template <typename Table, typename Entry>
-    bool insertOrReplace(Table& table, const Entry& updatedEntry)
+    typename std::enable_if_t<
+            std::is_same<Entry, joynr::access_control::dac::DomainRoleEntry>::value,
+            bool>
+    insertOrReplace(Table& table, const Entry& updatedEntry)
     {
         bool success = true;
         std::pair<typename Table::iterator, bool> result = table.insert(updatedEntry);
@@ -668,8 +676,159 @@ private:
             // entry exists, update it
             success = table.replace(result.first, updatedEntry);
         }
+
         persistToFile();
         return success;
+    }
+
+    template <typename Table, typename Entry>
+    typename std::enable_if_t<
+            !std::is_same<Entry, joynr::access_control::dac::DomainRoleEntry>::value,
+            bool>
+    insertOrReplace(Table& table, const Entry& updatedEntry)
+    {
+        bool success = true;
+        std::pair<typename Table::iterator, bool> result = table.insert(updatedEntry);
+        if (!result.second) {
+            // entry exists, update it
+            success = table.replace(result.first, updatedEntry);
+        }
+
+        // If entry ends with wildcard, then add it to the corresponding WildcardStorage
+        if (endsWithWildcard(updatedEntry.getDomain())) {
+            domainWildcardStorage.insert<access_control::wildcards::Domain>(
+                    updatedEntry.getDomain(), updatedEntry);
+        }
+        if (endsWithWildcard(updatedEntry.getInterfaceName())) {
+            interfaceWildcardStorage.insert<access_control::wildcards::Interface>(
+                    updatedEntry.getInterfaceName(), updatedEntry);
+        }
+
+        persistToFile();
+        return success;
+    }
+
+    template <typename Value>
+    access_control::WildcardStorage::Set<Value> filterOnUid(
+            const access_control::WildcardStorage::Set<Value>& inputSet,
+            const std::string& uid) const
+    {
+        // look first for the Uid
+        access_control::WildcardStorage::Set<Value> tempResult;
+        for (const auto& entry : inputSet) {
+            auto entryUid = entry.getUid();
+            if (entryUid == uid || entryUid == access_control::WILDCARD) {
+                tempResult.insert(entry);
+            }
+        }
+        return tempResult;
+    }
+
+    bool matchWildcard(const std::string& value, std::string wildcard) const
+    {
+        wildcard.pop_back();
+        return boost::algorithm::starts_with(value, wildcard);
+    }
+
+    template <typename Value>
+    access_control::WildcardStorage::Set<Value> filterForDomain(
+            const access_control::WildcardStorage::OptionalSet<Value>& interfaceSet,
+            const std::string& uid,
+            const std::string& domain) const
+    {
+        assert(interfaceSet);
+
+        // all entries in the set have the same interfaceName (as from RadixTree)
+        access_control::WildcardStorage::Set<Value> tempResult = filterOnUid(*interfaceSet, uid);
+        access_control::WildcardStorage::Set<Value> resultSet;
+
+        // look then at the domain
+        for (const auto& value : tempResult) {
+            if (value.getDomain() == domain) {
+                // exact match
+                resultSet.insert(value);
+            } else if (matchWildcard(domain, value.getDomain())) {
+                resultSet.insert(value);
+            }
+        }
+        return resultSet;
+    }
+
+    template <typename Value>
+    access_control::WildcardStorage::Set<Value> filterForInterface(
+            const access_control::WildcardStorage::OptionalSet<Value>& domainSet,
+            const std::string& uid,
+            const std::string& interface) const
+    {
+        assert(domainSet);
+
+        // all entries in the set have the same domain (as from RadixTree)
+        access_control::WildcardStorage::Set<Value> tempResult = filterOnUid(*domainSet, uid);
+        access_control::WildcardStorage::Set<Value> resultSet;
+
+        // look then at the domain
+        for (const auto& value : tempResult) {
+            if (value.getInterfaceName() == interface) {
+                // exact match
+                resultSet.insert(value);
+            } else if (matchWildcard(interface, value.getInterfaceName())) {
+                resultSet.insert(value);
+            }
+        }
+        return resultSet;
+    }
+
+    template <typename Value>
+    boost::optional<Value> pickClosest(
+            const access_control::WildcardStorage::Set<Value>& set_1,
+            const access_control::WildcardStorage::Set<Value>& set_2 = {}) const
+    {
+        // ordered set with custom comparator
+        typename access_control::TableViewResultSet<Value>::Type resultSet;
+        for (auto entry : set_1) {
+            resultSet.insert(entry);
+        }
+
+        for (auto entry : set_2) {
+            resultSet.insert(entry);
+        }
+
+        // return top
+        if (resultSet.empty()) {
+            return boost::none;
+        }
+        return *resultSet.begin();
+    }
+
+    template <typename Value>
+    boost::optional<Value> lookupDomainInterfaceWithWildcard(const std::string& uid,
+                                                             const std::string& domain,
+                                                             const std::string& interfaceName) const
+    {
+        using OptionalSet = access_control::WildcardStorage::OptionalSet<Value>;
+        OptionalSet ifRes = interfaceWildcardStorage.getLongestMatch<Value>(interfaceName);
+        OptionalSet dRes = domainWildcardStorage.getLongestMatch<Value>(domain);
+
+        if (ifRes && dRes) {
+            auto ifSetResutl = filterForDomain(ifRes, uid, domain);
+            auto dRetResutl = filterForInterface(dRes, uid, interfaceName);
+            // both the domain and interface wildcard results match the input parameters
+            // selection can be done without taking into account all input parameters
+            return pickClosest(ifSetResutl, dRetResutl);
+        }
+
+        if (ifRes) {
+            // only got a result from the interface wildcard storage
+            return pickClosest(*ifRes);
+        }
+
+        if (dRes) {
+            // only got a result from the domain wildcard storage
+            return pickClosest(*dRes);
+        }
+
+        // no match found
+        return boost::none;
     }
 
     template <typename Table, typename Value = typename Table::value_type>
@@ -688,12 +847,13 @@ private:
 
         if (!entry) {
             // try to match with wildcarded domain and/or interface
-            entry = lookupOptional(table, uid, domain, interfaceName);
+            entry = lookupDomainInterfaceWithWildcard<Value>(uid, domain, interfaceName);
         }
 
         if (!entry) {
             // try to match with wildcarded domain and/or interface and uid wildcarded
-            entry = lookupOptional(table, uid, domain, interfaceName);
+            entry = lookupDomainInterfaceWithWildcard<Value>(
+                    access_control::WILDCARD, domain, interfaceName);
         }
 
         return entry;

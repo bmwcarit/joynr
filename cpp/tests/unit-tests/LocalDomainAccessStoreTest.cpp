@@ -27,6 +27,13 @@ using namespace ::testing;
 using namespace joynr;
 using namespace joynr::infrastructure::DacTypes;
 
+struct AccessStoreTestData
+{
+    std::string userId;
+    std::string domain;
+    std::string interfaceName;
+};
+
 class LocalDomainAccessStoreTest : public ::testing::Test {
 public:
     LocalDomainAccessStoreTest()
@@ -73,6 +80,31 @@ protected:
     static const std::vector<std::string> DOMAINS;
     static const std::vector<Permission::Enum> PERMISSIONS;
     static const std::vector<TrustLevel::Enum> TRUST_LEVELS;
+
+    void queryAccessStoreAndVerifyOutput(const std::string& uid,
+                                         const std::string& domain,
+                                         const std::string& interfaceName,
+                                         const AccessStoreTestData& expectedResult){
+        const MasterAccessControlEntry expectedEntry (expectedResult.userId,
+                                                      expectedResult.domain,
+                                                      expectedResult.interfaceName,
+                                                      TrustLevel::LOW,
+                                                      TRUST_LEVELS,
+                                                      TrustLevel::LOW,
+                                                      TRUST_LEVELS,
+                                                      TEST_OPERATION1,
+                                                      Permission::NO,
+                                                      PERMISSIONS);
+
+        // The last parameter is the operation which we do not currently support
+        auto result = localDomainAccessStore.getMasterAccessControlEntry(uid,
+                                                           domain,
+                                                           interfaceName,
+                                                           joynr::access_control::WILDCARD);
+        ASSERT_TRUE(result);
+        EXPECT_EQ(expectedEntry, *result);
+    }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDomainAccessStoreTest);
 };
@@ -355,4 +387,77 @@ TEST_F(LocalDomainAccessStoreTest, containsOnlyWildcardOperations) {
     EXPECT_TRUE(localDomainAccessStore.onlyWildcardOperations(TEST_USER1,
                                                               TEST_DOMAIN1,
                                                               TEST_INTERFACE1));
+}
+
+/*
+ * The test only works with MasterAccessControlEntry.
+ * It could be extended to include all other types but it mainly focuses on the correctness
+ * of the retrived result instead of how all ACE/RCE work together.
+ *
+ * The test is divided in two main parts:
+ *  1. in the first part the access store is filled with entries (here wildcards can appear)
+ *  2. in the second part the access store is queried (query cannot contain wildcards)
+ */
+TEST_F(LocalDomainAccessStoreTest, getDomainAndInterfaceWithWildcard){
+    // ***
+    // Prepare LocalDomainAccessStore
+    // ***
+    const std::vector<AccessStoreTestData> accessStoreData = {
+       //
+       //           UID                   DOMAIN     INTERFACE
+       //
+       {TEST_USER1,                      "domain", "interfaceName"},
+       {TEST_USER1,                      "domain", "interface*"},
+       {TEST_USER1,                      "dom*",   "interfaceName"},
+       {TEST_USER1,                      "dom*",   "interface*"},
+       {joynr::access_control::WILDCARD, "domain", "interfaceName"},
+       {joynr::access_control::WILDCARD, "domain", "interface*"},
+       {joynr::access_control::WILDCARD, "dom*",   "interfaceName"},
+       {joynr::access_control::WILDCARD, "dom*",   "interface*"}
+    };
+
+    // add data to LocalDomainAccessStore
+    for(const auto& entry : accessStoreData) {
+        MasterAccessControlEntry masterACE (entry.userId,
+                                            entry.domain,
+                                            entry.interfaceName,
+                                            TrustLevel::LOW,
+                                            TRUST_LEVELS,
+                                            TrustLevel::LOW,
+                                            TRUST_LEVELS,
+                                            TEST_OPERATION1,
+                                            Permission::NO,
+                                            PERMISSIONS);
+        localDomainAccessStore.updateMasterAccessControlEntry(masterACE);
+    };
+
+    // ***
+    // Query storage and verify result:
+    // the match should always return the most specific entry from the access store.
+    // ***
+
+    // EXACT MATCH
+    // In the access store there is an entry as from the query
+    queryAccessStoreAndVerifyOutput(TEST_USER1,                      "domain", "interfaceName", accessStoreData[0]);
+
+    // MATCH INTERFACE WILDCARD
+    queryAccessStoreAndVerifyOutput(TEST_USER1,                      "domain", "interface1",    accessStoreData[1]);
+
+    // MATCH DOMAIN WILDCARD
+    queryAccessStoreAndVerifyOutput(TEST_USER1,                      "dom1",   "interfaceName", accessStoreData[2]);
+
+    // MATCH DOMAIN AND INTERFACE WITH WILDCARD
+    queryAccessStoreAndVerifyOutput(TEST_USER1,                      "dom1",   "interface1",    accessStoreData[3]);
+
+    // MATCH UID WILDCARD
+    queryAccessStoreAndVerifyOutput(TEST_USER2,                      "domain", "interfaceName", accessStoreData[4]);
+
+    // MATCH UID AND INTERFACE WITH WILDCARD
+    queryAccessStoreAndVerifyOutput(TEST_USER2,                      "domain", "interface1",    accessStoreData[5]);
+
+    // MATCH UID AND DOMAIN WITH WILDCARD
+    queryAccessStoreAndVerifyOutput(TEST_USER2,                      "dom1",   "interfaceName", accessStoreData[6]);
+
+    // MATCH UID, DOMAIN AND INTERFACE WITH WILDCARD
+    queryAccessStoreAndVerifyOutput(TEST_USER2,                      "dom1",   "interface1",    accessStoreData[7]);
 }
