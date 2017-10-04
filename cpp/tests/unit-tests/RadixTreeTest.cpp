@@ -88,12 +88,21 @@ TEST_F(RadixTreeTest, insertReturnsNode)
     EXPECT_EQ(value, node->getValue());
 }
 
+TEST_F(RadixTreeTest, insertReturnsNodeWithEmptyKey)
+{
+    const std::string key = "";
+    const std::string value = "value";
+    Node* node = tree.insert(key, value);
+
+    EXPECT_EQ(value, node->getValue());
+}
+
 TEST_F(RadixTreeTest, longestMatchRetrievesCorrectValues)
 {
     // find the entries by their original key
     for (auto& entry : data) {
         Node* node = tree.longestMatch(entry.first);
-        ASSERT_TRUE(node);
+        ASSERT_TRUE(node) << "queried value (entry.first): "<< entry.first;
         EXPECT_EQ(entry.second, node->getValue());
     }
 
