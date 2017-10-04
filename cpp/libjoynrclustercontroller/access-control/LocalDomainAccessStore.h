@@ -25,159 +25,16 @@
 #include <tuple>
 #include <vector>
 
-#include <boost/multi_index/composite_key.hpp>
-#include <boost/multi_index/hashed_index.hpp>
-#include <boost/multi_index/mem_fun.hpp>
-#include <boost/multi_index/ordered_index.hpp>
-#include <boost/multi_index_container.hpp>
 #include <boost/optional.hpp>
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
-#include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
-#include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
-#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
 #include "joynr/serializer/Serializer.h"
+
+#include "libjoynrclustercontroller/access-control/AccessControlUtils.h"
 
 namespace joynr
 {
-
-namespace access_control
-{
-
-static constexpr const char* WILDCARD = "*";
-
-namespace dac = joynr::infrastructure::DacTypes;
-namespace bmi = boost::multi_index;
-
-namespace tags
-{
-struct UidDomainInterfaceOperation;
-struct DomainAndInterface;
-struct Domain;
-} // namespace tags
-
-namespace tableTags
-{
-struct access;
-struct registration;
-} // namespace tableTags
-
-template <typename T>
-struct MetaTableView;
-
-template <>
-struct MetaTableView<access_control::dac::MasterAccessControlEntry>
-{
-    using tag = tableTags::access;
-};
-
-template <>
-struct MetaTableView<access_control::dac::OwnerAccessControlEntry>
-{
-    using tag = tableTags::access;
-};
-
-template <>
-struct MetaTableView<access_control::dac::MasterRegistrationControlEntry>
-{
-    using tag = tableTags::registration;
-};
-
-template <>
-struct MetaTableView<access_control::dac::OwnerRegistrationControlEntry>
-{
-    using tag = tableTags::registration;
-};
-
-struct TableViewTraitsBase
-{
-    // this custom comparator ensures that wildcards come last
-    struct WildcardComparator
-    {
-        bool operator()(const std::string& lhs, const std::string& rhs) const
-        {
-            if (lhs == WILDCARD) {
-                return false;
-            }
-            if (rhs == WILDCARD) {
-                return true;
-            }
-            return (lhs < rhs);
-        }
-    };
-    using DefaultComparator = std::less<std::string>;
-
-    using UidKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry, const std::string&, getUid);
-    using DomainKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry,
-                                                      const std::string&,
-                                                      getDomain);
-    using InterfaceKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry,
-                                                         const std::string&,
-                                                         getInterfaceName);
-};
-
-template <typename AccessTag, typename Entry>
-struct TableViewTraits;
-
-template <typename Entry>
-struct TableViewTraits<tableTags::access, Entry> : TableViewTraitsBase
-{
-    using OperationKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(Entry, const std::string&, getOperation);
-
-    using Type = bmi::ordered_unique<
-            bmi::tag<tags::UidDomainInterfaceOperation>,
-            bmi::composite_key<Entry, UidKey, DomainKey, InterfaceKey, OperationKey>,
-            bmi::composite_key_compare<WildcardComparator,
-                                       DefaultComparator,
-                                       DefaultComparator,
-                                       WildcardComparator>>;
-};
-
-template <typename Entry>
-struct TableViewTraits<tableTags::registration, Entry> : TableViewTraitsBase
-{
-    using Type = bmi::ordered_unique<
-            bmi::tag<tags::UidDomainInterfaceOperation>,
-            bmi::composite_key<Entry, UidKey, DomainKey, InterfaceKey>,
-            bmi::composite_key_compare<WildcardComparator, DefaultComparator, DefaultComparator>>;
-};
-
-template <typename Entry>
-struct TableMaker
-{
-    using Tag = typename MetaTableView<Entry>::tag;
-    using TableViewType = typename TableViewTraits<Tag, Entry>::Type;
-    using DomainKey = typename TableViewTraits<Tag, Entry>::DomainKey;
-    using InterfaceKey = typename TableViewTraits<Tag, Entry>::InterfaceKey;
-
-    using Type = bmi::multi_index_container<
-            Entry,
-            bmi::indexed_by<
-                    TableViewType,
-                    bmi::ordered_non_unique<bmi::tag<tags::DomainAndInterface>,
-                                            bmi::composite_key<Entry, DomainKey, InterfaceKey>>,
-                    bmi::hashed_non_unique<bmi::tag<tags::Domain>, DomainKey>>>;
-};
-
-namespace domain_role
-{
-using UidKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::DomainRoleEntry, const std::string&, getUid);
-using RoleKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::DomainRoleEntry,
-                                                const dac::Role::Enum&,
-                                                getRole);
-
-using Table = bmi::multi_index_container<
-        dac::DomainRoleEntry,
-        bmi::indexed_by<
-                bmi::ordered_unique<bmi::tag<tags::UidDomainInterfaceOperation>,
-                                    bmi::composite_key<dac::DomainRoleEntry, UidKey, RoleKey>>>>;
-} // namespace domain_role
-
-} // namespace access_control
-
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalDomainAccessStore
 {
 public:
