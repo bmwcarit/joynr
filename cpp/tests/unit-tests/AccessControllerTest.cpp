@@ -22,9 +22,11 @@
 
 #include <gtest/gtest.h>
 
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/MutableMessageFactory.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/Request.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "tests/utils/MockObjects.h"

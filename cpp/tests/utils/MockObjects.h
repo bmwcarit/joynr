@@ -41,14 +41,7 @@
 #include <websocketpp/common/connection_hdl.hpp>
 
 #include "joynr/access-control/IAccessController.h"
-#include "joynr/AbstractMessageRouter.h"
-#include "joynr/BrokerUrl.h"
-#include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/ClusterControllerDirectories.h"
-#include "joynr/ClusterControllerSettings.h"
 #include "joynr/DelayedScheduler.h"
-#include "joynr/Dispatcher.h"
-#include "joynr/DiscoveryQos.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
@@ -61,8 +54,8 @@
 #include "joynr/IMessagingStub.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMqttMessagingSkeleton.h"
-#include "joynr/ImmutableMessage.h"
 #include "joynr/IMulticastAddressCalculator.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/InProcessConnectorFactory.h"
 #include "joynr/IProxyBuilder.h"
 #include "joynr/IRequestCallerDirectory.h"
@@ -73,13 +66,8 @@
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/Logger.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/MessagingSettings.h"
-#include "joynr/MulticastMessagingSkeletonDirectory.h"
-#include "joynr/MulticastPublication.h"
-#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/MulticastSubscriptionRequest.h"
-#include "joynr/OneWayRequest.h"
+#include "joynr/MessagingQos.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/ReplyCaller.h"
@@ -115,9 +103,19 @@
 
 namespace joynr
 {
+class BroadcastSubscriptionRequest;
+class ClusterControllerSettings;
+class DiscoveryQos;
+class MessagingSettings;
+class MulticastPublication;
+class MulticastSubscriptionQos;
+class OneWayRequest;
 class RequestCaller;
 class SubscriptionReply;
-class BroadcastSubscriptionRequest;
+
+namespace types {
+class DiscoveryQos;
+} // namespace types
 } // namespace joynr
 
 using ::testing::_;
