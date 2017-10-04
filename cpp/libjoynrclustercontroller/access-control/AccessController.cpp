@@ -32,6 +32,8 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "libjoynrclustercontroller/ClusterControllerCallContext.h"
+#include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
 
 namespace joynr
 {
@@ -267,6 +269,17 @@ bool AccessController::needsHasConsumerPermissionCheck(const ImmutableMessage& m
     return true;
 }
 
+bool AccessController::needsHasProviderPermissionCheck() const
+{
+    const ClusterControllerCallContext& callContext = ClusterControllerCallContextStorage::get();
+
+    if (callContext.getIsValid()) {
+        return !callContext.getIsInternalProviderRegistration();
+    }
+
+    return true;
+}
+
 void AccessController::hasConsumerPermission(
         std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
@@ -316,6 +329,10 @@ bool AccessController::hasProviderPermission(const std::string& userId,
                                              const std::string& domain,
                                              const std::string& interfaceName)
 {
+    if (!needsHasProviderPermissionCheck()) {
+        return true;
+    }
+
     return localDomainAccessController->getProviderPermission(
                    userId, domain, interfaceName, trustLevel) == Permission::Enum::YES;
 }

@@ -100,6 +100,8 @@
 #include "libjoynrclustercontroller/mqtt/MqttTransportStatus.h"
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonNonTLS.h"
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonTLS.h"
+#include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
+#include "libjoynrclustercontroller/ClusterControllerCallContext.h"
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "libjoynr/dbus/DbusMessagingStubFactory.h"
@@ -770,6 +772,13 @@ std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterC
 
 void JoynrClusterControllerRuntime::registerInternalSystemServiceProviders()
 {
+    ClusterControllerCallContext clusterControllerCallContext;
+
+    clusterControllerCallContext.setIsValid(true);
+    clusterControllerCallContext.setIsInternalProviderRegistration(true);
+
+    ClusterControllerCallContextStorage::set(std::move(clusterControllerCallContext));
+
     routingProviderParticipantId = registerInternalSystemServiceProvider(
             std::dynamic_pointer_cast<joynr::system::RoutingProvider>(ccMessageRouter),
             systemServicesSettings.getCcRoutingProviderParticipantId());
@@ -793,6 +802,8 @@ void JoynrClusterControllerRuntime::registerInternalSystemServiceProviders()
                 systemServicesSettings.getCcAccessControlListEditorProviderParticipantId());
     }
 #endif // JOYNR_ENABLE_ACCESS_CONTROL
+
+    ClusterControllerCallContextStorage::invalidate();
 }
 
 void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProviders()

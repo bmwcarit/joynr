@@ -63,6 +63,7 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(AccessController);
     bool needsHasConsumerPermissionCheck(const ImmutableMessage& message) const;
+    bool needsHasProviderPermissionCheck() const;
 
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
