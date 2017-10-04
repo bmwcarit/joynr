@@ -19,8 +19,11 @@
 
 #include <gtest/gtest.h>
 
+#include "JoynrTest.h"
+
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/PrivateCopyAssign.h"
+
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
 using namespace ::testing;
@@ -61,7 +64,10 @@ public:
 
     ~LocalDomainAccessStoreTest() override
     {
-        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME().c_str());
+        // Delete test specific files
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.entries");
     }
 
 protected:
