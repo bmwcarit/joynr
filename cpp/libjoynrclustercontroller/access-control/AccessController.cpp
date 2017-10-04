@@ -247,7 +247,7 @@ void AccessController::addParticipantToWhitelist(const std::string& participantI
     whitelistParticipantIds.push_back(participantId);
 }
 
-bool AccessController::needsPermissionCheck(const ImmutableMessage& message)
+bool AccessController::needsHasConsumerPermissionCheck(const ImmutableMessage& message) const
 {
     if (util::vectorContains(whitelistParticipantIds, message.getRecipient())) {
         return false;
@@ -271,7 +271,7 @@ void AccessController::hasConsumerPermission(
         std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
 {
-    if (!needsPermissionCheck(*message)) {
+    if (!needsHasConsumerPermissionCheck(*message)) {
         callback->hasConsumerPermission(true);
         return;
     }

@@ -62,7 +62,7 @@ private:
     class ProviderRegistrationObserver;
 
     DISALLOW_COPY_AND_ASSIGN(AccessController);
-    bool needsPermissionCheck(const ImmutableMessage& message);
+    bool needsHasConsumerPermissionCheck(const ImmutableMessage& message) const;
 
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
