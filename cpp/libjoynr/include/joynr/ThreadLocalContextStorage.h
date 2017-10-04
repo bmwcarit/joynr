@@ -17,31 +17,38 @@
  * #L%
  */
 
-#include "joynr/CallContextStorage.h"
+#ifndef THREADLOCALCONTEXTSTORAGE_H
+#define THREADLOCALCONTEXTSTORAGE_H
 
 namespace joynr
 {
 
-thread_local CallContext CallContextStorage::callContext;
-
-void CallContextStorage::set(const CallContext& callContext)
+template <typename T>
+class ThreadLocalContextStorage
 {
-    CallContextStorage::callContext = callContext;
-}
+public:
+    static void set(const T& context)
+    {
+        get() = context;
+    }
 
-void CallContextStorage::set(CallContext&& callContext)
-{
-    CallContextStorage::callContext = std::move(callContext);
-}
+    static void set(T&& context)
+    {
+        get() = std::move(context);
+    }
 
-const CallContext& CallContextStorage::get()
-{
-    return callContext;
-}
+    static T& get()
+    {
+        static thread_local T context;
+        return context;
+    }
 
-void CallContextStorage::invalidate()
-{
-    callContext.invalidate();
-}
+    static void invalidate()
+    {
+        get().invalidate();
+    }
+};
 
 } // namespace joynr
+
+#endif // THREADLOCALCONTEXTSTORAGE_H
