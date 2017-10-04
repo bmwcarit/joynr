@@ -29,31 +29,58 @@ var Smrf = require('./SmrfNode');
 var JoynrMessage = require('../joynr/messaging/JoynrMessage');
 var JoynrRuntimeException = require('../joynr/exceptions/JoynrRuntimeException');
 var LoggerFactory = require('../joynr/system/LoggerFactory');
+var Util = require('../joynr/util/UtilInternal.js');
+
 module.exports =
         global.window !== undefined
                 ? require('./WebSocket')
                 : (function(smrf, JoynrMessage, JoynrRuntimeException, LoggerFactory) {
 
+                    if (typeof Buffer !== "function") {
+                        throw new JoynrRuntimeException(
+                                "Decoding of binary websocket messages not possible. Buffer not available.");
+                    }
+                    var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocket");
+
+                    /*
+                     * try to load the native C++ websocket implementation first; only if this fails
+                     * fall back to JS implementation. Temporarily silence error output for first
+                     * load attempt.
+                     */
+                    var ws;
+                    try {
+                        ws = require("wscpp");
+                    } catch (e) {
+                        ws = require("ws");
+                    }
+
+                    var skipJoynrHeaderKeys = {
+                        "contentType" : true,
+                        "creator" : true,
+                        "effort" : true,
+                        "from" : true,
+                        "msgId" : true,
+                        "replyChannelId" : true,
+                        "to" : true,
+                        "expiryDate" : true
+                    };
+
+                    var skipSmrfHeaderKeys = {
+                        // headers already converted manually
+                        't' : true,
+                        'id' : true,
+                        're' : true,
+                        'ef' : true,
+                        // reserved headers, prevent overwriting
+                        'from' : true,
+                        'to' : true,
+                        'msgId' : true,
+                        'replyChannelId' : true,
+                        'expiryDate' : true,
+                        'effort' : true
+                    };
+
                     function WebSocketNodeWrapper(remoteUrl, keychain) {
-
-                        if (typeof Buffer !== "function") {
-                            throw new JoynrRuntimeException(
-                                    "Decoding of binary websocket messages not possible. Buffer not available.");
-                        }
-                        var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocket");
-
-                        var ws;
-
-                        /*
-                         * try to load the native C++ websocket implementation first; only if this fails
-                         * fall back to JS implementation. Temporarily silence error output for first
-                         * load attempt.
-                         */
-                        try {
-                            ws = require("wscpp");
-                        } catch (e) {
-                            ws = require("ws");
-                        }
 
                         var clientOptions = keychain ? {
                             cert : keychain.tlsCert,
@@ -69,17 +96,6 @@ module.exports =
                         };
                         webSocketObj.decodeEventData = function(data) {
                             return data;
-                        };
-
-                        var skipJoynrHeaderKeys = {
-                            "contentType" : true,
-                            "creator" : true,
-                            "effort" : true,
-                            "from" : true,
-                            "msgId" : true,
-                            "replyChannelId" : true,
-                            "to" : true,
-                            "expiryDate" : true
                         };
 
                         var signingCallback = keychain ? function() {
@@ -127,21 +143,6 @@ module.exports =
                                     }
                                     return serializedMsg;
                                 };
-
-                        var skipSmrfHeaderKeys = {
-                            // headers already converted manually
-                            't' : true,
-                            'id' : true,
-                            're' : true,
-                            'ef' : true,
-                            // reserved headers, prevent overwriting
-                            'from' : true,
-                            'to' : true,
-                            'msgId' : true,
-                            'replyChannelId' : true,
-                            'expiryDate' : true,
-                            'effort' : true
-                        };
 
                         webSocketObj.unmarshalJoynrMessage =
                                 function(event, callback) {
@@ -193,6 +194,8 @@ module.exports =
 
                         return webSocketObj;
                     }
+
+                    Util.extend(WebSocketNodeWrapper, ws);
 
                     return WebSocketNodeWrapper;
                 }(Smrf, JoynrMessage, JoynrRuntimeException, LoggerFactory));
