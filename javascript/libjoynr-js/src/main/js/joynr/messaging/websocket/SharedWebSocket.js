@@ -130,6 +130,7 @@ var LoggerFactory = require('../../system/LoggerFactory');
                         var websocket = null;
                         var provisioning = settings.provisioning || {};
                         var reconnectSleepTimeMs = provisioning.reconnectSleepTimeMs || 1000; // default value = 1000ms
+                        var useUnencryptedTls = provisioning.useUnencryptedTls || true; // default to unencrypted Tls communication
                         var localAddress = settings.localAddress;
                         var remoteUrl = webSocketAddressToUrl(settings.remoteAddress);
                         var onmessageCallback = null;
@@ -145,7 +146,7 @@ var LoggerFactory = require('../../system/LoggerFactory');
                             if (closed) {
                                 return;
                             }
-                            websocket = new WebSocket(remoteUrl, settings.keychain);
+                            websocket = new WebSocket(remoteUrl, settings.keychain, useUnencryptedTls);
                             websocket.onopen = onOpen;
                             websocket.onclose = onClose;
                             websocket.onerror = onError;

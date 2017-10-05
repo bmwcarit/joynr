@@ -80,13 +80,14 @@ module.exports =
                         'effort' : true
                     };
 
-                    function WebSocketNodeWrapper(remoteUrl, keychain) {
+                    function WebSocketNodeWrapper(remoteUrl, keychain, useUnencryptedTls) {
 
                         var clientOptions = keychain ? {
                             cert : keychain.tlsCert,
                             key : keychain.tlsKey,
                             ca : keychain.tlsCa,
-                            rejectUnauthorized : true
+                            rejectUnauthorized : true,
+                            useUnencryptedTls : useUnencryptedTls
                         } : undefined;
 
                         var webSocketObj = new ws(remoteUrl, clientOptions);

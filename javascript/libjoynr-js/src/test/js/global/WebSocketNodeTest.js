@@ -86,15 +86,32 @@ describe("websocket node", function() {
         expect(serializedMessage).toBe("callback was called");
     });
 
-    it("calls the wscpp constructor with certs", function() {
+    it("calls the wscpp constructor with certs for unencrypted Tls communication", function() {
 
-        websocketNode = new WebsocketNode(remoteUrl, keychainWithCerts);
+        var useUnencryptedTls = true;
+        websocketNode = new WebsocketNode(remoteUrl, keychainWithCerts, useUnencryptedTls);
 
         expect(wscppSpy).toHaveBeenCalledWith(remoteUrl, {
             cert : keychainWithCerts.tlsCert,
             key : keychainWithCerts.tlsKey,
             ca : keychainWithCerts.tlsCa,
-            rejectUnauthorized : true
+            rejectUnauthorized : true,
+            useUnencryptedTls : useUnencryptedTls
+        });
+
+    });
+
+    it("calls the wscpp constructor with certs  for encrypted Tls communication", function() {
+
+        var useUnencryptedTls = false;
+        websocketNode = new WebsocketNode(remoteUrl, keychainWithCerts, useUnencryptedTls);
+
+        expect(wscppSpy).toHaveBeenCalledWith(remoteUrl, {
+            cert : keychainWithCerts.tlsCert,
+            key : keychainWithCerts.tlsKey,
+            ca : keychainWithCerts.tlsCa,
+            rejectUnauthorized : true,
+            useUnencryptedTls : useUnencryptedTls
         });
 
     });
