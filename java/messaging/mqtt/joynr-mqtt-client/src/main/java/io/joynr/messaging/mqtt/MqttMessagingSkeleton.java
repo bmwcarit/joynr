@@ -273,6 +273,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private void removeProcessedMessageInformation() {
         DelayedMessageId delayedMessageId;
         while ((delayedMessageId = processedMessagesQueue.poll()) != null) {
+            LOG.trace("Message {} removed from list of processed messages", delayedMessageId.getMessageId());
             processingMessages.remove(delayedMessageId.getMessageId());
         }
     }
@@ -280,6 +281,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private void handleMessageProcessed(String messageId, int mqttId, int mqttQos) {
         DelayedMessageId delayedMessageId = new DelayedMessageId(messageId, repeatedMqttMessageIgnorePeriodMs);
         if (!processedMessagesQueue.contains(delayedMessageId)) {
+            LOG.trace("Message {} was processed and will be acknowledged", messageId);
             mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
             processedMessagesQueue.put(delayedMessageId);
         }
@@ -290,6 +292,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         synchronized (processingMessages) {
             MqttAckInformation info = processingMessages.get(messageId);
             if (info == null) {
+                LOG.trace("Message {} was processed but it is unkown", messageId);
                 return;
             }
             handleMessageProcessed(messageId, info.getMqttId(), info.getMqttQos());
