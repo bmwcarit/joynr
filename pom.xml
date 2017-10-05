@@ -76,6 +76,12 @@
 			</modules>
 		</profile>
 		<profile>
+			<id>deploy-artifacts-to-other-repository</id>
+			<properties>
+				<assembly.skipAssembly>true</assembly.skipAssembly>
+			</properties>
+		</profile>
+		<profile>
 			<!--
 				This profile is extended in several submodules with packaging type WAR
 				to disable deployment of WAR files containing third-party software to
