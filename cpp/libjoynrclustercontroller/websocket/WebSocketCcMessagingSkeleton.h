@@ -275,7 +275,7 @@ private:
             return;
         }
 
-        if (!validateIncomingMessage(std::move(hdl), immutableMessage)) {
+        if (!validateIncomingMessage(hdl, immutableMessage)) {
             JOYNR_LOG_ERROR(logger, "Dropping message with ID {}", immutableMessage->getId());
             return;
         }
