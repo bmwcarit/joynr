@@ -145,6 +145,7 @@ protected:
 
     virtual bool validateIncomingMessage(const ConnectionHandle& hdl,
                                          std::shared_ptr<ImmutableMessage> message) = 0;
+    virtual bool preprocessIncomingMessage(std::shared_ptr<ImmutableMessage> message) = 0;
 
     void startAccept(std::uint16_t port)
     {
@@ -268,6 +269,11 @@ private:
         }
 
         JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+
+        if (!preprocessIncomingMessage(immutableMessage)) {
+            JOYNR_LOG_ERROR(logger, "Dropping message with ID {}", immutableMessage->getId());
+            return;
+        }
 
         if (!validateIncomingMessage(std::move(hdl), immutableMessage)) {
             JOYNR_LOG_ERROR(logger, "Dropping message with ID {}", immutableMessage->getId());
