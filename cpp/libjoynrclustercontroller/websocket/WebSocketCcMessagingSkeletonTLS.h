@@ -44,6 +44,8 @@ public:
             const std::string& privateKeyPemFile,
             bool useEncryptedTls);
 
+    virtual void init() override;
+
 private:
     bool validateIncomingMessage(const ConnectionHandle& hdl,
                                  std::shared_ptr<ImmutableMessage> message) final;
@@ -55,6 +57,9 @@ private:
                                                  ConnectionHandle hdl);
 
     bool useEncryptedTls;
+    const std::string caPemFile;
+    const std::string certPemFile;
+    const std::string privateKeyPemFile;
 };
 
 } // namespace joynr

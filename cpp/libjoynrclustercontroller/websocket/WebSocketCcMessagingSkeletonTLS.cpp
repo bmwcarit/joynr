@@ -36,20 +36,29 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
         : WebSocketCcMessagingSkeleton<websocketpp::config::asio_tls>(
                   ioService,
                   std::move(messageRouter),
-                  std::move(messagingStubFactory)),
-          useEncryptedTls{useEncryptedTls}
+                  std::move(messagingStubFactory),
+                  serverAddress.getPort()),
+          useEncryptedTls{useEncryptedTls},
+          caPemFile(caPemFile),
+          certPemFile(certPemFile),
+          privateKeyPemFile(privateKeyPemFile)
 {
+}
+
+void WebSocketCcMessagingSkeletonTLS::init()
+{
+    WebSocketCcMessagingSkeleton<websocketpp::config::asio_tls>::init();
+
     // ensure that OpenSSL is correctly initialized
     ::SSL_library_init();
     ::SSL_load_error_strings();
     ::OpenSSL_add_all_algorithms();
 
-    endpoint.set_tls_init_handler([this, caPemFile, certPemFile, privateKeyPemFile](
-                                          ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
+    endpoint.set_tls_init_handler([this](ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
         return createSSLContext(caPemFile, certPemFile, privateKeyPemFile, std::move(hdl));
     });
 
-    startAccept(serverAddress.getPort());
+    startAccept();
 }
 
 bool WebSocketCcMessagingSkeletonTLS::preprocessIncomingMessage(

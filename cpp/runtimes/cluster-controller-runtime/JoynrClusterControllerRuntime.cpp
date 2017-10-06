@@ -850,6 +850,7 @@ void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
                     certificatePemFilename,
                     privateKeyPemFilename,
                     useEncryptedTls);
+            wsTLSCcMessagingSkeleton->init();
         }
     }
 
@@ -865,6 +866,7 @@ void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
                 ccMessageRouter,
                 wsMessagingStubFactory,
                 wsAddress);
+        wsCcMessagingSkeleton->init();
     }
 }
 

@@ -37,9 +37,15 @@ public:
             const system::RoutingTypes::WebSocketAddress& serverAddress)
             : WebSocketCcMessagingSkeleton<websocketpp::config::asio>(ioService,
                                                                       messageRouter,
-                                                                      messagingStubFactory)
+                                                                      messagingStubFactory,
+                                                                      serverAddress.getPort())
     {
-        startAccept(serverAddress.getPort());
+    }
+
+    void init() override
+    {
+        WebSocketCcMessagingSkeleton<websocketpp::config::asio>::init();
+        startAccept();
     }
 
 protected:

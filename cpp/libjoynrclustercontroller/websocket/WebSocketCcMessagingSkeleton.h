@@ -52,6 +52,7 @@ public:
     virtual void transmit(
             std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
+    virtual void init() = 0;
     virtual void shutdown() = 0;
 };
 
@@ -60,7 +61,9 @@ public:
  * @brief Messaging skeleton for the cluster controller
  */
 template <typename Config>
-class WebSocketCcMessagingSkeleton : public IWebsocketCcMessagingSkeleton
+class WebSocketCcMessagingSkeleton
+        : public IWebsocketCcMessagingSkeleton,
+          public std::enable_shared_from_this<WebSocketCcMessagingSkeleton<Config>>
 {
 public:
     /**
@@ -71,15 +74,23 @@ public:
     WebSocketCcMessagingSkeleton(
             boost::asio::io_service& ioService,
             std::shared_ptr<IMessageRouter> messageRouter,
-            std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory)
-            : endpoint(),
+            std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory,
+            std::uint16_t port)
+            : IWebsocketCcMessagingSkeleton(),
+              std::enable_shared_from_this<WebSocketCcMessagingSkeleton<Config>>(),
+              ioService(ioService),
+              endpoint(),
               clientsMutex(),
               clients(),
               receiver(),
               messageRouter(std::move(messageRouter)),
-              messagingStubFactory(std::move(messagingStubFactory))
+              messagingStubFactory(std::move(messagingStubFactory)),
+              port(port)
     {
+    }
 
+    virtual void init() override
+    {
         websocketpp::lib::error_code initializationError;
         endpoint.init_asio(&ioService, initializationError);
         if (initializationError) {
@@ -141,13 +152,14 @@ protected:
     using ConnectionHandle = websocketpp::connection_hdl;
 
     ADD_LOGGER(WebSocketCcMessagingSkeleton);
+    boost::asio::io_service& ioService;
     Server endpoint;
 
     virtual bool validateIncomingMessage(const ConnectionHandle& hdl,
                                          std::shared_ptr<ImmutableMessage> message) = 0;
     virtual bool preprocessIncomingMessage(std::shared_ptr<ImmutableMessage> message) = 0;
 
-    void startAccept(std::uint16_t port)
+    void startAccept()
     {
         try {
             endpoint.set_reuse_addr(true);
@@ -303,6 +315,7 @@ private:
     std::shared_ptr<IMessageRouter> messageRouter;
     /*! Factory to build outgoing messaging stubs */
     std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory;
+    std::uint16_t port;
 
     DISALLOW_COPY_AND_ASSIGN(WebSocketCcMessagingSkeleton);
 };
