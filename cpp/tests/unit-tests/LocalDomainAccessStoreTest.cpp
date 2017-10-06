@@ -419,7 +419,8 @@ TEST_F(LocalDomainAccessStoreTest, getDomainAndInterfaceWithWildcard){
        {joynr::access_control::WILDCARD, "domain", "interfaceName"},
        {joynr::access_control::WILDCARD, "domain", "interface*"},
        {joynr::access_control::WILDCARD, "dom*",   "interfaceName"},
-       {joynr::access_control::WILDCARD, "dom*",   "interface*"}
+       {joynr::access_control::WILDCARD, "dom*",   "interface*"},
+       {joynr::access_control::WILDCARD, "*",      "*"}
     };
 
     // add data to LocalDomainAccessStore
@@ -466,4 +467,41 @@ TEST_F(LocalDomainAccessStoreTest, getDomainAndInterfaceWithWildcard){
 
     // MATCH UID, DOMAIN AND INTERFACE WITH WILDCARD
     queryAccessStoreAndVerifyOutput(TEST_USER2,                      "dom1",   "interface1",    accessStoreData[7]);
+}
+
+TEST_F(LocalDomainAccessStoreTest, allowEverything) {
+    // add data to LocalDomainAccessStore
+    const MasterAccessControlEntry masterACE (joynr::access_control::WILDCARD,
+                                        joynr::access_control::WILDCARD,
+                                        joynr::access_control::WILDCARD,
+                                        TrustLevel::LOW,
+                                        TRUST_LEVELS,
+                                        TrustLevel::LOW,
+                                        TRUST_LEVELS,
+                                        TEST_OPERATION1,
+                                        Permission::NO,
+                                        PERMISSIONS);
+    localDomainAccessStore.updateMasterAccessControlEntry(masterACE);
+
+    const AccessStoreTestData expectedData = {
+        joynr::access_control::WILDCARD,
+        joynr::access_control::WILDCARD,
+        joynr::access_control::WILDCARD
+    };
+
+    // MATCH ANYTHING
+    queryAccessStoreAndVerifyOutput(std::string("joynr"),
+                                    std::string("acl"),
+                                    std::string("wildcards"),
+                                    expectedData);
+}
+
+TEST_F(LocalDomainAccessStoreTest, denyEverything) {
+    // do not add anything to the store
+    // try to perform a query
+    auto result = localDomainAccessStore.getMasterAccessControlEntry("user",
+                                                       "domain",
+                                                       "interfaceName",
+                                                       joynr::access_control::WILDCARD);
+    ASSERT_FALSE(result);
 }
