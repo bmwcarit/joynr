@@ -54,8 +54,18 @@ void WebSocketCcMessagingSkeletonTLS::init()
     ::SSL_load_error_strings();
     ::OpenSSL_add_all_algorithms();
 
-    endpoint.set_tls_init_handler([this](ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
-        return createSSLContext(caPemFile, certPemFile, privateKeyPemFile, std::move(hdl));
+    endpoint.set_tls_init_handler([thisWeakPtr = joynr::util::as_weak_ptr(std::dynamic_pointer_cast<
+                                           WebSocketCcMessagingSkeletonTLS>(
+                                           this->shared_from_this()))](ConnectionHandle hdl)
+                                          ->std::shared_ptr<SSLContext> {
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            return thisSharedPtr->createSSLContext(thisSharedPtr->caPemFile,
+                                                   thisSharedPtr->certPemFile,
+                                                   thisSharedPtr->privateKeyPemFile,
+                                                   std::move(hdl));
+        } else {
+            return nullptr;
+        }
     });
 
     startAccept();
@@ -137,30 +147,42 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
         sslContext->use_private_key_file(privateKeyPemFile, SSLContext::pem);
 
         using VerifyContext = websocketpp::lib::asio::ssl::verify_context;
-        auto getCNFromCertificate = [ this, hdl = std::move(hdl) ](
-                bool preverified, VerifyContext& ctx)
-        {
-            // getting cert out of the verification context
-            X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
 
-            // extracting ownerId out of cert
-            X509_NAME* certSubName = mococrw::openssl::_X509_get_subject_name(cert);
-            mococrw::DistinguishedName distinguishedName =
-                    mococrw::DistinguishedName::fromX509Name(certSubName);
-            const std::string ownerId(distinguishedName.commonName());
-            if (ownerId.empty()) {
+        auto getCNFromCertificate = [
+            thisWeakPtr = joynr::util::as_weak_ptr(std::dynamic_pointer_cast<
+                    WebSocketCcMessagingSkeletonTLS>(this->shared_from_this())),
+            hdl = std::move(hdl)
+        ](bool preverified, VerifyContext& ctx)
+        {
+            if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                // getting cert out of the verification context
+                X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
+
+                // extracting ownerId out of cert
+                X509_NAME* certSubName = mococrw::openssl::_X509_get_subject_name(cert);
+                mococrw::DistinguishedName distinguishedName =
+                        mococrw::DistinguishedName::fromX509Name(certSubName);
+                const std::string ownerId(distinguishedName.commonName());
+                if (ownerId.empty()) {
+                    JOYNR_LOG_ERROR(logger,
+                                    "Rejecting secure websocket connection because the ownerId "
+                                    "(common name) of the TLS client certificate is empty.");
+                    return false;
+                }
+
+                // mapping the connection handler to the ownerId in clients map
+                joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
+                auto certEntry = CertEntry(std::move(clientAddress), std::move(ownerId));
+                std::lock_guard<std::mutex> lock(thisSharedPtr->clientsMutex);
+                thisSharedPtr->clients[std::move(hdl)] = std::move(certEntry);
+                return preverified;
+            } else {
                 JOYNR_LOG_ERROR(logger,
-                                "Rejecting secure websocket connection because the ownerId "
-                                "(common name) of the TLS client certificate is empty.");
+                                "Rejecting secure websocket connection because the "
+                                "WebSocketCcMessagingSkeletonTLS "
+                                "is no longer available.");
                 return false;
             }
-
-            // mapping the connection handler to the ownerId in clients map
-            joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
-            auto certEntry = CertEntry(std::move(clientAddress), std::move(ownerId));
-            std::lock_guard<std::mutex> lock(clientsMutex);
-            clients[std::move(hdl)] = std::move(certEntry);
-            return preverified;
         };
 
         // read ownerId of client's certificate and store it in clients map

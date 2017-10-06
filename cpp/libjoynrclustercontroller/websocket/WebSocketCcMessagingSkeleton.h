@@ -35,6 +35,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/Util.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketPpReceiver.h"
 #include "libjoynr/websocket/WebSocketPpSender.h"
@@ -104,18 +105,29 @@ public:
         endpoint.clear_error_channels(websocketpp::log::alevel::all);
 
         // register handlers
-        endpoint.set_close_handler(std::bind(
-                &WebSocketCcMessagingSkeleton::onConnectionClosed, this, std::placeholders::_1));
+        endpoint.set_close_handler([thisWeakPtr = joynr::util::as_weak_ptr(
+                                            this->shared_from_this())](ConnectionHandle hdl) {
+            if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                thisSharedPtr->onConnectionClosed(hdl);
+            }
+        });
 
         // new connections are handled in onInitMessageReceived; if initialization was successful,
         // any further messages for this connection are handled in onMessageReceived
-        endpoint.set_message_handler(std::bind(&WebSocketCcMessagingSkeleton::onInitMessageReceived,
-                                               this,
-                                               std::placeholders::_1,
-                                               std::placeholders::_2));
+        endpoint.set_message_handler([thisWeakPtr =
+                                              joynr::util::as_weak_ptr(this->shared_from_this())](
+                ConnectionHandle hdl, MessagePtr message) {
+            if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                thisSharedPtr->onInitMessageReceived(hdl, message);
+            }
+        });
 
-        receiver.registerReceiveCallback([this](ConnectionHandle&& hdl, smrf::ByteVector&& msg) {
-            onMessageReceived(std::move(hdl), std::move(msg));
+        receiver.registerReceiveCallback([thisWeakPtr = joynr::util::as_weak_ptr(
+                                                  this->shared_from_this())](
+                ConnectionHandle && hdl, smrf::ByteVector && msg) {
+            if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                thisSharedPtr->onMessageReceived(std::move(hdl), std::move(msg));
+            }
         });
     }
 
