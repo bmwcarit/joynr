@@ -109,7 +109,7 @@ boost::optional<DomainRoleEntry> LocalDomainAccessStore::getDomainRole(const std
 bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntry)
 {
     JOYNR_LOG_TRACE(
-            logger, "execute: entering updateDomainRoleEntry with uId {}", updatedEntry.getUid());
+            logger, "execute: entering updateDomainRole with uId {}", updatedEntry.getUid());
 
     return insertOrReplace(domainRoleTable, updatedEntry);
 }
@@ -166,8 +166,12 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAcces
 bool LocalDomainAccessStore::updateMasterAccessControlEntry(
         const MasterAccessControlEntry& updatedMasterAce)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering updateMasterAce with uId {}", updatedMasterAce.getUid());
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering updateMasterAccessControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    updatedMasterAce.getUid(),
+                    updatedMasterAce.getDomain(),
+                    updatedMasterAce.getInterfaceName());
 
     return insertOrReplace(masterAccessTable, updatedMasterAce);
 }
@@ -226,9 +230,12 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAcc
 bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
         const MasterAccessControlEntry& updatedMediatorAce)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering updateMediatorAce with uId {}", updatedMediatorAce.getUid());
-
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering updateMediatorAccessControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    updatedMediatorAce.getUid(),
+                    updatedMediatorAce.getDomain(),
+                    updatedMediatorAce.getInterfaceName());
     bool updateSuccess = false;
 
     boost::optional<MasterAccessControlEntry> masterAceOptional =
@@ -309,8 +316,12 @@ boost::optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessC
 bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
         const OwnerAccessControlEntry& updatedOwnerAce)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering updateOwnerAce with uId {}", updatedOwnerAce.getUid());
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering updateOwnerAccessControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    updatedOwnerAce.getUid(),
+                    updatedOwnerAce.getDomain(),
+                    updatedOwnerAce.getInterfaceName());
 
     bool updateSuccess = false;
 
@@ -382,8 +393,12 @@ boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
 bool LocalDomainAccessStore::updateMasterRegistrationControlEntry(
         const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMasterRce)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering updateMasterRce with uid {}", updatedMasterRce.getUid());
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering updateMasterRegistrationControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    updatedMasterRce.getUid(),
+                    updatedMasterRce.getDomain(),
+                    updatedMasterRce.getInterfaceName());
 
     return insertOrReplace(masterRegistrationTable, updatedMasterRce);
 }
@@ -426,9 +441,12 @@ boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
 bool LocalDomainAccessStore::updateMediatorRegistrationControlEntry(
         const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMediatorRce)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering updateMediatorRce with uid {}", updatedMediatorRce.getUid());
-
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering updateMediatorRegistrationControlEntry with uId={} "
+                    "domain={} interfaceName={}",
+                    updatedMediatorRce.getUid(),
+                    updatedMediatorRce.getDomain(),
+                    updatedMediatorRce.getInterfaceName());
     return insertOrReplace(mediatorRegistrationTable, updatedMediatorRce);
 }
 
@@ -470,8 +488,12 @@ boost::optional<OwnerRegistrationControlEntry> LocalDomainAccessStore::
 bool LocalDomainAccessStore::updateOwnerRegistrationControlEntry(
         const infrastructure::DacTypes::OwnerRegistrationControlEntry& updatedOwnerRce)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering updateOwnerRce with uid {}", updatedOwnerRce.getUid());
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering updateOwnerRegistrationControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    updatedOwnerRce.getUid(),
+                    updatedOwnerRce.getDomain(),
+                    updatedOwnerRce.getInterfaceName());
 
     return insertOrReplace(ownerRegistrationTable, updatedOwnerRce);
 }
