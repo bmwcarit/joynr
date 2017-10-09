@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,31 +17,15 @@
  * #L%
  */
 
-#include "joynr/CallContextStorage.h"
+#ifndef CLUSTERCONTROLLERCALLCONTEXTSTORAGE_H
+#define CLUSTERCONTROLLERCALLCONTEXTSTORAGE_H
+
+#include "ClusterControllerCallContext.h"
+#include "joynr/ThreadLocalContextStorage.h"
 
 namespace joynr
 {
-
-thread_local CallContext CallContextStorage::callContext;
-
-void CallContextStorage::set(const CallContext& callContext)
-{
-    CallContextStorage::callContext = callContext;
-}
-
-void CallContextStorage::set(CallContext&& callContext)
-{
-    CallContextStorage::callContext = std::move(callContext);
-}
-
-const CallContext& CallContextStorage::get()
-{
-    return callContext;
-}
-
-void CallContextStorage::invalidate()
-{
-    callContext.invalidate();
-}
-
+using ClusterControllerCallContextStorage = ThreadLocalContextStorage<ClusterControllerCallContext>;
 } // namespace joynr
+
+#endif

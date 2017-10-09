@@ -18,6 +18,8 @@ None.
 * **[C++]** If a LibJoynr instance was configured to use SSL but no keychain
  was provided to the JoynrRuntime::create method, it will report a fatal error
  and throw a JoynrRuntimeException.
+* **[C++]** Access control is included in the c++ build by default. It still must be enabled
+ by setting the configuration property `access-control/enable`.
 
 # joynr 0.29.2
 

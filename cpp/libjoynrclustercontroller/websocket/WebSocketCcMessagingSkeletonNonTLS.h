@@ -50,6 +50,12 @@ protected:
         std::ignore = message;
         return true;
     }
+
+    bool preprocessIncomingMessage(std::shared_ptr<ImmutableMessage> message) final
+    {
+        std::ignore = message;
+        return true;
+    }
 };
 
 } // namespace joynr

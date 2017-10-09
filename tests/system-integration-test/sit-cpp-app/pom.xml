@@ -87,6 +87,21 @@
 					</filesets>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<verbose>false</verbose>
+					<addSvnKeyWords>true</addSvnKeyWords>
+					<licenseName>apache_v2</licenseName>
+					<roots>
+						<root>.</root>
+					</roots>
+					<excludes>
+						<exclude>src/main/resources/local-domain-access-store.json</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>

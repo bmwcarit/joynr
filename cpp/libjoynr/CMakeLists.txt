@@ -137,7 +137,6 @@ set(JoynrLib_SOURCES
     "capabilities/ParticipantIdStorage.cpp"
     "CapabilitiesRegistrar.cpp"
     "common/CallContext.cpp"
-    "common/CallContextStorage.cpp"
     "common/CapabilityUtils.cpp"
     "common/concurrency/BlockingQueue.cpp"
     "common/concurrency/DelayedScheduler.cpp"

@@ -32,7 +32,7 @@ include(GenerateJoynrExports)
 option(
     ENABLE_ACCESS_CONTROL
     "Should access control be enabled for the cluster-controller?"
-    OFF
+    ON
 )
 message(STATUS "option ENABLE_ACCESS_CONTROL=" ${ENABLE_ACCESS_CONTROL})
 

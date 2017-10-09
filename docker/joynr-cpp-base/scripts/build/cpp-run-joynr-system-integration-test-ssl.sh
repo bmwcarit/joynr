@@ -67,8 +67,8 @@ cd $SSLPATH
 
 createCACertAndPrivateKey
 createCertAndPrivateKey "cluster-controller" "cc.key.pem" "cc.cert.pem"
-createCertAndPrivateKey "provider" "provider.key.pem" "provider.cert.pem"
-createCertAndPrivateKey "consumer" "consumer.key.pem" "consumer.cert.pem"
+createCertAndPrivateKey "sit-provider" "provider.key.pem" "provider.cert.pem"
+createCertAndPrivateKey "sit-consumer" "consumer.key.pem" "consumer.cert.pem"
 
 TEST_BINDIR="/data/build/tests/bin"
 

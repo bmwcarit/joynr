@@ -52,6 +52,27 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
     startAccept(serverAddress.getPort());
 }
 
+bool WebSocketCcMessagingSkeletonTLS::preprocessIncomingMessage(
+        std::shared_ptr<ImmutableMessage> message)
+{
+    smrf::ByteArrayView signature;
+    try {
+        signature = message->getSignature();
+    } catch (smrf::EncodingException& error) {
+        JOYNR_LOG_ERROR(logger,
+                        "Validation of message with ID {} failed: {}",
+                        message->getId(),
+                        error.what());
+        return false;
+    }
+
+    std::string signatureString(reinterpret_cast<const char*>(signature.data()), signature.size());
+
+    message->setCreator(std::move(signatureString));
+
+    return true;
+}
+
 bool WebSocketCcMessagingSkeletonTLS::validateIncomingMessage(
         const ConnectionHandle& hdl,
         std::shared_ptr<ImmutableMessage> message)
@@ -74,20 +95,8 @@ bool WebSocketCcMessagingSkeletonTLS::validateIncomingMessage(
         JOYNR_LOG_ERROR(logger, "OwnerId (common name) of the TLS certificate is empty.");
         return false;
     }
-    smrf::ByteArrayView signature;
-    try {
-        signature = message->getSignature();
-    } catch (smrf::EncodingException& error) {
-        JOYNR_LOG_ERROR(logger,
-                        "Validation of message with ID {} failed: {}. Message will be dropped.",
-                        message->getId(),
-                        error.what());
-        return false;
-    }
 
-    const std::string signatureString(
-            reinterpret_cast<const char*>(signature.data()), signature.size());
-    if (expectedOwnerId != signatureString) {
+    if (expectedOwnerId != message->getCreator()) {
         JOYNR_LOG_ERROR(logger,
                         "Validation of message with ID {} failed: invalid signature. "
                         "Message will be dropped.",
