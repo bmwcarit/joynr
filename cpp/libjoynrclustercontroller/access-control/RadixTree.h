@@ -131,7 +131,6 @@ public:
 
     ParentRange parents()
     {
-        assert(!isRoot());
         assert(!isInternal());
         return ParentRange(this);
     }

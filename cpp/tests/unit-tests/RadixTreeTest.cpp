@@ -193,3 +193,12 @@ TEST_F(RadixTreeTest, eraseRoot)
     validateParents("013", {});
     validateParents("012", {});
 }
+
+TEST_F(RadixTreeTest, callParentsOnRoot){
+    const std::string rootKey = "";
+    tree.insert(rootKey, "root");
+    Node* rootNode = tree.longestMatch(rootKey);
+    ASSERT_TRUE(rootNode);
+    auto parents = rootNode->parents();
+    EXPECT_EQ(parents.begin(), parents.end());
+}
