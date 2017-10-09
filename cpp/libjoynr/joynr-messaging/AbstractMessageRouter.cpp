@@ -463,8 +463,7 @@ void AbstractMessageRouter::addToRoutingTable(
             if ((*(routingEntry->address) != *address) ||
                 (routingEntry->isGloballyVisible != isGloballyVisible)) {
                 JOYNR_LOG_WARN(logger,
-                               "unable to update (participantId={}, address={}, "
-                               "isGloballyVisible={}, expiryDateMs={}) into routing table, since "
+                               "unable to update participantId={} in routing table, since "
                                "the participantId is already associated with routing entry {}",
                                participantId,
                                routingEntry->toString());

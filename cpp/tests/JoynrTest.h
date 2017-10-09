@@ -64,6 +64,12 @@ namespace test {
 namespace util {
 
     /**
+     * @brief Removes from the current directory all generated files.
+     * It removes all *.settings, *.persist and *.entries files.
+     */
+    void removeAllCreatedSettingsAndPersistencyFiles();
+
+    /**
      * @brief Remove specified file from current working directory.
      * @param filePattern: regex pattern to describe the set of files to remove.
      */

@@ -27,6 +27,7 @@
 
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ClusterControllerDirectories.h"
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/exceptions/JoynrException.h"

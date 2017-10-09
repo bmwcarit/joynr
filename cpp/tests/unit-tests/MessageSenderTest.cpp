@@ -28,6 +28,7 @@
 #include "joynr/MessagingQos.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/MutableMessageFactory.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/MessageSender.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
