@@ -96,11 +96,11 @@ This project has following dependencies:
    ├─ promise (8.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/promise/package.json
    │  └─ asap (2.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/asap/package.json
    ├─ requirejs (2.1.22) ── BSD (https://github.com/jrburke/r.js/blob/master/LICENSE), MIT (https://github.com/jrburke/r.js/blob/master/LICENSE) ── node_modules/requirejs/package.json
-   ├─ smrf-native (0.2.1) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/smrf-native/package.json
+   ├─ smrf-native (0.2.2) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/smrf-native/package.json
    │  ├─ bindings (1.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bindings/package.json
    │  └─ nan (2.6.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/nan/package.json
    ├─ ws (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/ws/package.json
-   ├─ wscpp (0.2.4) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/wscpp/package.json
+   ├─ wscpp (0.2.5) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/wscpp/package.json
    └─ xmlhttprequest (1.8.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/xmlhttprequest/package.json
 
 * json_parse_state.js (https://github.com/douglascrockford/JSON-js), Version 2012-06-01
