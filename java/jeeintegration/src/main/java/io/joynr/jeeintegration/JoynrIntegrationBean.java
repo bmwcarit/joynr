@@ -81,6 +81,7 @@ public class JoynrIntegrationBean {
 
     @PostConstruct
     public void initialise() {
+        LOG.debug("Initializing joynr integration bean");
         Set<Bean<?>> serviceProviderBeans = serviceProviderDiscovery.findServiceProviderBeans();
         joynrRuntime = joynrRuntimeFactory.create(getServiceProviderInterfaceClasses(serviceProviderBeans));
         registerProviders(serviceProviderBeans, joynrRuntime);
