@@ -601,7 +601,8 @@ private:
             access_control::TableMaker<access_control::dac::MasterAccessControlEntry>::Type;
     MasterAccessControlTable masterAccessTable;
 
-    using MediatorAccessControlTable = MasterAccessControlTable;
+    using MediatorAccessControlTable =
+            access_control::TableMaker<access_control::dac::MediatorAccessControlEntry>::Type;
     MediatorAccessControlTable mediatorAccessTable;
 
     using OwnerAccessControlTable =
@@ -612,7 +613,8 @@ private:
             access_control::TableMaker<access_control::dac::MasterRegistrationControlEntry>::Type;
     MasterRegistrationControlTable masterRegistrationTable;
 
-    using MediatorRegistrationControlTable = MasterRegistrationControlTable;
+    using MediatorRegistrationControlTable =
+            access_control::TableMaker<access_control::dac::MediatorRegistrationControlEntry>::Type;
     MediatorRegistrationControlTable mediatorRegistrationTable;
 
     using OwnerRegistrationControlTable =
@@ -943,6 +945,48 @@ private:
                        std::make_move_iterator(wildcardEntries.begin()),
                        std::make_move_iterator(wildcardEntries.end()));
         return entries;
+    }
+
+    std::vector<access_control::dac::MasterAccessControlEntry> convertMediator(
+            const std::vector<access_control::dac::MediatorAccessControlEntry>& mediatorEntries)
+    {
+        std::vector<access_control::dac::MasterAccessControlEntry> result;
+        for (const auto& e : mediatorEntries) {
+            result.push_back(e);
+        }
+        return result;
+    }
+
+    boost::optional<access_control::dac::MasterAccessControlEntry> convertMediator(
+            const boost::optional<access_control::dac::MediatorAccessControlEntry>& mediatorEntry)
+    {
+        boost::optional<access_control::dac::MasterAccessControlEntry> result;
+        if (mediatorEntry) {
+            result = *mediatorEntry;
+        }
+        return result;
+    }
+
+    std::vector<access_control::dac::MasterRegistrationControlEntry> convertMediator(
+            const std::vector<access_control::dac::MediatorRegistrationControlEntry>&
+                    mediatorEntries)
+    {
+        std::vector<access_control::dac::MasterRegistrationControlEntry> result;
+        for (const auto& e : mediatorEntries) {
+            result.push_back(e);
+        }
+        return result;
+    }
+
+    boost::optional<access_control::dac::MasterRegistrationControlEntry> convertMediator(
+            const boost::optional<access_control::dac::MediatorRegistrationControlEntry>&
+                    mediatorEntry)
+    {
+        boost::optional<access_control::dac::MasterRegistrationControlEntry> result;
+        if (mediatorEntry) {
+            result = *mediatorEntry;
+        }
+        return result;
     }
 };
 } // namespace joynr

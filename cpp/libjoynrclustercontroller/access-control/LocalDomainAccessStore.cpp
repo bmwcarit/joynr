@@ -190,16 +190,17 @@ bool LocalDomainAccessStore::removeMasterAccessControlEntry(const std::string& u
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
         const std::string& uid)
 {
-    return getEqualRangeWithUidWildcard(mediatorAccessTable, uid);
+    return convertMediator(getEqualRangeWithUidWildcard(mediatorAccessTable, uid));
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    return getEqualRange(mediatorAccessTable.get<access_control::tags::DomainAndInterface>(),
-                         domain,
-                         interfaceName);
+    return convertMediator(
+            getEqualRange(mediatorAccessTable.get<access_control::tags::DomainAndInterface>(),
+                          domain,
+                          interfaceName));
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
@@ -207,7 +208,8 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
         const std::string& domain,
         const std::string& interfaceName)
 {
-    return getEqualRangeWithUidWildcard(mediatorAccessTable, uid, domain, interfaceName);
+    return convertMediator(
+            getEqualRangeWithUidWildcard(mediatorAccessTable, uid, domain, interfaceName));
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
@@ -216,7 +218,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
     JOYNR_LOG_TRACE(logger, "execute: entering getEditableMediatorAces with uId {}", userId);
 
     // Get all the Mediator ACEs for the domains where the user is master
-    return getEntries(mediatorAccessTable, userId, Role::MASTER);
+    return convertMediator(getEntries(mediatorAccessTable, userId, Role::MASTER));
 }
 
 boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntry(
@@ -227,7 +229,8 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAcc
 {
     // ignoring operation as not yet supported
     std::ignore = operation;
-    return lookupOptionalWithWildcard(mediatorAccessTable, uid, domain, interfaceName);
+    return convertMediator(
+            lookupOptionalWithWildcard(mediatorAccessTable, uid, domain, interfaceName));
 }
 
 bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
@@ -420,7 +423,7 @@ std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomai
 {
     JOYNR_LOG_TRACE(
             logger, "execute: entering getMediatorRegistrationControlEntries with uid {}", uid);
-    return getEqualRangeWithUidWildcard(mediatorRegistrationTable, uid);
+    return convertMediator(getEqualRangeWithUidWildcard(mediatorRegistrationTable, uid));
 }
 
 std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomainAccessStore::
@@ -430,7 +433,7 @@ std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomai
                     "execute: entering getEditableMeditatorRegistrationControlEntry with uid {}",
                     uid);
 
-    return getEntries(mediatorRegistrationTable, uid, Role::MASTER);
+    return convertMediator(getEntries(mediatorRegistrationTable, uid, Role::MASTER));
 }
 
 boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
@@ -438,7 +441,8 @@ boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
                                             const std::string& domain,
                                             const std::string& interfaceName)
 {
-    return lookupOptionalWithWildcard(mediatorRegistrationTable, uid, domain, interfaceName);
+    return convertMediator(
+            lookupOptionalWithWildcard(mediatorRegistrationTable, uid, domain, interfaceName));
 }
 
 bool LocalDomainAccessStore::updateMediatorRegistrationControlEntry(

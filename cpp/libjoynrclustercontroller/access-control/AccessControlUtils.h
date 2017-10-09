@@ -54,9 +54,42 @@ using namespace joynr::infrastructure::DacTypes;
  */
 struct MediatorAccessControlEntry : public dac::MasterAccessControlEntry
 {
+    using MasterAccessControlEntry::MasterAccessControlEntry;
+    MediatorAccessControlEntry() = default;
+
+    MediatorAccessControlEntry(const MasterAccessControlEntry& entry)
+            : MasterAccessControlEntry(entry)
+    {
+    }
+
+    const auto& getOperation() const
+    {
+        return MasterAccessControlEntry::getOperation();
+    }
+
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<joynr::infrastructure::DacTypes::MasterAccessControlEntry>(this));
+    }
 };
 struct MediatorRegistrationControlEntry : public dac::MasterRegistrationControlEntry
 {
+    using MasterRegistrationControlEntry::MasterRegistrationControlEntry;
+
+    MediatorRegistrationControlEntry() = default;
+
+    MediatorRegistrationControlEntry(const MasterRegistrationControlEntry& entry)
+            : MasterRegistrationControlEntry(entry)
+    {
+    }
+
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>(
+                this));
+    }
 };
 std::size_t hash_value(const MediatorAccessControlEntry& masterAccessControlEntryValue);
 std::size_t hash_value(const MediatorRegistrationControlEntry& masterAccessControlEntryValue);
@@ -91,6 +124,12 @@ struct MetaTableView<dac::MasterAccessControlEntry>
 };
 
 template <>
+struct MetaTableView<dac::MediatorAccessControlEntry>
+{
+    using tag = tableTags::access;
+};
+
+template <>
 struct MetaTableView<dac::OwnerAccessControlEntry>
 {
     using tag = tableTags::access;
@@ -98,6 +137,12 @@ struct MetaTableView<dac::OwnerAccessControlEntry>
 
 template <>
 struct MetaTableView<dac::MasterRegistrationControlEntry>
+{
+    using tag = tableTags::registration;
+};
+
+template <>
+struct MetaTableView<dac::MediatorRegistrationControlEntry>
 {
     using tag = tableTags::registration;
 };
