@@ -54,6 +54,9 @@ LocalDomainAccessStore::LocalDomainAccessStore(std::string fileName)
                         persistenceFileName,
                         ex.what());
     }
+
+    // insert all entries into wildcard storage
+    applyForAllTables([this](auto& entry) { addToWildcardStorage(entry); });
 }
 
 std::set<std::pair<std::string, std::string>> LocalDomainAccessStore::

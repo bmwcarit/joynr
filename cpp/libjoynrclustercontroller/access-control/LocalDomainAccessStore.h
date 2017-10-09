@@ -694,6 +694,45 @@ private:
             success = table.replace(result.first, updatedEntry);
         }
 
+        addToWildcardStorage(updatedEntry);
+
+        persistToFile();
+        return success;
+    }
+
+    template <typename Fun, std::size_t I = 0, typename... Ts>
+    std::enable_if_t<I == sizeof...(Ts)> applyForTable(Fun f, std::tuple<Ts...>& tables)
+    {
+        // end recursion
+        std::ignore = f;
+        std::ignore = tables;
+    }
+
+    template <typename Fun, std::size_t I = 0, typename... Ts>
+            std::enable_if_t < I<sizeof...(Ts)> applyForTable(Fun f, std::tuple<Ts...>& tables)
+    {
+        auto& table = std::get<I>(tables);
+        for (auto& entry : table) {
+            f(entry);
+        }
+        applyForTable<Fun, I + 1>(f, tables);
+    }
+
+    template <typename Fun>
+    void applyForAllTables(Fun f)
+    {
+        auto tables = std::tie(masterAccessTable,
+                               mediatorAccessTable,
+                               ownerAccessTable,
+                               masterRegistrationTable,
+                               mediatorRegistrationTable,
+                               ownerRegistrationTable);
+        applyForTable(std::move(f), tables);
+    }
+
+    template <typename Entry>
+    void addToWildcardStorage(const Entry& updatedEntry)
+    {
         // If entry ends with wildcard, then add it to the corresponding WildcardStorage
         if (endsWithWildcard(updatedEntry.getDomain())) {
             domainWildcardStorage.insert<access_control::wildcards::Domain>(
@@ -703,9 +742,6 @@ private:
             interfaceWildcardStorage.insert<access_control::wildcards::Interface>(
                     updatedEntry.getInterfaceName(), updatedEntry);
         }
-
-        persistToFile();
-        return success;
     }
 
     template <typename Value>
