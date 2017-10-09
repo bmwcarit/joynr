@@ -328,7 +328,7 @@ void MosquittoConnection::publishMessage(
         uint32_t payloadlen = 0,
         const void* payload = nullptr)
 {
-    JOYNR_LOG_DEBUG(logger, "Publish to {}", topic);
+    JOYNR_LOG_DEBUG(logger, "Publish message of length {} to {}", payloadlen, topic);
 
     int mid;
     int rc = publish(&mid, topic.c_str(), payloadlen, payload, qosLevel, isMqttRetain());
