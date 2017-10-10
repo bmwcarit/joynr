@@ -29,7 +29,6 @@
 #include <vector>
 
 #include "AccessControlAlgorithm.h"
-#include "LocalDomainAccessStore.h"
 #include "joynr/Future.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/JoynrClusterControllerExport.h"
@@ -51,6 +50,8 @@ class GlobalDomainAccessControllerProxy;
 class GlobalDomainRoleControllerProxy;
 class GlobalDomainAccessControlListEditorProxy;
 } // namespace infrastructure
+
+class LocalDomainAccessStore;
 class MulticastSubscriptionQos;
 
 /**

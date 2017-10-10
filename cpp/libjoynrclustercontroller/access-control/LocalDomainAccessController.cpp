@@ -30,6 +30,8 @@
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 
+#include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
+
 namespace joynr
 {
 
