@@ -87,7 +87,6 @@
 #include "joynr/vehicle/DefaultGpsProvider.h"
 #include "joynr/vehicle/GpsProvider.h"
 #include "joynr/vehicle/GpsRequestCaller.h"
-#include "joynr/WebSocketSettings.h"
 
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/websocket/IWebSocketPpClient.h"
@@ -111,7 +110,9 @@ class MulticastPublication;
 class MulticastSubscriptionQos;
 class OneWayRequest;
 class RequestCaller;
+class Settings;
 class SubscriptionReply;
+class WebSocketSettings;
 
 namespace types {
 class DiscoveryQos;
@@ -1346,9 +1347,6 @@ public:
 class MockWebSocketClient : public joynr::IWebSocketPpClient
 {
 public:
-
-    MockWebSocketClient(joynr::WebSocketSettings wsSettings, boost::asio::io_service& ioService)
-    {}
     MOCK_METHOD0(dtorCalled, void());
     ~MockWebSocketClient() override
     {
