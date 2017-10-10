@@ -44,7 +44,8 @@ Arbitrator::Arbitrator(
         std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
         const DiscoveryQos& discoveryQos,
         std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction)
-        : discoveryProxy(discoveryProxy),
+        : std::enable_shared_from_this<Arbitrator>(),
+          discoveryProxy(discoveryProxy),
           discoveryQos(discoveryQos),
           systemDiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
                              discoveryQos.getDiscoveryTimeoutMs(),
