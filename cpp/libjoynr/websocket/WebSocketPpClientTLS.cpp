@@ -35,13 +35,12 @@ WebSocketPpClientTLS::WebSocketPpClientTLS(const WebSocketSettings& wsSettings,
     endpoint.set_tls_init_handler(
             [this, keyChain](ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
                 std::ignore = hdl;
-                return createSSLContext(keyChain, logger);
+                return createSSLContext(keyChain);
             });
 }
 
 std::shared_ptr<WebSocketPpClientTLS::SSLContext> WebSocketPpClientTLS::createSSLContext(
-        std::shared_ptr<joynr::IKeychain> keyChain,
-        Logger& logger)
+        std::shared_ptr<joynr::IKeychain> keyChain)
 {
     std::shared_ptr<SSLContext> sslContext;
 

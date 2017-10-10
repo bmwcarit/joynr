@@ -35,8 +35,7 @@ public:
                          std::shared_ptr<IKeychain> keyChain);
 
 private:
-    std::shared_ptr<SSLContext> createSSLContext(std::shared_ptr<IKeychain> keyChain,
-                                                 Logger& logger);
+    std::shared_ptr<SSLContext> createSSLContext(std::shared_ptr<IKeychain> keyChain);
 
     bool useEncryptedTls;
 };
