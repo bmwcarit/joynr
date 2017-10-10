@@ -884,14 +884,8 @@ private:
         }
 
         if (!entry) {
-            // try to match with wildcarded domain and/or interface
-            entry = lookupDomainInterfaceWithWildcard<Value>(uid, domain, interfaceName);
-        }
-
-        if (!entry) {
             // try to match with wildcarded domain and/or interface and uid wildcarded
-            entry = lookupDomainInterfaceWithWildcard<Value>(
-                    access_control::WILDCARD, domain, interfaceName);
+            entry = lookupDomainInterfaceWithWildcard<Value>(uid, domain, interfaceName);
         }
 
         return entry;
