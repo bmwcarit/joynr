@@ -29,7 +29,7 @@
 namespace joynr
 {
 
-std::unique_ptr<Arbitrator> ArbitratorFactory::createArbitrator(
+std::shared_ptr<Arbitrator> ArbitratorFactory::createArbitrator(
         const std::string& domain,
         const std::string& interfaceName,
         const joynr::types::Version& interfaceVersion,
@@ -60,7 +60,7 @@ std::unique_ptr<Arbitrator> ArbitratorFactory::createArbitrator(
     default:
         throw exceptions::DiscoveryException("Arbitrator creation failed: Invalid strategy!");
     }
-    return std::make_unique<Arbitrator>(domain,
+    return std::make_shared<Arbitrator>(domain,
                                         interfaceName,
                                         interfaceVersion,
                                         discoveryProxy,
