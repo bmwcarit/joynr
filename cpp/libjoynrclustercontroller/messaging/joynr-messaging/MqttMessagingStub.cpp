@@ -25,8 +25,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(MqttMessagingStub);
-
 MqttMessagingStub::MqttMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                      const system::RoutingTypes::MqttAddress& destinationAddress)
         : messageSender(std::move(messageSender)), destinationAddress(destinationAddress)
@@ -37,7 +35,7 @@ void MqttMessagingStub::transmit(
         std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> {}", message->toLogMessage());
+    JOYNR_LOG_DEBUG(logger(), ">>> OUTGOING >>> {}", message->toLogMessage());
     messageSender->sendMessage(destinationAddress, std::move(message), onFailure);
 }
 

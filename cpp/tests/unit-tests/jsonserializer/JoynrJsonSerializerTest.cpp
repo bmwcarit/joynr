@@ -61,12 +61,10 @@ public:
     void SetUp() {
     }
 protected:
-    ADD_LOGGER(JoynrJsonSerializerTest);
+    ADD_LOGGER(JoynrJsonSerializerTest)
     void testSerializationOfTStruct(joynr::types::TestTypes::TStruct expectedStruct);
 private:
 };
-
-INIT_LOGGER(JoynrJsonSerializerTest);
 
 TEST_F(JoynrJsonSerializerTest, exampleDeserializerApplicationException)
 {
@@ -80,7 +78,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerApplicationException)
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(exception);
-    JOYNR_LOG_TRACE(logger, "exceptions::ApplicationException JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "exceptions::ApplicationException JSON: {}",json);
 
     // Deserialize from JSON
     exceptions::ApplicationException t;
@@ -98,7 +96,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerProviderRuntimeException)
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(exception);
-    JOYNR_LOG_TRACE(logger, "exceptions::ProviderRuntimeException JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "exceptions::ProviderRuntimeException JSON: {}",json);
 
     // Deserialize from JSON
 
@@ -116,7 +114,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerDiscoveryException)
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(exception);
-    JOYNR_LOG_TRACE(logger, "exceptions::DiscoveryException JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "exceptions::DiscoveryException JSON: {}",json);
 
     // Deserialize from JSON
 
@@ -136,7 +134,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerMethodInvocationException)
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(exception);
-    JOYNR_LOG_TRACE(logger, "exceptions::MethodInvocationException JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "exceptions::MethodInvocationException JSON: {}",json);
 
     // Deserialize from JSON
     exceptions::MethodInvocationException deserializedException;
@@ -154,7 +152,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializerEmptyStruct)
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(expectedAddress);
-    JOYNR_LOG_TRACE(logger, "Address JSON: {}", json);
+    JOYNR_LOG_TRACE(logger(), "Address JSON: {}", json);
 
     // Deserialize from JSON
 
@@ -172,7 +170,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerPublicationMissedException)
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(exception);
-    JOYNR_LOG_TRACE(logger, "exceptions::PublicationMissedException JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "exceptions::PublicationMissedException JSON: {}",json);
 
     // Deserialize from JSON
     exceptions::PublicationMissedException t;
@@ -190,7 +188,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrTimeOutException)
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(exception);
-    JOYNR_LOG_TRACE(logger, "exceptions::JoynrTimeOutException JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "exceptions::JoynrTimeOutException JSON: {}",json);
 
     // Deserialize from JSON
     exceptions::JoynrTimeOutException t;
@@ -208,7 +206,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerJoynrSubscriptionPublicationW
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(publication);
-    JOYNR_LOG_TRACE(logger, "SubscriptionPublication JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "SubscriptionPublication JSON: {}",json);
 
     SubscriptionPublication deserializedSubscriptionPublication;
     joynr::serializer::deserializeFromJson(deserializedSubscriptionPublication, json);
@@ -230,7 +228,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerSubscriptionPublication)
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(expectedPublication);
-    JOYNR_LOG_TRACE(logger, "SubscriptionPublication JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "SubscriptionPublication JSON: {}",json);
 
     SubscriptionPublication deserializedSubscriptionPublication;
     joynr::serializer::deserializeFromJson(deserializedSubscriptionPublication, json);
@@ -250,7 +248,7 @@ TEST_F(JoynrJsonSerializerTest, exampleDeserializerMulticastSubscriptionRequest)
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(expectedRequest);
-    JOYNR_LOG_TRACE(logger, "MulticastSubscriptionRequest JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "MulticastSubscriptionRequest JSON: {}",json);
 
     MulticastSubscriptionRequest deserializedMulticastSubscriptionRequest;
     joynr::serializer::deserializeFromJson(deserializedMulticastSubscriptionRequest, json);
@@ -267,7 +265,7 @@ TEST_F(JoynrJsonSerializerTest, deserializerMulticastPublicationWithProviderRunt
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(publication);
-    JOYNR_LOG_TRACE(logger, "MulticastPublication JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "MulticastPublication JSON: {}",json);
 
     MulticastPublication deserializedMulticastPublication;
     joynr::serializer::deserializeFromJson(deserializedMulticastPublication, json);
@@ -289,7 +287,7 @@ TEST_F(JoynrJsonSerializerTest, deserializerMulticastPublication)
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(expectedPublication);
-    JOYNR_LOG_TRACE(logger, "MulticastPublication JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "MulticastPublication JSON: {}",json);
 
     MulticastPublication deserializedMulticastPublication;
     joynr::serializer::deserializeFromJson(deserializedMulticastPublication, json);
@@ -330,7 +328,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeMasterAccessControlEntry)
     // Serialize
     std::string json = joynr::serializer::serializeToJson(expectedMac);
 
-    JOYNR_LOG_TRACE(logger, "MAC JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "MAC JSON: {}",json);
 
     // Deserialize
     MasterAccessControlEntry mac;
@@ -372,7 +370,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTIntegerKeyMap)
     expectedMap.insert({1, "StringValue1"});
     expectedMap.insert({2, "StringValue2"});
 
-    serializeDeserializeMap<TIntegerKeyMap>(expectedMap, logger);
+    serializeDeserializeMap<TIntegerKeyMap>(expectedMap, logger());
 }
 
 TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingMap)
@@ -383,7 +381,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingMap)
     expectedMap.insert({TEnum::TLITERALA, TEverythingExtendedStruct()});
     expectedMap.insert({TEnum::TLITERALB, TEverythingExtendedStruct()});
 
-    serializeDeserializeMap<TEverythingMap>(expectedMap, logger);
+    serializeDeserializeMap<TEverythingMap>(expectedMap, logger());
 }
 
 TEST_F(JoynrJsonSerializerTest, serializeDeserializeTStringKeyMap)
@@ -394,7 +392,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTStringKeyMap)
     expectedMap.insert({"StringKey1", "StringValue1"});
     expectedMap.insert({"StringKey2", "StringValue2"});
 
-    serializeDeserializeMap<TStringKeyMap>(expectedMap, logger);
+    serializeDeserializeMap<TStringKeyMap>(expectedMap, logger());
 }
 
 TEST_F(JoynrJsonSerializerTest, serializeDeserializeTStringToByteBufferMap)
@@ -405,7 +403,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTStringToByteBufferMap)
     expectedMap.insert({"StringKey1", {0,1,2,3,4,5}});
     expectedMap.insert({"StringKey2", {10,9,8,7,6}});
 
-    serializeDeserializeMap<TStringToByteBufferMap>(expectedMap, logger);
+    serializeDeserializeMap<TStringToByteBufferMap>(expectedMap, logger());
 }
 
 // test with TEverythingStruct
@@ -453,7 +451,7 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializeTEverythingStruct)
     // Serialize
     std::string json = joynr::serializer::serializeToJson(expectedEverythingStruct);
 
-    JOYNR_LOG_TRACE(logger, "TEverythingStruct JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "TEverythingStruct JSON: {}",json);
 
     // Deserialize
     TEverythingStruct everythingStruct;
@@ -468,7 +466,7 @@ void JoynrJsonSerializerTest::testSerializationOfTStruct(joynr::types::TestTypes
 
     std::string json = joynr::serializer::serializeToJson(expectedStruct);
 
-    JOYNR_LOG_TRACE(logger, "TStruct JSON: {}",json);
+    JOYNR_LOG_TRACE(logger(), "TStruct JSON: {}",json);
 
     // Deserialize
     TStruct actualStruct;

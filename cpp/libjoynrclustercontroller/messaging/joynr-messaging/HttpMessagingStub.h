@@ -50,7 +50,7 @@ private:
     std::shared_ptr<ITransportMessageSender> messageSender;
     const system::RoutingTypes::ChannelAddress destinationAddress;
 
-    ADD_LOGGER(HttpMessagingStub);
+    ADD_LOGGER(HttpMessagingStub)
 };
 
 } // namespace joynr

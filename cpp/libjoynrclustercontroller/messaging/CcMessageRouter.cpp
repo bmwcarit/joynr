@@ -50,8 +50,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(CcMessageRouter);
-
 //------ ConsumerPermissionCallback --------------------------------------------
 
 class ConsumerPermissionCallback : public IAccessController::IHasConsumerPermissionCallback
@@ -69,7 +67,7 @@ public:
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destination;
 
 private:
-    ADD_LOGGER(ConsumerPermissionCallback);
+    ADD_LOGGER(ConsumerPermissionCallback)
 };
 
 //------ MessageNotification ---------------------------------------------------
@@ -158,7 +156,8 @@ void CcMessageRouter::setAccessController(std::weak_ptr<IAccessController> acces
 void CcMessageRouter::saveMulticastReceiverDirectory() const
 {
     if (multicastReceiverDirectoryFilename.empty()) {
-        JOYNR_LOG_INFO(logger, "Did not save multicast receiver directory: No filename specified");
+        JOYNR_LOG_INFO(
+                logger(), "Did not save multicast receiver directory: No filename specified");
         return;
     }
 
@@ -167,7 +166,7 @@ void CcMessageRouter::saveMulticastReceiverDirectory() const
                 multicastReceiverDirectoryFilename,
                 joynr::serializer::serializeToJson(multicastReceiverDirectory));
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_INFO(logger, ex.what());
+        JOYNR_LOG_INFO(logger(), ex.what());
     }
 }
 
@@ -180,10 +179,10 @@ void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
                 multicastReceiverDirectory,
                 joynr::util::loadStringFromFile(multicastReceiverDirectoryFilename));
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger, ex.what());
+        JOYNR_LOG_ERROR(logger(), ex.what());
         return;
     } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger, "Deserialization from JSON failed: {}", ex.what());
+        JOYNR_LOG_ERROR(logger(), "Deserialization from JSON failed: {}", ex.what());
         return;
     }
 
@@ -228,7 +227,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
         try {
             providerParticipantId = util::extractParticipantIdFromMulticastId(multicastId);
         } catch (std::invalid_argument& ex) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "Persisted multicast receivers: Invalid multicast ID found {}",
                             multicastId);
             continue;
@@ -238,7 +237,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
         const auto routingEntry =
                 routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
         if (!routingEntry) {
-            JOYNR_LOG_WARN(logger,
+            JOYNR_LOG_WARN(logger(),
                            "Persisted multicast receivers: No provider address found for "
                            "multicast ID {}",
                            multicastId);
@@ -250,7 +249,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
                 multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
 
         if (!multicastSubscriber) {
-            JOYNR_LOG_WARN(logger,
+            JOYNR_LOG_WARN(logger(),
                            "Persisted multicast receivers: No multicast subscriber found for "
                            "multicast ID {}",
                            multicastId);
@@ -272,13 +271,13 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
     // Validate the message if possible
     if (securityManager != nullptr && !securityManager->validate(*message)) {
         std::string errorMessage("messageId " + message->getId() + " failed validation");
-        JOYNR_LOG_ERROR(logger, errorMessage);
+        JOYNR_LOG_ERROR(logger(), errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
     registerGlobalRoutingEntryIfRequired(*message);
 
-    JOYNR_LOG_TRACE(logger, "Route message with Id {}", message->getId());
+    JOYNR_LOG_TRACE(logger(), "Route message with Id {}", message->getId());
     // search for the destination addresses
     AbstractMessageRouter::AddressUnorderedSet destAddresses = getDestinationAddresses(*message);
     // if destination address is not known
@@ -289,7 +288,7 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
         }
 
         // save the message for later delivery
-        JOYNR_LOG_WARN(logger,
+        JOYNR_LOG_WARN(logger(),
                        "No routing information found for destination participant ID \"{}\" "
                        "so far. Waiting for participant registration. "
                        "Queueing message (ID : {})",
@@ -526,7 +525,7 @@ void CcMessageRouter::registerMulticastReceiver(
             onError(error);
         }
     } else {
-        JOYNR_LOG_TRACE(logger,
+        JOYNR_LOG_TRACE(logger(),
                         "No messaging skeleton found for multicast "
                         "provider (address=" +
                                 providerAddress->toString() + ").");
@@ -559,7 +558,7 @@ void CcMessageRouter::addMulticastReceiver(
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
             thisSharedPtr->multicastReceiverDirectory.registerMulticastReceiver(
                     multicastId, subscriberParticipantId);
-            JOYNR_LOG_TRACE(logger,
+            JOYNR_LOG_TRACE(logger(),
                             "added multicast receiver={} for multicastId={}",
                             subscriberParticipantId,
                             multicastId);
@@ -568,7 +567,7 @@ void CcMessageRouter::addMulticastReceiver(
                 onSuccess();
             }
         } else {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "error adding multicast receiver={} for multicastId={} because "
                             "CcMessageRouter is no longer available",
                             subscriberParticipantId,
@@ -579,7 +578,7 @@ void CcMessageRouter::addMulticastReceiver(
             [ onError = std::move(onError), subscriberParticipantId, multicastId ](
                     const exceptions::JoynrRuntimeException& error)
     {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "error adding multicast receiver={} for multicastId={}, error: {}",
                         subscriberParticipantId,
                         multicastId,
@@ -627,7 +626,7 @@ void CcMessageRouter::removeMulticastReceiver(
         exceptions::ProviderRuntimeException exception(
                 "No routing entry for multicast provider (providerParticipantId=" +
                 providerParticipantId + ") found.");
-        JOYNR_LOG_ERROR(logger, exception.getMessage());
+        JOYNR_LOG_ERROR(logger(), exception.getMessage());
         if (onError) {
             onError(exception);
         }
@@ -639,7 +638,7 @@ void CcMessageRouter::removeMulticastReceiver(
         if (skeleton) {
             skeleton->unregisterMulticastSubscription(multicastId);
         } else {
-            JOYNR_LOG_TRACE(logger,
+            JOYNR_LOG_TRACE(logger(),
                             "No messaging skeleton found for multicast "
                             "provider (address=" +
                                     providerAddress->toString() + ").");
@@ -652,7 +651,7 @@ void CcMessageRouter::removeMulticastReceiver(
 
 void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 {
-    JOYNR_LOG_TRACE(logger, "message queued: {}", message->toLogMessage());
+    JOYNR_LOG_TRACE(logger(), "message queued: {}", message->toLogMessage());
     // do not fire a broadcast for an undeliverable message sent by
     // messageNotificationProvider (e.g. messageQueueForDelivery publication)
     // since it may cause an endless loop
@@ -667,8 +666,6 @@ void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 /**
  * IMPLEMENTATION of ConsumerPermissionCallback class
  */
-
-INIT_LOGGER(ConsumerPermissionCallback);
 
 ConsumerPermissionCallback::ConsumerPermissionCallback(
         std::weak_ptr<CcMessageRouter> owningMessageRouter,
@@ -685,13 +682,13 @@ void ConsumerPermissionCallback::hasConsumerPermission(bool hasPermission)
             if (auto owningMessageRouterSharedPtr = owningMessageRouter.lock()) {
                 owningMessageRouterSharedPtr->scheduleMessage(message, destination);
             } else {
-                JOYNR_LOG_ERROR(logger,
+                JOYNR_LOG_ERROR(logger(),
                                 "Message with Id {} could not be sent because messageRouter is not "
                                 "available",
                                 message->getId());
             }
         } catch (const exceptions::JoynrMessageNotSentException& e) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "Message with Id {} could not be sent. Error: {}",
                             message->getId(),
                             e.getMessage());

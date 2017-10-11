@@ -138,7 +138,7 @@ private:
     void operator=(const ClusterControllerSettings& other) = delete;
 
     Settings& settings;
-    ADD_LOGGER(ClusterControllerSettings);
+    ADD_LOGGER(ClusterControllerSettings)
     void checkSettings();
 };
 

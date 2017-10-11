@@ -104,7 +104,7 @@ private:
     std::atomic<bool> arbitrationRunning;
     std::atomic<bool> keepArbitrationRunning;
     std::thread arbitrationThread;
-    ADD_LOGGER(Arbitrator);
+    ADD_LOGGER(Arbitrator)
 };
 
 } // namespace joynr

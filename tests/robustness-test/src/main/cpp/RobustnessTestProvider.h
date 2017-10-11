@@ -75,7 +75,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(RobustnessTestProvider);
 
-    ADD_LOGGER(RobustnessTestProvider);
+    ADD_LOGGER(RobustnessTestProvider)
     std::atomic<bool> stopBroadcastWithSingleStringParameter;
     std::thread broadcastThread;
 };

@@ -87,7 +87,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 					«val errorMsg = "proxy cannot invoke " + getAttribute + ", because the communication end partner is not (yet) known"»
 					errorText = "«errorMsg»";
 				}
-				JOYNR_LOG_WARN(logger, errorText);
+				JOYNR_LOG_WARN(logger(), errorText);
 				auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
 				if (onError) {
 					onError(*error);
@@ -120,7 +120,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 					«val errorMsg = "proxy cannot invoke " + setAttribute + ", because the communication end partner is not (yet) known"»
 					errorText = "«errorMsg»";
 				}
-				JOYNR_LOG_WARN(logger, errorText);
+				JOYNR_LOG_WARN(logger(), errorText);
 				auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
 				if (onError) {
 					onError(*error);
@@ -157,7 +157,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 					«val errorMsg = "proxy cannot invoke " + methodName + ", because the communication end partner is not (yet) known"»
 					errorText = "«errorMsg»";
 				}
-				JOYNR_LOG_WARN(logger, errorText);
+				JOYNR_LOG_WARN(logger(), errorText);
 				auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
 				if (onRuntimeError) {
 					onRuntimeError(*error);

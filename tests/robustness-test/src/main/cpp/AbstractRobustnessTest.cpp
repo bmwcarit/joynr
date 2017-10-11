@@ -21,8 +21,6 @@
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
-INIT_LOGGER(AbstractRobustnessTest);
-
 std::shared_ptr<TestInterfaceProxy> AbstractRobustnessTest::proxy;
 std::shared_ptr<ProxyBuilder<TestInterfaceProxy>> AbstractRobustnessTest::proxyBuilder;
 std::shared_ptr<JoynrRuntime> AbstractRobustnessTest::runtime;

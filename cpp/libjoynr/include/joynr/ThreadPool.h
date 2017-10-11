@@ -92,7 +92,7 @@ private:
 
 private:
     /*! Logger */
-    ADD_LOGGER(ThreadPool);
+    ADD_LOGGER(ThreadPool)
 
     /*! Worker threads */
     std::vector<std::thread> threads;

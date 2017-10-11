@@ -21,7 +21,6 @@
 
 namespace joynr
 {
-INIT_LOGGER(RoutingTable);
 
 RoutingTable::RoutingTable() : multiIndexContainer()
 {
@@ -29,7 +28,7 @@ RoutingTable::RoutingTable() : multiIndexContainer()
 
 RoutingTable::~RoutingTable()
 {
-    JOYNR_LOG_TRACE(logger, "destructor: number of entries = {}", multiIndexContainer.size());
+    JOYNR_LOG_TRACE(logger(), "destructor: number of entries = {}", multiIndexContainer.size());
 }
 
 boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByParticipantId(
@@ -78,18 +77,18 @@ void RoutingTable::add(const std::string& participantId,
     if (!result.second) {
         multiIndexContainer.replace(result.first, routingEntry);
     }
-    JOYNR_LOG_TRACE(logger, "Added participantId: {}", participantId);
+    JOYNR_LOG_TRACE(logger(), "Added participantId: {}", participantId);
 }
 
 void RoutingTable::remove(const std::string& participantId)
 {
-    JOYNR_LOG_TRACE(logger, "Removing registered participantId: {}", participantId);
+    JOYNR_LOG_TRACE(logger(), "Removing registered participantId: {}", participantId);
     multiIndexContainer.erase(participantId);
 }
 
 void RoutingTable::purge()
 {
-    JOYNR_LOG_TRACE(logger, "Purging expired entries");
+    JOYNR_LOG_TRACE(logger(), "Purging expired entries");
     auto& index = boost::multi_index::get<routingtable::tags::ExpiryDate>(multiIndexContainer);
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
                        std::chrono::system_clock::now().time_since_epoch()).count();

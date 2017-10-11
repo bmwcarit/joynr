@@ -24,8 +24,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(BroadcastSubscriptionRequest);
-
 BroadcastSubscriptionRequest::BroadcastSubscriptionRequest() : filterParameters()
 {
 }

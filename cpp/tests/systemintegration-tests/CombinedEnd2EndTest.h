@@ -60,7 +60,7 @@ public:
     joynr::Semaphore semaphore;
     joynr::DiscoveryQos discoveryQos;
 
-    static joynr::Logger logger;
+    ADD_LOGGER(CombinedEnd2EndTest)
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CombinedEnd2EndTest);

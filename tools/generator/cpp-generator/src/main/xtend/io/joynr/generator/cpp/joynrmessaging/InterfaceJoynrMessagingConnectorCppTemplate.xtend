@@ -75,7 +75,7 @@ request.setParams(
 
 	def logMethodCall(FMethod method)
 	'''
-		JOYNR_LOG_DEBUG(logger,
+		JOYNR_LOG_DEBUG(logger(),
 				"REQUEST call proxy: requestReplyId: {}, method: {}, params: «getParamsPlaceholders(method.inputParameters.size)», proxy "
 				"participantId: {}, provider participantId: [{}]",
 				request.getRequestReplyId(),
@@ -177,7 +177,7 @@ request.setParams(
 					requestReplyId = request.getRequestReplyId(),
 					methodName = request.getMethodName()
 			] (const «returnType»& «attributeName») {
-				JOYNR_LOG_DEBUG(logger,
+				JOYNR_LOG_DEBUG(logger(),
 						"REQUEST returns successful: requestReplyId: {}, method: {}, response: {}",
 						requestReplyId,
 						methodName,
@@ -195,7 +195,7 @@ request.setParams(
 					requestReplyId = request.getRequestReplyId(),
 					methodName = request.getMethodName()
 			] (const std::shared_ptr<exceptions::JoynrException>& error) {
-				JOYNR_LOG_DEBUG(logger,
+				JOYNR_LOG_DEBUG(logger(),
 						"REQUEST returns error: requestReplyId: {}, method: {}, response: {}",
 						requestReplyId,
 						methodName,
@@ -208,7 +208,7 @@ request.setParams(
 			};
 
 			try {
-				JOYNR_LOG_DEBUG(logger,
+				JOYNR_LOG_DEBUG(logger(),
 						"REQUEST call proxy: requestReplyId: {}, method: {}, proxy "
 						"participantId: {}, provider participantId: [{}]",
 						request.getRequestReplyId(),
@@ -241,7 +241,7 @@ request.setParams(
 					requestReplyId = request.getRequestReplyId(),
 					methodName = request.getMethodName()
 			] () {
-				JOYNR_LOG_DEBUG(logger,
+				JOYNR_LOG_DEBUG(logger(),
 						"REQUEST returns successful: requestReplyId: {}, method: {}",
 						requestReplyId,
 						methodName
@@ -258,7 +258,7 @@ request.setParams(
 					requestReplyId = request.getRequestReplyId(),
 					methodName = request.getMethodName()
 			] (const std::shared_ptr<exceptions::JoynrException>& error) {
-				JOYNR_LOG_DEBUG(logger,
+				JOYNR_LOG_DEBUG(logger(),
 					"REQUEST returns error: requestReplyId: {}, method: {}, response: {}",
 					requestReplyId,
 					methodName,
@@ -271,7 +271,7 @@ request.setParams(
 			};
 
 			try {
-				JOYNR_LOG_DEBUG(logger,
+				JOYNR_LOG_DEBUG(logger(),
 						"REQUEST call proxy: requestReplyId: {}, method: {}, params: {}, proxy "
 						"participantId: {}, provider participantId: [{}]",
 						request.getRequestReplyId(),
@@ -312,7 +312,7 @@ request.setParams(
 					std::shared_ptr<joynr::SubscriptionQos> subscriptionQos,
 					SubscriptionRequest& subscriptionRequest
 		) {
-			JOYNR_LOG_DEBUG(logger, "Subscribing to «attributeName».");
+			JOYNR_LOG_DEBUG(logger(), "Subscribing to «attributeName».");
 			std::string attributeName("«attributeName»");
 			joynr::MessagingQos clonedMessagingQos(qosSettings);
 			clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
@@ -326,7 +326,7 @@ request.setParams(
 						subscriptionListener,
 						subscriptionQos,
 						subscriptionRequest);
-			JOYNR_LOG_DEBUG(logger,
+			JOYNR_LOG_DEBUG(logger(),
 					"SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy "
 					"participantId: {}, provider participantId: [{}]",
 					subscriptionRequest.getSubscriptionId(),
@@ -385,7 +385,7 @@ request.setParams(
 					methodName = request.getMethodName()
 			] («outputTypedConstParamList»)
 			{
-				JOYNR_LOG_DEBUG(logger,
+				JOYNR_LOG_DEBUG(logger(),
 					"REQUEST returns successful: requestReplyId: {}, method: {}, response: «getParamsPlaceholders(method.outputParameters.size)»",
 					requestReplyId,
 					methodName«IF !method.outputParameters.empty»,«ENDIF»
@@ -407,7 +407,7 @@ request.setParams(
 					methodName = request.getMethodName()
 			] (const std::shared_ptr<exceptions::JoynrException>& error)
 			{
-				JOYNR_LOG_DEBUG(logger,
+				JOYNR_LOG_DEBUG(logger(),
 					"REQUEST returns error: requestReplyId: {}, method: {}, response: {}",
 					requestReplyId,
 					methodName,
@@ -489,7 +489,7 @@ request.setParams(
 					const std::vector<std::string>& partitions
 				«ENDIF»
 	) {
-		JOYNR_LOG_TRACE(logger, "Subscribing to «broadcastName» broadcast.");
+		JOYNR_LOG_TRACE(logger(), "Subscribing to «broadcastName» broadcast.");
 		std::string broadcastName("«broadcastName»");
 		joynr::MessagingQos clonedMessagingQos(qosSettings);
 		clonedMessagingQos.setTtl(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos));
@@ -539,7 +539,7 @@ request.setParams(
 					subscriptionId] (const exceptions::ProviderRuntimeException& error) {
 						std::string message = "Could not register subscription to «broadcastName». Error from subscription manager: "
 									+ error.getMessage();
-						JOYNR_LOG_ERROR(logger, message);
+						JOYNR_LOG_ERROR(logger(), message);
 						exceptions::SubscriptionException subscriptionException(message, subscriptionId);
 						subscriptionListener->onError(subscriptionException);
 						if (auto ptr = subscriptionManager.lock())
@@ -559,7 +559,7 @@ request.setParams(
 							std::move(onSuccess),
 							std::move(onError));
 		«ENDIF»
-		JOYNR_LOG_DEBUG(logger,
+		JOYNR_LOG_DEBUG(logger(),
 				"SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy "
 				"participantId: {}, provider participantId: [{}]",
 				«IF broadcast.selective»

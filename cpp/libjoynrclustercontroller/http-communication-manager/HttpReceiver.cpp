@@ -29,8 +29,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(HttpReceiver);
-
 HttpReceiver::HttpReceiver(const MessagingSettings& settings,
                            const std::string& channelId,
                            const std::string& receiverId)
@@ -42,10 +40,10 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings,
           messageReceiver(nullptr),
           onMessageReceived(nullptr)
 {
-    JOYNR_LOG_DEBUG(logger, "Print settings... ");
+    JOYNR_LOG_DEBUG(logger(), "Print settings... ");
     settings.printSettings();
     updateSettings();
-    JOYNR_LOG_DEBUG(logger, "Init finished.");
+    JOYNR_LOG_DEBUG(logger(), "Init finished.");
 
     system::RoutingTypes::ChannelAddress receiverChannelAddress(
             settings.getBrokerUrl().getBrokerChannelsBaseUrl().toString() + channelId + "/",
@@ -85,13 +83,13 @@ void HttpReceiver::updateSettings()
 
 HttpReceiver::~HttpReceiver()
 {
-    JOYNR_LOG_TRACE(logger, "destructing HttpCommunicationManager");
+    JOYNR_LOG_TRACE(logger(), "destructing HttpCommunicationManager");
 }
 
 void HttpReceiver::startReceiveQueue()
 {
     if (!onMessageReceived) {
-        JOYNR_LOG_FATAL(logger, "FAIL::receiveQueue started with no onMessageReceived.");
+        JOYNR_LOG_FATAL(logger(), "FAIL::receiveQueue started with no onMessageReceived.");
     }
 
     // Get the settings specific to long polling
@@ -101,7 +99,7 @@ void HttpReceiver::startReceiveQueue()
             std::chrono::milliseconds(settings.getLongPollRetryInterval()),
             std::chrono::milliseconds(settings.getCreateChannelRetryInterval())};
 
-    JOYNR_LOG_DEBUG(logger, "startReceiveQueue");
+    JOYNR_LOG_DEBUG(logger(), "startReceiveQueue");
     messageReceiver = std::make_unique<LongPollingMessageReceiver>(settings.getBrokerUrl(),
                                                                    channelId,
                                                                    receiverId,
@@ -120,7 +118,7 @@ void HttpReceiver::stopReceiveQueue()
 {
     // currently channelCreatedSemaphore is not released here. This would be necessary if
     // stopReceivequeue is called, before channel is created.
-    JOYNR_LOG_DEBUG(logger, "stopReceiveQueue");
+    JOYNR_LOG_DEBUG(logger(), "stopReceiveQueue");
     if (messageReceiver) {
         messageReceiver.reset();
     }
@@ -143,20 +141,20 @@ bool HttpReceiver::tryToDeleteChannel()
             HttpNetworking::getInstance()->createHttpDeleteBuilder(deleteChannelUrl));
     std::shared_ptr<HttpRequest> deleteChannelRequest(
             deleteChannelRequestBuilder->withTimeout(std::chrono::seconds(20))->build());
-    JOYNR_LOG_TRACE(logger, "sending delete channel request to {}", deleteChannelUrl);
+    JOYNR_LOG_TRACE(logger(), "sending delete channel request to {}", deleteChannelUrl);
     HttpResult deleteChannelResult = deleteChannelRequest->execute();
     std::int64_t statusCode = deleteChannelResult.getStatusCode();
     if (statusCode == 200) {
         channelCreatedSemaphore->waitFor(
                 std::chrono::seconds(5)); // Reset the channel created Semaphore.
-        JOYNR_LOG_DEBUG(logger, "channel deletion successfull");
+        JOYNR_LOG_DEBUG(logger(), "channel deletion successfull");
 
         return true;
     } else if (statusCode == 204) {
-        JOYNR_LOG_DEBUG(logger, "channel did not exist: {}", statusCode);
+        JOYNR_LOG_DEBUG(logger(), "channel did not exist: {}", statusCode);
         return true;
     } else {
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "channel deletion failed with status code: {}",
                         deleteChannelResult.getStatusCode());
         return false;

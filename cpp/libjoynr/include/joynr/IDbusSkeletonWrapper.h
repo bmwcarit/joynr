@@ -39,7 +39,7 @@ public:
             : // factory(NULL),
               serviceAddress(serviceAddress)
     {
-        JOYNR_LOG_TRACE(logger, "Registering dbus skeleton on address: {}", serviceAddress);
+        JOYNR_LOG_TRACE(logger(), "Registering dbus skeleton on address: {}", serviceAddress);
 
         // create the skeleton
         std::shared_ptr<_SkeletonClass> skeleton = std::make_shared<_SkeletonClass>(callBack);
@@ -52,15 +52,15 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            JOYNR_LOG_INFO(logger, "registering service {}: SUCCESS", serviceAddress);
+            JOYNR_LOG_INFO(logger(), "registering service {}: SUCCESS", serviceAddress);
         } else {
-            JOYNR_LOG_FATAL(logger, "registering service {} : ERROR", serviceAddress);
+            JOYNR_LOG_FATAL(logger(), "registering service {} : ERROR", serviceAddress);
         }
     }
 
     ~IDbusSkeletonWrapper()
     {
-        JOYNR_LOG_TRACE(logger, "Unregistering dbus skeleton from address: {}", serviceAddress);
+        JOYNR_LOG_TRACE(logger(), "Unregistering dbus skeleton from address: {}", serviceAddress);
 
         auto runtime = CommonAPI::Runtime::load("DBus");
         bool success = runtime->getServicePublisher()->unregisterService(serviceAddress);
@@ -68,25 +68,22 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
         if (success) {
-            JOYNR_LOG_INFO(logger, "unregistering service {}: SUCCESS", serviceAddress);
+            JOYNR_LOG_INFO(logger(), "unregistering service {}: SUCCESS", serviceAddress);
         } else {
-            JOYNR_LOG_FATAL(logger, "unregistering service {}: ERROR", serviceAddress);
+            JOYNR_LOG_FATAL(logger(), "unregistering service {}: ERROR", serviceAddress);
         }
     }
 
     void logMethodCall(const std::string& method, const std::string& adapter)
     {
-        JOYNR_LOG_INFO(logger, "Call method {}:{}-> {}", adapter, serviceAddress, method);
+        JOYNR_LOG_INFO(logger(), "Call method {}:{}-> {}", adapter, serviceAddress, method);
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(IDbusSkeletonWrapper);
     std::string serviceAddress;
-    ADD_LOGGER(IDbusSkeletonWrapper);
+    ADD_LOGGER(IDbusSkeletonWrapper)
 };
-
-template <class _SkeletonClass, class _CallBackClass>
-INIT_LOGGER(SINGLE_MACRO_ARG(IDbusSkeletonWrapper<_SkeletonClass, _CallBackClass>));
 
 } // namespace joynr
 #endif // IDBUSSKELETONWRAPPER_H

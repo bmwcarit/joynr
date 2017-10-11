@@ -245,7 +245,7 @@ private:
 private:
     DISALLOW_COPY_AND_ASSIGN(RoutingTable);
     MultiIndexContainer multiIndexContainer;
-    ADD_LOGGER(RoutingTable);
+    ADD_LOGGER(RoutingTable)
 };
 
 } // namespace joynr

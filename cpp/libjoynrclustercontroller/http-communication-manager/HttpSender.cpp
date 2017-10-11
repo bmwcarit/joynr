@@ -46,8 +46,6 @@ std::int64_t HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL()
     return 3;
 }
 
-INIT_LOGGER(HttpSender);
-
 HttpSender::HttpSender(const BrokerUrl& brokerUrl,
                        std::chrono::milliseconds maxAttemptTtl,
                        std::chrono::milliseconds messageSendRetryInterval)
@@ -69,12 +67,12 @@ void HttpSender::sendMessage(
     const auto* channelAddress =
             dynamic_cast<const system::RoutingTypes::ChannelAddress*>(&destinationAddress);
     if (channelAddress == nullptr) {
-        JOYNR_LOG_DEBUG(logger, "Invalid destination address type provided");
+        JOYNR_LOG_DEBUG(logger(), "Invalid destination address type provided");
         onFailure(exceptions::JoynrRuntimeException("Invalid destination address type provided"));
         return;
     }
 
-    JOYNR_LOG_TRACE(logger, "sendMessage: ...");
+    JOYNR_LOG_TRACE(logger(), "sendMessage: ...");
 
     auto startTime = std::chrono::system_clock::now();
 
@@ -92,12 +90,12 @@ void HttpSender::sendMessage(
             remainingTtl.count() / HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL(),
             HttpSender::MIN_ATTEMPT_TTL().count());
 
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "Sending message; url: {}, time left: {}",
                     toUrl(*channelAddress),
                     DispatcherUtils::convertAbsoluteTimeToTtlString(message->getExpiryDate()));
 
-    JOYNR_LOG_TRACE(logger, "going to buildRequest");
+    JOYNR_LOG_TRACE(logger(), "going to buildRequest");
 
     // TODO transmit message->getSerializedMessage() instead
     std::string serializedMessage = "FIX ME I AM EMPTY";
@@ -115,13 +113,13 @@ void HttpSender::sendMessage(
     }
 
     JOYNR_LOG_TRACE(
-            logger, "sendMessageResult.getStatusCode() = {}", sendMessageResult.getStatusCode());
+            logger(), "sendMessageResult.getStatusCode() = {}", sendMessageResult.getStatusCode());
     if (sendMessageResult.getStatusCode() != 201) {
         std::string body("NULL");
         if (!sendMessageResult.getBody().empty()) {
             body = sendMessageResult.getBody();
         }
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "sending message - fail; error message {}; contents {}; rescheduling "
                         "for retry...",
                         sendMessageResult.getErrorMessage(),
@@ -134,7 +132,7 @@ void HttpSender::sendMessage(
             handleHttpError(sendMessageResult, delay, onFailure);
         }
     } else {
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "sending message - success; url: {} status code: {} at ",
                         toUrl(*channelAddress),
                         sendMessageResult.getStatusCode(),
@@ -146,18 +144,18 @@ HttpResult HttpSender::buildRequestAndSend(const std::string& data,
                                            const std::string& url,
                                            std::chrono::milliseconds curlTimeout)
 {
-    JOYNR_LOG_TRACE(logger, "buildRequestAndSend.createHttpPostBuilder...");
+    JOYNR_LOG_TRACE(logger(), "buildRequestAndSend.createHttpPostBuilder...");
     std::shared_ptr<IHttpPostBuilder> sendMessageRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(url));
 
-    JOYNR_LOG_TRACE(logger, "buildRequestAndSend.sendMessageRequestBuilder...");
+    JOYNR_LOG_TRACE(logger(), "buildRequestAndSend.sendMessageRequestBuilder...");
     std::shared_ptr<HttpRequest> sendMessageRequest(
             sendMessageRequestBuilder->withContentType("application/json")
                     ->withTimeout(std::min(maxAttemptTtl, curlTimeout))
                     ->postContent(data)
                     ->build());
-    JOYNR_LOG_TRACE(logger, "builtRequest");
-    JOYNR_LOG_TRACE(logger, "Sending Message: {}", util::truncateSerializedMessage(data));
+    JOYNR_LOG_TRACE(logger(), "builtRequest");
+    JOYNR_LOG_TRACE(logger(), "Sending Message: {}", util::truncateSerializedMessage(data));
 
     return sendMessageRequest->execute();
 }

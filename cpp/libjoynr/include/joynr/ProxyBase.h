@@ -67,7 +67,7 @@ protected:
     MessagingQos qosSettings;
     std::string proxyParticipantId;
     types::DiscoveryEntryWithMetaInfo providerDiscoveryEntry;
-    ADD_LOGGER(ProxyBase);
+    ADD_LOGGER(ProxyBase)
 };
 
 } // namespace joynr

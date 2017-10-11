@@ -69,7 +69,7 @@ public:
 private:
     boost::optional<BroadcastFilterParameters> filterParameters;
 
-    ADD_LOGGER(BroadcastSubscriptionRequest);
+    ADD_LOGGER(BroadcastSubscriptionRequest)
 };
 
 } // namespace joynr

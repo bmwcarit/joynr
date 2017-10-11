@@ -48,7 +48,7 @@ public:
     {
         std::type_index typeIndex = typeid(T);
         JOYNR_LOG_DEBUG(
-                logger, "register messaging skeleton for address type {}", typeIndex.name());
+                logger(), "register messaging skeleton for address type {}", typeIndex.name());
         std::lock_guard<std::recursive_mutex> lock(mutex);
         multicastSkeletons[typeIndex] = std::move(skeleton);
     }
@@ -59,7 +59,7 @@ public:
     {
         std::type_index typeIndex = typeid(T);
         JOYNR_LOG_DEBUG(
-                logger, "unregister messaging skeleton for address type {}", typeIndex.name());
+                logger(), "unregister messaging skeleton for address type {}", typeIndex.name());
         std::lock_guard<std::recursive_mutex> lock(mutex);
         multicastSkeletons.erase(typeIndex);
     }
@@ -71,7 +71,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MulticastMessagingSkeletonDirectory);
-    ADD_LOGGER(MulticastMessagingSkeletonDirectory);
+    ADD_LOGGER(MulticastMessagingSkeletonDirectory)
     std::unordered_map<std::type_index, std::shared_ptr<IMessagingMulticastSubscriber>>
             multicastSkeletons;
     std::recursive_mutex mutex;

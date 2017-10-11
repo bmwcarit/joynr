@@ -95,12 +95,10 @@ protected:
     std::int64_t defaultDiscoveryTimeoutMs;
     std::int64_t defaultRetryIntervalMs;
     std::string publicKeyId;
-    static joynr::Logger logger;
+    ADD_LOGGER(ArbitratorTest)
     std::shared_ptr<MockDiscovery> mockDiscovery;
     Semaphore semaphore;
 };
-
-INIT_LOGGER(ArbitratorTest);
 
 TEST_F(ArbitratorTest, arbitrationTimeout) {
     types::Version providerVersion;
@@ -139,7 +137,7 @@ TEST_F(ArbitratorTest, arbitrationTimeout) {
 
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
 
-    JOYNR_LOG_DEBUG(logger, "Time elapsed for unsuccessful arbitration : {}", elapsed.count());
+    JOYNR_LOG_DEBUG(logger(), "Time elapsed for unsuccessful arbitration : {}", elapsed.count());
     ASSERT_GE(elapsed.count(), discoveryTimeoutMs);
 }
 

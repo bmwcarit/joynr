@@ -37,8 +37,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(LibJoynrWebSocketRuntime);
-
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings,
                                                    std::shared_ptr<IKeychain> keyChain)
         : LibJoynrRuntime(std::move(settings), std::move(keyChain)),
@@ -75,7 +73,7 @@ void LibJoynrWebSocketRuntime::connect(
 
     // send initialization message containing libjoynr messaging address
     initializationMsg = joynr::serializer::serializeToJson(*libjoynrMessagingAddress);
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "OUTGOING sending websocket intialization message\nmessage: {}\nto: {}",
                     initializationMsg,
                     libjoynrMessagingAddress->toString());
@@ -126,7 +124,7 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
 {
     auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
         // initialization message will be sent after reconnect
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Sending websocket initialization message failed. Error: {}",
                         e.getMessage());
     };
@@ -143,15 +141,15 @@ void LibJoynrWebSocketRuntime::createWebsocketClient()
         if (keyChain == nullptr) {
             const std::string message(
                     "TLS websocket connection was configured for but no keychain was provided");
-            JOYNR_LOG_FATAL(logger, message);
+            JOYNR_LOG_FATAL(logger(), message);
             throw exceptions::JoynrRuntimeException(message);
         }
 
-        JOYNR_LOG_INFO(logger, "Using TLS connection");
+        JOYNR_LOG_INFO(logger(), "Using TLS connection");
         websocket = std::make_shared<WebSocketPpClientTLS>(
                 wsSettings, singleThreadIOService->getIOService(), keyChain);
     } else if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WS) {
-        JOYNR_LOG_INFO(logger, "Using non-TLS connection");
+        JOYNR_LOG_INFO(logger(), "Using non-TLS connection");
         websocket = std::make_shared<WebSocketPpClientNonTLS>(
                 wsSettings, singleThreadIOService->getIOService());
     } else {

@@ -182,7 +182,7 @@ private:
     std::int64_t defaultExpiryIntervalMs;
     std::weak_ptr<PublicationManager> publicationManager;
     const std::string globalAddress;
-    ADD_LOGGER(CapabilitiesRegistrar);
+    ADD_LOGGER(CapabilitiesRegistrar)
 };
 
 } // namespace joynr

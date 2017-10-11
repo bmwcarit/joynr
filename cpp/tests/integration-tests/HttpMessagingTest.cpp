@@ -25,7 +25,7 @@ using namespace joynr;
 
 class HttpMessagingTest : public AbstractMessagingTest {
 public:
-    ADD_LOGGER(HttpMessagingTest);
+    ADD_LOGGER(HttpMessagingTest)
     HttpMessagingTest() :
         receiverChannelId("receiverChannelId"),
         isLocalMessage(true)
@@ -47,8 +47,6 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingTest);
 };
-
-INIT_LOGGER(HttpMessagingTest);
 
 TEST_F(HttpMessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager)
 {

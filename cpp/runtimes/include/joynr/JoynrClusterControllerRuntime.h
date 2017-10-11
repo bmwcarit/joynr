@@ -183,7 +183,7 @@ protected:
     bool doHttpMessaging;
     std::shared_ptr<WebSocketMessagingStubFactory> wsMessagingStubFactory;
 
-    ADD_LOGGER(JoynrClusterControllerRuntime);
+    ADD_LOGGER(JoynrClusterControllerRuntime)
 
 private:
     template <typename T>

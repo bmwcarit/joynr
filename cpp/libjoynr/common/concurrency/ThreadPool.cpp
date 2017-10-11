@@ -27,8 +27,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(ThreadPool);
-
 ThreadPool::ThreadPool(const std::string& /*name*/, std::uint8_t numberOfThreads)
         : threads(),
           scheduler(),
@@ -113,17 +111,17 @@ void ThreadPool::execute(std::shared_ptr<Runnable> runnable)
 
 void ThreadPool::threadLifecycle(std::shared_ptr<ThreadPool> thisSharedPtr)
 {
-    JOYNR_LOG_TRACE(logger, "Thread enters lifecycle");
+    JOYNR_LOG_TRACE(logger(), "Thread enters lifecycle");
 
     while (thisSharedPtr->keepRunning) {
 
-        JOYNR_LOG_TRACE(logger, "Thread is waiting");
+        JOYNR_LOG_TRACE(logger(), "Thread is waiting");
         // Take a runnable
         std::shared_ptr<Runnable> runnable = scheduler.take();
 
         if (runnable) {
 
-            JOYNR_LOG_TRACE(logger, "Thread got runnable and will do work");
+            JOYNR_LOG_TRACE(logger(), "Thread got runnable and will do work");
 
             // Add runnable to the queue of currently running context
             {
@@ -137,7 +135,7 @@ void ThreadPool::threadLifecycle(std::shared_ptr<ThreadPool> thisSharedPtr)
             // Run the runnable
             runnable->run();
 
-            JOYNR_LOG_TRACE(logger, "Thread finished work");
+            JOYNR_LOG_TRACE(logger(), "Thread finished work");
 
             {
                 std::lock_guard<std::mutex> lock(thisSharedPtr->mutex);
@@ -146,7 +144,7 @@ void ThreadPool::threadLifecycle(std::shared_ptr<ThreadPool> thisSharedPtr)
         }
     }
 
-    JOYNR_LOG_TRACE(logger, "Thread leaves lifecycle");
+    JOYNR_LOG_TRACE(logger(), "Thread leaves lifecycle");
 }
 
 } // namespace joynr

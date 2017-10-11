@@ -84,7 +84,7 @@ private:
 
     std::shared_ptr<MosquittoConnection> mosquittoConnection;
 
-    ADD_LOGGER(MqttReceiver);
+    ADD_LOGGER(MqttReceiver)
 };
 
 } // namespace joynr

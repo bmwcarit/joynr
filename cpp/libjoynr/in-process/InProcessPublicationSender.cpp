@@ -29,8 +29,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(InProcessPublicationSender);
-
 InProcessPublicationSender::InProcessPublicationSender(
         std::shared_ptr<ISubscriptionManager> subscriptionManager)
         : subscriptionManager(std::move(subscriptionManager))
@@ -54,13 +52,13 @@ void InProcessPublicationSender::sendSubscriptionPublication(
       */
 
     const std::string& subscriptionId = subscriptionPublication.getSubscriptionId();
-    JOYNR_LOG_DEBUG(logger, "Sending publication. id={}", subscriptionId);
+    JOYNR_LOG_DEBUG(logger(), "Sending publication. id={}", subscriptionId);
     assert(subscriptionManager != nullptr);
     subscriptionManager->touchSubscriptionState(subscriptionId);
     std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);
     if (!callback) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Dropping subscription publication for non/no more existing subscription "
                         "with id={}",
                         subscriptionId);
@@ -82,13 +80,13 @@ void InProcessPublicationSender::sendSubscriptionReply(const std::string& sender
     std::ignore = qos;
 
     const std::string& subscriptionId = subscriptionReply.getSubscriptionId();
-    JOYNR_LOG_DEBUG(logger, "Sending publication. id={}", subscriptionId);
+    JOYNR_LOG_DEBUG(logger(), "Sending publication. id={}", subscriptionId);
     assert(subscriptionManager != nullptr);
     std::shared_ptr<ISubscriptionCallback> callback =
             subscriptionManager->getSubscriptionCallback(subscriptionId);
     if (!callback) {
         JOYNR_LOG_ERROR(
-                logger,
+                logger(),
                 "Dropping subscription reply for non/no more existing subscription with id={}",
                 subscriptionId);
         return;

@@ -144,7 +144,7 @@ public:
     }
 
 protected:
-    ADD_LOGGER(MutableMessageFactoryTest);
+    ADD_LOGGER(MutableMessageFactoryTest)
     MutableMessageFactory messageFactory;
     std::string senderID;
     std::string receiverID;
@@ -156,8 +156,6 @@ protected:
     Reply reply;
     SubscriptionPublication subscriptionPublication;
 };
-
-INIT_LOGGER(MutableMessageFactoryTest);
 
 TEST_F(MutableMessageFactoryTest, createRequest_withContentType)
 {
@@ -177,12 +175,12 @@ TEST_F(MutableMessageFactoryTest, createRequest)
     EXPECT_NEAR(expectedExpiryDate.time_since_epoch().count(),
                 expiryDate.time_since_epoch().count(),
                 100.);
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "expiryDate: {} [{}]",
                     DispatcherUtils::convertAbsoluteTimeToTtlString(expiryDate),
                     std::chrono::duration_cast<std::chrono::milliseconds>(
                             expiryDate.time_since_epoch()).count());
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "expectedExpiryDate: {}  [{}]",
                     DispatcherUtils::convertAbsoluteTimeToTtlString(expectedExpiryDate),
                     std::chrono::duration_cast<std::chrono::milliseconds>(

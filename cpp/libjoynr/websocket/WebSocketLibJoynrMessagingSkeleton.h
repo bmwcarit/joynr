@@ -53,7 +53,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketLibJoynrMessagingSkeleton);
-    ADD_LOGGER(WebSocketLibJoynrMessagingSkeleton);
+    ADD_LOGGER(WebSocketLibJoynrMessagingSkeleton)
 
     std::weak_ptr<IMessageRouter> messageRouter;
 };

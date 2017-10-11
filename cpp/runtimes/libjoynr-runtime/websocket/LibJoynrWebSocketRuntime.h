@@ -58,7 +58,7 @@ private:
     WebSocketSettings wsSettings;
     std::shared_ptr<IWebSocketPpClient> websocket;
     std::string initializationMsg;
-    ADD_LOGGER(LibJoynrWebSocketRuntime);
+    ADD_LOGGER(LibJoynrWebSocketRuntime)
 
     friend class JoynrRuntime;
 };

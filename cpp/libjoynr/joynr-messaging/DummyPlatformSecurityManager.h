@@ -39,7 +39,7 @@ public:
     std::string decrypt(const std::string& encryptedBytes) override;
 
 private:
-    ADD_LOGGER(DummyPlatformSecurityManager);
+    ADD_LOGGER(DummyPlatformSecurityManager)
 };
 
 } // namespace joynr

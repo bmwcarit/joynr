@@ -23,8 +23,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(InProcessConnectorFactory);
-
 InProcessConnectorFactory::InProcessConnectorFactory(
         std::weak_ptr<ISubscriptionManager> subscriptionManager,
         std::weak_ptr<PublicationManager> publicationManager,

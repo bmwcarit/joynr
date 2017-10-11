@@ -88,7 +88,6 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 «getNamespaceStarter(francaIntf)»
 
 «val className = interfaceName + "InProcessConnector"»
-INIT_LOGGER(«className»);
 
 «className»::«className»(
 			std::weak_ptr<joynr::ISubscriptionManager> subscriptionManager,
@@ -199,7 +198,7 @@ INIT_LOGGER(«className»);
 					};
 
 			//see header for more information
-			JOYNR_LOG_ERROR(logger, "#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
+			JOYNR_LOG_ERROR(logger(), "#### WARNING ##### «interfaceName»InProcessConnector::«setAttributeName»(Future) is synchronous.");
 			«francaIntf.interfaceCaller»->«setAttributeName»(«attributeName», std::move(onSuccessWrapper), std::move(onErrorWrapper));
 			return future;
 		}
@@ -253,17 +252,17 @@ INIT_LOGGER(«className»);
 				std::ignore = subscriptionQos;
 				std::ignore = subscriptionRequest;
 				// TODO support enum return values in C++ client
-				JOYNR_LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
+				JOYNR_LOG_FATAL(logger(), "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
 				// Visual C++ requires a return value
 				return std::make_shared<Future<std::string>>();
 			«ELSE»
-				JOYNR_LOG_TRACE(logger, "Subscribing to «attributeName».");
+				JOYNR_LOG_TRACE(logger(), "Subscribing to «attributeName».");
 				std::string attributeName("«attributeName»");
 				auto subscriptionManagerSharedPtr = subscriptionManager.lock();
 				auto future = std::make_shared<Future<std::string>>();
 				if (!subscriptionManagerSharedPtr) {
-					JOYNR_LOG_FATAL(logger, "Subscribing to attribute name «interfaceName».«attributeName» failed, because SubscriptionManager is not available");
+					JOYNR_LOG_FATAL(logger(), "Subscribing to attribute name «interfaceName».«attributeName» failed, because SubscriptionManager is not available");
 					return future;
 				}
 				auto subscriptionCallback = std::make_shared<
@@ -275,7 +274,7 @@ INIT_LOGGER(«className»);
 						subscriptionListener,
 						subscriptionQos,
 						subscriptionRequest);
-				JOYNR_LOG_TRACE(logger, "Registered subscription: {}", subscriptionRequest.toString());
+				JOYNR_LOG_TRACE(logger(), "Registered subscription: {}", subscriptionRequest.toString());
 				assert(address);
 				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(caller);
@@ -297,7 +296,7 @@ INIT_LOGGER(«className»);
 						publicationManagerSharedPtr->add(proxyParticipantId, providerParticipantId, caller, subscriptionRequest, inProcessPublicationSender);
 					}
 				} else {
-					JOYNR_LOG_FATAL(logger, "Subscribing to attribute name «interfaceName».«attributeName» failed, because PublicationManager is not available");
+					JOYNR_LOG_FATAL(logger(), "Subscribing to attribute name «interfaceName».«attributeName» failed, because PublicationManager is not available");
 					assert(false);
 				}
 				return future;
@@ -308,24 +307,24 @@ INIT_LOGGER(«className»);
 			«IF isEnum(attribute.type)»
 				std::ignore = subscriptionId;
 				// TODO support enum return values in C++ client
-				JOYNR_LOG_FATAL(logger, "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
+				JOYNR_LOG_FATAL(logger(), "enum return values are currently not supported in C++ client (attribute name: «interfaceName».«attributeName»)");
 				assert(false);
 			«ELSE»
-				JOYNR_LOG_TRACE(logger, "Unsubscribing. Id={}", subscriptionId);
+				JOYNR_LOG_TRACE(logger(), "Unsubscribing. Id={}", subscriptionId);
 				auto publicationManagerSharedPtr = publicationManager.lock();
 				if (publicationManagerSharedPtr) {
-					JOYNR_LOG_TRACE(logger, "Stopping publications by publication manager.");
+					JOYNR_LOG_TRACE(logger(), "Stopping publications by publication manager.");
 					publicationManagerSharedPtr->stopPublication(subscriptionId);
 				} else {
-					JOYNR_LOG_FATAL(logger, "Unsubscribing from attribute name: «interfaceName».«attributeName» failed, because PublicationManager is not available");
+					JOYNR_LOG_FATAL(logger(), "Unsubscribing from attribute name: «interfaceName».«attributeName» failed, because PublicationManager is not available");
 					assert(false);
 				}
 				auto subscriptionManagerSharedPtr = subscriptionManager.lock();
 				if (subscriptionManagerSharedPtr) {
-					JOYNR_LOG_TRACE(logger, "Unregistering attribute subscription.");
+					JOYNR_LOG_TRACE(logger(), "Unregistering attribute subscription.");
 					subscriptionManagerSharedPtr->unregisterSubscription(subscriptionId);
 				} else {
-					JOYNR_LOG_FATAL(logger, "Unregistering from attribute name: «interfaceName».«attributeName» failed, because SubscriptionManager is not available.");
+					JOYNR_LOG_FATAL(logger(), "Unregistering from attribute name: «interfaceName».«attributeName» failed, because SubscriptionManager is not available.");
 					assert(false);
 				}
 			«ENDIF»
@@ -405,10 +404,10 @@ INIT_LOGGER(«className»);
 	«val broadcastName = broadcast.joynrName»
 
 	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
-		JOYNR_LOG_TRACE(logger, "Subscribing to «broadcastName».");
+		JOYNR_LOG_TRACE(logger(), "Subscribing to «broadcastName».");
 		auto subscriptionManagerSharedPtr = subscriptionManager.lock();
 		if (!subscriptionManagerSharedPtr) {
-			JOYNR_LOG_FATAL(logger, "Subscribing to «broadcastName» failed because SubscriptionManager is not available.");
+			JOYNR_LOG_FATAL(logger(), "Subscribing to «broadcastName» failed because SubscriptionManager is not available.");
 			assert(false);
 		}
 		«IF broadcast.selective»
@@ -459,11 +458,11 @@ INIT_LOGGER(«className»);
 				const std::vector<std::string>& partitions
 			«ENDIF»
 	) {
-		JOYNR_LOG_TRACE(logger, "Subscribing to «broadcastName».");
+		JOYNR_LOG_TRACE(logger(), "Subscribing to «broadcastName».");
 		std::string broadcastName("«broadcastName»");
 		auto subscriptionManagerSharedPtr = subscriptionManager.lock();
 		if (!subscriptionManagerSharedPtr) {
-			JOYNR_LOG_FATAL(logger, "Subscribing to selective broadcast name «interfaceName».«broadcastName» failed, because SubscriptionManager is not available");
+			JOYNR_LOG_FATAL(logger(), "Subscribing to selective broadcast name «interfaceName».«broadcastName» failed, because SubscriptionManager is not available");
 			assert(false);
 		}
 
@@ -480,7 +479,7 @@ INIT_LOGGER(«className»);
 						subscriptionQos,
 						subscriptionRequest);
 			JOYNR_LOG_TRACE(
-					logger,
+					logger(),
 					"Registered broadcast subscription: {}",
 					subscriptionRequest.toString());
 			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
@@ -509,7 +508,7 @@ INIT_LOGGER(«className»);
 								inProcessPublicationSender);
 				}
 			} else {
-				JOYNR_LOG_FATAL(logger, "Subscribing to selective broadcast name «interfaceName».«broadcastName» failed, because PublicationManager is not available");
+				JOYNR_LOG_FATAL(logger(), "Subscribing to selective broadcast name «interfaceName».«broadcastName» failed, because PublicationManager is not available");
 				assert(false);
 			}
 		«ELSE»
@@ -523,7 +522,7 @@ INIT_LOGGER(«className»);
 							auto publicationManagerSharedPtr = publicationManagerWeakPtr.lock();
 							if (publicationManagerSharedPtr) {
 								JOYNR_LOG_TRACE(
-										logger,
+										logger(),
 										"Registered broadcast subscription: {}",
 										subscriptionRequest->toString());
 								publicationManagerSharedPtr->add(
@@ -533,7 +532,7 @@ INIT_LOGGER(«className»);
 											inProcessPublicationSender);
 							} else {
 								JOYNR_LOG_FATAL(
-										logger,
+										logger(),
 										"Registering broadcast subscription {} failed, because PublicationManager is not available",
 										subscriptionRequest->toString());
 							}
@@ -547,7 +546,7 @@ INIT_LOGGER(«className»);
 								" «broadcastName»." \
 								" Error from subscription manager: "
 								+ error.getMessage();
-						JOYNR_LOG_ERROR(logger, message);
+						JOYNR_LOG_ERROR(logger(), message);
 						exceptions::SubscriptionException subscriptionException(
 								message,
 								subscriptionId);
@@ -568,7 +567,7 @@ INIT_LOGGER(«className»);
 								std::move(onSuccess),
 								std::move(onError));
 			} else {
-				JOYNR_LOG_FATAL(logger, "Subscribing to broadcast name «interfaceName».«broadcastName» failed, because PublicationManager is not available");
+				JOYNR_LOG_FATAL(logger(), "Subscribing to broadcast name «interfaceName».«broadcastName» failed, because PublicationManager is not available");
 				assert(false);
 			}
 		«ENDIF»
@@ -576,21 +575,21 @@ INIT_LOGGER(«className»);
 	}
 
 	«produceUnsubscribeFromBroadcastSignature(broadcast, className)» {
-		JOYNR_LOG_TRACE(logger, "Unsubscribing broadcast. Id={}", subscriptionId);
+		JOYNR_LOG_TRACE(logger(), "Unsubscribing broadcast. Id={}", subscriptionId);
 		auto publicationManagerSharedPtr = publicationManager.lock();
 		if (publicationManagerSharedPtr) {
-			JOYNR_LOG_TRACE(logger, "Stopping publications by publication manager.");
+			JOYNR_LOG_TRACE(logger(), "Stopping publications by publication manager.");
 			publicationManagerSharedPtr->stopPublication(subscriptionId);
 		} else {
-			JOYNR_LOG_FATAL(logger, "Unsubscribing from broadcast Id={} failed because PublicationManager is not available", subscriptionId);
+			JOYNR_LOG_FATAL(logger(), "Unsubscribing from broadcast Id={} failed because PublicationManager is not available", subscriptionId);
 			assert(false);
 		}
 		auto subscriptionManagerSharedPtr = subscriptionManager.lock();
 		if (subscriptionManagerSharedPtr) {
-			JOYNR_LOG_TRACE(logger, "Unregistering broadcast subscription.");
+			JOYNR_LOG_TRACE(logger(), "Unregistering broadcast subscription.");
 			subscriptionManagerSharedPtr->unregisterSubscription(subscriptionId);
 		} else {
-			JOYNR_LOG_FATAL(logger, "Unsubscribing from broadcast Id={} failed because SubscriptionManager is not available", subscriptionId);
+			JOYNR_LOG_FATAL(logger(), "Unsubscribing from broadcast Id={} failed because SubscriptionManager is not available", subscriptionId);
 			assert(false);
 		}
 	}

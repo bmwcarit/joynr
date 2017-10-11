@@ -50,15 +50,13 @@ public:
     }
 
 protected:
-    ADD_LOGGER(WebSocketMessagingStubFactoryTest);
+    ADD_LOGGER(WebSocketMessagingStubFactoryTest)
     joynr::system::RoutingTypes::WebSocketAddress webSocketServerAddress;
     joynr::system::RoutingTypes::WebSocketClientAddress webSocketClientAddress;
     joynr::system::RoutingTypes::ChannelAddress channelAddress;
     joynr::system::RoutingTypes::CommonApiDbusAddress commonApiDbusAddress;
     joynr::system::RoutingTypes::BrowserAddress browserAddress;
 };
-
-INIT_LOGGER(WebSocketMessagingStubFactoryTest);
 
 TEST_F(WebSocketMessagingStubFactoryTest, canCreateWebSocketAddressses) {
     WebSocketMessagingStubFactory factory;

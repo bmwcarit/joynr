@@ -30,8 +30,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(KeywordArbitrationStrategyFunction);
-
 types::DiscoveryEntryWithMetaInfo KeywordArbitrationStrategyFunction::select(
         const std::map<std::string, types::CustomParameter> customParameters,
         const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const
@@ -45,19 +43,19 @@ types::DiscoveryEntryWithMetaInfo KeywordArbitrationStrategyFunction::select(
     if (keyword.empty()) {
         std::string errorMsg;
         errorMsg = "The Keyword is not set.";
-        JOYNR_LOG_WARN(logger, errorMsg);
+        JOYNR_LOG_WARN(logger(), errorMsg);
         throw exceptions::DiscoveryException(errorMsg);
     }
     for (const auto& discoveryEntry : discoveryEntries) {
         const types::ProviderQos& providerQos = discoveryEntry.getQos();
-        JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
+        JOYNR_LOG_TRACE(logger(), "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
 
         // Search the providerQos.getCustomParameters() for the keyword field
         std::vector<types::CustomParameter> qosParameters = providerQos.getCustomParameters();
         for (types::CustomParameter& parameter : qosParameters) {
             if (parameter.getName() == DiscoveryQos::KEYWORD_PARAMETER() &&
                 keyword == parameter.getValue()) {
-                JOYNR_LOG_TRACE(logger,
+                JOYNR_LOG_TRACE(logger(),
                                 "setting selectedParticipantId to {}",
                                 discoveryEntry.getParticipantId());
                 return discoveryEntry;
@@ -68,7 +66,7 @@ types::DiscoveryEntryWithMetaInfo KeywordArbitrationStrategyFunction::select(
     std::string errorMsg;
     errorMsg = "There was more than one entries in capabilitiesEntries, but none of the "
                "compatible entries had the correct keyword.";
-    JOYNR_LOG_WARN(logger, errorMsg);
+    JOYNR_LOG_WARN(logger(), errorMsg);
     throw exceptions::DiscoveryException(errorMsg);
 }
 

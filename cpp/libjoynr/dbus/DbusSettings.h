@@ -57,7 +57,7 @@ private:
     void operator=(const DbusSettings& other);
 
     Settings& settings;
-    ADD_LOGGER(DbusSettings);
+    ADD_LOGGER(DbusSettings)
     void checkSettings() const;
 };
 

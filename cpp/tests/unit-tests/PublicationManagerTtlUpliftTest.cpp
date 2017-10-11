@@ -137,10 +137,8 @@ protected:
     std::int64_t toleranceMs;
     std::shared_ptr<OnChangeSubscriptionQos> onChangeSubscriptionQos;
 
-    ADD_LOGGER(PublicationManagerTtlUpliftTest);
+    ADD_LOGGER(PublicationManagerTtlUpliftTest)
 };
-
-INIT_LOGGER(PublicationManagerTtlUpliftTest);
 
 void PublicationManagerTtlUpliftTest::testSubscriptionWithoutTtlUplift(
                                       const std::string& proxyId,
@@ -164,7 +162,7 @@ void PublicationManagerTtlUpliftTest::testSubscriptionWithoutTtlUplift(
                 sendSubscriptionReply(
                     Eq(providerId), // sender participant ID
                     Eq(proxyId), // receiver participant ID
-                    messagingQosWithTtl(expectedSubscriptionReplyTtlMs, toleranceMs, logger), // messaging QoS
+                    messagingQosWithTtl(expectedSubscriptionReplyTtlMs, toleranceMs, logger()), // messaging QoS
                     _ // subscription reply
                 )
     )
@@ -176,14 +174,14 @@ void PublicationManagerTtlUpliftTest::testSubscriptionWithoutTtlUplift(
                 sendSubscriptionPublicationMock(
                     Eq(providerId), // sender participant ID
                     Eq(proxyId), // receiver participant ID
-                    messagingQosWithTtl(expectedPublicationTtlMs, 0l, logger), // messaging QoS
+                    messagingQosWithTtl(expectedPublicationTtlMs, 0l, logger()), // messaging QoS
                     _ // subscription publication
                 )
     )
             .Times(2)
             .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-    JOYNR_LOG_DEBUG(logger, "adding request");
+    JOYNR_LOG_DEBUG(logger(), "adding request");
 
     if (isBroadcastSubscription) {
         publicationManager->add(proxyId, providerId, requestCaller, static_cast<BroadcastSubscriptionRequest&>(subscriptionRequest), mockPublicationSender);
@@ -237,7 +235,7 @@ void PublicationManagerTtlUpliftTest::expectAdditionalSubscriptionPublication(co
                 sendSubscriptionPublicationMock(
                     Eq(providerId), // sender participant ID
                     Eq(proxyId), // receiver participant ID
-                    messagingQosWithTtl(expectedPublicationTtlMs, 0l, logger), // messaging QoS
+                    messagingQosWithTtl(expectedPublicationTtlMs, 0l, logger()), // messaging QoS
                     _ // subscription publication
                 )
     )

@@ -37,8 +37,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(CapabilitiesClient);
-
 // The capabilitiesProxyBuilder will use as MessagingQoS the one provided by the CapabilitiesClient
 // user. If nothing is provided the default MessageQoS::ttl will be used.
 //

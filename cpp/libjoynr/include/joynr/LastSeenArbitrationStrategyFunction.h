@@ -53,7 +53,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LastSeenArbitrationStrategyFunction);
-    ADD_LOGGER(LastSeenArbitrationStrategyFunction);
+    ADD_LOGGER(LastSeenArbitrationStrategyFunction)
 };
 
 } // namespace joynr

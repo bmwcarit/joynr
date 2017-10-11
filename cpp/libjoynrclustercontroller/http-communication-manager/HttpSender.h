@@ -60,7 +60,7 @@ private:
     const BrokerUrl brokerUrl;
     const std::chrono::milliseconds maxAttemptTtl;
     const std::chrono::milliseconds messageSendRetryInterval;
-    ADD_LOGGER(HttpSender);
+    ADD_LOGGER(HttpSender)
 
     HttpResult buildRequestAndSend(const std::string& data,
                                    const std::string& url,

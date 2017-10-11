@@ -26,8 +26,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(SingleThreadedDelayedScheduler);
-
 SingleThreadedDelayedScheduler::SingleThreadedDelayedScheduler(
         const std::string& threadName,
         boost::asio::io_service& ioService,
@@ -46,13 +44,13 @@ SingleThreadedDelayedScheduler::SingleThreadedDelayedScheduler(
 
 SingleThreadedDelayedScheduler::~SingleThreadedDelayedScheduler()
 {
-    JOYNR_LOG_TRACE(logger, "Dtor called");
+    JOYNR_LOG_TRACE(logger(), "Dtor called");
     shutdown();
 }
 
 void SingleThreadedDelayedScheduler::shutdown()
 {
-    JOYNR_LOG_TRACE(logger, "shutdown() called");
+    JOYNR_LOG_TRACE(logger(), "shutdown() called");
 
     keepRunning = false;
 
@@ -72,16 +70,16 @@ void SingleThreadedDelayedScheduler::shutdown()
 
 void SingleThreadedDelayedScheduler::run()
 {
-    JOYNR_LOG_TRACE(logger, "Starting loop");
+    JOYNR_LOG_TRACE(logger(), "Starting loop");
 
     while (keepRunning) {
-        JOYNR_LOG_TRACE(logger, "Waiting for work");
+        JOYNR_LOG_TRACE(logger(), "Waiting for work");
 
         std::shared_ptr<Runnable> work = queue.take();
 
         if (work != nullptr) {
 
-            JOYNR_LOG_TRACE(logger, "Got work. Executing now.");
+            JOYNR_LOG_TRACE(logger(), "Got work. Executing now.");
             {
                 std::lock_guard<std::mutex> lock(mutex);
                 if (!keepRunning) {
@@ -98,7 +96,7 @@ void SingleThreadedDelayedScheduler::run()
                 currentlyRunning = nullptr;
             }
 
-            JOYNR_LOG_TRACE(logger, "Finished work");
+            JOYNR_LOG_TRACE(logger(), "Finished work");
 
             // if (work->isDeleteOnExit()) {
             //    delete work;
@@ -106,6 +104,6 @@ void SingleThreadedDelayedScheduler::run()
         }
     }
 
-    JOYNR_LOG_TRACE(logger, "End of loop. Terminating");
+    JOYNR_LOG_TRACE(logger(), "End of loop. Terminating");
 }
 } // namespace joynr

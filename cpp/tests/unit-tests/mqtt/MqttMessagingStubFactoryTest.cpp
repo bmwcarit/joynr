@@ -47,7 +47,7 @@ public:
     }
 
 protected:
-    ADD_LOGGER(MqttMessagingStubFactoryTest);
+    ADD_LOGGER(MqttMessagingStubFactoryTest)
     joynr::system::RoutingTypes::MqttAddress mqttAddress;
     joynr::system::RoutingTypes::WebSocketAddress webSocketServerAddress;
     joynr::system::RoutingTypes::WebSocketClientAddress webSocketClientAddress;
@@ -55,8 +55,6 @@ protected:
     joynr::system::RoutingTypes::CommonApiDbusAddress commonApiDbusAddress;
     joynr::system::RoutingTypes::BrowserAddress browserAddress;
 };
-
-INIT_LOGGER(MqttMessagingStubFactoryTest);
 
 TEST_F(MqttMessagingStubFactoryTest, canCreateMqttAddressses) {
     auto mockMessageSender = std::make_shared<MockTransportMessageSender>();

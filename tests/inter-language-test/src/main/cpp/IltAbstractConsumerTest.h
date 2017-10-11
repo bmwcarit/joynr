@@ -41,7 +41,7 @@ public:
     static void SetUpTestCase()
     {
         // Get the provider domain
-        JOYNR_LOG_INFO(logger, "Creating proxy for provider on domain {}", providerDomain);
+        JOYNR_LOG_INFO(logger(), "Creating proxy for provider on domain {}", providerDomain);
 
         // Get the current program directory
         std::string dir(
@@ -72,9 +72,9 @@ public:
                                      ->setDiscoveryQos(discoveryQos)
                                      ->build();
 
-        JOYNR_LOG_INFO(logger, "***********************");
-        JOYNR_LOG_INFO(logger, "Proxy built.");
-        JOYNR_LOG_INFO(logger, "***********************");
+        JOYNR_LOG_INFO(logger(), "***********************");
+        JOYNR_LOG_INFO(logger(), "Proxy built.");
+        JOYNR_LOG_INFO(logger(), "***********************");
     }
 
     static void TearDownTestCase()
@@ -106,7 +106,7 @@ protected:
     static const std::uint16_t subscriptionIdFutureTimeoutMs;
     static const std::chrono::milliseconds publicationTimeoutMs;
 
-    ADD_LOGGER(IltAbstractConsumerTest);
+    ADD_LOGGER(IltAbstractConsumerTest)
 
 public:
     IltAbstractConsumerTest() = default;
@@ -116,9 +116,6 @@ public:
         IltAbstractConsumerTest::programName = programName;
     }
 };
-
-template <typename T>
-INIT_LOGGER(IltAbstractConsumerTest<T>);
 
 template <typename T>
 std::shared_ptr<joynr::interlanguagetest::TestInterfaceProxy>

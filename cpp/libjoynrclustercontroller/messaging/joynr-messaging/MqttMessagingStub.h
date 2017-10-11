@@ -48,7 +48,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingStub);
     std::shared_ptr<ITransportMessageSender> messageSender;
     const system::RoutingTypes::MqttAddress destinationAddress;
-    ADD_LOGGER(MqttMessagingStub);
+    ADD_LOGGER(MqttMessagingStub)
 };
 
 } // namespace joynr

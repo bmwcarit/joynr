@@ -29,8 +29,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(QosArbitrationStrategyFunction);
-
 types::DiscoveryEntryWithMetaInfo QosArbitrationStrategyFunction::select(
         const std::map<std::string, types::CustomParameter> customParameters,
         const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const
@@ -41,11 +39,11 @@ types::DiscoveryEntryWithMetaInfo QosArbitrationStrategyFunction::select(
 
     for (auto it = discoveryEntries.cbegin(); it != discoveryEntries.cend(); ++it) {
         const types::ProviderQos& providerQos = it->getQos();
-        JOYNR_LOG_TRACE(logger, "Looping over discoveryEntry: {}", it->toString());
+        JOYNR_LOG_TRACE(logger(), "Looping over discoveryEntry: {}", it->toString());
 
         if (providerQos.getPriority() >= highestPriority) {
             selectedDiscoveryEntryIt = it;
-            JOYNR_LOG_TRACE(logger,
+            JOYNR_LOG_TRACE(logger(),
                             "setting selectedParticipantId to {}",
                             selectedDiscoveryEntryIt->getParticipantId());
             highestPriority = providerQos.getPriority();
@@ -56,7 +54,7 @@ types::DiscoveryEntryWithMetaInfo QosArbitrationStrategyFunction::select(
         std::stringstream errorMsg;
         errorMsg << "There was more than one entry in capabilitiesEntries, but none of the "
                     "compatible entries had a priority >= " << types::ProviderQos().getPriority();
-        JOYNR_LOG_WARN(logger, errorMsg.str());
+        JOYNR_LOG_WARN(logger(), errorMsg.str());
         throw exceptions::DiscoveryException(errorMsg.str());
     }
 

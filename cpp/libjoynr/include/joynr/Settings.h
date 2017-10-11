@@ -121,7 +121,7 @@ private:
                       bool overwrite);
 
     static boost::property_tree::path createPath(const std::string& path);
-    ADD_LOGGER(Settings);
+    ADD_LOGGER(Settings)
 };
 
 //---- Implementation ----------------------------------------------------------

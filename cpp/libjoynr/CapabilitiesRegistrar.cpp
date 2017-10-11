@@ -22,8 +22,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(CapabilitiesRegistrar);
-
 CapabilitiesRegistrar::CapabilitiesRegistrar(
         std::vector<std::shared_ptr<IDispatcher>> dispatcherList,
         system::IDiscoveryAsync& discoveryProxy,

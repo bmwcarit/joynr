@@ -591,7 +591,7 @@ public:
     std::set<std::pair<std::string, std::string>> getUniqueDomainInterfaceCombinations() const;
 
 private:
-    ADD_LOGGER(LocalDomainAccessStore);
+    ADD_LOGGER(LocalDomainAccessStore)
     void persistToFile() const;
     bool endsWithWildcard(const std::string& value) const;
 

@@ -32,8 +32,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(MqttSender);
-
 MqttSender::MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection,
                        const MessagingSettings& settings)
         : mosquittoConnection(mosquittoConnection),
@@ -47,18 +45,18 @@ void MqttSender::sendMessage(
         std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    JOYNR_LOG_TRACE(logger, "sendMessage: {}", message->toLogMessage());
+    JOYNR_LOG_TRACE(logger(), "sendMessage: {}", message->toLogMessage());
 
     auto mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destinationAddress);
     if (mqttAddress == nullptr) {
-        JOYNR_LOG_DEBUG(logger, "Invalid destination address type provided");
+        JOYNR_LOG_DEBUG(logger(), "Invalid destination address type provided");
         onFailure(exceptions::JoynrRuntimeException("Invalid destination address type provided"));
         return;
     }
 
     if (!mosquittoConnection->isSubscribedToChannelTopic()) {
         const std::string msg = "MqttSender is not connected, delaying message";
-        JOYNR_LOG_DEBUG(logger, msg);
+        JOYNR_LOG_DEBUG(logger(), msg);
         onFailure(exceptions::JoynrDelayMessageException(std::chrono::seconds(2), msg));
         return;
     }
@@ -87,7 +85,7 @@ void MqttSender::sendMessage(
         errorMsg << "Message size MQTT Publish failed: maximum allowed message size of "
                  << mqttMaxMessageSizeBytes << " bytes exceeded, actual size is "
                  << rawMessage.size() << " bytes";
-        JOYNR_LOG_DEBUG(logger, errorMsg.str());
+        JOYNR_LOG_DEBUG(logger(), errorMsg.str());
         onFailure(exceptions::JoynrMessageNotSentException(errorMsg.str()));
         return;
     }

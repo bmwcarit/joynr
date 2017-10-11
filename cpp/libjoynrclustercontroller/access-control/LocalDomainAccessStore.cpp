@@ -29,8 +29,6 @@ namespace joynr
 {
 using namespace infrastructure::DacTypes;
 
-INIT_LOGGER(LocalDomainAccessStore);
-
 LocalDomainAccessStore::LocalDomainAccessStore() : persistenceFileName()
 {
 }
@@ -47,9 +45,9 @@ LocalDomainAccessStore::LocalDomainAccessStore(std::string fileName)
         joynr::serializer::deserializeFromJson(
                 *this, joynr::util::loadStringFromFile(persistenceFileName));
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger, ex.what());
+        JOYNR_LOG_ERROR(logger(), ex.what());
     } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Could not deserialize persisted access control entries from {}: {}",
                         persistenceFileName,
                         ex.what());
@@ -85,7 +83,7 @@ std::set<std::pair<std::string, std::string>> LocalDomainAccessStore::
 
 std::vector<DomainRoleEntry> LocalDomainAccessStore::getDomainRoles(const std::string& userId)
 {
-    JOYNR_LOG_TRACE(logger, "execute: entering getDomainRoleEntries with userId {}", userId);
+    JOYNR_LOG_TRACE(logger(), "execute: entering getDomainRoleEntries with userId {}", userId);
 
     std::vector<DomainRoleEntry> domainRoles;
     boost::optional<DomainRoleEntry> masterDre = getDomainRole(userId, Role::MASTER);
@@ -112,14 +110,14 @@ boost::optional<DomainRoleEntry> LocalDomainAccessStore::getDomainRole(const std
 bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntry)
 {
     JOYNR_LOG_TRACE(
-            logger, "execute: entering updateDomainRole with uId {}", updatedEntry.getUid());
+            logger(), "execute: entering updateDomainRole with uId {}", updatedEntry.getUid());
 
     return insertOrReplace(domainRoleTable, updatedEntry);
 }
 
 bool LocalDomainAccessStore::removeDomainRole(const std::string& userId, Role::Enum role)
 {
-    JOYNR_LOG_TRACE(logger, "execute: entering removeDomainRoleEntry with uId {}", userId);
+    JOYNR_LOG_TRACE(logger(), "execute: entering removeDomainRoleEntry with uId {}", userId);
     return removeFromTable(domainRoleTable, userId, role);
 }
 
@@ -150,7 +148,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getEditableMasterA
         const std::string& userId)
 {
     JOYNR_LOG_TRACE(
-            logger, "execute: entering getEditableMasterAccessControlEntry with uId {}", userId);
+            logger(), "execute: entering getEditableMasterAccessControlEntry with uId {}", userId);
 
     return getEntries(masterAccessTable, userId, Role::MASTER);
 }
@@ -169,7 +167,7 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAcces
 bool LocalDomainAccessStore::updateMasterAccessControlEntry(
         const MasterAccessControlEntry& updatedMasterAce)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "execute: entering updateMasterAccessControlEntry with uId={} domain={} "
                     "interfaceName={}",
                     updatedMasterAce.getUid(),
@@ -215,7 +213,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
         getEditableMediatorAccessControlEntries(const std::string& userId)
 {
-    JOYNR_LOG_TRACE(logger, "execute: entering getEditableMediatorAces with uId {}", userId);
+    JOYNR_LOG_TRACE(logger(), "execute: entering getEditableMediatorAces with uId {}", userId);
 
     // Get all the Mediator ACEs for the domains where the user is master
     return convertMediator(getEntries(mediatorAccessTable, userId, Role::MASTER));
@@ -236,7 +234,7 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAcc
 bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
         const MasterAccessControlEntry& updatedMediatorAce)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "execute: entering updateMediatorAccessControlEntry with uId={} domain={} "
                     "interfaceName={}",
                     updatedMediatorAce.getUid(),
@@ -266,7 +264,7 @@ bool LocalDomainAccessStore::removeMediatorAccessControlEntry(const std::string&
                                                               const std::string& interfaceName,
                                                               const std::string& operation)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "execute: entering removeMediatorAce with userId: {}, domain: {}, "
                     "interfaceName: {}, operation: {}",
                     userId,
@@ -302,7 +300,7 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessContr
 std::vector<OwnerAccessControlEntry> LocalDomainAccessStore::getEditableOwnerAccessControlEntries(
         const std::string& userId)
 {
-    JOYNR_LOG_TRACE(logger, "execute: entering getEditableOwnerAces with uId {}", userId);
+    JOYNR_LOG_TRACE(logger(), "execute: entering getEditableOwnerAces with uId {}", userId);
 
     // Get all the Owner ACEs for the domains owned by the user
     return getEntries(ownerAccessTable, userId, Role::OWNER);
@@ -322,7 +320,7 @@ boost::optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessC
 bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
         const OwnerAccessControlEntry& updatedOwnerAce)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "execute: entering updateOwnerAccessControlEntry with uId={} domain={} "
                     "interfaceName={}",
                     updatedOwnerAce.getUid(),
@@ -356,7 +354,7 @@ bool LocalDomainAccessStore::removeOwnerAccessControlEntry(const std::string& us
                                                            const std::string& interfaceName,
                                                            const std::string& operation)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "execute: entering removeOwnerAce with userId: {}, domain: {}, interface: {}, "
                     "operation: {}",
                     userId,
@@ -375,15 +373,16 @@ std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomai
         getMasterRegistrationControlEntries(const std::string& uid) const
 {
     JOYNR_LOG_TRACE(
-            logger, "execute: entering getMasterRegistrationControlEntries with uid {}", uid);
+            logger(), "execute: entering getMasterRegistrationControlEntries with uid {}", uid);
     return getEqualRangeWithUidWildcard(masterRegistrationTable, uid);
 }
 
 std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomainAccessStore::
         getEditableMasterRegistrationControlEntries(const std::string& uid)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering getEditableMasterRegistrationControlEntry with uid {}", uid);
+    JOYNR_LOG_TRACE(logger(),
+                    "execute: entering getEditableMasterRegistrationControlEntry with uid {}",
+                    uid);
 
     return getEntries(masterRegistrationTable, uid, Role::MASTER);
 }
@@ -399,7 +398,7 @@ boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
 bool LocalDomainAccessStore::updateMasterRegistrationControlEntry(
         const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMasterRce)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "execute: entering updateMasterRegistrationControlEntry with uId={} domain={} "
                     "interfaceName={}",
                     updatedMasterRce.getUid(),
@@ -422,14 +421,14 @@ std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomai
         getMediatorRegistrationControlEntries(const std::string& uid)
 {
     JOYNR_LOG_TRACE(
-            logger, "execute: entering getMediatorRegistrationControlEntries with uid {}", uid);
+            logger(), "execute: entering getMediatorRegistrationControlEntries with uid {}", uid);
     return convertMediator(getEqualRangeWithUidWildcard(mediatorRegistrationTable, uid));
 }
 
 std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomainAccessStore::
         getEditableMediatorRegistrationControlEntries(const std::string& uid)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "execute: entering getEditableMeditatorRegistrationControlEntry with uid {}",
                     uid);
 
@@ -448,7 +447,7 @@ boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
 bool LocalDomainAccessStore::updateMediatorRegistrationControlEntry(
         const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMediatorRce)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "execute: entering updateMediatorRegistrationControlEntry with uId={} "
                     "domain={} interfaceName={}",
                     updatedMediatorRce.getUid(),
@@ -471,15 +470,16 @@ std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry> LocalDomain
         getOwnerRegistrationControlEntries(const std::string& uid)
 {
     JOYNR_LOG_TRACE(
-            logger, "execute: entering getOwnerRegistrationControlEntries with uid {}", uid);
+            logger(), "execute: entering getOwnerRegistrationControlEntries with uid {}", uid);
     return getEqualRangeWithUidWildcard(ownerRegistrationTable, uid);
 }
 
 std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry> LocalDomainAccessStore::
         getEditableOwnerRegistrationControlEntries(const std::string& uid)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering getEditableOwnerRegistrationControlEntry with uid {}", uid);
+    JOYNR_LOG_TRACE(logger(),
+                    "execute: entering getEditableOwnerRegistrationControlEntry with uid {}",
+                    uid);
 
     return getEntries(ownerRegistrationTable, uid, Role::OWNER);
 }
@@ -495,7 +495,7 @@ boost::optional<OwnerRegistrationControlEntry> LocalDomainAccessStore::
 bool LocalDomainAccessStore::updateOwnerRegistrationControlEntry(
         const infrastructure::DacTypes::OwnerRegistrationControlEntry& updatedOwnerRce)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "execute: entering updateOwnerRegistrationControlEntry with uId={} domain={} "
                     "interfaceName={}",
                     updatedOwnerRce.getUid(),
@@ -530,9 +530,9 @@ void LocalDomainAccessStore::persistToFile() const
         joynr::util::saveStringToFile(
                 persistenceFileName, joynr::serializer::serializeToJson(*this));
     } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger, "serializing to JSON failed: {}", ex.what());
+        JOYNR_LOG_ERROR(logger(), "serializing to JSON failed: {}", ex.what());
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger, ex.what());
+        JOYNR_LOG_ERROR(logger(), ex.what());
     }
 }
 

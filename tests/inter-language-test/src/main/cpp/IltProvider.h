@@ -336,7 +336,7 @@ private:
 
     std::int32_t attributeFireAndForget;
 
-    ADD_LOGGER(IltProvider);
+    ADD_LOGGER(IltProvider)
 };
 
 #endif

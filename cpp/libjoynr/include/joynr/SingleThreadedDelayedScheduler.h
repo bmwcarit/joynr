@@ -84,7 +84,7 @@ private:
 
 private:
     /*! Logger */
-    ADD_LOGGER(SingleThreadedDelayedScheduler);
+    ADD_LOGGER(SingleThreadedDelayedScheduler)
 
     /*! Flag signaling @ref Thread to keep running */
     std::atomic_bool keepRunning;

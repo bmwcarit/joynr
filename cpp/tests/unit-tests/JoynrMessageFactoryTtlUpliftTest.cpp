@@ -58,7 +58,7 @@ public:
     void checkMessageExpiryDate(const MutableMessage& message, const std::int64_t expectedTtl);
 
 protected:
-    ADD_LOGGER(JoynrMessageFactoryTtlUpliftTest);
+    ADD_LOGGER(JoynrMessageFactoryTtlUpliftTest)
     MutableMessageFactory messageFactory;
     std::string senderID;
     std::string receiverID;
@@ -70,8 +70,6 @@ protected:
     MessagingQos messagingQos;
     MutableMessageFactory factoryWithTtlUplift;
 };
-
-INIT_LOGGER(JoynrMessageFactoryTtlUpliftTest);
 
 void JoynrMessageFactoryTtlUpliftTest::checkMessageExpiryDate(const MutableMessage& message, const std::int64_t expectedTtl) {
     const std::int64_t tolerance = 50;

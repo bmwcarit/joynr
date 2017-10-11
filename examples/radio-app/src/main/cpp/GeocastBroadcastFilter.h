@@ -36,7 +36,7 @@ public:
             const vehicle::RadioNewStationDiscoveredBroadcastFilterParameters& filterParameters);
 
 private:
-    ADD_LOGGER(GeocastBroadcastFilter);
+    ADD_LOGGER(GeocastBroadcastFilter)
 };
 
 #endif // GEOCASTBROADCASTFILTER_H

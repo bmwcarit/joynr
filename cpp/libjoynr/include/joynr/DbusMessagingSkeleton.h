@@ -47,7 +47,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(DbusMessagingSkeleton);
     IMessaging& callBack;
-    ADD_LOGGER(DbusMessagingSkeleton);
+    ADD_LOGGER(DbusMessagingSkeleton)
 };
 
 } // namespace joynr

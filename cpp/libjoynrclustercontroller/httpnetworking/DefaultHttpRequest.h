@@ -50,7 +50,7 @@ private:
     curl_slist* headers;
 
     std::string content;
-    ADD_LOGGER(DefaultHttpRequest);
+    ADD_LOGGER(DefaultHttpRequest)
 };
 
 } // namespace joynr

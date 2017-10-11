@@ -89,7 +89,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MulticastReceiverDirectory);
-    ADD_LOGGER(MulticastReceiverDirectory);
+    ADD_LOGGER(MulticastReceiverDirectory)
 
     std::unordered_map<MulticastMatcher, std::unordered_set<std::string>, MulticastMatcherHash>
             multicastReceivers;

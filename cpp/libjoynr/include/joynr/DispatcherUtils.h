@@ -89,7 +89,7 @@ public:
      * @return current time in milliseconds as std::uint64_t
      */
     static std::uint64_t nowInMilliseconds();
-    ADD_LOGGER(DispatcherUtils);
+    ADD_LOGGER(DispatcherUtils)
 };
 
 } // namespace joynr

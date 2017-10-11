@@ -145,7 +145,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrMessageRouter);
-    ADD_LOGGER(LibJoynrMessageRouter);
+    ADD_LOGGER(LibJoynrMessageRouter)
 
     bool isParentMessageRouterSet();
     void addNextHopToParent(std::string participantId,

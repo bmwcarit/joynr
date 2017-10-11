@@ -144,7 +144,7 @@ public:
 	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, false)»
 
 private:
-	ADD_LOGGER(«interfaceName»InProcessConnector);
+	ADD_LOGGER(«interfaceName»InProcessConnector)
 
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»InProcessConnector);
 	std::string proxyParticipantId;

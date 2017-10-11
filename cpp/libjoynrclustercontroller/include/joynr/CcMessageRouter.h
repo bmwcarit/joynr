@@ -218,7 +218,7 @@ private:
             std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
     DISALLOW_COPY_AND_ASSIGN(CcMessageRouter);
-    ADD_LOGGER(CcMessageRouter);
+    ADD_LOGGER(CcMessageRouter)
 
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
     std::unique_ptr<IPlatformSecurityManager> securityManager;

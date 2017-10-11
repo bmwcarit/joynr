@@ -24,9 +24,6 @@
 namespace joynr
 {
 
-// Dispatcher Utils
-INIT_LOGGER(DispatcherUtils);
-
 JoynrTimePoint DispatcherUtils::convertTtlToAbsoluteTime(std::int64_t ttl_ms)
 {
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(

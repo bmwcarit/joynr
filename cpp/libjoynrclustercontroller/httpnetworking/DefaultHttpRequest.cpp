@@ -27,8 +27,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(DefaultHttpRequest);
-
 size_t DefaultHttpRequest::writeToString(void* buffer, size_t size, size_t nmemb, void* userp)
 {
     std::string* data = reinterpret_cast<std::string*>(userp);

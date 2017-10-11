@@ -56,14 +56,12 @@ protected:
         ON_CALL(*mockMosquittoConnection, getMqttPrio()).WillByDefault(Return("low"));
     }
 
-    ADD_LOGGER(MqttSenderTest);
+    ADD_LOGGER(MqttSenderTest)
     joynr::system::RoutingTypes::MqttAddress mqttAddress;
 
     std::shared_ptr<MockMosquittoConnection> mockMosquittoConnection;
     std::shared_ptr<MqttSender> mqttSender;
 };
-
-INIT_LOGGER(MqttSenderTest);
 
 TEST_F(MqttSenderTest, TestWithEnabledMessageSizeCheck) {
     MutableMessage mutableMessage;
