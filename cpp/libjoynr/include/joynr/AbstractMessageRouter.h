@@ -169,7 +169,7 @@ protected:
     MulticastReceiverDirectory multicastReceiverDirectory;
     MessagingSettings messagingSettings;
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
-    ThreadPoolDelayedScheduler messageScheduler;
+    std::shared_ptr<ThreadPoolDelayedScheduler> messageScheduler;
     std::unique_ptr<MessageQueue<std::string>> messageQueue;
     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue;
     std::string routingTableFileName;

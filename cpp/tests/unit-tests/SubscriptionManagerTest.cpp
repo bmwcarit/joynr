@@ -218,7 +218,7 @@ TEST_F(SubscriptionManagerTest, registerSubscriptionWithSameSubscriptionId_corre
 TEST_F(SubscriptionManagerTest, registerSubscription_withoutExpiryDate) {
     auto mockGpsSubscriptionListener = std::make_shared<MockSubscriptionListenerOneType<types::Localisation::GpsLocation>>();
     auto future = std::make_shared<Future<std::string>>();
-    MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler(singleThreadedIOService.getIOService());
+    auto mockDelayedScheduler = std::make_shared<MockDelayedScheduler>(singleThreadedIOService.getIOService());
     EXPECT_CALL(*mockDelayedScheduler,
                 schedule(_,_))
             .Times(0);
@@ -246,7 +246,7 @@ DelayedScheduler::RunnableHandle runnableHandle()
 TEST_F(SubscriptionManagerTest, registerSubscription_withExpiryDate) {
     auto mockGpsSubscriptionListener = std::make_shared<MockSubscriptionListenerOneType<types::Localisation::GpsLocation>>();
     auto future = std::make_shared<Future<std::string>>();
-    MockDelayedScheduler* mockDelayedScheduler = new MockDelayedScheduler(singleThreadedIOService.getIOService());
+    auto mockDelayedScheduler = std::make_shared<MockDelayedScheduler>(singleThreadedIOService.getIOService());
     EXPECT_CALL(*mockDelayedScheduler,
                 schedule(A<std::shared_ptr<Runnable>>(),_))
             .Times(1).WillRepeatedly(::testing::Return(runnableHandle()));

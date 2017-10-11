@@ -79,7 +79,8 @@ public:
 
     SubscriptionManager(boost::asio::io_service& ioService,
                         std::shared_ptr<IMessageRouter> messageRouter);
-    SubscriptionManager(DelayedScheduler* scheduler, std::shared_ptr<IMessageRouter> messageRouter);
+    SubscriptionManager(std::shared_ptr<DelayedScheduler> scheduler,
+                        std::shared_ptr<IMessageRouter> messageRouter);
 
     /**
      * @brief Subscribe to an attribute or broadcast. Modifies the subscription request to include
@@ -198,7 +199,7 @@ private:
 
     std::shared_ptr<IMessageRouter> messageRouter;
 
-    DelayedScheduler* missedPublicationScheduler;
+    std::shared_ptr<DelayedScheduler> missedPublicationScheduler;
     ADD_LOGGER(SubscriptionManager)
     /**
       * @class SubscriptionManager::MissedPublicationRunnable

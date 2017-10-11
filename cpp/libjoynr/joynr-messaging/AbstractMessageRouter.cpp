@@ -61,7 +61,9 @@ AbstractMessageRouter::AbstractMessageRouter(
           multicastReceiverDirectory(),
           messagingSettings(messagingSettings),
           messagingStubFactory(std::move(messagingStubFactory)),
-          messageScheduler(maxThreads, "AbstractMessageRouter", ioService),
+          messageScheduler(std::make_shared<ThreadPoolDelayedScheduler>(maxThreads,
+                                                                        "AbstractMessageRouter",
+                                                                        ioService)),
           messageQueue(std::move(messageQueue)),
           transportNotAvailableQueue(std::move(transportNotAvailableQueue)),
           routingTableFileName(),
@@ -91,7 +93,7 @@ void AbstractMessageRouter::shutdown()
 {
     messageQueueCleanerTimer.cancel();
     routingTableCleanerTimer.cancel();
-    messageScheduler.shutdown();
+    messageScheduler->shutdown();
     if (messagingStubFactory) {
         messagingStubFactory->shutdown();
     }
@@ -277,12 +279,12 @@ void AbstractMessageRouter::sendMessages(
 
         try {
             const std::uint32_t tryCount = 0;
-            messageScheduler.schedule(std::make_shared<MessageRunnable>(item->getContent(),
-                                                                        std::move(messagingStub),
-                                                                        address,
-                                                                        shared_from_this(),
-                                                                        tryCount),
-                                      std::chrono::milliseconds(0));
+            messageScheduler->schedule(std::make_shared<MessageRunnable>(item->getContent(),
+                                                                         std::move(messagingStub),
+                                                                         address,
+                                                                         shared_from_this(),
+                                                                         tryCount),
+                                       std::chrono::milliseconds(0));
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger(),
                             "Message with Id {} could not be sent. Error: {}",
@@ -313,12 +315,12 @@ void AbstractMessageRouter::scheduleMessage(
 
     auto stub = messagingStubFactory->create(destAddress);
     if (stub) {
-        messageScheduler.schedule(std::make_shared<MessageRunnable>(std::move(message),
-                                                                    std::move(stub),
-                                                                    std::move(destAddress),
-                                                                    shared_from_this(),
-                                                                    tryCount),
-                                  delay);
+        messageScheduler->schedule(std::make_shared<MessageRunnable>(std::move(message),
+                                                                     std::move(stub),
+                                                                     std::move(destAddress),
+                                                                     shared_from_this(),
+                                                                     tryCount),
+                                   delay);
     } else {
         JOYNR_LOG_WARN(
                 logger(),
