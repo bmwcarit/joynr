@@ -702,34 +702,23 @@ private:
         return success;
     }
 
-    template <typename Fun, std::size_t I = 0, typename... Ts>
-    std::enable_if_t<I == sizeof...(Ts)> applyForTable(Fun f, std::tuple<Ts...>& tables)
+    template <typename Fun, typename TableType>
+    void applyForTable(Fun f, TableType& table)
     {
-        // end recursion
-        std::ignore = f;
-        std::ignore = tables;
-    }
-
-    template <typename Fun, std::size_t I = 0, typename... Ts>
-            std::enable_if_t < I<sizeof...(Ts)> applyForTable(Fun f, std::tuple<Ts...>& tables)
-    {
-        auto& table = std::get<I>(tables);
         for (auto& entry : table) {
             f(entry);
         }
-        applyForTable<Fun, I + 1>(f, tables);
     }
 
     template <typename Fun>
     void applyForAllTables(Fun f)
     {
-        auto tables = std::tie(masterAccessTable,
-                               mediatorAccessTable,
-                               ownerAccessTable,
-                               masterRegistrationTable,
-                               mediatorRegistrationTable,
-                               ownerRegistrationTable);
-        applyForTable(std::move(f), tables);
+        applyForTable(f, masterAccessTable);
+        applyForTable(f, mediatorAccessTable);
+        applyForTable(f, ownerAccessTable);
+        applyForTable(f, masterRegistrationTable);
+        applyForTable(f, mediatorRegistrationTable);
+        applyForTable(f, ownerRegistrationTable);
     }
 
     template <typename Entry>
