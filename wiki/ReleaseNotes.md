@@ -6,6 +6,9 @@ None.
 ## Other changes
 * **[Java]** If a joynr instance receives a reply for which no receiver exists,
   it will be dropped immediately.
+* **[JS]** Once loaded, joynr automatically calls joynr.shutdown() when
+  process.exit(...) is called; a loaded joynr thus no longer prevents the
+  application from terminating.
 
 # joynr 0.30.0
 
