@@ -34,6 +34,7 @@ import javax.inject.Singleton;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.exceptions.JoynrDelayMessageException;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
@@ -387,6 +388,18 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         return millis;
     }
 
+    private void checkFoundAddresses(Set<Address> foundAddresses, ImmutableMessage message) {
+        if (foundAddresses.isEmpty()) {
+            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+                throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
+                        + message);
+            } else {
+                throw new JoynrIllegalStateException("Unable to find address for recipient with participant ID "
+                        + message.getRecipient());
+            }
+        }
+    }
+
     class MessageWorker implements Runnable {
         private int number;
 
@@ -409,6 +422,8 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                     checkExpiry(message);
 
                     Set<Address> addresses = getAddresses(message);
+                    checkFoundAddresses(addresses, message);
+
                     if (addresses.isEmpty()) {
                         throw new JoynrMessageNotSentException("Failed to send Message: No route for given participantId: "
                                 + message.getRecipient());
