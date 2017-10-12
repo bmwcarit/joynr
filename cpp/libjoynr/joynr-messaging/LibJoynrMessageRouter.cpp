@@ -475,8 +475,9 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
         ReadLocker lock(routingTableLock);
         const auto routingEntry =
                 routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
-        assert(routingEntry);
-        providerAddress = routingEntry->address;
+        if (routingEntry) {
+            providerAddress = routingEntry->address;
+        }
     }
 
     if (!providerAddress) {
