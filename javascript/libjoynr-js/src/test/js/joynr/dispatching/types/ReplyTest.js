@@ -19,39 +19,35 @@
  */
 var Reply = require('../../../../classes/joynr/dispatching/types/Reply');
 var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
-module.exports = (function(Reply, RadioStation) {
 
-    describe("libjoynr-js.joynr.dispatching.types.Reply", function() {
+describe("libjoynr-js.joynr.dispatching.types.Reply", function() {
 
-        it("is instantiable", function() {
-            var response = [ "response"
-            ];
-            var reply = new Reply({
-                requestReplyId : "id",
-                response : response
-            });
-            expect(reply).toBeDefined();
-            expect(reply instanceof Reply).toBeTruthy();
-            expect(reply._typeName).toEqual("joynr.Reply");
-            expect(reply.response).toEqual(response);
+    it("is instantiable", function() {
+        var response = [ "response"
+        ];
+        var reply = new Reply({
+            requestReplyId : "id",
+            response : response
         });
-
-        it("converts an untyped param to typed", function() {
-            var outParameter = {
-                _typeName : "joynr.vehicle.radiotypes.RadioStation",
-                name : "myRadioStation"
-            };
-            var reply = new Reply({
-                requestReplyId : "id",
-                response : [ outParameter
-                ]
-            });
-            expect(reply).toBeDefined();
-            expect(reply instanceof Reply).toBeTruthy();
-            expect(reply.response[0] instanceof RadioStation).toBeTruthy();
-        });
-
+        expect(reply).toBeDefined();
+        expect(reply instanceof Reply).toBeTruthy();
+        expect(reply._typeName).toEqual("joynr.Reply");
+        expect(reply.response).toEqual(response);
     });
 
-}(Reply, RadioStation)); // require
-/*jslint nomen: false */
+    it("converts an untyped param to typed", function() {
+        var outParameter = {
+            _typeName : "joynr.vehicle.radiotypes.RadioStation",
+            name : "myRadioStation"
+        };
+        var reply = new Reply({
+            requestReplyId : "id",
+            response : [ outParameter
+            ]
+        });
+        expect(reply).toBeDefined();
+        expect(reply instanceof Reply).toBeTruthy();
+        expect(reply.response[0] instanceof RadioStation).toBeTruthy();
+    });
+
+});

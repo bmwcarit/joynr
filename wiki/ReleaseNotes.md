@@ -1,3 +1,33 @@
+# joynr 0.30.0
+
+## API relevant changes
+* **[Java]** Setters for class members of Java classes
+  representing Franca structs no longer accept null
+  values. An InvalidArgumentException will be thrown
+  in case a setter is called with null.
+
+  The reason is that null values cause incomplete JSON
+  objects to be serialized which cannot be deserialized
+  on C++ side.
+
+## Configuration property changes
+* **[C++]** Made the following properties configurable. See
+  default-messaging.settings for more details.
+  * `routing-table-grace-period-ms`
+  * `routing-table-cleanup-interval-ms`
+
+## Other changes
+* **[C++]** The internal routing table can now be cleaned up.
+  Routing entries which have been created for handling a request from
+  global can be removed when the ttl + grace period has passed.
+* **[C++]** TLS client certificates for secure websocket connections with empty common name (CN)
+  field are not accepted any longer.
+* **[C++]** If a LibJoynr instance was configured to use SSL but no keychain
+ was provided to the JoynrRuntime::create method, it will report a fatal error
+ and throw a JoynrRuntimeException.
+* **[C++]** Access control is included in the c++ build by default. It still must be enabled
+ by setting the configuration property `access-control/enable`.
+
 # joynr 0.29.2
 
 ## API relevant changes

@@ -28,16 +28,18 @@ define("joynr/security/PlatformSecurityManager", [], function() {
      *            [JoynrMessage.JOYNRMESSAGE_TYPE_*]{@link JoynrMessage}
      */
     function PlatformSecurityManager() {
-        /**
-         * @name PlatformSecurityManager#getCurrentProcessUserId
-         * @function
-         *
-         * @returns {String} the user ID that executes node
-         */
-        this.getCurrentProcessUserId = function getCurrentProcessUserId() {
-            return "dummy-user-id";
-        };
+
     }
+
+    /**
+     * @name PlatformSecurityManager#getCurrentProcessUserId
+     * @function
+     *
+     * @returns {String} the user ID that executes node
+     */
+    PlatformSecurityManager.prototype.getCurrentProcessUserId = function getCurrentProcessUserId() {
+        return "dummy-user-id";
+    };
 
     return PlatformSecurityManager;
 

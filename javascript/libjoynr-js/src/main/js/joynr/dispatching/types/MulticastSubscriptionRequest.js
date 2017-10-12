@@ -21,90 +21,71 @@
 var Typing = require('../../util/Typing');
 var MulticastSubscriptionQos = require('../../proxy/MulticastSubscriptionQos');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports =
-        (function(Typing, MulticastSubscriptionQos, LoggerFactory) {
-    var log = LoggerFactory.getLogger("joynr/dispatching/types/MulticastSubscriptionRequest");
-    var defaultSettings = {
-        qos : new MulticastSubscriptionQos()
-    };
+var log = LoggerFactory.getLogger("joynr/dispatching/types/MulticastSubscriptionRequest");
+var defaultSettings = {
+    qos : new MulticastSubscriptionQos()
+};
 
-    /**
-     * @name MulticastSubscriptionRequest
-     * @constructor
-     * @param {String}
-     *            settings.subscriptionId Id of the new subscription
-     * @param {String}
-     *            settings.subscribedToName the name of the element to subscribe to
-     * @param {Object|SubscriptionQos}
-     *            [settings.subscriptionQos] the subscriptionQos
-     */
-    function MulticastSubscriptionRequest(settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkProperty(settings.multicastId, "String", "settings.multicastId");
-        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
-        Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
+/**
+ * @name MulticastSubscriptionRequest
+ * @constructor
+ * @param {String}
+ *            settings.subscriptionId Id of the new subscription
+ * @param {String}
+ *            settings.subscribedToName the name of the element to subscribe to
+ * @param {Object|SubscriptionQos}
+ *            [settings.subscriptionQos] the subscriptionQos
+ */
+function MulticastSubscriptionRequest(settings) {
+    Typing.checkProperty(settings, "Object", "settings");
+    Typing.checkProperty(settings.multicastId, "String", "settings.multicastId");
+    Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+    Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
 
-        try {
-            Typing.checkPropertyIfDefined(settings.qos, [
-                "Object",
-                "MulticastSubscriptionQos"
-            ], "settings.qos");
-        } catch (e) {
-            if (Typing.getObjectType(settings.qos) === "OnChangeSubscriptionQos") {
-                log.warn("multicast subscription was passed an OnChangeSubscriptionQos. "
-                    + "The minIntervalMs and publicationTtlMs will be discarded");
-                settings.qos = new MulticastSubscriptionQos({
-                    expiryDateMs : settings.qos.expiryDateMs
-                });
-            } else {
-                throw e;
-            }
+    try {
+        Typing.checkPropertyIfDefined(settings.qos, [
+            "Object",
+            "MulticastSubscriptionQos"
+        ], "settings.qos");
+    } catch (e) {
+        if (Typing.getObjectType(settings.qos) === "OnChangeSubscriptionQos") {
+            log.warn("multicast subscription was passed an OnChangeSubscriptionQos. "
+                + "The minIntervalMs and publicationTtlMs will be discarded");
+            settings.qos = new MulticastSubscriptionQos({
+                expiryDateMs : settings.qos.expiryDateMs
+            });
+        } else {
+            throw e;
         }
-
-        /**
-         * @name MulticastSubscriptionRequest#multicastId
-         * @type String
-         */
-        this.multicastId = settings.multicastId;
-        /**
-         * @name MulticastSubscriptionRequest#subscriptionId
-         * @type String
-         */
-        this.subscriptionId = settings.subscriptionId;
-        /**
-         * @name MulticastSubscriptionRequest#subscribedToName
-         * @type String
-         */
-        this.subscribedToName = settings.subscribedToName;
-        /**
-         * @name MulticastSubscriptionRequest#qos
-         * @type Object|OnChangeSubscriptionQos
-         */
-        this.qos = settings.qos || defaultSettings.qos;
-        /**
-         * The joynr type name
-         *
-         * @name MulticastSubscriptionRequest#_typeName
-         * @type String
-         */
-        Object.defineProperty(this, "_typeName", {
-            value : "joynr.MulticastSubscriptionRequest",
-            readable : true,
-            writable : false,
-            enumerable : true,
-            configurable : false
-        });
-
-        return Object.freeze(this);
     }
 
     /**
-     * The joynr type name
-     *
-     * @name Request#_typeName
+     * @name MulticastSubscriptionRequest#multicastId
      * @type String
      */
-    Object.defineProperty(MulticastSubscriptionRequest, "_typeName", {
+    this.multicastId = settings.multicastId;
+    /**
+     * @name MulticastSubscriptionRequest#subscriptionId
+     * @type String
+     */
+    this.subscriptionId = settings.subscriptionId;
+    /**
+     * @name MulticastSubscriptionRequest#subscribedToName
+     * @type String
+     */
+    this.subscribedToName = settings.subscribedToName;
+    /**
+     * @name MulticastSubscriptionRequest#qos
+     * @type Object|OnChangeSubscriptionQos
+     */
+    this.qos = settings.qos || defaultSettings.qos;
+    /**
+     * The joynr type name
+     *
+     * @name MulticastSubscriptionRequest#_typeName
+     * @type String
+     */
+    Object.defineProperty(this, "_typeName", {
         value : "joynr.MulticastSubscriptionRequest",
         readable : true,
         writable : false,
@@ -112,6 +93,21 @@ module.exports =
         configurable : false
     });
 
-    return MulticastSubscriptionRequest;
+    return Object.freeze(this);
+}
 
-        }(Typing, MulticastSubscriptionQos, LoggerFactory));
+/**
+ * The joynr type name
+ *
+ * @name Request#_typeName
+ * @type String
+ */
+Object.defineProperty(MulticastSubscriptionRequest, "_typeName", {
+    value : "joynr.MulticastSubscriptionRequest",
+    readable : true,
+    writable : false,
+    enumerable : true,
+    configurable : false
+});
+
+module.exports = MulticastSubscriptionRequest;

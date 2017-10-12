@@ -65,3 +65,12 @@ discovery-default-timeout-ms=600000
 # when no specific setting has been provided per API call.
 # Please refer to joynr::DiscoveryQos for details.
 discovery-default-retry-interval-ms=10000
+
+# The grace period in milliseconds after which a routingEntry may
+# be purged from the runtimes routingTable once the expiryDate
+# has been reached
+routing-table-grace-period-ms=60000
+
+# The period in milliseconds after which the runtimes routingTable
+# garbage collector will be periodically called
+routing-table-cleanup-interval-ms=60000

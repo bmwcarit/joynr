@@ -21,6 +21,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <memory>
 #include <mutex>
 #include <set>
 #include <string>
@@ -42,7 +43,7 @@ class Runnable;
  * @brief A container of a fixed number of threads doing work provided
  *      by @ref Runnable
  */
-class JOYNR_EXPORT ThreadPool
+class JOYNR_EXPORT ThreadPool : public std::enable_shared_from_this<ThreadPool>
 {
 public:
     /**
@@ -56,6 +57,13 @@ public:
      * Destructor
      */
     virtual ~ThreadPool();
+
+    /**
+     * @brief Does an ordinary init of @ref ThreadPool
+     * @note Must be called after constructor is called
+     * since it requires shared_ptr to own object
+     */
+    void init();
 
     /**
      * @brief Does an ordinary shutdown of @ref ThreadPool
@@ -73,14 +81,14 @@ public:
      * Executes work by adding to the queue
      * @param runnable Runnable to be executed
      */
-    void execute(Runnable* runnable);
+    void execute(std::shared_ptr<Runnable> runnable);
 
 private:
     /*! Disallow copy and assign */
     DISALLOW_COPY_AND_ASSIGN(ThreadPool);
 
     /*! Lifecycle for @ref threads */
-    void threadLifecycle();
+    void threadLifecycle(std::shared_ptr<ThreadPool> thisSharedptr);
 
 private:
     /*! Logger */
@@ -96,9 +104,11 @@ private:
     std::atomic_bool keepRunning;
 
     /*! Currently running work in @ref threads */
-    std::set<Runnable*> currentlyRunning;
+    std::set<std::shared_ptr<Runnable>> currentlyRunning;
 
     std::mutex mutex;
+
+    std::uint8_t numberOfThreads;
 };
 
 } // namespace joynr

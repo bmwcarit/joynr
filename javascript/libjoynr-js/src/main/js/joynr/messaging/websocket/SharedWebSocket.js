@@ -1,4 +1,5 @@
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, nomen: true, node: true */
+
 /*
  * #%L
  * %%
@@ -20,10 +21,9 @@
 var Promise = require('../../../global/Promise');
 var WebSocket = require('../../../global/WebSocketNode');
 var Typing = require('../../util/Typing');
-var JsonSerializer = require('../../util/JSONSerializer');
+var JSONSerializer = require('../../util/JSONSerializer');
 var LongTimer = require('../../util/LongTimer');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTimer, LoggerFactory) {
             var log = LoggerFactory.getLogger("joynr.messaging.websocket.SharedWebSocket");
             /**
              * @param address
@@ -47,7 +47,7 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
              *            libjoynr
              */
             function initializeConnection(websocket, localAddress) {
-                websocket.send(WebSocket.encodeString(JSON.stringify(localAddress)), {binary: true});
+                websocket.send(websocket.encodeString(JSON.stringify(localAddress)), {binary: true});
             }
 
             /**
@@ -61,7 +61,7 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                 while (queuedMessages.length) {
                     queued = queuedMessages.shift();
                     try {
-                        websocket.send(WebSocket.marshalJoynrMessage(queued.message), {binary: true});
+                        websocket.send(websocket.marshalJoynrMessage(queued.message), {binary: true});
                         queued.resolve();
                         // Error is thrown if the socket is no longer open
                     } catch (e) {
@@ -73,28 +73,31 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
             }
 
             function sendMessage(websocket, joynrMessage, queuedMessages) {
-                return new Promise(function(resolve, reject){
+
+                function sendMessageResolver(resolve, reject){
                     if (websocket.readyState === WebSocket.OPEN) {
                         try {
-                            websocket.send(WebSocket.marshalJoynrMessage(joynrMessage), {binary: true});
+                            websocket.send(websocket.marshalJoynrMessage(joynrMessage), {binary: true});
                             resolve();
                             // Error is thrown if the socket is no longer open, so requeue to the front
                         } catch (e) {
                             // add the message back to the front of the queue
                             queuedMessages.unshift({
-                                message : joynrMessage,
-                                resolve : resolve
+                                message: joynrMessage,
+                                resolve: resolve
                             });
                             throw e;
                         }
                     } else {
                         // push new messages onto the back of the queue
                         queuedMessages.push({
-                            message : joynrMessage,
-                            resolve : resolve
+                            message: joynrMessage,
+                            resolve: resolve
                         });
                     }
-                });
+                }
+
+                return new Promise(sendMessageResolver);
             }
 
             /**
@@ -110,6 +113,7 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
              *            settings.remoteAddress to which messages are sent on the websocket server.
              * @param {Object} settings.provisioning
              * @param {Number} settings.provisioning.reconnectSleepTimeMs
+             * @param {Object} settings.keychain
              */
             var SharedWebSocket =
                     function SharedWebSocket(settings) {
@@ -126,6 +130,7 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                         var websocket = null;
                         var provisioning = settings.provisioning || {};
                         var reconnectSleepTimeMs = provisioning.reconnectSleepTimeMs || 1000; // default value = 1000ms
+                        var useUnencryptedTls = provisioning.useUnencryptedTls || true; // default to unencrypted Tls communication
                         var localAddress = settings.localAddress;
                         var remoteUrl = webSocketAddressToUrl(settings.remoteAddress);
                         var onmessageCallback = null;
@@ -141,7 +146,7 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                             if (closed) {
                                 return;
                             }
-                            websocket = new WebSocket(remoteUrl);
+                            websocket = new WebSocket(remoteUrl, settings.keychain, useUnencryptedTls);
                             websocket.onopen = onOpen;
                             websocket.onclose = onClose;
                             websocket.onerror = onError;
@@ -197,9 +202,12 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                          *            joynrMessage the joynr message to transmit
                          */
                         this.send = function send(joynrMessage) {
-                            return sendMessage(websocket, joynrMessage, queuedMessages).catch(function(e1) {
-                                    resetConnection();
-                                });
+
+                            function sendMessageOnError(e1) {
+                                resetConnection();
+                            }
+
+                            return sendMessage(websocket, joynrMessage, queuedMessages).catch(sendMessageOnError);
                         };
 
                         /**
@@ -221,10 +229,10 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                         // the same API as WebSocket but have a setter function called when
                         // the attribute is set.
                         Object.defineProperty(this, "onmessage", {
-                            set : function(newCallback) {
+                            set: function(newCallback) {
                                 if (typeof newCallback === "function") {
                                     onmessageCallback = function(data) {
-                                        WebSocket.unmarshalJoynrMessage(data, newCallback);
+                                        websocket.unmarshalJoynrMessage(data, newCallback);
                                     };
                                     websocket.onmessage = onmessageCallback;
                                 } else {
@@ -233,14 +241,13 @@ module.exports = (function (Promise, WebSocket, Typing, JSONSerializer, LongTime
                                                 + typeof newCallback);
                                 }
                             },
-                            get : function() {
+                            get: function() {
                                 return onmessageCallback;
                             },
-                            enumerable : false,
-                            configurable : false
+                            enumerable  : false,
+                            configurable: false
                         });
 
                     };
             SharedWebSocket.EVENT_CODE_SHUTDOWN = 4000;
-            return SharedWebSocket;
-}(Promise, WebSocket, Typing, JsonSerializer, LongTimer, LoggerFactory));
+            module.exports = SharedWebSocket;

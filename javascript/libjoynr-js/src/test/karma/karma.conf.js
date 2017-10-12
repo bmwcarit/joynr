@@ -62,7 +62,8 @@ module.exports = function(config) {
 
     // list of files to exclude
     exclude: [
-            'test-classes/joynr/start/InProcessRuntimeTest.js'
+            'test-classes/joynr/start/InProcessRuntimeTest.js',
+            'test-classes/global/WebSocketNodeTest.js'
     ],
 
 

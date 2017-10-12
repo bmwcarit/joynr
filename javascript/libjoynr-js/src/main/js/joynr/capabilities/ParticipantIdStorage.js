@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -18,43 +18,43 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
-    /**
-     * @constructor
-     * @name ParticipantIdStorage
-     *
-     * @param {Persistency} persistency - the persistence object to be used to store the participantIds
-     * @param {Function} uuid - a function generating a uuid string
-     */
-    function ParticipantIdStorage(persistency, uuid) {
+/**
+ * @constructor
+ * @name ParticipantIdStorage
+ *
+ * @param {Persistency} persistency - the persistence object to be used to store the participantIds
+ * @param {Function} uuid - a function generating a uuid string
+ */
+function ParticipantIdStorage(persistency, uuid) {
 
-        /**
-         * @function
-         * @name ParticipantIdStorage#getParticipantId
-         *
-         * @param {String}
-         *            domain
-         * @param {Object}
-         *            provider
-         * @param {String}
-         *            provider.interfaceName
-         *
-         * @returns {String} the retrieved or generated participantId
-         */
-        this.getParticipantId = function getParticipantId(domain, provider) {
-            var interfaceNameDotted = provider.interfaceName.replace("/", ".");
-            var key = "joynr.participant." + domain + "." + interfaceNameDotted;
-            var participantId = persistency.getItem(key);
-            if (!participantId) {
-                participantId = domain + "." + interfaceNameDotted + "." + uuid();
-                persistency.setItem(key, participantId);
-            }
-            return participantId;
-        };
+    this._persistency = persistency;
+    this._uuid = uuid;
 
+}
+
+/**
+ * @function
+ * @name ParticipantIdStorage#getParticipantId
+ *
+ * @param {String}
+ *            domain
+ * @param {Object}
+ *            provider
+ * @param {String}
+ *            provider.interfaceName
+ *
+ * @returns {String} the retrieved or generated participantId
+ */
+ParticipantIdStorage.prototype.getParticipantId = function getParticipantId(domain, provider) {
+    var interfaceNameDotted = provider.interfaceName.replace("/", ".");
+    var key = "joynr.participant." + domain + "." + interfaceNameDotted;
+    var participantId = this._persistency.getItem(key);
+    if (!participantId) {
+        participantId = domain + "." + interfaceNameDotted + "." + this._uuid();
+        this._persistency.setItem(key, participantId);
     }
+    return participantId;
+};
 
-    return ParticipantIdStorage;
-
-}());
+module.exports = ParticipantIdStorage;

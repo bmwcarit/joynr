@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -19,28 +19,26 @@
  * #L%
  */
 var WebMessagingStub = require('./WebMessagingStub');
-module.exports = (function(WebMessagingStub) {
 
-            /**
-             * @constructor
-             * @name WebMessagingStubFactory
-             */
-            function WebMessagingStubFactory() {
+/**
+ * @constructor
+ * @name WebMessagingStubFactory
+ */
+function WebMessagingStubFactory() {
 
-                /**
-                 * @name WebMessagingStubFactory#build
-                 * @function
-                 *
-                 * @param {WebMessagingAddress} address the address to generate a messaging stub for
-                 */
-                this.build = function build(address) {
-                    return new WebMessagingStub({
-                        window : address.getWindow(),
-                        origin : address.getOrigin()
-                    });
-                };
-            }
+}
 
-            return WebMessagingStubFactory;
+/**
+ * @name WebMessagingStubFactory#build
+ * @function
+ *
+ * @param {WebMessagingAddress} address the address to generate a messaging stub for
+ */
+WebMessagingStubFactory.prototype.build = function build(address) {
+    return new WebMessagingStub({
+        window : address.getWindow(),
+        origin : address.getOrigin()
+    });
+};
 
-}(WebMessagingStub));
+module.exports = WebMessagingStubFactory;

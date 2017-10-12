@@ -48,7 +48,7 @@ class IDiscoveryAsync;
 /*
  *  Base class for different arbitration strategies.
  */
-class JOYNR_EXPORT Arbitrator
+class JOYNR_EXPORT Arbitrator : public std::enable_shared_from_this<Arbitrator>
 {
 
 public:

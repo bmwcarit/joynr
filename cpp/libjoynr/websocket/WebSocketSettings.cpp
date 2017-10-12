@@ -71,6 +71,12 @@ const std::string& WebSocketSettings::SETTING_PRIVATE_KEY_PEM_FILENAME()
     return value;
 }
 
+const std::string& WebSocketSettings::SETTING_TLS_ENCRYPTION()
+{
+    static const std::string value("websocket/tls-encryption");
+    return value;
+}
+
 const std::string& WebSocketSettings::DEFAULT_WEBSOCKET_SETTINGS_FILENAME()
 {
     static const std::string value("default-websocket.settings");
@@ -105,6 +111,16 @@ joynr::system::RoutingTypes::WebSocketAddress WebSocketSettings::
 
     return system::RoutingTypes::WebSocketAddress(
             protocol, url.getHost(), url.getPort(), url.getPath());
+}
+
+bool WebSocketSettings::getEncryptedTlsUsage() const
+{
+    return settings.get<bool>(WebSocketSettings::SETTING_TLS_ENCRYPTION());
+}
+
+void WebSocketSettings::setEncryptedTlsUsage(bool encryptedTls)
+{
+    settings.set(WebSocketSettings::SETTING_TLS_ENCRYPTION(), encryptedTls);
 }
 
 std::chrono::milliseconds WebSocketSettings::getReconnectSleepTimeMs() const
@@ -177,6 +193,11 @@ void WebSocketSettings::printSettings() const
                     "SETTING: {}  = {}",
                     SETTING_PRIVATE_KEY_PEM_FILENAME(),
                     settings.get<std::string>(SETTING_PRIVATE_KEY_PEM_FILENAME()));
+
+    JOYNR_LOG_DEBUG(logger,
+                    "SETTING: {}  = {}",
+                    SETTING_TLS_ENCRYPTION(),
+                    settings.get<std::string>(SETTING_TLS_ENCRYPTION()));
 }
 
 } // namespace joynr

@@ -20,43 +20,45 @@ package tests.performance
 
 
 typeCollection Types {
-	version { major 0 minor 1 }
+    version { major 0 minor 1 }
 
-	struct ComplexStruct {
-		Int32 num32
-		Int64 num64
-		Int8[] data
-		String str
-	}
+    struct ComplexStruct {
+        Int32 num32
+        Int64 num64
+        Int8[] data
+        String str
+    }
 }
 
 interface Echo {
-	version { major 0 minor 1 }
+    version { major 0 minor 1 }
 
-	method echoString {
-		in {
-			String data
-		}
-		out {
-			String responseData
-		}
-	}
+    attribute String simpleAttribute
 
-	method echoByteArray {
-		in {
-			Int8[] data
-		}
-		out {
-			Int8[] responseData
-		}
-	}
+    method echoString {
+        in {
+            String data
+        }
+        out {
+            String responseData
+        }
+    }
 
-	method echoComplexStruct {
-		in {
-			Types.ComplexStruct data
-		}
-		out {
-			Types.ComplexStruct responseData
-		}
-	}
+    method echoByteArray {
+        in {
+            Int8[] data
+        }
+        out {
+            Int8[] responseData
+        }
+    }
+
+    method echoComplexStruct {
+        in {
+            Types.ComplexStruct data
+        }
+        out {
+            Types.ComplexStruct responseData
+        }
+    }
 }

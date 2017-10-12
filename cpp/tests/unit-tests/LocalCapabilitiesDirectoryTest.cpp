@@ -27,6 +27,7 @@
 
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ClusterControllerDirectories.h"
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -58,7 +59,7 @@ public:
               clusterControllerSettings(settings),
               capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
               singleThreadedIOService(),
-              mockMessageRouter(singleThreadedIOService.getIOService()),
+              mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
               clusterControllerId("clusterControllerId"),
               localCapabilitiesDirectory(),
               lastSeenDateMs(std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -268,7 +269,7 @@ protected:
     ClusterControllerSettings clusterControllerSettings;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
     SingleThreadedIOService singleThreadedIOService;
-    MockMessageRouter mockMessageRouter;
+    std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::string clusterControllerId;
     std::unique_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     std::int64_t lastSeenDateMs;
@@ -1533,17 +1534,17 @@ void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(
 {
     const std::string participantId = "TEST_participantId";
     EXPECT_CALL(
-            mockMessageRouter,
+            *mockMessageRouter,
             addNextHop(participantId,
                        AllOf(Pointee(A<const joynr::system::RoutingTypes::Address>()),
                              pointerToAddressWithSerializedAddress(addressType, serializedAddress)),
-                       _,_,_)).Times(1);
-    EXPECT_CALL(mockMessageRouter,
+                       _,_,_,_,_)).Times(1);
+    EXPECT_CALL(*mockMessageRouter,
                 addNextHop(participantId,
                            AnyOf(Not(Pointee(A<const joynr::system::RoutingTypes::Address>())),
                                  Not(pointerToAddressWithSerializedAddress(
                                          addressType, serializedAddress))),
-                           _,_,_)).Times(0);
+                           _,_,_,_,_)).Times(0);
 
     std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
     types::DiscoveryEntry capEntry;

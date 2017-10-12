@@ -43,7 +43,9 @@ class InterfaceSubscriptionPublisherTemplate extends InterfaceTemplate {
 «warning()»
 package «packagePath»;
 
-import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
+«IF hasNonSelectiveBroadcast»
+	import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
+«ENDIF»
 import io.joynr.provider.SubscriptionPublisher;
 
 «FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true, false)»

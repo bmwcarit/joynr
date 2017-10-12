@@ -1,0 +1,36 @@
+{
+  "masterAccessTable": [
+    {
+      "_typeName": "joynr.infrastructure.DacTypes.MasterAccessControlEntry",
+      "uid": "sit-consumer",
+      "domain": "testDomain",
+      "interfaceName": "test/SystemIntegrationTest",
+      "defaultRequiredTrustLevel": "HIGH",
+      "possibleRequiredTrustLevels": [],
+      "defaultRequiredControlEntryChangeTrustLevel": "HIGH",
+      "possibleRequiredControlEntryChangeTrustLevels": [],
+      "operation": "*",
+      "defaultConsumerPermission": "YES",
+      "possibleConsumerPermissions": []
+    }
+  ],
+  "mediatorAccessTable": [],
+  "ownerAccessTable": [],
+  "masterRegistrationTable": [
+    {
+      "_typeName": "joynr.infrastructure.DacTypes.MasterRegistrationControlEntry",
+      "uid": "sit-provider",
+      "domain": "testDomain",
+      "interfaceName": "test/SystemIntegrationTest",
+      "defaultRequiredTrustLevel": "HIGH",
+      "possibleRequiredTrustLevels": [],
+      "defaultRequiredControlEntryChangeTrustLevel": "HIGH",
+      "possibleRequiredControlEntryChangeTrustLevels": [],
+      "defaultProviderPermission": "YES",
+      "possibleProviderPermissions": []
+    }
+  ],
+  "mediatorRegistrationTable": [],
+  "ownerRegistrationTable": [],
+  "domainRoleTable": []
+}

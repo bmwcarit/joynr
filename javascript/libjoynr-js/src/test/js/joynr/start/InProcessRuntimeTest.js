@@ -20,12 +20,11 @@
  * #L%
  */
 
-var provisioningCc = require('../../../test-classes/joynr/provisioning/provisioning_cc');
+var provisioning = require('../../../test-classes/joynr/provisioning/provisioning_cc');
 var InProcessRuntime = require('../../../classes/joynr/start/InProcessRuntime');
 var Promise = require('../../../classes/global/Promise');
-var WaitsFor = require('../../../test-classes/global/WaitsFor');
+var waitsFor = require('../../../test-classes/global/WaitsFor');
 
-(function(provisioning, InProcessRuntime, Promise, waitsFor) {
     function outputPromiseError(error) {
         expect(error.toString()).toBeFalsy();
     }
@@ -131,4 +130,3 @@ var WaitsFor = require('../../../test-classes/global/WaitsFor');
             }).catch(fail);
         });
     });
-}(provisioningCc, InProcessRuntime, Promise, WaitsFor));

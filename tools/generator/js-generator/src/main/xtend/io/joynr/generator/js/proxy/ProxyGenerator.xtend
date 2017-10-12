@@ -122,7 +122,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 			 * @summary The «attributeName» attribute is GENERATED FROM THE INTERFACE DESCRIPTION
 			 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
 			*/
-			this.«attributeName» = new settings.proxyElementTypes.ProxyAttribute«getAttributeCaps(attribute)»(this, settings, "«attributeName»", "«attribute.joynrTypeName»");
+			this.«attributeName» = new settings.proxyElementTypes.ProxyAttribute(this, settings, "«attributeName»", "«attribute.joynrTypeName»","«getAttributeCaps(attribute)»");
 	«ENDFOR»
 
 	«FOR operationName : getMethodNames(francaIntf)»

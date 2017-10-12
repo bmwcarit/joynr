@@ -48,6 +48,12 @@ void removeFileInCurrentDirectory(const std::string& filePattern)
     }
 }
 
+void removeAllCreatedSettingsAndPersistencyFiles() {
+    removeFileInCurrentDirectory(".*\\.settings");
+    removeFileInCurrentDirectory(".*\\.persist");
+    removeFileInCurrentDirectory(".*\\.entries");
+}
+
 void copyTestResourceToCurrentDirectory(const std::string& resourceFileName,
                                         const std::string& newName)
 {

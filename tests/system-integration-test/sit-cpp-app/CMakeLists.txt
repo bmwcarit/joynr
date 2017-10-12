@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(jsit-0.29.2)
+project(jsit-0.30.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -19,7 +19,7 @@ message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.29.2 REQUIRED)
+find_package(Joynr 0.30.0 REQUIRED)
 message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_WS_INCLUDE_DIRS=${Joynr_LIB_WS_INCLUDE_DIRS}")
@@ -45,6 +45,7 @@ find_package(Boost 1.58.0 REQUIRED
     COMPONENTS
     system
     filesystem
+    program_options
 )
 message(STATUS "variable Boost_LIBRARIES=${Boost_LIBRARIES}")
 message(STATUS "variable Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
@@ -76,6 +77,18 @@ set(
 include_directories(
     ${GENERATED_INCLUDE_DIRS}
     ${Joynr_LIB_COMMON_INCLUDE_DIRS}
+)
+
+set(
+    common_HEADERS
+    "src/main/cpp/KeychainImpl.h"
+    "src/main/cpp/SitUtil.h"
+)
+
+set(
+    common_SOURCES
+    "src/main/cpp/KeychainImpl.cpp"
+    "src/main/cpp/SitUtil.cpp"
 )
 
 # Consumer headers
@@ -126,6 +139,8 @@ add_executable(
     jsit-provider-ws
     ${jsit-provider_HEADERS}
     ${jsit-provider_SOURCES}
+    ${common_HEADERS}
+    ${common_SOURCES}
     ${GENERATED_HEADERS}
     ${GENERATED_SOURCES}
 )
@@ -143,6 +158,8 @@ add_executable(
     jsit-consumer-ws
     ${jsit-consumer_HEADERS}
     ${jsit-consumer_SOURCES}
+    ${common_HEADERS}
+    ${common_SOURCES}
     ${GENERATED_HEADERS}
     ${GENERATED_SOURCES}
 )
@@ -175,5 +192,9 @@ install(
     FILES
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-consumer.settings
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-provider.settings
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-consumer-ssl.settings
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-provider-ssl.settings
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-clustercontroller-ssl.settings
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/local-domain-access-store.json
     DESTINATION ${INSTALL_TEST_DIR}/resources
 )

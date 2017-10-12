@@ -43,10 +43,10 @@ class SubscriptionCallback : public ISubscriptionCallback
 public:
     explicit SubscriptionCallback(const std::string& subscriptionId,
                                   std::shared_ptr<Future<std::string>> future,
-                                  ISubscriptionManager* subscriptionManager)
+                                  std::weak_ptr<ISubscriptionManager> subscriptionManager)
             : subscriptionId(subscriptionId),
               future(std::move(future)),
-              subscriptionManager(subscriptionManager)
+              subscriptionManager(std::move(subscriptionManager))
     {
     }
 
@@ -78,21 +78,24 @@ public:
 
     void execute(const SubscriptionReply& subscriptionReply) override
     {
-        std::shared_ptr<exceptions::JoynrRuntimeException> error = subscriptionReply.getError();
-        std::shared_ptr<ISubscriptionListenerBase> listener =
-                subscriptionManager->getSubscriptionListener(subscriptionId);
-        if (error) {
-            subscriptionManager->unregisterSubscription(subscriptionReply.getSubscriptionId());
-            future->onError(error);
+        if (auto subscriptionManagerSharedPtr = subscriptionManager.lock()) {
+            std::shared_ptr<exceptions::JoynrRuntimeException> error = subscriptionReply.getError();
+            std::shared_ptr<ISubscriptionListenerBase> listener =
+                    subscriptionManagerSharedPtr->getSubscriptionListener(subscriptionId);
+            if (error) {
+                subscriptionManagerSharedPtr->unregisterSubscription(
+                        subscriptionReply.getSubscriptionId());
+                future->onError(error);
 
-            if (listener) {
-                listener->onError(*error);
-            }
-        } else {
-            future->onSuccess(subscriptionReply.getSubscriptionId());
+                if (listener) {
+                    listener->onError(*error);
+                }
+            } else {
+                future->onSuccess(subscriptionReply.getSubscriptionId());
 
-            if (listener) {
-                listener->onSubscribed(subscriptionReply.getSubscriptionId());
+                if (listener) {
+                    listener->onSubscribed(subscriptionReply.getSubscriptionId());
+                }
             }
         }
     }
@@ -100,7 +103,7 @@ public:
 protected:
     std::string subscriptionId;
     std::shared_ptr<Future<std::string>> future;
-    ISubscriptionManager* subscriptionManager;
+    std::weak_ptr<ISubscriptionManager> subscriptionManager;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionCallback);

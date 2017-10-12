@@ -18,46 +18,43 @@
  * limitations under the License.
  * #L%
  */
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
-module.exports = (function(Util, Typing) {
+
+/**
+ * @name SubscriptionReply
+ * @constructor
+ *
+ * @param {Object}
+ *            settings
+ * @param {String}
+ *            settings.subscriptionId
+ * @param {Object}
+ *            [settings.error] The exception object in case of subscription request failure
+ */
+function SubscriptionReply(settings) {
+    Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+
+    Typing.checkPropertyIfDefined(settings.error, [
+        "Object",
+        "SubscriptionException"
+    ], "settings.error");
 
     /**
-     * @name SubscriptionReply
-     * @constructor
-     *
-     * @param {Object}
-     *            settings
-     * @param {String}
-     *            settings.subscriptionId
-     * @param {Object}
-     *            [settings.error] The exception object in case of subscription request failure
+     * @name SubscriptionReply#subscriptionId
+     * @type String
      */
-    function SubscriptionReply(settings) {
-        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+    Util.extend(this, settings);
 
-        Typing.checkPropertyIfDefined(settings.error, [
-            "Object",
-            "SubscriptionException"
-        ], "settings.error");
+    /**
+     * The joynr type name
+     *
+     * @name SubscriptionReply#_typeName
+     * @type String
+     */
+    Typing.augmentTypeName(this, "joynr");
 
-        /**
-         * @name SubscriptionReply#subscriptionId
-         * @type String
-         */
-        Util.extend(this, settings);
+    return Object.freeze(this);
+}
 
-        /**
-         * The joynr type name
-         *
-         * @name SubscriptionReply#_typeName
-         * @type String
-         */
-        Typing.augmentTypeName(this, "joynr");
-
-        return Object.freeze(this);
-    }
-
-    return SubscriptionReply;
-
-}(UtilInternal, Typing));
+module.exports = SubscriptionReply;

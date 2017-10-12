@@ -19,52 +19,50 @@
  * #L%
  */
 var ProviderScope = require('../../../joynr/types/ProviderScope');
-var UtilInternal = require('../../util/UtilInternal');
-module.exports = (function(ProviderScope, Util) {
-    var defaultSettings = {};
-    var discoveryCapability = {
-        providerVersion : {
-            majorVersion : 0,
-            minorVersion : 1
-        },
-        domain : "io.joynr",
-        interfaceName : "system/Discovery",
-        participantId : "CC.DiscoveryProvider.ParticipantId",
-        qos : {
-            customParameters : [],
-            priority : 1,
-            scope : ProviderScope.LOCAL,
-            supportsOnChangeSubscriptions : true
-        },
-        lastSeenDateMs : Date.now(),
-        expiryDateMs : Util.getMaxLongValue(),
-        publicKeyId : "",
-        isLocal : true
-    };
+var Util = require('../../util/UtilInternal');
+var defaultSettings = {};
+var discoveryCapability = {
+    providerVersion : {
+        majorVersion : 0,
+        minorVersion : 1
+    },
+    domain : "io.joynr",
+    interfaceName : "system/Discovery",
+    participantId : "CC.DiscoveryProvider.ParticipantId",
+    qos : {
+        customParameters : [],
+        priority : 1,
+        scope : ProviderScope.LOCAL,
+        supportsOnChangeSubscriptions : true
+    },
+    lastSeenDateMs : Date.now(),
+    expiryDateMs : Util.getMaxLongValue(),
+    publicKeyId : "",
+    isLocal : true
+};
 
-    var routingCapability = {
-        providerVersion : {
-            majorVersion : 0,
-            minorVersion : 1
-        },
-        domain : "io.joynr",
-        interfaceName : "system/Routing",
-        participantId : "CC.RoutingProvider.ParticipantId",
-        qos : {
-            customParameters : [],
-            priority : 1,
-            scope : ProviderScope.LOCAL,
-            supportsOnChangeSubscriptions : true
-        },
-        lastSeenDateMs : Date.now(),
-        expiryDateMs : Util.getMaxLongValue(),
-        publicKeyId : "",
-        isLocal : true
-    };
+var routingCapability = {
+    providerVersion : {
+        majorVersion : 0,
+        minorVersion : 1
+    },
+    domain : "io.joynr",
+    interfaceName : "system/Routing",
+    participantId : "CC.RoutingProvider.ParticipantId",
+    qos : {
+        customParameters : [],
+        priority : 1,
+        scope : ProviderScope.LOCAL,
+        supportsOnChangeSubscriptions : true
+    },
+    lastSeenDateMs : Date.now(),
+    expiryDateMs : Util.getMaxLongValue(),
+    publicKeyId : "",
+    isLocal : true
+};
 
-    defaultSettings.capabilities = [
-        discoveryCapability,
-        routingCapability
-    ];
-    return defaultSettings;
-}(ProviderScope, UtilInternal));
+defaultSettings.capabilities = [
+    discoveryCapability,
+    routingCapability
+];
+module.exports = defaultSettings;

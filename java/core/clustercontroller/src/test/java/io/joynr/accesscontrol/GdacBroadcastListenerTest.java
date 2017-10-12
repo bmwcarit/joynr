@@ -1,5 +1,3 @@
-package io.joynr.accesscontrol;
-
 /*
  * #%L
  * %%
@@ -8,9 +6,9 @@ package io.joynr.accesscontrol;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +16,7 @@ package io.joynr.accesscontrol;
  * limitations under the License.
  * #L%
  */
+package io.joynr.accesscontrol;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
@@ -85,7 +84,6 @@ public class GdacBroadcastListenerTest {
 
     @Test
     public void testDreChangedListenerForRemoveDre() {
-        userDre.setDomains(null);
         LdacDomainRoleEntryChangedBroadcastListener dreChangedListener = new LdacDomainRoleEntryChangedBroadcastListener(domainAccessControlStore);
         dreChangedListener.onReceive(ChangeType.REMOVE, userDre);
         verify(domainAccessControlStore).removeDomainRole(eq(userDre.getUid()), eq(userDre.getRole()));
@@ -100,12 +98,6 @@ public class GdacBroadcastListenerTest {
 
     @Test
     public void testMasterAceChangedListenerForRemoveAce() {
-        masterAce.setDefaultConsumerPermission(null);
-        masterAce.setPossibleConsumerPermissions(null);
-        masterAce.setDefaultRequiredTrustLevel(null);
-        masterAce.setPossibleRequiredTrustLevels(null);
-        masterAce.setDefaultRequiredControlEntryChangeTrustLevel(null);
-        masterAce.setPossibleRequiredControlEntryChangeTrustLevels(null);
         LdacMasterAccessControlEntryChangedBroadcastListener dreChangedListener = new LdacMasterAccessControlEntryChangedBroadcastListener(domainAccessControlStore);
         dreChangedListener.onReceive(ChangeType.REMOVE, masterAce);
         verify(domainAccessControlStore).removeMasterAccessControlEntry(masterAce.getUid(),
@@ -123,12 +115,6 @@ public class GdacBroadcastListenerTest {
 
     @Test
     public void testMediatorAceChangedListenerForRemoveAce() {
-        masterAce.setDefaultConsumerPermission(null);
-        masterAce.setPossibleConsumerPermissions(null);
-        masterAce.setDefaultRequiredTrustLevel(null);
-        masterAce.setPossibleRequiredTrustLevels(null);
-        masterAce.setDefaultRequiredControlEntryChangeTrustLevel(null);
-        masterAce.setPossibleRequiredControlEntryChangeTrustLevels(null);
         LdacMediatorAccessControlEntryChangedBroadcastListener dreChangedListener = new LdacMediatorAccessControlEntryChangedBroadcastListener(domainAccessControlStore);
         dreChangedListener.onReceive(ChangeType.REMOVE, masterAce);
         verify(domainAccessControlStore).removeMediatorAccessControlEntry(masterAce.getUid(),
@@ -146,9 +132,6 @@ public class GdacBroadcastListenerTest {
 
     @Test
     public void testOnwerAceChangedListenerForRemoveAce() {
-        ownerAce.setConsumerPermission(null);
-        ownerAce.setRequiredAceChangeTrustLevel(null);
-        ownerAce.setRequiredTrustLevel(null);
         LdacOwnerAccessControlEntryChangedBroadcastListener dreChangedListener = new LdacOwnerAccessControlEntryChangedBroadcastListener(domainAccessControlStore);
         dreChangedListener.onReceive(ChangeType.REMOVE, ownerAce);
         verify(domainAccessControlStore).removeOwnerAccessControlEntry(ownerAce.getUid(),

@@ -23,6 +23,7 @@
 #include <functional>
 #include <memory>
 
+#include "joynr/IKeychain.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Settings.h"
@@ -35,13 +36,12 @@ namespace joynr
 class IWebSocketPpClient;
 class WebSocketLibJoynrMessagingSkeleton;
 class IWebSocketPpClient;
-class IKeychain;
 
 class LibJoynrWebSocketRuntime : public LibJoynrRuntime
 {
 public:
     LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings,
-                             std::shared_ptr<IKeychain> keyChain);
+                             std::shared_ptr<IKeychain> keyChain = nullptr);
     ~LibJoynrWebSocketRuntime() override;
 
 protected:
@@ -53,7 +53,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrWebSocketRuntime);
 
     void sendInitializationMsg();
-    void createWebsocketClient(std::shared_ptr<IKeychain> keyChain);
+    void createWebsocketClient();
 
     WebSocketSettings wsSettings;
     std::shared_ptr<IWebSocketPpClient> websocket;

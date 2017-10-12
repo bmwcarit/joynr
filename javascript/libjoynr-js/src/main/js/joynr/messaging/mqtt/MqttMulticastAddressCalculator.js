@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -20,35 +20,33 @@
  */
 var Typing = require('../../util/Typing');
 var MqttAddress = require('../../system/RoutingTypes/MqttAddress');
-module.exports = (function(Typing, MqttAddress) {
 
-    /**
-     * @constructor MqttMulticastAddressCalculator
-     * @param {Object}
-     *            settings
-     * @param {WebSocketAddress}
-     *            settings.globalAddress
-     */
-    var MqttMulticastAddressCalculator = function MqttMulticastAddressCalculator(settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkProperty(settings.globalAddress, "MqttAddress", "settings.globalAddress");
+/**
+ * @constructor MqttMulticastAddressCalculator
+ * @param {Object}
+ *            settings
+ * @param {WebSocketAddress}
+ *            settings.globalAddress
+ */
+var MqttMulticastAddressCalculator = function MqttMulticastAddressCalculator(settings) {
+    Typing.checkProperty(settings, "Object", "settings");
+    Typing.checkProperty(settings.globalAddress, "MqttAddress", "settings.globalAddress");
+    this._settings = settings;
+};
 
-        /**
-         * Calculates the multicast address for the submitted joynr message
-         * @function MqttMulticastAddressCalculator#calculate
-         *
-         * @param {JoynrMessage}
-         *            message
-         * @return {Address} the multicast address
-         */
-        this.calculate = function calculate(message) {
-            return new MqttAddress({
-                brokerUri : settings.globalAddress,
-                topic : message.to
-            });
-        };
-    };
+/**
+ * Calculates the multicast address for the submitted joynr message
+ * @function MqttMulticastAddressCalculator#calculate
+ *
+ * @param {JoynrMessage}
+ *            message
+ * @return {Address} the multicast address
+ */
+MqttMulticastAddressCalculator.prototype.calculate = function calculate(message) {
+    return new MqttAddress({
+        brokerUri : this._settings.globalAddress,
+        topic : message.to
+    });
+};
 
-    return MqttMulticastAddressCalculator;
-
-}(Typing, MqttAddress));
+module.exports = MqttMulticastAddressCalculator;

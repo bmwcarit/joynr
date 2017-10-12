@@ -37,6 +37,7 @@
 using ::testing::A;
 using ::testing::_;
 using ::testing::Eq;
+using ::testing::Mock;
 using ::testing::NotNull;
 using ::testing::AllOf;
 using ::testing::Invoke;
@@ -106,7 +107,10 @@ public:
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeListOfStringsOnSuccess));
     }
 
-    ~MockTestProvider() = default;
+    ~MockTestProvider()
+    {
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(this));
+    }
 
     void invokeLocationOnSuccess(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
                          std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
@@ -139,7 +143,7 @@ public:
         joynr::tests::testAbstractProvider::listOfStringsChanged(listOfStrings);
     }
 
-    void registerBroadcastListener(joynr::MulticastBroadcastListener* broadcastListener) override
+    void registerBroadcastListener(std::shared_ptr<joynr::MulticastBroadcastListener> broadcastListener) override
     {
         joynr::tests::testAbstractProvider::registerBroadcastListener(broadcastListener);
     }

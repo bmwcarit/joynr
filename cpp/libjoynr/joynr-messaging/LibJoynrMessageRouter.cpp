@@ -54,6 +54,7 @@ LibJoynrMessageRouter::~LibJoynrMessageRouter()
 }
 
 LibJoynrMessageRouter::LibJoynrMessageRouter(
+        MessagingSettings& messagingSettings,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress,
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         boost::asio::io_service& ioService,
@@ -62,7 +63,8 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
         int maxThreads,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
-        : AbstractMessageRouter(std::move(messagingStubFactory),
+        : AbstractMessageRouter(messagingSettings,
+                                std::move(messagingStubFactory),
                                 ioService,
                                 std::move(addressCalculator),
                                 maxThreads,
@@ -136,27 +138,55 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
 
             runningParentResolves.insert(destinationPartId);
 
-            std::function<void(const bool&)> onSuccess =
-                    [this, destinationPartId](const bool& resolved) {
-                if (resolved) {
-                    JOYNR_LOG_INFO(logger,
-                                   "Got destination address for participant {}",
-                                   destinationPartId);
-                    // save next hop in the routing table
-                    this->addProvisionedNextHop(
-                            destinationPartId, this->parentAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
-                    this->removeRunningParentResolvers(destinationPartId);
-                    this->sendMessages(destinationPartId, this->parentAddress);
+            std::function<void(const bool&)> onSuccess = [
+                destinationPartId,
+                thisWeakPtr = joynr::util::as_weak_ptr(
+                        std::dynamic_pointer_cast<LibJoynrMessageRouter>(shared_from_this()))
+            ](const bool& resolved)
+            {
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    if (resolved) {
+                        JOYNR_LOG_INFO(logger,
+                                       "Got destination address for participant {}",
+                                       destinationPartId);
+                        // save next hop in the routing table
+                        thisSharedPtr->addProvisionedNextHop(
+                                destinationPartId,
+                                thisSharedPtr->parentAddress,
+                                thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE);
+                        thisSharedPtr->sendMessages(
+                                destinationPartId, thisSharedPtr->parentAddress);
+                    } else {
+                        JOYNR_LOG_ERROR(logger,
+                                        "Failed to resolve next hop for participant {}",
+                                        destinationPartId);
+                    }
+                    thisSharedPtr->removeRunningParentResolvers(destinationPartId);
                 } else {
                     JOYNR_LOG_ERROR(logger,
-                                    "Failed to resolve next hop for participant {}",
+                                    "Failed to resolve next hop for participant {} because "
+                                    "LibJoynrMessageRouter is no longer available",
                                     destinationPartId);
-                    // TODO error handling in case of failing submission (?)
                 }
             };
 
-            // TODO error handling in case of failing submission (?)
-            parentRouter->resolveNextHopAsync(destinationPartId, onSuccess);
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError = [
+                destinationPartId,
+                thisWeakPtr = joynr::util::as_weak_ptr(
+                        std::dynamic_pointer_cast<LibJoynrMessageRouter>(shared_from_this()))
+            ](const joynr::exceptions::JoynrRuntimeException& error)
+            {
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    JOYNR_LOG_ERROR(logger,
+                                    "Failed to resolve next hop for participant {}: {}",
+                                    destinationPartId,
+                                    error.getMessage());
+                    thisSharedPtr->removeRunningParentResolvers(destinationPartId);
+                }
+            };
+
+            parentRouter->resolveNextHopAsync(
+                    destinationPartId, std::move(onSuccess), std::move(onError));
         }
         return;
     }
@@ -262,11 +292,13 @@ void LibJoynrMessageRouter::addNextHop(
         const std::string& participantId,
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
         bool isGloballyVisible,
+        const std::int64_t expiryDateMs,
+        const bool isSticky,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     assert(address);
-    addToRoutingTable(participantId, isGloballyVisible, address);
+    addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
     addNextHopToParent(participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
     sendMessages(participantId, address);
 }
@@ -331,16 +363,30 @@ void LibJoynrMessageRouter::addMulticastReceiver(
         }
     }
 
-    std::function<void()> onSuccessWrapper =
-            [ this, multicastId, subscriberParticipantId, onSuccess = std::move(onSuccess) ]()
+    std::function<void()> onSuccessWrapper = [
+        thisWeakPtr = joynr::util::as_weak_ptr(
+                std::dynamic_pointer_cast<LibJoynrMessageRouter>(shared_from_this())),
+        multicastId,
+        subscriberParticipantId,
+        onSuccess = std::move(onSuccess)
+    ]()
     {
-        multicastReceiverDirectory.registerMulticastReceiver(multicastId, subscriberParticipantId);
-        JOYNR_LOG_TRACE(logger,
-                        "added multicast receiver={} for multicastId={}",
-                        subscriberParticipantId,
-                        multicastId);
-        if (onSuccess) {
-            onSuccess();
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            thisSharedPtr->multicastReceiverDirectory.registerMulticastReceiver(
+                    multicastId, subscriberParticipantId);
+            JOYNR_LOG_TRACE(logger,
+                            "added multicast receiver={} for multicastId={}",
+                            subscriberParticipantId,
+                            multicastId);
+            if (onSuccess) {
+                onSuccess();
+            }
+        } else {
+            JOYNR_LOG_ERROR(logger,
+                            "error adding multicast receiver={} for multicastId={} because "
+                            "LibJoynrMessageRouter is no longer available",
+                            subscriberParticipantId,
+                            multicastId);
         }
     };
     std::function<void(const exceptions::JoynrRuntimeException&)> onErrorWrapper =
@@ -360,7 +406,8 @@ void LibJoynrMessageRouter::addMulticastReceiver(
     if (!providerAddress) {
         // try to resolve destination address via parent message router
         auto onResolved = [
-            this,
+            thisWeakPtr = joynr::util::as_weak_ptr(
+                    std::dynamic_pointer_cast<LibJoynrMessageRouter>(shared_from_this())),
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -369,13 +416,25 @@ void LibJoynrMessageRouter::addMulticastReceiver(
         ](const bool& resolved)
         {
             if (resolved) {
-                addProvisionedNextHop(
-                        providerParticipantId, parentAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
-                parentRouter->addMulticastReceiverAsync(multicastId,
-                                                        subscriberParticipantId,
-                                                        providerParticipantId,
-                                                        std::move(onSuccessWrapper),
-                                                        std::move(onErrorWrapper));
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    thisSharedPtr->addProvisionedNextHop(
+                            providerParticipantId,
+                            thisSharedPtr->parentAddress,
+                            thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE);
+                    thisSharedPtr->parentRouter->addMulticastReceiverAsync(
+                            multicastId,
+                            subscriberParticipantId,
+                            providerParticipantId,
+                            std::move(onSuccessWrapper),
+                            std::move(onErrorWrapper));
+                } else {
+                    exceptions::ProviderRuntimeException exception(
+                            "No routing entry for multicast provider (providerParticipantId=" +
+                            providerParticipantId + ") found in parent router because "
+                                                    "LibJoynrMessageRouter is no longer "
+                                                    "available.");
+                    onErrorWrapper(exception);
+                }
             } else {
                 exceptions::ProviderRuntimeException exception(
                         "No routing entry for multicast provider (providerParticipantId=" +

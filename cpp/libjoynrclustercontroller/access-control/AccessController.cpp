@@ -32,6 +32,8 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "libjoynrclustercontroller/ClusterControllerCallContext.h"
+#include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
 
 namespace joynr
 {
@@ -247,7 +249,7 @@ void AccessController::addParticipantToWhitelist(const std::string& participantI
     whitelistParticipantIds.push_back(participantId);
 }
 
-bool AccessController::needsPermissionCheck(const ImmutableMessage& message)
+bool AccessController::needsHasConsumerPermissionCheck(const ImmutableMessage& message) const
 {
     if (util::vectorContains(whitelistParticipantIds, message.getRecipient())) {
         return false;
@@ -267,11 +269,22 @@ bool AccessController::needsPermissionCheck(const ImmutableMessage& message)
     return true;
 }
 
+bool AccessController::needsHasProviderPermissionCheck() const
+{
+    const ClusterControllerCallContext& callContext = ClusterControllerCallContextStorage::get();
+
+    if (callContext.getIsValid()) {
+        return !callContext.getIsInternalProviderRegistration();
+    }
+
+    return true;
+}
+
 void AccessController::hasConsumerPermission(
         std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
 {
-    if (!needsPermissionCheck(*message)) {
+    if (!needsHasConsumerPermissionCheck(*message)) {
         callback->hasConsumerPermission(true);
         return;
     }
@@ -316,6 +329,10 @@ bool AccessController::hasProviderPermission(const std::string& userId,
                                              const std::string& domain,
                                              const std::string& interfaceName)
 {
+    if (!needsHasProviderPermissionCheck()) {
+        return true;
+    }
+
     return localDomainAccessController->getProviderPermission(
                    userId, domain, interfaceName, trustLevel) == Permission::Enum::YES;
 }

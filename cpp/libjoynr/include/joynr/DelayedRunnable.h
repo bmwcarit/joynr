@@ -38,7 +38,7 @@ namespace joynr
 class DelayedRunnable
 {
 public:
-    DelayedRunnable(std::unique_ptr<Runnable> delayedRunnable,
+    DelayedRunnable(std::shared_ptr<Runnable> delayedRunnable,
                     boost::asio::io_service& ioService,
                     std::chrono::milliseconds delayMs,
                     std::function<void(const boost::system::error_code&)>&& timerExpiredCallback)
@@ -51,21 +51,16 @@ public:
     ~DelayedRunnable()
     {
         timer.cancel();
-
-        // Don't delete the runnable if automatic deletition is disabled
-        if (runnable && !runnable->isDeleteOnExit()) {
-            runnable.release();
-        }
     }
 
-    Runnable* takeRunnable()
+    std::shared_ptr<Runnable> takeRunnable()
     {
-        return runnable.release();
+        return runnable;
     }
 
 private:
     SteadyTimer timer;
-    std::unique_ptr<Runnable> runnable;
+    std::shared_ptr<Runnable> runnable;
 };
 
 } // namespace joynr

@@ -47,20 +47,22 @@ private:
 public:
     explicit MulticastSubscriptionCallback(const std::string& subscriptionId,
                                            std::shared_ptr<Future<std::string>> future,
-                                           ISubscriptionManager* subscriptionManager)
+                                           std::weak_ptr<ISubscriptionManager> subscriptionManager)
             : Base(subscriptionId, std::move(future), subscriptionManager)
     {
     }
 
     void onError(const BasePublication& publication, const exceptions::JoynrRuntimeException& error)
     {
-        const MulticastPublication& multicastPublication =
-                static_cast<const MulticastPublication&>(publication);
-        std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
-                Base::subscriptionManager->getMulticastSubscriptionListeners(
-                        multicastPublication.getMulticastId());
-        for (const auto& listener : listeners) {
-            listener->onError(error);
+        if (auto subscriptionManagerSharedPtr = Base::subscriptionManager.lock()) {
+            const MulticastPublication& multicastPublication =
+                    static_cast<const MulticastPublication&>(publication);
+            std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
+                    subscriptionManagerSharedPtr->getMulticastSubscriptionListeners(
+                            multicastPublication.getMulticastId());
+            for (const auto& listener : listeners) {
+                listener->onError(error);
+            }
         }
     }
 
@@ -68,15 +70,18 @@ public:
     std::enable_if_t<std::is_void<Holder>::value, void> onSuccess(
             const BasePublication& publication)
     {
-        const MulticastPublication& multicastPublication =
-                static_cast<const MulticastPublication&>(publication);
-        std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
-                Base::subscriptionManager->getMulticastSubscriptionListeners(
-                        multicastPublication.getMulticastId());
-        for (const auto& listener : listeners) {
-            auto voidListener = std::dynamic_pointer_cast<ISubscriptionListener<void>>(listener);
-            assert(voidListener);
-            voidListener->onReceive();
+        if (auto subscriptionManagerSharedPtr = Base::subscriptionManager.lock()) {
+            const MulticastPublication& multicastPublication =
+                    static_cast<const MulticastPublication&>(publication);
+            std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
+                    subscriptionManagerSharedPtr->getMulticastSubscriptionListeners(
+                            multicastPublication.getMulticastId());
+            for (const auto& listener : listeners) {
+                auto voidListener =
+                        std::dynamic_pointer_cast<ISubscriptionListener<void>>(listener);
+                assert(voidListener);
+                voidListener->onReceive();
+            }
         }
     }
 
@@ -86,16 +91,18 @@ public:
             const Holder& value,
             const Ts&... values)
     {
-        const MulticastPublication& multicastPublication =
-                static_cast<const MulticastPublication&>(publication);
-        std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
-                Base::subscriptionManager->getMulticastSubscriptionListeners(
-                        multicastPublication.getMulticastId());
-        for (const auto& listener : listeners) {
-            auto typedListener =
-                    std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(listener);
-            assert(typedListener);
-            typedListener->onReceive(value, values...);
+        if (auto subscriptionManagerSharedPtr = Base::subscriptionManager.lock()) {
+            const MulticastPublication& multicastPublication =
+                    static_cast<const MulticastPublication&>(publication);
+            std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
+                    subscriptionManagerSharedPtr->getMulticastSubscriptionListeners(
+                            multicastPublication.getMulticastId());
+            for (const auto& listener : listeners) {
+                auto typedListener =
+                        std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(listener);
+                assert(typedListener);
+                typedListener->onReceive(value, values...);
+            }
         }
     }
 

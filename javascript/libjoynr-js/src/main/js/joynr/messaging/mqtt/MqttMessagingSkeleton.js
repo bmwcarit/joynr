@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -22,84 +22,78 @@ var Typing = require('../../util/Typing');
 var LoggerFactory = require('../../system/LoggerFactory');
 var DiagnosticTags = require('../../system/DiagnosticTags');
 var JoynrException = require('../../exceptions/JoynrException');
-module.exports =
-        (function(Typing, LoggerFactory, DiagnosticTags, JoynrException) {
 
-    /**
-     * @constructor MqttMessagingSkeleton
-     * @param {Object} settings
-     * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
-     * @param {MessageRouter} settings.messageRouter the message router
-     * @param {MqttAddress} settings.address own address of joynr client
-     */
-    var MqttMessagingSkeleton =
-            function MqttMessagingSkeleton(settings) {
-                Typing.checkProperty(settings, "Object", "settings");
-                Typing.checkProperty(settings.client, "SharedMqttClient", "settings.client");
-                Typing.checkProperty(
-                        settings.messageRouter,
-                        "MessageRouter",
-                        "settings.messageRouter");
-                Typing.checkProperty(settings.address, "MqttAddress", "settings.address");
+var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
+/**
+ * @constructor MqttMessagingSkeleton
+ * @param {Object} settings
+ * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
+ * @param {MessageRouter} settings.messageRouter the message router
+ * @param {MqttAddress} settings.address own address of joynr client
+ */
+var MqttMessagingSkeleton =
+        function MqttMessagingSkeleton(settings) {
+            Typing.checkProperty(settings, "Object", "settings");
+            Typing.checkProperty(settings.client, "SharedMqttClient", "settings.client");
+            Typing.checkProperty(settings.messageRouter, "MessageRouter", "settings.messageRouter");
+            Typing.checkProperty(settings.address, "MqttAddress", "settings.address");
 
-                var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
+            this._multicastSubscriptionCount = {};
+            this._settings = settings;
 
-                var multicastSubscriptionCount = {};
-
-                settings.client.onmessage =
-                        function(topic, message) {
-                            message.setReceivedFromGlobal(true);
-                            try {
-                                settings.messageRouter.route(message);
-                            } catch (e) {
-                                log.error("unable to process message: "
-                                    + e
-                                    + (e instanceof JoynrException ? " " + e.detailMessage : "")
-                                    + " \nmessge: "
-                                    + DiagnosticTags.forJoynrMessage(message));
-                            }
-                        };
-
-                settings.client.subscribe(settings.address.topic + "/#");
-
-                function translateWildcard(multicastId) {
-                    if (multicastId.match(/[\w\W]*\/[*]$/)) {
-                        return multicastId.replace(/\/\*/g, '/#');
-                    }
-                    return multicastId;
-                }
-
-                this.registerMulticastSubscription =
-                        function(multicastId) {
-                            if (multicastSubscriptionCount[multicastId] === undefined) {
-                                multicastSubscriptionCount[multicastId] = 0;
-                            }
-                            settings.client.subscribe(translateWildcard(multicastId));
-                            multicastSubscriptionCount[multicastId] =
-                                    multicastSubscriptionCount[multicastId] + 1;
-                        };
-
-                this.unregisterMulticastSubscription = function(multicastId) {
-                    var subscribersCount = multicastSubscriptionCount[multicastId];
-                    if (subscribersCount !== undefined) {
-                        subscribersCount--;
-                        if (subscribersCount === 0) {
-                            settings.client.unsubscribe(translateWildcard(multicastId));
-                            delete multicastSubscriptionCount[multicastId];
-                        } else {
-                            multicastSubscriptionCount[multicastId] = subscribersCount;
+            settings.client.onmessage =
+                    function(topic, message) {
+                        message.setReceivedFromGlobal(true);
+                        try {
+                            settings.messageRouter.route(message);
+                        } catch (e) {
+                            log.error("unable to process message: "
+                                + e
+                                + (e instanceof JoynrException ? " " + e.detailMessage : "")
+                                + " \nmessage: "
+                                + DiagnosticTags.forJoynrMessage(message));
                         }
-                    }
-                };
+                    };
 
-                /**
-                 * @function MqttMessagingSkeleton#shutdown
-                 */
-                this.shutdown = function shutdown() {
-                    settings.client.close();
-                };
-            };
+            settings.client.subscribe(settings.address.topic + "/#");
 
-    return MqttMessagingSkeleton;
+        };
 
-        }(Typing, LoggerFactory, DiagnosticTags, JoynrException));
+MqttMessagingSkeleton.prototype._translateWildcard = function(multicastId) {
+    if (multicastId.match(/[\w\W]*\/[*]$/)) {
+        return multicastId.replace(/\/\*/g, "/#");
+    }
+    return multicastId;
+};
+
+MqttMessagingSkeleton.prototype.registerMulticastSubscription =
+        function(multicastId) {
+            if (this._multicastSubscriptionCount[multicastId] === undefined) {
+                this._multicastSubscriptionCount[multicastId] = 0;
+            }
+            this._settings.client.subscribe(this._translateWildcard(multicastId));
+            this._multicastSubscriptionCount[multicastId] =
+                    this._multicastSubscriptionCount[multicastId] + 1;
+        };
+
+MqttMessagingSkeleton.prototype.unregisterMulticastSubscription = function(multicastId) {
+    var subscribersCount = this._multicastSubscriptionCount[multicastId];
+    if (subscribersCount !== undefined) {
+        subscribersCount--;
+        if (subscribersCount === 0) {
+            this._settings.client.unsubscribe(this._translateWildcard(multicastId));
+            delete this._multicastSubscriptionCount[multicastId];
+        } else {
+            this._multicastSubscriptionCount[multicastId] = subscribersCount;
+        }
+    }
+};
+
+/**
+ * @function MqttMessagingSkeleton#shutdown
+ */
+MqttMessagingSkeleton.prototype.shutdown = function shutdown() {
+    this._settings.client.close();
+};
+
+module.exports = MqttMessagingSkeleton;

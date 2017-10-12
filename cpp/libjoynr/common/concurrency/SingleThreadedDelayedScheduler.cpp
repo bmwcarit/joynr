@@ -32,7 +32,7 @@ SingleThreadedDelayedScheduler::SingleThreadedDelayedScheduler(
         const std::string& threadName,
         boost::asio::io_service& ioService,
         std::chrono::milliseconds defaultDelayMs)
-        : DelayedScheduler([this](Runnable* work) { this->queue.add(work); },
+        : DelayedScheduler([this](std::shared_ptr<Runnable> work) { this->queue.add(work); },
                            ioService,
                            defaultDelayMs),
           Thread(threadName),
@@ -77,7 +77,7 @@ void SingleThreadedDelayedScheduler::run()
     while (keepRunning) {
         JOYNR_LOG_TRACE(logger, "Waiting for work");
 
-        Runnable* work = queue.take();
+        std::shared_ptr<Runnable> work = queue.take();
 
         if (work != nullptr) {
 
@@ -85,9 +85,9 @@ void SingleThreadedDelayedScheduler::run()
             {
                 std::lock_guard<std::mutex> lock(mutex);
                 if (!keepRunning) {
-                    if (work->isDeleteOnExit()) {
-                        delete work;
-                    }
+                    // if (work->isDeleteOnExit()) {
+                    //    delete work;
+                    //}
                     break;
                 }
                 currentlyRunning = work;
@@ -100,9 +100,9 @@ void SingleThreadedDelayedScheduler::run()
 
             JOYNR_LOG_TRACE(logger, "Finished work");
 
-            if (work->isDeleteOnExit()) {
-                delete work;
-            }
+            // if (work->isDeleteOnExit()) {
+            //    delete work;
+            //}
         }
     }
 

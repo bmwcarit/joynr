@@ -20,62 +20,58 @@
  */
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var JoynrException = require('./JoynrException');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(TypeRegistrySingleton, Typing, Util, JoynrException, LoggerFactory) {
-    var defaultSettings;
+var defaultSettings;
 
-    /**
-     * @classdesc
-     *
-     * @summary
-     * Constructor of JoynrRuntimeException object used for reporting
-     * error conditions. This serves as superobject for other more specific
-     * runtime exception objects and inherits from JoynrException.
-     *
-     * @constructor
-     * @name JoynrRuntimeException
-     *
-     * @param {Object}
-     *            [settings] the settings object for the constructor call
-     * @param {String}
-     *            [settings.detailMessage] message containing details
-     *            about the error
-     * @returns {JoynrRuntimeException}
-     *            The newly created IllegalAccessException object
-     */
-    function JoynrRuntimeException(settings) {
-        if (!(this instanceof JoynrRuntimeException)) {
-            // in case someone calls constructor without new keyword (e.g. var c
-            // = Constructor({..}))
-            return new JoynrRuntimeException(settings);
-        }
-
-        var log = LoggerFactory.getLogger("joynr.exceptions.JoynrRuntimeException");
-        var exception = new JoynrException(settings);
-
-        /**
-         * Used for serialization.
-         * @name JoynrRuntimeException#_typeName
-         * @type String
-         */
-        Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrRuntimeException");
-        Typing.checkPropertyIfDefined(settings, "Object", "settings");
-        Util.extend(this, defaultSettings, settings, exception);
+/**
+ * @classdesc
+ *
+ * @summary
+ * Constructor of JoynrRuntimeException object used for reporting
+ * error conditions. This serves as superobject for other more specific
+ * runtime exception objects and inherits from JoynrException.
+ *
+ * @constructor
+ * @name JoynrRuntimeException
+ *
+ * @param {Object}
+ *            [settings] the settings object for the constructor call
+ * @param {String}
+ *            [settings.detailMessage] message containing details
+ *            about the error
+ * @returns {JoynrRuntimeException}
+ *            The newly created IllegalAccessException object
+ */
+function JoynrRuntimeException(settings) {
+    if (!(this instanceof JoynrRuntimeException)) {
+        // in case someone calls constructor without new keyword (e.g. var c
+        // = Constructor({..}))
+        return new JoynrRuntimeException(settings);
     }
 
-    defaultSettings = {};
+    var log = LoggerFactory.getLogger("joynr.exceptions.JoynrRuntimeException");
+    var exception = new JoynrException(settings);
 
-    TypeRegistrySingleton.getInstance().addType(
-            "joynr.exceptions.JoynrRuntimeException",
-            JoynrRuntimeException);
+    /**
+     * Used for serialization.
+     * @name JoynrRuntimeException#_typeName
+     * @type String
+     */
+    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrRuntimeException");
+    Typing.checkPropertyIfDefined(settings, "Object", "settings");
+    Util.extend(this, defaultSettings, settings, exception);
+}
 
-    JoynrRuntimeException.prototype = new Error();
-    JoynrRuntimeException.prototype.constructor = JoynrRuntimeException;
-    JoynrRuntimeException.prototype.name = "JoynrRuntimeException";
+defaultSettings = {};
 
-    return JoynrRuntimeException;
+TypeRegistrySingleton.getInstance().addType(
+        "joynr.exceptions.JoynrRuntimeException",
+        JoynrRuntimeException);
 
-        }(TypeRegistrySingleton, Typing, UtilInternal, JoynrException, LoggerFactory));
+JoynrRuntimeException.prototype = new Error();
+JoynrRuntimeException.prototype.constructor = JoynrRuntimeException;
+JoynrRuntimeException.prototype.name = "JoynrRuntimeException";
+
+module.exports = JoynrRuntimeException;

@@ -20,78 +20,74 @@
  */
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
 var Typing = require('../util/Typing');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var JoynrRuntimeException = require('./JoynrRuntimeException');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(TypeRegistrySingleton, Typing, Util, JoynrRuntimeException, LoggerFactory) {
-    var defaultSettings;
+var defaultSettings;
 
-    /**
-     * @classdesc
-     *
-     * @summary
-     * Constructor of MethodInvocationException object used for reporting
-     * error conditions when invoking a method (e.g. method does not
-     * exist or no method with matching signature found etc.) that should
-     * be transmitted back to consumer side.
-     *
-     * @constructor
-     * @name MethodInvocationException
-     *
-     * @param {Object}
-     *            [settings] the settings object for the constructor call
-     * @param {Version} [settings.providerVersion] the version of the provider
-     *            which could not handle the method invocation
-     * @param {String}
-     *            [settings.detailMessage] message containing details
-     *            about the error
-     * @returns {MethodInvocationException}
-     *            The newly created MethodInvocationException object
-     */
-    function MethodInvocationException(settings) {
-        if (!(this instanceof MethodInvocationException)) {
-            // in case someone calls constructor without new keyword (e.g. var c
-            // = Constructor({..}))
-            return new MethodInvocationException(settings);
-        }
-
-        var log = LoggerFactory.getLogger("joynr.exceptions.MethodInvocationException");
-        var runtimeException = new JoynrRuntimeException(settings);
-
-        /**
-         * Used for serialization.
-         * @name MethodInvocationException#_typeName
-         * @type String
-         */
-        Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.MethodInvocationException");
-
-        /**
-         * The provider version information
-         * @name MethodInvocationException#providerVersion
-         * @type String
-         */
-        if (settings) {
-            Typing.checkProperty(settings, "Object", "settings");
-            Typing.checkPropertyIfDefined(
-                    settings.providerVersion,
-                    "Version",
-                    "settings.providerVersion");
-        }
-
-        Util.extend(this, defaultSettings, settings, runtimeException);
+/**
+ * @classdesc
+ *
+ * @summary
+ * Constructor of MethodInvocationException object used for reporting
+ * error conditions when invoking a method (e.g. method does not
+ * exist or no method with matching signature found etc.) that should
+ * be transmitted back to consumer side.
+ *
+ * @constructor
+ * @name MethodInvocationException
+ *
+ * @param {Object}
+ *            [settings] the settings object for the constructor call
+ * @param {Version} [settings.providerVersion] the version of the provider
+ *            which could not handle the method invocation
+ * @param {String}
+ *            [settings.detailMessage] message containing details
+ *            about the error
+ * @returns {MethodInvocationException}
+ *            The newly created MethodInvocationException object
+ */
+function MethodInvocationException(settings) {
+    if (!(this instanceof MethodInvocationException)) {
+        // in case someone calls constructor without new keyword (e.g. var c
+        // = Constructor({..}))
+        return new MethodInvocationException(settings);
     }
 
-    defaultSettings = {};
+    var log = LoggerFactory.getLogger("joynr.exceptions.MethodInvocationException");
+    var runtimeException = new JoynrRuntimeException(settings);
 
-    TypeRegistrySingleton.getInstance().addType(
-            "joynr.exceptions.MethodInvocationException",
-            MethodInvocationException);
+    /**
+     * Used for serialization.
+     * @name MethodInvocationException#_typeName
+     * @type String
+     */
+    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.MethodInvocationException");
 
-    MethodInvocationException.prototype = new Error();
-    MethodInvocationException.prototype.constructor = MethodInvocationException;
-    MethodInvocationException.prototype.name = "MethodInvocationException";
+    /**
+     * The provider version information
+     * @name MethodInvocationException#providerVersion
+     * @type String
+     */
+    if (settings) {
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkPropertyIfDefined(
+                settings.providerVersion,
+                "Version",
+                "settings.providerVersion");
+    }
 
-    return MethodInvocationException;
+    Util.extend(this, defaultSettings, settings, runtimeException);
+}
 
-        }(TypeRegistrySingleton, Typing, UtilInternal, JoynrRuntimeException, LoggerFactory));
+defaultSettings = {};
+
+TypeRegistrySingleton.getInstance().addType(
+        "joynr.exceptions.MethodInvocationException",
+        MethodInvocationException);
+
+MethodInvocationException.prototype = new Error();
+MethodInvocationException.prototype.constructor = MethodInvocationException;
+MethodInvocationException.prototype.name = "MethodInvocationException";
+
+module.exports = MethodInvocationException;

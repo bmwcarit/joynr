@@ -56,7 +56,7 @@ public:
         messagingSettings(settings),
         messageQueue(nullptr),
         messagingStubFactory(nullptr),
-        messageRouter(nullptr),
+        messageRouter(),
         mutableMessage(),
         multicastMessagingSkeletonDirectory(std::make_shared<MulticastMessagingSkeletonDirectory>()),
         brokerURL("mqtt://globalTransport.example.com"),
@@ -87,7 +87,7 @@ public:
 protected:
     template<typename U = T,
              typename =  std::enable_if_t<std::is_same<U, LibJoynrMessageRouter>::value>>
-    std::unique_ptr<LibJoynrMessageRouter> createMessageRouter(std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {})
+    std::shared_ptr<LibJoynrMessageRouter> createMessageRouter(std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {})
     {
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
         messageQueue = messageQueueForMessageRouter.get();
@@ -95,7 +95,8 @@ protected:
         auto transportNotAvailableQueue = std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>();
         transportNotAvailableQueueRef = transportNotAvailableQueue.get();
 
-        auto libJoynrMessageRouter = std::make_unique<LibJoynrMessageRouter>(
+        auto libJoynrMessageRouter = std::make_shared<LibJoynrMessageRouter>(
+                    messagingSettings,
                     webSocketClientAddress,
                     messagingStubFactory,
                     singleThreadedIOService.getIOService(),
@@ -105,25 +106,28 @@ protected:
                     std::move(messageQueueForMessageRouter),
                     std::move(transportNotAvailableQueue)
                 );
+        libJoynrMessageRouter->init();
 
         return std::move(libJoynrMessageRouter);
     }
 
     template<typename U = T,
              typename =  std::enable_if_t<std::is_same<U, CcMessageRouter>::value>>
-    std::unique_ptr<CcMessageRouter> createMessageRouter(std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {})
+    std::shared_ptr<CcMessageRouter> createMessageRouter(std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {})
     {
         const std::string globalCcAddress("globalAddress");
         const std::string messageNotificationProviderParticipantId("messageNotificationProviderParticipantId");
         ClusterControllerSettings ccSettings(settings);
 
+        messagingSettings.setRoutingTableCleanupIntervalMs(5000);
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
         messageQueue = messageQueueForMessageRouter.get();
 
         auto transportNotAvailableQueue = std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>();
         transportNotAvailableQueueRef = transportNotAvailableQueue.get();
 
-        return std::make_unique<CcMessageRouter>(
+        auto ccMessageRouter = std::make_shared<CcMessageRouter>(
+                    messagingSettings,
                     messagingStubFactory,
                     multicastMessagingSkeletonDirectory,
                     std::unique_ptr<IPlatformSecurityManager>(),
@@ -136,6 +140,8 @@ protected:
                     std::move(messageQueueForMessageRouter),
                     std::move(transportNotAvailableQueue)
                 );
+        ccMessageRouter->init();
+        return std::move(ccMessageRouter);
     }
 
     SingleThreadedIOService singleThreadedIOService;
@@ -146,7 +152,7 @@ protected:
     MessageQueue<std::shared_ptr<ITransportStatus>>* transportNotAvailableQueueRef;
     std::shared_ptr<MockMessagingStubFactory> messagingStubFactory;
 
-    std::unique_ptr<T> messageRouter;
+    std::shared_ptr<T> messageRouter;
 
     MutableMessage mutableMessage;
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;

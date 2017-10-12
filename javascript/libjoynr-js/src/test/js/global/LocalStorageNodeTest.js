@@ -41,15 +41,13 @@ describe("local storage", function() {
         fs.rmdirSync(location);
     });
 
-
     beforeEach(function(done) {
         testNum++;
         location = "${project.build.directory}/LocalStorage-" + testNum;
-        storage = new LocalStorage(
-            {
-                clearPersistency : false,
-                location : location
-            });
+        storage = new LocalStorage({
+            clearPersistency : false,
+            location : location
+        });
         done();
     });
 
@@ -85,15 +83,15 @@ describe("local storage", function() {
         expect(result).toEqual(null);
     });
 
-    it("ignores corrupt files", function () {
+    it("ignores corrupt files", function() {
 
         storage.setItem(key, JSON.stringify(item));
         var filename = fs.readdirSync(location)[0];
         fs.writeFileSync(location + "/" + filename, corruptData);
 
         storage = new LocalStorage({
-            clearPersistency: false,
-            location        : location
+            clearPersistency : false,
+            location : location
         });
         expect(storage.getItem(key)).toBe(null);
     });
@@ -105,8 +103,8 @@ describe("local storage", function() {
         fs.writeFileSync(location + "/" + filename, corruptData);
 
         storage = new LocalStorage({
-            clearPersistency: false,
-            location        : location
+            clearPersistency : false,
+            location : location
         });
 
         storage.setItem(key, JSON.stringify(item));
@@ -121,8 +119,8 @@ describe("local storage", function() {
         fs.writeFileSync(location + "/otherFile", "other Data");
 
         storage = new LocalStorage({
-            clearPersistency: false,
-            location        : location
+            clearPersistency : false,
+            location : location
         });
 
         var files = fs.readdirSync(location);

@@ -25,159 +25,18 @@
 #include <tuple>
 #include <vector>
 
-#include <boost/multi_index/composite_key.hpp>
-#include <boost/multi_index/hashed_index.hpp>
-#include <boost/multi_index/mem_fun.hpp>
-#include <boost/multi_index/ordered_index.hpp>
-#include <boost/multi_index_container.hpp>
 #include <boost/optional.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
-#include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
-#include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
-#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
 #include "joynr/serializer/Serializer.h"
+
+#include "libjoynrclustercontroller/access-control/WildcardStorage.h"
+#include "libjoynrclustercontroller/access-control/AccessControlUtils.h"
 
 namespace joynr
 {
-
-namespace access_control
-{
-
-static constexpr const char* WILDCARD = "*";
-
-namespace dac = joynr::infrastructure::DacTypes;
-namespace bmi = boost::multi_index;
-
-namespace tags
-{
-struct UidDomainInterfaceOperation;
-struct DomainAndInterface;
-struct Domain;
-} // namespace tags
-
-namespace tableTags
-{
-struct access;
-struct registration;
-} // namespace tableTags
-
-template <typename T>
-struct MetaTableView;
-
-template <>
-struct MetaTableView<access_control::dac::MasterAccessControlEntry>
-{
-    using tag = tableTags::access;
-};
-
-template <>
-struct MetaTableView<access_control::dac::OwnerAccessControlEntry>
-{
-    using tag = tableTags::access;
-};
-
-template <>
-struct MetaTableView<access_control::dac::MasterRegistrationControlEntry>
-{
-    using tag = tableTags::registration;
-};
-
-template <>
-struct MetaTableView<access_control::dac::OwnerRegistrationControlEntry>
-{
-    using tag = tableTags::registration;
-};
-
-struct TableViewTraitsBase
-{
-    // this custom comparator ensures that wildcards come last
-    struct WildcardComparator
-    {
-        bool operator()(const std::string& lhs, const std::string& rhs) const
-        {
-            if (lhs == WILDCARD) {
-                return false;
-            }
-            if (rhs == WILDCARD) {
-                return true;
-            }
-            return (lhs < rhs);
-        }
-    };
-    using DefaultComparator = std::less<std::string>;
-
-    using UidKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry, const std::string&, getUid);
-    using DomainKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry,
-                                                      const std::string&,
-                                                      getDomain);
-    using InterfaceKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::ControlEntry,
-                                                         const std::string&,
-                                                         getInterfaceName);
-};
-
-template <typename AccessTag, typename Entry>
-struct TableViewTraits;
-
-template <typename Entry>
-struct TableViewTraits<tableTags::access, Entry> : TableViewTraitsBase
-{
-    using OperationKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(Entry, const std::string&, getOperation);
-
-    using Type = bmi::ordered_unique<
-            bmi::tag<tags::UidDomainInterfaceOperation>,
-            bmi::composite_key<Entry, UidKey, DomainKey, InterfaceKey, OperationKey>,
-            bmi::composite_key_compare<WildcardComparator,
-                                       DefaultComparator,
-                                       DefaultComparator,
-                                       WildcardComparator>>;
-};
-
-template <typename Entry>
-struct TableViewTraits<tableTags::registration, Entry> : TableViewTraitsBase
-{
-    using Type = bmi::ordered_unique<
-            bmi::tag<tags::UidDomainInterfaceOperation>,
-            bmi::composite_key<Entry, UidKey, DomainKey, InterfaceKey>,
-            bmi::composite_key_compare<WildcardComparator, DefaultComparator, DefaultComparator>>;
-};
-
-template <typename Entry>
-struct TableMaker
-{
-    using Tag = typename MetaTableView<Entry>::tag;
-    using TableViewType = typename TableViewTraits<Tag, Entry>::Type;
-    using DomainKey = typename TableViewTraits<Tag, Entry>::DomainKey;
-    using InterfaceKey = typename TableViewTraits<Tag, Entry>::InterfaceKey;
-
-    using Type = bmi::multi_index_container<
-            Entry,
-            bmi::indexed_by<
-                    TableViewType,
-                    bmi::ordered_non_unique<bmi::tag<tags::DomainAndInterface>,
-                                            bmi::composite_key<Entry, DomainKey, InterfaceKey>>,
-                    bmi::hashed_non_unique<bmi::tag<tags::Domain>, DomainKey>>>;
-};
-
-namespace domain_role
-{
-using UidKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::DomainRoleEntry, const std::string&, getUid);
-using RoleKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(dac::DomainRoleEntry,
-                                                const dac::Role::Enum&,
-                                                getRole);
-
-using Table = bmi::multi_index_container<
-        dac::DomainRoleEntry,
-        bmi::indexed_by<
-                bmi::ordered_unique<bmi::tag<tags::UidDomainInterfaceOperation>,
-                                    bmi::composite_key<dac::DomainRoleEntry, UidKey, RoleKey>>>>;
-} // namespace domain_role
-
-} // namespace access_control
-
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalDomainAccessStore
 {
 public:
@@ -734,13 +593,16 @@ public:
 private:
     ADD_LOGGER(LocalDomainAccessStore);
     void persistToFile() const;
+    bool endsWithWildcard(const std::string& value) const;
+
     std::string persistenceFileName;
 
     using MasterAccessControlTable =
             access_control::TableMaker<access_control::dac::MasterAccessControlEntry>::Type;
     MasterAccessControlTable masterAccessTable;
 
-    using MediatorAccessControlTable = MasterAccessControlTable;
+    using MediatorAccessControlTable =
+            access_control::TableMaker<access_control::dac::MediatorAccessControlEntry>::Type;
     MediatorAccessControlTable mediatorAccessTable;
 
     using OwnerAccessControlTable =
@@ -751,7 +613,8 @@ private:
             access_control::TableMaker<access_control::dac::MasterRegistrationControlEntry>::Type;
     MasterRegistrationControlTable masterRegistrationTable;
 
-    using MediatorRegistrationControlTable = MasterRegistrationControlTable;
+    using MediatorRegistrationControlTable =
+            access_control::TableMaker<access_control::dac::MediatorRegistrationControlEntry>::Type;
     MediatorRegistrationControlTable mediatorRegistrationTable;
 
     using OwnerRegistrationControlTable =
@@ -760,6 +623,9 @@ private:
 
     using DomainRoleTable = access_control::domain_role::Table;
     DomainRoleTable domainRoleTable;
+
+    joynr::access_control::WildcardStorage domainWildcardStorage;
+    joynr::access_control::WildcardStorage interfaceWildcardStorage;
 
     template <typename Table, typename Value = typename Table::value_type, typename... Args>
     std::vector<Value> getEqualRange(const Table& table, Args&&... args) const
@@ -801,7 +667,10 @@ private:
     }
 
     template <typename Table, typename Entry>
-    bool insertOrReplace(Table& table, const Entry& updatedEntry)
+    typename std::enable_if_t<
+            std::is_same<Entry, joynr::access_control::dac::DomainRoleEntry>::value,
+            bool>
+    insertOrReplace(Table& table, const Entry& updatedEntry)
     {
         bool success = true;
         std::pair<typename Table::iterator, bool> result = table.insert(updatedEntry);
@@ -809,34 +678,184 @@ private:
             // entry exists, update it
             success = table.replace(result.first, updatedEntry);
         }
+
         persistToFile();
         return success;
     }
 
-    template <typename Table, typename Value = typename Table::value_type>
-    boost::optional<Value> lookupOptionalWithWildcard(const Table& table,
-                                                      const std::string& uid,
-                                                      const std::string& domain,
-                                                      const std::string& interfaceName,
-                                                      const std::string& operation) const
+    template <typename Table, typename Entry>
+    typename std::enable_if_t<
+            !std::is_same<Entry, joynr::access_control::dac::DomainRoleEntry>::value,
+            bool>
+    insertOrReplace(Table& table, const Entry& updatedEntry)
     {
-        boost::optional<Value> entry;
-        entry = lookupOptional(table, uid, domain, interfaceName, operation);
-        if (!entry) {
-            entry = lookupOptional(table, uid, domain, interfaceName, access_control::WILDCARD);
+        bool success = true;
+        std::pair<typename Table::iterator, bool> result = table.insert(updatedEntry);
+        if (!result.second) {
+            // entry exists, update it
+            success = table.replace(result.first, updatedEntry);
         }
-        if (!entry) {
-            entry = lookupOptional(
-                    table, access_control::WILDCARD, domain, interfaceName, operation);
+
+        addToWildcardStorage(updatedEntry);
+
+        persistToFile();
+        return success;
+    }
+
+    template <typename Fun, typename TableType>
+    void applyForTable(Fun f, TableType& table)
+    {
+        for (auto& entry : table) {
+            f(entry);
         }
-        if (!entry) {
-            entry = lookupOptional(table,
-                                   access_control::WILDCARD,
-                                   domain,
-                                   interfaceName,
-                                   access_control::WILDCARD);
+    }
+
+    template <typename Fun>
+    void applyForAllTables(Fun f)
+    {
+        applyForTable(f, masterAccessTable);
+        applyForTable(f, mediatorAccessTable);
+        applyForTable(f, ownerAccessTable);
+        applyForTable(f, masterRegistrationTable);
+        applyForTable(f, mediatorRegistrationTable);
+        applyForTable(f, ownerRegistrationTable);
+    }
+
+    template <typename Entry>
+    void addToWildcardStorage(const Entry& updatedEntry)
+    {
+        // If entry ends with wildcard, then add it to the corresponding WildcardStorage
+        if (endsWithWildcard(updatedEntry.getDomain())) {
+            domainWildcardStorage.insert<access_control::wildcards::Domain>(
+                    updatedEntry.getDomain(), updatedEntry);
         }
-        return entry;
+        if (endsWithWildcard(updatedEntry.getInterfaceName())) {
+            interfaceWildcardStorage.insert<access_control::wildcards::Interface>(
+                    updatedEntry.getInterfaceName(), updatedEntry);
+        }
+    }
+
+    template <typename Value>
+    access_control::WildcardStorage::Set<Value> filterOnUid(
+            const access_control::WildcardStorage::Set<Value>& inputSet,
+            const std::string& uid) const
+    {
+        // look first for the Uid
+        access_control::WildcardStorage::Set<Value> tempResult;
+        for (const auto& entry : inputSet) {
+            auto entryUid = entry.getUid();
+            if (entryUid == uid || entryUid == access_control::WILDCARD) {
+                tempResult.insert(entry);
+            }
+        }
+        return tempResult;
+    }
+
+    bool matchWildcard(const std::string& value, std::string wildcard) const
+    {
+        wildcard.pop_back();
+        return boost::algorithm::starts_with(value, wildcard);
+    }
+
+    template <typename Value>
+    access_control::WildcardStorage::Set<Value> filterForDomain(
+            const access_control::WildcardStorage::OptionalSet<Value>& interfaceSet,
+            const std::string& uid,
+            const std::string& domain) const
+    {
+        assert(interfaceSet);
+
+        // all entries in the set have the same interfaceName (as from RadixTree)
+        access_control::WildcardStorage::Set<Value> tempResult = filterOnUid(*interfaceSet, uid);
+        access_control::WildcardStorage::Set<Value> resultSet;
+
+        // look then at the domain
+        for (const auto& value : tempResult) {
+            if (value.getDomain() == domain) {
+                // exact match
+                resultSet.insert(value);
+            } else if (matchWildcard(domain, value.getDomain())) {
+                resultSet.insert(value);
+            }
+        }
+        return resultSet;
+    }
+
+    template <typename Value>
+    access_control::WildcardStorage::Set<Value> filterForInterface(
+            const access_control::WildcardStorage::OptionalSet<Value>& domainSet,
+            const std::string& uid,
+            const std::string& interface) const
+    {
+        assert(domainSet);
+
+        // all entries in the set have the same domain (as from RadixTree)
+        access_control::WildcardStorage::Set<Value> tempResult = filterOnUid(*domainSet, uid);
+        access_control::WildcardStorage::Set<Value> resultSet;
+
+        // look then at the domain
+        for (const auto& value : tempResult) {
+            if (value.getInterfaceName() == interface) {
+                // exact match
+                resultSet.insert(value);
+            } else if (matchWildcard(interface, value.getInterfaceName())) {
+                resultSet.insert(value);
+            }
+        }
+        return resultSet;
+    }
+
+    template <typename Value>
+    boost::optional<Value> pickClosest(
+            const access_control::WildcardStorage::Set<Value>& set_1,
+            const access_control::WildcardStorage::Set<Value>& set_2 = {}) const
+    {
+        // ordered set with custom comparator
+        typename access_control::TableViewResultSet<Value>::Type resultSet;
+        for (auto entry : set_1) {
+            resultSet.insert(entry);
+        }
+
+        for (auto entry : set_2) {
+            resultSet.insert(entry);
+        }
+
+        // return top
+        if (resultSet.empty()) {
+            return boost::none;
+        }
+        return *resultSet.begin();
+    }
+
+    template <typename Value>
+    boost::optional<Value> lookupDomainInterfaceWithWildcard(const std::string& uid,
+                                                             const std::string& domain,
+                                                             const std::string& interfaceName) const
+    {
+        using OptionalSet = access_control::WildcardStorage::OptionalSet<Value>;
+        OptionalSet ifRes = interfaceWildcardStorage.getLongestMatch<Value>(interfaceName);
+        OptionalSet dRes = domainWildcardStorage.getLongestMatch<Value>(domain);
+
+        if (ifRes && dRes) {
+            auto ifSetResutl = filterForDomain(ifRes, uid, domain);
+            auto dRetResutl = filterForInterface(dRes, uid, interfaceName);
+            // both the domain and interface wildcard results match the input parameters
+            // selection can be done without taking into account all input parameters
+            return pickClosest(ifSetResutl, dRetResutl);
+        }
+
+        if (ifRes) {
+            // only got a result from the interface wildcard storage
+            return pickClosest(*ifRes);
+        }
+
+        if (dRes) {
+            // only got a result from the domain wildcard storage
+            return pickClosest(*dRes);
+        }
+
+        // no match found
+        return boost::none;
     }
 
     template <typename Table, typename Value = typename Table::value_type>
@@ -845,10 +864,19 @@ private:
                                                       const std::string& domain,
                                                       const std::string& interfaceName) const
     {
+        // Exact match
         boost::optional<Value> entry = lookupOptional(table, uid, domain, interfaceName);
+
         if (!entry) {
+            // try to match with wildcarded userId
             entry = lookupOptional(table, access_control::WILDCARD, domain, interfaceName);
         }
+
+        if (!entry) {
+            // try to match with wildcarded domain and/or interface and uid wildcarded
+            entry = lookupDomainInterfaceWithWildcard<Value>(uid, domain, interfaceName);
+        }
+
         return entry;
     }
 
@@ -900,6 +928,48 @@ private:
                        std::make_move_iterator(wildcardEntries.begin()),
                        std::make_move_iterator(wildcardEntries.end()));
         return entries;
+    }
+
+    std::vector<access_control::dac::MasterAccessControlEntry> convertMediator(
+            const std::vector<access_control::dac::MediatorAccessControlEntry>& mediatorEntries)
+    {
+        std::vector<access_control::dac::MasterAccessControlEntry> result;
+        for (const auto& e : mediatorEntries) {
+            result.push_back(e);
+        }
+        return result;
+    }
+
+    boost::optional<access_control::dac::MasterAccessControlEntry> convertMediator(
+            const boost::optional<access_control::dac::MediatorAccessControlEntry>& mediatorEntry)
+    {
+        boost::optional<access_control::dac::MasterAccessControlEntry> result;
+        if (mediatorEntry) {
+            result = *mediatorEntry;
+        }
+        return result;
+    }
+
+    std::vector<access_control::dac::MasterRegistrationControlEntry> convertMediator(
+            const std::vector<access_control::dac::MediatorRegistrationControlEntry>&
+                    mediatorEntries)
+    {
+        std::vector<access_control::dac::MasterRegistrationControlEntry> result;
+        for (const auto& e : mediatorEntries) {
+            result.push_back(e);
+        }
+        return result;
+    }
+
+    boost::optional<access_control::dac::MasterRegistrationControlEntry> convertMediator(
+            const boost::optional<access_control::dac::MediatorRegistrationControlEntry>&
+                    mediatorEntry)
+    {
+        boost::optional<access_control::dac::MasterRegistrationControlEntry> result;
+        if (mediatorEntry) {
+            result = *mediatorEntry;
+        }
+        return result;
     }
 };
 } // namespace joynr

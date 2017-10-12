@@ -35,14 +35,13 @@ var PublicationMissedException = require('../../../../classes/joynr/exceptions/P
 var SubscriptionException = require('../../../../classes/joynr/exceptions/SubscriptionException');
 var LoggerFactory = require('../../../../classes/joynr/system/LoggerFactory');
 var Date = require('../../../../test-classes/global/Date');
-var WaitsFor = require('../../../../test-classes/global/WaitsFor');
+var waitsFor = require('../../../../test-classes/global/WaitsFor');
 var TestEnum = require('../../../../test-classes/joynr/tests/testTypes/TestEnum');
 var TypeRegistrySingleton = require('../../../../classes/joynr/types/TypeRegistrySingleton');
 var DiscoveryEntryWithMetaInfo = require('../../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
 var Version = require('../../../../classes/joynr/types/Version');
 var ProviderQos = require('../../../../classes/joynr/types/ProviderQos');
-var UtilInternal = require('../../../../classes/joynr/util/UtilInternal');
-module.exports = (function (SubscriptionManager, MessagingQos, defaultMessagingSettings, MulticastSubscriptionRequest, SubscriptionReply, SubscriptionRequest, SubscriptionStop, OnChangeWithKeepAliveSubscriptionQos, OnChangeSubscriptionQos, SubscriptionQos, SubscriptionPublication, Promise, Reply, PublicationMissedException, SubscriptionException, LoggerFactory, Date, waitsFor, TestEnum, TypeRegistrySingleton, DiscoveryEntryWithMetaInfo, Version, ProviderQos, Util) {
+var Util = require('../../../../classes/joynr/util/UtilInternal');
 
             describe(
                     "libjoynr-js.joynr.dispatching.subscription.SubscriptionManager",
@@ -891,4 +890,3 @@ module.exports = (function (SubscriptionManager, MessagingQos, defaultMessagingS
                                     });
                                 });
                         });
-}(SubscriptionManager, MessagingQos, defaultMessagingSettings, MulticastSubscriptionRequest, SubscriptionReply, SubscriptionRequest, SubscriptionStop, OnChangeWithKeepAliveSubscriptionQos, OnChangeSubscriptionQos, SubscriptionQos, SubscriptionPublication, Promise, Reply, PublicationMissedException, SubscriptionException, LoggerFactory, Date, WaitsFor, TestEnum, TypeRegistrySingleton, DiscoveryEntryWithMetaInfo, Version, ProviderQos, UtilInternal));

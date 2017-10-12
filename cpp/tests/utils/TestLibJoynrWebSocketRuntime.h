@@ -24,11 +24,11 @@
 
 #include <gtest/gtest.h>
 
-#include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
-#include "joynr/Settings.h"
-#include "joynr/Semaphore.h"
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/IKeychain.h"
+#include "joynr/Semaphore.h"
+#include "joynr/Settings.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
 namespace joynr
 {
@@ -37,7 +37,12 @@ class TestLibJoynrWebSocketRuntime : public LibJoynrWebSocketRuntime
 {
 public:
 
-    TestLibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings, std::shared_ptr<IKeychain> keyChain) : LibJoynrWebSocketRuntime(std::move(settings), std::move(keyChain))
+    TestLibJoynrWebSocketRuntime(
+            std::unique_ptr<Settings> settings,
+            std::shared_ptr<IKeychain> keyChain = nullptr)
+        : LibJoynrWebSocketRuntime(
+              std::move(settings),
+              std::move(keyChain))
     {
     }
 

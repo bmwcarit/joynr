@@ -19,34 +19,33 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
-    /**
-     * @name PlatformSecurityManager
-     * @constructor
-     * @variation 2
-     *
-     * @param {String}
-     *            messageType the message type as defined by
-     *            [JoynrMessage.JOYNRMESSAGE_TYPE_*]{@link JoynrMessage}
-     */
-    function PlatformSecurityManager() {
-        /**
-         * @name PlatformSecurityManager(2)#getCurrentProcessUserId
-         * @function
-         *
-         * @returns {String} the user ID that executes node
-         */
-        this.getCurrentProcessUserId = function getCurrentProcessUserId() {
-            // Remark: Faking the user name by setting this environment variable
-            // is not a security threat, since the process can only access the
-            // private key of the real user. This key is used to sign the message.
-            // On the receiving side joynr will try to verify the message signature
-            // with the public key of the faked user which will fail.
-            return process.env.USER;
-        };
-    }
+/**
+ * @name PlatformSecurityManager
+ * @constructor
+ * @variation 2
+ *
+ * @param {String}
+ *            messageType the message type as defined by
+ *            [JoynrMessage.JOYNRMESSAGE_TYPE_*]{@link JoynrMessage}
+ */
+function PlatformSecurityManager() {
 
-    return PlatformSecurityManager;
+}
 
-}());
+/**
+ * @name PlatformSecurityManager(2)#getCurrentProcessUserId
+ * @function
+ *
+ * @returns {String} the user ID that executes node
+ */
+PlatformSecurityManager.prototype.getCurrentProcessUserId = function getCurrentProcessUserId() {
+    // Remark: Faking the user name by setting this environment variable
+    // is not a security threat, since the process can only access the
+    // private key of the real user. This key is used to sign the message.
+    // On the receiving side joynr will try to verify the message signature
+    // with the public key of the faked user which will fail.
+    return process.env.USER;
+};
+
+module.exports = PlatformSecurityManager;

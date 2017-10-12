@@ -18,70 +18,37 @@
  * limitations under the License.
  * #L%
  */
-var ProviderAttributeNotifyReadWrite = require('./ProviderAttributeNotifyReadWrite');
-var ProviderAttributeNotifyRead = require('./ProviderAttributeNotifyRead');
-var ProviderAttributeNotifyWrite = require('./ProviderAttributeNotifyWrite');
-var ProviderAttributeNotify = require('./ProviderAttributeNotify');
-var ProviderAttributeReadWrite = require('./ProviderAttributeReadWrite');
-var ProviderAttributeRead = require('./ProviderAttributeRead');
-var ProviderAttributeWrite = require('./ProviderAttributeWrite');
+var ProviderAttribute = require('./ProviderAttribute');
 var ProviderOperation = require('./ProviderOperation');
 var ProviderEvent = require('./ProviderEvent');
-module.exports =
-        (function(
-                ProviderAttributeNotifyReadWrite,
-                ProviderAttributeNotifyRead,
-                ProviderAttributeNotifyWrite,
-                ProviderAttributeNotify,
-                ProviderAttributeReadWrite,
-                ProviderAttributeRead,
-                ProviderAttributeWrite,
-                ProviderOperation,
-                ProviderEvent) {
 
-    var dependencies = {
-        ProviderAttributeNotifyReadWrite : ProviderAttributeNotifyReadWrite,
-        ProviderAttributeNotifyRead : ProviderAttributeNotifyRead,
-        ProviderAttributeNotifyWrite : ProviderAttributeNotifyWrite,
-        ProviderAttributeNotify : ProviderAttributeNotify,
-        ProviderAttributeReadWrite : ProviderAttributeReadWrite,
-        ProviderAttributeRead : ProviderAttributeRead,
-        ProviderAttributeWrite : ProviderAttributeWrite,
-        ProviderOperation : ProviderOperation,
-        ProviderEvent : ProviderEvent
-    };
+var dependencies = {
+    ProviderAttribute : ProviderAttribute,
+    ProviderOperation : ProviderOperation,
+    ProviderEvent : ProviderEvent
+};
+/**
+ * @name ProviderBuilder
+ * @constructor
+ */
+var ProviderBuilder = function ProviderBuilder() {
     /**
-     * @name ProviderBuilder
-     * @constructor
+     * @name ProviderBuilder#build
+     * @function
+     * @param {Function}
+     *            ProviderConstructor - the constructor function of the generated Provider that
+     *            creates a new provider instance
+     * @param {Object}
+     *            implementation - an object containing the same fields and public functions as
+     *            exposed int he provider that implements the actual functionaltiy of the
+     *            provider
+     * @returns {Object} a provider of the given type
+     * @throws {Error}
+     *             if correct implementation was not provided
      */
-    var ProviderBuilder = function ProviderBuilder() {
-        /**
-         * @name ProviderBuilder#build
-         * @function
-         * @param {Function}
-         *            ProviderConstructor - the constructor function of the generated Provider that
-         *            creates a new provider instance
-         * @param {Object}
-         *            implementation - an object containing the same fields and public functions as
-         *            exposed int he provider that implements the actual functionaltiy of the
-         *            provider
-         * @returns {Object} a provider of the given type
-         * @throws {Error}
-         *             if correct implementation was not provided
-         */
-        this.build = function build(ProviderConstructor, implementation) {
-            return new ProviderConstructor(implementation, dependencies);
-        };
+    this.build = function build(ProviderConstructor, implementation) {
+        return new ProviderConstructor(implementation, dependencies);
     };
+};
 
-    return ProviderBuilder;
-        }(
-                ProviderAttributeNotifyReadWrite,
-                ProviderAttributeNotifyRead,
-                ProviderAttributeNotifyWrite,
-                ProviderAttributeNotify,
-                ProviderAttributeReadWrite,
-                ProviderAttributeRead,
-                ProviderAttributeWrite,
-                ProviderOperation,
-                ProviderEvent));
+module.exports = ProviderBuilder;

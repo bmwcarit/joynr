@@ -25,15 +25,14 @@ var Reply = require('../../../classes/joynr/dispatching/types/Reply');
 var TypeRegistrySingleton = require('../../../classes/joynr/types/TypeRegistrySingleton');
 var Typing = require('../../../classes/joynr/util/Typing');
 var UtilInternal = require('../../../classes/joynr/util/UtilInternal');
-var JsonSerializer = require('../../../classes/joynr/util/JSONSerializer');
+var JSONSerializer = require('../../../classes/joynr/util/JSONSerializer');
 var MethodInvocationException = require('../../../classes/joynr/exceptions/MethodInvocationException');
 var Version = require('../../../classes/joynr/types/Version');
 var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
 var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
 var Promise = require('../../../classes/global/Promise');
-var WaitsFor = require('../../../test-classes/global/WaitsFor');
-module.exports = (function (RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing, UtilInternal, JSONSerializer, MethodInvocationException, Version, DiscoveryEntryWithMetaInfo, ProviderQos, MessagingQos, Promise, waitsFor) {
+var waitsFor = require('../../../test-classes/global/WaitsFor');
             describe(
                     "libjoynr-js.joynr.dispatching.RequestReplyManager",
                     function() {
@@ -42,6 +41,7 @@ module.exports = (function (RequestReplyManager, OneWayRequest, Request, Reply, 
                         var requestReplyManager;
                         var typeRegistry;
                         var ttl_ms = 50;
+                        var toleranceMs = 1500; // at least 1000 since that's the cleanup interval
                         var requestReplyId = "requestReplyId";
                         var testResponse = [ "testResponse"
                         ];
@@ -145,6 +145,10 @@ module.exports = (function (RequestReplyManager, OneWayRequest, Request, Reply, 
                                     "test.ComplexTypeWithComplexAndSimpleProperties",
                                     ComplexTypeWithComplexAndSimpleProperties);
                             requestReplyManager = new RequestReplyManager(dispatcherSpy, typeRegistry);
+                        });
+
+                        afterEach(function () {
+                            requestReplyManager.shutdown();
                         });
 
                         it("is instantiable", function(done) {
@@ -367,6 +371,8 @@ module.exports = (function (RequestReplyManager, OneWayRequest, Request, Reply, 
                                 "reject"
                             ]);
 
+                            var timeout = toleranceMs + ttl_ms;
+
                             requestReplyManager.addReplyCaller(
                                 requestReplyId,
                                 replyCallerSpy,
@@ -376,7 +382,7 @@ module.exports = (function (RequestReplyManager, OneWayRequest, Request, Reply, 
                             waitsFor(function() {
                                 return replyCallerSpy.resolve.calls.count() > 0
                                     || replyCallerSpy.reject.calls.count() > 0;
-                            }, "reject or fulfill to be called", ttl_ms * 2).then(function() {
+                            }, "reject or fulfill to be called", timeout).then(function() {
                                 expect(replyCallerSpy.resolve).toHaveBeenCalled();
                                 expect(replyCallerSpy.resolve).toHaveBeenCalledWith(testResponse);
                                 expect(replyCallerSpy.reject).not.toHaveBeenCalled();
@@ -393,6 +399,8 @@ module.exports = (function (RequestReplyManager, OneWayRequest, Request, Reply, 
                                         "reject"
                                     ]);
 
+                                    var timeout = toleranceMs + ttl_ms;
+
                                     requestReplyManager.addReplyCaller(
                                         "requestReplyId",
                                         replyCallerSpy,
@@ -400,15 +408,15 @@ module.exports = (function (RequestReplyManager, OneWayRequest, Request, Reply, 
 
                                     waitsFor(function() {
                                         return replyCallerSpy.resolve.calls.count() > 0
-                                            || replyCallerSpy.reject.calls.count() > 0;
-                                    }, "reject or fulfill to be called", ttl_ms * 2).then(function() {
+                                        || replyCallerSpy.reject.calls.count() > 0;
+                                    }, "reject or fulfill to be called", timeout).then(function() {
                                         expect(replyCallerSpy.resolve).not.toHaveBeenCalled();
                                         expect(replyCallerSpy.reject).toHaveBeenCalled();
                                         done();
                                         return null;
                                     }).catch(fail);
 
-                                });
+                        });
 
                         function testHandleReplyWithExpectedType(params, promiseChain) {
                             var replyCallerSpy = jasmine.createSpyObj("deferred", [
@@ -908,4 +916,3 @@ module.exports = (function (RequestReplyManager, OneWayRequest, Request, Reply, 
                             done();
                         });
                     });
-}(RequestReplyManager, OneWayRequest, Request, Reply, TypeRegistrySingleton, Typing, UtilInternal, JsonSerializer, MethodInvocationException, Version, DiscoveryEntryWithMetaInfo, ProviderQos, MessagingQos, Promise, WaitsFor));    // require

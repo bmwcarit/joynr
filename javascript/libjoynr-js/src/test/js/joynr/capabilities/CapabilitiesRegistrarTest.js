@@ -1,4 +1,4 @@
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, node: true*/
 /*global fail: true */
 /*
  * #%L
@@ -22,12 +22,11 @@ var Promise = require('../../../classes/global/Promise');
 var CapabilitiesRegistrar = require('../../../classes/joynr/capabilities/CapabilitiesRegistrar');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
 var GlobalDiscoveryEntry = require('../../../classes/joynr/types/GlobalDiscoveryEntry');
-var ProviderAttributeNotifyReadWrite = require('../../../classes/joynr/provider/ProviderAttributeNotifyReadWrite');
+var ProviderAttribute = require('../../../classes/joynr/provider/ProviderAttribute');
 var DiscoveryEntry = require('../../../classes/joynr/types/DiscoveryEntry');
 var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
 var Version = require('../../../classes/joynr/types/Version');
 var uuid = require('../../../classes/lib/uuid-annotated');
-module.exports = (function (Promise, CapabilitiesRegistrar, ProviderQos, GlobalDiscoveryEntry, ProviderAttributeNotifyReadWrite, DiscoveryEntry, ProviderScope, Version, uuid) {
             describe(
                     "libjoynr-js.joynr.capabilities.CapabilitiesRegistrar",
                     function() {
@@ -82,11 +81,11 @@ module.exports = (function (Promise, CapabilitiesRegistrar, ProviderQos, GlobalD
                                         supportsOnChangeSubscriptions : true
                                     });
 
-                            provider.myAttribute = new ProviderAttributeNotifyReadWrite(provider, {
+                            provider.myAttribute = new ProviderAttribute(provider, {
                                 dependencies : {
                                     publicationManager : publicationManagerSpy
                                 }
-                            }, "myAttribute", "Boolean");
+                            }, "myAttribute", "Boolean", "NOTIFYREADWRITE");
 
                             localChannelId = "localChannelId";
                             domain = "testdomain";
@@ -426,5 +425,3 @@ module.exports = (function (Promise, CapabilitiesRegistrar, ProviderQos, GlobalD
                                 });
 
                     });
-
-}(Promise, CapabilitiesRegistrar, ProviderQos, GlobalDiscoveryEntry, ProviderAttributeNotifyReadWrite, DiscoveryEntry, ProviderScope, Version, uuid));    // require

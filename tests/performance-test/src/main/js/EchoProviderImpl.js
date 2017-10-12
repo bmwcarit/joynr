@@ -29,28 +29,39 @@ var error = testbase.logging.error;
 var log = testbase.logging.log;
 
 exports.implementation = {
-    echoString : function(opArgs) {
-        return {responseData: opArgs.data};
+
+    simpleAttribute: {
+
+        set : function() {
+        },
+
+        get: function () {
+
+        }
     },
 
-    echoByteArray : function(opArgs) {
+    echoString: function(opArgs) {
+        return { responseData: opArgs.data };
+    },
+
+    echoByteArray: function(opArgs) {
         return new Promise(function(resolve, reject) {
             if (opArgs.data === undefined) {
                 reject(new joynr.exceptions.ProviderRuntimeException(
-                        {detailMessage: "echoByteArray: invalid argument data"}));
+                        { detailMessage: "echoByteArray: invalid argument data" }));
             } else {
-                resolve({responseData: opArgs.data});
+                resolve({ responseData: opArgs.data });
             }
         });
     },
 
-    echoComplexStruct : function(opArgs) {
+    echoComplexStruct: function(opArgs) {
         return new Promise(function(resolve, reject) {
             if (opArgs.data === undefined) {
                 reject(new joynr.exceptions.ProviderRuntimeException(
-                        {detailMessage: "echoComplexStruct: invalid argument data"}));
+                        { detailMessage: "echoComplexStruct: invalid argument data" }));
             } else {
-                resolve({responseData: opArgs.data});
+                resolve({ responseData: opArgs.data });
             }
         });
     }

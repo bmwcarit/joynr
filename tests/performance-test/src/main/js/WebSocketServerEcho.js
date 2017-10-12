@@ -19,7 +19,7 @@
  * #L%
  */
 
-var serverPort =  process.argv[2];
+var serverPort = process.argv[2];
 
 if (!serverPort) {
     console.log("usage: node WebSocketServerEcho.js port");
@@ -29,10 +29,10 @@ if (!serverPort) {
 console.log("Server port is " + serverPort);
 
 var WebSocketServer = require("ws").Server;
-var server =  new WebSocketServer({port: serverPort});
+var server = new WebSocketServer({ port: serverPort });
 
-server.on('connection', function(webSocket) {
-    webSocket.on('message', function(message) {
+server.on("connection", function(webSocket) {
+    webSocket.on("message", function(message) {
         webSocket.send(message);
     });
 });

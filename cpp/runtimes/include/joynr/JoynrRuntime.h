@@ -220,7 +220,7 @@ public:
     {
         if (!proxyFactory) {
             throw exceptions::JoynrRuntimeException(
-                    "Exception in JoynrRuntime: Cannot perform arbitration as"
+                    "Exception in JoynrRuntime: Cannot perform arbitration as "
                     "runtime is not yet fully initialized.");
         }
         return std::make_shared<ProxyBuilder<TIntfProxy>>(shared_from_this(),
@@ -298,7 +298,7 @@ protected:
      * @brief Constructs a JoynrRuntime instance
      * @param settings The system service settings
      */
-    explicit JoynrRuntime(Settings& settings);
+    explicit JoynrRuntime(Settings& settings, std::shared_ptr<IKeychain> keyChain = nullptr);
 
     static std::unique_ptr<Settings> createSettings(const std::string& pathToLibjoynrSettings,
                                                     const std::string& pathToMessagingSettings);
@@ -341,7 +341,7 @@ protected:
      * @brief Publication manager receives subscription requests and prepares publications
      * which are send back to the subscription manager.
      */
-    PublicationManager* publicationManager;
+    std::shared_ptr<PublicationManager> publicationManager;
     std::shared_ptr<IKeychain> keyChain;
 
 private:

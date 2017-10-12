@@ -24,12 +24,14 @@
 
 #include "joynr/Dispatcher.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/IKeychain.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessDispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/InProcessPublicationSender.h"
 #include "joynr/MessageSender.h"
 #include "joynr/LibJoynrMessageRouter.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/PublicationManager.h"
 #include "joynr/Settings.h"
@@ -45,10 +47,11 @@
 namespace joynr
 {
 
-LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings)
-        : JoynrRuntime(*settings),
+LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
+                                 std::shared_ptr<IKeychain> keyChain)
+        : JoynrRuntime(*settings, std::move(keyChain)),
           subscriptionManager(nullptr),
-          inProcessPublicationSender(nullptr),
+          inProcessPublicationSender(),
           messageSender(nullptr),
           joynrDispatcher(nullptr),
           inProcessDispatcher(),
@@ -82,8 +85,7 @@ LibJoynrRuntime::~LibJoynrRuntime()
         libjoynrSettings = nullptr;
     }
     if (inProcessPublicationSender) {
-        delete inProcessPublicationSender;
-        inProcessPublicationSender = nullptr;
+        inProcessPublicationSender.reset();
     }
     if (libJoynrMessageRouter) {
         libJoynrMessageRouter->shutdown();
@@ -111,10 +113,12 @@ void LibJoynrRuntime::init(
             systemServicesSettings.getCcRoutingProviderParticipantId();
     // create message router
     libJoynrMessageRouter =
-            std::make_shared<LibJoynrMessageRouter>(libjoynrMessagingAddress,
+            std::make_shared<LibJoynrMessageRouter>(messagingSettings,
+                                                    libjoynrMessagingAddress,
                                                     std::move(messagingStubFactory),
                                                     singleThreadIOService->getIOService(),
                                                     std::move(addressCalculator));
+    libJoynrMessageRouter->init();
 
     libJoynrMessageRouter->loadRoutingTable(
             libjoynrSettings->getMessageRouterPersistenceFilename());
@@ -131,9 +135,9 @@ void LibJoynrRuntime::init(
     dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
-    publicationManager = new PublicationManager(singleThreadIOService->getIOService(),
-                                                messageSender.get(),
-                                                messagingSettings.getTtlUpliftMs());
+    publicationManager = std::make_shared<PublicationManager>(singleThreadIOService->getIOService(),
+                                                              messageSender,
+                                                              messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings->getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
@@ -144,10 +148,10 @@ void LibJoynrRuntime::init(
     inProcessDispatcher =
             std::make_shared<InProcessDispatcher>(singleThreadIOService->getIOService());
 
-    inProcessPublicationSender = new InProcessPublicationSender(subscriptionManager);
+    inProcessPublicationSender = std::make_shared<InProcessPublicationSender>(subscriptionManager);
     // TODO: replace raw ptr to IRequestCallerDirectory
     auto inProcessConnectorFactory = std::make_unique<InProcessConnectorFactory>(
-            subscriptionManager.get(),
+            subscriptionManager,
             publicationManager,
             inProcessPublicationSender,
             std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher));
@@ -221,7 +225,7 @@ void LibJoynrRuntime::init(
                 dispatcherAddress,
                 libJoynrMessageRouter,
                 messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
-                *publicationManager,
+                publicationManager,
                 globalAddress);
 
         onSuccess();

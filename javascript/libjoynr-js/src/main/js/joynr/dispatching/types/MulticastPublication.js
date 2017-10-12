@@ -18,53 +18,50 @@
  * limitations under the License.
  * #L%
  */
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
-module.exports = (function(Util, Typing) {
 
-    /**
-     * @name MulticastPublication
-     * @constructor
-     *
-     * @param {String}
-     *            settings.multicastId
-     * @param {Object}
-     *            settings.response
-     * @param {Object}
-     *            settings.error The exception object in case of publication failure
-     */
-    function MulticastPublication(settings) {
-        if (settings.response) {
-            settings.response = Util.ensureTypedValues(settings.response);
-        }
-
-        /**
-         * @name MulticastPublication#multicastId
-         * @type String
-         */
-        this.multicastId = settings.multicastId;
-        /**
-         * @name MulticastPublication#response
-         * @type Object
-         */
-        this.response = settings.response;
-        /**
-         * @name MulticastPublication#error
-         * @type Object
-         */
-        this.error = settings.error;
-
-        /**
-         * The joynr type name
-         *
-         * @name MulticastPublication#_typeName
-         * @type String
-         */
-        Typing.augmentTypeName(this, "joynr");
-
-        return Object.freeze(this);
+/**
+ * @name MulticastPublication
+ * @constructor
+ *
+ * @param {String}
+ *            settings.multicastId
+ * @param {Object}
+ *            settings.response
+ * @param {Object}
+ *            settings.error The exception object in case of publication failure
+ */
+function MulticastPublication(settings) {
+    if (settings.response) {
+        settings.response = Util.ensureTypedValues(settings.response);
     }
 
-    return MulticastPublication;
+    /**
+     * @name MulticastPublication#multicastId
+     * @type String
+     */
+    this.multicastId = settings.multicastId;
+    /**
+     * @name MulticastPublication#response
+     * @type Object
+     */
+    this.response = settings.response;
+    /**
+     * @name MulticastPublication#error
+     * @type Object
+     */
+    this.error = settings.error;
 
-}(UtilInternal, Typing));
+    /**
+     * The joynr type name
+     *
+     * @name MulticastPublication#_typeName
+     * @type String
+     */
+    Typing.augmentTypeName(this, "joynr");
+
+    return Object.freeze(this);
+}
+
+module.exports = MulticastPublication;

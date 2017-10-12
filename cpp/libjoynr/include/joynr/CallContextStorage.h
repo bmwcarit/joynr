@@ -21,22 +21,11 @@
 #define CALLCONTEXTSTORAGE_H
 
 #include "joynr/CallContext.h"
+#include "joynr/ThreadLocalContextStorage.h"
 
 namespace joynr
 {
-
-class CallContextStorage
-{
-public:
-    static void set(const CallContext& callContext);
-    static void set(CallContext&& callContext);
-    static const CallContext& get();
-    static void invalidate();
-
-private:
-    static thread_local CallContext callContext;
-};
-
+using CallContextStorage = ThreadLocalContextStorage<CallContext>;
 } // namespace joynr
 
 #endif // CALLCONTEXTSTORAGE_H

@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -19,41 +19,38 @@
  * #L%
  */
 var JoynrMessage = require('../JoynrMessage');
-var JsonSerializer = require('../../util/JSONSerializer');
+var JSONSerializer = require('../../util/JSONSerializer');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports = (function(JoynrMessage, JSONSerializer, LoggerFactory) {
 
-    /**
-     * @name MqttMessagingStub
-     * @constructor
+var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
+/**
+ * @name MqttMessagingStub
+ * @constructor
 
-     * @param {Object} settings the settings object for this constructor call
-     * @param {MqttAddress} settings.address the mqtt address of the message destination
-     * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
-     */
-    function MqttMessagingStub(settings) {
-        var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
+ * @param {Object} settings the settings object for this constructor call
+ * @param {MqttAddress} settings.address the mqtt address of the message destination
+ * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
+ */
+function MqttMessagingStub(settings) {
+    this._settings = settings;
+}
 
-        /**
-         * @name MqttMessagingStub#transmit
-         * @function
-         *
-         * @param {Object|JoynrMessage} message the message to transmit
-         */
-        this.transmit = function transmit(message) {
-            log.debug("transmit message: \"" + JSONSerializer.stringify(message) + "\"");
-            var topic = settings.address.topic;
-            if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
-                topic += MqttMessagingStub.PRIORITY_LOW + message.to;
-            }
-
-            return settings.client.send(topic, message);
-        };
-
+/**
+ * @name MqttMessagingStub#transmit
+ * @function
+ *
+ * @param {Object|JoynrMessage} message the message to transmit
+ */
+MqttMessagingStub.prototype.transmit = function transmit(message) {
+    log.debug("transmit message: \"" + JSONSerializer.stringify(message) + "\"");
+    var topic = this._settings.address.topic;
+    if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
+        topic += MqttMessagingStub.PRIORITY_LOW + message.to;
     }
 
-    MqttMessagingStub.PRIORITY_LOW = "/low/";
+    return this._settings.client.send(topic, message);
+};
 
-    return MqttMessagingStub;
+MqttMessagingStub.PRIORITY_LOW = "/low/";
 
-}(JoynrMessage, JsonSerializer, LoggerFactory));
+module.exports = MqttMessagingStub;

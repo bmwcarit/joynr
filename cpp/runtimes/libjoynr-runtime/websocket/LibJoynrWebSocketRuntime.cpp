@@ -16,8 +16,11 @@
  * limitations under the License.
  * #L%
  */
-#include <cassert>
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
+
+#include <cassert>
+
+#include <websocketpp/common/connection_hdl.hpp>
 
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
@@ -38,12 +41,12 @@ INIT_LOGGER(LibJoynrWebSocketRuntime);
 
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings,
                                                    std::shared_ptr<IKeychain> keyChain)
-        : LibJoynrRuntime(std::move(settings)),
+        : LibJoynrRuntime(std::move(settings), std::move(keyChain)),
           wsSettings(*this->settings),
           websocket(nullptr),
           initializationMsg()
 {
-    createWebsocketClient(keyChain);
+    createWebsocketClient();
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
@@ -131,16 +134,19 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
     websocket->send(smrf::ByteArrayView(rawMessage), onFailure);
 }
 
-void LibJoynrWebSocketRuntime::createWebsocketClient(std::shared_ptr<IKeychain> keyChain)
+void LibJoynrWebSocketRuntime::createWebsocketClient()
 {
     system::RoutingTypes::WebSocketAddress webSocketAddress =
             wsSettings.createClusterControllerMessagingAddress();
 
-    std::string certificateAuthorityPemFilename = wsSettings.getCertificateAuthorityPemFilename();
-    std::string certificatePemFilename = wsSettings.getCertificatePemFilename();
-    std::string privateKeyPemFilename = wsSettings.getPrivateKeyPemFilename();
-
     if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS) {
+        if (keyChain == nullptr) {
+            const std::string message(
+                    "TLS websocket connection was configured for but no keychain was provided");
+            JOYNR_LOG_FATAL(logger, message);
+            throw exceptions::JoynrRuntimeException(message);
+        }
+
         JOYNR_LOG_INFO(logger, "Using TLS connection");
         websocket = std::make_shared<WebSocketPpClientTLS>(
                 wsSettings, singleThreadIOService->getIOService(), keyChain);
@@ -159,9 +165,12 @@ void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
 {
     auto wsLibJoynrMessagingSkeleton =
             std::make_shared<WebSocketLibJoynrMessagingSkeleton>(util::as_weak_ptr(messageRouter));
-    websocket->registerReceiveCallback([wsLibJoynrMessagingSkeleton](smrf::ByteVector&& msg) {
-        wsLibJoynrMessagingSkeleton->onMessageReceived(std::move(msg));
-    });
+    using ConnectionHandle = websocketpp::connection_hdl;
+    websocket->registerReceiveCallback(
+            [wsLibJoynrMessagingSkeleton](ConnectionHandle&& hdl, smrf::ByteVector&& msg) {
+                std::ignore = hdl;
+                wsLibJoynrMessagingSkeleton->onMessageReceived(std::move(msg));
+            });
 }
 
 } // namespace joynr

@@ -18,34 +18,33 @@
  * limitations under the License.
  * #L%
  */
-var LoggingManager = require('./LoggingManager');
-var DefaultLoggerConfiguration = require('./DefaultLoggerConfiguration');
-module.exports = (function(LoggingManager, defaultConfig) {
-    /**
-     * @name LoggerFactory
-     * @class
-     * @classdesc Global factory to create logger instances
-     */
-    var LoggerFactory = {};
-    var loggingManager;
-    LoggerFactory.init = function init(newLoggingManager) {
-        loggingManager = newLoggingManager;
-    };
+var LoggingManager = require("./LoggingManager");
+var defaultConfig = require("./DefaultLoggerConfiguration");
 
-    /**
-     * @name LoggerFactory#getLogger
-     * @function
-     * @param {Object} name - The logger's name
-     */
-    LoggerFactory.getLogger = function getLogger(name) {
-        if (loggingManager === undefined) {
-            var newLoggingManager = new LoggingManager();
-            newLoggingManager.configure(defaultConfig);
-            LoggerFactory.init(newLoggingManager);
-        }
+/**
+ * @name LoggerFactory
+ * @class
+ * @classdesc Global factory to create logger instances
+ */
+var LoggerFactory = {};
+var loggingManager;
+LoggerFactory.init = function init(newLoggingManager) {
+    loggingManager = newLoggingManager;
+};
 
-        return loggingManager.getLogger(name);
-    };
+/**
+ * @name LoggerFactory#getLogger
+ * @function
+ * @param {Object} name - The logger's name
+ */
+LoggerFactory.getLogger = function getLogger(name) {
+    if (loggingManager === undefined) {
+        var newLoggingManager = new LoggingManager();
+        newLoggingManager.configure(defaultConfig);
+        LoggerFactory.init(newLoggingManager);
+    }
 
-    return LoggerFactory;
-}(LoggingManager, DefaultLoggerConfiguration));
+    return loggingManager.getLogger(name);
+};
+
+module.exports = LoggerFactory;

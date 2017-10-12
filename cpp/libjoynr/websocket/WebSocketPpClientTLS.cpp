@@ -29,7 +29,8 @@ namespace joynr
 WebSocketPpClientTLS::WebSocketPpClientTLS(const WebSocketSettings& wsSettings,
                                            boost::asio::io_service& ioService,
                                            std::shared_ptr<joynr::IKeychain> keyChain)
-        : WebSocketPpClient<websocketpp::config::asio_tls_client>(wsSettings, ioService)
+        : WebSocketPpClient<websocketpp::config::asio_tls_client>(wsSettings, ioService),
+          useEncryptedTls{wsSettings.getEncryptedTlsUsage()}
 {
     endpoint.set_tls_init_handler(
             [this, keyChain](ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
@@ -70,8 +71,16 @@ std::shared_ptr<WebSocketPpClientTLS::SSLContext> WebSocketPpClientTLS::createSS
         sslContext->use_private_key(privateKeyPemBuffer, WebSocketPpClientTLS::SSLContext::pem);
         sslContext->use_certificate(certificatePemBuffer, WebSocketPpClientTLS::SSLContext::pem);
     } catch (boost::system::system_error& e) {
-        JOYNR_LOG_ERROR(logger, "Failed to initialize TLS session {}", e.what());
+        JOYNR_LOG_FATAL(logger, "Failed to initialize TLS session {}", e.what());
         return nullptr;
+    }
+
+    if (!useEncryptedTls) {
+        int opensslResult = SSL_CTX_set_cipher_list(sslContext->native_handle(), "eNULL");
+        if (opensslResult == 0) {
+            JOYNR_LOG_FATAL(logger, "Failed to initialize TLS session: Could not set NULL cipher");
+            return nullptr;
+        }
     }
 
     return sslContext;

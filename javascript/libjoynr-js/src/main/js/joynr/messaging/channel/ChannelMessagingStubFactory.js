@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -20,58 +20,57 @@
  */
 var Typing = require('../../util/Typing');
 var ChannelMessagingStub = require('./ChannelMessagingStub');
-module.exports =
-        (function(Typing, ChannelMessagingStub) {
 
-    /**
-     * @constructor
-     * @name ChannelMessagingStubFactory
-     *
-     * @param {Object} settings
-     * @param {ChannelMessagingSender|Object} settings.channelMessagingSender
-     */
-    function ChannelMessagingStubFactory(settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkProperty(
-                settings.channelMessagingSender,
-                "ChannelMessagingSender",
-                "channelMessagingSender");
-        var globalAddress;
+/**
+ * @constructor
+ * @name ChannelMessagingStubFactory
+ *
+ * @param {Object} settings
+ * @param {ChannelMessagingSender|Object} settings.channelMessagingSender
+ */
+function ChannelMessagingStubFactory(settings) {
 
-        /**
-         * This method is called when the global address has been created
-         *
-         * @function
-         * @name CapabilityDiscovery#globalAddressReady
-         *
-         * @param {Address}
-         *            globalAddress the address used to register discovery entries globally
-         */
-        this.globalAddressReady = function globalAddressReady(newGlobalAddress) {
-            globalAddress = newGlobalAddress;
+    Typing.checkProperty(settings, "Object", "settings");
+    Typing.checkProperty(
+            settings.channelMessagingSender,
+            "ChannelMessagingSender",
+            "channelMessagingSender");
+    this._globalAddress = null;
+    this._settings = settings;
+}
+
+/**
+ * This method is called when the global address has been created
+ *
+ * @function
+ * @name CapabilityDiscovery#globalAddressReady
+ *
+ * @param {Address}
+ *            globalAddress the address used to register discovery entries globally
+ */
+ChannelMessagingStubFactory.prototype.globalAddressReady =
+        function globalAddressReady(newGlobalAddress) {
+            this._globalAddress = newGlobalAddress;
         };
 
-        /**
-         * @name ChannelMessagingStubFactory#build
-         * @function
-         *
-         * @param {ChannelAddress} address the address to generate a messaging stub for
-         */
-        this.build = function build(address) {
-            Typing.checkProperty(address, "ChannelAddress", "address");
-            if (!globalAddress) {
-                var error = new Error("global channel address not yet set");
-                error.delay = true;
-                throw error;
-            }
-            return new ChannelMessagingStub({
-                destinationChannelAddress : address,
-                channelMessagingSender : settings.channelMessagingSender,
-                myChannelAddress : globalAddress
-            });
-        };
+/**
+ * @name ChannelMessagingStubFactory#build
+ * @function
+ *
+ * @param {ChannelAddress} address the address to generate a messaging stub for
+ */
+ChannelMessagingStubFactory.prototype.build = function build(address) {
+    Typing.checkProperty(address, "ChannelAddress", "address");
+    if (!this._globalAddress) {
+        var error = new Error("global channel address not yet set");
+        error.delay = true;
+        throw error;
     }
+    return new ChannelMessagingStub({
+        destinationChannelAddress : address,
+        channelMessagingSender : this._settings.channelMessagingSender,
+        myChannelAddress : this._globalAddress
+    });
+};
 
-    return ChannelMessagingStubFactory;
-
-        }(Typing, ChannelMessagingStub));
+module.exports = ChannelMessagingStubFactory;

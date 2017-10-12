@@ -28,9 +28,8 @@ var MessageReplyToAddressCalculator = require('../MessageReplyToAddressCalculato
 var JoynrException = require('../../exceptions/JoynrException');
 var JoynrRuntimeException = require('../../exceptions/JoynrRuntimeException');
 var Typing = require('../../util/Typing');
-var UtilInternal = require('../../util/UtilInternal');
-var JsonSerializer = require('../../util/JSONSerializer');
-module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTags, LoggerFactory, InProcessAddress, JoynrMessage, MessageReplyToAddressCalculator, JoynrException, JoynrRuntimeException, Typing, Util, JSONSerializer) {
+var Util = require('../../util/UtilInternal');
+var JSONSerializer = require('../../util/JSONSerializer');
 
             /**
              * Message Router receives a message and forwards it to the correct endpoint, as looked up in the {@link RoutingTable}
@@ -109,9 +108,7 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                 this.setReplyToAddress = function (newAddress) {
                     replyToAddress = newAddress;
                     messageReplyToAddressCalculator.setReplyToAddress(replyToAddress);
-                    messagesWithoutReplyTo.forEach(function(msg) {
-                        that.route(msg);
-                    });
+                    messagesWithoutReplyTo.forEach(that.route);
                 };
 
                 /**
@@ -140,19 +137,22 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
 
                     routingTable[participantId] = undefined;
                     persistency.removeItem(that.getStorageKey(participantId));
+
+                    function handleParentMessageRouter (resolve, reject) {
+                        queuedRemoveNextHopCalls[queuedRemoveNextHopCalls.length] = {
+                            participantId: participantId,
+                            resolve      : resolve,
+                            reject       : reject
+                        };
+                    }
+
                     var promise;
                     if (routingProxy !== undefined) {
                         promise = routingProxy.removeNextHop({
-                            participantId : participantId
+                            participantId: participantId
                         });
                     } else if (parentMessageRouterAddress !== undefined) {
-                        promise = new Promise(function(resolve, reject) {
-                            queuedRemoveNextHopCalls[queuedRemoveNextHopCalls.length] = {
-                                participantId : participantId,
-                                resolve : resolve,
-                                reject : reject
-                            };
-                        });
+                        promise = new Promise(handleParentMessageRouter);
                     } else {
                         promise = Promise.resolve();
                     }
@@ -172,33 +172,33 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                             var result;
                             if (Typing.getObjectType(incomingAddress) === "BrowserAddress") {
                                 result = routingProxy.addNextHop({
-                                    participantId : participantId,
-                                    browserAddress : incomingAddress,
-                                    isGloballyVisible : isGloballyVisible
+                                    participantId    : participantId,
+                                    browserAddress   : incomingAddress,
+                                    isGloballyVisible: isGloballyVisible
                                 });
                             } else if (Typing.getObjectType(incomingAddress) === "ChannelAddress") {
                                 result = routingProxy.addNextHop({
-                                    participantId : participantId,
-                                    channelAddress : incomingAddress,
-                                    isGloballyVisible : isGloballyVisible
+                                    participantId    : participantId,
+                                    channelAddress   : incomingAddress,
+                                    isGloballyVisible: isGloballyVisible
                                 });
                             } else if (Typing.getObjectType(incomingAddress) === "WebSocketAddress") {
                                 result = routingProxy.addNextHop({
-                                    participantId : participantId,
+                                    participantId    : participantId,
                                     webSocketAddress : incomingAddress,
-                                    isGloballyVisible : isGloballyVisible
+                                    isGloballyVisible: isGloballyVisible
                                 });
                             } else if (Typing.getObjectType(incomingAddress) === "WebSocketClientAddress") {
                                 result = routingProxy.addNextHop({
-                                    participantId : participantId,
-                                    webSocketClientAddress : incomingAddress,
-                                    isGloballyVisible : isGloballyVisible
+                                    participantId         : participantId,
+                                    webSocketClientAddress: incomingAddress,
+                                    isGloballyVisible     : isGloballyVisible
                                 });
                             } else if (Typing.getObjectType(incomingAddress) === "CommonApiDbusAddress") {
                                 result = routingProxy.addNextHop({
-                                    participantId : participantId,
-                                    commonApiDbusAddress : incomingAddress,
-                                    isGloballyVisible : isGloballyVisible
+                                    participantId       : participantId,
+                                    commonApiDbusAddress: incomingAddress,
+                                    isGloballyVisible   : isGloballyVisible
                                 });
                             }
                             return result;
@@ -210,73 +210,75 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                  * @param {RoutingProxy} newRoutingproxy - the routing proxy to be set
                  */
                 this.setRoutingProxy =
-                        function setRoutingProxy(newRoutingProxy) {
-                            var hop, participantId, errorFct, receiver, queuedCall;
+                    function setRoutingProxy(newRoutingProxy) {
+                        var hop, participantId, errorFct, receiver, queuedCall;
 
-                            routingProxy = newRoutingProxy;
+                        routingProxy = newRoutingProxy;
 
-                            var replyToAddressPromise = routingProxy.replyToAddress.get().then(function(replyToAddress) {
-                                that.setReplyToAddress(replyToAddress);
-                            }).catch(function(error) {
-                                throw new Error("Failed to get replyToAddress from parent router: " + error
-                                        + (error instanceof JoynrException ? " " + error.detailMessage : ""));
-                            });
+                        function replyToAddressOnError(error) {
+                            throw new Error("Failed to get replyToAddress from parent router: " + error
+                            + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                        }
 
-                            errorFct = function(error) {
-                                if (!isReady()) {
-                                    //in this case, the error is expected, e.g. during shut down
-                                    log.debug("Adding routingProxy.proxyParticipantId " + routingProxy.proxyParticipantId
-                                            + "failed while the message router is not ready. Error: " + error.message);
-                                    return;
-                                }
-                                throw new Error(error);
-                            };
+                        var replyToAddressPromise = routingProxy.replyToAddress.get()
+                        .then(that.setReplyToAddress)
+                        .catch(replyToAddressOnError);
 
-                            if (routingProxy !== undefined) {
-                                if (routingProxy.proxyParticipantId !== undefined) {
-                                    // isGloballyVisible is false because the routing provider is local
-                                    var isGloballyVisible = false;
-                                    that.addNextHopToParentRoutingTable(
-                                            routingProxy.proxyParticipantId, isGloballyVisible).catch(errorFct);
-                                }
-                                for (hop in queuedAddNextHopCalls) {
-                                    if (queuedAddNextHopCalls.hasOwnProperty(hop)) {
-                                        queuedCall = queuedAddNextHopCalls[hop];
-                                        if (queuedCall.participantId !== routingProxy.proxyParticipantId) {
-                                            that.addNextHopToParentRoutingTable(
-                                                    queuedCall.participantId, queuedCall.isGloballyVisible).then(
-                                                    queuedCall.resolve).catch(queuedCall.reject);
-                                        }
-                                    }
-                                }
-                                for (hop in queuedRemoveNextHopCalls) {
-                                    if (queuedRemoveNextHopCalls.hasOwnProperty(hop)) {
-                                        queuedCall = queuedRemoveNextHopCalls[hop];
-                                        that.removeNextHop(queuedCall.participantId).then(
-                                                queuedCall.resolve).catch(queuedCall.reject);
-                                    }
-                                }
-                                for (receiver in queuedAddMulticastReceiverCalls) {
-                                    if (queuedAddMulticastReceiverCalls.hasOwnProperty(receiver)) {
-                                        queuedCall = queuedAddMulticastReceiverCalls[receiver];
-                                        routingProxy.addMulticastReceiver(queuedCall.parameters).then(
-                                                queuedCall.resolve).catch(queuedCall.reject);
-                                    }
-                                }
-                                for (receiver in queuedRemoveMulticastReceiverCalls) {
-                                    if (queuedRemoveMulticastReceiverCalls.hasOwnProperty(receiver)) {
-                                        queuedCall = queuedRemoveMulticastReceiverCalls[receiver];
-                                        routingProxy.removeMulticastReceiver(queuedCall.parameters).then(
+                        errorFct = function(error) {
+                            if (!isReady()) {
+                                //in this case, the error is expected, e.g. during shut down
+                                log.debug("Adding routingProxy.proxyParticipantId " + routingProxy.proxyParticipantId
+                                        + "failed while the message router is not ready. Error: " + error.message);
+                                return;
+                            }
+                            throw new Error(error);
+                        };
+
+                        if (routingProxy !== undefined) {
+                            if (routingProxy.proxyParticipantId !== undefined) {
+                                // isGloballyVisible is false because the routing provider is local
+                                var isGloballyVisible = false;
+                                that.addNextHopToParentRoutingTable(
+                                        routingProxy.proxyParticipantId, isGloballyVisible).catch(errorFct);
+                            }
+                            for (hop in queuedAddNextHopCalls) {
+                                if (queuedAddNextHopCalls.hasOwnProperty(hop)) {
+                                    queuedCall = queuedAddNextHopCalls[hop];
+                                    if (queuedCall.participantId !== routingProxy.proxyParticipantId) {
+                                        that.addNextHopToParentRoutingTable(
+                                                queuedCall.participantId, queuedCall.isGloballyVisible).then(
                                                 queuedCall.resolve).catch(queuedCall.reject);
                                     }
                                 }
                             }
-                            queuedAddNextHopCalls = undefined;
-                            queuedRemoveNextHopCalls = undefined;
-                            queuedAddMulticastReceiverCalls = undefined;
-                            queuedRemoveMulticastReceiverCalls = undefined;
-                            return replyToAddressPromise;
-                        };
+                            for (hop in queuedRemoveNextHopCalls) {
+                                if (queuedRemoveNextHopCalls.hasOwnProperty(hop)) {
+                                    queuedCall = queuedRemoveNextHopCalls[hop];
+                                    that.removeNextHop(queuedCall.participantId).then(
+                                            queuedCall.resolve).catch(queuedCall.reject);
+                                }
+                            }
+                            for (receiver in queuedAddMulticastReceiverCalls) {
+                                if (queuedAddMulticastReceiverCalls.hasOwnProperty(receiver)) {
+                                    queuedCall = queuedAddMulticastReceiverCalls[receiver];
+                                    routingProxy.addMulticastReceiver(queuedCall.parameters).then(
+                                            queuedCall.resolve).catch(queuedCall.reject);
+                                }
+                            }
+                            for (receiver in queuedRemoveMulticastReceiverCalls) {
+                                if (queuedRemoveMulticastReceiverCalls.hasOwnProperty(receiver)) {
+                                    queuedCall = queuedRemoveMulticastReceiverCalls[receiver];
+                                    routingProxy.removeMulticastReceiver(queuedCall.parameters).then(
+                                            queuedCall.resolve).catch(queuedCall.reject);
+                                }
+                            }
+                        }
+                        queuedAddNextHopCalls = undefined;
+                        queuedRemoveNextHopCalls = undefined;
+                        queuedAddMulticastReceiverCalls = undefined;
+                        queuedRemoveMulticastReceiverCalls = undefined;
+                        return replyToAddressPromise;
+                    };
 
                 /*
                  * this method is called when no address can be found in the local routing table 
@@ -285,25 +287,29 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                     var address, addressString;
 
                     addressString = persistency.getItem(that.getStorageKey(participantId));
-                    if ((addressString === undefined
-                        || addressString === null || addressString === '{}')) {
+                    if (addressString === undefined
+                        || addressString === null || addressString === "{}") {
                         persistency.removeItem(that.getStorageKey(participantId));
                     } else {
                         address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
                         routingTable[participantId] = address;
                     }
+
+                    function resolveNextHopOnSuccess(opArgs) {
+                        if (opArgs.resolved) {
+                            routingTable[participantId] = parentMessageRouterAddress;
+                            return parentMessageRouterAddress;
+                        }
+                        throw new Error("nextHop cannot be resolved, as participant with id "
+                        + participantId
+                        + " is not reachable by parent routing table");
+                    }
+
                     if (address === undefined && routingProxy !== undefined) {
                         return routingProxy.resolveNextHop({
-                                participantId : participantId
-                            }).then(function(opArgs) {
-                                if (opArgs.resolved) {
-                                    routingTable[participantId] = parentMessageRouterAddress;
-                                    return parentMessageRouterAddress;
-                                }
-                                throw new Error("nextHop cannot be resolved, as participant with id "
-                                                + participantId
-                                                + " is not reachable by parent routing table");
-                            });
+                                participantId: participantId
+                            })
+                        .then(resolveNextHopOnSuccess);
                     }
                     return Promise.resolve(address);
                 }
@@ -356,7 +362,7 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                         if (array === undefined) {
                             return false;
                         }
-                        for (j=0;j<array.length;j++) {
+                        for (j = 0;j < array.length;j++) {
                             if (array[j].equals(address)) {
                                 return true;
                             }
@@ -367,10 +373,10 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                     var multicastIdPattern, receivers;
                     for (multicastIdPattern in multicastReceiversRegistry) {
                         if (multicastReceiversRegistry.hasOwnProperty(multicastIdPattern)) {
-                            if(joynrMessage.to.match(new RegExp(multicastIdPattern)) !== null) {
+                            if (joynrMessage.to.match(new RegExp(multicastIdPattern)) !== null) {
                                 receivers = multicastReceiversRegistry[multicastIdPattern];
                                 if (receivers !== undefined) {
-                                    for (i=0;i<receivers.length;i++){
+                                    for (i = 0;i < receivers.length;i++){
                                         address = routingTable[receivers[i]];
                                         if (address !== undefined && !containsAddress(result, address)) {
                                             result.push(address);
@@ -417,9 +423,20 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                         }
                     }
 
-                    messagingStub =
-                            settings.messagingStubFactory
-                                    .createMessagingStub(address);
+                    function transmitOnSuccess() {
+                        //succeeded, do nothing
+                        return null;
+                    }
+
+                    function transmitOnError(error) {
+
+                        //error while transmitting message
+                        log.debug("Error while transmitting message: " + error);
+                        //TODO queue message and retry later
+                        return null;
+                    }
+
+                    messagingStub = settings.messagingStubFactory.createMessagingStub(address);
                     if (messagingStub === undefined) {
                         errorMsg =
                                 "No message receiver found for participantId: "
@@ -429,15 +446,7 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                                 .forJoynrMessage(joynrMessage));
                         throw new Error(errorMsg);
                     } else {
-                        return messagingStub.transmit(joynrMessage).then(function() {
-                            //succeeded, do nothing
-                            return null;
-                        }).catch(function(error) {
-                            //error while transmitting message
-                            log.debug("Error while transmitting message: " + error);
-                            //TODO queue message and retry later
-                            return null;
-                        });
+                        return messagingStub.transmit(joynrMessage).then(transmitOnSuccess).catch(transmitOnError);
                     }
                 }
 
@@ -479,7 +488,7 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                     if (now > joynrMessage.expiryDate) {
                         var errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
                         log.warn(errorMsg);
-                        throw new JoynrRuntimeException({detailMessage: errorMsg});
+                        throw new JoynrRuntimeException({ detailMessage: errorMsg });
                     }
 
                     registerGlobalRoutingEntryIfRequired(joynrMessage);
@@ -514,48 +523,48 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                  *            isGloballyVisible
                  */
                 this.addNextHop =
-                        function addNextHop(participantId, address, isGloballyVisible) {
-                            if (!isReady()) {
-                                log.debug("addNextHop: ignore call as message router is already shut down");
-                                return Promise.reject(new Error("message router is already shut down"));
-                            }
-                            // store the address of the participantId persistently
-                            routingTable[participantId] = address;
-                            var serializedAddress = JSONSerializer.stringify(address);
-                            var promise;
-                            if ((serializedAddress === undefined
-                                || serializedAddress === null || serializedAddress === '{}')) {
-                                log.info("addNextHop: HOP address "
-                                    + serializedAddress
-                                    + " will not be persisted for participant id: "
-                                    + participantId);
-                            } else {
-                                persistency.setItem(
-                                        that.getStorageKey(participantId),
-                                        serializedAddress);
-                            }
+                    function addNextHop(participantId, address, isGloballyVisible) {
+                        if (!isReady()) {
+                            log.debug("addNextHop: ignore call as message router is already shut down");
+                            return Promise.reject(new Error("message router is already shut down"));
+                        }
+                        // store the address of the participantId persistently
+                        routingTable[participantId] = address;
+                        var serializedAddress = JSONSerializer.stringify(address);
+                        var promise;
+                        if (serializedAddress === undefined
+                            || serializedAddress === null || serializedAddress === "{}") {
+                            log.info("addNextHop: HOP address "
+                                + serializedAddress
+                                + " will not be persisted for participant id: "
+                                + participantId);
+                        } else {
+                            persistency.setItem(
+                                    that.getStorageKey(participantId),
+                                    serializedAddress);
+                        }
 
-                            if (routingProxy !== undefined) {
-                                // register remotely
-                                promise = that.addNextHopToParentRoutingTable(participantId, isGloballyVisible);
+                        function parentResolver(resolve, reject){
+                            queuedAddNextHopCalls[queuedAddNextHopCalls.length] =
+                            {
+                                participantId    : participantId,
+                                isGloballyVisible: isGloballyVisible,
+                                resolve          : resolve,
+                                reject           : reject
+                            };
+                        }
+
+                        if (routingProxy !== undefined) {
+                            // register remotely
+                            promise = that.addNextHopToParentRoutingTable(participantId, isGloballyVisible);
+                        } else if (parentMessageRouterAddress !== undefined) {
+                                promise = new Promise(parentResolver);
                             } else {
-                                if (parentMessageRouterAddress !== undefined) {
-                                    promise = new Promise(function(resolve, reject){
-                                        queuedAddNextHopCalls[queuedAddNextHopCalls.length] =
-                                        {
-                                            participantId : participantId,
-                                            isGloballyVisible : isGloballyVisible,
-                                            resolve : resolve,
-                                            reject : reject
-                                        };
-                                    });
-                                } else {
-                                    promise = Promise.resolve();
-                                }
+                                promise = Promise.resolve();
                             }
-                            that.participantRegistered(participantId);
-                            return promise;
-                        };
+                        that.participantRegistered(participantId);
+                        return promise;
+                    };
 
                 /**
                  * Adds a new receiver for the identified multicasts.
@@ -597,14 +606,17 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                     if (routingProxy !== undefined) {
                         return routingProxy.addMulticastReceiver(parameters);
                     }
-                    return new Promise(function(resolve, reject){
+
+                    function addMulticastReceiverResolver(resolve, reject){
                         queuedAddMulticastReceiverCalls[queuedAddMulticastReceiverCalls.length] =
                         {
-                            parameters : parameters,
-                            resolve : resolve,
-                            reject : reject
+                            parameters: parameters,
+                            resolve   : resolve,
+                            reject    : reject
                         };
-                    });
+                    }
+
+                    return new Promise(addMulticastReceiverResolver);
                 };
 
                 /**
@@ -655,14 +667,16 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                     if (routingProxy !== undefined) {
                         return routingProxy.removeMulticastReceiver(parameters);
                     }
-                    return new Promise(function(resolve, reject){
+
+                    function removeMulticastReceiverResolver(resolve, reject){
                         queuedRemoveMulticastReceiverCalls[queuedRemoveMulticastReceiverCalls.length] =
                         {
-                            parameters : parameters,
-                            resolve : resolve,
-                            reject : reject
+                            parameters: parameters,
+                            resolve   : resolve,
+                            reject    : reject
                         };
-                    });
+                    }
+                    return new Promise(removeMulticastReceiverResolver);
                 };
 
                 /**
@@ -673,22 +687,22 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                  * @returns {Promise} a Promise object
                  */
                 this.participantRegistered =
-                        function participantRegistered(participantId) {
-                            var i, msgContainer, messageQueue =
-                                    settings.messageQueue.getAndRemoveMessages(participantId);
+                    function participantRegistered(participantId) {
+                        var i, msgContainer, messageQueue =
+                                settings.messageQueue.getAndRemoveMessages(participantId);
 
-                            if (messageQueue !== undefined) {
-                                i = messageQueue.length;
-                                while (i--) {
-                                    try {
-                                        that.route(messageQueue[i]);
-                                    } catch(error) {
-                                        log.error("queued message could not be sent to " + participantId + ", error: " + error
-                                                + (error instanceof JoynrException ? " " + error.detailMessage : ""));
-                                    }
+                        if (messageQueue !== undefined) {
+                            i = messageQueue.length;
+                            while (i--) {
+                                try {
+                                    that.route(messageQueue[i]);
+                                } catch (error) {
+                                    log.error("queued message could not be sent to " + participantId + ", error: " + error
+                                            + (error instanceof JoynrException ? " " + error.detailMessage : ""));
                                 }
                             }
-                        };
+                        }
+                    };
 
                 /**
                  * Tell the message router that the given participantId is known. The message router
@@ -725,28 +739,25 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                  * @name MessageRouter#shutdown
                  */
                 this.shutdown = function shutdown() {
+
+                    function rejectCall(call) {
+                        call.reject(new Error("Message Router has been shut down"));
+                    }
+
                     if (queuedAddNextHopCalls !== undefined) {
-                        queuedAddNextHopCalls.forEach(function(call) {
-                            call.reject(new Error("Message Router has been shut down"));
-                        });
+                        queuedAddNextHopCalls.forEach(rejectCall);
                         queuedAddNextHopCalls = [];
                     }
                     if (queuedRemoveNextHopCalls !== undefined) {
-                        queuedRemoveNextHopCalls.forEach(function(call) {
-                            call.reject(new Error("Message Router has been shut down"));
-                        });
+                        queuedRemoveNextHopCalls.forEach(rejectCall);
                         queuedRemoveNextHopCalls = [];
                     }
                     if (queuedAddMulticastReceiverCalls !== undefined) {
-                        queuedAddMulticastReceiverCalls.forEach(function(call) {
-                            call.reject(new Error("Message Router has been shut down"));
-                        });
+                        queuedAddMulticastReceiverCalls.forEach(rejectCall);
                         queuedAddMulticastReceiverCalls = [];
                     }
                     if (queuedRemoveMulticastReceiverCalls !== undefined) {
-                        queuedRemoveMulticastReceiverCalls.forEach(function(call) {
-                            call.reject(new Error("Message Router has been shut down"));
-                        });
+                        queuedRemoveMulticastReceiverCalls.forEach(rejectCall);
                         queuedRemoveMulticastReceiverCalls = [];
                     }
                     started = false;
@@ -754,5 +765,4 @@ module.exports = (function (Promise, MulticastWildcardRegexFactory, DiagnosticTa
                 };
             }
 
-            return MessageRouter;
-}(Promise, MulticastWildcardRegexFactory, DiagnosticTags, LoggerFactory, InProcessAddress, JoynrMessage, MessageReplyToAddressCalculator, JoynrException, JoynrRuntimeException, Typing, UtilInternal, JsonSerializer));
+            module.exports = MessageRouter;

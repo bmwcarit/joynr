@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -19,41 +19,39 @@
  * #L%
  */
 var Typing = require('../../util/Typing');
-module.exports = (function(Typing) {
+
+/**
+ * @constructor WebMessagingAddress
+ * @param {Object} settings the settings object for this constructor call
+ * @param {Object} settings.window the default target window, the messages should be sent to
+ * @param {String} settings.origin the default origin, the messages should be sent to
+ */
+function WebMessagingAddress(settings) {
+    Typing.checkProperty(settings, "Object", "settings");
+    Typing.checkProperty(settings.window, "Object", "settings.window");
+    Typing.checkProperty(settings.origin, "String", "settings.origin");
+    this._settings = settings;
 
     /**
-     * @constructor WebMessagingAddress
-     * @param {Object} settings the settings object for this constructor call
-     * @param {Object} settings.window the default target window, the messages should be sent to
-     * @param {String} settings.origin the default origin, the messages should be sent to
+     * @name WebMessagingAddress#getWindow
+     * @function
+     *
+     * @returns {Window} the windows that should be addressed
      */
-    function WebMessagingAddress(settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkProperty(settings.window, "Object", "settings.window");
-        Typing.checkProperty(settings.origin, "String", "settings.origin");
+    WebMessagingAddress.prototype.getWindow = function getWindow() {
+        return this._settings.window;
+    };
 
-        /**
-         * @name WebMessagingAddress#getWindow
-         * @function
-         *
-         * @returns {Window} the windows that should be addressed
-         */
-        this.getWindow = function getWindow() {
-            return settings.window;
-        };
+    /**
+     * @name WebMessagingAddress#getOrigin
+     * @function
+     *
+     * @returns {String} the origin of the window that should be addressed
+     * @see WebMessagingAddress#getWindow
+     */
+    WebMessagingAddress.prototype.getOrigin = function getOrigin() {
+        return this._settings.origin;
+    };
+}
 
-        /**
-         * @name WebMessagingAddress#getOrigin
-         * @function
-         *
-         * @returns {String} the origin of the window that should be addressed
-         * @see WebMessagingAddress#getWindow
-         */
-        this.getOrigin = function getOrigin() {
-            return settings.origin;
-        };
-    }
-
-    return WebMessagingAddress;
-
-}(Typing));
+module.exports = WebMessagingAddress;

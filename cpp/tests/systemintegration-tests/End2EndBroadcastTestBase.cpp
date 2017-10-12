@@ -30,6 +30,7 @@
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/MessagingSettings.h"
+#include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/LibjoynrSettings.h"
@@ -222,7 +223,7 @@ public:
 
     void TearDown() {
         if (!providerParticipantId.empty()) {
-            runtime1->unregisterProvider(providerParticipantId);
+            unregisterProvider();
         }
         bool deleteChannel = true;
         runtime1->stop(deleteChannel);
@@ -262,6 +263,10 @@ protected:
 
     std::shared_ptr<MyTestProvider> registerProvider() {
         return registerProvider(runtime1);
+    }
+
+    void unregisterProvider() {
+        return runtime1->unregisterProvider(providerParticipantId);
     }
 
     std::shared_ptr<MyTestProvider> registerProvider(std::shared_ptr<JoynrClusterControllerRuntime> runtime) {

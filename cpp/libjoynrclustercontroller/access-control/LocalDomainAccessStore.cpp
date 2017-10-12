@@ -54,6 +54,9 @@ LocalDomainAccessStore::LocalDomainAccessStore(std::string fileName)
                         persistenceFileName,
                         ex.what());
     }
+
+    // insert all entries into wildcard storage
+    applyForAllTables([this](auto& entry) { addToWildcardStorage(entry); });
 }
 
 std::set<std::pair<std::string, std::string>> LocalDomainAccessStore::
@@ -109,7 +112,7 @@ boost::optional<DomainRoleEntry> LocalDomainAccessStore::getDomainRole(const std
 bool LocalDomainAccessStore::updateDomainRole(const DomainRoleEntry& updatedEntry)
 {
     JOYNR_LOG_TRACE(
-            logger, "execute: entering updateDomainRoleEntry with uId {}", updatedEntry.getUid());
+            logger, "execute: entering updateDomainRole with uId {}", updatedEntry.getUid());
 
     return insertOrReplace(domainRoleTable, updatedEntry);
 }
@@ -158,14 +161,20 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAcces
         const std::string& interfaceName,
         const std::string& operation)
 {
-    return lookupOptionalWithWildcard(masterAccessTable, uid, domain, interfaceName, operation);
+    // ignoring operation as not yet supported
+    std::ignore = operation;
+    return lookupOptionalWithWildcard(masterAccessTable, uid, domain, interfaceName);
 }
 
 bool LocalDomainAccessStore::updateMasterAccessControlEntry(
         const MasterAccessControlEntry& updatedMasterAce)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering updateMasterAce with uId {}", updatedMasterAce.getUid());
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering updateMasterAccessControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    updatedMasterAce.getUid(),
+                    updatedMasterAce.getDomain(),
+                    updatedMasterAce.getInterfaceName());
 
     return insertOrReplace(masterAccessTable, updatedMasterAce);
 }
@@ -181,16 +190,17 @@ bool LocalDomainAccessStore::removeMasterAccessControlEntry(const std::string& u
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
         const std::string& uid)
 {
-    return getEqualRangeWithUidWildcard(mediatorAccessTable, uid);
+    return convertMediator(getEqualRangeWithUidWildcard(mediatorAccessTable, uid));
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
         const std::string& domain,
         const std::string& interfaceName)
 {
-    return getEqualRange(mediatorAccessTable.get<access_control::tags::DomainAndInterface>(),
-                         domain,
-                         interfaceName);
+    return convertMediator(
+            getEqualRange(mediatorAccessTable.get<access_control::tags::DomainAndInterface>(),
+                          domain,
+                          interfaceName));
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntries(
@@ -198,7 +208,8 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessC
         const std::string& domain,
         const std::string& interfaceName)
 {
-    return getEqualRangeWithUidWildcard(mediatorAccessTable, uid, domain, interfaceName);
+    return convertMediator(
+            getEqualRangeWithUidWildcard(mediatorAccessTable, uid, domain, interfaceName));
 }
 
 std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
@@ -207,7 +218,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessStore::
     JOYNR_LOG_TRACE(logger, "execute: entering getEditableMediatorAces with uId {}", userId);
 
     // Get all the Mediator ACEs for the domains where the user is master
-    return getEntries(mediatorAccessTable, userId, Role::MASTER);
+    return convertMediator(getEntries(mediatorAccessTable, userId, Role::MASTER));
 }
 
 boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAccessControlEntry(
@@ -216,15 +227,21 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAcc
         const std::string& interfaceName,
         const std::string& operation)
 {
-    return lookupOptionalWithWildcard(mediatorAccessTable, uid, domain, interfaceName, operation);
+    // ignoring operation as not yet supported
+    std::ignore = operation;
+    return convertMediator(
+            lookupOptionalWithWildcard(mediatorAccessTable, uid, domain, interfaceName));
 }
 
 bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
         const MasterAccessControlEntry& updatedMediatorAce)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering updateMediatorAce with uId {}", updatedMediatorAce.getUid());
-
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering updateMediatorAccessControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    updatedMediatorAce.getUid(),
+                    updatedMediatorAce.getDomain(),
+                    updatedMediatorAce.getInterfaceName());
     bool updateSuccess = false;
 
     boost::optional<MasterAccessControlEntry> masterAceOptional =
@@ -297,14 +314,20 @@ boost::optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessC
         const std::string& interfaceName,
         const std::string& operation)
 {
-    return lookupOptionalWithWildcard(ownerAccessTable, userId, domain, interfaceName, operation);
+    // ignoring operation as not yet supported
+    std::ignore = operation;
+    return lookupOptionalWithWildcard(ownerAccessTable, userId, domain, interfaceName);
 }
 
 bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
         const OwnerAccessControlEntry& updatedOwnerAce)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering updateOwnerAce with uId {}", updatedOwnerAce.getUid());
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering updateOwnerAccessControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    updatedOwnerAce.getUid(),
+                    updatedOwnerAce.getDomain(),
+                    updatedOwnerAce.getInterfaceName());
 
     bool updateSuccess = false;
 
@@ -376,8 +399,12 @@ boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
 bool LocalDomainAccessStore::updateMasterRegistrationControlEntry(
         const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMasterRce)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering updateMasterRce with uid {}", updatedMasterRce.getUid());
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering updateMasterRegistrationControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    updatedMasterRce.getUid(),
+                    updatedMasterRce.getDomain(),
+                    updatedMasterRce.getInterfaceName());
 
     return insertOrReplace(masterRegistrationTable, updatedMasterRce);
 }
@@ -396,7 +423,7 @@ std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomai
 {
     JOYNR_LOG_TRACE(
             logger, "execute: entering getMediatorRegistrationControlEntries with uid {}", uid);
-    return getEqualRangeWithUidWildcard(mediatorRegistrationTable, uid);
+    return convertMediator(getEqualRangeWithUidWildcard(mediatorRegistrationTable, uid));
 }
 
 std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomainAccessStore::
@@ -406,7 +433,7 @@ std::vector<infrastructure::DacTypes::MasterRegistrationControlEntry> LocalDomai
                     "execute: entering getEditableMeditatorRegistrationControlEntry with uid {}",
                     uid);
 
-    return getEntries(mediatorRegistrationTable, uid, Role::MASTER);
+    return convertMediator(getEntries(mediatorRegistrationTable, uid, Role::MASTER));
 }
 
 boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
@@ -414,15 +441,19 @@ boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
                                             const std::string& domain,
                                             const std::string& interfaceName)
 {
-    return lookupOptionalWithWildcard(mediatorRegistrationTable, uid, domain, interfaceName);
+    return convertMediator(
+            lookupOptionalWithWildcard(mediatorRegistrationTable, uid, domain, interfaceName));
 }
 
 bool LocalDomainAccessStore::updateMediatorRegistrationControlEntry(
         const infrastructure::DacTypes::MasterRegistrationControlEntry& updatedMediatorRce)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering updateMediatorRce with uid {}", updatedMediatorRce.getUid());
-
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering updateMediatorRegistrationControlEntry with uId={} "
+                    "domain={} interfaceName={}",
+                    updatedMediatorRce.getUid(),
+                    updatedMediatorRce.getDomain(),
+                    updatedMediatorRce.getInterfaceName());
     return insertOrReplace(mediatorRegistrationTable, updatedMediatorRce);
 }
 
@@ -464,8 +495,12 @@ boost::optional<OwnerRegistrationControlEntry> LocalDomainAccessStore::
 bool LocalDomainAccessStore::updateOwnerRegistrationControlEntry(
         const infrastructure::DacTypes::OwnerRegistrationControlEntry& updatedOwnerRce)
 {
-    JOYNR_LOG_TRACE(
-            logger, "execute: entering updateOwnerRce with uid {}", updatedOwnerRce.getUid());
+    JOYNR_LOG_TRACE(logger,
+                    "execute: entering updateOwnerRegistrationControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    updatedOwnerRce.getUid(),
+                    updatedOwnerRce.getDomain(),
+                    updatedOwnerRce.getInterfaceName());
 
     return insertOrReplace(ownerRegistrationTable, updatedOwnerRce);
 }
@@ -499,6 +534,14 @@ void LocalDomainAccessStore::persistToFile() const
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger, ex.what());
     }
+}
+
+bool LocalDomainAccessStore::endsWithWildcard(const std::string& value) const
+{
+    if (value.empty()) {
+        return false;
+    }
+    return value.back() == *joynr::access_control::WILDCARD;
 }
 
 } // namespace joynr

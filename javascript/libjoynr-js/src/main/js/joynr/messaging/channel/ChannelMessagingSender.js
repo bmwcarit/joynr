@@ -19,14 +19,13 @@
  * #L%
  */
 var Promise = require('../../../global/Promise');
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
-var JsonSerializer = require('../../util/JSONSerializer');
+var JSONSerializer = require('../../util/JSONSerializer');
 var JoynrMessage = require('../JoynrMessage');
 var LongTimer = require('../../util/LongTimer');
 var DiagnosticTags = require('../../system/DiagnosticTags');
 var LoggerFactory = require('../../system/LoggerFactory');
-module.exports = (function (Promise, Util, Typing, JSONSerializer, JoynrMessage, LongTimer, DiagnosticTags, LoggerFactory) {
 
     /**
      * ChannelMessagingSender sends JoynrMessages to their destinations via Http
@@ -101,42 +100,47 @@ module.exports = (function (Promise, Util, Typing, JSONSerializer, JoynrMessage,
                 + timeout
                 + JSONSerializer.stringify(queuedMessage.message, undefined, 4));
 
+            function createXMLHTTPRequestOnSuccess(xhr) {
+                try {
+                    log.debug("sending msgId: "
+                    + queuedMessage.message.msgId
+                    + " completed successfully");
+                    queuedMessage.pending = false;
+                    LongTimer.clearTimeout(queuedMessage.expiryTimer);
+                    delete queuedMessage.expiryTimer;
+                    queuedMessage.resolve();
+                } catch (error) {
+                    log.error("sending msgId: "
+                    + queuedMessage.message.msgId
+                    + " deferred caused an exception");
+                }
+                messageProcessors++;
+                notify();
+                return xhr;
+            }
+
+            function createXMLHTTPRequestOnError(xhr, errorType) {
+                try {
+                    log.debug("sending msgId: " + queuedMessage.message.msgId + " failed");
+                    resend(queuedMessage);
+                } catch (error) {
+                    log.error("sending msgId: "
+                    + queuedMessage.message.msgId
+                    + " deferred.reject caused an exception");
+                }
+                messageProcessors++;
+                notify();
+                return xhr;
+            }
+
             communicationModule.createXMLHTTPRequest({
-                type : "POST",
-                url : queuedMessage.to,
-                data : JSONSerializer.stringify(queuedMessage.message),
-                timeout : timeout
-            }).then(
-                    function(xhr) {
-                        try {
-                            log.debug("sending msgId: "
-                                + queuedMessage.message.msgId
-                                + " completed successfully");
-                            queuedMessage.pending = false;
-                            LongTimer.clearTimeout(queuedMessage.expiryTimer);
-                            delete queuedMessage.expiryTimer;
-                            queuedMessage.resolve();
-                        } catch (error) {
-                            log.error("sending msgId: "
-                                + queuedMessage.message.msgId
-                                + " deferred caused an exception");
-                        }
-                        messageProcessors++;
-                        notify();
-                        return xhr;
-                    }).catch(function(xhr, errorType) {
-                        try {
-                            log.debug("sending msgId: " + queuedMessage.message.msgId + " failed");
-                            resend(queuedMessage);
-                        } catch (error) {
-                            log.error("sending msgId: "
-                                + queuedMessage.message.msgId
-                                + " deferred.reject caused an exception");
-                        }
-                        messageProcessors++;
-                        notify();
-                        return xhr;
-                    });
+                type   : "POST",
+                url    : queuedMessage.to,
+                data   : JSONSerializer.stringify(queuedMessage.message),
+                timeout: timeout
+            })
+            .then(createXMLHTTPRequestOnSuccess)
+            .catch(createXMLHTTPRequestOnError);
         }
 
         /**
@@ -173,11 +177,14 @@ module.exports = (function (Promise, Util, Typing, JSONSerializer, JoynrMessage,
                 LongTimer.clearTimeout(queuedMessage.expiryTimer);
                 queuedMessage.expiryTimer = undefined;
             }
-            queuedMessage.expiryTimer = LongTimer.setTimeout(function(){
+
+            function createExpiryTimerTimeout() {
                 if (!checkIfExpired(queuedMessage)) {
                     createExpiryTimer(queuedMessage);
                 }
-            }, Math.max(0, getRelativeExpiryDate(queuedMessage.message)));
+            }
+            queuedMessage.expiryTimer = LongTimer.setTimeout(createExpiryTimerTimeout,
+            Math.max(0, getRelativeExpiryDate(queuedMessage.message)));
         }
 
         /**
@@ -192,31 +199,34 @@ module.exports = (function (Promise, Util, Typing, JSONSerializer, JoynrMessage,
          * @returns {Object} a promise object for async event handling
          */
         this.send =
-                function send(joynrMessage, toChannelAddress) {
-                    if (!joynrMessage instanceof JoynrMessage) {
-                        return Promise.reject(new Error(
-                                "CANNOT SEND: invalid joynrMessage which is of type "
-                                    + Typing.getObjectType(joynrMessage)));
+            function send(joynrMessage, toChannelAddress) {
+                if (!(joynrMessage instanceof JoynrMessage)) {
+                    return Promise.reject(new Error(
+                            "CANNOT SEND: invalid joynrMessage which is of type "
+                                + Typing.getObjectType(joynrMessage)));
+                }
+
+                function sendResolver (resolve, reject) {
+                    if (terminated) {
+                        reject(new Error("ChannelMessagingSender is already shut down"));
+                        return;
                     }
-                    return new Promise(function(resolve, reject) {
-                        if (terminated) {
-                            reject(new Error("ChannelMessagingSender is already shut down"));
-                            return;
-                        }
-                        var queuedMessage = {
-                            message : joynrMessage,
-                            to : toChannelAddress.messagingEndpointUrl
-                                + "messageWithoutContentType/",
-                            resolve : resolve,
-                            reject : reject,
-                            pending : true,
-                            expiryTimer : undefined
-                        };
-                        createExpiryTimer(queuedMessage);
-                        messageQueue.push(queuedMessage);
-                        LongTimer.setTimeout(notify, 0);
-                    });
-                };
+                    var queuedMessage = {
+                        message: joynrMessage,
+                        to     : toChannelAddress.messagingEndpointUrl
+                        + "messageWithoutContentType/",
+                        resolve    : resolve,
+                        reject     : reject,
+                        pending    : true,
+                        expiryTimer: undefined
+                    };
+                    createExpiryTimer(queuedMessage);
+                    messageQueue.push(queuedMessage);
+                    LongTimer.setTimeout(notify, 0);
+                }
+
+                return new Promise(sendResolver);
+            };
 
          /**
          * Resend in the event of an error, and call the error callback if the ttl is
@@ -239,11 +249,13 @@ module.exports = (function (Promise, Util, Typing, JSONSerializer, JoynrMessage,
                  return;
              }
 
-             // resend the message
-             queuedMessage.resendTimer = LongTimer.setTimeout(function() {
+             function resendTimeout() {
                  delete queuedMessage.resendTimer;
                  postMessage(queuedMessage);
-             }, resendDelay_ms);
+             }
+
+             // resend the message
+             queuedMessage.resendTimer = LongTimer.setTimeout(resendTimeout, resendDelay_ms);
          }
 
          /**
@@ -253,7 +265,8 @@ module.exports = (function (Promise, Util, Typing, JSONSerializer, JoynrMessage,
           * @name ChannelMessagingSender#shutdown
           */
          this.shutdown = function shutdown() {
-             messageQueue.forEach(function(queuedMessage) {
+
+             function handleQueuedMessage(queuedMessage) {
                  if (queuedMessage.expiryTimer !== undefined) {
                      LongTimer.clearTimeout(queuedMessage.expiryTimer);
                  }
@@ -261,12 +274,12 @@ module.exports = (function (Promise, Util, Typing, JSONSerializer, JoynrMessage,
                      LongTimer.clearTimeout(queuedMessage.resendTimer);
                  }
                  queuedMessage.reject(new Error("ChannelMessagingSender is already shut down"));
-             });
+             }
+
+             messageQueue.forEach(handleQueuedMessage);
              messageQueue = [];
              terminated = true;
          };
     }
 
-    return ChannelMessagingSender;
-
-}(Promise, UtilInternal, Typing, JsonSerializer, JoynrMessage, LongTimer, DiagnosticTags, LoggerFactory));
+    module.exports = ChannelMessagingSender;

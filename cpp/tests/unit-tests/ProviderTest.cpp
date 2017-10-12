@@ -25,10 +25,8 @@
 #include "joynr/SubscriptionAttributeListener.h"
 #include "joynr/SingleThreadedIOService.h"
 
-#include "joynr/tests/testProvider.h"
+#include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/tests/TestWithoutVersionProvider.h"
-
-#include "tests/utils/MockObjects.h"
 
 using namespace joynr;
 

@@ -75,6 +75,10 @@ Software libraries listed below included in some products are free software that
 - javassist:javassist:3.12.1.GA
   Sources: info/javassist-3.12.1.GA-sources-jar
 
+The software listed below included in some products is licensed under the "MIT/X11 license". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in the documents listed below.
+- org.slf4j:slf4j-api:1.7.25
+  License: META-INF/licenses/MIT.slf4j.txt
+
 The software listed below included in some products is licensed under the "W3C® Software Notice and License". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/W3C-Software-Notice.txt".
 - files in WEB-INF/lib/xml-apis-1.4.01.jar:org/w3c/dom
   License: WEB-INF/lib/xml-apis-1.4.01.jar:license/LICENSE.dom-software.txt

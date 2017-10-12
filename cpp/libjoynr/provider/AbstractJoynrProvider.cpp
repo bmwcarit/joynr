@@ -38,33 +38,26 @@ AbstractJoynrProvider::AbstractJoynrProvider()
 
 AbstractJoynrProvider::~AbstractJoynrProvider()
 {
-    // Delete all attribute listeners
-    for (auto& mapEntry : attributeListeners) {
-        const std::vector<SubscriptionAttributeListener*>& listeners(mapEntry.second);
-        for (SubscriptionAttributeListener* listener : listeners) {
-            delete listener;
-        }
-    }
 }
 
 void AbstractJoynrProvider::registerAttributeListener(
         const std::string& attributeName,
-        SubscriptionAttributeListener* attributeListener)
+        std::shared_ptr<SubscriptionAttributeListener> attributeListener)
 {
     WriteLocker locker(lockAttributeListeners);
-    attributeListeners[attributeName].push_back(attributeListener);
+    attributeListeners[attributeName].push_back(std::move(attributeListener));
 }
 
 void AbstractJoynrProvider::unregisterAttributeListener(
         const std::string& attributeName,
-        SubscriptionAttributeListener* attributeListener)
+        std::shared_ptr<SubscriptionAttributeListener> attributeListener)
 {
     WriteLocker locker(lockAttributeListeners);
-    std::vector<SubscriptionAttributeListener*>& listeners = attributeListeners[attributeName];
+    std::vector<std::shared_ptr<SubscriptionAttributeListener>>& listeners =
+            attributeListeners[attributeName];
 
     auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), attributeListener);
     assert(listenerIt != listeners.cend());
-    delete *listenerIt;
     listeners.erase(listenerIt);
 
     if (listeners.empty()) {
@@ -72,28 +65,31 @@ void AbstractJoynrProvider::unregisterAttributeListener(
     }
 }
 
-void AbstractJoynrProvider::registerBroadcastListener(const std::string& broadcastName,
-                                                      UnicastBroadcastListener* broadcastListener)
+void AbstractJoynrProvider::registerBroadcastListener(
+        const std::string& broadcastName,
+        std::shared_ptr<UnicastBroadcastListener> broadcastListener)
 {
     WriteLocker locker(lockSelectiveBroadcastListeners);
-    selectiveBroadcastListeners[broadcastName].push_back(broadcastListener);
+    selectiveBroadcastListeners[broadcastName].push_back(std::move(broadcastListener));
 }
 
-void AbstractJoynrProvider::registerBroadcastListener(MulticastBroadcastListener* broadcastListener)
+void AbstractJoynrProvider::registerBroadcastListener(
+        std::shared_ptr<MulticastBroadcastListener> broadcastListener)
 {
     WriteLocker locker(lockBroadcastListeners);
-    broadcastListeners.push_back(broadcastListener);
+    broadcastListeners.push_back(std::move(broadcastListener));
 }
 
-void AbstractJoynrProvider::unregisterBroadcastListener(const std::string& broadcastName,
-                                                        UnicastBroadcastListener* broadcastListener)
+void AbstractJoynrProvider::unregisterBroadcastListener(
+        const std::string& broadcastName,
+        std::shared_ptr<UnicastBroadcastListener> broadcastListener)
 {
     WriteLocker locker(lockSelectiveBroadcastListeners);
-    std::vector<UnicastBroadcastListener*>& listeners = selectiveBroadcastListeners[broadcastName];
+    std::vector<std::shared_ptr<UnicastBroadcastListener>>& listeners =
+            selectiveBroadcastListeners[broadcastName];
 
     auto listenerIt = std::find(listeners.cbegin(), listeners.cend(), broadcastListener);
     assert(listenerIt != listeners.cend());
-    delete *listenerIt;
     listeners.erase(listenerIt);
 
     if (listeners.empty()) {

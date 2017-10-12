@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>0.29.2</version>
+	<version>0.30.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -74,6 +74,12 @@
 			<modules>
 				<module>android</module>
 			</modules>
+		</profile>
+		<profile>
+			<id>deploy-artifacts-to-other-repository</id>
+			<properties>
+				<assembly.skipAssembly>true</assembly.skipAssembly>
+			</properties>
 		</profile>
 		<profile>
 			<!--
@@ -1034,7 +1040,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>license-maven-plugin</artifactId>
-					<version>1.5</version>
+					<version>1.14</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

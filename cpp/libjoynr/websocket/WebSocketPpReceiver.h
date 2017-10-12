@@ -44,14 +44,14 @@ public:
 
     ~WebSocketPpReceiver() = default;
 
-    void registerReceiveCallback(std::function<void(smrf::ByteVector&&)> callback)
+    void registerReceiveCallback(
+            std::function<void(ConnectionHandle&&, smrf::ByteVector&&)> callback)
     {
         onMessageReceivedCallback = std::move(callback);
     }
 
     void onMessageReceived(ConnectionHandle hdl, MessagePtr message)
     {
-        std::ignore = hdl;
         using websocketpp::frame::opcode::value;
         const value mode = message->get_opcode();
         if (mode == value::binary) {
@@ -61,7 +61,7 @@ public:
                 // TODO can this copy be avoided?
                 const std::string& messageStr = message->get_payload();
                 smrf::ByteVector rawMessage(messageStr.begin(), messageStr.end());
-                onMessageReceivedCallback(std::move(rawMessage));
+                onMessageReceivedCallback(std::move(hdl), std::move(rawMessage));
             }
         } else {
             JOYNR_LOG_ERROR(logger, "received unsupported message type {}, dropping message", mode);
@@ -69,7 +69,7 @@ public:
     }
 
 private:
-    std::function<void(smrf::ByteVector&&)> onMessageReceivedCallback;
+    std::function<void(ConnectionHandle&&, smrf::ByteVector&&)> onMessageReceivedCallback;
 
     ADD_LOGGER(WebSocketPpReceiver);
 };

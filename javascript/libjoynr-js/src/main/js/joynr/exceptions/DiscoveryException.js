@@ -19,68 +19,64 @@
  * #L%
  */
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var JoynrRuntimeException = require('./JoynrRuntimeException');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
-    var defaultSettings;
+var defaultSettings;
 
-    /**
-     * @classdesc
-     *
-     * @summary
-     * Constructor of DiscoveryException object used for reporting
-     * error conditions during discovery and arbitration.
-     *
-     * @constructor
-     * @name DiscoveryException
-     *
-     * @param {Object}
-     *            [settings] the settings object for the constructor call
-     * @param {String}
-     *            [settings.detailMessage] message containing details
-     *            about the error
-     * @returns {DiscoveryException}
-     *            The newly created DiscoveryException object
-     */
-    function DiscoveryException(settings) {
-        if (!(this instanceof DiscoveryException)) {
-            // in case someone calls constructor without new keyword (e.g. var c
-            // = Constructor({..}))
-            return new DiscoveryException(settings);
-        }
-
-        var log = LoggerFactory.getLogger("joynr.exceptions.DiscoveryException");
-        var joynrRuntimeException = new JoynrRuntimeException(settings);
-
-        /**
-         * Used for serialization.
-         * @name DiscoveryException#_typeName
-         * @type String
-         */
-        Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.DiscoveryException");
-
-        /**
-         * See [constructor description]{@link DiscoveryException}.
-         * @name DiscoveryException#detailMessage
-         * @type String
-         */
-        this.detailMessage = undefined;
-
-        Util.extend(this, defaultSettings, settings, joynrRuntimeException);
+/**
+ * @classdesc
+ *
+ * @summary
+ * Constructor of DiscoveryException object used for reporting
+ * error conditions during discovery and arbitration.
+ *
+ * @constructor
+ * @name DiscoveryException
+ *
+ * @param {Object}
+ *            [settings] the settings object for the constructor call
+ * @param {String}
+ *            [settings.detailMessage] message containing details
+ *            about the error
+ * @returns {DiscoveryException}
+ *            The newly created DiscoveryException object
+ */
+function DiscoveryException(settings) {
+    if (!(this instanceof DiscoveryException)) {
+        // in case someone calls constructor without new keyword (e.g. var c
+        // = Constructor({..}))
+        return new DiscoveryException(settings);
     }
 
-    defaultSettings = {};
+    var log = LoggerFactory.getLogger("joynr.exceptions.DiscoveryException");
+    var joynrRuntimeException = new JoynrRuntimeException(settings);
 
-    TypeRegistrySingleton.getInstance().addType(
-            "joynr.exceptions.DiscoveryException",
-            DiscoveryException);
+    /**
+     * Used for serialization.
+     * @name DiscoveryException#_typeName
+     * @type String
+     */
+    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.DiscoveryException");
 
-    DiscoveryException.prototype = new Error();
-    DiscoveryException.prototype.constructor = DiscoveryException;
-    DiscoveryException.prototype.name = "DiscoveryException";
+    /**
+     * See [constructor description]{@link DiscoveryException}.
+     * @name DiscoveryException#detailMessage
+     * @type String
+     */
+    this.detailMessage = undefined;
 
-    return DiscoveryException;
+    Util.extend(this, defaultSettings, settings, joynrRuntimeException);
+}
 
-        }(TypeRegistrySingleton, UtilInternal, JoynrRuntimeException, LoggerFactory));
+defaultSettings = {};
+
+TypeRegistrySingleton.getInstance().addType(
+        "joynr.exceptions.DiscoveryException",
+        DiscoveryException);
+
+DiscoveryException.prototype = new Error();
+DiscoveryException.prototype.constructor = DiscoveryException;
+DiscoveryException.prototype.name = "DiscoveryException";
+
+module.exports = DiscoveryException;

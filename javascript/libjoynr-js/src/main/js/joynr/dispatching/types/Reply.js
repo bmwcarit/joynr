@@ -18,71 +18,68 @@
  * limitations under the License.
  * #L%
  */
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
-module.exports = (function(Util, Typing) {
 
-    /**
-     * @name Reply
-     * @constructor
-     *
-     * @param {Object}
-     *            settings
-     * @param {String}
-     *            settings.requestReplyId
-     * @param {Array}
-     *            [settings.response] the response may be undefined
-     * @param {Object}
-     *            [settings.error] The exception object in case of request failure
-     */
-    function Reply(settings) {
-        var i;
-        if (settings.response) {
-            for (i = 0; i < settings.response.length; i++) {
-                settings.response[i] = Util.ensureTypedValues(settings.response[i]);
-            }
+/**
+ * @name Reply
+ * @constructor
+ *
+ * @param {Object}
+ *            settings
+ * @param {String}
+ *            settings.requestReplyId
+ * @param {Array}
+ *            [settings.response] the response may be undefined
+ * @param {Object}
+ *            [settings.error] The exception object in case of request failure
+ */
+function Reply(settings) {
+    var i;
+    if (settings.response) {
+        for (i = 0; i < settings.response.length; i++) {
+            settings.response[i] = Util.ensureTypedValues(settings.response[i]);
         }
-        // must contain exactly one of the two alternatives
-        if (!settings.response && !settings.error) {
-            throw new Error("Reply object does neither contain response nor error");
-        }
-        if (settings.error && Util.isArray(settings.response) && settings.response.length > 0) {
-            throw new Error("Reply object contains both response and error");
-        }
-
-        /**
-         * @name Reply#requestReplyId
-         * @type String
-         */
-        this.requestReplyId = settings.requestReplyId;
-        /**
-         * @name Reply#response
-         * @type Array
-         */
-        this.response = settings.response;
-        /**
-         * @name Reply#error
-         * @type Object
-         */
-        this.error = settings.error;
-
-        /**
-         * The joynr type name
-         *
-         * @name Reply#_typeName
-         * @type String
-         */
-        Object.defineProperty(this, "_typeName", {
-            value : "joynr.Reply",
-            readable : true,
-            writable : false,
-            enumerable : true,
-            configurable : false
-        });
-
-        return Object.freeze(this);
+    }
+    // must contain exactly one of the two alternatives
+    if (!settings.response && !settings.error) {
+        throw new Error("Reply object does neither contain response nor error");
+    }
+    if (settings.error && Util.isArray(settings.response) && settings.response.length > 0) {
+        throw new Error("Reply object contains both response and error");
     }
 
-    return Reply;
+    /**
+     * @name Reply#requestReplyId
+     * @type String
+     */
+    this.requestReplyId = settings.requestReplyId;
+    /**
+     * @name Reply#response
+     * @type Array
+     */
+    this.response = settings.response;
+    /**
+     * @name Reply#error
+     * @type Object
+     */
+    this.error = settings.error;
 
-}(UtilInternal, Typing));
+    /**
+     * The joynr type name
+     *
+     * @name Reply#_typeName
+     * @type String
+     */
+    Object.defineProperty(this, "_typeName", {
+        value : "joynr.Reply",
+        readable : true,
+        writable : false,
+        enumerable : true,
+        configurable : false
+    });
+
+    return Object.freeze(this);
+}
+
+module.exports = Reply;

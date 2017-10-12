@@ -19,8 +19,6 @@
  * #L%
  */
 
-(function() {
-
     var jstestdriver = null;
     var JstdConsoleAppender = function JstdConsoleAppender() {};
 
@@ -74,5 +72,3 @@
         window.JstdConsoleAppender = JstdConsoleAppender;
         jstestdriver = window.jstestdriver;
     }
-
-}());

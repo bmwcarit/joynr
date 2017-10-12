@@ -27,6 +27,7 @@
 #include "joynr/IClusterControllerSignalHandler.h"
 
 #include "joynr/ClusterControllerSettings.h"
+#include "joynr/IKeychain.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
@@ -35,7 +36,6 @@
 #include "joynr/RuntimeConfig.h"
 #include "joynr/Semaphore.h"
 #include "joynr/WebSocketSettings.h"
-#include "joynr/IKeychain.h"
 
 #ifdef USE_DBUS_COMMONAPI_COMMUNICATION
 #include "joynr/DBusMessageRouterAdapter.h"
@@ -61,17 +61,18 @@ class IDispatcher;
 class InProcessPublicationSender;
 class InProcessMessagingSkeleton;
 class HttpMessagingSkeleton;
-class MqttMessagingSkeleton;
+class IMqttMessagingSkeleton;
+class MqttReceiver;
 class MulticastMessagingSkeletonDirectory;
 class IPlatformSecurityManager;
 class Settings;
+class IMessageRouter;
 class IMessageSender;
 class IWebsocketCcMessagingSkeleton;
 class CcMessageRouter;
 class WebSocketMessagingStubFactory;
 class MosquittoConnection;
 class LocalDomainAccessController;
-class IKeychain;
 
 namespace infrastructure
 {
@@ -84,9 +85,15 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
           public IClusterControllerSignalHandler
 {
 public:
+    using MqttMessagingSkeletonFactory = std::function<
+            std::shared_ptr<IMqttMessagingSkeleton>(std::weak_ptr<IMessageRouter> messageRouter,
+                                                    std::shared_ptr<MqttReceiver> mqttReceiver,
+                                                    const std::string& multicastTopicPrefix,
+                                                    std::uint64_t ttlUplift)>;
     JoynrClusterControllerRuntime(
             std::unique_ptr<Settings> settings,
             std::shared_ptr<IKeychain> keyChain = nullptr,
+            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
             std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver = nullptr,
             std::shared_ptr<ITransportMessageSender> httpMessageSender = nullptr,
             std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver = nullptr,
@@ -95,12 +102,14 @@ public:
     static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::size_t argc,
             char* argv[],
-            std::shared_ptr<IKeychain> keyChain = nullptr);
+            std::shared_ptr<IKeychain> keyChain = nullptr,
+            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr);
 
     static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::unique_ptr<Settings> settings,
             const std::string& discoveryEntriesFile = "",
-            std::shared_ptr<IKeychain> keyChain = nullptr);
+            std::shared_ptr<IKeychain> keyChain = nullptr,
+            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr);
 
     ~JoynrClusterControllerRuntime() override;
 
@@ -150,10 +159,11 @@ protected:
     std::shared_ptr<MosquittoConnection> mosquittoConnection;
     std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver;
     std::shared_ptr<ITransportMessageSender> mqttMessageSender;
-    std::shared_ptr<MqttMessagingSkeleton> mqttMessagingSkeleton;
+    MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory;
+    std::shared_ptr<IMqttMessagingSkeleton> mqttMessagingSkeleton;
 
     std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
-    InProcessPublicationSender* inProcessPublicationSender;
+    std::shared_ptr<InProcessPublicationSender> inProcessPublicationSender;
 
     std::unique_ptr<Settings> settings;
     LibjoynrSettings libjoynrSettings;
@@ -213,7 +223,6 @@ private:
     Semaphore lifetimeSemaphore;
 
     std::shared_ptr<joynr::AccessController> accessController;
-    std::shared_ptr<IKeychain> keyChain;
 
     std::string routingProviderParticipantId;
     std::string discoveryProviderParticipantId;

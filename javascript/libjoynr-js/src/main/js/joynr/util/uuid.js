@@ -19,8 +19,5 @@
  * #L%
  */
 var uuid = require('../../lib/uuid-annotated');
-module.exports = (function(uuid) {
 
-    return uuid;
-
-}(uuid));
+module.exports = uuid;

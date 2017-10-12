@@ -32,7 +32,7 @@ INIT_LOGGER(ReceivedMessageRunnable);
 
 ReceivedMessageRunnable::ReceivedMessageRunnable(std::shared_ptr<ImmutableMessage> message,
                                                  Dispatcher& dispatcher)
-        : Runnable(true),
+        : Runnable(),
           ObjectWithDecayTime(message->getExpiryDate()),
           message(std::move(message)),
           dispatcher(dispatcher)

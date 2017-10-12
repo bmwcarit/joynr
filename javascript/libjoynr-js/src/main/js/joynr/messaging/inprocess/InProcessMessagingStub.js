@@ -1,5 +1,4 @@
-/*jslint node: true */
-
+/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,28 +17,25 @@
  * limitations under the License.
  * #L%
  */
-module.exports = (function() {
 
-    /**
-     * @constructor
-     * @name InProcessMessagingStub
-     *
-     * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton to send the joynr messages to
-     */
-    function InProcessMessagingStub(inProcessMessagingSkeleton) {
-        this.inProcessMessagingSkeleton = inProcessMessagingSkeleton;
-    }
+/**
+ * @constructor
+ * @name InProcessMessagingStub
+ *
+ * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton to send the joynr messages to
+ */
+function InProcessMessagingStub(inProcessMessagingSkeleton) {
+    this._inProcessMessagingSkeleton = inProcessMessagingSkeleton;
+}
 
-    /**
-     * @name InProcessMessagingStub#transmit
-     * @function
-     *
-     * @param {JoynrMessage} message the message to transmit
-     * @returns {Object} A+ promise object
-     */
-    InProcessMessagingStub.prototype.transmit = function transmit(joynrMessage) {
-        return this.inProcessMessagingSkeleton.receiveMessage(joynrMessage);
-    };
-    return InProcessMessagingStub;
-
-}());
+/**
+ * @name InProcessMessagingStub#transmit
+ * @function
+ *
+ * @param {JoynrMessage} message the message to transmit
+ * @returns {Object} A+ promise object
+ */
+InProcessMessagingStub.prototype.transmit = function transmit(joynrMessage) {
+    return this._inProcessMessagingSkeleton.receiveMessage(joynrMessage);
+};
+module.exports = InProcessMessagingStub;

@@ -19,37 +19,29 @@
  * #L%
  */
 var Typing = require('../../util/Typing');
-module.exports =
-        (function(Typing) {
+
+/**
+ * @constructor WebSocketMulticastAddressCalculator
+ * @param {Object}
+ *            settings
+ * @param {WebSocketAddress}
+ *            settings.globalAddress
+ */
+var WebSocketMulticastAddressCalculator = function WebSocketMulticastAddressCalculator(settings) {
+    Typing.checkProperty(settings, "Object", "settings");
+    Typing.checkProperty(settings.globalAddress, "WebSocketAddress", "settings.globalAddress");
 
     /**
-     * @constructor WebSocketMulticastAddressCalculator
-     * @param {Object}
-     *            settings
-     * @param {WebSocketAddress}
-     *            settings.globalAddress
+     * Calculates the multicast address for the submitted joynr message
+     * @function WebSocketMulticastAddressCalculator#calculate
+     *
+     * @param {JoynrMessage}
+     *            message
+     * @return {Address} the multicast address
      */
-    var WebSocketMulticastAddressCalculator =
-            function WebSocketMulticastAddressCalculator(settings) {
-                Typing.checkProperty(settings, "Object", "settings");
-                Typing.checkProperty(
-                        settings.globalAddress,
-                        "WebSocketAddress",
-                        "settings.globalAddress");
+    this.calculate = function calculate(message) {
+        return settings.globalAddress;
+    };
+};
 
-                /**
-                 * Calculates the multicast address for the submitted joynr message
-                 * @function WebSocketMulticastAddressCalculator#calculate
-                 *
-                 * @param {JoynrMessage}
-                 *            message
-                 * @return {Address} the multicast address
-                 */
-                this.calculate = function calculate(message) {
-                    return settings.globalAddress;
-                };
-            };
-
-    return WebSocketMulticastAddressCalculator;
-
-        }(Typing));
+module.exports = WebSocketMulticastAddressCalculator;

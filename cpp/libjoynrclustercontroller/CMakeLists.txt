@@ -117,6 +117,7 @@ file(
     "mqtt/*.cpp"
     "websocket/*.cpp"
     "ClusterControllerSettings.cpp"
+    "ClusterControllerCallContext.cpp"
 )
 
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})

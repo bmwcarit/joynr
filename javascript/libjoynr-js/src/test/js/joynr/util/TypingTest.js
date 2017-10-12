@@ -32,7 +32,6 @@ var ComplexStruct = require('../../../test-classes/joynr/datatypes/exampleTypes/
 var Country = require('../../../test-classes/joynr/datatypes/exampleTypes/Country');
 var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
 var Promise = require('../../../classes/global/Promise');
-module.exports = (function (Typing, TypeRegistry, LoggerFactory, TypeRegistrySingleton, DiscoveryEntry, ProviderQos, ProviderScope, Version, RadioStation, ComplexRadioStation, ComplexStruct, Country, TestEnum, Promise) {
 
             function MyCustomObj() {}
             function _TestConstructor123_() {}
@@ -635,5 +634,3 @@ module.exports = (function (Typing, TypeRegistry, LoggerFactory, TypeRegistrySin
                     }).not.toThrow();
                 });
             });
-
-}(Typing, TypeRegistry, LoggerFactory, TypeRegistrySingleton, DiscoveryEntry, ProviderQos, ProviderScope, Version, RadioStation, ComplexRadioStation, ComplexStruct, Country, TestEnum, Promise));

@@ -19,11 +19,11 @@
  * #L%
  */
 var Promise = require('../../classes/global/Promise');
-var provisioningRoot = require('../../test-classes/joynr/provisioning/provisioning_root');
-var provisioningEnd2EndCommon = require('./provisioning_end2end_common');
+var provisioning_root = require('../../test-classes/joynr/provisioning/provisioning_root');
+var provisioning_end2end = require('./provisioning_end2end_common');
 var defaultInterTabSettings = require('../../classes/joynr/start/settings/defaultInterTabSettings');
-var WaitsFor = require('../../test-classes/global/WaitsFor');
-module.exports = (function (Promise, provisioning_root, provisioning_end2end, defaultInterTabSettings, waitsFor) {
+var waitsFor = require('../../test-classes/global/WaitsFor');
+
             var IntegrationUtils = {};
             var currentlyRunningWebWorkerCC;
             var workerReady = {}, workerStarted = {}, workerFinished = {}, worker = {}, workerId =
@@ -275,5 +275,4 @@ module.exports = (function (Promise, provisioning_root, provisioning_end2end, de
                 }, time + " ms to elapse", time);
             };
 
-            return IntegrationUtils;
-}(Promise, provisioningRoot, provisioningEnd2EndCommon, defaultInterTabSettings, WaitsFor));
+            module.exports = IntegrationUtils;

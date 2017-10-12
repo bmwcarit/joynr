@@ -78,20 +78,19 @@ public:
 
         runtime2 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings2));
         runtime2->init();
-    }
-
-    void SetUp() {
         runtime1->start();
         runtime2->start();
     }
 
-    void TearDown() {
+    ~End2EndSubscriptionTest() {
         if (!providerParticipantId.empty()) {
             runtime1->unregisterProvider(providerParticipantId);
         }
         bool deleteChannel = true;
         runtime1->stop(deleteChannel);
+        runtime1.reset();
         runtime2->stop(deleteChannel);
+        runtime2.reset();
 
         // Delete persisted files
         std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
@@ -120,8 +119,6 @@ public:
         EXPECT_FALSE(testProvider->attributeListeners.find(attributeName) == testProvider->attributeListeners.cend() ||
                     testProvider->attributeListeners.find(attributeName)->second.empty());
     }
-
-    ~End2EndSubscriptionTest() = default;
 
 private:
     std::string providerParticipantId;

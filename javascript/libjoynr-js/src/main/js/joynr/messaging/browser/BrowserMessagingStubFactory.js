@@ -1,5 +1,4 @@
-/*jslint node: true */
-
+/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -18,41 +17,39 @@
  * limitations under the License.
  * #L%
  */
+
 var Typing = require('../../util/Typing');
 var BrowserMessagingStub = require('./BrowserMessagingStub');
-module.exports =
-        (function(Typing, BrowserMessagingStub) {
 
-    /**
-     * @constructor
-     * @name BrowserMessagingStubFactory
-     *
-     * @param {Object} settings
-     * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
-     */
-    function BrowserMessagingStubFactory(settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkProperty(
-                settings.webMessagingStub,
-                "WebMessagingStub",
-                "settings.webMessagingStub");
+/**
+ * @constructor
+ * @name BrowserMessagingStubFactory
+ *
+ * @param {Object} settings
+ * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
+ */
+function BrowserMessagingStubFactory(settings) {
+    Typing.checkProperty(settings, "Object", "settings");
+    Typing
+            .checkProperty(
+                    settings.webMessagingStub,
+                    "WebMessagingStub",
+                    "settings.webMessagingStub");
 
-        /**
-         * @name BrowserMessagingStubFactory#build
-         * @function
-         *
-         * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
-         */
-        this.build = function build(address) {
-            Typing.checkProperty(address, "BrowserAddress", "address");
+    this._settings = settings;
+}
 
-            return new BrowserMessagingStub({
-                windowId : address.windowId,
-                webMessagingStub : settings.webMessagingStub
-            });
-        };
-    }
+/**
+ * @name BrowserMessagingStubFactory#build
+ * @function
+ *
+ * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
+ */
+BrowserMessagingStubFactory.prototype.build = function build(address) {
+    return new BrowserMessagingStub({
+        windowId : address.windowId,
+        webMessagingStub : this._settings.webMessagingStub
+    });
+};
 
-    return BrowserMessagingStubFactory;
-
-        }(Typing, BrowserMessagingStub));
+module.exports = BrowserMessagingStubFactory;

@@ -21,40 +21,37 @@
 var MulticastPublication =
         require('../../../../classes/joynr/dispatching/types/MulticastPublication');
 var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
-module.exports = (function(MulticastPublication, RadioStation) {
 
-    describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", function() {
+describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", function() {
 
-        it("is defined", function() {
-            expect(MulticastPublication).toBeDefined();
+    it("is defined", function() {
+        expect(MulticastPublication).toBeDefined();
+    });
+
+    it("is instantiable", function() {
+        var response = "response";
+        var publication = new MulticastPublication({
+            multicastId : "testMulticastId",
+            response : response
         });
-
-        it("is instantiable", function() {
-            var response = "response";
-            var publication = new MulticastPublication({
-                multicastId : "testMulticastId",
-                response : response
-            });
-            expect(publication).toBeDefined();
-            expect(publication).not.toBeNull();
-            expect(typeof publication === "object").toBeTruthy();
-            expect(publication instanceof MulticastPublication).toBeTruthy();
-
-        });
-
-        it("is constructs with correct member values", function() {
-            var multicastId = "testMulticastId";
-            var response = "response";
-
-            var publication = new MulticastPublication({
-                multicastId : multicastId,
-                response : response
-            });
-
-            expect(publication.multicastId).toEqual(multicastId);
-            expect(publication.response).toEqual(response);
-        });
+        expect(publication).toBeDefined();
+        expect(publication).not.toBeNull();
+        expect(typeof publication === "object").toBeTruthy();
+        expect(publication instanceof MulticastPublication).toBeTruthy();
 
     });
 
-}(MulticastPublication, RadioStation)); // require
+    it("is constructs with correct member values", function() {
+        var multicastId = "testMulticastId";
+        var response = "response";
+
+        var publication = new MulticastPublication({
+            multicastId : multicastId,
+            response : response
+        });
+
+        expect(publication.multicastId).toEqual(multicastId);
+        expect(publication.response).toEqual(response);
+    });
+
+});

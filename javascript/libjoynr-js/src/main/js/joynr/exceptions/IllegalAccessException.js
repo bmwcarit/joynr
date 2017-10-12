@@ -19,69 +19,65 @@
  * #L%
  */
 var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var UtilInternal = require('../util/UtilInternal');
+var Util = require('../util/UtilInternal');
 var JoynrRuntimeException = require('./JoynrRuntimeException');
 var LoggerFactory = require('../system/LoggerFactory');
-module.exports =
-        (function(TypeRegistrySingleton, Util, JoynrRuntimeException, LoggerFactory) {
-    var defaultSettings;
+var defaultSettings;
 
-    /**
-     * @classdesc
-     *
-     * @summary
-     * Constructor of IllegalAccessException object used for reporting
-     * error conditions due to access restrictions that should be reported
-     * back to consumer side.
-     *
-     * @constructor
-     * @name IllegalAccessException
-     *
-     * @param {Object}
-     *            [settings] the settings object for the constructor call
-     * @param {String}
-     *            [settings.detailMessage] message containing details
-     *            about the error
-     * @returns {IllegalAccessException}
-     *            The newly created IllegalAccessException object
-     */
-    function IllegalAccessException(settings) {
-        if (!(this instanceof IllegalAccessException)) {
-            // in case someone calls constructor without new keyword (e.g. var c
-            // = Constructor({..}))
-            return new IllegalAccessException(settings);
-        }
-
-        var log = LoggerFactory.getLogger("joynr.exceptions.IllegalAccessException");
-        var joynrRuntimeException = new JoynrRuntimeException(settings);
-
-        /**
-         * Used for serialization.
-         * @name IllegalAccessException#_typeName
-         * @type String
-         */
-        Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.IllegalAccessException");
-
-        /**
-         * See [constructor description]{@link IllegalAccessException}.
-         * @name IllegalAccessException#detailMessage
-         * @type String
-         */
-        this.detailMessage = undefined;
-
-        Util.extend(this, defaultSettings, settings, joynrRuntimeException);
+/**
+ * @classdesc
+ *
+ * @summary
+ * Constructor of IllegalAccessException object used for reporting
+ * error conditions due to access restrictions that should be reported
+ * back to consumer side.
+ *
+ * @constructor
+ * @name IllegalAccessException
+ *
+ * @param {Object}
+ *            [settings] the settings object for the constructor call
+ * @param {String}
+ *            [settings.detailMessage] message containing details
+ *            about the error
+ * @returns {IllegalAccessException}
+ *            The newly created IllegalAccessException object
+ */
+function IllegalAccessException(settings) {
+    if (!(this instanceof IllegalAccessException)) {
+        // in case someone calls constructor without new keyword (e.g. var c
+        // = Constructor({..}))
+        return new IllegalAccessException(settings);
     }
 
-    defaultSettings = {};
+    var log = LoggerFactory.getLogger("joynr.exceptions.IllegalAccessException");
+    var joynrRuntimeException = new JoynrRuntimeException(settings);
 
-    TypeRegistrySingleton.getInstance().addType(
-            "joynr.exceptions.IllegalAccessException",
-            IllegalAccessException);
+    /**
+     * Used for serialization.
+     * @name IllegalAccessException#_typeName
+     * @type String
+     */
+    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.IllegalAccessException");
 
-    IllegalAccessException.prototype = new Error();
-    IllegalAccessException.prototype.constructor = IllegalAccessException;
-    IllegalAccessException.prototype.name = "IllegalAccessException";
+    /**
+     * See [constructor description]{@link IllegalAccessException}.
+     * @name IllegalAccessException#detailMessage
+     * @type String
+     */
+    this.detailMessage = undefined;
 
-    return IllegalAccessException;
+    Util.extend(this, defaultSettings, settings, joynrRuntimeException);
+}
 
-        }(TypeRegistrySingleton, UtilInternal, JoynrRuntimeException, LoggerFactory));
+defaultSettings = {};
+
+TypeRegistrySingleton.getInstance().addType(
+        "joynr.exceptions.IllegalAccessException",
+        IllegalAccessException);
+
+IllegalAccessException.prototype = new Error();
+IllegalAccessException.prototype.constructor = IllegalAccessException;
+IllegalAccessException.prototype.name = "IllegalAccessException";
+
+module.exports = IllegalAccessException;

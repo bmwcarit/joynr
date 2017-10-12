@@ -92,41 +92,40 @@ var CommonApiDbusAddress = require('./joynr/system/RoutingTypes/CommonApiDbusAdd
 var WebSocketAddress = require('./joynr/system/RoutingTypes/WebSocketAddress');
 var WebSocketClientAddress = require('./joynr/system/RoutingTypes/WebSocketClientAddress');
 var LongTimer = require('./joynr/util/LongTimer');
-module.exports = (function() {
-    // load all external modules
-    var nsContext, nsElem, nsElems, i, value;
-    var root = {};
-    // cycle over all exports
-    for (i = 0; i < libjoynrExports.length; ++i) {
-        // Window in case of a Browser or DedicatedWebWorkerContext in a WebWorker Environment
-        nsContext = root;
-        nsElems = libjoynrExports[i].replace(/^\.\/joynr\//, '').split('/').reverse();
-        //remove "joynr";
-        // go through namespace elements of require.js namespace, i.e. "some/namespace/NameSpaceTest"
-        while (nsElems.length) {
-            // translate namespace elements to objects on window or the current WebWorkerContext,
-            // e.g. "some/namespace/NameSpaceTest" is then usable as "some.namespace.NameSpaceTest"
-            // as in "console.log(new some.namespace.NameSpaceTest().msg);", but don"t overwrite
-            // already existing namespaces, make module publicly available on the window variable
-            // or the current WebWorkerContext, which in fact defines a global variable with the
-            // name <module.name> and assigns the module to it
-            nsElem = nsElems.pop();
-            if (nsElems.length) {
-                value = nsContext[nsElem] || {};
-            } else {
-                // make all members of the module read-only
-                value = Object.freeze(require(libjoynrExports[i]));
-            }
-            // export namespace fragment or module read-only to the parent namespace
-            Object.defineProperty(nsContext, nsElem, {
-                readable : true,
-                enumerable : true,
-                configurable : false,
-                writable : false,
-                value : value
-            });
-            nsContext = value;
+
+// load all external modules
+var nsContext, nsElem, nsElems, i, value;
+var root = {};
+// cycle over all exports
+for (i = 0; i < libjoynrExports.length; ++i) {
+    // Window in case of a Browser or DedicatedWebWorkerContext in a WebWorker Environment
+    nsContext = root;
+    nsElems = libjoynrExports[i].replace(/^\.\/joynr\//, '').split('/').reverse();
+    //remove "joynr";
+    // go through namespace elements of require.js namespace, i.e. "some/namespace/NameSpaceTest"
+    while (nsElems.length) {
+        // translate namespace elements to objects on window or the current WebWorkerContext,
+        // e.g. "some/namespace/NameSpaceTest" is then usable as "some.namespace.NameSpaceTest"
+        // as in "console.log(new some.namespace.NameSpaceTest().msg);", but don"t overwrite
+        // already existing namespaces, make module publicly available on the window variable
+        // or the current WebWorkerContext, which in fact defines a global variable with the
+        // name <module.name> and assigns the module to it
+        nsElem = nsElems.pop();
+        if (nsElems.length) {
+            value = nsContext[nsElem] || {};
+        } else {
+            // make all members of the module read-only
+            value = Object.freeze(require(libjoynrExports[i]));
         }
+        // export namespace fragment or module read-only to the parent namespace
+        Object.defineProperty(nsContext, nsElem, {
+            readable : true,
+            enumerable : true,
+            configurable : false,
+            writable : false,
+            value : value
+        });
+        nsContext = value;
     }
-    return root;
-}());
+}
+module.exports = root;

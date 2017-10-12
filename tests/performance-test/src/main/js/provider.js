@@ -40,10 +40,10 @@ joynr.load(testbase.provisioning_common).then(function(loadedJoynr) {
     joynr = loadedJoynr;
 
     var providerQos = new joynr.types.ProviderQos({
-        customParameters : [],
-        priority : Date.now(),
-        scope : joynr.types.ProviderScope.LOCAL,
-        supportsOnChangeSubscriptions : true
+        customParameters             : [],
+        priority                     : Date.now(),
+        scope                        : joynr.types.ProviderScope.LOCAL,
+        supportsOnChangeSubscriptions: true
     });
 
     var EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");

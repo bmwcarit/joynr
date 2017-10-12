@@ -1,5 +1,3 @@
-package io.joynr.messaging.mqtt;
-
 /*
  * #%L
  * %%
@@ -8,9 +6,9 @@ package io.joynr.messaging.mqtt;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +16,7 @@ package io.joynr.messaging.mqtt;
  * limitations under the License.
  * #L%
  */
+package io.joynr.messaging.mqtt;
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
@@ -254,7 +253,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             forwardMessage(message, mqttId, mqttQos, failureAction);
         } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
             LOG.error("Message: \"{}\", could not be deserialized, exception: {}", serializedMessage, e.getMessage());
-            mqttClient.sendMqttAck(mqttId, mqttQos);
+            mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
             failureAction.execute(e);
         }
     }
@@ -274,6 +273,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private void removeProcessedMessageInformation() {
         DelayedMessageId delayedMessageId;
         while ((delayedMessageId = processedMessagesQueue.poll()) != null) {
+            LOG.debug("Message {} removed from list of processed messages", delayedMessageId.getMessageId());
             processingMessages.remove(delayedMessageId.getMessageId());
         }
     }
@@ -281,7 +281,8 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private void handleMessageProcessed(String messageId, int mqttId, int mqttQos) {
         DelayedMessageId delayedMessageId = new DelayedMessageId(messageId, repeatedMqttMessageIgnorePeriodMs);
         if (!processedMessagesQueue.contains(delayedMessageId)) {
-            mqttClient.sendMqttAck(mqttId, mqttQos);
+            LOG.debug("Message {} was processed and will be acknowledged", messageId);
+            mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
             processedMessagesQueue.put(delayedMessageId);
         }
     }
@@ -291,6 +292,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         synchronized (processingMessages) {
             MqttAckInformation info = processingMessages.get(messageId);
             if (info == null) {
+                LOG.debug("Message {} was processed but it is unkown", messageId);
                 return;
             }
             handleMessageProcessed(messageId, info.getMqttId(), info.getMqttQos());

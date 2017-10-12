@@ -37,6 +37,8 @@ public:
 private:
     std::shared_ptr<SSLContext> createSSLContext(std::shared_ptr<IKeychain> keyChain,
                                                  Logger& logger);
+
+    bool useEncryptedTls;
 };
 
 } // namespace joynr

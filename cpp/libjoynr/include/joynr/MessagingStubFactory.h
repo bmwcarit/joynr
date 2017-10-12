@@ -65,6 +65,7 @@ public:
                           destinationAddress) override;
 
     void registerStubFactory(std::shared_ptr<IMiddlewareMessagingStubFactory> factory);
+    void shutdown() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MessagingStubFactory);

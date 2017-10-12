@@ -39,7 +39,7 @@ public:
      * An unicast broadcast listener is being used for selectiveBroadcasts
      */
     UnicastBroadcastListener(const std::string& subscriptionId,
-                             PublicationManager& publicationManager)
+                             std::weak_ptr<PublicationManager> publicationManager)
             : AbstractBroadcastListener(publicationManager), subscriptionId(subscriptionId)
     {
     }
@@ -66,13 +66,17 @@ void UnicastBroadcastListener::selectiveBroadcastOccurred(
         const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
         const Ts&... values)
 {
-    publicationManager.selectiveBroadcastOccurred(subscriptionId, filters, values...);
+    if (auto publicationManagerSharedPtr = publicationManager.lock()) {
+        publicationManagerSharedPtr->selectiveBroadcastOccurred(subscriptionId, filters, values...);
+    }
 }
 
 template <typename... Ts>
 void UnicastBroadcastListener::broadcastOccurred(const Ts&... values)
 {
-    publicationManager.broadcastOccurred(subscriptionId, values...);
+    if (auto publicationManagerSharedPtr = publicationManager.lock()) {
+        publicationManagerSharedPtr->broadcastOccurred(subscriptionId, values...);
+    }
 }
 
 } // namespace joynr

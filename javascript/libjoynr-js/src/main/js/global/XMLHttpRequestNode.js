@@ -22,10 +22,10 @@
  *
  * @returns object with properties window and document.
  */
-var xmlhttprequest = require('xmlhttprequest');
-module.exports = global.window !== undefined ? require('./XMLHttpRequest') : (function(xmlhttprequest) {
-    var XMLHttpRequest = xmlhttprequest.XMLHttpRequest;
-
+if (global.window !== undefined) {
+    module.exports = require("./XMLHttpRequest");
+} else {
+    var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
     global.XMLHttpRequest = XMLHttpRequest;
-    return XMLHttpRequest;
-}(xmlhttprequest));
+    module.exports = XMLHttpRequest;
+}

@@ -27,29 +27,26 @@
  */
 var Typing = require("../joynr/util/Typing");
 
-module.exports =
-        (function(Typing) {
-    /**
-     * constructor for a localStorage object
-     * @param {Object}
-     *            settings the settings object
-     * @param {Boolean}
-     *            settings.clearPersistency localStorage is cleared if set to true
-     *
-     * @constructor LocalStorage
-     */
-    var LocalStorage =
-            function(settings) {
-                settings = settings || {};
-                Typing.checkPropertyIfDefined(
-                        settings.clearPersistency,
-                        "Boolean",
-                        "settings.clearPersistency");
-                if (settings.clearPersistency) {
-                    localStorage.clear();
-                }
-                return localStorage;
-            };
+/**
+ * constructor for a localStorage object
+ * @param {Object}
+ *            settings the settings object
+ * @param {Boolean}
+ *            settings.clearPersistency localStorage is cleared if set to true
+ *
+ * @constructor LocalStorage
+ */
+var LocalStorage =
+        function(settings) {
+            settings = settings || {};
+            Typing.checkPropertyIfDefined(
+                    settings.clearPersistency,
+                    "Boolean",
+                    "settings.clearPersistency");
+            if (settings.clearPersistency) {
+                localStorage.clear();
+            }
+            return localStorage;
+        };
 
-    return LocalStorage;
-        }(Typing));
+module.exports = LocalStorage;

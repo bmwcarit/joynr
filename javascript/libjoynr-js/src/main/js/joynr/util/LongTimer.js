@@ -20,187 +20,183 @@
  */
 // max value for timeout, see
 // http://stackoverflow.com/questions/3468607/why-does-settimeout-break-for-large-millisecond-delay-values
-module.exports = (function() {
+/**
+ * Implementation for long (>2^31-1 ms) timer functions that only allows timeouts or intervals
+ * of 2^31-1 ms (because of SignedInt32 representation)
+ *
+ * @name LongTimer
+ * @class
+ */
+var LongTimer = {};
 
-    /**
-     * Implementation for long (>2^31-1 ms) timer functions that only allows timeouts or intervals
-     * of 2^31-1 ms (because of SignedInt32 representation)
-     *
-     * @name LongTimer
-     * @class
-     */
-    var LongTimer = {};
+LongTimer.maxTime = Math.pow(2, 31) - 1;
+LongTimer.idPrefix = 'lt';
 
-    LongTimer.maxTime = Math.pow(2, 31) - 1;
-    LongTimer.idPrefix = 'lt';
+var highestTimeoutId = 0;
+LongTimer.timeoutMap = {};
 
-    var highestTimeoutId = 0;
-    LongTimer.timeoutMap = {};
+function timeoutPortion(timeoutId) {
+    // retrieve timeout object
+    var timeoutObj = LongTimer.timeoutMap[timeoutId];
 
-    function timeoutPortion(timeoutId) {
-        // retrieve timeout object
-        var timeoutObj = LongTimer.timeoutMap[timeoutId];
-
-        // timeout has been cancelled
-        if (timeoutObj === undefined) {
-            return;
-        }
-
-        // if timeout elapsed, remove timeout object and call function
-        if (timeoutObj.remainingTimeout === 0) {
-            delete LongTimer.timeoutMap[timeoutId];
-            timeoutObj.func.apply(this, timeoutObj.args);
-            return;
-        }
-
-        // recalculate remaining timeout and start next portion of timeout
-        var timeToWait = Math.min(LongTimer.maxTime, timeoutObj.remainingTimeout);
-        timeoutObj.remainingTimeout -= timeToWait;
-        timeoutObj.currentTimeout = setTimeout(timeoutPortion, timeToWait, timeoutId);
+    // timeout has been cancelled
+    if (timeoutObj === undefined) {
+        return;
     }
 
-    /**
-     * Implementation for long (>2^31-1 ms) window.setTimeout only allows intervals of 2^31-1 ms
-     * (because of SignedInt32 representation)
-     *
-     * @function LongTimer#setTimeout
-     * @param {Function}
-     *            func
-     * @param {Number}
-     *            timeout
-     * @returns {String|Object} timeout identifier
-     * @throws {Error}
-     *             if parameters are nullable or not of documented type
-     */
-    LongTimer.setTimeout = function(func, timeout) {
-        if (timeout <= LongTimer.maxTime) {
-            return setTimeout.apply(null, arguments);
-        }
+    // if timeout elapsed, remove timeout object and call function
+    if (timeoutObj.remainingTimeout === 0) {
+        delete LongTimer.timeoutMap[timeoutId];
+        timeoutObj.func.apply(this, timeoutObj.args);
+        return;
+    }
 
-        // get next timeout id and prefix it to avoid possible collisions in environents
-        // where setTimeout returns a number (e.g. in browsers).
-        var timeoutId = LongTimer.idPrefix + (++highestTimeoutId);
+    // recalculate remaining timeout and start next portion of timeout
+    var timeToWait = Math.min(LongTimer.maxTime, timeoutObj.remainingTimeout);
+    timeoutObj.remainingTimeout -= timeToWait;
+    timeoutObj.currentTimeout = setTimeout(timeoutPortion, timeToWait, timeoutId);
+}
 
-        // put timeout object into map
-        LongTimer.timeoutMap[timeoutId] = {
-            func : func,
-            remainingTimeout : timeout,
-            args : Array.prototype.slice.call(arguments, 2)
-        // get the arbitrary arguments
-        };
+/**
+ * Implementation for long (>2^31-1 ms) window.setTimeout only allows intervals of 2^31-1 ms
+ * (because of SignedInt32 representation)
+ *
+ * @function LongTimer#setTimeout
+ * @param {Function}
+ *            func
+ * @param {Number}
+ *            timeout
+ * @returns {String|Object} timeout identifier
+ * @throws {Error}
+ *             if parameters are nullable or not of documented type
+ */
+LongTimer.setTimeout = function(func, timeout) {
+    if (timeout <= LongTimer.maxTime) {
+        return setTimeout.apply(null, arguments);
+    }
 
-        // start timeout
-        if (timeout === 0) {
-            setTimeout(timeoutPortion, 0, timeoutId);
-        } else {
-            timeoutPortion(timeoutId);
-        }
-        // return id to
-        return timeoutId;
+    // get next timeout id and prefix it to avoid possible collisions in environents
+    // where setTimeout returns a number (e.g. in browsers).
+    var timeoutId = LongTimer.idPrefix + (++highestTimeoutId);
+
+    // put timeout object into map
+    LongTimer.timeoutMap[timeoutId] = {
+        func : func,
+        remainingTimeout : timeout,
+        args : Array.prototype.slice.call(arguments, 2)
+    // get the arbitrary arguments
     };
 
-    /**
-     * Clears the timeout
-     *
-     * @function LongTimer#clearTimeout
-     * @param timeoutId
-     *            the timeout id given by setTimeout
-     * @throws {Error}
-     *             if parameters are nullable or not of documented type
-     */
-    LongTimer.clearTimeout = function(timeoutId) {
+    // start timeout
+    if (timeout === 0) {
+        setTimeout(timeoutPortion, 0, timeoutId);
+    } else {
+        timeoutPortion(timeoutId);
+    }
+    // return id to
+    return timeoutId;
+};
+
+/**
+ * Clears the timeout
+ *
+ * @function LongTimer#clearTimeout
+ * @param timeoutId
+ *            the timeout id given by setTimeout
+ * @throws {Error}
+ *             if parameters are nullable or not of documented type
+ */
+LongTimer.clearTimeout = function(timeoutId) {
+    // retrieve timeout object
+    var timeoutObj = LongTimer.timeoutMap[timeoutId];
+
+    // timeout has run out, been cancelled already or was less than maxTime
+    if (timeoutObj === undefined) {
+        return clearTimeout(timeoutId);
+    }
+
+    // stop javascript interval and remove timeout object
+    clearTimeout(timeoutObj.currentTimeout);
+    LongTimer.timeoutMap[timeoutId] = undefined;
+};
+
+var highestIntervalId = -1;
+var intervalMap = {};
+
+/**
+ * Implementation for long (>2^31-1 ms) window.setInterval only allows intervals of 2^31-1 ms
+ * (because of SignedInt32 representation)
+ *
+ * @function LongTimer#setInterval
+ * @param {Function}
+ *            func
+ * @param {Number}
+ *            interval
+ * @returns {Number} interval identifier
+ * @throws {Error}
+ *             if parameters are nullable or not of documented type
+ */
+LongTimer.setInterval = function(func, interval) {
+    // get next interval id
+    var intervalId = ++highestIntervalId;
+
+    function intervalPortion() {
         // retrieve timeout object
-        var timeoutObj = LongTimer.timeoutMap[timeoutId];
+        var intervalObj = intervalMap[intervalId];
 
-        // timeout has run out, been cancelled already or was less than maxTime
-        if (timeoutObj === undefined) {
-            return clearTimeout(timeoutId);
-        }
-
-        // stop javascript interval and remove timeout object
-        clearTimeout(timeoutObj.currentTimeout);
-        LongTimer.timeoutMap[timeoutId] = undefined;
-    };
-
-    var highestIntervalId = -1;
-    var intervalMap = {};
-
-    /**
-     * Implementation for long (>2^31-1 ms) window.setInterval only allows intervals of 2^31-1 ms
-     * (because of SignedInt32 representation)
-     *
-     * @function LongTimer#setInterval
-     * @param {Function}
-     *            func
-     * @param {Number}
-     *            interval
-     * @returns {Number} interval identifier
-     * @throws {Error}
-     *             if parameters are nullable or not of documented type
-     */
-    LongTimer.setInterval = function(func, interval) {
-        // get next interval id
-        var intervalId = ++highestIntervalId;
-
-        function intervalPortion() {
-            // retrieve timeout object
-            var intervalObj = intervalMap[intervalId];
-
-            // interval has been cancelled
-            if (intervalObj === undefined) {
-                return;
-            }
-
-            // if interval elapsed, call function and reset remaining interval time
-            if (intervalObj.remainingInterval === 0) {
-                intervalObj.func();
-                intervalObj.remainingInterval = intervalObj.interval;
-            }
-
-            // recalculate remaining timeout and start next portion of interval
-            var timeToWait = Math.min(LongTimer.maxTime, intervalObj.remainingInterval);
-            intervalObj.remainingInterval -= timeToWait;
-            intervalObj.currentTimeout = setTimeout(intervalPortion, timeToWait);
-        }
-
-        // put interval object into map
-        intervalMap[intervalId] = {
-            func : func,
-            remainingInterval : interval,
-            interval : interval
-        };
-
-        // start interval
-        intervalPortion();
-
-        // return id to
-        return intervalId;
-    };
-
-    /**
-     * Clears the interval
-     *
-     * @function LongTimer#clearInterval
-     * @param intervalId
-     *            the interval id given by setInterval
-     * @throws {Error}
-     *             if parameters are nullable or not of documented type
-     */
-    LongTimer.clearInterval = function(intervalId) {
-
-        // retrieve interval object
-        var interval = intervalMap[intervalId];
-
-        // interval has run out or been cancelled already
-        if (interval === undefined) {
+        // interval has been cancelled
+        if (intervalObj === undefined) {
             return;
         }
 
-        // stop javascript timeout and remove interval object
-        clearTimeout(interval.currentTimeout);
-        delete intervalMap[intervalId];
+        // if interval elapsed, call function and reset remaining interval time
+        if (intervalObj.remainingInterval === 0) {
+            intervalObj.func();
+            intervalObj.remainingInterval = intervalObj.interval;
+        }
+
+        // recalculate remaining timeout and start next portion of interval
+        var timeToWait = Math.min(LongTimer.maxTime, intervalObj.remainingInterval);
+        intervalObj.remainingInterval -= timeToWait;
+        intervalObj.currentTimeout = setTimeout(intervalPortion, timeToWait);
+    }
+
+    // put interval object into map
+    intervalMap[intervalId] = {
+        func : func,
+        remainingInterval : interval,
+        interval : interval
     };
 
-    return LongTimer;
+    // start interval
+    intervalPortion();
 
-}());
+    // return id to
+    return intervalId;
+};
+
+/**
+ * Clears the interval
+ *
+ * @function LongTimer#clearInterval
+ * @param intervalId
+ *            the interval id given by setInterval
+ * @throws {Error}
+ *             if parameters are nullable or not of documented type
+ */
+LongTimer.clearInterval = function(intervalId) {
+
+    // retrieve interval object
+    var interval = intervalMap[intervalId];
+
+    // interval has run out or been cancelled already
+    if (interval === undefined) {
+        return;
+    }
+
+    // stop javascript timeout and remove interval object
+    clearTimeout(interval.currentTimeout);
+    delete intervalMap[intervalId];
+};
+
+module.exports = LongTimer;

@@ -41,13 +41,25 @@ public:
             const system::RoutingTypes::WebSocketAddress& serverAddress,
             const std::string& caPemFile,
             const std::string& certPemFile,
-            const std::string& privateKeyPemFile);
+            const std::string& privateKeyPemFile,
+            bool useEncryptedTls);
+
+    virtual void init() override;
 
 private:
+    bool validateIncomingMessage(const ConnectionHandle& hdl,
+                                 std::shared_ptr<ImmutableMessage> message) final;
+    bool preprocessIncomingMessage(std::shared_ptr<ImmutableMessage> message) final;
+
     std::shared_ptr<SSLContext> createSSLContext(const std::string& caPemFile,
                                                  const std::string& certPemFile,
                                                  const std::string& privateKeyPemFile,
                                                  ConnectionHandle hdl);
+
+    bool useEncryptedTls;
+    const std::string caPemFile;
+    const std::string certPemFile;
+    const std::string privateKeyPemFile;
 };
 
 } // namespace joynr

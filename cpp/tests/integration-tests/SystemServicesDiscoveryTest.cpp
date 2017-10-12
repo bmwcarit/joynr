@@ -101,6 +101,7 @@ public:
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                 std::move(settings),
                 nullptr,
+                nullptr,
                 mockMessageReceiverHttp,
                 nullptr,
                 mockMessageReceiverMqtt,
@@ -140,7 +141,7 @@ TEST_F(SystemServicesDiscoveryTest, discoveryProviderIsAvailable)
     );
 }
 
-TEST_F(SystemServicesDiscoveryTest, lookupUnknowParticipantReturnsEmptyResult)
+TEST_F(SystemServicesDiscoveryTest, lookupUnknownParticipantReturnsEmptyResult)
 {
     discoveryProxy = discoveryProxyBuilder
             ->setMessagingQos(MessagingQos(5000))
@@ -222,6 +223,13 @@ TEST_F(SystemServicesDiscoveryTest, add)
         ADD_FAILURE()<< "lookup was not successful";
     }
     EXPECT_EQ(expectedResult, result);
+
+    // cleanup after test
+    try {
+        discoveryProxy->remove(participantId);
+    } catch (const exceptions::JoynrException& e) {
+        ADD_FAILURE()<< "remove was not successful";
+    }
 }
 
 TEST_F(SystemServicesDiscoveryTest, remove)

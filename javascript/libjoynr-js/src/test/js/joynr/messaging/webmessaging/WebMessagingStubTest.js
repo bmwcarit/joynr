@@ -19,61 +19,58 @@
  * #L%
  */
 var WebMessagingStub = require('../../../../classes/joynr/messaging/webmessaging/WebMessagingStub');
-var JsonSerializer = require('../../../../classes/joynr/util/JSONSerializer');
-module.exports =
-        (function(WebMessagingStub, JSONSerializer) {
+var JSONSerializer = require('../../../../classes/joynr/util/JSONSerializer');
 
-    describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", function() {
+describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", function() {
 
-        var window, origin, webMessagingStub, joynrMessage;
+    var window, origin, webMessagingStub, joynrMessage;
 
-        beforeEach(function(done) {
-            function Window() {}
-            window = new Window();
-            window.postMessage = jasmine.createSpy("postMessage");
-            origin = "defaultOrigin";
+    beforeEach(function(done) {
+        function Window() {}
+        window = new Window();
+        window.postMessage = jasmine.createSpy("postMessage");
+        origin = "defaultOrigin";
 
-            webMessagingStub = new WebMessagingStub({
-                window : window,
-                origin : origin
-            });
-
-            function JoynrMessage() {}
-            joynrMessage = new JoynrMessage();
-            done();
+        webMessagingStub = new WebMessagingStub({
+            window : window,
+            origin : origin
         });
 
-        it("is of correct type and has all members", function(done) {
-            expect(WebMessagingStub).toBeDefined();
-            expect(typeof WebMessagingStub === "function").toBeTruthy();
-            expect(webMessagingStub).toBeDefined();
-            expect(webMessagingStub instanceof WebMessagingStub).toBeTruthy();
-            expect(webMessagingStub.transmit).toBeDefined();
-            expect(typeof webMessagingStub.transmit === "function").toBeTruthy();
-            done();
-        });
-
-        it("throws on missing or wrongly typed arguments in transmit", function() {
-            expect(function() {
-                webMessagingStub.transmit(undefined);
-            }).toThrow();
-            expect(function() {
-                webMessagingStub.transmit({
-                    message : joynrMessage
-                });
-            }).not.toThrow();
-        });
-
-        it("calls window.postMessage correctly", function(done) {
-            var param = {
-                message : joynrMessage
-            };
-            webMessagingStub.transmit(param);
-            expect(window.postMessage).toHaveBeenCalledWith(
-                    JSON.parse(JSONSerializer.stringify(param)),
-                    origin);
-            done();
-        });
-
+        function JoynrMessage() {}
+        joynrMessage = new JoynrMessage();
+        done();
     });
-        }(WebMessagingStub, JsonSerializer));
+
+    it("is of correct type and has all members", function(done) {
+        expect(WebMessagingStub).toBeDefined();
+        expect(typeof WebMessagingStub === "function").toBeTruthy();
+        expect(webMessagingStub).toBeDefined();
+        expect(webMessagingStub instanceof WebMessagingStub).toBeTruthy();
+        expect(webMessagingStub.transmit).toBeDefined();
+        expect(typeof webMessagingStub.transmit === "function").toBeTruthy();
+        done();
+    });
+
+    it("throws on missing or wrongly typed arguments in transmit", function() {
+        expect(function() {
+            webMessagingStub.transmit(undefined);
+        }).toThrow();
+        expect(function() {
+            webMessagingStub.transmit({
+                message : joynrMessage
+            });
+        }).not.toThrow();
+    });
+
+    it("calls window.postMessage correctly", function(done) {
+        var param = {
+            message : joynrMessage
+        };
+        webMessagingStub.transmit(param);
+        expect(window.postMessage).toHaveBeenCalledWith(
+                JSON.parse(JSONSerializer.stringify(param)),
+                origin);
+        done();
+    });
+
+});

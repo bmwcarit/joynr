@@ -55,7 +55,7 @@ Software libraries listed below included in some products are free software that
   Sources: WEB-INF/lib/annotations-2.0.1.jar
 
 The software listed below included in some products is licensed under the "MIT/X11 license". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in the documents listed below.
-- org.slf4j:slf4j-api:1.7.21
+- org.slf4j:slf4j-api:1.7.25
   License: META-INF/licenses/MIT.slf4j.txt
-- org.slf4j:slf4j-log4j12:1.7.21
+- org.slf4j:slf4j-log4j12:1.7.25
   License: META-INF/licenses/MIT.slf4j.txt

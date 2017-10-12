@@ -19,39 +19,36 @@
  * #L%
  */
 var InProcessAddress = require('../../../../classes/joynr/messaging/inprocess/InProcessAddress');
-module.exports = (function(InProcessAddress) {
 
-    describe("libjoynr-js.joynr.messaging.inprocess.InProcessAddress", function() {
-        var skeleton, inProcessAddress;
+describe("libjoynr-js.joynr.messaging.inprocess.InProcessAddress", function() {
+    var skeleton, inProcessAddress;
 
-        beforeEach(function() {
-            skeleton = {
-                key : "skeleton"
-            };
-            inProcessAddress = new InProcessAddress(skeleton);
-        });
-
-        it("is instantiable and of correct type", function() {
-            expect(InProcessAddress).toBeDefined();
-            expect(typeof InProcessAddress === "function").toBeTruthy();
-            expect(inProcessAddress).toBeDefined();
-            expect(inProcessAddress instanceof InProcessAddress).toBeTruthy();
-            expect(inProcessAddress.getSkeleton).toBeDefined();
-            expect(typeof inProcessAddress.getSkeleton === "function").toBeTruthy();
-        });
-
-        it("retrieves skeleton correctly", function() {
-            expect(inProcessAddress.getSkeleton()).toEqual(skeleton);
-        });
-
-        it("equals", function() {
-            expect(inProcessAddress.equals(new InProcessAddress(1))).toBeFalsy();
-            expect(inProcessAddress.equals(undefined)).toBeFalsy();
-            expect(inProcessAddress.equals(null)).toBeFalsy();
-            expect(inProcessAddress.equals("")).toBeFalsy();
-            expect(inProcessAddress.equals(new InProcessAddress(skeleton))).toBeTruthy();
-        });
-
+    beforeEach(function() {
+        skeleton = {
+            key : "skeleton"
+        };
+        inProcessAddress = new InProcessAddress(skeleton);
     });
 
-}(InProcessAddress));
+    it("is instantiable and of correct type", function() {
+        expect(InProcessAddress).toBeDefined();
+        expect(typeof InProcessAddress === "function").toBeTruthy();
+        expect(inProcessAddress).toBeDefined();
+        expect(inProcessAddress instanceof InProcessAddress).toBeTruthy();
+        expect(inProcessAddress.getSkeleton).toBeDefined();
+        expect(typeof inProcessAddress.getSkeleton === "function").toBeTruthy();
+    });
+
+    it("retrieves skeleton correctly", function() {
+        expect(inProcessAddress.getSkeleton()).toEqual(skeleton);
+    });
+
+    it("equals", function() {
+        expect(inProcessAddress.equals(new InProcessAddress(1))).toBeFalsy();
+        expect(inProcessAddress.equals(undefined)).toBeFalsy();
+        expect(inProcessAddress.equals(null)).toBeFalsy();
+        expect(inProcessAddress.equals("")).toBeFalsy();
+        expect(inProcessAddress.equals(new InProcessAddress(skeleton))).toBeTruthy();
+    });
+
+});

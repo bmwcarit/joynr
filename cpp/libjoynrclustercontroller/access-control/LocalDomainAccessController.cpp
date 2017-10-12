@@ -30,6 +30,8 @@
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 
+#include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
+
 namespace joynr
 {
 
@@ -370,7 +372,11 @@ Permission::Enum LocalDomainAccessController::getConsumerPermission(
         const std::string& operation,
         TrustLevel::Enum trustLevel)
 {
-    JOYNR_LOG_TRACE(logger, "Entering getConsumerPermission with known operation");
+    JOYNR_LOG_TRACE(logger,
+                    "Entering getConsumerPermission with userID={} domain={} interfaceName={}",
+                    userId,
+                    domain,
+                    interfaceName);
 
     boost::optional<MasterAccessControlEntry> masterAceOptional =
             localDomainAccessStore->getMasterAccessControlEntry(
@@ -571,7 +577,11 @@ Permission::Enum LocalDomainAccessController::getProviderPermission(
         const std::string& interfaceName,
         TrustLevel::Enum trustLevel)
 {
-    JOYNR_LOG_TRACE(logger, "Entering getProviderPermission");
+    JOYNR_LOG_TRACE(logger,
+                    "Entering getProviderPermission with userID={} domain={} interfaceName={}",
+                    uid,
+                    domain,
+                    interfaceName);
 
     boost::optional<MasterRegistrationControlEntry> masterRceOptional =
             localDomainAccessStore->getMasterRegistrationControlEntry(uid, domain, interfaceName);

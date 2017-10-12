@@ -22,38 +22,35 @@ var GlobalDiscoveryEntry = require('../../../classes/joynr/types/GlobalDiscovery
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
 var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
 var Version = require('../../../classes/joynr/types/Version');
-module.exports = (function(GlobalDiscoveryEntry, ProviderQos, ProviderScope, Version) {
 
-    var capInfo;
-    beforeEach(function() {
-        capInfo = new GlobalDiscoveryEntry({
-            providerVersion : new Version({
-                majorVersion : 47,
-                minorVersion : 11
-            }),
-            domain : "vehicleADomain",
-            interfaceName : "vehicle/cdsnavigation",
-            qos : new ProviderQos({
-                customParameters : [],
-                priority : 1,
-                scope : ProviderScope.GLOBAL,
-                supportsOnChangeSubscriptions : true
-            }),
-            address : "address",
-            publicKeyId : "",
-            participantId : "CDSNavigationParticipantId_vehicleA"
-        });
+var capInfo;
+beforeEach(function() {
+    capInfo = new GlobalDiscoveryEntry({
+        providerVersion : new Version({
+            majorVersion : 47,
+            minorVersion : 11
+        }),
+        domain : "vehicleADomain",
+        interfaceName : "vehicle/cdsnavigation",
+        qos : new ProviderQos({
+            customParameters : [],
+            priority : 1,
+            scope : ProviderScope.GLOBAL,
+            supportsOnChangeSubscriptions : true
+        }),
+        address : "address",
+        publicKeyId : "",
+        participantId : "CDSNavigationParticipantId_vehicleA"
     });
+});
 
-    describe("libjoynr-js.joynr.capabilities.GlobalDiscoveryEntry", function() {
-        it("is instantiable", function() {
-            expect(capInfo).toBeDefined();
-            expect(capInfo instanceof GlobalDiscoveryEntry).toBeTruthy();
-        });
-        it("providerVersion is set", function() {
-            expect(capInfo.providerVersion).toBeDefined();
-            expect(capInfo.providerVersion instanceof Version).toBeTruthy();
-        });
+describe("libjoynr-js.joynr.capabilities.GlobalDiscoveryEntry", function() {
+    it("is instantiable", function() {
+        expect(capInfo).toBeDefined();
+        expect(capInfo instanceof GlobalDiscoveryEntry).toBeTruthy();
     });
-
-}(GlobalDiscoveryEntry, ProviderQos, ProviderScope, Version)); // require
+    it("providerVersion is set", function() {
+        expect(capInfo.providerVersion).toBeDefined();
+        expect(capInfo.providerVersion instanceof Version).toBeTruthy();
+    });
+});

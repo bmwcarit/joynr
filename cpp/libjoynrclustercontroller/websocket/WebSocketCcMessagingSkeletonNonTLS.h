@@ -37,9 +37,30 @@ public:
             const system::RoutingTypes::WebSocketAddress& serverAddress)
             : WebSocketCcMessagingSkeleton<websocketpp::config::asio>(ioService,
                                                                       messageRouter,
-                                                                      messagingStubFactory)
+                                                                      messagingStubFactory,
+                                                                      serverAddress.getPort())
     {
-        startAccept(serverAddress.getPort());
+    }
+
+    void init() override
+    {
+        WebSocketCcMessagingSkeleton<websocketpp::config::asio>::init();
+        startAccept();
+    }
+
+protected:
+    bool validateIncomingMessage(const ConnectionHandle& hdl,
+                                 std::shared_ptr<ImmutableMessage> message) final
+    {
+        std::ignore = hdl;
+        std::ignore = message;
+        return true;
+    }
+
+    bool preprocessIncomingMessage(std::shared_ptr<ImmutableMessage> message) final
+    {
+        std::ignore = message;
+        return true;
     }
 };
 

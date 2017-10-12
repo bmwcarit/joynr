@@ -22,8 +22,7 @@ var LoggingProxy = require('./LoggingProxy');
 var DiscoveryQos = require('../proxy/DiscoveryQos');
 var DiscoveryScope = require('../../joynr/types/DiscoveryScope');
 var LoggerFactory = require('./LoggerFactory');
-var UtilInternal = require('../util/UtilInternal');
-module.exports = (function (DistributedLoggingAppender, LoggingProxy, DiscoveryQos, DiscoveryScope, LoggerFactory, Util) {
+var Util = require('../util/UtilInternal');
 
             /**
              * A Factory to create a DistributedLoggingAppender constructor that contains a closure
@@ -73,6 +72,4 @@ module.exports = (function (DistributedLoggingAppender, LoggingProxy, DiscoveryQ
                         };
                     };
 
-            return DistributedLoggingAppenderConstructorFactory;
-
-}(DistributedLoggingAppender, LoggingProxy, DiscoveryQos, DiscoveryScope, LoggerFactory, UtilInternal));
+module.exports = DistributedLoggingAppenderConstructorFactory;

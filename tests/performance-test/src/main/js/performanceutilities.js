@@ -19,12 +19,12 @@
  * #L%
  */
 
-PerformanceUtilities = {};
+var PerformanceUtilities = {};
 
 PerformanceUtilities.createByteArray = function(size, defaultValue) {
-    result = [];
+    var result = [];
 
-    for(var i=0 ; i < size ; i++) {
+    for (var i = 0 ; i < size ; i++) {
         result.push(defaultValue);
     }
 
@@ -33,11 +33,19 @@ PerformanceUtilities.createByteArray = function(size, defaultValue) {
 
 PerformanceUtilities.createString = function(length, defaultChar) {
     // Add one because the character is inserted between the array elements.
-    return String(new Array(length + 1).join(defaultChar))
+    return String(new Array(length + 1).join(defaultChar));
 };
 
 PerformanceUtilities.createRandomNumber = function createRandomNumber(max) {
-    return Math.floor(Math.random()*(max+1));
+    return Math.floor(Math.random() * (max + 1));
+};
+
+PerformanceUtilities.forceGC = function(){
+    if (global.gc){
+        global.gc();
+    } else {
+        console.error("no gc hook! (Start node with --expose-gc  -> use npm run startconsumer)");
+    }
 };
 
 /**
@@ -45,86 +53,42 @@ PerformanceUtilities.createRandomNumber = function createRandomNumber(max) {
  * available, a default value will be used.
  */
 PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
-    var bounceProxyBaseUrl, domain, stringLength, byteArrayLength, numRuns, timeout, brokerUri, viacc, cchost, ccport, host, skipByteArraySizeTimesK;
+    var bounceProxyBaseUrl, domain, stringLength, byteArrayLength, numRuns, timeout, brokerUri, viacc, cchost, ccport,
+        skipByteArraySizeTimesK, testRuns, measureMemory;
 
-    if(environment.domain != undefined) {
-        domain = environment.domain;
-    } else {
-        domain = "test_domain";
-    }
+    testRuns = environment.testRuns || 100;
+    domain = environment.domain || "performance_test_domain";
+    stringLength = environment.stringlength || 10;
+    byteArrayLength = environment.bytearraylength || 100;
+    numRuns = environment.runs || 1000;
+    timeout = environment.timeout || 3600000;
+    viacc = environment.viacc || "true";
+    brokerUri = environment.brokerUri || "tcp://localhost:1883";
+    bounceProxyBaseUrl = environment.bounceProxyBaseUrl || "http://localhost:8080";
+    cchost = environment.cchost || "localhost";
+    ccport = environment.ccport || 4242;
+    measureMemory = environment.measureMemory || "true";
 
-    if(environment.stringlength != undefined) {
-        stringLength = environment.stringlength;
-    } else {
-        stringLength = 10;
-    }
-
-    if(environment.bytearraylength != undefined) {
-        byteArrayLength = environment.bytearraylength;
-    } else {
-        byteArrayLength = 100;
-    }
-
-    if(environment.runs != undefined) {
-        numRuns = environment.runs;
-    } else {
-        numRuns = 10000;
-    }
-
-    if(environment.timeout != undefined) {
-        timeout = environment.timeout;
-    } else {
-        timeout = 3600000;
-    }
-
-    if(environment.viacc != undefined) {
-        viacc = environment.viacc;
-    } else {
-        viacc = 'true';
-    }
-
-    if(environment.brokerUri != undefined) {
-        brokerUri = environment.brokerUri;
-    } else {
-        brokerUri = 'tcp://localhost:1883';
-    }
-
-    if(environment.bounceProxyBaseUrl != undefined) {
-        bounceProxyBaseUrl = environment.bounceProxyBaseUrl;
-    } else {
-        bounceProxyBaseUrl = 'http://localhost:8080';
-    }
-
-    if(environment.cchost != undefined) {
-        cchost = environment.cchost;
-    } else {
-        cchost = 'localhost';
-    }
-
-    if(environment.ccport != undefined) {
-        ccport = environment.ccport;
-    } else {
-        ccport = 4242;
-    }
-
-    if(environment.skipByteArraySizeTimesK != undefined) {
+    if (environment.skipByteArraySizeTimesK !== undefined) {
         skipByteArraySizeTimesK = environment.skipByteArraySizeTimesK;
     } else {
         skipByteArraySizeTimesK = false;
     }
 
     return {
-        'stringLength' : stringLength,
-        'byteArrayLength' : byteArrayLength,
-        'numRuns' : numRuns,
-        'timeout' : timeout,
-        'domain' : domain,
-        'brokerUri' : brokerUri,
-        'viacc' : viacc,
-        'cchost': cchost,
-        'ccport': ccport,
-        'bounceProxyBaseUrl': bounceProxyBaseUrl,
-        'skipByteArraySizeTimesK': skipByteArraySizeTimesK
+        stringLength           : stringLength,
+        byteArrayLength        : byteArrayLength,
+        testRuns               : testRuns,
+        numRuns                : numRuns,
+        timeout                : timeout,
+        domain                 : domain,
+        brokerUri              : brokerUri,
+        viacc                  : viacc,
+        cchost                 : cchost,
+        ccport                 : ccport,
+        bounceProxyBaseUrl     : bounceProxyBaseUrl,
+        skipByteArraySizeTimesK: skipByteArraySizeTimesK,
+        measureMemory          : measureMemory
     };
 };
 

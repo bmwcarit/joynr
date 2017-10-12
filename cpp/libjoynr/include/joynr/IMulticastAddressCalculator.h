@@ -38,6 +38,7 @@ public:
      */
     virtual std::shared_ptr<const joynr::system::RoutingTypes::Address> compute(
             const ImmutableMessage& message) = 0;
+    virtual ~IMulticastAddressCalculator() = default;
 };
 
 } // namespace joynr

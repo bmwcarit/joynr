@@ -1,5 +1,3 @@
-package io.joynr.messaging.sender;
-
 /*
  * #%L
  * %%
@@ -8,9 +6,9 @@ package io.joynr.messaging.sender;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +16,7 @@ package io.joynr.messaging.sender;
  * limitations under the License.
  * #L%
  */
+package io.joynr.messaging.sender;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -31,14 +30,14 @@ import joynr.system.RoutingTypes.RoutingTypesUtil;
 @Singleton
 public class CcMessageSender extends AbstractMessageSender {
     @Inject
-    public CcMessageSender(MessageRouter messageRouter, ReplyToAddressProvider globalAddressProvider) {
+    public CcMessageSender(MessageRouter messageRouter, ReplyToAddressProvider replyToAddressProvider) {
         super(messageRouter);
 
-        globalAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
+        replyToAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
             @Override
             public void transportReady(Address address) {
-                String globalAddressString = RoutingTypesUtil.toAddressString(address);
-                setReplyToAddress(globalAddressString);
+                String replyToAddress = RoutingTypesUtil.toAddressString(address);
+                setReplyToAddress(replyToAddress);
             }
         });
     }

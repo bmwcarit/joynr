@@ -17,22 +17,23 @@
  * #L%
  */
 
+#include <chrono>
 #include <memory>
 #include <string>
-#include <chrono>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/JoynrClusterControllerRuntime.h"
-#include "joynr/vehicle/GpsProxy.h"
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/Future.h"
-#include "joynr/Util.h"
-#include "joynr/Settings.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/MessagingSettings.h"
+#include "joynr/Settings.h"
+#include "joynr/Util.h"
+#include "joynr/vehicle/GpsProxy.h"
 
-#include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
-
+#include "tests/JoynrTest.h"
 #include "tests/utils/MockObjects.h"
 #include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
@@ -51,49 +52,105 @@ using namespace joynr;
 **********************************************************************************************************/
 class End2EndSSLTest : public TestWithParam<std::tuple<std::string, std::string, bool>> {
 public:
-    End2EndSSLTest() : domain()
+    End2EndSSLTest()
+        : domain(),
+          ownerId(),
+          useTls(std::get<2>(GetParam())),
+          ccRuntime(nullptr),
+          libJoynrRuntime(nullptr)
     {
-        bool useTls = std::get<2>(GetParam());
-        std::shared_ptr<IKeychain> keyChain = nullptr;
-
-        if(useTls) {
-            keyChain = createMockKeyChain();
-        }
-
-        auto ccSettings = std::make_unique<Settings>(std::get<0>(GetParam()));
-        runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(ccSettings));
-        runtime->init();
-
-        auto libJoynrSettings = std::make_unique<Settings>(std::get<1>(GetParam()));
-        libJoynrRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(libJoynrSettings), keyChain);
-
         std::string uuid = util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
+
+        keyChain = useTls ? createMockKeyChain() : nullptr;
     }
 
-    // Sets up the test fixture.
-    void SetUp(){
-       runtime->start();
-       EXPECT_TRUE(libJoynrRuntime->connect(std::chrono::milliseconds(2000)));
-    }
-
-    // Tears down the test fixture.
-    void TearDown(){
+    ~End2EndSSLTest() {
+        libJoynrRuntime.reset();
         bool deleteChannel = true;
-        runtime->stop(deleteChannel);
+        ccRuntime->stop(deleteChannel);
+        ccRuntime.reset();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(550));
 
         // Delete persisted files
         std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
+        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
+        std::remove(MessagingSettings::DEFAULT_PERSISTENCE_FILENAME().c_str());
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(550));
+    }
+
+protected:
+    void startRuntimes() {
+        auto ccSettings = std::make_unique<Settings>(std::get<0>(GetParam()));
+        ccRuntime = std::make_shared<JoynrClusterControllerRuntime>(std::move(ccSettings));
+        ccRuntime->init();
+
+        auto libJoynrSettings = std::make_unique<Settings>(std::get<1>(GetParam()));
+        libJoynrRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(libJoynrSettings), keyChain);
+
+        ccRuntime->start();
+        ASSERT_TRUE(libJoynrRuntime->connect(std::chrono::milliseconds(2000)));
+    }
+
+    std::string createAndRegisterProvider()
+    {
+        auto mockProvider = std::make_shared<MockGpsProvider>();
+        types::ProviderQos providerQos;
+        std::chrono::milliseconds millisSinceEpoch =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch());
+        providerQos.setPriority(millisSinceEpoch.count());
+        providerQos.setScope(joynr::types::ProviderScope::LOCAL);
+        providerQos.setSupportsOnChangeSubscriptions(true);
+        std::string participantId = ccRuntime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
+
+        return participantId;
+    }
+
+    std::shared_ptr<vehicle::GpsProxy> buildProxy()
+    {
+        std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
+                libJoynrRuntime->createProxyBuilder<vehicle::GpsProxy>(domain);
+        DiscoveryQos discoveryQos;
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+        discoveryQos.setDiscoveryTimeoutMs(3000);
+
+        std::int64_t qosRoundTripTTL = 40000;
+        std::shared_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
+                ->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                ->setDiscoveryQos(discoveryQos)
+                ->build();
+
+        return gpsProxy;
+    }
+
+    void testLocalconnectionCallRpcMethodWithInvalidMessageSignature() {
+        startRuntimes();
+
+        std::string participantId = createAndRegisterProvider();
+
+        std::shared_ptr<vehicle::GpsProxy> gpsProxy = buildProxy();
+
+        std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellitesAsync());
+        int actualValue;
+        JOYNR_ASSERT_NO_THROW(gpsFuture->get(2000, actualValue));
+
+        gpsFuture = gpsProxy->calculateAvailableSatellitesAsync();
+        if (useTls) {
+            EXPECT_THROW(gpsFuture->get(2000, actualValue), exceptions::JoynrTimeOutException);
+        } else {
+            JOYNR_EXPECT_NO_THROW(gpsFuture->get(2000, actualValue));
+        }
+
+        ccRuntime->unregisterProvider(participantId);
     }
 
 private:
-
-    std::shared_ptr<IKeychain> createMockKeyChain() {
+    std::shared_ptr<MockKeyChain> createMockKeyChain() {
         const std::string privateKeyPassword("");
 
         std::shared_ptr<const mococrw::X509Certificate> certificate =
@@ -106,8 +163,9 @@ private:
                         joynr::util::loadStringFromFile("/data/ssl-data/private/client.key.pem"), privateKeyPassword)
                     );
 
-        std::shared_ptr<MockKeyChain> keyChain = std::make_shared<MockKeyChain>();
+        ownerId = certificate->getSubjectDistinguishedName().commonName();
 
+        std::shared_ptr<MockKeyChain> keyChain = std::make_shared<MockKeyChain>();
         ON_CALL(*keyChain, getTlsCertificate()).WillByDefault(Return(certificate));
         ON_CALL(*keyChain, getTlsKey()).WillByDefault(Return(privateKey));
         ON_CALL(*keyChain, getTlsRootCertificate()).WillByDefault(Return(caCertificate));
@@ -117,7 +175,10 @@ private:
 
 protected:
     std::string domain;
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
+    std::string ownerId;
+    const bool useTls;
+    std::shared_ptr<MockKeyChain> keyChain;
+    std::shared_ptr<JoynrClusterControllerRuntime> ccRuntime;
     std::shared_ptr<TestLibJoynrWebSocketRuntime> libJoynrRuntime;
 
 private:
@@ -126,39 +187,70 @@ private:
 
 TEST_P(End2EndSSLTest, localconnection_call_rpc_method_and_get_expected_result)
 {
-    // Create a provider
-    auto mockProvider = std::make_shared<MockGpsProvider>();
-    types::ProviderQos providerQos;
-    std::chrono::milliseconds millisSinceEpoch =
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch());
-    providerQos.setPriority(millisSinceEpoch.count());
-    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-    providerQos.setSupportsOnChangeSubscriptions(true);
-    std::string participantId = runtime->registerProvider<vehicle::GpsProvider>(domain, mockProvider, providerQos);
+    if (useTls) {
+        ON_CALL(*keyChain, getOwnerId()).WillByDefault(Return(ownerId));
+    }
+    startRuntimes();
 
-    // Build a proxy
-    std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
-            libJoynrRuntime->createProxyBuilder<vehicle::GpsProxy>(domain);
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(3000);
+    std::string participantId = createAndRegisterProvider();
 
-    std::int64_t qosRoundTripTTL = 40000;
-    std::shared_ptr<vehicle::GpsProxy> gpsProxy = gpsProxyBuilder
-            ->setMessagingQos(MessagingQos(qosRoundTripTTL))
-            ->setDiscoveryQos(discoveryQos)
-            ->build();
+    std::shared_ptr<vehicle::GpsProxy> gpsProxy = buildProxy();
 
     // Call the provider and wait for a result
     std::shared_ptr<Future<int> >gpsFuture (gpsProxy->calculateAvailableSatellitesAsync());
-    gpsFuture->wait();
 
     int expectedValue = 42; //as defined in MockGpsProvider
     int actualValue;
-    gpsFuture->get(actualValue);
+    gpsFuture->get(2000, actualValue);
     EXPECT_EQ(expectedValue, actualValue);
-    runtime->unregisterProvider(participantId);
+
+    ccRuntime->unregisterProvider(participantId);
+}
+
+TEST_P(End2EndSSLTest, localconnection_call_rpc_method_without_message_signature)
+{
+    if (useTls) {
+        InSequence s;
+        // calls to getOwnerId:
+        // 1 getGlobalAddress
+        // 2 getReplyToAddress
+        // 3 addNextHop for routing proxy
+        // 4 addNextHop for discovery proxy
+
+        // 5 resolve next hop for discovery provider
+        // 6 lookup provider
+        // 7 addNextHop for proxy
+
+        // 8 resolve next hop for provider
+        // 9 call provider method
+        EXPECT_CALL(*keyChain, getOwnerId()).Times(9).WillRepeatedly(Return(ownerId));
+        // call provider method
+        EXPECT_CALL(*keyChain, getOwnerId()).Times(1).WillOnce(Return(""));
+    }
+    testLocalconnectionCallRpcMethodWithInvalidMessageSignature();
+}
+
+TEST_P(End2EndSSLTest, localconnection_call_rpc_method_with_invalid_message_signature)
+{
+    if (useTls) {
+        InSequence s;
+        // calls to getOwnerId:
+        // 1 getGlobalAddress
+        // 2 getReplyToAddress
+        // 3 addNextHop for routing proxy
+        // 4 addNextHop for discovery proxy
+
+        // 5 resolve next hop for discovery provider
+        // 6 lookup provider
+        // 7 addNextHop for proxy
+
+        // 8 resolve next hop for provider
+        // 9 call provider method
+        EXPECT_CALL(*keyChain, getOwnerId()).Times(9).WillRepeatedly(Return(ownerId));
+        // call provider method
+        EXPECT_CALL(*keyChain, getOwnerId()).WillOnce(Return("invalid signature"));
+    }
+    testLocalconnectionCallRpcMethodWithInvalidMessageSignature();
 }
 
 INSTANTIATE_TEST_CASE_P(TLS,

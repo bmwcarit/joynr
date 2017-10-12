@@ -21,79 +21,76 @@
 var RadioProvider = require('../../../test-classes/joynr/vehicle/RadioProvider');
 var ProviderBuilder = require('../../../classes/joynr/provider/ProviderBuilder');
 var ProviderOperation = require('../../../classes/joynr/provider/ProviderOperation');
-module.exports = (function(RadioProvider, ProviderBuilder, ProviderOperation) {
 
-    describe("libjoynr-js.joynr.provider.ProviderBuilder", function() {
-        var providerBuilder = null;
-        var implementation = null;
+describe("libjoynr-js.joynr.provider.ProviderBuilder", function() {
+    var providerBuilder = null;
+    var implementation = null;
 
-        beforeEach(function() {
-            providerBuilder = new ProviderBuilder();
-            implementation = {
-                isOn : {
-                    value : false,
-                    get : function() {
-                        return this.value;
-                    },
-                    set : function(newValue) {
-                        this.value = newValue;
-                    }
+    beforeEach(function() {
+        providerBuilder = new ProviderBuilder();
+        implementation = {
+            isOn : {
+                value : false,
+                get : function() {
+                    return this.value;
                 },
-                numberOfStations : {
-                    value : 0,
-                    get : function() {
-                        return this.value;
-                    },
-                    set : function(newValue) {
-                        this.value = newValue;
-                    }
+                set : function(newValue) {
+                    this.value = newValue;
+                }
+            },
+            numberOfStations : {
+                value : 0,
+                get : function() {
+                    return this.value;
                 },
-                mixedSubscriptions : {
-                    value : "testvalue",
-                    get : function() {
-                        return this.value;
-                    },
-                    set : function(newValue) {
-                        this.value = newValue;
-                    }
+                set : function(newValue) {
+                    this.value = newValue;
+                }
+            },
+            mixedSubscriptions : {
+                value : "testvalue",
+                get : function() {
+                    return this.value;
                 },
-                attrProvidedImpl : {
-                    value : "testValue2",
-                    get : function() {
-                        return this.value;
-                    },
-                    set : function(newValue) {
-                        this.value = newValue;
-                    }
+                set : function(newValue) {
+                    this.value = newValue;
+                }
+            },
+            attrProvidedImpl : {
+                value : "testValue2",
+                get : function() {
+                    return this.value;
                 },
-                attributeTestingProviderInterface : {
-                    get : function() {
-                        return undefined;
-                    }
-                },
-                addFavoriteStation : jasmine.createSpy("addFavoriteStation"),
-                weakSignal : jasmine.createSpy("weakSignal"),
-                methodProvidedImpl : jasmine.createSpy("methodProvidedImpl")
-            };
-        });
+                set : function(newValue) {
+                    this.value = newValue;
+                }
+            },
+            attributeTestingProviderInterface : {
+                get : function() {
+                    return undefined;
+                }
+            },
+            addFavoriteStation : jasmine.createSpy("addFavoriteStation"),
+            weakSignal : jasmine.createSpy("weakSignal"),
+            methodProvidedImpl : jasmine.createSpy("methodProvidedImpl")
+        };
+    });
 
-        it("is defined and of correct type", function() {
-            expect(providerBuilder).toBeDefined();
-            expect(typeof providerBuilder.build === "function").toBe(true);
-        });
+    it("is defined and of correct type", function() {
+        expect(providerBuilder).toBeDefined();
+        expect(typeof providerBuilder.build === "function").toBe(true);
+    });
 
-        it("returns a provider of the given type", function() {
-            var radioProvider = providerBuilder.build(RadioProvider, implementation);
-            expect(radioProvider).toBeDefined();
-            expect(radioProvider).not.toBeNull();
-            expect(radioProvider instanceof RadioProvider).toBeTruthy();
-            expect(radioProvider.interfaceName).toBeDefined();
-            expect(radioProvider.isOn).toBeDefined();
-            expect(radioProvider.addFavoriteStation).toBeDefined();
-            expect(radioProvider.addFavoriteStation instanceof ProviderOperation).toBeTruthy();
-
-        });
+    it("returns a provider of the given type", function() {
+        var radioProvider = providerBuilder.build(RadioProvider, implementation);
+        expect(radioProvider).toBeDefined();
+        expect(radioProvider).not.toBeNull();
+        expect(radioProvider instanceof RadioProvider).toBeTruthy();
+        expect(radioProvider.interfaceName).toBeDefined();
+        expect(radioProvider.isOn).toBeDefined();
+        expect(radioProvider.addFavoriteStation).toBeDefined();
+        expect(radioProvider.addFavoriteStation instanceof ProviderOperation).toBeTruthy();
 
     });
 
-}(RadioProvider, ProviderBuilder, ProviderOperation)); // require
+});

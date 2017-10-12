@@ -18,67 +18,64 @@
  * limitations under the License.
  * #L%
  */
-var UtilInternal = require('../../util/UtilInternal');
+var Util = require('../../util/UtilInternal');
 var Typing = require('../../util/Typing');
 var uuid = require('../../../lib/uuid-annotated');
-module.exports = (function(Util, Typing, uuid) {
 
-    var defaultSettings = {
-        paramDatatypes : [],
-        params : []
-    };
+var defaultSettings = {
+    paramDatatypes : [],
+    params : []
+};
 
-    var rrBase = uuid();
-    var rrIndex = 0;
+var rrBase = uuid();
+var rrIndex = 0;
 
-    Util.enrichObjectWithSetPrototypeOf();
+Util.enrichObjectWithSetPrototypeOf();
 
-    /**
-     * @name Request
-     * @constructor
-     *
-     * @param {Object}
-     *            settings
-     * @param {String}
-     *            settings.requestReplyId
-     * @param {String}
-     *            settings.methodName
-     * @param {Array}
-     *            [settings.paramDatatypes] parameter datatypes
-     * @param {String}
-     *            settings.paramDatatypes.array
-     * @param {Array}
-     *            [settings.params] parameters
-     * @param {?}
-     *            settings.params.array
-     */
-    function Request(settings) {
-        var i;
-        settings.requestReplyId = settings.requestReplyId || (rrBase + "_" + rrIndex++);
+/**
+ * @name Request
+ * @constructor
+ *
+ * @param {Object}
+ *            settings
+ * @param {String}
+ *            settings.requestReplyId
+ * @param {String}
+ *            settings.methodName
+ * @param {Array}
+ *            [settings.paramDatatypes] parameter datatypes
+ * @param {String}
+ *            settings.paramDatatypes.array
+ * @param {Array}
+ *            [settings.params] parameters
+ * @param {?}
+ *            settings.params.array
+ */
+function Request(settings) {
+    var i;
+    settings.requestReplyId = settings.requestReplyId || (rrBase + "_" + rrIndex++);
 
-        if (settings.params) {
-            for (i = 0; i < settings.params.length; i++) {
-                settings.params[i] = Util.ensureTypedValues(settings.params[i]);
-            }
+    if (settings.params) {
+        for (i = 0; i < settings.params.length; i++) {
+            settings.params[i] = Util.ensureTypedValues(settings.params[i]);
         }
-        if (!settings.paramDatatypes) {
-            settings.paramDatatypes = [];
-        }
-
-        /**
-         * The joynr type name
-         *
-         * @name Request#_typeName
-         * @type String
-         */
-        /*jslint nomen: true*/
-        settings._typeName = "joynr.Request";
-        /*jslint nomen: false */
-        Object.setPrototypeOf(settings, Request.prototype);
-
-        return settings;
+    }
+    if (!settings.paramDatatypes) {
+        settings.paramDatatypes = [];
     }
 
-    return Request;
+    /**
+     * The joynr type name
+     *
+     * @name Request#_typeName
+     * @type String
+     */
+    /*jslint nomen: true*/
+    settings._typeName = "joynr.Request";
+    /*jslint nomen: false */
+    Object.setPrototypeOf(settings, Request.prototype);
 
-}(UtilInternal, Typing, uuid));
+    return settings;
+}
+
+module.exports = Request;
