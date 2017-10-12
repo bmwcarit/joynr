@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 abstract public class AbstractMessageRouter implements MessageRouter, ShutdownListener {
     private Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
     private final RoutingTable routingTable;
-    private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
+    private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss:sss");
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
     private long routingTableGracePeriodMs;
