@@ -643,4 +643,34 @@ public class CcMessageRouterTest {
         verify(mockMsgProcessedListener).messageProcessed(immutableMessage.getId());
         verifyNoMoreInteractions(messagingStubMock);
     }
+
+    @Test
+    public void testMulticastMessageIsDroppedIfNoAddressIsFound() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+
+        final MulticastPublication multicastPublication = new MulticastPublication(new JoynrRuntimeException("Test Exception"),
+                                                                                   "multicastId");
+        final MutableMessage mutableMessage = messageFactory.createMulticast("fromParticipantId",
+                                                                             multicastPublication,
+                                                                             new MessagingQos());
+        final ImmutableMessage immutableMessage = mutableMessage.getImmutableMessage();
+
+        MessageProcessedListener mockMsgProcessedListener = Mockito.mock(MessageProcessedListener.class);
+        messageRouter.registerMessageProcessedListener(mockMsgProcessedListener);
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                semaphore.release();
+                return null;
+            }
+
+        }).when(mockMsgProcessedListener).messageProcessed(anyString());
+
+        messageRouter.route(immutableMessage);
+        semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
+
+        verify(mockMsgProcessedListener).messageProcessed(immutableMessage.getId());
+        verifyNoMoreInteractions(messagingStubMock);
+    }
 }
