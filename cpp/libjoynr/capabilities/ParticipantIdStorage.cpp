@@ -43,7 +43,7 @@ void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
 {
     std::string providerKey = createProviderKey(domain, interfaceName);
     storage.set(providerKey, participantId);
-    storage.sync();
+    sync();
 }
 
 std::string ParticipantIdStorage::getProviderParticipantId(const std::string& domain,
@@ -64,11 +64,16 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
         // Persist a new participant Id, using the defaultValue if possible
         participantId = (!defaultValue.empty()) ? defaultValue : util::createUuid();
         storage.set(providerKey, participantId);
-        storage.sync();
+        sync();
     } else {
         participantId = storage.get<std::string>(providerKey);
     }
     return participantId;
+}
+
+void ParticipantIdStorage::sync()
+{
+    storage.sync();
 }
 
 std::string ParticipantIdStorage::createProviderKey(const std::string& domain,
