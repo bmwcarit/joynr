@@ -67,24 +67,12 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
     {
-
-        std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
-
-        std::string interfaceName = T::INTERFACE_NAME();
-
-        // Get the provider participant Id - the persisted provider Id has priority
-        std::string participantId =
+        const std::string interfaceName = T::INTERFACE_NAME();
+        const std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);
-
+        std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
         provider->registerBroadcastListener(
                 std::make_shared<MulticastBroadcastListener>(participantId, publicationManager));
-
-        for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
-            // TODO will the provider be registered at all dispatchers or
-            //     should it be configurable which ones are used to contact it.
-            assert(currentDispatcher != nullptr);
-            currentDispatcher->addRequestCaller(participantId, caller);
-        }
 
         const std::int64_t now =
                 std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -103,14 +91,46 @@ public:
                                            defaultPublicKeyId);
         bool isGloballyVisible = entry.getQos().getScope() == types::ProviderScope::GLOBAL;
         auto onSuccessWrapper = [
+            domain,
+            interfaceName,
+            dispatcherList = this->dispatcherList,
+            caller,
+            participantIdStorage = util::as_weak_ptr(participantIdStorage),
             isGloballyVisible,
             messageRouter = util::as_weak_ptr(messageRouter),
             participantId,
             dispatcherAddress = dispatcherAddress,
             onSuccess = std::move(onSuccess),
             onError
-        ]
+        ]()
         {
+            auto onSuccessAddNextHop = [
+                domain,
+                interfaceName,
+                dispatcherList,
+                caller,
+                participantIdStorage,
+                participantId,
+                onSuccess = std::move(onSuccess),
+                onError
+            ]()
+            {
+                for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
+                    // TODO will the provider be registered at all dispatchers or
+                    //     should it be configurable which ones are used to contact it.
+                    assert(currentDispatcher != nullptr);
+                    currentDispatcher->addRequestCaller(participantId, caller);
+                }
+                // Sync persistency to disk now that registration is done.
+                if (auto participantIdStoragePtr = participantIdStorage.lock()) {
+                    participantIdStoragePtr->setProviderParticipantId(
+                            domain, interfaceName, participantId);
+                }
+                if (onSuccess) {
+                    onSuccess();
+                }
+            };
+
             // add next hop to dispatcher
             if (auto ptr = messageRouter.lock()) {
                 constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
@@ -120,7 +140,7 @@ public:
                                 isGloballyVisible,
                                 expiryDateMs,
                                 isSticky,
-                                std::move(onSuccess),
+                                std::move(onSuccessAddNextHop),
                                 std::move(onError));
             }
         };
