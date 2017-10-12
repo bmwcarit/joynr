@@ -23,6 +23,7 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Settings.h"
 
 namespace joynr
 {
@@ -70,7 +71,8 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(ParticipantIdStorage);
     std::string createProviderKey(const std::string& domain, const std::string& interfaceName);
-    std::string filename;
+
+    joynr::Settings storage;
 };
 
 } // namespace joynr

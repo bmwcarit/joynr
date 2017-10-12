@@ -22,13 +22,12 @@
 
 #include <boost/format.hpp>
 
-#include "joynr/Settings.h"
 #include "joynr/Util.h"
 
 namespace joynr
 {
 
-ParticipantIdStorage::ParticipantIdStorage(const std::string& filename) : filename(filename)
+ParticipantIdStorage::ParticipantIdStorage(const std::string& filename) : storage(filename)
 {
 }
 
@@ -42,12 +41,9 @@ void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
                                                     const std::string& interfaceName,
                                                     const std::string& participantId)
 {
-    // Access the persistence file through a threadsafe Settings object
-    Settings settings(filename);
-
     std::string providerKey = createProviderKey(domain, interfaceName);
-    settings.set(providerKey, participantId);
-    settings.sync();
+    storage.set(providerKey, participantId);
+    storage.sync();
 }
 
 std::string ParticipantIdStorage::getProviderParticipantId(const std::string& domain,
@@ -60,20 +56,17 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
                                                            const std::string& interfaceName,
                                                            const std::string& defaultValue)
 {
-    // Access the persistence file through a threadsafe Settings object
-    Settings settings(filename);
-
     std::string providerKey = createProviderKey(domain, interfaceName);
 
     std::string participantId;
     // Lookup the participant id
-    if (!settings.contains(providerKey)) {
+    if (!storage.contains(providerKey)) {
         // Persist a new participant Id, using the defaultValue if possible
         participantId = (!defaultValue.empty()) ? defaultValue : util::createUuid();
-        settings.set(providerKey, participantId);
-        settings.sync();
+        storage.set(providerKey, participantId);
+        storage.sync();
     } else {
-        participantId = settings.get<std::string>(providerKey);
+        participantId = storage.get<std::string>(providerKey);
     }
     return participantId;
 }
