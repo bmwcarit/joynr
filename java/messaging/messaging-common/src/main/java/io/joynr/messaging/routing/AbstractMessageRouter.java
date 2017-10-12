@@ -393,6 +393,9 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
             if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                 throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
                         + message);
+            } else if (message.isReply()) {
+                throw new JoynrMessageNotSentException("Failed to send Reply: No address found for given message: "
+                        + message);
             } else {
                 throw new JoynrIllegalStateException("Unable to find address for recipient with participant ID "
                         + message.getRecipient());

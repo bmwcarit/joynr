@@ -32,6 +32,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
@@ -82,7 +83,9 @@ import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
 import joynr.ImmutableMessage;
 import joynr.Message;
+import joynr.MulticastPublication;
 import joynr.MutableMessage;
+import joynr.Reply;
 import joynr.Request;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
@@ -122,6 +125,7 @@ public class CcMessageRouterTest {
     protected String fromParticipantId = "fromParticipantId";
 
     private Module testModule;
+    private MutableMessageFactory messageFactory;
 
     @Before
     public void setUp() throws Exception {
@@ -195,8 +199,7 @@ public class CcMessageRouterTest {
         messageRouter = injector.getInstance(MessageRouter.class);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        MutableMessageFactory messageFactory = new MutableMessageFactory(objectMapper,
-                                                                         new HashSet<JoynrMessageProcessor>());
+        messageFactory = new MutableMessageFactory(objectMapper, new HashSet<JoynrMessageProcessor>());
 
         final boolean isGloballyVisible = true; // toParticipantId is globally visible
         final long expiryDateMs = Long.MAX_VALUE;
@@ -608,4 +611,36 @@ public class CcMessageRouterTest {
         verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
     }
 
+    @Test
+    public void testNotRoutableReplyDropped() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+        final String unknownParticipantId = "unknown_participant_id";
+        final String requestReplyId = "some_request_reply_id";
+
+        final Reply reply = new Reply(requestReplyId, new JoynrRuntimeException("TestException"));
+
+        final MutableMessage mutableMessage = messageFactory.createReply(fromParticipantId,
+                                                                         unknownParticipantId,
+                                                                         reply,
+                                                                         new MessagingQos());
+        final ImmutableMessage immutableMessage = mutableMessage.getImmutableMessage();
+
+        MessageProcessedListener mockMsgProcessedListener = Mockito.mock(MessageProcessedListener.class);
+        messageRouter.registerMessageProcessedListener(mockMsgProcessedListener);
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                semaphore.release();
+                return null;
+            }
+
+        }).when(mockMsgProcessedListener).messageProcessed(anyString());
+
+        messageRouter.route(immutableMessage);
+        semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
+
+        verify(mockMsgProcessedListener).messageProcessed(immutableMessage.getId());
+        verifyNoMoreInteractions(messagingStubMock);
+    }
 }
