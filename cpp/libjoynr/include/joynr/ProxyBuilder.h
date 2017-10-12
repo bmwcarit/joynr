@@ -125,7 +125,7 @@ private:
     ProxyFactory& proxyFactory;
     std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
     std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
-    std::unique_ptr<Arbitrator> arbitrator;
+    std::shared_ptr<Arbitrator> arbitrator;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<IMessageRouter> messageRouter;

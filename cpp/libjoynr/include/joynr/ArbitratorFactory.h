@@ -40,7 +40,7 @@ public:
     /*
      *  Creates an arbitrator object using the type specified in the qosParameters.
      */
-    static std::unique_ptr<Arbitrator> createArbitrator(
+    static std::shared_ptr<Arbitrator> createArbitrator(
             const std::string& domain,
             const std::string& interfaceName,
             const types::Version& interfaceVersion,

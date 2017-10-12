@@ -44,7 +44,8 @@ Arbitrator::Arbitrator(
         std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
         const DiscoveryQos& discoveryQos,
         std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction)
-        : discoveryProxy(discoveryProxy),
+        : std::enable_shared_from_this<Arbitrator>(),
+          discoveryProxy(discoveryProxy),
           discoveryQos(discoveryQos),
           systemDiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
                              discoveryQos.getDiscoveryTimeoutMs(),
@@ -91,23 +92,29 @@ void Arbitrator::startArbitration(
     onSuccessCallback = onSuccess;
     onErrorCallback = onError;
 
-    arbitrationThread = std::thread([this]() {
-        Semaphore semaphore;
-        arbitrationFinished = false;
+    arbitrationThread = std::thread([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())]() {
 
-        std::string serializedDomainsList = boost::algorithm::join(domains, ", ");
+        auto thisSharedPtr = thisWeakPtr.lock();
+        if (!thisSharedPtr) {
+            return;
+        }
+
+        Semaphore semaphore;
+        thisSharedPtr->arbitrationFinished = false;
+
+        std::string serializedDomainsList = boost::algorithm::join(thisSharedPtr->domains, ", ");
         JOYNR_LOG_DEBUG(logger,
                         "DISCOVERY lookup for domain: [{}], interface: {}",
                         serializedDomainsList,
-                        interfaceName);
+                        thisSharedPtr->interfaceName);
 
         // Arbitrate until successful or timed out
         auto start = std::chrono::system_clock::now();
 
-        while (keepArbitrationRunning) {
-            attemptArbitration();
+        while (thisSharedPtr->keepArbitrationRunning) {
+            thisSharedPtr->attemptArbitration();
 
-            if (arbitrationFinished) {
+            if (thisSharedPtr->arbitrationFinished) {
                 return;
             }
 
@@ -116,34 +123,48 @@ void Arbitrator::startArbitration(
             auto now = std::chrono::system_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
 
-            if (discoveryQos.getDiscoveryTimeoutMs() <= duration.count()) {
+            if (thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() <= duration.count()) {
                 // discovery timeout reached
                 break;
-            } else if (discoveryQos.getDiscoveryTimeoutMs() - duration.count() <=
-                       discoveryQos.getRetryIntervalMs()) {
+            } else if (thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - duration.count() <=
+                       thisSharedPtr->discoveryQos.getRetryIntervalMs()) {
                 /*
                  * no retry possible -> wait until discoveryTimeout is reached and inform caller
                  * about
                  * cancelled arbitration
                  */
-                semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() -
-                                                            duration.count()));
+
+                auto waitIntervalMs = std::chrono::milliseconds(
+                        thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - duration.count());
+                thisSharedPtr.reset();
+                semaphore.waitFor(waitIntervalMs);
+                thisSharedPtr = thisWeakPtr.lock();
+                if (!thisSharedPtr) {
+                    return;
+                }
                 break;
             } else {
                 // wait for retry interval and attempt a new arbitration
-                semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getRetryIntervalMs()));
+                auto waitIntervalMs =
+                        std::chrono::milliseconds(thisSharedPtr->discoveryQos.getRetryIntervalMs());
+                thisSharedPtr.reset();
+                semaphore.waitFor(waitIntervalMs);
+                thisSharedPtr = thisWeakPtr.lock();
+                if (!thisSharedPtr) {
+                    return;
+                }
             }
         }
 
         // If this point is reached the arbitration timed out
-        if (!discoveredIncompatibleVersions.empty()) {
-            onErrorCallback(
-                    exceptions::NoCompatibleProviderFoundException(discoveredIncompatibleVersions));
+        if (!(thisSharedPtr->discoveredIncompatibleVersions.empty())) {
+            thisSharedPtr->onErrorCallback(exceptions::NoCompatibleProviderFoundException(
+                    thisSharedPtr->discoveredIncompatibleVersions));
         } else {
-            onErrorCallback(arbitrationError);
+            thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
         }
 
-        arbitrationRunning = false;
+        thisSharedPtr->arbitrationRunning = false;
     });
 }
 
