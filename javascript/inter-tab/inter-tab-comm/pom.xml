@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr.javascript</groupId>
 		<artifactId>inter-tab</artifactId>
-		<version>0.30.0</version>
+		<version>0.30.1</version>
 	</parent>
 
 	<properties>

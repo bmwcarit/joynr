@@ -21,7 +21,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>tools</artifactId>
-		<version>0.30.0</version>
+		<version>0.30.1</version>
 	</parent>
 	<groupId>io.joynr.tools</groupId>
 	<artifactId>license-check</artifactId>

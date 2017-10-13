@@ -21,7 +21,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="io.joynr.android.test"
   android:versionCode="1"
-  android:versionName="0.30.0">
+  android:versionName="0.30.1">
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="21"/>
 
