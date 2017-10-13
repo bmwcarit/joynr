@@ -340,8 +340,10 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-        logger.debug("Received message via MQTT from topic {}:\n{}", topic, new String(mqttMessage.getPayload(),
-                                                                                       Charsets.UTF_8));
+        logger.debug("MQTT message received: id {}, topic {}, payload\n{}",
+                     mqttMessage.getId(),
+                     topic,
+                     new String(mqttMessage.getPayload(), Charsets.UTF_8));
         if (messagingSkeleton == null) {
             logger.error("MQTT message not processed: messagingSkeleton has not been set yet");
             return;
