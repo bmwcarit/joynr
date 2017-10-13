@@ -334,8 +334,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void deliveryComplete(IMqttDeliveryToken arg0) {
-        // nothing to do here
+    public void deliveryComplete(IMqttDeliveryToken mqttDeliveryToken) {
+        logger.debug("MQTT message delivered. id: {}", mqttDeliveryToken.getMessageId());
     }
 
     @Override
