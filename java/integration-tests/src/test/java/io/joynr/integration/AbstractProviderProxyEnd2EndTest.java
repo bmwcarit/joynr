@@ -232,7 +232,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }
 
         provider = new TestProvider();
-        ProviderQos testProviderQos = new ProviderQos();
         testProviderQos.setPriority(System.currentTimeMillis());
 
         providerAsync = new TestAsyncProviderImpl();
