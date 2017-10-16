@@ -43,7 +43,7 @@ import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import io.joynr.servlet.ServletUtil;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.tests.testProxy;
-import org.junit.After;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,13 +66,6 @@ public class WebSocketProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2
 
         //init websocket properties before libjoynr runtimes are created
         super.baseSetup();
-    }
-
-    @Override
-    @After
-    public void tearDown() throws InterruptedException {
-        super.tearDown();
-        ccJoynrRuntime.shutdown(false);
     }
 
     private JoynrRuntime createClusterController(Properties webSocketConfig) {
