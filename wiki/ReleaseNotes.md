@@ -1,3 +1,12 @@
+# joynr 0.30.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** If a joynr instance receives a reply for which no receiver exists,
+  it will be dropped immediately.
+
 # joynr 0.30.0
 
 ## API relevant changes
