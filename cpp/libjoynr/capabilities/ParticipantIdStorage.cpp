@@ -58,17 +58,12 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
 {
     std::string providerKey = createProviderKey(domain, interfaceName);
 
-    std::string participantId;
-    // Lookup the participant id
-    if (!storage.contains(providerKey)) {
-        // Persist a new participant Id, using the defaultValue if possible
-        participantId = (!defaultValue.empty()) ? defaultValue : util::createUuid();
-        storage.set(providerKey, participantId);
-        sync();
+    if (boost::optional<std::string> participantId =
+                storage.getOptional<std::string>(providerKey)) {
+        return *participantId;
     } else {
-        participantId = storage.get<std::string>(providerKey);
+        return (!defaultValue.empty()) ? defaultValue : util::createUuid();
     }
-    return participantId;
 }
 
 void ParticipantIdStorage::sync()
