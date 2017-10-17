@@ -3,6 +3,16 @@
 ## API relevant changes
 None.
 
+## Configuration property changes
+* **[Java]** PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE and PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS
+ were renamed in order to reflect that they are related to the backpressure
+ mechanism. PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE is now called
+ PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE and its identifier is
+ `joynr.messaging.backpressure.maxincomingmqttmessagesinqueue`.
+ PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS is now called
+ PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS and its identifier
+ is `joynr.messaging.backpressure.repeatedmqttmessageignoreperiodms`.
+
 ## Other changes
 * **[Java]** If a joynr instance receives a reply for which no receiver exists,
   it will be dropped immediately.
