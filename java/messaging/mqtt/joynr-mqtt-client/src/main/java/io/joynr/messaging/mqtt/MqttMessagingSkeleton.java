@@ -236,26 +236,35 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
                 }
             }
 
-            synchronized (processingMessages) {
-                // The number of not yet processed (queued) Mqtt messages is the difference between
-                // processingMessages.size() and the number of messages which are already processed but still
-                // not removed from processingMessages.
-                if (processingMessages.size() - processedMessagesQueue.size() >= maxMqttMessagesInQueue) {
-                    LOG.warn("Maximum number of Mqtt messages in message queue reached. "
-                            + "Incoming Mqtt message with id {} cannot be handled now.", message.getId());
-                    return;
-                }
-                if (processingMessages.containsKey(message.getId())) {
-                    LOG.debug("Dropping already received message with id {}", message.getId());
-                    return;
-                }
+            if (dropMessage(message)) {
+                return;
             }
+
             forwardMessage(message, mqttId, mqttQos, failureAction);
         } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
             LOG.error("Message: \"{}\", could not be deserialized, exception: {}", serializedMessage, e.getMessage());
             mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
             failureAction.execute(e);
         }
+    }
+
+    private boolean dropMessage(ImmutableMessage message) {
+        synchronized (processingMessages) {
+            // The number of not yet processed (queued) Mqtt messages is the difference between
+            // processingMessages.size() and the number of messages which are already processed but still
+            // not removed from processingMessages.
+            if (processingMessages.size() - processedMessagesQueue.size() >= maxMqttMessagesInQueue) {
+                LOG.warn("Maximum number of Mqtt messages in message queue reached. "
+                        + "Incoming Mqtt message with id {} cannot be handled now.", message.getId());
+                return true;
+            }
+            if (processingMessages.containsKey(message.getId())) {
+                LOG.debug("Dropping already received message with id {}", message.getId());
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected JoynrMqttClient getClient() {
