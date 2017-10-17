@@ -19,6 +19,7 @@
 #ifndef PARTICIPANTIDSTORAGE_H
 #define PARTICIPANTIDSTORAGE_H
 
+#include <mutex>
 #include <string>
 
 #include "joynr/JoynrExport.h"
@@ -77,6 +78,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ParticipantIdStorage);
     std::string createProviderKey(const std::string& domain, const std::string& interfaceName);
 
+    std::mutex mutex;
     joynr::Settings storage;
 };
 

@@ -68,6 +68,7 @@ std::string ParticipantIdStorage::getProviderParticipantId(const std::string& do
 
 void ParticipantIdStorage::sync()
 {
+    std::lock_guard<std::mutex> lockAccessToFile(mutex);
     storage.sync();
 }
 
