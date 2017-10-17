@@ -12,6 +12,8 @@ None.
  PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS is now called
  PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS and its identifier
  is `joynr.messaging.backpressure.repeatedmqttmessageignoreperiodms`.
+ * **[Java]** Introduced `PROPERTY_BACKPRESSURE_ENABLED`. See [Java Configuration Reference](JavaSettings.md) for
+   details about the new property. The backpressure mechanism is disabled by default.
 
 ## Other changes
 * **[Java]** If a joynr instance receives a reply for which no receiver exists,

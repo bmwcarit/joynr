@@ -78,6 +78,7 @@ public class DefaultMqttClientIdProviderTest {
         properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS,
                        "1000");
         properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE, "20");
+        properties.put(ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED, "false");
         Module testModule = Modules.override(new MqttPahoModule()).with(new AbstractModule() {
             @Override
             protected void configure() {

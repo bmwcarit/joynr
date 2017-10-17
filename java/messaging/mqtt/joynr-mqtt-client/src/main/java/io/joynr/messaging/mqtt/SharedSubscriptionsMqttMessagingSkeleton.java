@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.mqtt;
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
@@ -53,6 +54,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     public SharedSubscriptionsMqttMessagingSkeleton(@Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                                     @Named(PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS) int repeatedMqttMessageIgnorePeriodMs,
                                                     @Named(PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE) int maxIncomingMqttMessagesInQueue,
+                                                    @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
                                                     @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
@@ -63,6 +65,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
         super(ownAddress,
               repeatedMqttMessageIgnorePeriodMs,
               maxIncomingMqttMessagesInQueue,
+              backpressureEnabled,
               messageRouter,
               mqttClientFactory,
               mqttTopicPrefixProvider,

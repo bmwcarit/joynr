@@ -112,8 +112,18 @@ The number of threads used by the message router to send joynr messages.
 * **User property**: `joynr.messaging.maximumparallelsends`
 * **Default value**: `20`
 
+### `PROPERTY_BACKPRESSURE_ENABLED`
+Controls whether the backpressure mechanism is active.
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `joynr.messaging.backpressure.enabled`
+* **Default value**: `false`
+
 ### `PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE`
 The number of incoming MQTT messages that can be handled by the message router at the same time.
+
+This property is only relevant when `PROPERTY_BACKPRESSURE_ENABLED` is set to true.
 
 To prevent the mqtt broker from flooding the message queue, the reception of further incoming MQTT
 messages will be delayed by not sending acknowledgement messages to the broker until an already
@@ -128,6 +138,8 @@ See also `PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`.
 ### `PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS`
 Time in milliseconds for which the message ID of processed messages is kept to detect duplicated
 incoming Mqtt messages.
+
+This property is only relevant when `PROPERTY_BACKPRESSURE_ENABLED` is set to true.
 
 The Mqtt broker tries to resend a Qos=1 and Qos=2 message when no response (PUBACK/PUBREL) is
 received. Joynr keeps track of received but not yet processed messages and delays the

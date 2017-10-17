@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.mqtt;
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
@@ -55,6 +56,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private MqttAddress ownAddress;
     private int repeatedMqttMessageIgnorePeriodMs;
     private int maxIncomingMqttMessagesInQueue;
+    private boolean backpressureEnabled;
     private MqttAddress replyToAddress;
     private MessageRouter messageRouter;
     private String channelId;
@@ -68,6 +70,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                          @Named(PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS) int repeatedMqttMessageIgnorePeriodMs,
                                          @Named(PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE) int maxIncomingMqttMessagesInQueue,
+                                         @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          MessageRouter messageRouter,
                                          MqttClientFactory mqttClientFactory,
@@ -81,6 +84,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.ownAddress = ownAddress;
         this.repeatedMqttMessageIgnorePeriodMs = repeatedMqttMessageIgnorePeriodMs;
         this.maxIncomingMqttMessagesInQueue = maxIncomingMqttMessagesInQueue;
+        this.backpressureEnabled = backpressureEnabled;
         this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
@@ -96,6 +100,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
             return new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                 repeatedMqttMessageIgnorePeriodMs,
                                                                 maxIncomingMqttMessagesInQueue,
+                                                                backpressureEnabled,
                                                                 replyToAddress,
                                                                 messageRouter,
                                                                 mqttClientFactory,
@@ -107,6 +112,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         return new MqttMessagingSkeleton(ownAddress,
                                          repeatedMqttMessageIgnorePeriodMs,
                                          maxIncomingMqttMessagesInQueue,
+                                         backpressureEnabled,
                                          messageRouter,
                                          mqttClientFactory,
                                          mqttTopicPrefixProvider,

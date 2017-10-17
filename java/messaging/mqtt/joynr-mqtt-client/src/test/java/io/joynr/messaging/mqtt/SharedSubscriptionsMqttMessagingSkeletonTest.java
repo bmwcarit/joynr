@@ -51,6 +51,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
 
     private final int maxMqttMessagesInQueue = 20;
     private final int repeatedMqttMessageIgnorePeriodMs = 1000;
+    private final boolean backpressureEnabled = false;
 
     @Mock
     private MqttClientFactory mqttClientFactory;
@@ -88,6 +89,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                repeatedMqttMessageIgnorePeriodMs,
                                                                maxMqttMessagesInQueue,
+                                                               backpressureEnabled,
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
@@ -105,6 +107,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                repeatedMqttMessageIgnorePeriodMs,
                                                                maxMqttMessagesInQueue,
+                                                               backpressureEnabled,
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
@@ -121,6 +124,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
                                                                repeatedMqttMessageIgnorePeriodMs,
                                                                maxMqttMessagesInQueue,
+                                                               backpressureEnabled,
                                                                replyToAddress,
                                                                messageRouter,
                                                                mqttClientFactory,
