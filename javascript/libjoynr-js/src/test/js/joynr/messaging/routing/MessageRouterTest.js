@@ -370,16 +370,20 @@ var uuid = require('../../../../classes/lib/uuid-annotated');
                                 });
 
                         it("route drops expired message", function(done) {
+                            var isGloballyVisible = true;
+                            messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
                             joynrMessage.expiryDate = Date.now() - 1;
-                            try {
-                                messageRouter.route(joynrMessage);
+                            joynrMessage.setIsLocalMessage(true);
+                            messageRouter.route(joynrMessage)
+                            .then(function() {
                                 done.fail("did not throw");
-                            } catch (e) {
+                            })
+                            .catch(function(e) {
                                 expect(e.detailMessage.indexOf("expired message") >= 0).toBe(true);
-                            }
-                            expect(messagingStubFactorySpy.createMessagingStub).not
-                                    .toHaveBeenCalled();
-                            done();
+                                expect(messagingStubFactorySpy.createMessagingStub).not
+                                        .toHaveBeenCalled();
+                                done();
+                            });
                         });
 
                         it("sets replyTo address for non local messages", function(done) {
