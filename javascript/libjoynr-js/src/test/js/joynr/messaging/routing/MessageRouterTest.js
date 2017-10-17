@@ -737,18 +737,22 @@ var uuid = require('../../../../classes/lib/uuid-annotated');
                                 var expectedJoynrMessage = new JoynrMessage(Util.extendDeep({}, joynrMessage));
                                 expectedJoynrMessage.replyChannelId = serializedTestGlobalClusterControllerAddress;
 
-                                expect(messageRouter.route.bind(this, joynrMessage)).toThrowError(Error);
+                                messageRouter.route(joynrMessage)
+                                .then(function() {
+                                    expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
 
-                                expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
+                                    messageRouter.setRoutingProxy(routingProxySpy);
 
-                                messageRouter.setRoutingProxy(routingProxySpy);
-
-                                waitsFor(function() {
-                                    return (messagingStubSpy.transmit.calls.count() >= 1);
-                                }, "wait for tranmsit to be done", 1000).finally(function() {
-                                    expect(messagingStubSpy.transmit).toHaveBeenCalledWith(expectedJoynrMessage);
-                                    done();
-                                    return null;
+                                    waitsFor(function() {
+                                        return (messagingStubSpy.transmit.calls.count() >= 1);
+                                    }, "wait for tranmsit to be done", 1000).finally(function() {
+                                        expect(messagingStubSpy.transmit).toHaveBeenCalledWith(expectedJoynrMessage);
+                                        done();
+                                        return null;
+                                    });
+                                })
+                                .catch(function(error) {
+                                    done.fail("unexpected error from messageRouter.route: " + error);
                                 });
                             });
 

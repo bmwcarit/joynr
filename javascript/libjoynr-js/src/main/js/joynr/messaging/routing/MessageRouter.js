@@ -408,11 +408,13 @@ var JSONSerializer = require('../../util/JSONSerializer');
                         errorMsg =
                                 "No message receiver found for participantId: "
                                     + joynrMessage.to
-                                    + ". Queuing request message.";
-                        log.info(errorMsg, DiagnosticTags
+                                    + ". Queuing message.";
+                        log.warn(errorMsg, DiagnosticTags
                                 .forJoynrMessage(joynrMessage));
+                        // message is queued until the participant is registered
+                        // TODO remove expired messages from queue
                         settings.messageQueue.putMessage(joynrMessage);
-                        throw new Error(errorMsg);
+                        return Promise.resolve();
                     }
 
                     if (!joynrMessage.isLocalMessage) {
@@ -425,7 +427,7 @@ var JSONSerializer = require('../../util/JSONSerializer');
                                 + ". Queuing message.";
                             log.warn(errorMsg, JSON.stringify(DiagnosticTags
                                     .forJoynrMessage(joynrMessage)));
-                            throw new Error(errorMsg);
+                            return Promise.resolve();
                         }
                     }
 
@@ -450,10 +452,10 @@ var JSONSerializer = require('../../util/JSONSerializer');
                                     + " queuing message.";
                         log.info(errorMsg, DiagnosticTags
                                 .forJoynrMessage(joynrMessage));
-                        throw new Error(errorMsg);
-                    } else {
-                        return messagingStub.transmit(joynrMessage).then(transmitOnSuccess).catch(transmitOnError);
+                        // TODO queue message and retry later
+                        return Promise.resolve();
                     }
+                    return messagingStub.transmit(joynrMessage).then(transmitOnSuccess).catch(transmitOnError);
                 }
 
                 function registerGlobalRoutingEntryIfRequired(joynrMessage) {
