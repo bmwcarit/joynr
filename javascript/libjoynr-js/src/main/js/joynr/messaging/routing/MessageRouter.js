@@ -286,13 +286,19 @@ var JSONSerializer = require('../../util/JSONSerializer');
                 function resolveNextHopInternal(participantId) {
                     var address, addressString;
 
-                    addressString = persistency.getItem(that.getStorageKey(participantId));
-                    if (addressString === undefined
-                        || addressString === null || addressString === "{}") {
-                        persistency.removeItem(that.getStorageKey(participantId));
-                    } else {
-                        address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
-                        routingTable[participantId] = address;
+                    try {
+                        addressString = persistency.getItem(that.getStorageKey(participantId));
+                        if (addressString === undefined
+                            || addressString === null || addressString === "{}") {
+                            persistency.removeItem(that.getStorageKey(participantId));
+                        } else {
+                            address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
+                            routingTable[participantId] = address;
+                        }
+                    } catch (error) {
+                        log.error("Failed to get address from persisted routing entries for participant "
+                                + participantId);
+                        return Promise.reject(error);
                     }
 
                     function resolveNextHopOnSuccess(opArgs) {
