@@ -22,6 +22,8 @@
 /**
  * @exports DiagnosticTags
  */
+var LoggerFactory = require('./LoggerFactory');
+var log = LoggerFactory.getLogger("joynr.system.DiagnosticTags");
 var DiagnosticTags = {};
 
 /**
@@ -61,37 +63,51 @@ DiagnosticTags.forChannel = function forChannel(channelInfo) {
  * @param {Object} requestInfo
  */
 DiagnosticTags.forRequest = function forRequest(requestInfo) {
-    return {
+    var tagsForRequest = {
         diagnosticTag : "Request",
         requestReplyId : requestInfo.request.requestReplyId,
-        params : requestInfo.request.params,
         to : requestInfo.to,
         from : requestInfo.from
     };
+    if (log.isDebugEnabled() && requestInfo.request.params) {
+        tagsForRequest.params = JSON.stringify(requestInfo.request.params);
+    }
+    return tagsForRequest;
 };
 
 /**
  * @param {Object} requestInfo
  */
-DiagnosticTags.forOneWayRequest = function forRequest(requestInfo) {
-    return {
+DiagnosticTags.forOneWayRequest = function forOneWayRequest(requestInfo) {
+    var tagsForOneWayRequest = {
         diagnosticTag : "OneWayRequest",
-        params : requestInfo.request.params,
         to : requestInfo.to,
         from : requestInfo.from
     };
+    if (log.isDebugEnabled() && requestInfo.request.params) {
+        tagsForOneWayRequest.params = JSON.stringify(requestInfo.request.params);
+    }
+    return tagsForOneWayRequest;
 };
 
 /**
  * @param {Object} replyInfo
  */
 DiagnosticTags.forReply = function forReply(replyInfo) {
-    return {
+    var tagsForReply = {
         diagnosticTag : "Reply",
         requestReplyId : replyInfo.reply.requestReplyId,
         to : replyInfo.to,
         from : replyInfo.from
     };
+    if (log.isDebugEnabled()) {
+        if (replyInfo.reply.error) {
+            tagsForReply.error = JSON.stringify(replyInfo.reply.error);
+        } else {
+            tagsForReply.response = JSON.stringify(replyInfo.reply.response);
+        }
+    }
+    return tagsForReply;
 };
 
 /**
@@ -164,23 +180,33 @@ DiagnosticTags.forSubscriptionStop = function forSubscriptionStop(subscriptionSt
  * @param {Object} publicationInfo
  */
 DiagnosticTags.forPublication = function forPublication(publicationInfo) {
-    return {
+    var tagsForPublication = {
         diagnosticTag : "Publication",
         subscriptionId : publicationInfo.publication.subscriptionId,
         to : publicationInfo.to,
         from : publicationInfo.from
     };
+    if (log.isDebugEnabled()) {
+        tagsForPublication.response = JSON.stringify(publicationInfo.publication.response);
+    }
+    return tagsForPublication;
 };
 
 /**
  * @param {Object} publicationInfo - multicast publication info
  */
-DiagnosticTags.forMulticastPublication = function forMulticastPublication(publicationInfo) {
-    return {
-        diagnosticTag : "MulticastPublication",
-        multicastId : publicationInfo.publication.multicastId,
-        from : publicationInfo.from
-    };
-};
+DiagnosticTags.forMulticastPublication =
+        function forMulticastPublication(publicationInfo) {
+            var tagsForMulticastPublication = {
+                diagnosticTag : "MulticastPublication",
+                multicastId : publicationInfo.publication.multicastId,
+                from : publicationInfo.from
+            };
+            if (log.isDebugEnabled()) {
+                tagsForMulticastPublication.response =
+                        JSON.stringify(publicationInfo.publication.response);
+            }
+            return tagsForMulticastPublication;
+        };
 
 module.exports = DiagnosticTags;
