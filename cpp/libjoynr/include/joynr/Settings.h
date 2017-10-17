@@ -21,6 +21,7 @@
 
 #include <string>
 
+#include <boost/optional.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include "joynr/JoynrExport.h"
@@ -66,6 +67,13 @@ public:
      */
     template <class T>
     T get(const std::string& path) const;
+
+    /**
+     * @brief Get the setting with the given path
+     * @param path The '/' delimited path to get the setting for
+     */
+    template <class T>
+    boost::optional<T> getOptional(const std::string& path) const;
 
     /**
      * @brief Set the setting with the given path, overwriting any previous value.
@@ -126,6 +134,16 @@ T Settings::get(const std::string& path) const
 
     // Get the value with the path
     return propertyTree.get<T>(treePath, T());
+}
+
+template <class T>
+boost::optional<T> Settings::getOptional(const std::string& path) const
+{
+    // Create a '/' delimited path
+    const boost::property_tree::path treePath = createPath(path);
+
+    // Get the value with the path
+    return propertyTree.get_optional<T>(treePath);
 }
 
 template <class T>
