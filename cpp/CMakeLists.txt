@@ -735,7 +735,7 @@ else(USE_PLATFORM_MOCOCRW)
 endif(USE_PLATFORM_MOCOCRW)
 
 if (USE_PLATFORM_SMRF)
-    find_package(smrf 0.2.1 REQUIRED CONFIG)
+    find_package(smrf 0.2.2 REQUIRED CONFIG)
 else(USE_PLATFORM_SMRF)
     message(STATUS "############ Download: smrf ############")
 
@@ -746,7 +746,7 @@ else(USE_PLATFORM_SMRF)
     AddExternalProject(
         smrf
         GIT_REPOSITORY https://github.com/bmwcarit/smrf
-        GIT_TAG 0.2.1
+        GIT_TAG 0.2.2
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""
