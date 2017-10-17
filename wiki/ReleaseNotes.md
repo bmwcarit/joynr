@@ -9,6 +9,7 @@ None.
 * **[JS]** Once loaded, joynr automatically calls joynr.shutdown() when
   process.exit(...) is called; a loaded joynr thus no longer prevents the
   application from terminating.
+* **[C++]** Do not block main thread for asynchronous provider registration.
 
 # joynr 0.30.0
 
