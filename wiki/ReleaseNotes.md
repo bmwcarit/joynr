@@ -9,6 +9,9 @@ None.
 * **[JS]** Once loaded, joynr automatically calls joynr.shutdown() when
   process.exit(...) is called; a loaded joynr thus no longer prevents the
   application from terminating.
+* **[JS]** Enhanced tracing output; log level 'debug' now logs messages with
+  full details, log level 'info' logs with reduced details (w/o parameters,
+  response values, publication details)
 * **[C++]** Do not block main thread for asynchronous provider registration.
 
 # joynr 0.30.0
