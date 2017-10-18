@@ -49,6 +49,7 @@ public:
     static const std::string& SETTING_WS_TLS_PORT();
     static const std::string& SETTING_WS_PORT();
     static const std::string& SETTING_USE_ONLY_LDAS();
+    static const std::string& SETTING_ACCESS_CONTROL_AUDIT();
 
     static const std::string& SETTING_ACCESS_CONTROL_ENABLE();
     static const std::string& SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS();
@@ -67,6 +68,7 @@ public:
     static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
     static bool DEFAULT_ENABLE_ACCESS_CONTROLLER();
     static bool DEFAULT_USE_ONLY_LDAS();
+    static bool DEFAULT_ACCESS_CONTROL_AUDIT();
 
     explicit ClusterControllerSettings(Settings& settings);
     ClusterControllerSettings(const ClusterControllerSettings&) = default;
@@ -115,6 +117,9 @@ public:
 
     bool enableAccessController() const;
     void setEnableAccessController(bool enable);
+
+    bool aclAudit() const;
+    void setAclAudit(bool enable);
 
     std::string getGlobalDomainAccessControlAddress() const;
     std::string getGlobalDomainAccessControlParticipantId() const;

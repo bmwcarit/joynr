@@ -77,6 +77,10 @@ void ClusterControllerSettings::checkSettings()
         settings.set(SETTING_MQTT_TLS_ENABLED(), DEFAULT_MQTT_TLS_ENABLED());
     }
 
+    if (!settings.contains(SETTING_ACCESS_CONTROL_AUDIT())) {
+        settings.set(SETTING_ACCESS_CONTROL_AUDIT(), DEFAULT_ACCESS_CONTROL_AUDIT());
+    }
+
     if (isMqttTlsEnabled()) {
         if (!isMqttCertificateAuthorityCertificateFolderPathSet() &&
             !isMqttCertificateAuthorityPemFilenameSet()) {
@@ -172,6 +176,12 @@ const std::string& ClusterControllerSettings::SETTING_USE_ONLY_LDAS()
 const std::string& ClusterControllerSettings::SETTING_ACCESS_CONTROL_ENABLE()
 {
     static const std::string value("access-control/enable");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_ACCESS_CONTROL_AUDIT()
+{
+    static const std::string value("access-control/audit");
     return value;
 }
 
@@ -271,6 +281,11 @@ const std::string& ClusterControllerSettings::DEFAULT_MQTT_CLIENT_ID_PREFIX()
 }
 
 bool ClusterControllerSettings::DEFAULT_MQTT_TLS_ENABLED()
+{
+    return false;
+}
+
+bool ClusterControllerSettings::DEFAULT_ACCESS_CONTROL_AUDIT()
 {
     return false;
 }
@@ -479,6 +494,16 @@ bool ClusterControllerSettings::enableAccessController() const
 }
 
 void ClusterControllerSettings::setEnableAccessController(bool enable)
+{
+    settings.set(SETTING_ACCESS_CONTROL_ENABLE(), enable);
+}
+
+bool ClusterControllerSettings::aclAudit() const
+{
+    return settings.get<bool>(SETTING_ACCESS_CONTROL_AUDIT());
+}
+
+void ClusterControllerSettings::setAclAudit(bool enable)
 {
     settings.set(SETTING_ACCESS_CONTROL_ENABLE(), enable);
 }
