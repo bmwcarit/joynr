@@ -155,6 +155,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
     @Override
     public void init() {
+        LOG.debug("Initializing MQTT skeleton ...");
         if (backpressureEnabled) {
             messageRouter.registerMessageProcessedListener(this);
         }
