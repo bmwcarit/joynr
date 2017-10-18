@@ -46,6 +46,8 @@ public:
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
     static const std::string& SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS();
     static const std::string& SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS();
+    static const std::string& SETTING_MQTT_RECONNECT_MAX_DELAY();
+    static const std::string& SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED();
     static const std::string& SETTING_MQTT_CONNECTION_TIMEOUT_MS();
     static const std::string& SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES();
     static const std::string& SETTING_INDEX();
@@ -115,6 +117,7 @@ public:
     static std::uint64_t DEFAULT_MAXIMUM_TTL_MS();
     static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS();
     static std::chrono::seconds DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS();
+    static bool DEFAULT_MQTT_ENABLED();
     static std::chrono::milliseconds DEFAULT_MQTT_CONNECTION_TIMEOUT_MS();
     static std::int64_t DEFAULT_MQTT_MAX_MESSAGE_SIZE_BYTES();
     static std::int64_t NO_MQTT_MAX_MESSAGE_SIZE_BYTES();
@@ -133,6 +136,10 @@ public:
     void setMqttKeepAliveTimeSeconds(std::chrono::seconds mqttKeepAliveTimeSeconds);
     std::chrono::seconds getMqttReconnectDelayTimeSeconds() const;
     void setMqttReconnectDelayTimeSeconds(std::chrono::seconds mqttReconnectDelayTimeSeconds);
+    std::chrono::seconds getMqttReconnectMaxDelayTimeSeconds() const;
+    void setMqttReconnectMaxDelayTimeSeconds(std::chrono::seconds mqttReconnectMaxDelayTimeSeconds);
+    bool getMqttExponentialBackoffEnabled() const;
+    void setMqttExponentialBackoffEnabled(const bool& enable);
     std::chrono::milliseconds getMqttConnectionTimeoutMs() const;
     std::int64_t getMqttMaxMessageSizeBytes() const;
     void setMqttMaxMessageSizeBytes(std::int64_t mqttMaxMessageSizeBytes);

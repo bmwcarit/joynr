@@ -161,8 +161,8 @@ void MosquittoConnection::start()
     connect_async(host.c_str(), port, messagingSettings.getMqttKeepAliveTimeSeconds().count());
 
     reconnect_delay_set(messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
-                        messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
-                        false);
+                        messagingSettings.getMqttReconnectMaxDelayTimeSeconds().count(),
+                        messagingSettings.getMqttExponentialBackoffEnabled());
 
     startLoop();
 }
