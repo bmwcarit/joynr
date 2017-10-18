@@ -348,6 +348,7 @@ void JoynrClusterControllerRuntime::init()
     // init message router
     ccMessageRouter = std::make_shared<CcMessageRouter>(
             messagingSettings,
+            clusterControllerSettings,
             messagingStubFactory,
             multicastMessagingSkeletonDirectory,
             std::move(securityManager),

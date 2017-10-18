@@ -52,6 +52,7 @@ class IMessagingStubFactory;
 class IMulticastAddressCalculator;
 class IPlatformSecurityManager;
 class MulticastMessagingSkeletonDirectory;
+class ClusterControllerSettings;
 
 namespace system
 {
@@ -81,6 +82,7 @@ class JOYNR_EXPORT CcMessageRouter : public joynr::AbstractMessageRouter,
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
     CcMessageRouter(MessagingSettings& messagingSettings,
+                    ClusterControllerSettings& clusterControllerSettings,
                     std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                     std::shared_ptr<MulticastMessagingSkeletonDirectory>
                             multicastMessagingSkeletonDirectory,
@@ -227,6 +229,7 @@ private:
     const std::string globalClusterControllerAddress;
     std::shared_ptr<CcMessageNotificationProvider> messageNotificationProvider;
     const std::string messageNotificationProviderParticipantId;
+    ClusterControllerSettings& clusterControllerSettings;
 };
 
 } // namespace joynr

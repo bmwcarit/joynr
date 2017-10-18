@@ -629,11 +629,30 @@ bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEnt
     if (auto gotAccessController = accessController.lock()) {
         const CallContext& callContext = CallContextStorage::get();
         const std::string& ownerId = callContext.getPrincipal();
-        return gotAccessController->hasProviderPermission(
+        const bool result = gotAccessController->hasProviderPermission(
                 ownerId,
                 infrastructure::DacTypes::TrustLevel::HIGH,
                 discoveryEntry.getDomain(),
                 discoveryEntry.getInterfaceName());
+        if (clusterControllerSettings.aclAudit()) {
+            if (!result) {
+                JOYNR_LOG_ERROR(logger(),
+                                "ACL AUDIT: owner '{}' is not allowed to register "
+                                "interface '{}' on domain '{}'",
+                                ownerId,
+                                discoveryEntry.getInterfaceName(),
+                                discoveryEntry.getDomain());
+            } else {
+                JOYNR_LOG_DEBUG(logger(),
+                                "ACL AUDIT: owner '{}' is allowed to register interface "
+                                "'{}' on domain '{}'",
+                                ownerId,
+                                discoveryEntry.getInterfaceName(),
+                                discoveryEntry.getDomain());
+            }
+            return true;
+        }
+        return result;
     }
 
     // return false in case AC ptr and setting do not match

@@ -22,6 +22,7 @@
 #include <cassert>
 #include <functional>
 
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/ImmutableMessage.h"
@@ -58,7 +59,8 @@ public:
     ConsumerPermissionCallback(
             std::weak_ptr<CcMessageRouter> owningMessageRouter,
             std::shared_ptr<ImmutableMessage> message,
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> destination);
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> destination,
+            bool aclAudit);
 
     void hasConsumerPermission(bool hasPermission) override;
 
@@ -67,6 +69,7 @@ public:
     std::shared_ptr<const joynr::system::RoutingTypes::Address> destination;
 
 private:
+    const bool aclAudit;
     ADD_LOGGER(ConsumerPermissionCallback)
 };
 
@@ -112,6 +115,7 @@ class MessageQueuedForDeliveryBroadcastFilter
 
 CcMessageRouter::CcMessageRouter(
         MessagingSettings& messagingSettings,
+        ClusterControllerSettings& clusterControllerSettings,
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory,
         std::unique_ptr<IPlatformSecurityManager> securityManager,
@@ -138,7 +142,8 @@ CcMessageRouter::CcMessageRouter(
           multicastReceiverDirectoryFilename(),
           globalClusterControllerAddress(globalClusterControllerAddress),
           messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>()),
-          messageNotificationProviderParticipantId(messageNotificationProviderParticipantId)
+          messageNotificationProviderParticipantId(messageNotificationProviderParticipantId),
+          clusterControllerSettings(clusterControllerSettings)
 {
     messageNotificationProvider->addBroadcastFilter(
             std::make_shared<MessageQueuedForDeliveryBroadcastFilter>());
@@ -305,7 +310,8 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
             auto callback = std::make_shared<ConsumerPermissionCallback>(
                     std::dynamic_pointer_cast<CcMessageRouter>(shared_from_this()),
                     message,
-                    destAddress);
+                    destAddress,
+                    clusterControllerSettings.aclAudit());
             gotAccessController->hasConsumerPermission(message, callback);
             return;
         }
@@ -670,13 +676,29 @@ void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 ConsumerPermissionCallback::ConsumerPermissionCallback(
         std::weak_ptr<CcMessageRouter> owningMessageRouter,
         std::shared_ptr<ImmutableMessage> message,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> destination)
-        : owningMessageRouter(owningMessageRouter), message(message), destination(destination)
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> destination,
+        bool aclAudit)
+        : owningMessageRouter(owningMessageRouter),
+          message(message),
+          destination(destination),
+          aclAudit(aclAudit)
 {
 }
 
 void ConsumerPermissionCallback::hasConsumerPermission(bool hasPermission)
 {
+    if (aclAudit) {
+        if (!hasPermission) {
+            JOYNR_LOG_ERROR(logger(),
+                            "ACL AUDIT: message with id '{}' is not allowed by ACL",
+                            message->getId());
+            hasPermission = true;
+        } else {
+            JOYNR_LOG_TRACE(logger(),
+                            "ACL AUDIT: message with id '{}' is allowed by ACL",
+                            message->getId());
+        }
+    }
     if (hasPermission) {
         try {
             if (auto owningMessageRouterSharedPtr = owningMessageRouter.lock()) {
