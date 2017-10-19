@@ -606,10 +606,8 @@ void JoynrClusterControllerRuntime::init()
 
     capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
 
-#ifdef JOYNR_ENABLE_ACCESS_CONTROL
     // Do this after local capabilities directory and message router have been initialized.
     enableAccessController(provisionedDiscoveryEntries);
-#endif // JOYNR_ENABLE_ACCESS_CONTROL
 
     registerInternalSystemServiceProviders();
 }
@@ -793,25 +791,21 @@ void JoynrClusterControllerRuntime::registerInternalSystemServiceProviders()
                     ccMessageRouter->getMessageNotificationProvider()),
             systemServicesSettings.getCcMessageNotificationProviderParticipantId());
 
-#ifdef JOYNR_ENABLE_ACCESS_CONTROL
     if (clusterControllerSettings.enableAccessController()) {
         accessControlListEditorProviderParticipantId = registerInternalSystemServiceProvider(
                 std::dynamic_pointer_cast<joynr::infrastructure::AccessControlListEditorProvider>(
                         aclEditor),
                 systemServicesSettings.getCcAccessControlListEditorProviderParticipantId());
     }
-#endif // JOYNR_ENABLE_ACCESS_CONTROL
 
     ClusterControllerCallContextStorage::invalidate();
 }
 
 void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProviders()
 {
-#ifdef JOYNR_ENABLE_ACCESS_CONTROL
     if (!accessControlListEditorProviderParticipantId.empty()) {
         unregisterProvider(accessControlListEditorProviderParticipantId);
     }
-#endif // JOYNR_ENABLE_ACCESS_CONTROL
     unregisterProvider(messageNotificationProviderParticipantId);
     unregisterProvider(discoveryProviderParticipantId);
     unregisterProvider(providerReregistrationControllerParticipantId);

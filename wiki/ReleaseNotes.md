@@ -12,7 +12,7 @@ None.
  PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS is now called
  PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS and its identifier
  is `joynr.messaging.backpressure.repeatedmqttmessageignoreperiodms`.
- * **[Java]** Introduced `PROPERTY_BACKPRESSURE_ENABLED`. See [Java Configuration Reference](JavaSettings.md) for
+* **[Java]** Introduced `PROPERTY_BACKPRESSURE_ENABLED`. See [Java Configuration Reference](JavaSettings.md) for
    details about the new property. The backpressure mechanism is disabled by default.
 
 ## Other changes
@@ -30,6 +30,9 @@ None.
 * **[C++]** implemented ACL audit mode, which allows to audit whether ACL/RCL
   is configured correctly. By default, it is turned off and can be activated
   via `access-control/audit`.
+* **[C++]** Not possible to remove access control from C++ build. At runtime is
+   disabled by default and can be enabled via setting the configuration property `access-control/enable`
+   in the cluster controller settings.
 
 # joynr 0.30.0
 
