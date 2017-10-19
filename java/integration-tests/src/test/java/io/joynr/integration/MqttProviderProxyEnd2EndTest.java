@@ -32,7 +32,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 import io.joynr.integration.util.DummyJoynrApplication;
-import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttModule;
@@ -64,23 +63,20 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         joynrConfig.putAll(mqttConfig);
         joynrConfig.putAll(baseTestConfig);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(modules);
-        Module modulesWithRuntime = Modules.override(runtimeModule).with(new AtmosphereMessagingModule(),
-                                                                         new MqttPahoModule(),
-                                                                         new AbstractModule() {
+        Module modulesWithRuntime = Modules.override(runtimeModule).with(new MqttPahoModule(), new AbstractModule() {
 
-                                                                             @Override
-                                                                             protected void configure() {
-                                                                                 bind(RawMessagingPreprocessor.class).toInstance(new RawMessagingPreprocessor() {
+            @Override
+            protected void configure() {
+                bind(RawMessagingPreprocessor.class).toInstance(new RawMessagingPreprocessor() {
 
-                                                                                     @Override
-                                                                                     public byte[] process(byte[] rawMessage,
-                                                                                                           Map<String, Serializable> context) {
-                                                                                         return rawMessage;
-                                                                                     }
-                                                                                 });
-                                                                             }
+                    @Override
+                    public byte[] process(byte[] rawMessage, Map<String, Serializable> context) {
+                        return rawMessage;
+                    }
+                });
+            }
 
-                                                                         });
+        });
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
 
