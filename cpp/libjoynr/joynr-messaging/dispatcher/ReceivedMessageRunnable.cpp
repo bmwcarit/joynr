@@ -62,9 +62,9 @@ void ReceivedMessageRunnable::run()
         return;
     }
 
+    JOYNR_LOG_TRACE(logger(), "Setting callContext principal to: {}", message->getCreator());
     CallContext callContext;
     callContext.setPrincipal(message->getCreator());
-
     CallContextStorage::set(std::move(callContext));
 
     if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST()) {
@@ -92,6 +92,7 @@ void ReceivedMessageRunnable::run()
     }
 
     CallContextStorage::invalidate();
+    JOYNR_LOG_TRACE(logger(), "Invalidating call context.");
 }
 
 } // namespace joynr

@@ -86,8 +86,8 @@ bool WebSocketCcMessagingSkeletonTLS::preprocessIncomingMessage(
     }
 
     std::string signatureString(reinterpret_cast<const char*>(signature.data()), signature.size());
-
-    message->setCreator(std::move(signatureString));
+    JOYNR_LOG_TRACE(logger(), "Received message with signature: {}", signatureString);
+    message->setCreator(signatureString);
 
     return true;
 }
