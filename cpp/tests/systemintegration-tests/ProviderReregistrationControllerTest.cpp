@@ -44,4 +44,7 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
     Semaphore finishedSemaphore;
     providerReregistrationControllerProxy->triggerGlobalProviderReregistrationAsync([&finishedSemaphore]() { finishedSemaphore.notify(); }, nullptr);
     finishedSemaphore.waitFor(std::chrono::seconds(2));
+
+    runtime->stop();
+    runtime = nullptr;
 }
