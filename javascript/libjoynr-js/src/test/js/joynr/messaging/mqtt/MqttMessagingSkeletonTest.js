@@ -22,6 +22,7 @@ var MqttMessagingSkeleton =
         require('../../../../classes/joynr/messaging/mqtt/MqttMessagingSkeleton');
 var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
 var MessageRouter = require('../../../../classes/joynr/messaging/routing/MessageRouter');
+var Promise = require('../../../../classes/global/Promise');
 
 describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
 
@@ -35,6 +36,7 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
 
         messageRouterSpy = Object.create(MessageRouter.prototype);
         messageRouterSpy.route = jasmine.createSpy("messageRouterSpy.route");
+        messageRouterSpy.route.and.returnValue(Promise.resolve());
 
         function MqttAddress() {}
 

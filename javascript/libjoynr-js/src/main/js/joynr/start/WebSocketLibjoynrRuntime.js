@@ -356,7 +356,17 @@ var LocalStorage = require('../../global/LocalStorageNode');
                         parentMessageRouterAddress : ccAddress,
                         incomingAddress : localAddress
                     });
-                    webSocketMessagingSkeleton.registerListener(messageRouter.route);
+                    webSocketMessagingSkeleton.registerListener(function(joynrMessage) {
+                        try {
+                            messageRouter.route(joynrMessage)
+                            .catch(function(error) {
+                                // already logged in messageRouter
+                            });
+                        } catch (error) {
+                            // Errors should be returned via the Promise
+                            log.fatal("Caught error from messageRouter.Route in WebSocketMessagingSkeleton: " + error);
+                        }
+                    });
 
                     // link up clustercontroller messaging to dispatcher
                     messageRouterSkeleton = new InProcessMessagingSkeleton();

@@ -697,14 +697,19 @@ var JSONSerializer = require('../../util/JSONSerializer');
                         var i, msgContainer, messageQueue =
                                 settings.messageQueue.getAndRemoveMessages(participantId);
 
+                        function handleError(error) {
+                            log.error("queued message could not be sent to " + participantId + ", error: " + error
+                                    + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                        }
+
                         if (messageQueue !== undefined) {
                             i = messageQueue.length;
                             while (i--) {
                                 try {
-                                    that.route(messageQueue[i]);
+                                    that.route(messageQueue[i])
+                                    .catch (handleError);
                                 } catch (error) {
-                                    log.error("queued message could not be sent to " + participantId + ", error: " + error
-                                            + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                                    handleError(error);
                                 }
                             }
                         }
