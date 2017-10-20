@@ -26,6 +26,8 @@ None.
   response values, publication details)
 * **[JS]** Handle uncaught errors from MessageRouter.route to prevent crashes
   when an incoming message cannot be processed
+* **[JS]** Members of top level struct method parameters are now checked for
+  existance.
 * **[C++]** Do not block main thread for asynchronous provider registration.
 * **[C++]** implemented ACL audit mode, which allows to audit whether ACL/RCL
   is configured correctly. By default, it is turned off and can be activated
