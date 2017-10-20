@@ -24,6 +24,8 @@ None.
 * **[JS]** Enhanced tracing output; log level 'debug' now logs messages with
   full details, log level 'info' logs with reduced details (w/o parameters,
   response values, publication details)
+* **[JS]** Handle uncaught errors from MessageRouter.route to prevent crashes
+  when an incoming message cannot be processed
 * **[C++]** Do not block main thread for asynchronous provider registration.
 * **[C++]** implemented ACL audit mode, which allows to audit whether ACL/RCL
   is configured correctly. By default, it is turned off and can be activated
