@@ -209,6 +209,68 @@ var JSONSerializer = require('../../util/JSONSerializer');
                             return Promise.reject(new JoynrRuntimeException({ detailMessage: errorMsg }));
                         };
 
+                // helper functions for setRoutingProxy
+                function getReplyToAddressOnError(error) {
+                    throw new Error("Failed to get replyToAddress from parent router: " + error
+                    + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                }
+                function handleAddNextHopToParentError(error) {
+                    if (!isReady()) {
+                        //in this case, the error is expected, e.g. during shut down
+                        log.debug("Adding routingProxy.proxyParticipantId " + routingProxy.proxyParticipantId
+                                + "failed while the message router is not ready. Error: " + error.message);
+                        return;
+                    }
+                    throw new Error(error);
+                }
+                function addRoutingProxyToParentRoutingTable() {
+                    if (routingProxy.proxyParticipantId !== undefined) {
+                        // isGloballyVisible is false because the routing provider is local
+                        var isGloballyVisible = false;
+                        return that.addNextHopToParentRoutingTable(
+                                routingProxy.proxyParticipantId, isGloballyVisible)
+                               .catch(handleAddNextHopToParentError);
+                    }
+                }
+                function processQueuedRoutingProxyCalls() {
+                    var hop, participantId, receiver, queuedCall;
+                    for (hop in queuedAddNextHopCalls) {
+                        if (queuedAddNextHopCalls.hasOwnProperty(hop)) {
+                            queuedCall = queuedAddNextHopCalls[hop];
+                            if (queuedCall.participantId !== routingProxy.proxyParticipantId) {
+                                that.addNextHopToParentRoutingTable(
+                                        queuedCall.participantId, queuedCall.isGloballyVisible).then(
+                                        queuedCall.resolve).catch(queuedCall.reject);
+                            }
+                        }
+                    }
+                    for (hop in queuedRemoveNextHopCalls) {
+                        if (queuedRemoveNextHopCalls.hasOwnProperty(hop)) {
+                            queuedCall = queuedRemoveNextHopCalls[hop];
+                            that.removeNextHop(queuedCall.participantId).then(
+                                    queuedCall.resolve).catch(queuedCall.reject);
+                        }
+                    }
+                    for (receiver in queuedAddMulticastReceiverCalls) {
+                        if (queuedAddMulticastReceiverCalls.hasOwnProperty(receiver)) {
+                            queuedCall = queuedAddMulticastReceiverCalls[receiver];
+                            routingProxy.addMulticastReceiver(queuedCall.parameters).then(
+                                    queuedCall.resolve).catch(queuedCall.reject);
+                        }
+                    }
+                    for (receiver in queuedRemoveMulticastReceiverCalls) {
+                        if (queuedRemoveMulticastReceiverCalls.hasOwnProperty(receiver)) {
+                            queuedCall = queuedRemoveMulticastReceiverCalls[receiver];
+                            routingProxy.removeMulticastReceiver(queuedCall.parameters).then(
+                                    queuedCall.resolve).catch(queuedCall.reject);
+                        }
+                    }
+                    queuedAddNextHopCalls = undefined;
+                    queuedRemoveNextHopCalls = undefined;
+                    queuedAddMulticastReceiverCalls = undefined;
+                    queuedRemoveMulticastReceiverCalls = undefined;
+                    return null;
+                }
                 /**
                  * @function MessageRouter#setRoutingProxy
                  *
@@ -216,73 +278,17 @@ var JSONSerializer = require('../../util/JSONSerializer');
                  */
                 this.setRoutingProxy =
                     function setRoutingProxy(newRoutingProxy) {
-                        var hop, participantId, errorFct, receiver, queuedCall;
-
                         routingProxy = newRoutingProxy;
 
-                        function replyToAddressOnError(error) {
-                            throw new Error("Failed to get replyToAddress from parent router: " + error
-                            + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                        if (routingProxy === undefined) {
+                            return Promise.resolve(); // TODO resolve or reject???
                         }
 
-                        var replyToAddressPromise = routingProxy.replyToAddress.get()
+                        return routingProxy.replyToAddress.get()
                         .then(that.setReplyToAddress)
-                        .catch(replyToAddressOnError);
-
-                        errorFct = function(error) {
-                            if (!isReady()) {
-                                //in this case, the error is expected, e.g. during shut down
-                                log.debug("Adding routingProxy.proxyParticipantId " + routingProxy.proxyParticipantId
-                                        + "failed while the message router is not ready. Error: " + error.message);
-                                return;
-                            }
-                            throw new Error(error);
-                        };
-
-                        if (routingProxy !== undefined) {
-                            if (routingProxy.proxyParticipantId !== undefined) {
-                                // isGloballyVisible is false because the routing provider is local
-                                var isGloballyVisible = false;
-                                that.addNextHopToParentRoutingTable(
-                                        routingProxy.proxyParticipantId, isGloballyVisible).catch(errorFct);
-                            }
-                            for (hop in queuedAddNextHopCalls) {
-                                if (queuedAddNextHopCalls.hasOwnProperty(hop)) {
-                                    queuedCall = queuedAddNextHopCalls[hop];
-                                    if (queuedCall.participantId !== routingProxy.proxyParticipantId) {
-                                        that.addNextHopToParentRoutingTable(
-                                                queuedCall.participantId, queuedCall.isGloballyVisible).then(
-                                                queuedCall.resolve).catch(queuedCall.reject);
-                                    }
-                                }
-                            }
-                            for (hop in queuedRemoveNextHopCalls) {
-                                if (queuedRemoveNextHopCalls.hasOwnProperty(hop)) {
-                                    queuedCall = queuedRemoveNextHopCalls[hop];
-                                    that.removeNextHop(queuedCall.participantId).then(
-                                            queuedCall.resolve).catch(queuedCall.reject);
-                                }
-                            }
-                            for (receiver in queuedAddMulticastReceiverCalls) {
-                                if (queuedAddMulticastReceiverCalls.hasOwnProperty(receiver)) {
-                                    queuedCall = queuedAddMulticastReceiverCalls[receiver];
-                                    routingProxy.addMulticastReceiver(queuedCall.parameters).then(
-                                            queuedCall.resolve).catch(queuedCall.reject);
-                                }
-                            }
-                            for (receiver in queuedRemoveMulticastReceiverCalls) {
-                                if (queuedRemoveMulticastReceiverCalls.hasOwnProperty(receiver)) {
-                                    queuedCall = queuedRemoveMulticastReceiverCalls[receiver];
-                                    routingProxy.removeMulticastReceiver(queuedCall.parameters).then(
-                                            queuedCall.resolve).catch(queuedCall.reject);
-                                }
-                            }
-                        }
-                        queuedAddNextHopCalls = undefined;
-                        queuedRemoveNextHopCalls = undefined;
-                        queuedAddMulticastReceiverCalls = undefined;
-                        queuedRemoveMulticastReceiverCalls = undefined;
-                        return replyToAddressPromise;
+                        .catch(getReplyToAddressOnError)
+                        .then(addRoutingProxyToParentRoutingTable)
+                        .then(processQueuedRoutingProxyCalls);
                     };
 
                 /*

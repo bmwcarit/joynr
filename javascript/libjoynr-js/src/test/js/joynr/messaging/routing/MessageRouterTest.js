@@ -827,16 +827,21 @@ var uuid = require('../../../../classes/lib/uuid-annotated');
                                     expect(messageRouter.hasMulticastReceivers()).toBe(true);
                                 });
 
-                                it("queues calls and forwards them once proxy is available", function() {
+                                it("queues calls and forwards them once proxy is available", function(done) {
                                     messageRouter.addMulticastReceiver(parameters);
+                                    expect(routingProxySpy.addMulticastReceiver).not.toHaveBeenCalled();
 
-                                    messageRouter.setRoutingProxy(routingProxySpy);
+                                    messageRouter.setRoutingProxy(routingProxySpy)
+                                    .then(function() {
+                                        expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalled();
 
-                                    expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalled();
+                                        expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalledWith(parameters);
 
-                                    expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalledWith(parameters);
+                                        expect(messageRouter.hasMulticastReceivers()).toBe(true);
 
-                                    expect(messageRouter.hasMulticastReceivers()).toBe(true);
+                                        done();
+                                    })
+                                    .catch(done.fail);
                                 });
                             }); // describe addMulticastReceiver
 
@@ -882,16 +887,21 @@ var uuid = require('../../../../classes/lib/uuid-annotated');
                                     expect(messageRouter.hasMulticastReceivers()).toBe(false);
                                 });
 
-                                it("queues calls and forwards them once proxy is available", function() {
+                                it("queues calls and forwards them once proxy is available", function(done) {
                                     messageRouter.removeMulticastReceiver(parameters);
+                                    expect(routingProxySpy.removeMulticastReceiver).not.toHaveBeenCalled();
 
-                                    messageRouter.setRoutingProxy(routingProxySpy);
+                                    messageRouter.setRoutingProxy(routingProxySpy)
+                                    .then(function() {
+                                        expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalled();
 
-                                    expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalled();
+                                        expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalledWith(parameters);
 
-                                    expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalledWith(parameters);
+                                        expect(messageRouter.hasMulticastReceivers()).toBe(false);
 
-                                    expect(messageRouter.hasMulticastReceivers()).toBe(false);
+                                        done();
+                                    })
+                                    .catch(done.fail);
                                 });
                             }); // describe removeMulticastReceiver
 
@@ -943,16 +953,19 @@ var uuid = require('../../../../classes/lib/uuid-annotated');
                                         increaseFakeTime(1);
 
                                         expect(routingProxySpy.addNextHop).not.toHaveBeenCalled();
-                                        messageRouter.setRoutingProxy(routingProxySpy);
-                                        expect(routingProxySpy.addNextHop).toHaveBeenCalled();
-                                        expect(
-                                                routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId)
-                                                .toEqual(joynrMessage.to);
-                                        expect(
-                                                routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress)
-                                                .toEqual(incomingAddress);
-                                        increaseFakeTime(1);
-                                        done();
+
+                                        messageRouter.setRoutingProxy(routingProxySpy)
+                                        .then(function() {
+                                            expect(routingProxySpy.addNextHop).toHaveBeenCalled();
+                                            expect(
+                                                    routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId)
+                                                    .toEqual(joynrMessage.to);
+                                            expect(
+                                                    routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress)
+                                                    .toEqual(incomingAddress);
+                                            done();
+                                        })
+                                        .catch(done.fail);
                                     });
 
                             it(
@@ -986,22 +999,25 @@ var uuid = require('../../../../classes/lib/uuid-annotated');
                                         routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
                                         increaseFakeTime(1);
                                         expect(routingProxySpy.addNextHop).not.toHaveBeenCalled();
-                                        messageRouter.setRoutingProxy(routingProxySpy);
-                                        expect(routingProxySpy.addNextHop).toHaveBeenCalled();
-                                        expect(
-                                                routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId)
-                                                .toEqual(joynrMessage.to);
-                                        expect(
-                                                routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress)
-                                                .toEqual(incomingAddress);
-                                        expect(
-                                                routingProxySpy.addNextHop.calls.argsFor(1)[0].participantId)
-                                                .toEqual(joynrMessage2.to);
-                                        expect(
-                                                routingProxySpy.addNextHop.calls.argsFor(1)[0].browserAddress)
-                                                .toEqual(incomingAddress);
-                                        increaseFakeTime(1);
-                                        done();
+
+                                        messageRouter.setRoutingProxy(routingProxySpy)
+                                        .then(function() {
+                                            expect(routingProxySpy.addNextHop).toHaveBeenCalled();
+                                            expect(
+                                                    routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId)
+                                                    .toEqual(joynrMessage.to);
+                                            expect(
+                                                    routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress)
+                                                    .toEqual(incomingAddress);
+                                            expect(
+                                                    routingProxySpy.addNextHop.calls.argsFor(1)[0].participantId)
+                                                    .toEqual(joynrMessage2.to);
+                                            expect(
+                                                    routingProxySpy.addNextHop.calls.argsFor(1)[0].browserAddress)
+                                                    .toEqual(incomingAddress);
+                                            done();
+                                        })
+                                        .catch(done.fail);
                                     });
 
                             it(
