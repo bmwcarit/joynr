@@ -95,7 +95,7 @@ function checkArguments(operationArguments) {
 
                 try {
                     if (Constructor && Constructor.checkMembers) {
-                        Constructor.checkMembers(argumentValue, Typing.checkPropertyIfDefined);
+                        Constructor.checkMembers(argumentValue, Typing.checkProperty);
                     }
                 } catch (error) {
                     errors.push(error.message);
