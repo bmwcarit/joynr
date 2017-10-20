@@ -281,7 +281,9 @@ var JSONSerializer = require('../../util/JSONSerializer');
                     };
 
                 /*
-                 * this method is called when no address can be found in the local routing table 
+                 * This method is called when no address can be found in the local routing table.
+                 *
+                 * It tries to resolve the next hop from the persistency and parent router.
                  */
                 function resolveNextHopInternal(participantId) {
                     var address, addressString;
