@@ -263,7 +263,11 @@ INIT_LOGGER(«className»);
 				auto subscriptionManagerSharedPtr = subscriptionManager.lock();
 				auto future = std::make_shared<Future<std::string>>();
 				if (!subscriptionManagerSharedPtr) {
-					JOYNR_LOG_FATAL(logger, "Subscribing to attribute name «interfaceName».«attributeName» failed, because SubscriptionManager is not available");
+					const std::string errorText("Subscribing to attribute name «interfaceName».«attributeName» failed, because SubscriptionManager is not available");
+					JOYNR_LOG_FATAL(logger, errorText);
+					auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
+					subscriptionListener->onError(*error);
+					future->onError(error);
 					return future;
 				}
 				auto subscriptionCallback = std::make_shared<
@@ -297,7 +301,11 @@ INIT_LOGGER(«className»);
 						publicationManagerSharedPtr->add(proxyParticipantId, providerParticipantId, caller, subscriptionRequest, inProcessPublicationSender);
 					}
 				} else {
-					JOYNR_LOG_FATAL(logger, "Subscribing to attribute name «interfaceName».«attributeName» failed, because PublicationManager is not available");
+					const std::string errorText = "Subscribing to attribute name «interfaceName».«attributeName» failed, because PublicationManager is not available";
+					JOYNR_LOG_FATAL(logger, errorText);
+					auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
+					subscriptionListener->onError(*error);
+					future->onError(error);
 					assert(false);
 				}
 				return future;
@@ -462,12 +470,16 @@ INIT_LOGGER(«className»);
 		JOYNR_LOG_TRACE(logger, "Subscribing to «broadcastName».");
 		std::string broadcastName("«broadcastName»");
 		auto subscriptionManagerSharedPtr = subscriptionManager.lock();
+		auto future = std::make_shared<Future<std::string>>();
 		if (!subscriptionManagerSharedPtr) {
-			JOYNR_LOG_FATAL(logger, "Subscribing to selective broadcast name «interfaceName».«broadcastName» failed, because SubscriptionManager is not available");
+			const std::string errorText = "Subscribing to selective broadcast name «interfaceName».«broadcastName» failed, because SubscriptionManager is not available";
+			JOYNR_LOG_FATAL(logger, errorText);
+			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
+			subscriptionListener->onError(*error);
+			future->onError(error);
 			assert(false);
 		}
 
-		auto future = std::make_shared<Future<std::string>>();
 		assert(address);
 		«IF broadcast.selective»
 			auto subscriptionCallback = std::make_shared<
@@ -568,7 +580,11 @@ INIT_LOGGER(«className»);
 								std::move(onSuccess),
 								std::move(onError));
 			} else {
-				JOYNR_LOG_FATAL(logger, "Subscribing to broadcast name «interfaceName».«broadcastName» failed, because PublicationManager is not available");
+				const std::string errorText = "Subscribing to broadcast name «interfaceName».«broadcastName» failed, because PublicationManager is not available";
+				JOYNR_LOG_FATAL(logger, errorText);
+				auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
+				subscriptionListener->onError(*error);
+				future->onError(error);
 				assert(false);
 			}
 		«ENDIF»
