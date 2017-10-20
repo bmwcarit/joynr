@@ -433,11 +433,6 @@ var JSONSerializer = require('../../util/JSONSerializer');
                         }
                     }
 
-                    function transmitOnSuccess() {
-                        //succeeded, do nothing
-                        return null;
-                    }
-
                     function transmitOnError(error) {
 
                         //error while transmitting message
@@ -457,7 +452,7 @@ var JSONSerializer = require('../../util/JSONSerializer');
                         // TODO queue message and retry later
                         return Promise.resolve();
                     }
-                    return messagingStub.transmit(joynrMessage).then(transmitOnSuccess).catch(transmitOnError);
+                    return messagingStub.transmit(joynrMessage).catch(transmitOnError);
                 }
 
                 function registerGlobalRoutingEntryIfRequired(joynrMessage) {
