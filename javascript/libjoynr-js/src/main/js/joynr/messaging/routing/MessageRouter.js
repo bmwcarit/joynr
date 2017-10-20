@@ -436,7 +436,8 @@ var JSONSerializer = require('../../util/JSONSerializer');
                     function transmitOnError(error) {
 
                         //error while transmitting message
-                        log.debug("Error while transmitting message: " + error);
+                        log.debug("Error while transmitting message: " + error
+                                + (error instanceof JoynrException ? " " + error.detailMessage : ""));
                         //TODO queue message and retry later
                         return null;
                     }
