@@ -33,6 +33,7 @@
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 
 #include "tests/mock/MockObjects.h"
+#include "tests/mock/MockWebSocketSendInterface.h"
 
 using namespace ::testing;
 

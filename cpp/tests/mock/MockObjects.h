@@ -780,22 +780,6 @@ private:
     std::function<void()> onConnectionClosedCallback;
 };
 
-class MockWebSocketSendInterface : public joynr::IWebSocketSendInterface {
-public:
-    MOCK_METHOD2(send, void (const smrf::ByteArrayView& message,
-                             const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
-    MOCK_CONST_METHOD0(isInitialized, bool ());
-    MOCK_CONST_METHOD0(isConnected, bool ());
-};
-
-class MockClusterControllerSignalHandler: public joynr::IClusterControllerSignalHandler
-{
-public:
-    MOCK_METHOD0(shutdown, void());
-    MOCK_METHOD0(startExternalCommunication, void());
-    MOCK_METHOD0(stopExternalCommunication, void());
-};
-
 #ifdef _MSC_VER
     #pragma warning( push )
 #endif

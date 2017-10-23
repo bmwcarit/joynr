@@ -16,19 +16,19 @@
  * limitations under the License.
  * #L%
  */
-#ifndef TESTS_MOCK_MOCKCLUSTERCONTROLLERSIGNALHANDLER_H
-#define TESTS_MOCK_MOCKCLUSTERCONTROLLERSIGNALHANDLER_H
+#ifndef TESTS_MOCK_MOCKWEBSOCKETSENDINTERFACE_H
+#define TESTS_MOCK_MOCKWEBSOCKETSENDINTERFACE_H
 
 #include <gmock/gmock.h>
 
-#include "joynr/IClusterControllerSignalHandler.h"
+#include "joynr/IWebSocketSendInterface.h"
 
-class MockClusterControllerSignalHandler: public joynr::IClusterControllerSignalHandler
-{
+class MockWebSocketSendInterface : public joynr::IWebSocketSendInterface {
 public:
-    MOCK_METHOD0(shutdown, void());
-    MOCK_METHOD0(startExternalCommunication, void());
-    MOCK_METHOD0(stopExternalCommunication, void());
+    MOCK_METHOD2(send, void (const smrf::ByteArrayView& message,
+                             const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
+    MOCK_CONST_METHOD0(isInitialized, bool ());
+    MOCK_CONST_METHOD0(isConnected, bool ());
 };
 
-#endif // TESTS_MOCK_MOCKCLUSTERCONTROLLERSIGNALHANDLER_H
+#endif // TESTS_MOCK_MOCKWEBSOCKETSENDINTERFACE_H
