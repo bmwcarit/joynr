@@ -281,6 +281,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockTransportMessageSender.h
         mock/MockTransportMessageReceiver.h
         mock/MockJoynrRuntime.h
+        mock/MockDelayedScheduler.h
     )
 
     add_library(

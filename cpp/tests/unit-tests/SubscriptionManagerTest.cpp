@@ -38,6 +38,8 @@
 #include "tests/mock/MockObjects.h"
 #include "tests/utils/TimeUtils.h"
 
+#include "tests/mock/MockDelayedScheduler.h"
+
 using ::testing::A;
 using ::testing::_;
 using ::testing::AtLeast;
