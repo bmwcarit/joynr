@@ -29,7 +29,9 @@
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
 #include "joynr/Semaphore.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
+
 #include "tests/mock/MockObjects.h"
+#include "tests/mock/MockLocalDomainAccessController.h"
 
 using namespace joynr;
 

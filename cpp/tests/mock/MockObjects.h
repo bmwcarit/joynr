@@ -728,47 +728,6 @@ public:
                      const joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters &filterParameters));
 };
 
-class MockLocalDomainAccessController : public joynr::LocalDomainAccessController {
-public:
-    using joynr::LocalDomainAccessController::LocalDomainAccessController;
-
-    MOCK_METHOD5(getConsumerPermission,
-                 void(
-                     const std::string& userId,
-                     const std::string& domain,
-                     const std::string& interfaceName,
-                     joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                     std::shared_ptr<joynr::LocalDomainAccessController::IGetPermissionCallback> callback));
-
-    MOCK_METHOD5(getConsumerPermission,
-                 joynr::infrastructure::DacTypes::Permission::Enum(
-                     const std::string& userId,
-                     const std::string& domain,
-                     const std::string& interfaceName,
-                     const std::string& operation,
-                     joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
-    MOCK_METHOD5(getProviderPermission,
-                 void(
-                     const std::string& userId,
-                     const std::string& domain,
-                     const std::string& interfaceName,
-                     joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                     std::shared_ptr<joynr::LocalDomainAccessController::IGetPermissionCallback> callback));
-
-    MOCK_METHOD4(getProviderPermission,
-                 joynr::infrastructure::DacTypes::Permission::Enum(
-                     const std::string& userId,
-                     const std::string& domain,
-                     const std::string& interfaceName,
-                     joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
-
-    MOCK_METHOD3(hasRole,
-                 bool(
-                     const std::string& userId,
-                     const std::string& domain,
-                     joynr::infrastructure::DacTypes::Role::Enum role));
-};
-
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
     MockLocalCapabilitiesDirectory(joynr::ClusterControllerSettings& ccSettings, std::shared_ptr<joynr::IMessageRouter> mockMessageRouter, boost::asio::io_service& ioService):

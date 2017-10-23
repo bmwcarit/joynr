@@ -38,6 +38,7 @@
 #include "joynr/serializer/Serializer.h"
 
 #include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/MockLocalDomainAccessController.h"
 
 using namespace ::testing;
 using namespace joynr;
