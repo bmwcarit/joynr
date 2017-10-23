@@ -57,6 +57,46 @@ LocalDomainAccessStore::LocalDomainAccessStore(std::string fileName)
     applyForAllTables([this](auto& entry) { addToWildcardStorage(entry); });
 }
 
+bool LocalDomainAccessStore::mergeDomainAccessStore(const LocalDomainAccessStore& other)
+{
+    if (!mergeTable(other.domainRoleTable, domainRoleTable)) {
+        JOYNR_LOG_ERROR(logger(), "Could not merge domainRoleTable");
+        return false;
+    }
+
+    if (!mergeTable(other.masterAccessTable, masterAccessTable)) {
+        JOYNR_LOG_ERROR(logger(), "Could not merge masterAccessTable");
+        return false;
+    }
+
+    if (!mergeTable(other.mediatorAccessTable, mediatorAccessTable)) {
+        JOYNR_LOG_ERROR(logger(), "Could not merge mediatorAccessTable");
+        return false;
+    }
+
+    if (!mergeTable(other.ownerAccessTable, ownerAccessTable)) {
+        JOYNR_LOG_ERROR(logger(), "Could not merge ownerAccessTable");
+        return false;
+    }
+
+    if (!mergeTable(other.masterRegistrationTable, masterRegistrationTable)) {
+        JOYNR_LOG_ERROR(logger(), "Could not merge masterRegistrationTable");
+        return false;
+    }
+
+    if (!mergeTable(other.mediatorRegistrationTable, mediatorRegistrationTable)) {
+        JOYNR_LOG_ERROR(logger(), "Could not merge mediatorRegistrationTable");
+        return false;
+    }
+
+    if (!mergeTable(other.ownerRegistrationTable, ownerRegistrationTable)) {
+        JOYNR_LOG_ERROR(logger(), "Could not merge ownerRegistrationTable");
+        return false;
+    }
+
+    return true;
+}
+
 std::set<std::pair<std::string, std::string>> LocalDomainAccessStore::
         getUniqueDomainInterfaceCombinations() const
 {

@@ -590,6 +590,15 @@ public:
      */
     std::set<std::pair<std::string, std::string>> getUniqueDomainInterfaceCombinations() const;
 
+    /**
+     * Merge all tables from from the passed LocalDomainAccessStore into
+     * this LocalDomainAccessStore
+     *
+     * @param store
+     * @return: if the merge was successful
+     */
+    bool mergeDomainAccessStore(const LocalDomainAccessStore& other);
+
 private:
     ADD_LOGGER(LocalDomainAccessStore)
     void persistToFile() const;
@@ -670,7 +679,7 @@ private:
     typename std::enable_if_t<
             std::is_same<Entry, joynr::access_control::dac::DomainRoleEntry>::value,
             bool>
-    insertOrReplace(Table& table, const Entry& updatedEntry)
+    insertOrReplace(Table& table, const Entry& updatedEntry, bool persist = true)
     {
         bool success = true;
         std::pair<typename Table::iterator, bool> result = table.insert(updatedEntry);
@@ -679,7 +688,10 @@ private:
             success = table.replace(result.first, updatedEntry);
         }
 
-        persistToFile();
+        if (persist) {
+            persistToFile();
+        }
+
         return success;
     }
 
@@ -687,7 +699,7 @@ private:
     typename std::enable_if_t<
             !std::is_same<Entry, joynr::access_control::dac::DomainRoleEntry>::value,
             bool>
-    insertOrReplace(Table& table, const Entry& updatedEntry)
+    insertOrReplace(Table& table, const Entry& updatedEntry, bool persist = true)
     {
         bool success = true;
         std::pair<typename Table::iterator, bool> result = table.insert(updatedEntry);
@@ -698,7 +710,10 @@ private:
 
         addToWildcardStorage(updatedEntry);
 
-        persistToFile();
+        if (persist) {
+            persistToFile();
+        }
+
         return success;
     }
 
@@ -719,6 +734,19 @@ private:
         applyForTable(f, masterRegistrationTable);
         applyForTable(f, mediatorRegistrationTable);
         applyForTable(f, ownerRegistrationTable);
+    }
+
+    template <typename Table>
+    bool mergeTable(const Table& source, Table& dest)
+    {
+        const bool persist = false;
+
+        for (const auto& entry : source) {
+            if (!insertOrReplace(dest, entry, persist)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     template <typename Entry>

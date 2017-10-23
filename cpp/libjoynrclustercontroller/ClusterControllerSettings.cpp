@@ -477,6 +477,13 @@ const std::string& ClusterControllerSettings::
     static const std::string value("cluster-controller/local-domain-access-store-persistence-file");
     return value;
 }
+
+const std::string& ClusterControllerSettings::SETTING_ACL_ENTRIES_DIRECTORY()
+{
+    static const std::string value("cluster-controller/acl-entries-directory");
+    return value;
+}
+
 std::string ClusterControllerSettings::getLocalDomainAccessStorePersistenceFilename() const
 {
     return settings.get<std::string>(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
@@ -486,6 +493,16 @@ void ClusterControllerSettings::setLocalDomainAccessStorePersistenceFilename(
         const std::string& filename)
 {
     settings.set(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME(), filename);
+}
+
+void ClusterControllerSettings::setAclEntriesDirectory(const std::string& directoryPath)
+{
+    settings.set(SETTING_ACL_ENTRIES_DIRECTORY(), directoryPath);
+}
+
+std::string ClusterControllerSettings::getAclEntriesDirectory() const
+{
+    return settings.get<std::string>(SETTING_ACL_ENTRIES_DIRECTORY());
 }
 
 bool ClusterControllerSettings::enableAccessController() const

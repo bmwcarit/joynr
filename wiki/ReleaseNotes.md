@@ -4,6 +4,9 @@
 None.
 
 ## Configuration property changes
+* **[C++]** allow to load multiple ACL/RCL Json files for the cluster-controller.
+  * `cluster-controller/acl-entries-directory`
+
 * **[C++]** make the delay of the attempt to reconnect in mosquitto loop exponential until the connection succeeds.
      By default this property is not enabled mqtt-exponential-backoff-enabled = false.
   * `messaging/mqtt-reconnect-max-delay`
