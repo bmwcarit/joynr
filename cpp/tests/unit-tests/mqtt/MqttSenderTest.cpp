@@ -27,6 +27,7 @@
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
 
 #include "tests/mock/MockObjects.h"
+#include "tests/mock/MockMosquittoConnection.h"
 
 using namespace ::testing;
 
