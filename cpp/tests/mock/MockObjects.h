@@ -175,46 +175,6 @@ public:
     MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (std::shared_ptr<joynr::Runnable>, std::chrono::milliseconds delay));
 };
 
-class MockRunnableBlocking : public joynr::Runnable
-{
-public:
-    MockRunnableBlocking()
-        : Runnable(),
-          mutex(),
-          wait()
-    {
-    }
-
-    MOCK_CONST_METHOD0(dtorCalled, void ());
-    ~MockRunnableBlocking() { dtorCalled(); }
-
-    MOCK_METHOD0(shutdownCalled, void ());
-    void shutdown()
-    {
-        wait.notify_all();
-        shutdownCalled();
-    }
-
-    void manualShutdown()
-    {
-        wait.notify_all();
-    }
-
-    MOCK_CONST_METHOD0(runEntry, void ());
-    MOCK_CONST_METHOD0(runExit, void ());
-    void run()
-    {
-        runEntry();
-        std::unique_lock<std::mutex> lock(mutex);
-        wait.wait(lock);
-        runExit();
-    }
-
-private:
-    std::mutex mutex;
-    std::condition_variable wait;
-};
-
 class MockInProcessConnectorFactory : public joynr::InProcessConnectorFactory {
 public:
 
