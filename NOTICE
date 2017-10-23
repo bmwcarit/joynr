@@ -311,7 +311,6 @@ This project has dependencies to:
   JMS 1.1 API under lgpl
   JPA 2.0 API under Sun Binary Code License
   jquery under MIT License
-  js-test-driver under The Apache Software License, Version 2.0
   JSON (JavaScript Object Notation) under provided without support or warranty
   JSON Small and Fast Parser under The Apache Software License, Version 2.0
   json-path under Apache 2.0
