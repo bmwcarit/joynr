@@ -26,7 +26,7 @@
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 
 class MulticastMessagingSkeletonDirectoryTest : public ::testing::Test {
 public:

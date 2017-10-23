@@ -36,7 +36,7 @@
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 
 using ::testing::AtLeast;
 using ::testing::Throw;

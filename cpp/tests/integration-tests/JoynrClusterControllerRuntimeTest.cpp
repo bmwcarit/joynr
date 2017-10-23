@@ -39,7 +39,7 @@
 #include "joynr/serializer/Serializer.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;

@@ -27,8 +27,8 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
 
-#include "tests/utils/MockObjects.h"
-#include "tests/utils/MockCallback.h"
+#include "tests/mock/MockObjects.h"
+#include "tests/mock/MockCallback.h"
 
 using ::testing::A;
 using ::testing::_;

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "tests/utils/TimeUtils.h"
 
 using namespace joynr;

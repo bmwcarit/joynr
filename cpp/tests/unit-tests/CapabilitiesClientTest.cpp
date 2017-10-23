@@ -27,7 +27,7 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 
 using namespace joynr;
 

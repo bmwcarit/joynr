@@ -29,7 +29,7 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "tests/JoynrTest.h"
 
 using ::testing::A;

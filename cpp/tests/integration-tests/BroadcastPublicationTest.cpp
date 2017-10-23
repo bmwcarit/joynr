@@ -20,7 +20,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <memory>
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/MessageSender.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"

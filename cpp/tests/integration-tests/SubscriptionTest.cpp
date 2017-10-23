@@ -41,8 +41,8 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
-#include "tests/utils/MockCallback.h"
+#include "tests/mock/MockObjects.h"
+#include "tests/mock/MockCallback.h"
 
 using namespace ::testing;
 using namespace joynr;

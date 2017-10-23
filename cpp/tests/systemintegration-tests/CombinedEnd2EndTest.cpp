@@ -27,7 +27,7 @@
 
 #include "systemintegration-tests/CombinedEnd2EndTest.h"
 #include "systemintegration-tests/TestConfiguration.h"
-#include "tests/utils/LibJoynrMockObjects.h"
+#include "tests/mock/LibJoynrMockObjects.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/exceptions/MethodInvocationException.h"

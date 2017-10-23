@@ -29,7 +29,7 @@
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/Request.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "libjoynrclustercontroller/access-control/AccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 #include "joynr/types/DiscoveryEntry.h"

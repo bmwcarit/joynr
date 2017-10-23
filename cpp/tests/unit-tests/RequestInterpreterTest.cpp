@@ -30,8 +30,8 @@
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 
-#include "tests/utils/MockObjects.h"
-#include "tests/utils/MockCallback.h"
+#include "tests/mock/MockObjects.h"
+#include "tests/mock/MockCallback.h"
 
 using ::testing::A;
 using ::testing::_;

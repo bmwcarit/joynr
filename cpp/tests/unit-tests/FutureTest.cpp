@@ -24,7 +24,7 @@
 #include "joynr/Future.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 
 using ::testing::Property;
 using ::testing::Eq;

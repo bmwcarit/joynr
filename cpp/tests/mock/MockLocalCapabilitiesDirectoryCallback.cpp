@@ -18,7 +18,7 @@
  */
 #include <thread>
 
-#include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
+#include "tests/mock/MockLocalCapabilitiesDirectoryCallback.h"
 
 using namespace joynr;
 

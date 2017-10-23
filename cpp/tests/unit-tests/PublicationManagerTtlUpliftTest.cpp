@@ -36,7 +36,7 @@
 #include "joynr/tests/testRequestInterpreter.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 
 using ::testing::A;
 using ::testing::_;

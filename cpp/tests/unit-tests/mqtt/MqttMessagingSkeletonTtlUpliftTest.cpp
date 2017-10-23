@@ -32,7 +32,7 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/MutableMessageFactory.h"
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "tests/JoynrTest.h"
 
 using ::testing::_;

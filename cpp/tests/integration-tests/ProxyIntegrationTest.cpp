@@ -29,7 +29,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/vehicle/GpsProxy.h"
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
 
 using ::testing::Return;

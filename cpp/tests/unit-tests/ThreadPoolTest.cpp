@@ -23,7 +23,7 @@
 
 #include "joynr/ThreadPool.h"
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;

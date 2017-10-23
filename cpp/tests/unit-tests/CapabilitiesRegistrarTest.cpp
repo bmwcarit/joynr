@@ -24,7 +24,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "joynr/CapabilitiesRegistrar.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "joynr/types/Version.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/SingleThreadedIOService.h"

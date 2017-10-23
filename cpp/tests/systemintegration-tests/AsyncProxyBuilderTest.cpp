@@ -22,7 +22,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/tests/testProxy.h"

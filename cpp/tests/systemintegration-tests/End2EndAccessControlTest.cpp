@@ -32,7 +32,7 @@
 #include "joynr/JoynrClusterControllerRuntime.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/LibJoynrMockObjects.h"
+#include "tests/mock/LibJoynrMockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;

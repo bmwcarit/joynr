@@ -34,7 +34,7 @@
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/IPlatformSecurityManager.h"
 

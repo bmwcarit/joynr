@@ -35,7 +35,7 @@
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "joynr/SingleThreadedIOService.h"
 
 #include "tests/JoynrTest.h"

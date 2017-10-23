@@ -27,7 +27,7 @@
 #include "MessageRouterTest.h"
 
 #include "joynr/Semaphore.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"

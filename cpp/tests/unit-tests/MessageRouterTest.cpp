@@ -41,7 +41,7 @@
 #include "joynr/Util.h"
 #include "joynr/IPlatformSecurityManager.h"
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 
 using ::testing::InvokeArgument;
 using ::testing::Pointee;

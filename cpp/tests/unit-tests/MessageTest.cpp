@@ -24,7 +24,7 @@
 #include "joynr/MutableMessage.h"
 #include "joynr/DispatcherUtils.h"
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;

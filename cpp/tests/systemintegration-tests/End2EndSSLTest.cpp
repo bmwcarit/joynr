@@ -34,7 +34,7 @@
 #include "joynr/vehicle/GpsProxy.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using namespace ::testing;

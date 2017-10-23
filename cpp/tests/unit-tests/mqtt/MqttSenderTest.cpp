@@ -26,7 +26,7 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 
 using namespace ::testing;
 

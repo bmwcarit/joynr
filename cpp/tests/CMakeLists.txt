@@ -213,10 +213,6 @@ set(
     test_HEADERS
     "JoynrTest.h"
     "PrettyPrint.h"
-    "utils/MockCallback.h"
-    "utils/MockObjects.h"
-    "utils/LibJoynrMockObjects.h"
-    "utils/MockLocalCapabilitiesDirectoryCallback.h"
     "utils/PtrUtils.h"
     "utils/TimeUtils.h"
     "utils/TestRunnable.h"
@@ -228,11 +224,54 @@ set(
     test_SOURCES
     "JoynrTest.cpp"
     "PrettyPrint.cpp"
-    "utils/MockObjects.cpp"
     "utils/TestRunnable.cpp"
-    "utils/MockLocalCapabilitiesDirectoryCallback.cpp"
     "TestMain.cpp"
 )
+
+################
+# Mock objects #
+################
+if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATION_TESTS})
+    set(
+        MOCK_SOURCES
+        mock/LibJoynrMockObjects.h
+        mock/MockCallback.h
+        mock/MockLocalCapabilitiesDirectoryCallback.cpp
+        mock/MockLocalCapabilitiesDirectoryCallback.h
+        mock/MockObjects.cpp
+        mock/MockObjects.h
+    )
+
+    add_library(
+        JoynrMocks
+        ${MOCK_SOURCES}
+    )
+
+    if(NOT USE_PLATFORM_GTEST_GMOCK)
+        add_dependencies(JoynrMocks googletest)
+        add_dependencies(JoynrMocks googlemock)
+    endif(NOT USE_PLATFORM_GTEST_GMOCK)
+
+    target_link_libraries(
+        JoynrMocks
+        PUBLIC
+        ${test_TARGET_LIBRARIES}
+    )
+
+    target_include_directories(
+        JoynrMocks
+        SYSTEM
+        PUBLIC
+        ${GTEST_INCLUDE_DIRS}
+        ${GMOCK_INCLUDE_DIRS}
+    )
+
+    target_include_directories(
+        JoynrMocks
+        PUBLIC
+        ${test_INCLUDE_DIRECTORIES}
+    )
+endif(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATION_TESTS})
 
 ###############
 # g_UnitTests #
@@ -272,6 +311,7 @@ if(${BUILD_UNIT_TESTS})
         g_UnitTests
         TestGenerated
         ${test_TARGET_LIBRARIES}
+        JoynrMocks
     )
 
     target_include_directories(
@@ -318,6 +358,7 @@ if(${BUILD_INTEGRATION_TESTS})
         g_IntegrationTests
         TestGenerated
         ${test_TARGET_LIBRARIES}
+        JoynrMocks
     )
 
     target_include_directories(
@@ -362,6 +403,7 @@ if(${BUILD_SYSTEM_INTEGRATION_TESTS})
         g_SystemIntegrationTests
         TestGenerated
         ${test_TARGET_LIBRARIES}
+        JoynrMocks
     )
 
     set_target_properties(

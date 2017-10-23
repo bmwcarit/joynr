@@ -42,7 +42,7 @@
 #include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "tests/JoynrTest.h"
 
 using ::testing::A;

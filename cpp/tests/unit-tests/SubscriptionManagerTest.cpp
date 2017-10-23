@@ -35,7 +35,7 @@
 #include "joynr/SubscriptionManager.h"
 #include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/Util.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "tests/utils/TimeUtils.h"
 
 using ::testing::A;

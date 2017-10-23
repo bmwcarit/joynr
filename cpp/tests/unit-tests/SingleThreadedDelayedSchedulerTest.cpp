@@ -25,7 +25,7 @@
 #include "joynr/SingleThreadedDelayedScheduler.h"
 #include "joynr/SingleThreadedIOService.h"
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockObjects.h"
 #include "tests/utils/TestRunnable.h"
 
 using namespace ::testing;

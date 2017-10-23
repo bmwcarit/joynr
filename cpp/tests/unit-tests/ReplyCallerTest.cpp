@@ -23,8 +23,8 @@
 
 #include "joynr/ReplyCaller.h"
 
-#include "tests/utils/MockObjects.h"
-#include "tests/utils/MockCallback.h"
+#include "tests/mock/MockObjects.h"
+#include "tests/mock/MockCallback.h"
 
 using ::testing::Property;
 using ::testing::Eq;

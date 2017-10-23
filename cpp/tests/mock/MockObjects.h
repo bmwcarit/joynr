@@ -98,7 +98,7 @@
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
 #include "tests/PrettyPrint.h"
-#include "tests/utils/LibJoynrMockObjects.h"
+#include "tests/mock/LibJoynrMockObjects.h"
 
 namespace joynr
 {
