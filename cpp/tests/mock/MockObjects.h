@@ -175,16 +175,6 @@ public:
     MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (std::shared_ptr<joynr::Runnable>, std::chrono::milliseconds delay));
 };
 
-class MockInProcessConnectorFactory : public joynr::InProcessConnectorFactory {
-public:
-
-    MockInProcessConnectorFactory()
-        : InProcessConnectorFactory(std::weak_ptr<joynr::SubscriptionManager>(),std::weak_ptr<joynr::PublicationManager>(),std::weak_ptr<joynr::InProcessPublicationSender>(),nullptr) {
-    }
-
-    MOCK_METHOD1(canBeCreated, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address> address));
-};
-
 class MockKeychain : public joynr::IKeychain {
 public:
     MOCK_CONST_METHOD0(getTlsCertificate, std::shared_ptr<const mococrw::X509Certificate>());
