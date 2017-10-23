@@ -273,6 +273,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockKeychain.h
         mock/MockMessageSender.h
         mock/MockReplyCaller.h
+        mock/MockGpsFloatSubscriptionListener.h
     )
 
     add_library(

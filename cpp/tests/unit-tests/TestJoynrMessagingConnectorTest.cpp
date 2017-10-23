@@ -32,6 +32,7 @@
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockObjects.h"
 #include "tests/mock/MockSubscriptionManager.h"
+#include "tests/mock/MockGpsFloatSubscriptionListener.h"
 
 using ::testing::A;
 using ::testing::_;
