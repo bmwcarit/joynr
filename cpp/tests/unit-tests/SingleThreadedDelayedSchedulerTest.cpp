@@ -26,6 +26,7 @@
 #include "joynr/SingleThreadedIOService.h"
 
 #include "tests/mock/MockObjects.h"
+#include "tests/mock/MockRunnable.h"
 #include "tests/utils/TestRunnable.h"
 
 using namespace ::testing;

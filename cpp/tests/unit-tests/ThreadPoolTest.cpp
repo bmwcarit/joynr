@@ -24,6 +24,7 @@
 #include "joynr/ThreadPool.h"
 
 #include "tests/mock/MockObjects.h"
+#include "tests/mock/MockRunnable.h"
 
 using namespace ::testing;
 using namespace joynr;

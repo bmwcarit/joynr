@@ -175,23 +175,6 @@ public:
     MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (std::shared_ptr<joynr::Runnable>, std::chrono::milliseconds delay));
 };
 
-class MockRunnable : public joynr::Runnable
-{
-public:
-    MockRunnable() : Runnable()
-    {
-    }
-
-    MOCK_CONST_METHOD0(dtorCalled, void ());
-    ~MockRunnable()
-    {
-        dtorCalled();
-    }
-
-    MOCK_METHOD0(shutdown, void ());
-    MOCK_METHOD0(run, void ());
-};
-
 class MockRunnableWithAccuracy : public joynr::Runnable
 {
 public:
