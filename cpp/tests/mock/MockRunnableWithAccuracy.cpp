@@ -1,14 +1,14 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,15 +16,14 @@
  * limitations under the License.
  * #L%
  */
-#include "tests/mock/MockObjects.h"
-#include "tests/utils/TimeUtils.h"
+#include "tests/mock/MockRunnableWithAccuracy.h"
 
-using namespace joynr;
+#include "tests/utils/TimeUtils.h"
 
 MockRunnableWithAccuracy::MockRunnableWithAccuracy(
     const std::uint64_t delay)
     : Runnable(),
-      est_ms(TimeUtils::getCurrentMillisSinceEpoch() + delay)
+      est_ms(joynr::TimeUtils::getCurrentMillisSinceEpoch() + delay)
 {
 }
 
@@ -37,7 +36,7 @@ void MockRunnableWithAccuracy::run()
 {
     runCalled();
 
-    const std::uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
+    const std::uint64_t now_ms = joynr::TimeUtils::getCurrentMillisSinceEpoch();
 
     const std::uint64_t diff = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
     JOYNR_LOG_TRACE(logger(), "Runnable run() is called");

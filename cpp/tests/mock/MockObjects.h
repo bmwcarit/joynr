@@ -175,27 +175,6 @@ public:
     MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (std::shared_ptr<joynr::Runnable>, std::chrono::milliseconds delay));
 };
 
-class MockRunnableWithAccuracy : public joynr::Runnable
-{
-public:
-    static const std::uint64_t timerAccuracyTolerance_ms = 5U;
-
-    MockRunnableWithAccuracy(const std::uint64_t delay);
-
-    MOCK_CONST_METHOD0(dtorCalled, void ());
-    ~MockRunnableWithAccuracy();
-
-    MOCK_METHOD0(shutdown, void ());
-
-    MOCK_CONST_METHOD0(runCalled, void());
-    MOCK_CONST_METHOD0(runCalledInTime, void());
-    void run() override;
-
-private:
-    const std::uint64_t est_ms;
-    ADD_LOGGER(MockRunnableWithAccuracy)
-};
-
 class MockRunnableBlocking : public joynr::Runnable
 {
 public:
