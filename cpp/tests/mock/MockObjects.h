@@ -144,17 +144,6 @@ public:
     MOCK_METHOD0(getMessageRouter, std::shared_ptr<joynr::IMessageRouter>());
 };
 
-
-
-class MockKeyChain : public joynr::IKeychain
-{
-public:
-    MOCK_CONST_METHOD0(getTlsCertificate, std::shared_ptr<const mococrw::X509Certificate>());
-    MOCK_CONST_METHOD0(getTlsKey, std::shared_ptr<const mococrw::AsymmetricPrivateKey>());
-    MOCK_CONST_METHOD0(getTlsRootCertificate, std::shared_ptr<const mococrw::X509Certificate>());
-    MOCK_CONST_METHOD0(getOwnerId, std::string());
-};
-
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:
@@ -173,14 +162,6 @@ public:
     void shutdown() { joynr::DelayedScheduler::shutdown(); }
     MOCK_METHOD1(unschedule, void (joynr::DelayedScheduler::RunnableHandle));
     MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (std::shared_ptr<joynr::Runnable>, std::chrono::milliseconds delay));
-};
-
-class MockKeychain : public joynr::IKeychain {
-public:
-    MOCK_CONST_METHOD0(getTlsCertificate, std::shared_ptr<const mococrw::X509Certificate>());
-    MOCK_CONST_METHOD0(getTlsKey, std::shared_ptr<const mococrw::AsymmetricPrivateKey>());
-    MOCK_CONST_METHOD0(getTlsRootCertificate, std::shared_ptr<const mococrw::X509Certificate>());
-    MOCK_CONST_METHOD0(getOwnerId, std::string());
 };
 
 class MockMessageSender : public joynr::IMessageSender {

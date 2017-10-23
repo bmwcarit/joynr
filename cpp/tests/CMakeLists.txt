@@ -270,6 +270,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockRunnableWithAccuracy.h
         mock/MockRunnableBlocking.h
         mock/MockInProcessConnectorFactory.h
+        mock/MockKeychain.h
     )
 
     add_library(

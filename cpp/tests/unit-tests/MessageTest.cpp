@@ -25,6 +25,7 @@
 #include "joynr/DispatcherUtils.h"
 
 #include "tests/mock/MockObjects.h"
+#include "tests/mock/MockKeychain.h"
 
 using namespace ::testing;
 using namespace joynr;

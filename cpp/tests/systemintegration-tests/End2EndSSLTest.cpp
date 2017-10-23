@@ -36,6 +36,7 @@
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockObjects.h"
 #include "tests/utils/TestLibJoynrWebSocketRuntime.h"
+#include "tests/mock/MockKeychain.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -62,7 +63,7 @@ public:
         std::string uuid = util::createUuid();
         domain = "cppEnd2EndSSLTest_Domain_" + uuid;
 
-        keyChain = useTls ? createMockKeyChain() : nullptr;
+        keyChain = useTls ? createMockKeychain() : nullptr;
     }
 
     ~End2EndSSLTest() {
@@ -150,7 +151,7 @@ protected:
     }
 
 private:
-    std::shared_ptr<MockKeyChain> createMockKeyChain() {
+    std::shared_ptr<MockKeychain> createMockKeychain() {
         const std::string privateKeyPassword("");
 
         std::shared_ptr<const mococrw::X509Certificate> certificate =
@@ -165,7 +166,7 @@ private:
 
         ownerId = certificate->getSubjectDistinguishedName().commonName();
 
-        std::shared_ptr<MockKeyChain> keyChain = std::make_shared<MockKeyChain>();
+        std::shared_ptr<MockKeychain> keyChain = std::make_shared<MockKeychain>();
         ON_CALL(*keyChain, getTlsCertificate()).WillByDefault(Return(certificate));
         ON_CALL(*keyChain, getTlsKey()).WillByDefault(Return(privateKey));
         ON_CALL(*keyChain, getTlsRootCertificate()).WillByDefault(Return(caCertificate));
@@ -177,7 +178,7 @@ protected:
     std::string domain;
     std::string ownerId;
     const bool useTls;
-    std::shared_ptr<MockKeyChain> keyChain;
+    std::shared_ptr<MockKeychain> keyChain;
     std::shared_ptr<JoynrClusterControllerRuntime> ccRuntime;
     std::shared_ptr<TestLibJoynrWebSocketRuntime> libJoynrRuntime;
 
