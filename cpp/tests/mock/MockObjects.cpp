@@ -21,20 +21,6 @@
 
 using namespace joynr;
 
-const std::uint32_t MockProvider::MAJOR_VERSION = 1337;
-const std::uint32_t MockProvider::MINOR_VERSION = 42;
-
-const std::string& IMockProviderInterface::INTERFACE_NAME()
-{
-    static const std::string INTERFACE_NAME("test/interface");
-    return INTERFACE_NAME;
-}
-
-const std::string& MockProvider::getInterfaceName() const
-{
-    return INTERFACE_NAME();
-}
-
 MockRunnableWithAccuracy::MockRunnableWithAccuracy(
     const std::uint64_t delay)
     : Runnable(),

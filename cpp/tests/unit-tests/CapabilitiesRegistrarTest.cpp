@@ -31,6 +31,7 @@
 
 #include "tests/mock/MockObjects.h"
 #include "tests/mock/MockDiscovery.h"
+#include "tests/mock/MockProvider.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;
@@ -108,7 +109,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
     testQos.setPriority(100);
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::INTERFACE_NAME()
+                    MockProvider::INTERFACE_NAME()
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
@@ -121,7 +122,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
                 addAsync(
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
-                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
+                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(MockProvider::INTERFACE_NAME())),
                         Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos)),
                         Property(&joynr::types::DiscoveryEntry::getProviderVersion, Eq(expectedProviderVersion))
@@ -153,7 +154,7 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders){
     testQos.setScope(types::ProviderScope::GLOBAL);
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::INTERFACE_NAME()
+                    MockProvider::INTERFACE_NAME()
     ))
             .Times(2)
             .WillRepeatedly(Return(expectedParticipantId));
@@ -206,7 +207,7 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders){
 TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::INTERFACE_NAME()
+                    MockProvider::INTERFACE_NAME()
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
@@ -274,7 +275,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
 
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::INTERFACE_NAME()
+                    MockProvider::INTERFACE_NAME()
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
@@ -287,7 +288,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
                 addAsync(
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
-                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
+                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(MockProvider::INTERFACE_NAME())),
                         Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     ),
@@ -335,7 +336,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
 
     EXPECT_CALL(*mockParticipantIdStorage, getProviderParticipantId(
                     domain,
-                    IMockProviderInterface::INTERFACE_NAME()
+                    MockProvider::INTERFACE_NAME()
     ))
             .Times(1)
             .WillOnce(Return(expectedParticipantId));
@@ -347,7 +348,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
                 addAsync(
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
-                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(IMockProviderInterface::INTERFACE_NAME())),
+                        Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(MockProvider::INTERFACE_NAME())),
                         Property(&joynr::types::DiscoveryEntry::getParticipantId, Eq(expectedParticipantId)),
                         Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))
                     ),

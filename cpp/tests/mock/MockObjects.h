@@ -597,23 +597,6 @@ public:
     }
 };
 
-class IMockProviderInterface {
-public:
-    virtual ~IMockProviderInterface() = default;
-    static const std::string& INTERFACE_NAME();
-};
-
-
-class MockProvider : public joynr::AbstractJoynrProvider, public IMockProviderInterface {
-public:
-    static const std::uint32_t MAJOR_VERSION;
-    static const std::uint32_t MINOR_VERSION;
-    MOCK_CONST_METHOD0(getProviderQos, joynr::types::ProviderQos());
-    MOCK_CONST_METHOD0(getParticipantId, std::string());
-    ~MockProvider() override = default;
-    const std::string& getInterfaceName() const override;
-};
-
 namespace joynr
 {
 template <>
