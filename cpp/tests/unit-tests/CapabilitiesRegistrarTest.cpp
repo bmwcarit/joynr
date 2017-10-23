@@ -31,6 +31,7 @@
 
 #include "tests/mock/MockObjects.h"
 #include "tests/mock/MockDiscovery.h"
+#include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockProvider.h"
 
 using ::testing::DoAll;

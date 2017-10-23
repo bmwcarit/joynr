@@ -39,6 +39,7 @@
 #include "joynr/SingleThreadedIOService.h"
 
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockDispatcher.h"
 
 using ::testing::A;
 using ::testing::_;

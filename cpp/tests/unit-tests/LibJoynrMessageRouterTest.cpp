@@ -30,6 +30,8 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/LibjoynrSettings.h"
 
+#include "tests/mock/MockDispatcher.h"
+
 using ::testing::DoAll;
 using ::testing::InvokeArgument;
 using ::testing::InSequence;

@@ -36,6 +36,7 @@
 
 #include "tests/mock/MockObjects.h"
 #include "tests/mock/MockCallback.h"
+#include "tests/mock/MockDispatcher.h"
 
 using ::testing::A;
 using ::testing::_;

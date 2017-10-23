@@ -310,20 +310,6 @@ public:
     MOCK_METHOD1(canBeCreated, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address> address));
 };
 
-class MockDispatcher : public joynr::IDispatcher {
-public:
-    MOCK_METHOD3(addReplyCaller, void(const std::string& requestReplyId,
-                                      std::shared_ptr<joynr::IReplyCaller> replyCaller,
-                                      const joynr::MessagingQos& qosSettings));
-    MOCK_METHOD1(removeReplyCaller, void(const std::string& requestReplyId));
-    MOCK_METHOD2(addRequestCaller, void(const std::string& participantId, std::shared_ptr<joynr::RequestCaller> requestCaller));
-    MOCK_METHOD1(removeRequestCaller, void(const std::string& participantId));
-    MOCK_METHOD1(receive, void(std::shared_ptr<joynr::ImmutableMessage> message));
-    MOCK_METHOD1(registerSubscriptionManager, void(std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager));
-    MOCK_METHOD1(registerPublicationManager,void(std::weak_ptr<joynr::PublicationManager> publicationManager));
-    MOCK_METHOD0(shutdown, void ());
-};
-
 class MockKeychain : public joynr::IKeychain {
 public:
     MOCK_CONST_METHOD0(getTlsCertificate, std::shared_ptr<const mococrw::X509Certificate>());

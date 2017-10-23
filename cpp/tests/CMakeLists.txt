@@ -243,6 +243,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockDiscovery.h
         mock/MockProvider.cpp
         mock/MockProvider.h
+        mock/MockDispatcher.h
     )
 
     add_library(
