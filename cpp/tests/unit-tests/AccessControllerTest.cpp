@@ -39,6 +39,7 @@
 
 #include "tests/mock/MockMessageRouter.h"
 #include "tests/mock/MockLocalDomainAccessController.h"
+#include "tests/mock/MockLocalCapabilitiesDirectory.h"
 
 using namespace ::testing;
 using namespace joynr;

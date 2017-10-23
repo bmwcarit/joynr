@@ -720,21 +720,6 @@ public:
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, std::shared_ptr<joynr::SubscriptionAttributeListener> attributeListener));
 };
 
-class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
-public:
-    MockLocalCapabilitiesDirectory(joynr::ClusterControllerSettings& ccSettings, std::shared_ptr<joynr::IMessageRouter> mockMessageRouter, boost::asio::io_service& ioService):
-        LocalCapabilitiesDirectory(ccSettings, nullptr, "localAddress", mockMessageRouter, ioService, "clusterControllerId")
-   {}
-
-    MOCK_METHOD3(
-            lookup,
-            void(
-                const std::string& participantId,
-                std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)> onSuccess,
-                std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError
-            ));
-};
-
 #ifdef _MSC_VER
     #pragma warning( push )
 #endif

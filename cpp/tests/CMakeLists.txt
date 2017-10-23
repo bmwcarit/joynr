@@ -264,6 +264,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockClusterControllerSignalHandler.h
         mock/MockWebSocketSendInterface.h
         mock/MockWebSocketClient.h
+        mock/MockLocalCapabilitiesDirectory.h
     )
 
     add_library(
