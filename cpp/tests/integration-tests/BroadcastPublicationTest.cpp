@@ -31,6 +31,7 @@
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/MockPublicationSender.h"
 
 using namespace ::testing;
 using ::testing::InSequence;

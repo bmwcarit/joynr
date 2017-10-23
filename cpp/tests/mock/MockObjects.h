@@ -464,38 +464,6 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
-class MockPublicationSender : public joynr::IPublicationSender {
-public:
-    MOCK_METHOD4(
-            sendSubscriptionPublicationMock,
-            void(
-                const std::string& senderParticipantId,
-                const std::string& receiverParticipantId,
-                const joynr::MessagingQos& qos,
-                const joynr::SubscriptionPublication& subscriptionPublication
-            )
-    );
-
-    MOCK_METHOD4(
-            sendSubscriptionReply,
-            void(
-                const std::string& senderParticipantId,
-                const std::string& receiverParticipantId,
-                const joynr::MessagingQos& qos,
-                const joynr::SubscriptionReply& subscriptionReply
-            )
-    );
-
-    void sendSubscriptionPublication(
-        const std::string& senderParticipantId,
-        const std::string& receiverParticipantId,
-        const joynr::MessagingQos& qos,
-        joynr::SubscriptionPublication&& subscriptionPublication
-    ){
-        sendSubscriptionPublicationMock(senderParticipantId,receiverParticipantId,qos,subscriptionPublication);
-    }
-};
-
 namespace joynr
 {
 template <>
