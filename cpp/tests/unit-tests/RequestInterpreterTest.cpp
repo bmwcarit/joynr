@@ -32,6 +32,7 @@
 
 #include "tests/mock/MockObjects.h"
 #include "tests/mock/MockCallback.h"
+#include "tests/mock/MockTestRequestCaller.h"
 
 using ::testing::A;
 using ::testing::_;

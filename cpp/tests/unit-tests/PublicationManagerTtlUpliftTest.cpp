@@ -38,6 +38,7 @@
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockObjects.h"
 #include "tests/mock/MockPublicationSender.h"
+#include "tests/mock/MockTestRequestCaller.h"
 
 using ::testing::A;
 using ::testing::_;

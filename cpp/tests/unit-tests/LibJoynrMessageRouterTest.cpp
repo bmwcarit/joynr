@@ -31,6 +31,7 @@
 #include "joynr/LibjoynrSettings.h"
 
 #include "tests/mock/MockDispatcher.h"
+#include "tests/mock/MockTestRequestCaller.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;
