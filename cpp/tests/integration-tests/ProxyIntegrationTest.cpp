@@ -32,6 +32,7 @@
 
 #include "tests/mock/MockObjects.h"
 #include "tests/mock/MockInProcessConnectorFactory.h"
+#include "tests/mock/MockJoynrRuntime.h"
 
 using ::testing::Return;
 

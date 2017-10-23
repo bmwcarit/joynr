@@ -280,6 +280,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockRoutingProxy.h
         mock/MockTransportMessageSender.h
         mock/MockTransportMessageReceiver.h
+        mock/MockJoynrRuntime.h
     )
 
     add_library(

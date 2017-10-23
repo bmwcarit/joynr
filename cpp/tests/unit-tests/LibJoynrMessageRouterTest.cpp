@@ -34,6 +34,7 @@
 #include "tests/mock/MockTestRequestCaller.h"
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
 #include "tests/mock/MockRoutingProxy.h"
+#include "tests/mock/MockJoynrRuntime.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;

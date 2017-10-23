@@ -36,6 +36,7 @@
 #include "tests/mock/MockObjects.h"
 #include "tests/mock/MockGlobalDomainAccessControllerProxy.h"
 #include "tests/mock/MockGlobalDomainRoleControllerProxy.h"
+#include "tests/mock/MockJoynrRuntime.h"
 
 using namespace ::testing;
 using namespace joynr;

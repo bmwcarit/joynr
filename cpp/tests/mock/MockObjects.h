@@ -134,16 +134,6 @@ using ::testing::Return;
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #pragma GCC diagnostic ignored "-Wreorder"
 
-class MockJoynrRuntime : public joynr::JoynrRuntime
-{
-public:
-    MockJoynrRuntime(joynr::Settings& settings) : joynr::JoynrRuntime(settings) {
-    }
-    MockJoynrRuntime(std::unique_ptr<joynr::Settings> settings) : joynr::JoynrRuntime(*settings) {
-    }
-    MOCK_METHOD0(getMessageRouter, std::shared_ptr<joynr::IMessageRouter>());
-};
-
 class MockDelayedScheduler : public joynr::DelayedScheduler
 {
 public:
