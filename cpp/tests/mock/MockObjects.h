@@ -262,29 +262,6 @@ public:
     MOCK_METHOD1(unregisterMulticastSubscription, void(const std::string& multicastId));
 };
 
-class MockGpsProvider : public joynr::vehicle::DefaultGpsProvider
-{
-public:
-    MockGpsProvider() : joynr::vehicle::DefaultGpsProvider()
-    {
-    }
-
-    ~MockGpsProvider()
-    {
-        JOYNR_LOG_DEBUG(logger(), "I am being destroyed");
-    }
-
-    MOCK_METHOD1(getLocation, void(joynr::types::Localisation::GpsLocation& result) );
-    MOCK_METHOD1(setLocation, void(joynr::types::Localisation::GpsLocation gpsLocation));
-
-    std::string getParticipantId() const
-    {
-        return "Fake_ParticipantId_vehicle/DefaultGpsProvider";
-    }
-private:
-    ADD_LOGGER(MockGpsProvider)
-};
-
 #ifdef _MSC_VER
     #pragma warning( push )
 #endif

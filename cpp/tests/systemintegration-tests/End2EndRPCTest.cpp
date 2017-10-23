@@ -35,6 +35,8 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "tests/JoynrTest.h"
 
+#include "tests/mock/MockGpsProvider.h"
+
 using namespace ::testing;
 
 

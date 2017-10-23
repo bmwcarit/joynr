@@ -37,6 +37,7 @@
 #include "tests/mock/MockObjects.h"
 #include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 #include "tests/mock/MockKeychain.h"
+#include "tests/mock/MockGpsProvider.h"
 
 using namespace ::testing;
 using namespace joynr;
