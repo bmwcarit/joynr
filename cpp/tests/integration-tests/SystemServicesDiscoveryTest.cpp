@@ -34,6 +34,7 @@
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockObjects.h"
+#include "tests/mock/MockTransportMessageSender.h"
 
 using namespace joynr;
 

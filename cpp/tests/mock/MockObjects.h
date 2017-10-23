@@ -181,13 +181,6 @@ public:
     MOCK_METHOD0(isConnected, bool());
 };
 
-class MockTransportMessageSender : public joynr::ITransportMessageSender
-{
-public:
-    MOCK_METHOD3(sendMessage,void(const joynr::system::RoutingTypes::Address&, std::shared_ptr<joynr::ImmutableMessage>, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
-    MOCK_METHOD1(init,void(const joynr::MessagingSettings& settings));
-};
-
 #ifdef _MSC_VER
     #pragma warning( push )
 #endif

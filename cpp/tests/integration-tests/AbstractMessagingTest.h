@@ -40,6 +40,7 @@
 
 #include "tests/mock/MockMessageSender.h"
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
+#include "tests/mock/MockTransportMessageSender.h"
 
 using namespace ::testing;
 using namespace joynr;
