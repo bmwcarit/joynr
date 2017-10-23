@@ -318,14 +318,6 @@ public:
     MOCK_CONST_METHOD0(getOwnerId, std::string());
 };
 
-class MockMessagingStubFactory : public joynr::IMessagingStubFactory {
-public:
-    MOCK_METHOD1(create, std::shared_ptr<joynr::IMessagingStub>(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
-    MOCK_METHOD1(remove, void(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
-    MOCK_METHOD1(contains, bool(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&));
-    MOCK_METHOD0(shutdown, void ());
-};
-
 class MockMessageRouter : public joynr::IMessageRouter {
 public:
     void invokeAddNextHopOnSuccessFct(const std::string& participantId,

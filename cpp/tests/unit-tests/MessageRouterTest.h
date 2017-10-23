@@ -46,6 +46,7 @@
 #include "joynr/ImmutableMessage.h"
 
 #include "tests/mock/MockMessagingStub.h"
+#include "tests/mock/MockMessagingStubFactory.h"
 
 using namespace joynr;
 
