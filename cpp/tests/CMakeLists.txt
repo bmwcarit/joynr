@@ -250,6 +250,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockPublicationSender.h
         mock/MockProxyBuilder.h
         mock/MockCapabilitiesClient.h
+        mock/MockSubscriptionManager.h
     )
 
     add_library(

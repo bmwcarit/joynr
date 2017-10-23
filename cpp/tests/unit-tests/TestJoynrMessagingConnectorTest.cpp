@@ -29,8 +29,9 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
-#include "tests/mock/MockObjects.h"
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockObjects.h"
+#include "tests/mock/MockSubscriptionManager.h"
 
 using ::testing::A;
 using ::testing::_;
