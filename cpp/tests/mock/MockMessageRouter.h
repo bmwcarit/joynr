@@ -51,7 +51,7 @@ public:
     MockMessageRouter(boost::asio::io_service& ioService)
     {
         std::ignore = ioService;
-        using ::testing::_;        
+        using ::testing::_;
         EXPECT_CALL(
                 *this,
                 addNextHop(_,_,_,_,_,_,_)

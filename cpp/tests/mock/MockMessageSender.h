@@ -55,7 +55,7 @@ public:
                 bool isLocalMessage
             )
     );
-    
+
     MOCK_METHOD5(
             sendOneWayRequest,
             void(
