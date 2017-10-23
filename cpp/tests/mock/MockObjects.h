@@ -254,14 +254,6 @@ public:
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
 };
 
-class MockMessagingMulticastSubscriber : public joynr::IMessagingMulticastSubscriber
-{
-public:
-
-    MOCK_METHOD1(registerMulticastSubscription, void(const std::string& multicastId));
-    MOCK_METHOD1(unregisterMulticastSubscription, void(const std::string& multicastId));
-};
-
 #ifdef _MSC_VER
     #pragma warning( push )
 #endif

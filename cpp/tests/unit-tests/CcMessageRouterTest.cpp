@@ -43,6 +43,7 @@
 #include "joynr/IPlatformSecurityManager.h"
 
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
+#include "tests/mock/MockMessagingMulticastSubscriber.h"
 
 using ::testing::Pointee;
 using ::testing::Return;
