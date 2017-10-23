@@ -144,23 +144,7 @@ public:
     MOCK_METHOD0(getMessageRouter, std::shared_ptr<joynr::IMessageRouter>());
 };
 
-template<typename T>
-class MockProxyBuilder : public joynr::IProxyBuilder<T>
-{
-public:
-    MockProxyBuilder(){
-        ON_CALL(*this, setCached(_)).WillByDefault(Return(this));
-        ON_CALL(*this, setMessagingQos(_)).WillByDefault(Return(this));
-        ON_CALL(*this, setDiscoveryQos(_)).WillByDefault(Return(this));
-    }
 
-    MOCK_METHOD1_T(setCached, joynr::IProxyBuilder<T>*(const bool cached));
-    MOCK_METHOD1_T(setMessagingQos, joynr::IProxyBuilder<T>*(const joynr::MessagingQos& cached));
-    MOCK_METHOD1_T(setDiscoveryQos, joynr::IProxyBuilder<T>*(const joynr::DiscoveryQos& cached));
-    MOCK_METHOD0_T(build, std::shared_ptr<T>());
-    MOCK_METHOD2_T(buildAsync, void(std::function<void(std::shared_ptr<T> proxy)> onSuccess,
-                                    std::function<void(const joynr::exceptions::DiscoveryException&)>));
-};
 
 class MockKeyChain : public joynr::IKeychain
 {
