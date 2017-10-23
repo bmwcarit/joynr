@@ -38,6 +38,8 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/IPlatformSecurityManager.h"
 
+#include "tests/mock/MockMessageSender.h"
+
 using namespace ::testing;
 using namespace joynr;
 
