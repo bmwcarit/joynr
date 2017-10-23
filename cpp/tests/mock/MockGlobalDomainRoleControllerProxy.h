@@ -26,11 +26,6 @@
 class MockGlobalDomainRoleControllerProxy : public virtual joynr::infrastructure::GlobalDomainRoleControllerProxy {
 public:
     MockGlobalDomainRoleControllerProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
-        GlobalDomainRoleControllerProxy(
-                runtime,
-                nullptr,
-                  "domain",
-                joynr::MessagingQos()),
         ProxyBase(
                 runtime,
                 nullptr,
@@ -50,6 +45,11 @@ public:
                 runtime,
                 nullptr,
                 "domain",
+                joynr::MessagingQos()),
+        GlobalDomainRoleControllerProxy(
+                runtime,
+                nullptr,
+                  "domain",
                 joynr::MessagingQos())
     {
     }

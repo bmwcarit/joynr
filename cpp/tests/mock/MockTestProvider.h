@@ -33,8 +33,8 @@ class MockTestProvider : public joynr::tests::DefaulttestProvider
 {
 public:
     MockTestProvider() :
-        listOfStrings(),
-        joynr::tests::DefaulttestProvider()
+        joynr::tests::DefaulttestProvider(),
+        listOfStrings()
     {
         EXPECT_CALL(*this, getLocation(_,_))
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeLocationOnSuccess));

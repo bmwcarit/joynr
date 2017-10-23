@@ -26,11 +26,6 @@
 class MockGlobalDomainAccessControllerProxy : public virtual joynr::infrastructure::GlobalDomainAccessControllerProxy {
 public:
     MockGlobalDomainAccessControllerProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
-        GlobalDomainAccessControllerProxy(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
         ProxyBase(
                 runtime,
                 nullptr,
@@ -47,6 +42,11 @@ public:
                 "domain",
                 joynr::MessagingQos()),
         GlobalDomainAccessControllerAsyncProxy(
+                runtime,
+                nullptr,
+                "domain",
+                joynr::MessagingQos()),
+        GlobalDomainAccessControllerProxy(
                 runtime,
                 nullptr,
                 "domain",

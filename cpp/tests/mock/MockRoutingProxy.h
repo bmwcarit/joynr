@@ -27,11 +27,6 @@
 class MockRoutingProxy : public virtual joynr::system::RoutingProxy {
 public:
     MockRoutingProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
-        RoutingProxy(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
         ProxyBase(
                 runtime,
                 nullptr,
@@ -48,6 +43,11 @@ public:
                 "domain",
                 joynr::MessagingQos()),
         RoutingAsyncProxy(
+                runtime,
+                nullptr,
+                "domain",
+                joynr::MessagingQos()),
+        RoutingProxy(
                 runtime,
                 nullptr,
                 "domain",

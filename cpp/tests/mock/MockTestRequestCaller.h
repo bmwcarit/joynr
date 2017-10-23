@@ -61,8 +61,8 @@ public:
     }
 
     MockTestRequestCaller() :
-            providerVersion(47, 11),
-            joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
+            joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>()),
+            providerVersion(47, 11)
     {
         ON_CALL(
                 *this,
@@ -92,8 +92,8 @@ public:
 
     }
     MockTestRequestCaller(testing::Cardinality getLocationCardinality) :
-            providerVersion(47, 11),
-            joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>())
+            joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>()),
+            providerVersion(47, 11)
     {
         EXPECT_CALL(
                 *this,
