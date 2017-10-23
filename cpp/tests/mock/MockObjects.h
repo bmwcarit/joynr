@@ -155,37 +155,6 @@ public:
     MOCK_CONST_METHOD0(getOwnerId, std::string());
 };
 
-class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
-public:
-    MOCK_METHOD3(add, void(const joynr::types::GlobalDiscoveryEntry& entry,
-                           std::function<void()> onSuccess,
-                           std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
-    MOCK_METHOD3(add, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& entry,
-                           std::function<void()> onSuccess,
-                           std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
-
-    MOCK_METHOD1(remove, void(std::vector<std::string> participantIdList));
-    MOCK_METHOD1(remove, void(const std::string& participantId));
-    MOCK_METHOD3(lookup, std::vector<joynr::types::GlobalDiscoveryEntry>(const std::vector<std::string>& domain, const std::string& interfaceName, std::int64_t messagingTtl));
-    MOCK_METHOD5(lookup, void(
-                     const std::vector<std::string>& domain,
-                     const std::string& interfaceName,
-                     std::int64_t messagingTtl,
-                     std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
-    MOCK_METHOD3(lookup, void(
-                     const std::string& participantId,
-                     std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> callbackFct,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
-    MOCK_METHOD3(touch, void(const std::string& clusterControllerId,
-                     std::function<void()> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
-
-    void setProxyBuilder(std::shared_ptr<joynr::IProxyBuilder<joynr::infrastructure::GlobalCapabilitiesDirectoryProxy>> input) {
-        std::ignore = input;
-    }
-};
-
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:

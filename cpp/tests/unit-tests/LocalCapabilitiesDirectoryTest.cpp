@@ -44,6 +44,7 @@
 #include "tests/mock/MockCallback.h"
 #include "tests/mock/MockLocalCapabilitiesDirectoryCallback.h"
 #include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/MockCapabilitiesClient.h"
 
 using ::testing::Property;
 using ::testing::WhenDynamicCastTo;

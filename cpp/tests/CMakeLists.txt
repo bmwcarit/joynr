@@ -249,6 +249,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockMessageRouter.h
         mock/MockPublicationSender.h
         mock/MockProxyBuilder.h
+        mock/MockCapabilitiesClient.h
     )
 
     add_library(
