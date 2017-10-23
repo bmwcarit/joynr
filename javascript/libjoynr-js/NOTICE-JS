@@ -71,13 +71,8 @@ This project has following dependencies:
    │  │     │  └─ pump (1.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/pump/package.json
    │  │     ├─ remove-trailing-separator (1.1.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/remove-trailing-separator/package.json
    │  │     ├─ to-absolute-glob (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/to-absolute-glob/package.json
-   │  │     │  ├─ extend-shallow (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/extend-shallow/package.json
-   │  │     │  │  └─ is-extendable (0.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-extendable/package.json
-   │  │     │  └─ is-absolute (0.2.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-absolute/package.json
-   │  │     │     ├─ is-relative (0.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-relative/package.json
-   │  │     │     │  └─ is-unc-path (0.1.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-unc-path/package.json
-   │  │     │     │     └─ unc-path-regex (0.1.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/unc-path-regex/package.json
-   │  │     │     └─ is-windows (0.2.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-windows/package.json
+   │  │     │  └─ extend-shallow (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/extend-shallow/package.json
+   │  │     │     └─ is-extendable (0.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-extendable/package.json
    │  │     └─ unique-stream (2.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/unique-stream/package.json
    │  │        ├─ json-stable-stringify (1.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/json-stable-stringify/package.json
    │  │        │  └─ jsonify (0.0.0) ── public domain ── node_modules/jsonify/package.json
@@ -87,15 +82,17 @@ This project has following dependencies:
    │  ├─ mqtt-packet (5.4.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mqtt-packet/package.json
    │  │  └─ bl (1.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bl/package.json
    │  ├─ reinterval (1.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/reinterval/package.json
-   │  ├─ split2 (2.1.1) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/split2/package.json
+   │  ├─ split2 (2.2.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/split2/package.json
    │  └─ websocket-stream (3.3.3) ── BSD 2-clause "Simplified" License (http://www.opensource.org/licenses/BSD-2-Clause) ── node_modules/websocket-stream/package.json
    ├─ node-persist (2.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/node-persist/package.json
+   │  ├─ is-absolute (0.2.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-absolute/package.json
+   │  │  ├─ is-relative (0.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-relative/package.json
+   │  │  │  └─ is-unc-path (0.1.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-unc-path/package.json
+   │  │  │     └─ unc-path-regex (0.1.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/unc-path-regex/package.json
+   │  │  └─ is-windows (0.2.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/is-windows/package.json
    │  ├─ mkdirp (0.5.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mkdirp/package.json
-   │  │  └─ minimist (0.0.8) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/minimist/package.json
+   │  │  └─ minimist (0.0.8) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/mkdirp ~ minimist/package.json
    │  └─ q (1.1.2) ── MIT (http://github.com/kriskowal/q/raw/master/LICENSE) ── node_modules/q/package.json
-   ├─ promise (8.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/promise/package.json
-   │  └─ asap (2.0.6) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/asap/package.json
-   ├─ requirejs (2.1.22) ── BSD (https://github.com/jrburke/r.js/blob/master/LICENSE), MIT (https://github.com/jrburke/r.js/blob/master/LICENSE) ── node_modules/requirejs/package.json
    ├─ smrf-native (0.2.2) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/smrf-native/package.json
    │  ├─ bindings (1.2.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/bindings/package.json
    │  └─ nan (2.6.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/nan/package.json
@@ -144,12 +141,6 @@ This project has following dependencies:
   Webjar: <groupId>org.atmosphere.client</groupId>
           <artifactId>javascript</artifactId>
           <version>2.0.9</version>
-
-* RequireJS (https://github.com/jrburke/requirejs)
-  License: MIT License (https://github.com/jrburke/requirejs/blob/master/LICENSE)
-  Webjar: <groupId>org.webjars</groupId>
-          <artifactId>requirejs</artifactId>
-          <version>2.1.22</version>
 
 * Jasmine (https://github.com/pivotal/jasmine)
   License: MIT License (https://github.com/pivotal/jasmine/blob/master/MIT.LICENSE)
