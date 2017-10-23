@@ -29,6 +29,7 @@
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/SubscriptionReply.h"
+#include "joynr/MulticastPublication.h"
 
 class MockMessageSender : public joynr::IMessageSender {
 public:

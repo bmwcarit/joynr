@@ -234,7 +234,7 @@ set(
 if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATION_TESTS})
     set(
         MOCK_SOURCES
-        mock/LibJoynrMockObjects.h
+        mock/MockSubscriptionListener.h
         mock/MockCallback.h
         mock/MockLocalCapabilitiesDirectoryCallback.cpp
         mock/MockLocalCapabilitiesDirectoryCallback.h

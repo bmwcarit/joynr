@@ -26,7 +26,7 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/tests/testProxy.h"
 
-#include "tests/mock/LibJoynrMockObjects.h"
+#include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
 
 using namespace ::testing;

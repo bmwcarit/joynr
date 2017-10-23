@@ -41,7 +41,7 @@
 #include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockMessagingStub.h"
 #include "tests/mock/MockMessageSender.h"
-#include "tests/mock/LibJoynrMockObjects.h"
+#include "tests/mock/MockSubscriptionListener.h"
 
 using ::testing::A;
 using ::testing::_;

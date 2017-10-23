@@ -36,10 +36,11 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/BrokerUrl.h"
+#include "joynr/tests/DefaulttestProvider.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockLocationUpdatedSelectiveFilter.h"
-#include "tests/mock/LibJoynrMockObjects.h"
+#include "tests/mock/MockSubscriptionListener.h"
 
 using namespace ::testing;
 using namespace joynr;

@@ -41,10 +41,12 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/Future.h"
 #include "joynr/SubscriptionManager.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/tests/Itest.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockMessageRouter.h"
-#include "tests/mock/LibJoynrMockObjects.h"
+#include "tests/mock/MockSubscriptionListener.h"
 
 using namespace ::testing;
 using namespace joynr;

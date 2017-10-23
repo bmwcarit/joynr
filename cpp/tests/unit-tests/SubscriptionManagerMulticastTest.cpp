@@ -34,7 +34,7 @@
 #include "joynr/Util.h"
 
 #include "tests/mock/MockMessageRouter.h"
-#include "tests/mock/LibJoynrMockObjects.h"
+#include "tests/mock/MockSubscriptionListener.h"
 
 using ::testing::_;
 

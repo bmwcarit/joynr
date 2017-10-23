@@ -16,43 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#ifndef LIBJOYNR_MOCKOBJECTS_H_
-#define LIBJOYNR_MOCKOBJECTS_H_
+#ifndef TESTS_MOCK_MOCKSUBSCRIPTIONLISTENER_H
+#define TESTS_MOCK_MOCKSUBSCRIPTIONLISTENER_H
 
-#include <memory>
-#include <numeric>
-#include <string>
-#include <tuple>
-#include <vector>
-
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 #include "joynr/types/Localisation/GpsLocation.h"
-#include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/ISubscriptionListener.h"
-
-#include "tests/PrettyPrint.h"
-
-using ::testing::A;
-using ::testing::_;
-using ::testing::Eq;
-using ::testing::Mock;
-using ::testing::NotNull;
-using ::testing::AllOf;
-using ::testing::Invoke;
-using ::testing::Property;
-
-// Disable VC++ warnings due to google mock
-// http://code.google.com/p/googlemock/wiki/FrequentlyAskedQuestions#MSVC_gives_me_warning_C4301_or_C4373_when_I_define_a_mock_method
-#ifdef _MSC_VER
-    #pragma warning( push )
-    #pragma warning( disable : 4373 )
-#endif
-
-// Disable compiler warnings.
-#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-#pragma GCC diagnostic ignored "-Wreorder"
 
 // GMock doesn't support mocking variadic template functions directly.
 // Workaround: Mock exactly the functions with the number of arguments used in the tests.
@@ -94,11 +64,4 @@ public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 
-#ifdef _MSC_VER
-    #pragma warning( push )
-#endif
-
-// restore GCC diagnostic state
-#pragma GCC diagnostic pop
-
-#endif /* LIBJOYNR_MOCKOBJECTS_H_ */
+#endif // TESTS_MOCK_MOCKSUBSCRIPTIONLISTENER_H

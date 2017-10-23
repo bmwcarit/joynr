@@ -34,7 +34,7 @@
 #include "joynr/tests/DefaulttestProvider.h"
 #include "tests/JoynrTest.h"
 #include "joynr/Semaphore.h"
-#include "tests/mock/LibJoynrMockObjects.h"
+#include "tests/mock/MockSubscriptionListener.h"
 
 using namespace ::testing;
 using namespace joynr;

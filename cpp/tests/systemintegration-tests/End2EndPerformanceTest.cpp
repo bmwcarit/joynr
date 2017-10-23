@@ -30,7 +30,7 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 
-#include "tests/mock/LibJoynrMockObjects.h"
+#include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
 
 using namespace ::testing;

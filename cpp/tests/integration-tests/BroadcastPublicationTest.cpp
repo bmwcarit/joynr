@@ -33,7 +33,7 @@
 #include "tests/mock/MockMessageRouter.h"
 #include "tests/mock/MockPublicationSender.h"
 #include "tests/mock/MockLocationUpdatedSelectiveFilter.h"
-#include "tests/mock/LibJoynrMockObjects.h"
+#include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
 
 using namespace ::testing;
