@@ -42,6 +42,7 @@
 #include "joynr/IPlatformSecurityManager.h"
 
 #include "tests/mock/MockObjects.h"
+#include "tests/mock/MockTransportStatus.h"
 
 using ::testing::InvokeArgument;
 using ::testing::Pointee;
