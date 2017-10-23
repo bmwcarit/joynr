@@ -45,6 +45,8 @@
 #include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
 
+#include "tests/mock/MockMessagingStub.h"
+
 using namespace joynr;
 
 template <typename T>

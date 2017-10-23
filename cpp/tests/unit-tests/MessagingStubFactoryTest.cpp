@@ -24,6 +24,7 @@
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 
 #include "tests/mock/MockObjects.h"
+#include "tests/mock/MockMessagingStub.h"
 
 using namespace joynr;
 using namespace testing;

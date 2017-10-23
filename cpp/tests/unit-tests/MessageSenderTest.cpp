@@ -40,6 +40,7 @@
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockDispatcher.h"
+#include "tests/mock/MockMessagingStub.h"
 
 using ::testing::A;
 using ::testing::_;

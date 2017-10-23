@@ -614,11 +614,6 @@ public:
     MOCK_METHOD1(init,void(const joynr::MessagingSettings& settings));
 };
 
-class MockMessagingStub : public joynr::IMessagingStub {
-public:
-    MOCK_METHOD2(transmit, void(std::shared_ptr<joynr::ImmutableMessage> message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
-};
-
 class GlobalCapabilitiesMock {
 public:
     MOCK_METHOD1(capabilitiesReceived, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& results));
