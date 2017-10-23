@@ -27,6 +27,7 @@
 #include "joynr/tests/testProxy.h"
 
 #include "tests/mock/LibJoynrMockObjects.h"
+#include "tests/mock/MockTestProvider.h"
 
 using namespace ::testing;
 using namespace joynr;

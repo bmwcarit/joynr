@@ -43,6 +43,7 @@
 #include "tests/mock/MockTransportMessageSender.h"
 #include "tests/mock/MockTransportMessageReceiver.h"
 #include "tests/mock/LibJoynrMockObjects.h"
+#include "tests/mock/MockTestProvider.h"
 
 using namespace ::testing;
 using namespace joynr;

@@ -36,6 +36,7 @@
 
 #include "tests/mock/MockGpsProvider.h"
 #include "tests/mock/LibJoynrMockObjects.h"
+#include "tests/mock/MockTestProvider.h"
 
 using namespace ::testing;
 

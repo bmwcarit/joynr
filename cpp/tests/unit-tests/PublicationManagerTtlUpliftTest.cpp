@@ -52,6 +52,7 @@ using ::testing::MatchResultListener;
 using ::testing::Matcher;
 using ::testing::MakeMatcher;
 using ::testing::Mock;
+using ::testing::Eq;
 
 using namespace joynr;
 

@@ -23,7 +23,7 @@
 
 #include "joynr/tests/testRequestCaller.h"
 
-#include "tests/mock/LibJoynrMockObjects.h"
+#include "tests/mock/MockTestProvider.h"
 
 class MockTestRequestCaller : public joynr::tests::testRequestCaller {
 public:

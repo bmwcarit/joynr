@@ -35,12 +35,14 @@
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
 #include "tests/mock/MockRoutingProxy.h"
 #include "tests/mock/MockJoynrRuntime.h"
+#include "tests/mock/MockTestProvider.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;
 using ::testing::InSequence;
 using ::testing::Pointee;
 using ::testing::Return;
+using ::testing::Eq;
 
 using namespace joynr;
 

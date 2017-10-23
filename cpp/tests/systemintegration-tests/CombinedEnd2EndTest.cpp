@@ -45,6 +45,7 @@
 
 #include "tests/PrettyPrint.h"
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockTestProvider.h"
 
 using namespace ::testing;
 using namespace joynr;
