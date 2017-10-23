@@ -33,6 +33,7 @@
 #include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockTestRequestCaller.h"
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
+#include "tests/mock/MockRoutingProxy.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;

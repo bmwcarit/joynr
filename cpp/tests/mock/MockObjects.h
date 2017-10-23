@@ -193,67 +193,6 @@ public:
     MOCK_METHOD1(capabilitiesReceived, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& results));
 };
 
-class MockRoutingProxy : public virtual joynr::system::RoutingProxy {
-public:
-    MockRoutingProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
-        RoutingProxy(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
-        ProxyBase(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
-        RoutingProxyBase(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
-        RoutingSyncProxy(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
-        RoutingAsyncProxy(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos())
-    { }
-
-    MOCK_METHOD5(addNextHopAsync, std::shared_ptr<joynr::Future<void>>(
-            const std::string& participantId,
-            const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
-            const bool& isGloballyVisible,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                    onRuntimeError));
-
-    MOCK_METHOD3(resolveNextHopAsync,
-                 std::shared_ptr<joynr::Future<bool>>(
-                     const std::string& participantId,
-                     std::function<void(const bool& resolved)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
-
-    MOCK_METHOD5(addMulticastReceiverAsync,
-        std::shared_ptr<joynr::Future<void>> (
-            const std::string& multicastId,
-            const std::string& subscriberParticipantId,
-            const std::string& providerParticipantId,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
-
-    MOCK_METHOD5(removeMulticastReceiverAsync,
-        std::shared_ptr<joynr::Future<void>> (
-            const std::string& multicastId,
-            const std::string& subscriberParticipantId,
-            const std::string& providerParticipantId,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
-};
-
 #ifdef _MSC_VER
     #pragma warning( push )
 #endif
