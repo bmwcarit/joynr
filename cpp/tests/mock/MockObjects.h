@@ -285,24 +285,6 @@ private:
     ADD_LOGGER(MockGpsProvider)
 };
 
-class MockGpsRequestCaller : public joynr::vehicle::GpsRequestCaller {
-public:
-    MockGpsRequestCaller() : joynr::vehicle::GpsRequestCaller(std::make_shared<MockGpsProvider>() ) {}
-    MOCK_METHOD2(getLocationMock, void(std::function<void(const joynr::types::Localisation::GpsLocation&)>,
-                                       std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>));
-    
-    void getLocation(
-                std::function<void(const joynr::types::Localisation::GpsLocation&)>&& onSuccess,
-                std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError
-        ) override
-    {
-        getLocationMock(onSuccess, onError);
-    }
-
-    MOCK_METHOD2(registerAttributeListener, void(const std::string& attributeName, std::shared_ptr<joynr::SubscriptionAttributeListener> attributeListener));
-    MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, std::shared_ptr<joynr::SubscriptionAttributeListener> attributeListener));
-};
-
 #ifdef _MSC_VER
     #pragma warning( push )
 #endif

@@ -132,7 +132,7 @@ protected:
 // this test goes a step further and makes sure that the response is visible in Messaging
 TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
 
-    // Expect the mock object MockGpsRequestCaller in MockObjects.h to be called.
+    // Expect the mock object MockTestRequestCaller to be called.
     // The OUT param Gpslocation is set with gpsLocation1
     EXPECT_CALL(
                 *mockRequestCaller,
