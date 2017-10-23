@@ -31,9 +31,10 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/MutableMessageFactory.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/Settings.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockMessageRouter.h"
 
 using ::testing::_;

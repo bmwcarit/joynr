@@ -32,7 +32,6 @@
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockWebSocketSendInterface.h"
 #include "tests/mock/MockWebSocketClient.h"
 

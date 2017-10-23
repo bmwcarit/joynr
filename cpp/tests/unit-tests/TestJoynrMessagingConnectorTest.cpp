@@ -30,7 +30,6 @@
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockSubscriptionManager.h"
 #include "tests/mock/MockGpsFloatSubscriptionListener.h"
 

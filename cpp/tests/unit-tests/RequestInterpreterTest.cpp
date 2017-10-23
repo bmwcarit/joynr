@@ -24,13 +24,13 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/InterfaceRegistrar.h"
 #include "joynr/Request.h"
+#include "joynr/Reply.h"
 #include "joynr/vehicle/IGps.h"
 #include "joynr/vehicle/GpsRequestInterpreter.h"
 #include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockCallback.h"
 #include "tests/mock/MockTestRequestCaller.h"
 

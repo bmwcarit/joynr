@@ -33,7 +33,6 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockGlobalDomainAccessControllerProxy.h"
 #include "tests/mock/MockGlobalDomainRoleControllerProxy.h"
 #include "tests/mock/MockJoynrRuntime.h"

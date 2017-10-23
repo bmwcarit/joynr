@@ -39,9 +39,9 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/SubscriptionManager.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockCallback.h"
 #include "tests/mock/MockMessageRouter.h"
 #include "tests/mock/MockTestRequestCaller.h"

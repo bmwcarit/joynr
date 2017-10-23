@@ -24,7 +24,6 @@
 #include <gmock/gmock.h>
 
 #include "joynr/JoynrClusterControllerRuntime.h"
-#include "tests/mock/MockObjects.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/vehicle/GpsProxy.h"
@@ -36,6 +35,7 @@
 #include "tests/JoynrTest.h"
 
 #include "tests/mock/MockGpsProvider.h"
+#include "tests/mock/LibJoynrMockObjects.h"
 
 using namespace ::testing;
 

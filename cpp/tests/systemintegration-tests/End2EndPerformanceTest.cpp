@@ -23,13 +23,14 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "tests/mock/MockObjects.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/Future.h"
 #include "joynr/DispatcherUtils.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
+
+#include "tests/mock/LibJoynrMockObjects.h"
 
 using namespace ::testing;
 

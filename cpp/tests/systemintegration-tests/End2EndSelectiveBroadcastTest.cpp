@@ -34,7 +34,6 @@
 #include "joynr/Future.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;

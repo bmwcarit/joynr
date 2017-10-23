@@ -33,11 +33,15 @@
 #include "joynr/exceptions/MethodInvocationException.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/tests/Itest.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/ISubscriptionListener.h"
 
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockCallback.h"
 #include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockMessagingStub.h"
+#include "tests/mock/MockMessageSender.h"
+#include "tests/mock/LibJoynrMockObjects.h"
 
 using ::testing::A;
 using ::testing::_;

@@ -38,9 +38,9 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Settings.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockCallback.h"
 #include "tests/mock/MockLocalCapabilitiesDirectoryCallback.h"
 #include "tests/mock/MockMessageRouter.h"

@@ -35,10 +35,10 @@
 #include "joynr/SubscriptionManager.h"
 #include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/Util.h"
-#include "tests/mock/MockObjects.h"
 #include "tests/utils/TimeUtils.h"
 
 #include "tests/mock/MockDelayedScheduler.h"
+#include "tests/mock/LibJoynrMockObjects.h"
 
 using ::testing::A;
 using ::testing::_;

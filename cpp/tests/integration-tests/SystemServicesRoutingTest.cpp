@@ -29,7 +29,6 @@
 #include "joynr/serializer/Serializer.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockObjects.h"
 #include "tests/utils/PtrUtils.h"
 #include "tests/mock/MockTransportMessageSender.h"
 #include "tests/mock/MockTransportMessageReceiver.h"

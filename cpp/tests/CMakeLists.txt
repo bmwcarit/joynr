@@ -238,7 +238,6 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockCallback.h
         mock/MockLocalCapabilitiesDirectoryCallback.cpp
         mock/MockLocalCapabilitiesDirectoryCallback.h
-        mock/MockObjects.h
         mock/MockDiscovery.h
         mock/MockProvider.cpp
         mock/MockProvider.h

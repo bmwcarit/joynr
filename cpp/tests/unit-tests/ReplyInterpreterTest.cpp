@@ -26,12 +26,14 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
+#include "joynr/types/TestTypes/TEverythingMap.h"
 
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockCallback.h"
 
 using ::testing::A;
 using ::testing::_;
+using ::testing::Property;
+using ::testing::Eq;
 
 MATCHER_P(joynrException, other, "") {
     return arg->getTypeName() == other.getTypeName() && arg->getMessage() == other.getMessage();

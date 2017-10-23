@@ -26,6 +26,7 @@
 #include "joynr/ImmutableMessage.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/MessageSender.h"
+#include "joynr/MessagingQos.h"
 #include "joynr/MutableMessageFactory.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/UnicastSubscriptionCallback.h"
@@ -39,10 +40,11 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/Future.h"
+#include "joynr/SubscriptionManager.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/LibJoynrMockObjects.h"
 
 using namespace ::testing;
 using namespace joynr;

@@ -36,7 +36,6 @@
 #include "joynr/tests/testProxy.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockGpsFloatSubscriptionListener.h"
 
 using namespace ::testing;

@@ -28,17 +28,23 @@
 #include "joynr/types/Version.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/types/DiscoveryQos.h"
 
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockDiscovery.h"
 #include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockProvider.h"
 #include "tests/mock/MockMessageRouter.h"
 #include "tests/mock/MockParticipantIdStorage.h"
+#include "tests/mock/MockMessageSender.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;
 using ::testing::Mock;
+using ::testing::Return;
+using ::testing::Eq;
+using ::testing::_;
+using ::testing::Property;
 
 using namespace joynr;
 

@@ -33,8 +33,8 @@
 #include "joynr/MulticastSubscriptionCallback.h"
 #include "joynr/Util.h"
 
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/LibJoynrMockObjects.h"
 
 using ::testing::_;
 

@@ -31,7 +31,6 @@
 #include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
 #include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
 
-#include "tests/mock/MockObjects.h"
 #include "tests/JoynrTest.h"
 
 using namespace ::testing;

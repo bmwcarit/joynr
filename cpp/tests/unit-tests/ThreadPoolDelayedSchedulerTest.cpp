@@ -25,9 +25,9 @@
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/SingleThreadedIOService.h"
 
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockRunnable.h"
 #include "tests/utils/TestRunnable.h"
+#include "tests/mock/MockRunnableWithAccuracy.h"
 
 using namespace ::testing;
 using namespace joynr;

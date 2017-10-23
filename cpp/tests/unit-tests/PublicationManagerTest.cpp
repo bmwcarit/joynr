@@ -45,9 +45,9 @@
 #include "joynr/IMessageSender.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockPublicationSender.h"
 #include "tests/mock/MockTestRequestCaller.h"
+#include "tests/mock/MockMessageSender.h"
 
 using ::testing::A;
 using ::testing::_;

@@ -45,7 +45,6 @@
 #include "joynr/CallContextStorage.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockCallback.h"
 #include "tests/mock/MockMessageRouter.h"
 #include "tests/mock/MockSubscriptionManager.h"

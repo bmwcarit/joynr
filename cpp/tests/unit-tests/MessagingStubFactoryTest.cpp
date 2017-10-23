@@ -22,8 +22,8 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
-#include "tests/mock/MockObjects.h"
 #include "tests/mock/MockMessagingStub.h"
 
 using namespace joynr;

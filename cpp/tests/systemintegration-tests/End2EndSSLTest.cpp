@@ -24,6 +24,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include <mococrw/x509.h>
+
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/Future.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
@@ -34,7 +36,6 @@
 #include "joynr/vehicle/GpsProxy.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockObjects.h"
 #include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 #include "tests/mock/MockKeychain.h"
 #include "tests/mock/MockGpsProvider.h"
