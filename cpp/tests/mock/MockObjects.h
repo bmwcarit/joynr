@@ -164,16 +164,6 @@ public:
     MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (std::shared_ptr<joynr::Runnable>, std::chrono::milliseconds delay));
 };
 
-template <typename T>
-class MockReplyCaller : public joynr::ReplyCaller<T> {
-public:
-    MockReplyCaller(std::function<void(const T& returnValue)> callbackFct,
-                    std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>& error)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
-    MOCK_METHOD1_T(returnValue, void(const T& payload));
-    MOCK_METHOD0_T(timeOut, void());
-    MOCK_CONST_METHOD0_T(getType, std::string());
-};
-
 class MockGpsFloatSubscriptionListener
         : public joynr::ISubscriptionListener<joynr::types::Localisation::GpsLocation, float> {
 public:
