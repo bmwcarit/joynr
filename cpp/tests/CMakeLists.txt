@@ -240,6 +240,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockLocalCapabilitiesDirectoryCallback.h
         mock/MockObjects.cpp
         mock/MockObjects.h
+        mock/MockDiscovery.h
     )
 
     add_library(

@@ -37,6 +37,7 @@
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockObjects.h"
+#include "tests/mock/MockDiscovery.h"
 
 using ::testing::AtLeast;
 using ::testing::Throw;

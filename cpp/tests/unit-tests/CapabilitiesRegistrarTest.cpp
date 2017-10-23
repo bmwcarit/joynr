@@ -20,14 +20,17 @@
 #include <string>
 #include <limits>
 
-#include "joynr/PrivateCopyAssign.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/CapabilitiesRegistrar.h"
-#include "tests/mock/MockObjects.h"
 #include "joynr/types/Version.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/SingleThreadedIOService.h"
+
+#include "tests/mock/MockObjects.h"
+#include "tests/mock/MockDiscovery.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;
