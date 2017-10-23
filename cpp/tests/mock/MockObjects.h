@@ -741,45 +741,6 @@ public:
     MOCK_METHOD1(hasConsumerPermission, void(bool hasPermission));
 };
 
-class MockWebSocketClient : public joynr::IWebSocketPpClient
-{
-public:
-    MOCK_METHOD0(dtorCalled, void());
-    ~MockWebSocketClient() override
-    {
-        dtorCalled();
-    }
-
-    using ConnectionHandle = websocketpp::connection_hdl;
-    MOCK_METHOD1(registerConnectCallback, void(std::function<void()>));
-    MOCK_METHOD1(registerReconnectCallback, void(std::function<void()>));
-    MOCK_METHOD1(registerReceiveCallback, void(std::function<void(ConnectionHandle&&, smrf::ByteVector&&)>));
-
-    void registerDisconnectCallback(std::function<void()> callback) override
-    {
-        onConnectionClosedCallback = callback;
-    }
-
-    void signalDisconnect()
-    {
-        onConnectionClosedCallback();
-    }
-
-    MOCK_METHOD1(connect, void(const joynr::system::RoutingTypes::WebSocketAddress&));
-    MOCK_METHOD0(close, void());
-
-    MOCK_CONST_METHOD0(isConnected, bool());
-
-    MOCK_METHOD2(send, void(
-            const smrf::ByteArrayView&,
-            const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
-
-    MOCK_CONST_METHOD0(getSender, std::shared_ptr<joynr::IWebSocketSendInterface>());
-
-private:
-    std::function<void()> onConnectionClosedCallback;
-};
-
 #ifdef _MSC_VER
     #pragma warning( push )
 #endif

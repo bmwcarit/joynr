@@ -34,6 +34,7 @@
 
 #include "tests/mock/MockObjects.h"
 #include "tests/mock/MockWebSocketSendInterface.h"
+#include "tests/mock/MockWebSocketClient.h"
 
 using namespace ::testing;
 
