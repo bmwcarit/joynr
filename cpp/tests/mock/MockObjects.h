@@ -805,22 +805,6 @@ public:
     MOCK_METHOD1(setAvailabilityChangedCallback, void(std::function<void(bool)> availabilityChangedCallback));
 };
 
-class MockAccessController : public joynr::IAccessController
-{
-public:
-    MockAccessController() = default;
-
-    MOCK_METHOD2(hasConsumerPermission, void(std::shared_ptr<joynr::ImmutableMessage> message,
-                                             std::shared_ptr<joynr::IAccessController::IHasConsumerPermissionCallback> callback));
-
-    MOCK_METHOD4(hasProviderPermission, bool(const std::string& userId,
-                                             joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                                             const std::string& domain,
-                                             const std::string& interfaceName));
-
-    MOCK_METHOD1(addParticipantToWhitelist, void(const std::string& participantId));
-};
-
 #ifdef _MSC_VER
     #pragma warning( push )
 #endif

@@ -259,6 +259,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockLocationUpdatedSelectiveFilter.h
         mock/MockMqttMessagingSkeleton.h
         mock/MockMosquittoConnection.h
+        mock/MockAccessController.h
     )
 
     add_library(
