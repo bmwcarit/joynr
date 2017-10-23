@@ -728,49 +728,6 @@ public:
                      const joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters &filterParameters));
 };
 
-class MockGlobalDomainRoleControllerProxy : public virtual joynr::infrastructure::GlobalDomainRoleControllerProxy {
-public:
-    MockGlobalDomainRoleControllerProxy(std::weak_ptr<joynr::JoynrRuntime> runtime) :
-        GlobalDomainRoleControllerProxy(
-                runtime,
-                nullptr,
-                  "domain",
-                joynr::MessagingQos()),
-        ProxyBase(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
-        GlobalDomainRoleControllerProxyBase(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
-        GlobalDomainRoleControllerSyncProxy(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
-        GlobalDomainRoleControllerAsyncProxy(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos())
-    {
-    }
-
-    MOCK_METHOD3(
-            getDomainRolesAsync,
-            std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>>>(
-                const std::string& uid,
-                std::function<void(
-                    const std::vector<joynr::infrastructure::DacTypes::DomainRoleEntry>& domainRoleEntries
-                )> onSuccess,
-                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
-            )
-    );
-};
-
 class MockLocalDomainAccessController : public joynr::LocalDomainAccessController {
 public:
     using joynr::LocalDomainAccessController::LocalDomainAccessController;
