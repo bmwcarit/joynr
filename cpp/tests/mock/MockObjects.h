@@ -841,23 +841,6 @@ public:
     MOCK_METHOD1(unsubscribeFromTopic, void(const std::string& topic));
 };
 
-class MockMqttMessagingSkeleton : public joynr::IMqttMessagingSkeleton
-{
-public:
-    MOCK_METHOD2(transmit, void(std::shared_ptr<joynr::ImmutableMessage> message,
-                 const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
-
-    // GoogleMock does not support mocking functions with r-value references as parameters
-    MOCK_METHOD1(onMessageReceivedMock,void(smrf::ByteVector& rawMessage));
-    void onMessageReceived(smrf::ByteVector&& rawMessage) override
-    {
-        onMessageReceivedMock(rawMessage);
-    }
-
-    MOCK_METHOD1(registerMulticastSubscription, void(const std::string& multicastId));
-    MOCK_METHOD1(unregisterMulticastSubscription, void(const std::string& multicastId));
-};
-
 #ifdef _MSC_VER
     #pragma warning( push )
 #endif
