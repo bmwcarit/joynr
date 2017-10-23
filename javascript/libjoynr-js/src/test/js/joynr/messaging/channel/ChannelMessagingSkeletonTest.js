@@ -22,6 +22,7 @@ var ChannelMessagingSkeleton =
         require('../../../../classes/joynr/messaging/channel/ChannelMessagingSkeleton');
 var ChannelAddress = require('../../../../classes/joynr/system/RoutingTypes/ChannelAddress');
 var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
+var Promise = require('../../../../classes/global/Promise');
 
 describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", function() {
 
@@ -36,6 +37,7 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", functio
             "addNextHop",
             "route"
         ]);
+        messageRouterSpy.route.and.returnValue(Promise.resolve());
         channelMessagingSkeleton = new ChannelMessagingSkeleton({
             messageRouter : messageRouterSpy
         });

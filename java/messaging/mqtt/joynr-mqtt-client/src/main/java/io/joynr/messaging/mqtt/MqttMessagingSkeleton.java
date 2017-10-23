@@ -18,8 +18,9 @@
  */
 package io.joynr.messaging.mqtt;
 
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_ENABLED;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.DelayQueue;
@@ -65,6 +66,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private Set<JoynrMessageProcessor> messageProcessors;
     private Map<String, MqttAckInformation> processingMessages;
     private DelayQueue<DelayedMessageId> processedMessagesQueue;
+    private final boolean backpressureEnabled;
 
     private static class MqttAckInformation {
         private int mqttId;
@@ -128,15 +130,17 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     }
 
     @Inject
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
     public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                 @Named(PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS) int repeatedMqttMessageIgnorePeriodMs,
-                                 @Named(PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE) int maxMqttMessagesInQueue,
+                                 @Named(PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS) int repeatedMqttMessageIgnorePeriodMs,
+                                 @Named(PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE) int maxMqttMessagesInQueue,
+                                 @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
                                  Set<JoynrMessageProcessor> messageProcessors) {
+        this.backpressureEnabled = backpressureEnabled;
         this.ownAddress = ownAddress;
         this.repeatedMqttMessageIgnorePeriodMs = repeatedMqttMessageIgnorePeriodMs;
         this.maxMqttMessagesInQueue = maxMqttMessagesInQueue;
@@ -151,7 +155,11 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
     @Override
     public void init() {
-        messageRouter.registerMessageProcessedListener(this);
+        LOG.debug("Initializing MQTT skeleton ...");
+        if (backpressureEnabled) {
+            messageRouter.registerMessageProcessedListener(this);
+        }
+
         mqttClient = mqttClientFactory.create();
         mqttClient.setMessageListener(this);
         mqttClient.start();
@@ -200,9 +208,11 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         return topic;
     }
 
-    private void forwardMessage(ImmutableMessage message, int mqttId, int mqttQos, FailureAction failureAction) {
+    private void forwardMessageWithBackpressure(ImmutableMessage message,
+                                                int mqttId,
+                                                int mqttQos,
+                                                FailureAction failureAction) {
         message.setReceivedFromGlobal(true);
-        LOG.debug("<<< INCOMING <<< {}", message);
         synchronized (processingMessages) {
             // message.getId() == null (NullPointerException) already caught in transmit
             processingMessages.put(message.getId(), new MqttAckInformation(mqttId, mqttQos));
@@ -221,6 +231,22 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         }
     }
 
+    private void forwardMessageWithoutBackpressure(ImmutableMessage message,
+                                                   int mqttId,
+                                                   int mqttQos,
+                                                   FailureAction failureAction) {
+        message.setReceivedFromGlobal(true);
+
+        try {
+            messageRouter.route(message);
+        } catch (Exception e) {
+            LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
+            failureAction.execute(e);
+        }
+
+        mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
+    }
+
     @Override
     public void transmit(byte[] serializedMessage, int mqttId, int mqttQos, FailureAction failureAction) {
         try {
@@ -230,12 +256,32 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             ImmutableMessage message = new ImmutableMessage(processedMessage);
             message.setContext(context);
 
+            LOG.debug("<<< INCOMING <<< {}", message);
+
             if (messageProcessors != null) {
                 for (JoynrMessageProcessor processor : messageProcessors) {
                     message = processor.processIncoming(message);
                 }
             }
 
+            if (dropMessage(message)) {
+                return;
+            }
+
+            if (backpressureEnabled) {
+                forwardMessageWithBackpressure(message, mqttId, mqttQos, failureAction);
+            } else {
+                forwardMessageWithoutBackpressure(message, mqttId, mqttQos, failureAction);
+            }
+        } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
+            LOG.error("Message: \"{}\", could not be deserialized, exception: {}", serializedMessage, e.getMessage());
+            mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
+            failureAction.execute(e);
+        }
+    }
+
+    private boolean dropMessage(ImmutableMessage message) {
+        if (backpressureEnabled) {
             synchronized (processingMessages) {
                 // The number of not yet processed (queued) Mqtt messages is the difference between
                 // processingMessages.size() and the number of messages which are already processed but still
@@ -243,19 +289,16 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
                 if (processingMessages.size() - processedMessagesQueue.size() >= maxMqttMessagesInQueue) {
                     LOG.warn("Maximum number of Mqtt messages in message queue reached. "
                             + "Incoming Mqtt message with id {} cannot be handled now.", message.getId());
-                    return;
+                    return true;
                 }
                 if (processingMessages.containsKey(message.getId())) {
                     LOG.debug("Dropping already received message with id {}", message.getId());
-                    return;
+                    return true;
                 }
             }
-            forwardMessage(message, mqttId, mqttQos, failureAction);
-        } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
-            LOG.error("Message: \"{}\", could not be deserialized, exception: {}", serializedMessage, e.getMessage());
-            mqttClient.messageReceivedAndProcessingFinished(mqttId, mqttQos);
-            failureAction.execute(e);
         }
+
+        return false;
     }
 
     protected JoynrMqttClient getClient() {

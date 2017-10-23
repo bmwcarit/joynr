@@ -26,7 +26,7 @@ echo "preparing the node environment incl. required dependencies"
 
 #currently, we assume npm and node is installed on the machine running this script
 #download and install all required node modules using the package.json
-npm install
+#npm install
 
 #so far, only files located at the ${project.build.outputDirectory} can find the installed node_modules
 #make the installed node_modules available for the test-classes

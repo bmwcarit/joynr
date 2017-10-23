@@ -158,7 +158,7 @@ var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
                                 "expect correct error reporting after operation call with wrong type of argument",
                                 function(done) {
                                         addFavoriteStation({
-                                            "radioStation" : 1
+                                            "radioStation" : 1,
                                         }).then(function(message) {
                                             fail("unexpected resolve from addFavoriteStation");
                                             return null;
@@ -348,7 +348,8 @@ var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
                                 "expect no error reporting after operation call with correct complex argument",
                                 function(done) {
                                     var radioStation = new RadioStation({
-                                        name : "correctValue"
+                                        name : "correctValue",
+                                        byteBuffer: []
                                     });
 
                                     addFavoriteStation({
@@ -398,7 +399,8 @@ var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
                             }).then(function() {
                                 return testOperationOverloading({
                                     radioStation : new RadioStation({
-                                        name : "typedStation"
+                                        name : "typedStation",
+                                        byteBuffer: []
                                     })
                                 }); // correct version two
                             }).then(function() {
@@ -423,7 +425,8 @@ var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
                             }).then(function() {
                                 return testOperationOverloading({
                                     radioStation : new RadioStation({
-                                        name : "stringStation"
+                                        name : "stringStation",
+                                        byteBuffer: []
                                     }),
                                     anotherArgument : 2
                                 }, true); // wrong additional arguments

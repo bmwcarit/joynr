@@ -370,16 +370,20 @@ var uuid = require('../../../../classes/lib/uuid-annotated');
                                 });
 
                         it("route drops expired message", function(done) {
+                            var isGloballyVisible = true;
+                            messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
                             joynrMessage.expiryDate = Date.now() - 1;
-                            try {
-                                messageRouter.route(joynrMessage);
+                            joynrMessage.setIsLocalMessage(true);
+                            messageRouter.route(joynrMessage)
+                            .then(function() {
                                 done.fail("did not throw");
-                            } catch (e) {
+                            })
+                            .catch(function(e) {
                                 expect(e.detailMessage.indexOf("expired message") >= 0).toBe(true);
-                            }
-                            expect(messagingStubFactorySpy.createMessagingStub).not
-                                    .toHaveBeenCalled();
-                            done();
+                                expect(messagingStubFactorySpy.createMessagingStub).not
+                                        .toHaveBeenCalled();
+                                done();
+                            });
                         });
 
                         it("sets replyTo address for non local messages", function(done) {
@@ -737,18 +741,22 @@ var uuid = require('../../../../classes/lib/uuid-annotated');
                                 var expectedJoynrMessage = new JoynrMessage(Util.extendDeep({}, joynrMessage));
                                 expectedJoynrMessage.replyChannelId = serializedTestGlobalClusterControllerAddress;
 
-                                expect(messageRouter.route.bind(this, joynrMessage)).toThrowError(Error);
+                                messageRouter.route(joynrMessage)
+                                .then(function() {
+                                    expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
 
-                                expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
+                                    messageRouter.setRoutingProxy(routingProxySpy);
 
-                                messageRouter.setRoutingProxy(routingProxySpy);
-
-                                waitsFor(function() {
-                                    return (messagingStubSpy.transmit.calls.count() >= 1);
-                                }, "wait for tranmsit to be done", 1000).finally(function() {
-                                    expect(messagingStubSpy.transmit).toHaveBeenCalledWith(expectedJoynrMessage);
-                                    done();
-                                    return null;
+                                    waitsFor(function() {
+                                        return (messagingStubSpy.transmit.calls.count() >= 1);
+                                    }, "wait for tranmsit to be done", 1000).finally(function() {
+                                        expect(messagingStubSpy.transmit).toHaveBeenCalledWith(expectedJoynrMessage);
+                                        done();
+                                        return null;
+                                    });
+                                })
+                                .catch(function(error) {
+                                    done.fail("unexpected error from messageRouter.route: " + error);
                                 });
                             });
 

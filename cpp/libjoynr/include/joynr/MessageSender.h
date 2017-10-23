@@ -152,7 +152,7 @@ private:
     std::shared_ptr<IMessageRouter> messageRouter;
     MutableMessageFactory messageFactory;
     std::string replyToAddress;
-    ADD_LOGGER(MessageSender);
+    ADD_LOGGER(MessageSender)
 };
 
 } // namespace joynr

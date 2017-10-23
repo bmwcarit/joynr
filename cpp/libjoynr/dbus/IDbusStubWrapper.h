@@ -106,7 +106,7 @@ private:
 protected:
     std::string serviceAddress;
     std::shared_ptr<_ProxyClass<>> proxy;
-    ADD_LOGGER(IDbusStubWrapper);
+    ADD_LOGGER(IDbusStubWrapper)
 
     // event handling subscritpion
     CommonAPI::ProxyStatusEvent* proxyEvent;
@@ -145,10 +145,6 @@ protected:
         JOYNR_LOG_INFO(logger, "Call method {} -> {}", serviceAddress, method);
     }
 };
-
-
-template <template <class...> class _ProxyClass>
-INIT_LOGGER(SINGLE_MACRO_ARG(IDbusStubWrapper<_ProxyClass>));
 
 } // namespace joynr
 #endif // IDBUSSTUBWRAPPER_H

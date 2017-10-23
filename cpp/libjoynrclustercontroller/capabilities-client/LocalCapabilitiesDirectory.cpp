@@ -46,8 +46,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(LocalCapabilitiesDirectory);
-
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         ClusterControllerSettings& clusterControllerSettings,
         std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
@@ -86,7 +84,7 @@ void LocalCapabilitiesDirectory::scheduleFreshnessUpdate()
     freshnessUpdateTimer.expires_from_now(
             clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs(), timerError);
     if (timerError) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Error from freshness update timer: {}: {}",
                         timerError.value(),
                         timerError.message());
@@ -102,20 +100,20 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
 {
     if (timerError == boost::asio::error::operation_aborted) {
         // Assume Destructor has been called
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "freshness update aborted after shutdown, error code from freshness update "
                         "timer: {}",
                         timerError.message());
         return;
     } else if (timerError) {
         JOYNR_LOG_ERROR(
-                logger,
+                logger(),
                 "send freshness update called with error code from freshness update timer: {}",
                 timerError.message());
     }
 
     auto onError = [](const joynr::exceptions::JoynrRuntimeException& error) {
-        JOYNR_LOG_ERROR(logger, "error sending freshness update: {}", error.getMessage());
+        JOYNR_LOG_ERROR(logger(), "error sending freshness update: {}", error.getMessage());
     };
     capabilitiesClient->touch(clusterControllerId, nullptr, std::move(onError));
     scheduleFreshnessUpdate();
@@ -149,13 +147,13 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
             std::function<void(const exceptions::JoynrException&)> onError =
                     [&](const exceptions::JoynrException& error) {
                 JOYNR_LOG_ERROR(
-                        logger,
+                        logger(),
                         "Error occured during the execution of capabilitiesProxy->add. Error: {}",
                         error.getMessage());
             };
 
             std::function<void()> onSuccess = [this, globalDiscoveryEntry]() {
-                JOYNR_LOG_TRACE(logger,
+                JOYNR_LOG_TRACE(logger(),
                                 "Global capability addedd successfully, adding it to list "
                                 "of registered capabilities.");
                 this->registeredGlobalCapabilities.push_back(globalDiscoveryEntry);
@@ -195,24 +193,24 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId)
     boost::optional<types::DiscoveryEntry> optionalEntry =
             localCapabilities.lookupByParticipantId(participantId);
     if (!optionalEntry) {
-        JOYNR_LOG_INFO(logger, "participantId '{}' not found, cannot be removed", participantId);
+        JOYNR_LOG_INFO(logger(), "participantId '{}' not found, cannot be removed", participantId);
         return;
     }
     const types::DiscoveryEntry& entry = *optionalEntry;
 
     if (isGlobal(entry)) {
-        JOYNR_LOG_TRACE(logger, "Removing globally registered participantId: {}", participantId);
+        JOYNR_LOG_TRACE(logger(), "Removing globally registered participantId: {}", participantId);
         removeFromGloballyRegisteredCapabilities(entry);
         globalCapabilities.removeByParticipantId(participantId);
         capabilitiesClient->remove(participantId);
     }
-    JOYNR_LOG_TRACE(logger, "Removing locally registered participantId: {}", participantId);
+    JOYNR_LOG_TRACE(logger(), "Removing locally registered participantId: {}", participantId);
     localCapabilities.removeByParticipantId(participantId);
     informObserversOnRemove(entry);
     if (auto messageRouterSharedPtr = messageRouter.lock()) {
         messageRouterSharedPtr->removeNextHop(participantId);
     } else {
-        JOYNR_LOG_FATAL(logger,
+        JOYNR_LOG_FATAL(logger(),
                         "could not removeNextHop for {} because messageRouter is not available",
                         participantId);
     }
@@ -592,14 +590,14 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
                                                    isSticky);
             } else {
                 JOYNR_LOG_FATAL(
-                        logger,
+                        logger(),
                         "could not addNextHop {} to {} because messageRouter is not available",
                         currentEntry.getParticipantId(),
                         serializedAddress);
             }
             this->insertInCache(currentEntry, false, true);
         } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_FATAL(logger,
+            JOYNR_LOG_FATAL(logger(),
                             "could not deserialize Address from {} - error: {}",
                             serializedAddress,
                             e.what());
@@ -631,11 +629,30 @@ bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEnt
     if (auto gotAccessController = accessController.lock()) {
         const CallContext& callContext = CallContextStorage::get();
         const std::string& ownerId = callContext.getPrincipal();
-        return gotAccessController->hasProviderPermission(
+        const bool result = gotAccessController->hasProviderPermission(
                 ownerId,
                 infrastructure::DacTypes::TrustLevel::HIGH,
                 discoveryEntry.getDomain(),
                 discoveryEntry.getInterfaceName());
+        if (clusterControllerSettings.aclAudit()) {
+            if (!result) {
+                JOYNR_LOG_ERROR(logger(),
+                                "ACL AUDIT: owner '{}' is not allowed to register "
+                                "interface '{}' on domain '{}'",
+                                ownerId,
+                                discoveryEntry.getInterfaceName(),
+                                discoveryEntry.getDomain());
+            } else {
+                JOYNR_LOG_DEBUG(logger(),
+                                "ACL AUDIT: owner '{}' is allowed to register interface "
+                                "'{}' on domain '{}'",
+                                ownerId,
+                                discoveryEntry.getInterfaceName(),
+                                discoveryEntry.getDomain());
+            }
+            return true;
+        }
+        return result;
     }
 
     // return false in case AC ptr and setting do not match
@@ -694,7 +711,7 @@ void LocalCapabilitiesDirectory::lookup(
             return;
         }
         if (capabilities.size() > 1) {
-            JOYNR_LOG_ERROR(this->logger,
+            JOYNR_LOG_ERROR(this->logger(),
                             "participantId {} has more than 1 capability entry:\n {}\n {}",
                             participantId,
                             capabilities[0].toString(),
@@ -744,7 +761,7 @@ void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& 
         joynr::util::saveStringToFile(
                 fileName, joynr::serializer::serializeToJson(localCapabilities));
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger, ex.what());
+        JOYNR_LOG_ERROR(logger(), ex.what());
     }
 }
 
@@ -756,7 +773,7 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
     try {
         jsonString = joynr::util::loadStringFromFile(persistencyFile);
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_INFO(logger, ex.what());
+        JOYNR_LOG_INFO(logger(), ex.what());
     }
 
     if (jsonString.empty()) {
@@ -766,7 +783,7 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
     try {
         joynr::serializer::deserializeFromJson(localCapabilities, jsonString);
     } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger, ex.what());
+        JOYNR_LOG_ERROR(logger(), ex.what());
     }
 
     // insert all global capability entries into global cache
@@ -779,7 +796,7 @@ void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::str
 {
     if (fileName.empty()) {
         JOYNR_LOG_WARN(
-                logger, "Empty file name provided in input: cannot load global capabilities.");
+                logger(), "Empty file name provided in input: cannot load global capabilities.");
         return;
     }
 
@@ -787,7 +804,7 @@ void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::str
     try {
         jsonString = joynr::util::loadStringFromFile(fileName);
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger, ex.what());
+        JOYNR_LOG_ERROR(logger(), ex.what());
     }
 
     if (jsonString.empty()) {
@@ -800,7 +817,7 @@ void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::str
     } catch (const std::invalid_argument& e) {
         std::string errorMessage("could not deserialize injected global capabilities from " +
                                  jsonString + " - error: " + e.what());
-        JOYNR_LOG_FATAL(logger, errorMessage);
+        JOYNR_LOG_FATAL(logger(), errorMessage);
         return;
     }
 
@@ -908,7 +925,7 @@ void LocalCapabilitiesDirectory::scheduleCleanupTimer()
     checkExpiredDiscoveryEntriesTimer.expires_from_now(
             std::chrono::milliseconds(intervalMs), timerError);
     if (timerError) {
-        JOYNR_LOG_FATAL(logger,
+        JOYNR_LOG_FATAL(logger(),
                         "Error scheduling discovery entries check. {}: {}",
                         timerError.value(),
                         timerError.message());
@@ -925,13 +942,13 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
 {
     if (errorCode == boost::asio::error::operation_aborted) {
         // Assume Destructor has been called
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "expired discovery entries check aborted after shutdown, error code from "
                         "expired discovery entries timer: {}",
                         errorCode.message());
         return;
     } else if (errorCode) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Error triggering expired discovery entries check, error code: {}",
                         errorCode.message());
     }

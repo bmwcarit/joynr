@@ -23,7 +23,8 @@ var ErrorList = require('../../../test-classes/joynr/vehicle/radiotypes/ErrorLis
 var TestEnum = require('../../../test-classes/joynr/tests/testTypes/TestEnum');
 
     var radioStationVar = new RadioStation({
-        name : "asdf"
+        name : "asdf",
+        byteBuffer: []
     });
     var testData = [
         {

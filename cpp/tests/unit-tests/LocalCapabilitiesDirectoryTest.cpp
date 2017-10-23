@@ -300,13 +300,11 @@ protected:
     void registerReceivedCapabilities(const std::string& addressType,
                                       const std::string& serializedAddress);
 
-    ADD_LOGGER(LocalCapabilitiesDirectoryTest);
+    ADD_LOGGER(LocalCapabilitiesDirectoryTest)
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectoryTest);
 };
-
-INIT_LOGGER(LocalCapabilitiesDirectoryTest);
 
 const std::string LocalCapabilitiesDirectoryTest::INTERFACE_1_NAME("myInterfaceA");
 const std::string LocalCapabilitiesDirectoryTest::INTERFACE_2_NAME("myInterfaceB");

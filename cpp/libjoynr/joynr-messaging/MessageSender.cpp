@@ -36,8 +36,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(MessageSender);
-
 MessageSender::MessageSender(std::shared_ptr<IMessageRouter> messageRouter,
                              std::shared_ptr<IKeychain> keyChain,
                              std::uint64_t ttlUpliftMs)
@@ -67,7 +65,7 @@ void MessageSender::sendRequest(const std::string& senderParticipantId,
 {
     auto dispatcherSharedPtr = dispatcher.lock();
     if (dispatcherSharedPtr == nullptr) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Sending a request failed. Dispatcher is null. Probably a proxy "
                         "was used after the runtime was deleted.");
         return;
@@ -118,7 +116,7 @@ void MessageSender::sendReply(const std::string& senderParticipantId,
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Reply with RequestReplyId {} could not be sent to {}. Error: {}",
                         reply.getRequestReplyId(),
                         receiverParticipantId,
@@ -210,7 +208,7 @@ void MessageSender::sendSubscriptionReply(const std::string& senderParticipantId
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {
         JOYNR_LOG_ERROR(
-                logger,
+                logger(),
                 "SubscriptionReply with SubscriptionId {} could not be sent to {}. Error: {}",
                 subscriptionReply.getSubscriptionId(),
                 receiverParticipantId,
@@ -247,7 +245,7 @@ void MessageSender::sendSubscriptionPublication(const std::string& senderPartici
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {
         JOYNR_LOG_ERROR(
-                logger,
+                logger(),
                 "SubscriptionPublication with SubscriptionId {} could not be sent to {}. Error: {}",
                 subscriptionPublication.getSubscriptionId(),
                 receiverParticipantId,
@@ -267,7 +265,7 @@ void MessageSender::sendMulticast(const std::string& fromParticipantId,
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "MulticastPublication with multicastId {} could not be sent. Error: {}",
                         multicastPublication.getMulticastId(),
                         e.getMessage());

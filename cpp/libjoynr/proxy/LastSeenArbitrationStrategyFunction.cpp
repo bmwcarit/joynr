@@ -27,8 +27,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(LastSeenArbitrationStrategyFunction);
-
 types::DiscoveryEntryWithMetaInfo LastSeenArbitrationStrategyFunction::select(
         const std::map<std::string, types::CustomParameter> customParameters,
         const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const
@@ -38,7 +36,7 @@ types::DiscoveryEntryWithMetaInfo LastSeenArbitrationStrategyFunction::select(
     int64_t latestLastSeenDateMs = -1;
 
     for (auto it = discoveryEntries.cbegin(); it != discoveryEntries.cend(); ++it) {
-        JOYNR_LOG_TRACE(logger, "Looping over discoveryEntry: {}", it->toString());
+        JOYNR_LOG_TRACE(logger(), "Looping over discoveryEntry: {}", it->toString());
         int64_t lastSeenDateMs = it->getLastSeenDateMs();
 
         if (lastSeenDateMs > latestLastSeenDateMs) {
@@ -51,7 +49,7 @@ types::DiscoveryEntryWithMetaInfo LastSeenArbitrationStrategyFunction::select(
         std::string errorMsg;
         errorMsg = "There was one or more entries in capabilitiesEntries, but the LastSeenDateMs "
                    "wasn't set.";
-        JOYNR_LOG_WARN(logger, errorMsg);
+        JOYNR_LOG_WARN(logger(), errorMsg);
         throw exceptions::DiscoveryException(errorMsg);
     }
 

@@ -24,8 +24,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(WebSocketMessagingStubFactory);
-
 WebSocketMessagingStubFactory::WebSocketMessagingStubFactory()
         : serverStubMap(),
           serverStubMapMutex(),
@@ -54,7 +52,7 @@ std::shared_ptr<IMessagingStub> WebSocketMessagingStubFactory::create(
                                  std::shared_ptr<IMessagingStub>>::const_iterator stub =
                 clientStubMap.find(*webSocketClientAddress);
         if (stub == clientStubMap.cend()) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "No websocket found for address {}",
                             webSocketClientAddress->toString());
             return std::shared_ptr<IMessagingStub>();
@@ -69,7 +67,7 @@ std::shared_ptr<IMessagingStub> WebSocketMessagingStubFactory::create(
                                  std::shared_ptr<IMessagingStub>>::const_iterator stub =
                 serverStubMap.find(*webSocketServerAddress);
         if (stub == serverStubMap.cend()) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "No websocket found for address {}",
                             webSocketServerAddress->toString());
             return std::shared_ptr<IMessagingStub>();
@@ -91,7 +89,7 @@ void WebSocketMessagingStubFactory::addClient(
             clientStubMap[clientAddress] = std::move(wsClientStub);
         }
     } else {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Client with address {} already exists in the clientStubMap",
                         clientAddress.toString());
     }
@@ -118,7 +116,7 @@ void WebSocketMessagingStubFactory::addServer(
 void WebSocketMessagingStubFactory::onMessagingStubClosed(
         const system::RoutingTypes::Address& address)
 {
-    JOYNR_LOG_DEBUG(logger, "removing messaging stub for address: {}", address.toString());
+    JOYNR_LOG_DEBUG(logger(), "removing messaging stub for address: {}", address.toString());
     std::shared_ptr<const system::RoutingTypes::Address> addressPtr = nullptr;
     // if destination is a WS client address
     if (auto webSocketClientAddress =

@@ -64,7 +64,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ConnectorFactory);
     std::shared_ptr<InProcessConnectorFactory> inProcessConnectorFactory;
     std::unique_ptr<JoynrMessagingConnectorFactory> joynrMessagingConnectorFactory;
-    ADD_LOGGER(ConnectorFactory);
+    ADD_LOGGER(ConnectorFactory)
 };
 
 } // namespace joynr

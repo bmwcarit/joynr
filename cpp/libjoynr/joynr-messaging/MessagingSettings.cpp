@@ -26,8 +26,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(MessagingSettings);
-
 MessagingSettings::MessagingSettings(Settings& settings) : settings(settings)
 {
     settings.fillEmptySettingsWithDefaults(DEFAULT_MESSAGING_SETTINGS_FILENAME());
@@ -758,77 +756,77 @@ void MessagingSettings::checkSettings()
 
 void MessagingSettings::printSettings() const
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {} = {})",
                     SETTING_BROKER_URL(),
                     settings.get<std::string>(SETTING_BROKER_URL()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {} = {})",
                     SETTING_DISCOVERY_DIRECTORIES_DOMAIN(),
                     settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_CAPABILITIES_DIRECTORY_URL(),
                     settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_CAPABILITIES_DIRECTORY_CHANNELID(),
                     settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID(),
                     settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS(),
                     settings.get<std::string>(SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS(),
                     settings.get<std::string>(SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_INDEX(),
                     settings.get<std::string>(SETTING_INDEX()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_CREATE_CHANNEL_RETRY_INTERVAL(),
                     settings.get<std::string>(SETTING_CREATE_CHANNEL_RETRY_INTERVAL()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_DELETE_CHANNEL_RETRY_INTERVAL(),
                     settings.get<std::string>(SETTING_DELETE_CHANNEL_RETRY_INTERVAL()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_SEND_MSG_RETRY_INTERVAL(),
                     settings.get<std::string>(SETTING_SEND_MSG_RETRY_INTERVAL()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_LONGPOLL_RETRY_INTERVAL(),
                     settings.get<std::string>(SETTING_LONGPOLL_RETRY_INTERVAL()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_LOCAL_PROXY_HOST(),
                     settings.get<std::string>(SETTING_LOCAL_PROXY_HOST()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_LOCAL_PROXY_PORT(),
                     settings.get<std::string>(SETTING_LOCAL_PROXY_PORT()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_PERSISTENCE_FILENAME(),
                     settings.get<std::string>(SETTING_PERSISTENCE_FILENAME()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_DISCOVERY_MESSAGES_TTL_MS(),
                     settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()));
-    JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_MAXIMUM_TTL_MS(), getMaximumTtlMs());
-    JOYNR_LOG_DEBUG(logger, "SETTING: {} = {})", SETTING_TTL_UPLIFT_MS(), getTtlUpliftMs());
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(), "SETTING: {} = {})", SETTING_MAXIMUM_TTL_MS(), getMaximumTtlMs());
+    JOYNR_LOG_DEBUG(logger(), "SETTING: {} = {})", SETTING_TTL_UPLIFT_MS(), getTtlUpliftMs());
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {} = {})",
                     SETTING_ROUTING_TABLE_GRACE_PERIOD_MS(),
                     settings.get<std::int64_t>(SETTING_ROUTING_TABLE_GRACE_PERIOD_MS()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {} = {})",
                     SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(),
                     settings.get<std::int64_t>(SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS()));

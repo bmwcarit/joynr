@@ -121,7 +121,7 @@ private:
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> defaultCapabilitiesProxy;
     std::shared_ptr<IProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
             capabilitiesProxyBuilder;
-    ADD_LOGGER(CapabilitiesClient);
+    ADD_LOGGER(CapabilitiesClient)
 };
 
 } // namespace joynr

@@ -40,11 +40,9 @@ public:
     }
 
 protected:
-    ADD_LOGGER(SystemServicesSettingsTest);
+    ADD_LOGGER(SystemServicesSettingsTest)
     std::string testSettingsFileName;
 };
-
-INIT_LOGGER(SystemServicesSettingsTest);
 
 TEST_F(SystemServicesSettingsTest, intializedWithDefaultSettings) {
     Settings testSettings(testSettingsFileName);

@@ -113,7 +113,7 @@ public:
 
 protected:
     /*! Logger */
-    ADD_LOGGER(DelayedScheduler);
+    ADD_LOGGER(DelayedScheduler)
 
 private:
     /*! @ref DelayedScheduler is not allowed to be copied */

@@ -199,7 +199,7 @@ private:
     std::shared_ptr<IMessageRouter> messageRouter;
 
     DelayedScheduler* missedPublicationScheduler;
-    ADD_LOGGER(SubscriptionManager);
+    ADD_LOGGER(SubscriptionManager)
     /**
       * @class SubscriptionManager::MissedPublicationRunnable
       * @brief
@@ -231,7 +231,7 @@ private:
         const std::string subscriptionId;
         std::int64_t alertAfterInterval;
         std::weak_ptr<SubscriptionManager> subscriptionManager;
-        ADD_LOGGER(MissedPublicationRunnable);
+        ADD_LOGGER(MissedPublicationRunnable)
     };
     /**
       * @class SubscriptionManager::SubscriptionEndRunnable
@@ -254,7 +254,7 @@ private:
         DISALLOW_COPY_AND_ASSIGN(SubscriptionEndRunnable);
         std::string subscriptionId;
         std::weak_ptr<SubscriptionManager> subscriptionManager;
-        ADD_LOGGER(SubscriptionEndRunnable);
+        ADD_LOGGER(SubscriptionEndRunnable)
     };
 };
 

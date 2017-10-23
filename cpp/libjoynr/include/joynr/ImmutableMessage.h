@@ -145,7 +145,7 @@ private:
 
     std::string creator;
     RequiredHeaders requiredHeaders;
-    ADD_LOGGER(ImmutableMessage);
+    ADD_LOGGER(ImmutableMessage)
 };
 
 } // namespace joynr

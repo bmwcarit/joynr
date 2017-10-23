@@ -25,8 +25,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(DbusMessagingStubAdapter);
-
 DbusMessagingStubAdapter::DbusMessagingStubAdapter(std::string serviceAddress)
         : IDbusStubWrapper(serviceAddress)
 {

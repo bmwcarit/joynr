@@ -36,6 +36,7 @@ var MulticastPublication = require('../../../classes/joynr/dispatching/types/Mul
 var SubscriptionPublication =
         require('../../../classes/joynr/dispatching/types/SubscriptionPublication');
 var uuid = require('../../../classes/lib/uuid-annotated');
+var Promise = require('../../../classes/global/Promise');
 
 var providerId = "providerId";
 var providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
@@ -211,6 +212,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
         clusterControllerMessagingStub =
                 jasmine.createSpyObj("ClusterControllerMessagingStub", [ "transmit"
                 ]);
+        clusterControllerMessagingStub.transmit.and.returnValue(Promise.resolve());
 
         securityManager = jasmine.createSpyObj("SecurityManager", [ "getCurrentProcessUserId"
         ]);

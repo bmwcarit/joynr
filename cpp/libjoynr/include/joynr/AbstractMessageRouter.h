@@ -183,7 +183,7 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessageRouter);
-    ADD_LOGGER(AbstractMessageRouter);
+    ADD_LOGGER(AbstractMessageRouter)
 
     void checkExpiryDate(const ImmutableMessage& message);
 };
@@ -209,7 +209,7 @@ private:
     std::weak_ptr<AbstractMessageRouter> messageRouter;
     std::uint32_t tryCount;
 
-    ADD_LOGGER(MessageRunnable);
+    ADD_LOGGER(MessageRunnable)
 };
 
 } // namespace joynr

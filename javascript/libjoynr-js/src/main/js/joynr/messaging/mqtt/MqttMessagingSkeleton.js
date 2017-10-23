@@ -45,9 +45,17 @@ var MqttMessagingSkeleton =
                     function(topic, message) {
                         message.setReceivedFromGlobal(true);
                         try {
-                            settings.messageRouter.route(message);
-                        } catch (e) {
-                            log.error("unable to process message: "
+                            settings.messageRouter.route(message)
+                            .catch (function(e) {
+                                log.error("unable to process message: "
+                                    + e
+                                    + (e instanceof JoynrException ? " " + e.detailMessage : "")
+                                    + " \nmessage: "
+                                    + DiagnosticTags.forJoynrMessage(message));
+                            });
+                        } catch(e) {
+                            // Errors should be returned via the Promise
+                            log.fatal("unable to process message: "
                                 + e
                                 + (e instanceof JoynrException ? " " + e.detailMessage : "")
                                 + " \nmessage: "

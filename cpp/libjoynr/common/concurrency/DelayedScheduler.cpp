@@ -27,8 +27,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(DelayedScheduler);
-
 DelayedScheduler::DelayedScheduler(std::function<void(std::shared_ptr<Runnable>)> onWorkAvailable,
                                    boost::asio::io_service& ioService,
                                    std::chrono::milliseconds defaultDelayMs)
@@ -44,7 +42,7 @@ DelayedScheduler::DelayedScheduler(std::function<void(std::shared_ptr<Runnable>)
 
 DelayedScheduler::~DelayedScheduler()
 {
-    JOYNR_LOG_TRACE(logger, "Dtor called");
+    JOYNR_LOG_TRACE(logger(), "Dtor called");
     // check if DelayedScheduler::shutdown() was called first
     assert(delayedRunnables.empty());
 }
@@ -54,7 +52,7 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(std::shared_ptr<Runn
 {
     std::lock_guard<std::mutex> lock(writeLock);
 
-    JOYNR_LOG_TRACE(logger, "schedule: enter with {} ms delay", delay.count());
+    JOYNR_LOG_TRACE(logger(), "schedule: enter with {} ms delay", delay.count());
 
     if (stoppingDelayedScheduler) {
         // if (runnable->isDeleteOnExit()) {
@@ -64,7 +62,7 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(std::shared_ptr<Runn
     }
 
     if (delay == std::chrono::milliseconds::zero()) {
-        JOYNR_LOG_TRACE(logger, "Forward runnable directly (no delay)");
+        JOYNR_LOG_TRACE(logger(), "Forward runnable directly (no delay)");
         onWorkAvailable(runnable);
         return INVALID_RUNNABLE_HANDLE;
     }
@@ -89,7 +87,7 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(std::shared_ptr<Runn
                                 auto it = this->delayedRunnables.find(newRunnableHandle);
 
                                 if (it == this->delayedRunnables.end()) {
-                                    JOYNR_LOG_WARN(this->logger,
+                                    JOYNR_LOG_WARN(logger(),
                                                    "Timed runnable with ID {} not found.",
                                                    newRunnableHandle);
                                     return;
@@ -102,13 +100,13 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(std::shared_ptr<Runn
                                 this->delayedRunnables.erase(it);
                             }
                         } else if (errorCode != boost::system::errc::operation_canceled) {
-                            JOYNR_LOG_ERROR(this->logger,
+                            JOYNR_LOG_ERROR(logger(),
                                             "Failed to schedule delayed runnable: {}",
                                             errorCode.message());
                         }
                     }));
 
-    JOYNR_LOG_TRACE(logger, "Added timer with ID {}", newRunnableHandle);
+    JOYNR_LOG_TRACE(logger(), "Added timer with ID {}", newRunnableHandle);
 
     return newRunnableHandle;
 }
@@ -121,7 +119,7 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(std::shared_ptr<Runn
 void DelayedScheduler::unschedule(const RunnableHandle runnableHandle)
 {
     if (runnableHandle == INVALID_RUNNABLE_HANDLE) {
-        JOYNR_LOG_WARN(logger, "unschedule() called with invalid runnable handle");
+        JOYNR_LOG_WARN(logger(), "unschedule() called with invalid runnable handle");
         return;
     }
 
@@ -130,14 +128,14 @@ void DelayedScheduler::unschedule(const RunnableHandle runnableHandle)
         auto it = delayedRunnables.find(runnableHandle);
 
         if (it == delayedRunnables.end()) {
-            JOYNR_LOG_WARN(logger, "Timed runnable with ID {} not found.", runnableHandle);
+            JOYNR_LOG_WARN(logger(), "Timed runnable with ID {} not found.", runnableHandle);
             return;
         }
 
         delayedRunnables.erase(it);
     }
 
-    JOYNR_LOG_TRACE(logger, "runnable with handle {} unscheduled", runnableHandle);
+    JOYNR_LOG_TRACE(logger(), "runnable with handle {} unscheduled", runnableHandle);
 }
 
 void DelayedScheduler::shutdown()

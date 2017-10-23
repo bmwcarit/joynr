@@ -97,7 +97,7 @@ public:
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestInterpreter);
-	ADD_LOGGER(«interfaceName»RequestInterpreter);
+	ADD_LOGGER(«interfaceName»RequestInterpreter)
 };
 
 «getNamespaceEnder(francaIntf)»

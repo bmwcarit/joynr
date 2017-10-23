@@ -110,8 +110,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(JoynrClusterControllerRuntime);
-
 static const std::string ACC_ENTRIES_FILE = "CCAccessControl.entries";
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
@@ -202,13 +200,13 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
         const std::string settingsFileName(argv[i]);
 
         // Read the settings file
-        JOYNR_LOG_INFO(logger, "Loading settings file: {}", settingsFileName);
+        JOYNR_LOG_INFO(logger(), "Loading settings file: {}", settingsFileName);
         Settings currentSettings(settingsFileName);
 
         // Check for errors
         if (!currentSettings.isLoaded()) {
             JOYNR_LOG_FATAL(
-                    logger, "Provided settings file {} could not be loaded.", settingsFileName);
+                    logger(), "Provided settings file {} could not be loaded.", settingsFileName);
             return nullptr;
         }
 
@@ -248,20 +246,20 @@ void JoynrClusterControllerRuntime::init()
                                   joynr::system::RoutingTypes::MqttProtocol::Enum::MQTTS) ||
         brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
                                   joynr::system::RoutingTypes::MqttProtocol::Enum::TCP)) {
-        JOYNR_LOG_DEBUG(logger, "MQTT-Messaging");
+        JOYNR_LOG_DEBUG(logger(), "MQTT-Messaging");
         auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
                 brokerUrl.toString(), "");
         addressCalculator = std::make_unique<joynr::MqttMulticastAddressCalculator>(
                 globalAddress, clusterControllerSettings.getMqttMulticastTopicPrefix());
         doMqttMessaging = true;
     } else if (brokerProtocol == "HTTP" || brokerProtocol == "HTTPS") {
-        JOYNR_LOG_DEBUG(logger, "HTTP-Messaging");
+        JOYNR_LOG_DEBUG(logger(), "HTTP-Messaging");
         auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
                 brokerUrl.toString(), "");
         addressCalculator = std::make_unique<joynr::HttpMulticastAddressCalculator>(globalAddress);
         doHttpMessaging = true;
     } else {
-        JOYNR_LOG_FATAL(logger, "invalid broker protocol in broker-url: {}", brokerProtocol);
+        JOYNR_LOG_FATAL(logger(), "invalid broker protocol in broker-url: {}", brokerProtocol);
         throw exceptions::JoynrRuntimeException(
                 "Exception in JoynrRuntime: invalid broker protocol in broker-url: " +
                 brokerProtocol);
@@ -300,7 +298,7 @@ void JoynrClusterControllerRuntime::init()
 
     if (doHttpMessaging) {
         if (!httpMessageReceiverSupplied) {
-            JOYNR_LOG_DEBUG(logger,
+            JOYNR_LOG_DEBUG(logger(),
                             "The http message receiver supplied is NULL, creating the default "
                             "http MessageReceiver");
 
@@ -326,7 +324,7 @@ void JoynrClusterControllerRuntime::init()
             transportStatuses.emplace_back(std::move(mqttTransportStatus));
         }
         if (!mqttMessageReceiver) {
-            JOYNR_LOG_DEBUG(logger,
+            JOYNR_LOG_DEBUG(logger(),
                             "The mqtt message receiver supplied is NULL, creating the default "
                             "mqtt MessageReceiver");
 
@@ -350,6 +348,7 @@ void JoynrClusterControllerRuntime::init()
     // init message router
     ccMessageRouter = std::make_shared<CcMessageRouter>(
             messagingSettings,
+            clusterControllerSettings,
             messagingStubFactory,
             multicastMessagingSkeletonDirectory,
             std::move(securityManager),
@@ -375,7 +374,7 @@ void JoynrClusterControllerRuntime::init()
                                                    std::move(globalCapabilitiesDirectoryAddress),
                                                    isGloballyVisible);
         } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_FATAL(logger,
+            JOYNR_LOG_FATAL(logger(),
                             "could not deserialize MqttAddress from {} - error: {}",
                             capabilitiesDirectoryChannelId,
                             e.what());
@@ -435,7 +434,7 @@ void JoynrClusterControllerRuntime::init()
 
         // create http message sender
         if (!httpMessageSender) {
-            JOYNR_LOG_DEBUG(logger,
+            JOYNR_LOG_DEBUG(logger(),
                             "The http message sender supplied is NULL, creating the default "
                             "http MessageSender");
 
@@ -483,7 +482,7 @@ void JoynrClusterControllerRuntime::init()
 
         // create message sender
         if (!mqttMessageSender) {
-            JOYNR_LOG_DEBUG(logger,
+            JOYNR_LOG_DEBUG(logger(),
                             "The mqtt message sender supplied is NULL, creating the default "
                             "mqtt MessageSender");
 
@@ -607,10 +606,8 @@ void JoynrClusterControllerRuntime::init()
 
     capabilitiesClient->setProxyBuilder(std::move(capabilitiesProxyBuilder));
 
-#ifdef JOYNR_ENABLE_ACCESS_CONTROL
     // Do this after local capabilities directory and message router have been initialized.
     enableAccessController(provisionedDiscoveryEntries);
-#endif // JOYNR_ENABLE_ACCESS_CONTROL
 
     registerInternalSystemServiceProviders();
 }
@@ -674,7 +671,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
         return;
     }
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "AccessControl was enabled attempting to load entries from {}.",
                     ACC_ENTRIES_FILE);
 
@@ -685,10 +682,10 @@ void JoynrClusterControllerRuntime::enableAccessController(
             joynr::serializer::deserializeFromJson(
                     accessControlEntries, joynr::util::loadStringFromFile(ACC_ENTRIES_FILE));
         } catch (const std::runtime_error& ex) {
-            JOYNR_LOG_ERROR(logger, ex.what());
+            JOYNR_LOG_ERROR(logger(), ex.what());
             accessControlEntries.clear();
         } catch (const std::invalid_argument& ex) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "Could not deserialize access control entries from {}: {}",
                             ACC_ENTRIES_FILE,
                             ex.what());
@@ -696,7 +693,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
         }
     } else {
         JOYNR_LOG_INFO(
-                logger, "Access control file with entries does not exists.", ACC_ENTRIES_FILE);
+                logger(), "Access control file with entries does not exists.", ACC_ENTRIES_FILE);
     }
 
     auto localDomainAccessStore = std::make_shared<joynr::LocalDomainAccessStore>(
@@ -744,7 +741,7 @@ std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterC
                 *globalDomainAccessControlAddress,
                 clusterControllerSettings.getGlobalDomainAccessControlAddress());
     } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Cannot deserialize global domain access controller address. Reason: {}.",
                         ex.what());
     }
@@ -794,25 +791,21 @@ void JoynrClusterControllerRuntime::registerInternalSystemServiceProviders()
                     ccMessageRouter->getMessageNotificationProvider()),
             systemServicesSettings.getCcMessageNotificationProviderParticipantId());
 
-#ifdef JOYNR_ENABLE_ACCESS_CONTROL
     if (clusterControllerSettings.enableAccessController()) {
         accessControlListEditorProviderParticipantId = registerInternalSystemServiceProvider(
                 std::dynamic_pointer_cast<joynr::infrastructure::AccessControlListEditorProvider>(
                         aclEditor),
                 systemServicesSettings.getCcAccessControlListEditorProviderParticipantId());
     }
-#endif // JOYNR_ENABLE_ACCESS_CONTROL
 
     ClusterControllerCallContextStorage::invalidate();
 }
 
 void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProviders()
 {
-#ifdef JOYNR_ENABLE_ACCESS_CONTROL
     if (!accessControlListEditorProviderParticipantId.empty()) {
         unregisterProvider(accessControlListEditorProviderParticipantId);
     }
-#endif // JOYNR_ENABLE_ACCESS_CONTROL
     unregisterProvider(messageNotificationProviderParticipantId);
     unregisterProvider(discoveryProviderParticipantId);
     unregisterProvider(providerReregistrationControllerParticipantId);
@@ -830,8 +823,8 @@ void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
         if (checkAndLogCryptoFileExistence(certificateAuthorityPemFilename,
                                            certificatePemFilename,
                                            privateKeyPemFilename,
-                                           logger)) {
-            JOYNR_LOG_INFO(logger, "Using TLS connection");
+                                           logger())) {
+            JOYNR_LOG_INFO(logger(), "Using TLS connection");
 
             system::RoutingTypes::WebSocketAddress wsAddress(
                     system::RoutingTypes::WebSocketProtocol::WSS,
@@ -872,7 +865,7 @@ void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
 
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
-    JOYNR_LOG_TRACE(logger, "entering ~JoynrClusterControllerRuntime");
+    JOYNR_LOG_TRACE(logger(), "entering ~JoynrClusterControllerRuntime");
 
     if (wsCcMessagingSkeleton) {
         wsCcMessagingSkeleton->shutdown();
@@ -911,7 +904,7 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     delete ccDbusMessageRouterAdapter;
     delete dbusSettings;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-    JOYNR_LOG_TRACE(logger, "leaving ~JoynrClusterControllerRuntime");
+    JOYNR_LOG_TRACE(logger(), "leaving ~JoynrClusterControllerRuntime");
 }
 
 void JoynrClusterControllerRuntime::startExternalCommunication()
@@ -953,7 +946,7 @@ void JoynrClusterControllerRuntime::stopExternalCommunication()
 
 void JoynrClusterControllerRuntime::shutdown()
 {
-    JOYNR_LOG_TRACE(logger, "Shutdown Cluster Controller");
+    JOYNR_LOG_TRACE(logger(), "Shutdown Cluster Controller");
     lifetimeSemaphore.notify();
 }
 

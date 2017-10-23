@@ -90,7 +90,7 @@ public:
             endpoint.start_accept();
             thread = std::thread(&Server::run, &endpoint);
         } catch (const std::exception& e) {
-            JOYNR_LOG_ERROR(logger, "caught exception: {}", e.what());
+            JOYNR_LOG_ERROR(logger(), "caught exception: {}", e.what());
         }
     }
 
@@ -99,7 +99,7 @@ private:
     void onMessageReceived(ConnectionHandle hdl, MessagePtr msg)
     {
         std::ignore = hdl;
-        JOYNR_LOG_DEBUG(logger, "received message of size {}", msg->get_payload().size());
+        JOYNR_LOG_DEBUG(logger(), "received message of size {}", msg->get_payload().size());
         if(messageReceivedCallback)
         {
             const std::string& messageStr = msg->get_payload();
@@ -111,10 +111,8 @@ private:
     std::uint32_t port;
     std::thread thread;
     std::function<void(smrf::ByteVector&&)> messageReceivedCallback;
-    ADD_LOGGER(WebSocketServer);
+    ADD_LOGGER(WebSocketServer)
 };
-
-INIT_LOGGER(WebSocketServer);
 
 class WebSocketMessagingStubTest : public testing::TestWithParam<std::size_t>
 {
@@ -142,7 +140,7 @@ public:
                     server.getPort(),
                     ""
         );
-        JOYNR_LOG_DEBUG(logger, "server URL: {}",serverAddress.toString());
+        JOYNR_LOG_DEBUG(logger(), "server URL: {}",serverAddress.toString());
         joynr::Semaphore connected(0);
         webSocket = std::make_shared<joynr::WebSocketPpClient<websocketpp::config::asio_client>>(wsSettings, singleThreadedIOService.getIOService());
         webSocket->registerConnectCallback([&connected](){connected.notify();});
@@ -150,11 +148,11 @@ public:
 
         // wait until connected
         connected.wait();
-        JOYNR_LOG_DEBUG(logger, "WebSocket is connected: {}", webSocket->isConnected());
+        JOYNR_LOG_DEBUG(logger(), "WebSocket is connected: {}", webSocket->isConnected());
     }
 
 protected:
-    ADD_LOGGER(WebSocketMessagingStubTest);
+    ADD_LOGGER(WebSocketMessagingStubTest)
     joynr::Settings settings;
     joynr::WebSocketSettings wsSettings;
     WebSocketServer server;
@@ -163,10 +161,8 @@ protected:
     std::shared_ptr<joynr::IWebSocketPpClient> webSocket;
 };
 
-INIT_LOGGER(WebSocketMessagingStubTest);
-
 TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize) {
-    JOYNR_LOG_TRACE(logger, "transmit message");
+    JOYNR_LOG_TRACE(logger(), "transmit message");
 
     joynr::Semaphore sem(0);
     smrf::ByteVector receivedMessage;

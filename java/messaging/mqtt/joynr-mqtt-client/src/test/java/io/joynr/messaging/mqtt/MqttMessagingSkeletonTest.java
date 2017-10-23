@@ -64,6 +64,7 @@ public class MqttMessagingSkeletonTest {
 
     private final int repeatedMqttMessageIgnorePeriodMs = 1000;
     private final int maxMqttMessagesInQueue = 20;
+    private final boolean backpressureEnabled = true;
     private MqttMessagingSkeleton subject;
 
     @Mock
@@ -102,6 +103,7 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownAddress,
                                             repeatedMqttMessageIgnorePeriodMs,
                                             maxMqttMessagesInQueue,
+                                            backpressureEnabled,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
@@ -164,6 +166,7 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownAddress,
                                             repeatedMqttMessageIgnorePeriodMs,
                                             maxMqttMessagesInQueue,
+                                            backpressureEnabled,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
@@ -189,6 +192,7 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownAddress,
                                             repeatedMqttMessageIgnorePeriodMs,
                                             maxMqttMessagesInQueue,
+                                            backpressureEnabled,
                                             messageRouter,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
@@ -398,7 +402,36 @@ public class MqttMessagingSkeletonTest {
                          mqttQos,
                          failIfCalledAction);
         verify(messageRouter, times(maxMqttMessagesInQueue + 1)).route(any(ImmutableMessage.class));
+    }
 
+    @Test
+    public void testPubAckSentWhenBackpressureIsDisabled() throws Exception {
+        final int mqttQos = 1;
+        final int mqttMessageId1 = 1234;
+        final int mqttMessageId2 = 4321;
+
+        ImmutableMessage message1 = createTestMessage();
+        ImmutableMessage message2 = createTestMessage();
+
+        final boolean testLocalBackpressureEnabled = false;
+        final int testLocalmaxMqttMessagesInQueue = 1;
+
+        subject = new MqttMessagingSkeleton(ownAddress,
+                                            repeatedMqttMessageIgnorePeriodMs,
+                                            testLocalmaxMqttMessagesInQueue,
+                                            testLocalBackpressureEnabled,
+                                            messageRouter,
+                                            mqttClientFactory,
+                                            mqttTopicPrefixProvider,
+                                            new NoOpRawMessagingPreprocessor(),
+                                            new HashSet<JoynrMessageProcessor>());
+        subject.init();
+
+        subject.transmit(message1.getSerializedMessage(), mqttMessageId1, mqttQos, failIfCalledAction);
+        subject.transmit(message2.getSerializedMessage(), mqttMessageId2, mqttQos, failIfCalledAction);
+
+        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId1, mqttQos);
+        verify(mqttClient).messageReceivedAndProcessingFinished(mqttMessageId2, mqttQos);
     }
 
     private ImmutableMessage createTestMessage() throws Exception {

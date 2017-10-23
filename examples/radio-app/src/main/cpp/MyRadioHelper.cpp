@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,8 +24,6 @@
 #include <boost/filesystem/path.hpp>
 
 using namespace joynr;
-
-INIT_LOGGER(MyRadioHelper);
 
 MyRadioHelper::MyRadioHelper()
 {
@@ -54,9 +52,9 @@ const std::string& MyRadioHelper::MISSING_NAME()
 
 void MyRadioHelper::pressQToContinue()
 {
-    JOYNR_LOG_INFO(logger, "*****************************************************");
-    JOYNR_LOG_INFO(logger, "Please press \"q\" to quit the application\n");
-    JOYNR_LOG_INFO(logger, "*****************************************************");
+    JOYNR_LOG_INFO(logger(), "*****************************************************");
+    JOYNR_LOG_INFO(logger(), "Please press \"q\" to quit the application\n");
+    JOYNR_LOG_INFO(logger(), "*****************************************************");
 
     while (getch() != 'q')
         ;

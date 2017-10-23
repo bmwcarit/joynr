@@ -42,7 +42,6 @@
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/Logger.h"
 
 #include "tests/PrettyPrint.h"
 #include "tests/JoynrTest.h"
@@ -54,8 +53,6 @@ static const std::string messagingPropertiesPersistenceFileName1(
         "CombinedEnd2EndTest-runtime1-joynr.settings");
 static const std::string messagingPropertiesPersistenceFileName2(
         "CombinedEnd2EndTest-runtime2-joynr.settings");
-
-INIT_LOGGER(CombinedEnd2EndTest);
 
 CombinedEnd2EndTest::CombinedEnd2EndTest()
         : runtime1(),
@@ -83,15 +80,15 @@ CombinedEnd2EndTest::CombinedEnd2EndTest()
 
 void CombinedEnd2EndTest::SetUp()
 {
-    JOYNR_LOG_DEBUG(logger, std::string("SetUp() CombinedEnd2End"));
+    JOYNR_LOG_DEBUG(logger(), std::string("SetUp() CombinedEnd2End"));
 
     // See if the test environment has overridden the configuration files
     tests::Configuration& configuration = tests::Configuration::getInstance();
     std::string systemSettingsFile = configuration.getDefaultSystemSettingsFile();
     std::string websocketSettingsFile = configuration.getDefaultWebsocketSettingsFile();
 
-    JOYNR_LOG_DEBUG(logger, "Default system settings file: {}", systemSettingsFile.c_str());
-    JOYNR_LOG_DEBUG(logger, "Default websocket settings file: {}", websocketSettingsFile.c_str());
+    JOYNR_LOG_DEBUG(logger(), "Default system settings file: {}", systemSettingsFile.c_str());
+    JOYNR_LOG_DEBUG(logger(), "Default websocket settings file: {}", websocketSettingsFile.c_str());
 
     if (systemSettingsFile.empty() && websocketSettingsFile.empty()) {
         runtime1 = JoynrRuntime::createRuntime(
@@ -398,7 +395,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
             testProxy->setEnumAttribute(static_cast<tests::testTypes::TestEnum::Enum>(999));
             ASSERT_FALSE(true) << "This line of code should never be reached";
         } catch (joynr::exceptions::MethodInvocationException& e) {
-            JOYNR_LOG_DEBUG(logger,
+            JOYNR_LOG_DEBUG(logger(),
                             "Expected joynr::exceptions::MethodInvocationException has been "
                             "thrown. Message: {}",
                             e.getMessage());
@@ -865,7 +862,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain)
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
         elapsed = duration.count();
         if (elapsed < arbitrationTimeout) {
-            JOYNR_LOG_DEBUG(logger,
+            JOYNR_LOG_DEBUG(logger(),
                             "Expected joynr::exceptions::DiscoveryException has been thrown too "
                             "early. Message: {}",
                             e.getMessage());

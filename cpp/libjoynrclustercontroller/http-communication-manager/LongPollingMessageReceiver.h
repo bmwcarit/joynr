@@ -81,7 +81,7 @@ private:
     std::mutex interruptedMutex;
     std::condition_variable interruptedWait;
 
-    ADD_LOGGER(LongPollingMessageReceiver);
+    ADD_LOGGER(LongPollingMessageReceiver)
 
     // Ownership shared between this and HttpReceiver
     std::shared_ptr<Semaphore> channelCreatedSemaphore;

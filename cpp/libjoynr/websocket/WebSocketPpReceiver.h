@@ -56,7 +56,7 @@ public:
         const value mode = message->get_opcode();
         if (mode == value::binary) {
             JOYNR_LOG_TRACE(
-                    logger, "incoming binary message of size {}", message->get_payload().size());
+                    logger(), "incoming binary message of size {}", message->get_payload().size());
             if (onMessageReceivedCallback) {
                 // TODO can this copy be avoided?
                 const std::string& messageStr = message->get_payload();
@@ -64,18 +64,16 @@ public:
                 onMessageReceivedCallback(std::move(hdl), std::move(rawMessage));
             }
         } else {
-            JOYNR_LOG_ERROR(logger, "received unsupported message type {}, dropping message", mode);
+            JOYNR_LOG_ERROR(
+                    logger(), "received unsupported message type {}, dropping message", mode);
         }
     }
 
 private:
     std::function<void(ConnectionHandle&&, smrf::ByteVector&&)> onMessageReceivedCallback;
 
-    ADD_LOGGER(WebSocketPpReceiver);
+    ADD_LOGGER(WebSocketPpReceiver)
 };
-
-template <typename Endpoint>
-INIT_LOGGER(SINGLE_MACRO_ARG(WebSocketPpReceiver<Endpoint>));
 
 } // namespace joynr
 

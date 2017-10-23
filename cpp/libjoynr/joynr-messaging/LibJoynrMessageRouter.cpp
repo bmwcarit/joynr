@@ -45,8 +45,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(LibJoynrMessageRouter);
-
 //------ MessageRouter ---------------------------------------------------------
 
 LibJoynrMessageRouter::~LibJoynrMessageRouter()
@@ -116,7 +114,7 @@ void LibJoynrMessageRouter::setParentRouter(std::shared_ptr<system::RoutingProxy
 void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
                                           std::uint32_t tryCount)
 {
-    JOYNR_LOG_TRACE(logger, "Route message with Id {}", message->getId());
+    JOYNR_LOG_TRACE(logger(), "Route message with Id {}", message->getId());
     // search for the destination addresses
     AbstractMessageRouter::AddressUnorderedSet destAddresses = getDestinationAddresses(*message);
 
@@ -146,7 +144,7 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
             {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
                     if (resolved) {
-                        JOYNR_LOG_INFO(logger,
+                        JOYNR_LOG_INFO(logger(),
                                        "Got destination address for participant {}",
                                        destinationPartId);
                         // save next hop in the routing table
@@ -157,13 +155,13 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
                         thisSharedPtr->sendMessages(
                                 destinationPartId, thisSharedPtr->parentAddress);
                     } else {
-                        JOYNR_LOG_ERROR(logger,
+                        JOYNR_LOG_ERROR(logger(),
                                         "Failed to resolve next hop for participant {}",
                                         destinationPartId);
                     }
                     thisSharedPtr->removeRunningParentResolvers(destinationPartId);
                 } else {
-                    JOYNR_LOG_ERROR(logger,
+                    JOYNR_LOG_ERROR(logger(),
                                     "Failed to resolve next hop for participant {} because "
                                     "LibJoynrMessageRouter is no longer available",
                                     destinationPartId);
@@ -177,7 +175,7 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
             ](const joynr::exceptions::JoynrRuntimeException& error)
             {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                    JOYNR_LOG_ERROR(logger,
+                    JOYNR_LOG_ERROR(logger(),
                                     "Failed to resolve next hop for participant {}: {}",
                                     destinationPartId,
                                     error.getMessage());
@@ -208,7 +206,7 @@ bool LibJoynrMessageRouter::publishToGlobal(const ImmutableMessage& message)
 bool LibJoynrMessageRouter::isParentMessageRouterSet()
 {
     if (!parentRouter) {
-        JOYNR_LOG_TRACE(logger,
+        JOYNR_LOG_TRACE(logger(),
                         "Parent message router not set. Discard this message if it appears "
                         "during libJoynr initlization. It can be related to a configuration "
                         "problem. Check setting file.");
@@ -230,7 +228,7 @@ void LibJoynrMessageRouter::addNextHopToParent(
         if (onError) {
             onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
         } else {
-            JOYNR_LOG_WARN(logger,
+            JOYNR_LOG_WARN(logger(),
                            "Unable to report error (received by calling "
                            "parentRouter->addNextHopAsync), since onError function is "
                            "empty. Error message: {}",
@@ -324,7 +322,7 @@ void LibJoynrMessageRouter::removeNextHop(
 
     std::function<void(const exceptions::JoynrRuntimeException&)> onErrorWrapper =
             [onError](const exceptions::JoynrRuntimeException& error) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Unable to report error (received by calling "
                         "parentRouter->removeNextHopAsync), since onError function is "
                         "empty. Error message: {}",
@@ -374,7 +372,7 @@ void LibJoynrMessageRouter::addMulticastReceiver(
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
             thisSharedPtr->multicastReceiverDirectory.registerMulticastReceiver(
                     multicastId, subscriberParticipantId);
-            JOYNR_LOG_TRACE(logger,
+            JOYNR_LOG_TRACE(logger(),
                             "added multicast receiver={} for multicastId={}",
                             subscriberParticipantId,
                             multicastId);
@@ -382,7 +380,7 @@ void LibJoynrMessageRouter::addMulticastReceiver(
                 onSuccess();
             }
         } else {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "error adding multicast receiver={} for multicastId={} because "
                             "LibJoynrMessageRouter is no longer available",
                             subscriberParticipantId,
@@ -393,7 +391,7 @@ void LibJoynrMessageRouter::addMulticastReceiver(
             [ onError = std::move(onError), subscriberParticipantId, multicastId ](
                     const exceptions::JoynrRuntimeException& error)
     {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "error adding multicast receiver={} for multicastId={}, error: {}",
                         subscriberParticipantId,
                         multicastId,
@@ -475,12 +473,13 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
         ReadLocker lock(routingTableLock);
         const auto routingEntry =
                 routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
-        assert(routingEntry);
-        providerAddress = routingEntry->address;
+        if (routingEntry) {
+            providerAddress = routingEntry->address;
+        }
     }
 
     if (!providerAddress) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "No routing entry for multicast provider (providerParticipantId=" +
                                 providerParticipantId + ") found.");
         return;
@@ -498,7 +497,7 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
             [ onError = std::move(onError), subscriberParticipantId, multicastId ](
                     const exceptions::JoynrException& error)
     {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "error removing multicast receiver={} for multicastId={}, error: {}",
                         subscriberParticipantId,
                         multicastId,

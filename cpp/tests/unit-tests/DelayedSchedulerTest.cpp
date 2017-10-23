@@ -76,10 +76,10 @@ public:
         {
             const std::uint64_t diff_ms = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
 
-            JOYNR_LOG_TRACE(logger, "Runnable is available");
-            JOYNR_LOG_TRACE(logger, " ETA        : {}",est_ms);
-            JOYNR_LOG_TRACE(logger, " current    : {}",now_ms);
-            JOYNR_LOG_TRACE(logger, " difference : {}",diff_ms);
+            JOYNR_LOG_TRACE(logger(), "Runnable is available");
+            JOYNR_LOG_TRACE(logger(), " ETA        : {}",est_ms);
+            JOYNR_LOG_TRACE(logger(), " current    : {}",now_ms);
+            JOYNR_LOG_TRACE(logger(), " difference : {}",diff_ms);
 
             if (diff_ms <= timerAccuracy_ms)
             {
@@ -88,7 +88,7 @@ public:
         }
         else
         {
-            JOYNR_LOG_TRACE(logger, "No delay given but work available called.");
+            JOYNR_LOG_TRACE(logger(), "No delay given but work available called.");
         }
         //if (runnable->isDeleteOnExit()) {
         //    delete runnable;

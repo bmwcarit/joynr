@@ -25,8 +25,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(PosixSignalHandler);
-
 std::weak_ptr<IClusterControllerSignalHandler> PosixSignalHandler::clusterControllerPtr;
 
 void PosixSignalHandler::setHandleAndRegisterForSignals(
@@ -44,23 +42,23 @@ void PosixSignalHandler::handleSignal(int signal)
     if (auto ptr = clusterControllerPtr.lock()) {
         switch (signal) {
         case SIGTERM:
-            JOYNR_LOG_TRACE(logger, "Received signal: SIGTERM");
+            JOYNR_LOG_TRACE(logger(), "Received signal: SIGTERM");
             ptr->shutdown();
             break;
         case SIGUSR1:
-            JOYNR_LOG_TRACE(logger, "Received signal: SIGUSR1");
+            JOYNR_LOG_TRACE(logger(), "Received signal: SIGUSR1");
             ptr->startExternalCommunication();
             break;
         case SIGUSR2:
-            JOYNR_LOG_TRACE(logger, "Received signal: SIGUSR2");
+            JOYNR_LOG_TRACE(logger(), "Received signal: SIGUSR2");
             ptr->stopExternalCommunication();
             break;
         default:
-            JOYNR_LOG_WARN(logger, "Signal Handler did not register for signal: {}", signal);
+            JOYNR_LOG_WARN(logger(), "Signal Handler did not register for signal: {}", signal);
         }
         return;
     }
     JOYNR_LOG_TRACE(
-            logger, "Received Signal: {} but Cluster Controller Pointer is not valid", signal);
+            logger(), "Received Signal: {} but Cluster Controller Pointer is not valid", signal);
 }
 } // namespace joynr

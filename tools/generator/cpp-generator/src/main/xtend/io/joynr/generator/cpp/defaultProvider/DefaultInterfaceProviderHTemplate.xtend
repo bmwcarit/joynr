@@ -141,7 +141,7 @@ protected:
 	«ENDFOR»
 
 private:
-	ADD_LOGGER(Default«interfaceName»Provider);
+	ADD_LOGGER(Default«interfaceName»Provider)
 
 };
 

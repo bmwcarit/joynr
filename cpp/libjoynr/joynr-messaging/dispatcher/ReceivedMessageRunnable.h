@@ -49,7 +49,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ReceivedMessageRunnable);
     std::shared_ptr<ImmutableMessage> message;
     Dispatcher& dispatcher;
-    ADD_LOGGER(ReceivedMessageRunnable);
+    ADD_LOGGER(ReceivedMessageRunnable)
 };
 
 } // namespace joynr

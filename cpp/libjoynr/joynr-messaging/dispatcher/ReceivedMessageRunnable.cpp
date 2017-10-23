@@ -28,8 +28,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(ReceivedMessageRunnable);
-
 ReceivedMessageRunnable::ReceivedMessageRunnable(std::shared_ptr<ImmutableMessage> message,
                                                  Dispatcher& dispatcher)
         : Runnable(),
@@ -37,7 +35,7 @@ ReceivedMessageRunnable::ReceivedMessageRunnable(std::shared_ptr<ImmutableMessag
           message(std::move(message)),
           dispatcher(dispatcher)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "Creating ReceivedMessageRunnable for message: {}",
                     this->message->toLogMessage());
 }
@@ -54,19 +52,19 @@ void ReceivedMessageRunnable::run()
 
     const std::string& messageType = message->getType();
 
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "Running ReceivedMessageRunnable for message type: {}, msg ID: {}",
                     messageType,
                     message->getId());
     if (isExpired()) {
         JOYNR_LOG_DEBUG(
-                logger, "Dropping ReceivedMessageRunnable message, because it is expired: ");
+                logger(), "Dropping ReceivedMessageRunnable message, because it is expired: ");
         return;
     }
 
+    JOYNR_LOG_TRACE(logger(), "Setting callContext principal to: {}", message->getCreator());
     CallContext callContext;
     callContext.setPrincipal(message->getCreator());
-
     CallContextStorage::set(std::move(callContext));
 
     if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST()) {
@@ -90,10 +88,11 @@ void ReceivedMessageRunnable::run()
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP()) {
         dispatcher.handleSubscriptionStopReceived(std::move(message));
     } else {
-        JOYNR_LOG_ERROR(logger, "unknown message type: {}", messageType);
+        JOYNR_LOG_ERROR(logger(), "unknown message type: {}", messageType);
     }
 
     CallContextStorage::invalidate();
+    JOYNR_LOG_TRACE(logger(), "Invalidating call context.");
 }
 
 } // namespace joynr

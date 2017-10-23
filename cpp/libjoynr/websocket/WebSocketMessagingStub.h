@@ -63,7 +63,7 @@ private:
     /*! Message sender for outgoing messages over WebSocket */
     std::shared_ptr<IWebSocketSendInterface> webSocket;
 
-    ADD_LOGGER(WebSocketMessagingStub);
+    ADD_LOGGER(WebSocketMessagingStub)
 };
 
 } // namespace joynr

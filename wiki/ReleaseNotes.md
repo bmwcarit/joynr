@@ -1,3 +1,41 @@
+# joynr 0.30.1
+
+## API relevant changes
+None.
+
+## Configuration property changes
+* **[Java]** PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE and PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS
+ were renamed in order to reflect that they are related to the backpressure
+ mechanism. PROPERTY_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE is now called
+ PROPERTY_BACKPRESSURE_MAX_INCOMING_MQTT_MESSAGES_IN_QUEUE and its identifier is
+ `joynr.messaging.backpressure.maxincomingmqttmessagesinqueue`.
+ PROPERTY_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS is now called
+ PROPERTY_BACKPRESSURE_REPEATED_MQTT_MESSAGE_IGNORE_PERIOD_MS and its identifier
+ is `joynr.messaging.backpressure.repeatedmqttmessageignoreperiodms`.
+* **[Java]** Introduced `PROPERTY_BACKPRESSURE_ENABLED`. See [Java Configuration Reference](JavaSettings.md) for
+   details about the new property. The backpressure mechanism is disabled by default.
+
+## Other changes
+* **[Java]** If a joynr instance receives a reply for which no receiver exists,
+  it will be dropped immediately.
+* **[JS]** Once loaded, joynr automatically calls joynr.shutdown() when
+  process.exit(...) is called; a loaded joynr thus no longer prevents the
+  application from terminating.
+* **[JS]** Enhanced tracing output; log level 'debug' now logs messages with
+  full details, log level 'info' logs with reduced details (w/o parameters,
+  response values, publication details)
+* **[JS]** Handle uncaught errors from MessageRouter.route to prevent crashes
+  when an incoming message cannot be processed
+* **[JS]** Members of top level struct method parameters are now checked for
+  existance.
+* **[C++]** Do not block main thread for asynchronous provider registration.
+* **[C++]** implemented ACL audit mode, which allows to audit whether ACL/RCL
+  is configured correctly. By default, it is turned off and can be activated
+  via `access-control/audit`.
+* **[C++]** Not possible to remove access control from C++ build. At runtime is
+   disabled by default and can be enabled via setting the configuration property `access-control/enable`
+   in the cluster controller settings.
+
 # joynr 0.30.0
 
 ## API relevant changes

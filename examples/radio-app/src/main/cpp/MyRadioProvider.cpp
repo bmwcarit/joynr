@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,8 +24,6 @@
 #include "MyRadioHelper.h"
 
 using namespace joynr;
-
-INIT_LOGGER(MyRadioProvider);
 
 MyRadioProvider::MyRadioProvider()
         : DefaultRadioProvider(),
@@ -60,7 +58,7 @@ void MyRadioProvider::getCurrentStation(
 {
     std::lock_guard<std::mutex> locker(mutex);
     std::ignore = onError;
-    MyRadioHelper::prettyLog(logger, "getCurrentStation -> " + currentStation.toString());
+    MyRadioHelper::prettyLog(logger(), "getCurrentStation -> " + currentStation.toString());
     onSuccess(currentStation);
 }
 
@@ -77,7 +75,7 @@ void MyRadioProvider::shuffleStations(
     currentStationChanged(stationsList.at(currentStationIndex));
     currentStation = stationsList.at(currentStationIndex);
     MyRadioHelper::prettyLog(
-            logger,
+            logger(),
             "shuffleStations: " + oldStation.toString() + " -> " + currentStation.toString());
     onSuccess();
 }
@@ -103,7 +101,7 @@ void MyRadioProvider::addFavoriteStation(
         }
     }
     if (!duplicateFound) {
-        MyRadioHelper::prettyLog(logger, "addFavoriteStation(" + radioStation.toString() + ")");
+        MyRadioHelper::prettyLog(logger(), "addFavoriteStation(" + radioStation.toString() + ")");
         stationsList.push_back(radioStation);
         onSuccess(true);
     }
@@ -118,7 +116,7 @@ void MyRadioProvider::getLocationOfCurrentStation(
     joynr::vehicle::Country::Enum country(currentStation.getCountry());
     joynr::vehicle::GeoPosition location(countryGeoPositionMap.at(country));
     MyRadioHelper::prettyLog(
-            logger,
+            logger(),
             "getLocationOfCurrentStation: return country \"" +
                     joynr::vehicle::Country::getLiteral(currentStation.getCountry()) +
                     "\" and location \"" + location.toString() + "\"");
@@ -127,7 +125,7 @@ void MyRadioProvider::getLocationOfCurrentStation(
 
 void MyRadioProvider::fireWeakSignalBroadcast()
 {
-    MyRadioHelper::prettyLog(logger, "fire weakSignalBroadcast: " + currentStation.toString());
+    MyRadioHelper::prettyLog(logger(), "fire weakSignalBroadcast: " + currentStation.toString());
     fireWeakSignal(currentStation);
 }
 
@@ -135,7 +133,7 @@ void MyRadioProvider::fireNewStationDiscoveredBroadcast()
 {
     vehicle::RadioStation discoveredStation(stationsList.at(currentStationIndex));
     vehicle::GeoPosition geoPosition(countryGeoPositionMap.at(discoveredStation.getCountry()));
-    MyRadioHelper::prettyLog(logger,
+    MyRadioHelper::prettyLog(logger(),
                              "fire newStationDiscoveredBroadcast: " + discoveredStation.toString() +
                                      " at " + geoPosition.toString());
     fireNewStationDiscovered(discoveredStation, geoPosition);

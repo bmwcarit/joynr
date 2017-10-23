@@ -95,7 +95,7 @@ public:
 
     ~Directory()
     {
-        JOYNR_LOG_TRACE(logger, "destructor: number of entries = {}", callbackMap.size());
+        JOYNR_LOG_TRACE(logger(), "destructor: number of entries = {}", callbackMap.size());
     }
 
     /*
@@ -140,7 +140,7 @@ public:
             std::lock_guard<std::mutex> lock(mutex);
 
             if (isShutdown) {
-                JOYNR_LOG_TRACE(logger, "add failed: already shutdown");
+                JOYNR_LOG_TRACE(logger(), "add failed: already shutdown");
                 return;
             }
 
@@ -164,7 +164,7 @@ public:
                 if (!errorCode) {
                     this->removeAfterTimeout<T>(keyId);
                 } else if (errorCode != boost::asio::error::operation_aborted) {
-                    JOYNR_LOG_TRACE(this->logger,
+                    JOYNR_LOG_TRACE(this->logger(),
                                     "Timer removal of entry from directory failed : {}",
                                     errorCode.message());
                 }
@@ -248,7 +248,7 @@ private:
 protected:
     std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
     std::unordered_map<Key, SteadyTimer> timeoutTimerMap;
-    ADD_LOGGER(Directory);
+    ADD_LOGGER(Directory)
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
@@ -258,8 +258,6 @@ private:
     bool isShutdown;
 };
 
-template <typename Key, typename T>
-INIT_LOGGER(SINGLE_MACRO_ARG(Directory<Key, T>));
 } // namespace joynr
 
 #endif // DIRECTORY_H

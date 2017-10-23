@@ -44,7 +44,7 @@ using namespace joynr;
 
 class End2EndPerformanceTest : public TestWithParam< std::tuple<std::string, std::string> > {
 public:
-    ADD_LOGGER(End2EndPerformanceTest);
+    ADD_LOGGER(End2EndPerformanceTest)
     std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
     std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
     std::unique_ptr<Settings> settings1;
@@ -99,8 +99,6 @@ private:
 
 };
 
-INIT_LOGGER(End2EndPerformanceTest);
-
 TEST_P(End2EndPerformanceTest, sendManyRequests) {
 
     types::ProviderQos providerQos;
@@ -151,7 +149,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     std::uint64_t stopTime = DispatcherUtils::nowInMilliseconds();
     //check if all Requests were successful
     EXPECT_EQ(numberOfRequests, successfulRequests);
-    JOYNR_LOG_INFO(logger, "Required Time for 1000 Requests: {}",(stopTime - startTime));
+    JOYNR_LOG_INFO(logger(), "Required Time for 1000 Requests: {}",(stopTime - startTime));
 
     runtime1->unregisterProvider(participantId);
 

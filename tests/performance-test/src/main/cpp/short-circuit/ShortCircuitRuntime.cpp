@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,18 +23,18 @@
 #include <limits>
 
 #include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/MessagingStubFactory.h"
-#include "joynr/MessageSender.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/IKeychain.h"
-#include "joynr/InProcessMessagingAddress.h"
-#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
-#include "joynr/SubscriptionManager.h"
 #include "joynr/InProcessDispatcher.h"
+#include "joynr/InProcessMessagingAddress.h"
 #include "joynr/InProcessPublicationSender.h"
+#include "joynr/MessageSender.h"
+#include "joynr/MessagingStubFactory.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
 #include "joynr/Settings.h"
+#include "joynr/SubscriptionManager.h"
+#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "libjoynrclustercontroller/include/joynr/CcMessageRouter.h"
 
 namespace joynr
@@ -42,7 +42,9 @@ namespace joynr
 
 ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
                                          std::shared_ptr<IKeychain> keyChain)
-        : JoynrRuntime(*settings), keyChain(std::move(keyChain))
+        : JoynrRuntime(*settings),
+          keyChain(std::move(keyChain)),
+          clusterControllerSettings(*settings)
 {
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
     requestCallerDirectory = std::make_shared<DummyRequestCallerDirectory>();
@@ -59,6 +61,7 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
             "messageNotificationProviderParticipantId");
 
     messageRouter = std::make_shared<CcMessageRouter>(messagingSettings,
+                                                      clusterControllerSettings,
                                                       std::move(messagingStubFactory),
                                                       nullptr,
                                                       nullptr,

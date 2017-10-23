@@ -27,8 +27,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(MqttReceiver);
-
 MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnection,
                            const MessagingSettings& settings,
                            const std::string& channelIdForMqttTopic,
@@ -53,12 +51,12 @@ void MqttReceiver::updateSettings()
 
 void MqttReceiver::startReceiveQueue()
 {
-    JOYNR_LOG_DEBUG(logger, "startReceiveQueue");
+    JOYNR_LOG_DEBUG(logger(), "startReceiveQueue");
 }
 
 void MqttReceiver::stopReceiveQueue()
 {
-    JOYNR_LOG_DEBUG(logger, "stopReceiveQueue");
+    JOYNR_LOG_DEBUG(logger(), "stopReceiveQueue");
 }
 
 const std::string& MqttReceiver::getGlobalClusterControllerAddress() const

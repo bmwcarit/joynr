@@ -25,8 +25,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(DbusMessagingSkeleton);
-
 DbusMessagingSkeleton::DbusMessagingSkeleton(IMessaging& callBack) : callBack(callBack)
 {
 }
@@ -37,7 +35,7 @@ void DbusMessagingSkeleton::transmit(joynr::messaging::IMessaging::JoynrMessage 
     JoynrMessage joynrMessage;
     DbusMessagingUtil::copyDbusMsgToJoynrMsg(message, joynrMessage);
     // callback
-    JOYNR_LOG_INFO(logger, "transmit incoming message: {}", joynrMessage.getHeaderMessageId());
+    JOYNR_LOG_INFO(logger(), "transmit incoming message: {}", joynrMessage.getHeaderMessageId());
     callBack.transmit(joynrMessage);
 }
 

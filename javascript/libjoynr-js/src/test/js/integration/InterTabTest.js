@@ -203,7 +203,10 @@ module.exports = (function (Promise, joynr, DiscoveryEntry, DiscoveryScope, Disc
                                                             interfaceName : interfaceName,
                                                             discoveryQos : new DiscoveryQosGen(
                                                                     {
-                                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY
+                                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY,
+                                                                        providerMustSupportOnChange: false,
+                                                                        discoveryTimeout: 60000,
+                                                                        cacheMaxAge: 0
                                                                     })
                                                         })
                                                 .then(
@@ -699,7 +702,10 @@ module.exports = (function (Promise, joynr, DiscoveryEntry, DiscoveryScope, Disc
                                                             interfaceName : "vehicle/Radio",
                                                             discoveryQos : new DiscoveryQosGen(
                                                                     {
-                                                                        discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
+                                                                        discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
+                                                                        providerMustSupportOnChange: false,
+                                                                        discoveryTimeout: 60000,
+                                                                        cacheMaxAge: 0
                                                                     })
                                         });
                                     }).then(function(opArgs) {
@@ -712,7 +718,10 @@ module.exports = (function (Promise, joynr, DiscoveryEntry, DiscoveryScope, Disc
                                                 interfaceName : "vehicle/Radio",
                                                 discoveryQos : new DiscoveryQosGen(
                                                     {
-                                                        discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL
+                                                        discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
+                                                        providerMustSupportOnChange: false,
+                                                        discoveryTimeout: 60000,
+                                                        cacheMaxAge: 0
                                                 })
                                         });
                                     }).then(function(opArgs) {
@@ -746,7 +755,10 @@ module.exports = (function (Promise, joynr, DiscoveryEntry, DiscoveryScope, Disc
                                                 interfaceName : interfaceName,
                                                 discoveryQos : new DiscoveryQosGen(
                                                     {
-                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY
+                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY,
+                                                        providerMustSupportOnChange: false,
+                                                        discoveryTimeout: 60000,
+                                                        cacheMaxAge: 0
                                                 })
                                         });
                                     }).then(function(opArgs) {
@@ -769,7 +781,10 @@ module.exports = (function (Promise, joynr, DiscoveryEntry, DiscoveryScope, Disc
                                                 interfaceName : interfaceName,
                                                 discoveryQos : new DiscoveryQosGen(
                                                     {
-                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY
+                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY,
+                                                        providerMustSupportOnChange: false,
+                                                        discoveryTimeout: 60000,
+                                                        cacheMaxAge: 0
                                                 })
                                         });
                                     }).then(function(opArgs) {
@@ -790,7 +805,10 @@ module.exports = (function (Promise, joynr, DiscoveryEntry, DiscoveryScope, Disc
                                                 interfaceName : interfaceName,
                                                 discoveryQos : new DiscoveryQosGen(
                                                     {
-                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY
+                                                        discoveryScope : DiscoveryScope.LOCAL_ONLY,
+                                                        providerMustSupportOnChange: false,
+                                                        discoveryTimeout: 60000,
+                                                        cacheMaxAge: 0
                                                 })
                                         });
                                     }).then(function(opArgs) {

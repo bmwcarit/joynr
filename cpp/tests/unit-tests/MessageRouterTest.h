@@ -54,6 +54,7 @@ public:
         singleThreadedIOService(),
         settings(),
         messagingSettings(settings),
+        clusterControllerSettings(settings),
         messageQueue(nullptr),
         messagingStubFactory(nullptr),
         messageRouter(),
@@ -128,6 +129,7 @@ protected:
 
         auto ccMessageRouter = std::make_shared<CcMessageRouter>(
                     messagingSettings,
+                    clusterControllerSettings,
                     messagingStubFactory,
                     multicastMessagingSkeletonDirectory,
                     std::unique_ptr<IPlatformSecurityManager>(),
@@ -148,6 +150,7 @@ protected:
     std::string settingsFileName;
     Settings settings;
     MessagingSettings messagingSettings;
+    ClusterControllerSettings clusterControllerSettings;
     MessageQueue<std::string>* messageQueue;
     MessageQueue<std::shared_ptr<ITransportStatus>>* transportNotAvailableQueueRef;
     std::shared_ptr<MockMessagingStubFactory> messagingStubFactory;

@@ -42,7 +42,7 @@ static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystem
 
 class CapabilitiesClientTest : public TestWithParam< std::string > {
 public:
-    ADD_LOGGER(CapabilitiesClientTest);
+    ADD_LOGGER(CapabilitiesClientTest)
     std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     std::unique_ptr<Settings> settings;
     MessagingSettings messagingSettings;
@@ -81,8 +81,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesClientTest);
 
 };
-
-INIT_LOGGER(CapabilitiesClientTest);
 
 TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>> capabilitiesProxyBuilder =
@@ -123,11 +121,11 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
                 capPublicKeyId,
                 capSerializedChannelAddress);
 
-    JOYNR_LOG_DEBUG(logger, "Registering capabilities");
+    JOYNR_LOG_DEBUG(logger(), "Registering capabilities");
     capabilitiesClient->add(globalDiscoveryEntry,
                             [](){},
                             [](const joynr::exceptions::JoynrRuntimeException& /*exception*/){});
-    JOYNR_LOG_DEBUG(logger, "Registered capabilities");
+    JOYNR_LOG_DEBUG(logger(), "Registered capabilities");
 
     auto callback = std::make_shared<GlobalCapabilitiesMock>();
 
@@ -144,11 +142,11 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
                 callback->capabilitiesReceived(capabilities);
             };
 
-    JOYNR_LOG_DEBUG(logger, "get capabilities");
+    JOYNR_LOG_DEBUG(logger(), "get capabilities");
     std::int64_t defaultDiscoveryMessageTtl = messagingSettings.getDiscoveryMessagesTtl();
     capabilitiesClient->lookup({capDomain}, capInterface, defaultDiscoveryMessageTtl, onSuccess);
     semaphore.waitFor(std::chrono::seconds(10));
-    JOYNR_LOG_DEBUG(logger, "finished get capabilities");
+    JOYNR_LOG_DEBUG(logger(), "finished get capabilities");
 }
 
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,

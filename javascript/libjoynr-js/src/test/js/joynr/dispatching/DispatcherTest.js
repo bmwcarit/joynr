@@ -44,6 +44,7 @@ var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/Discovery
 var Version = require('../../../classes/joynr/types/Version');
 var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
 var uuid = require('../../../classes/lib/uuid-annotated');
+var Promise = require('../../../classes/global/Promise');
 
             var providerId = "providerId";
             var proxyId = "proxyId";
@@ -113,6 +114,7 @@ var uuid = require('../../../classes/lib/uuid-annotated');
                                             "ClusterControllerMessagingStub",
                                             [ "transmit"
                                             ]);
+                            clusterControllerMessagingStub.transmit.and.returnValue(Promise.resolve());
 
                             securityManager =
                                     jasmine.createSpyObj(

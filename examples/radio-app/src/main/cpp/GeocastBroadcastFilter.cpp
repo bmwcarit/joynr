@@ -24,8 +24,6 @@
 
 #include "joynr/serializer/Serializer.h"
 
-INIT_LOGGER(GeocastBroadcastFilter);
-
 GeocastBroadcastFilter::GeocastBroadcastFilter()
 {
 }
@@ -46,7 +44,7 @@ bool GeocastBroadcastFilter::filter(
         joynr::serializer::deserializeFromJson(
                 positionOfInterest, filterParameters.getPositionOfInterest());
     } catch (const std::invalid_argument& e) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Unable to deserialize geo position object from: {} - error: {}",
                         filterParameters.getPositionOfInterest(),
                         e.what());

@@ -63,7 +63,7 @@ public:
      */
     void wait()
     {
-        JOYNR_LOG_TRACE(logger, "resultReceived.getStatus():{}", resultReceived.getStatus());
+        JOYNR_LOG_TRACE(logger(), "resultReceived.getStatus():{}", resultReceived.getStatus());
         resultReceived.wait();
         resultReceived.notify();
     }
@@ -92,7 +92,7 @@ public:
      */
     void onError(std::shared_ptr<exceptions::JoynrException> error)
     {
-        JOYNR_LOG_TRACE(logger, "onError has been invoked");
+        JOYNR_LOG_TRACE(logger(), "onError has been invoked");
         this->error = std::move(error);
         status = StatusCodeEnum::ERROR;
         resultReceived.notify();
@@ -113,11 +113,8 @@ protected:
     std::shared_ptr<exceptions::JoynrException> error;
     StatusCodeEnum status;
     Semaphore resultReceived;
-    ADD_LOGGER(FutureBase);
+    ADD_LOGGER(FutureBase)
 };
-
-template <class Derived>
-INIT_LOGGER(FutureBase<Derived>);
 
 template <class... Ts>
 /**
@@ -196,7 +193,7 @@ public:
      */
     void onSuccess(Ts... results)
     {
-        JOYNR_LOG_TRACE(this->logger, "onSuccess has been invoked");
+        JOYNR_LOG_TRACE(this->logger(), "onSuccess has been invoked");
         this->status = StatusCodeEnum::SUCCESS;
         // transform variadic templates into a std::tuple
         this->results = std::make_tuple(std::move(results)...);

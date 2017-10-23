@@ -82,20 +82,18 @@ public:
     std::string attributeFireAndForgetSubscriptionId;
 
 protected:
-    ADD_LOGGER(IltConsumerFireAndForgetMethodTest);
+    ADD_LOGGER(IltConsumerFireAndForgetMethodTest)
 };
-
-INIT_LOGGER(IltConsumerFireAndForgetMethodTest);
 
 /**
  * Wait for a subsriptionPublication for the attributeFireAndForget.
  */
 void IltConsumerFireAndForgetMethodTest::waitForAttributeFireAndForgetPublication()
 {
-    JOYNR_LOG_INFO(logger, "waitForAttributeFireAndForgetPublication");
+    JOYNR_LOG_INFO(logger(), "waitForAttributeFireAndForgetPublication");
     EXPECT_TRUE(publicationSemaphore.waitFor(publicationTimeoutMs));
     Mock::VerifyAndClearExpectations(mockInt32SubscriptionListener.get());
-    JOYNR_LOG_INFO(logger, "waitForAttributeFireAndForgetPublication - DONE");
+    JOYNR_LOG_INFO(logger(), "waitForAttributeFireAndForgetPublication - DONE");
 }
 
 /**
@@ -123,7 +121,7 @@ void IltConsumerFireAndForgetMethodTest::subscribeToAttributeFireAndForget(
         EXPECT_TRUE(onSubscribedSemaphore.waitFor(
                 std::chrono::milliseconds(subscriptionIdFutureTimeoutMs)));
     });
-    JOYNR_LOG_INFO(logger,
+    JOYNR_LOG_INFO(logger(),
                    "subscribeToAttributeFireAndForget - subscriptionId: " +
                            attributeFireAndForgetSubscriptionId);
     waitForAttributeFireAndForgetPublication();
@@ -132,7 +130,7 @@ void IltConsumerFireAndForgetMethodTest::subscribeToAttributeFireAndForget(
 void IltConsumerFireAndForgetMethodTest::unsubscribeAttributeFireAndForget()
 {
     JOYNR_LOG_INFO(
-            logger, "unSubscribeAttributeFireAndForget: " + attributeFireAndForgetSubscriptionId);
+            logger(), "unSubscribeAttributeFireAndForget: " + attributeFireAndForgetSubscriptionId);
     JOYNR_ASSERT_NO_THROW({
         testInterfaceProxy->unsubscribeFromAttributeFireAndForget(
                 attributeFireAndForgetSubscriptionId);
@@ -140,20 +138,20 @@ void IltConsumerFireAndForgetMethodTest::unsubscribeAttributeFireAndForget()
     });
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     JOYNR_LOG_INFO(
-            logger,
+            logger(),
             "unSubscribeAttributeFireAndForget: " + attributeFireAndForgetSubscriptionId + " - OK");
 }
 
 TEST_F(IltConsumerFireAndForgetMethodTest, callMethodFireAndForgetWithoutParameter)
 {
-    JOYNR_LOG_INFO(
-            logger, "callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget");
+    JOYNR_LOG_INFO(logger(),
+                   "callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget");
     subscribeToAttributeFireAndForget(*testInterfaceProxy);
     int32_t expectedValue = 1;
     EXPECT_CALL(*mockInt32SubscriptionListener, onReceive(expectedValue)).Times(1);
     EXPECT_CALL(*mockInt32SubscriptionListener, onError(_)).Times(0);
     JOYNR_EXPECT_NO_THROW({
-        JOYNR_LOG_INFO(logger, "callMethodFireAndForgetWithoutParameter");
+        JOYNR_LOG_INFO(logger(), "callMethodFireAndForgetWithoutParameter");
         testInterfaceProxy->methodFireAndForgetWithoutParameter();
         waitForAttributeFireAndForgetPublication();
     });
@@ -163,14 +161,14 @@ TEST_F(IltConsumerFireAndForgetMethodTest, callMethodFireAndForgetWithoutParamet
 
 TEST_F(IltConsumerFireAndForgetMethodTest, callMethodFireAndForgetWithInputParameter)
 {
-    JOYNR_LOG_INFO(logger,
+    JOYNR_LOG_INFO(logger(),
                    "callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget");
     subscribeToAttributeFireAndForget(*testInterfaceProxy);
     int32_t expectedValue = 4242;
     EXPECT_CALL(*mockInt32SubscriptionListener, onReceive(expectedValue)).Times(1);
     EXPECT_CALL(*mockInt32SubscriptionListener, onError(_)).Times(0);
     JOYNR_EXPECT_NO_THROW({
-        JOYNR_LOG_INFO(logger, "callMethodFireAndForgetWithInputParameter");
+        JOYNR_LOG_INFO(logger(), "callMethodFireAndForgetWithInputParameter");
         testInterfaceProxy->methodFireAndForgetWithInputParameter(expectedValue);
         waitForAttributeFireAndForgetPublication();
     });

@@ -73,25 +73,25 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithMultipleStructParametersAsync)
             if (!IltUtil::checkBaseStructWithoutElements(baseStructWithoutElementsOut)) {
                 methodWithMultipleStructParametersAsyncCallbackResult = false;
                 methodWithMultipleStructParametersAsyncCallbackDone = true;
-                JOYNR_LOG_INFO(logger,
+                JOYNR_LOG_INFO(logger(),
                                "callMethodWithMultipleStructParametersAsync - callback - invalid "
                                "baseStructWithoutElementsOut");
-                JOYNR_LOG_INFO(logger, "callMethodWithMultipleStructParametersAsync - FAILED");
+                JOYNR_LOG_INFO(logger(), "callMethodWithMultipleStructParametersAsync - FAILED");
                 return;
             }
 
             if (!IltUtil::checkExtendedExtendedBaseStruct(extendedExtendedBaseStructOut)) {
                 methodWithMultipleStructParametersAsyncCallbackResult = false;
                 methodWithMultipleStructParametersAsyncCallbackDone = true;
-                JOYNR_LOG_INFO(logger,
+                JOYNR_LOG_INFO(logger(),
                                "callMethodWithMultipleStructParametersAsync - callback - invalid "
                                "extendedExtendedBaseStructOut");
-                JOYNR_LOG_INFO(logger, "callMethodWithMultipleStructParametersAsync - FAILED");
+                JOYNR_LOG_INFO(logger(), "callMethodWithMultipleStructParametersAsync - FAILED");
                 return;
             }
             methodWithMultipleStructParametersAsyncCallbackResult = true;
             methodWithMultipleStructParametersAsyncCallbackDone = true;
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithMultipleStructParametersAsync - callback - "
                            "got correct values");
         };
@@ -100,11 +100,11 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithMultipleStructParametersAsync)
                 [](const joynr::exceptions::JoynrException& error) {
             methodWithMultipleStructParametersAsyncCallbackResult = false;
             methodWithMultipleStructParametersAsyncCallbackDone = true;
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithMultipleStructParametersAsync - callback - "
                            "caught exception");
-            JOYNR_LOG_INFO(logger, error.getTypeName());
-            JOYNR_LOG_INFO(logger, error.getMessage());
+            JOYNR_LOG_INFO(logger(), error.getTypeName());
+            JOYNR_LOG_INFO(logger(), error.getMessage());
         };
 
         futureType future = testInterfaceProxy->methodWithMultipleStructParametersAsync(
@@ -150,17 +150,17 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithSingleArrayParametersAsync)
             if (!IltUtil::checkStringArray(result)) {
                 methodWithSingleArrayParametersAsyncCallbackResult = false;
                 methodWithSingleArrayParametersAsyncCallbackDone = true;
-                JOYNR_LOG_INFO(logger,
+                JOYNR_LOG_INFO(logger(),
                                "callMethodWithSingleArrayParametersAsync - callback - invalid "
                                "baseStructWithoutElementsOut");
-                JOYNR_LOG_INFO(logger, "callMethodWithSingleArrayParametersAsync - FAILED");
+                JOYNR_LOG_INFO(logger(), "callMethodWithSingleArrayParametersAsync - FAILED");
                 return;
             }
 
             methodWithSingleArrayParametersAsyncCallbackResult = true;
             methodWithSingleArrayParametersAsyncCallbackDone = true;
             JOYNR_LOG_INFO(
-                    logger,
+                    logger(),
                     "callMethodWithSingleArrayParametersAsync - callback - got correct values");
         };
 
@@ -169,10 +169,10 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithSingleArrayParametersAsync)
             methodWithSingleArrayParametersAsyncCallbackResult = false;
             methodWithSingleArrayParametersAsyncCallbackDone = true;
             JOYNR_LOG_INFO(
-                    logger,
+                    logger(),
                     "callMethodWithSingleArrayParametersAsync - callback - caught exception");
-            JOYNR_LOG_INFO(logger, error.getTypeName());
-            JOYNR_LOG_INFO(logger, error.getMessage());
+            JOYNR_LOG_INFO(logger(), error.getTypeName());
+            JOYNR_LOG_INFO(logger(), error.getMessage());
         };
 
         std::shared_ptr<joynr::Future<std::vector<std::string>>> future =
@@ -211,16 +211,16 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithSinglePrimitiveParametersAsync)
             if (result != std::to_string(arg)) {
                 methodWithSinglePrimitiveParametersAsyncCallbackResult = false;
                 methodWithSinglePrimitiveParametersAsyncCallbackDone = true;
-                JOYNR_LOG_INFO(logger,
+                JOYNR_LOG_INFO(logger(),
                                "callMethodWithSinglePrimitiveParametersAsync - callback - invalid "
                                "baseStructWithoutElementsOut");
-                JOYNR_LOG_INFO(logger, "callMethodWithSinglePrimitiveParametersAsync - FAILED");
+                JOYNR_LOG_INFO(logger(), "callMethodWithSinglePrimitiveParametersAsync - FAILED");
                 return;
             }
 
             methodWithSinglePrimitiveParametersAsyncCallbackResult = true;
             methodWithSinglePrimitiveParametersAsyncCallbackDone = true;
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithSinglePrimitiveParametersAsync - callback - "
                            "got correct values");
         };
@@ -229,11 +229,11 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithSinglePrimitiveParametersAsync)
                 [](const joynr::exceptions::JoynrException& error) {
             methodWithSinglePrimitiveParametersAsyncCallbackResult = false;
             methodWithSinglePrimitiveParametersAsyncCallbackDone = true;
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithSinglePrimitiveParametersAsync - callback - "
                            "caught exception");
-            JOYNR_LOG_INFO(logger, error.getTypeName());
-            JOYNR_LOG_INFO(logger, error.getMessage());
+            JOYNR_LOG_INFO(logger(), error.getTypeName());
+            JOYNR_LOG_INFO(logger(), error.getMessage());
         };
 
         std::shared_ptr<joynr::Future<std::string>> future =
@@ -270,7 +270,7 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
 
         std::function<void()> onSuccess = []() {
             // check results
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithExtendedErrorEnumAsync - 1st - callback - unexpected "
                            "call to "
                            "onSuccess");
@@ -281,26 +281,26 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
         auto onRuntimeError = [](const joynr::exceptions::JoynrRuntimeException& error) {
             if (error.getTypeName() == "joynr.exceptions.ProviderRuntimeException") {
                 if (error.getMessage() == "Exception from methodWithExtendedErrorEnum") {
-                    JOYNR_LOG_INFO(logger,
+                    JOYNR_LOG_INFO(logger(),
                                    "callMethodWithExtendedErrorEnumAsync - 1st - callback - "
                                    "got expected "
                                    "exception");
                     methodWithExtendedErrorEnumAsyncCallbackResult = true;
                 } else {
-                    JOYNR_LOG_INFO(logger,
+                    JOYNR_LOG_INFO(logger(),
                                    "callMethodWithExtendedErrorEnumAsync - 1st - callback - got "
                                    "ProviderRuntimeException with wrong message");
-                    JOYNR_LOG_INFO(logger, error.getMessage());
+                    JOYNR_LOG_INFO(logger(), error.getMessage());
                     methodWithExtendedErrorEnumAsyncCallbackResult = false;
                 }
             } else {
                 JOYNR_LOG_INFO(
-                        logger,
+                        logger(),
                         "callMethodWithExtendedErrorEnumAsync - 1st - callback - got invalid "
                         "exception "
                         "type");
-                JOYNR_LOG_INFO(logger, error.getTypeName());
-                JOYNR_LOG_INFO(logger, error.getMessage());
+                JOYNR_LOG_INFO(logger(), error.getTypeName());
+                JOYNR_LOG_INFO(logger(), error.getMessage());
                 methodWithExtendedErrorEnumAsyncCallbackResult = false;
             }
             methodWithExtendedErrorEnumAsyncCallbackDone = true;
@@ -313,13 +313,13 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
         try {
             long timeoutInMilliseconds = 8000;
             future->get();
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithExtendedErrorEnumAsync - 1st - returned from "
                            "future->get()");
             ASSERT_FALSE(future->isOk());
         } catch (joynr::exceptions::ProviderRuntimeException& error) {
             // expected case
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithExtendedErrorEnumAsync - 1st - caught "
                            "ProviderRuntimeException");
             ASSERT_TRUE(error.getTypeName(), "joynr.exceptions.ProviderRuntimeException");
@@ -355,7 +355,7 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
             // check results
             methodWithExtendedErrorEnumAsyncCallbackResult = false;
             methodWithExtendedErrorEnumAsyncCallbackDone = true;
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithExtendedErrorEnumAsync - 2nd - callback - unexpected "
                            "call to "
                            "onSuccess");
@@ -364,12 +364,12 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
         using joynr::interlanguagetest::TestInterface::MethodWithExtendedErrorEnumErrorEnum;
         auto onApplicationError = [](const MethodWithExtendedErrorEnumErrorEnum::Enum& errorEnum) {
             if (errorEnum != MethodWithExtendedErrorEnumErrorEnum::ERROR_3_3_NTC) {
-                JOYNR_LOG_INFO(logger,
+                JOYNR_LOG_INFO(logger(),
                                "callMethodWithExtendedErrorEnumAsync - 2nd - callback - got "
                                "ApplicationException with wrong enumeration");
                 methodWithExtendedErrorEnumAsyncCallbackResult = false;
             } else {
-                JOYNR_LOG_INFO(logger,
+                JOYNR_LOG_INFO(logger(),
                                "callMethodWithExtendedErrorEnumAsync - 2nd - callback - got "
                                "expected ApplicationException");
                 methodWithExtendedErrorEnumAsyncCallbackResult = true;
@@ -377,12 +377,12 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
             methodWithExtendedErrorEnumAsyncCallbackDone = true;
         };
         auto onRuntimeError = [](const exceptions::JoynrRuntimeException& error) {
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithExtendedErrorEnumAsync - 2nd - callback - got invalid "
                            "exception "
                            "type");
-            JOYNR_LOG_INFO(logger, error.getTypeName());
-            JOYNR_LOG_INFO(logger, error.getMessage());
+            JOYNR_LOG_INFO(logger(), error.getTypeName());
+            JOYNR_LOG_INFO(logger(), error.getMessage());
             methodWithExtendedErrorEnumAsyncCallbackResult = false;
             methodWithExtendedErrorEnumAsyncCallbackDone = true;
         };
@@ -393,12 +393,12 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
 
         try {
             long timeoutInMilliseconds = 8000;
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithExtendedErrorEnumAsync - 2nd - about to call "
                            "future.waitForFinished()");
             // future->wait(timeoutInMilliseconds);
             future->get();
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithExtendedErrorEnumAsync - 2nd - returned from "
                            "future.get()");
             ASSERT_FALSE(future->isOk());
@@ -422,7 +422,7 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
             }
 
             JOYNR_LOG_INFO(
-                    logger, "callMethodWithExtendedErrorEnumAsync - 2nd - catch error checks OK");
+                    logger(), "callMethodWithExtendedErrorEnumAsync - 2nd - catch error checks OK");
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
@@ -449,7 +449,7 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
             // check results
             methodWithExtendedErrorEnumAsyncCallbackResult = false;
             methodWithExtendedErrorEnumAsyncCallbackDone = true;
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithExtendedErrorEnumAsync - 3rd - callback - unexpected "
                            "call to "
                            "onSuccess");
@@ -458,12 +458,12 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
         using joynr::interlanguagetest::TestInterface::MethodWithExtendedErrorEnumErrorEnum;
         auto onApplicationError = [](const MethodWithExtendedErrorEnumErrorEnum::Enum& errorEnum) {
             if (errorEnum != MethodWithExtendedErrorEnumErrorEnum::ERROR_2_1_TC2) {
-                JOYNR_LOG_INFO(logger,
+                JOYNR_LOG_INFO(logger(),
                                "callMethodWithExtendedErrorEnumAsync - 3rd - callback - got "
                                "ApplicationException with wrong enumeration");
                 methodWithExtendedErrorEnumAsyncCallbackResult = false;
             } else {
-                JOYNR_LOG_INFO(logger,
+                JOYNR_LOG_INFO(logger(),
                                "callMethodWithExtendedErrorEnumAsync - 3rd - callback - got "
                                "expected ApplicationException");
                 methodWithExtendedErrorEnumAsyncCallbackResult = true;
@@ -472,12 +472,12 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
         };
 
         auto onRuntimeError = [](const exceptions::JoynrRuntimeException& error) {
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithExtendedErrorEnumAsync - 3rd - callback - got invalid "
                            "exception "
                            "type");
-            JOYNR_LOG_INFO(logger, error.getTypeName());
-            JOYNR_LOG_INFO(logger, error.getMessage());
+            JOYNR_LOG_INFO(logger(), error.getTypeName());
+            JOYNR_LOG_INFO(logger(), error.getMessage());
             methodWithExtendedErrorEnumAsyncCallbackResult = false;
             methodWithExtendedErrorEnumAsyncCallbackDone = true;
         };
@@ -489,12 +489,12 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
 
         try {
             long timeoutInMilliseconds = 8000;
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithExtendedErrorEnumAsync - 3rd - about to call "
                            "future->waitForFinished()");
             // future->wait(timeoutInMilliseconds);
             future->get();
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "callMethodWithExtendedErrorEnumAsync - 3rd - returned from "
                            "future->get()");
             ASSERT_FALSE(future->isOk());
@@ -511,7 +511,7 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
                                                     MethodWithExtendedErrorEnumErrorEnum::Enum>(),
                           joynr::interlanguagetest::TestInterface::
                                   MethodWithExtendedErrorEnumErrorEnum::ERROR_2_1_TC2);
-                JOYNR_LOG_INFO(logger,
+                JOYNR_LOG_INFO(logger(),
                                "callMethodWithExtendedErrorEnumAsync - 3rd - got "
                                "expected ApplicationException");
                 // fallthrough
@@ -521,7 +521,7 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
             }
 
             JOYNR_LOG_INFO(
-                    logger, "callMethodWithExtendedErrorEnumAsync - 3rd - catch error checks OK");
+                    logger(), "callMethodWithExtendedErrorEnumAsync - 3rd - catch error checks OK");
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
@@ -529,7 +529,7 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithExtendedErrorEnumAsync)
             ASSERT_TRUE(methodWithExtendedErrorEnumAsyncCallbackDone);
             ASSERT_TRUE(methodWithExtendedErrorEnumAsyncCallbackResult);
             JOYNR_LOG_INFO(
-                    logger,
+                    logger(),
                     "callMethodWithExtendedErrorEnumAsync - 3rd - callback has set OK flags");
         } catch (joynr::exceptions::JoynrRuntimeException& e) {
             FAIL() << "callMethodWithExtendedErrorEnumAsync - 3rd - caught "

@@ -35,7 +35,7 @@ public:
             std::weak_ptr<IClusterControllerSignalHandler> clusterControllerRuntime);
 
 private:
-    ADD_LOGGER(PosixSignalHandler);
+    ADD_LOGGER(PosixSignalHandler)
     PosixSignalHandler() = delete;
     ~PosixSignalHandler() = delete;
 

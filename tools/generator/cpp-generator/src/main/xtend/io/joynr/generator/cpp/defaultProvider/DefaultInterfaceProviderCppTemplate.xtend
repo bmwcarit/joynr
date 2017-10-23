@@ -53,8 +53,6 @@ class DefaultInterfaceProviderCppTemplate extends InterfaceTemplate{
 
 «getNamespaceStarter(francaIntf)»
 
-INIT_LOGGER(Default«interfaceName»Provider);
-
 Default«interfaceName»Provider::Default«interfaceName»Provider() :
 		«interfaceName»AbstractProvider()
 		«IF !francaIntf.attributes.empty»,«ENDIF»
@@ -173,9 +171,9 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider()
 				«outputParamType» «argument.joynrName»;
 			«ENDIF»
 		«ENDFOR»
-		JOYNR_LOG_WARN(logger, "**********************************************");
-		JOYNR_LOG_WARN(logger, "* Default«interfaceName»Provider::«methodName» called");
-		JOYNR_LOG_WARN(logger, "**********************************************");
+		JOYNR_LOG_WARN(logger(), "**********************************************");
+		JOYNR_LOG_WARN(logger(), "* Default«interfaceName»Provider::«methodName» called");
+		JOYNR_LOG_WARN(logger(), "**********************************************");
 		«IF !method.fireAndForget»
 			onSuccess(
 					«outputUntypedParamList»

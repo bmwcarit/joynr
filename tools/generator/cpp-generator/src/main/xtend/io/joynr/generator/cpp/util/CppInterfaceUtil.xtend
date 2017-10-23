@@ -317,7 +317,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 					onRuntimeError(exceptions::JoynrRuntimeException(errorMessage));
 				}
 				else {
-					JOYNR_LOG_ERROR(logger, errorMessage);
+					JOYNR_LOG_ERROR(logger(), errorMessage);
 				}
 			}
 		}
@@ -327,7 +327,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 				onRuntimeError(exceptions::JoynrRuntimeException(errorMessage));
 			}
 			else {
-				JOYNR_LOG_ERROR(logger, errorMessage);
+				JOYNR_LOG_ERROR(logger(), errorMessage);
 			}
 		}
 	«ELSE»

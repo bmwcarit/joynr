@@ -27,8 +27,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(FixedParticipantArbitrationStrategyFunction);
-
 types::DiscoveryEntryWithMetaInfo FixedParticipantArbitrationStrategyFunction::select(
         const std::map<std::string, types::CustomParameter> customParameters,
         const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const
@@ -44,7 +42,7 @@ types::DiscoveryEntryWithMetaInfo FixedParticipantArbitrationStrategyFunction::s
 
     auto selectedDiscovery = discoveryEntries.front();
     JOYNR_LOG_TRACE(
-            logger, "setting selectedParticipantId to {}", selectedDiscovery.getParticipantId());
+            logger(), "setting selectedParticipantId to {}", selectedDiscovery.getParticipantId());
     return selectedDiscovery;
 }
 } // namespace joynr

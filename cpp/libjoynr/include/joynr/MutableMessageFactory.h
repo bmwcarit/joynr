@@ -122,7 +122,7 @@ private:
     std::unique_ptr<IPlatformSecurityManager> securityManager;
     std::uint64_t ttlUpliftMs;
     std::shared_ptr<IKeychain> keyChain;
-    ADD_LOGGER(MutableMessageFactory);
+    ADD_LOGGER(MutableMessageFactory)
 };
 
 } // namespace joynr

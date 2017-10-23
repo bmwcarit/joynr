@@ -53,7 +53,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(QosArbitrationStrategyFunction);
-    ADD_LOGGER(QosArbitrationStrategyFunction);
+    ADD_LOGGER(QosArbitrationStrategyFunction)
 };
 
 } // namespace joynr

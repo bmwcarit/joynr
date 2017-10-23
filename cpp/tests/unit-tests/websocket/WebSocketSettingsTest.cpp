@@ -40,11 +40,9 @@ public:
     }
 
 protected:
-    ADD_LOGGER(WebSocketSettingsTest);
+    ADD_LOGGER(WebSocketSettingsTest)
     std::string testSettingsFileName;
 };
-
-INIT_LOGGER(WebSocketSettingsTest);
 
 TEST_F(WebSocketSettingsTest, intializedWithDefaultSettings) {
     Settings testSettings(testSettingsFileName);

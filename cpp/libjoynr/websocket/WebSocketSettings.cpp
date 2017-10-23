@@ -27,8 +27,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(WebSocketSettings);
-
 WebSocketSettings::WebSocketSettings(Settings& settings) : settings(settings)
 {
     settings.fillEmptySettingsWithDefaults(DEFAULT_WEBSOCKET_SETTINGS_FILENAME());
@@ -102,7 +100,7 @@ joynr::system::RoutingTypes::WebSocketAddress WebSocketSettings::
     Url url(ccMessagingUrl);
 
     if (!url.isValid()) {
-        JOYNR_LOG_ERROR(logger, "Could not parse URL: {}", ccMessagingUrl);
+        JOYNR_LOG_ERROR(logger(), "Could not parse URL: {}", ccMessagingUrl);
         return system::RoutingTypes::WebSocketAddress{};
     }
 
@@ -174,27 +172,27 @@ bool WebSocketSettings::contains(const std::string& key) const
 
 void WebSocketSettings::printSettings() const
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_CC_MESSAGING_URL(),
                     settings.get<std::string>(SETTING_CC_MESSAGING_URL()));
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME(),
                     settings.get<std::string>(SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME()));
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_CERTIFICATE_PEM_FILENAME(),
                     settings.get<std::string>(SETTING_CERTIFICATE_PEM_FILENAME()));
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_PRIVATE_KEY_PEM_FILENAME(),
                     settings.get<std::string>(SETTING_PRIVATE_KEY_PEM_FILENAME()));
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_TLS_ENCRYPTION(),
                     settings.get<std::string>(SETTING_TLS_ENCRYPTION()));

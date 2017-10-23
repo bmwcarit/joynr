@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.30.0)
+project(joynr-0.30.1)
 set(JOYNR_MAJOR_VERSION 0)
 set(JOYNR_MINOR_VERSION 30)
-set(JOYNR_PATCH_VERSION 0)
+set(JOYNR_PATCH_VERSION 1)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -826,6 +826,10 @@ set(
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
+get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
+get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
+
 set(
     JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS
     ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
@@ -851,9 +855,6 @@ if(${USE_DBUS_COMMONAPI_COMMUNICATION})
 endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 # ... for the build tree
-get_target_property(Joynr_PUBLIC_INCLUDE_DIRECTORY Joynr PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
 
 set(
     JoynrConfig_LIB_COMMON_INCLUDE_DIRS

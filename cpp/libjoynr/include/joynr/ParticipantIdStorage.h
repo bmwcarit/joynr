@@ -19,10 +19,12 @@
 #ifndef PARTICIPANTIDSTORAGE_H
 #define PARTICIPANTIDSTORAGE_H
 
+#include <mutex>
 #include <string>
 
 #include "joynr/JoynrExport.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Settings.h"
 
 namespace joynr
 {
@@ -67,10 +69,17 @@ public:
                                                  const std::string& interfaceName,
                                                  const std::string& defaultValue);
 
+    /**
+     * Sync/Persist changes in the storage to file.
+     */
+    void sync();
+
 private:
     DISALLOW_COPY_AND_ASSIGN(ParticipantIdStorage);
     std::string createProviderKey(const std::string& domain, const std::string& interfaceName);
-    std::string filename;
+
+    std::mutex mutex;
+    joynr::Settings storage;
 };
 
 } // namespace joynr

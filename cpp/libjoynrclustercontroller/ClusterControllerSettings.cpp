@@ -25,8 +25,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(ClusterControllerSettings);
-
 ClusterControllerSettings::ClusterControllerSettings(Settings& settings) : settings(settings)
 {
     settings.fillEmptySettingsWithDefaults(DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME());
@@ -79,33 +77,37 @@ void ClusterControllerSettings::checkSettings()
         settings.set(SETTING_MQTT_TLS_ENABLED(), DEFAULT_MQTT_TLS_ENABLED());
     }
 
+    if (!settings.contains(SETTING_ACCESS_CONTROL_AUDIT())) {
+        settings.set(SETTING_ACCESS_CONTROL_AUDIT(), DEFAULT_ACCESS_CONTROL_AUDIT());
+    }
+
     if (isMqttTlsEnabled()) {
         if (!isMqttCertificateAuthorityCertificateFolderPathSet() &&
             !isMqttCertificateAuthorityPemFilenameSet()) {
             const std::string message =
                     "MQTT TLS is enabled but no CA certificate filename or folder was provided";
-            JOYNR_LOG_ERROR(logger, message);
+            JOYNR_LOG_ERROR(logger(), message);
             throw joynr::exceptions::JoynrConfigurationException(message);
         }
 
         if (!isMqttCertificatePemFilenameSet()) {
             const std::string message =
                     "MQTT TLS is enabled but no mqtt certificate PEM filename was provided";
-            JOYNR_LOG_ERROR(logger, message);
+            JOYNR_LOG_ERROR(logger(), message);
             throw joynr::exceptions::JoynrConfigurationException(message);
         }
 
         if (!isMqttPrivateKeyPemFilenameSet()) {
             const std::string message =
                     "MQTT TLS is enabled but no private key PEM filename was provided";
-            JOYNR_LOG_ERROR(logger, message);
+            JOYNR_LOG_ERROR(logger(), message);
             throw joynr::exceptions::JoynrConfigurationException(message);
         }
     } else if (isMqttCertificateAuthorityCertificateFolderPathSet() ||
                isMqttCertificateAuthorityPemFilenameSet() || isMqttCertificatePemFilenameSet() ||
                isMqttPrivateKeyPemFilenameSet()) {
         JOYNR_LOG_WARN(
-                logger, "MQTT TLS is disabled but at least one MQTT TLS property was configured");
+                logger(), "MQTT TLS is disabled but at least one MQTT TLS property was configured");
     }
 
     if (!settings.contains(SETTING_ACCESS_CONTROL_ENABLE())) {
@@ -116,14 +118,14 @@ void ClusterControllerSettings::checkSettings()
                 SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()));
 
         if (!settings.contains(SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS())) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "Configuration error. Access controller is enabled but "
                             "no {} was defined.",
                             SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS());
         }
         if (!settings.contains(
                     SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID())) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "Configuration error. Access controller is enabled but "
                             "no {} was defined.",
                             SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID());
@@ -174,6 +176,12 @@ const std::string& ClusterControllerSettings::SETTING_USE_ONLY_LDAS()
 const std::string& ClusterControllerSettings::SETTING_ACCESS_CONTROL_ENABLE()
 {
     static const std::string value("access-control/enable");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_ACCESS_CONTROL_AUDIT()
+{
+    static const std::string value("access-control/audit");
     return value;
 }
 
@@ -273,6 +281,11 @@ const std::string& ClusterControllerSettings::DEFAULT_MQTT_CLIENT_ID_PREFIX()
 }
 
 bool ClusterControllerSettings::DEFAULT_MQTT_TLS_ENABLED()
+{
+    return false;
+}
+
+bool ClusterControllerSettings::DEFAULT_ACCESS_CONTROL_AUDIT()
 {
     return false;
 }
@@ -485,6 +498,16 @@ void ClusterControllerSettings::setEnableAccessController(bool enable)
     settings.set(SETTING_ACCESS_CONTROL_ENABLE(), enable);
 }
 
+bool ClusterControllerSettings::aclAudit() const
+{
+    return settings.get<bool>(SETTING_ACCESS_CONTROL_AUDIT());
+}
+
+void ClusterControllerSettings::setAclAudit(bool enable)
+{
+    settings.set(SETTING_ACCESS_CONTROL_ENABLE(), enable);
+}
+
 std::string ClusterControllerSettings::getGlobalDomainAccessControlAddress() const
 {
     return settings.get<std::string>(
@@ -534,106 +557,110 @@ void ClusterControllerSettings::setCapabilitiesFreshnessUpdateIntervalMs(
 
 void ClusterControllerSettings::printSettings() const
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME(),
                     getMulticastReceiverDirectoryPersistenceFilename());
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(),
                     getLocalCapabilitiesDirectoryPersistenceFilename());
 
-    JOYNR_LOG_DEBUG(
-            logger, "SETTING: {}  = {}", SETTING_MQTT_CLIENT_ID_PREFIX(), getMqttClientIdPrefix());
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {}  = {}",
+                    SETTING_MQTT_CLIENT_ID_PREFIX(),
+                    getMqttClientIdPrefix());
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_MQTT_MULTICAST_TOPIC_PREFIX(),
                     getMqttMulticastTopicPrefix());
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_MQTT_UNICAST_TOPIC_PREFIX(),
                     getMqttUnicastTopicPrefix());
 
     if (isWsTLSPortSet()) {
-        JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_WS_TLS_PORT(), getWsTLSPort());
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {}  = {}", SETTING_WS_TLS_PORT(), getWsTLSPort());
     } else {
-        JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_WS_TLS_PORT());
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {}  = NOT SET", SETTING_WS_TLS_PORT());
     }
 
     if (isWsPortSet()) {
-        JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_WS_PORT(), getWsPort());
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {}  = {}", SETTING_WS_PORT(), getWsPort());
     } else {
-        JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_WS_PORT());
+        JOYNR_LOG_DEBUG(logger(), "SETTING: {}  = NOT SET", SETTING_WS_PORT());
     }
 
-    JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_MQTT_TLS_ENABLED(), isMqttTlsEnabled());
+    JOYNR_LOG_DEBUG(logger(), "SETTING: {}  = {}", SETTING_MQTT_TLS_ENABLED(), isMqttTlsEnabled());
 
     if (isMqttCertificateAuthorityPemFilenameSet()) {
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "SETTING: {}  = {}",
                         SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME(),
                         getMqttCertificateAuthorityPemFilename());
     } else {
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "SETTING: {}  = NOT SET",
                         SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
     }
 
     if (isMqttCertificateAuthorityCertificateFolderPathSet()) {
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "SETTING: {}  = {}",
                         SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH(),
                         getMqttCertificateAuthorityCertificateFolderPath());
     } else {
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "SETTING: {}  = NOT SET",
                         SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
     }
 
     if (isMqttCertificatePemFilenameSet()) {
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "SETTING: {}  = {}",
                         SETTING_MQTT_CERTIFICATE_PEM_FILENAME(),
                         getMqttCertificatePemFilename());
     } else {
-        JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
+        JOYNR_LOG_DEBUG(
+                logger(), "SETTING: {}  = NOT SET", SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
     }
 
     if (isMqttPrivateKeyPemFilenameSet()) {
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "SETTING: {}  = {}",
                         SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME(),
                         getMqttPrivateKeyPemFilename());
     } else {
-        JOYNR_LOG_DEBUG(logger, "SETTING: {}  = NOT SET", SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
+        JOYNR_LOG_DEBUG(
+                logger(), "SETTING: {}  = NOT SET", SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
     }
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME(),
                     getLocalDomainAccessStorePersistenceFilename());
 
-    JOYNR_LOG_DEBUG(logger, "SETTING: {}  = {}", SETTING_USE_ONLY_LDAS(), getUseOnlyLDAS());
+    JOYNR_LOG_DEBUG(logger(), "SETTING: {}  = {}", SETTING_USE_ONLY_LDAS(), getUseOnlyLDAS());
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_ACCESS_CONTROL_ENABLE(),
                     settings.get<std::string>(SETTING_ACCESS_CONTROL_ENABLE()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {} = {})",
                     SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
                     getCapabilitiesFreshnessUpdateIntervalMs().count());
     if (settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE())) {
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "SETTING: {}  = {})",
                         SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS(),
                         settings.get<std::string>(
                                 SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
         JOYNR_LOG_DEBUG(
-                logger,
+                logger(),
                 "SETTING: {}  = {})",
                 SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID(),
                 settings.get<std::string>(

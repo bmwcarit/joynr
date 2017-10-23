@@ -23,8 +23,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(AbstractJoynrMessagingConnector);
-
 AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
         std::shared_ptr<IMessageSender> messageSender,
         std::shared_ptr<ISubscriptionManager> subscriptionManager,

@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, node: true */
 
 /*
  * #%L
@@ -39,6 +39,7 @@ var JSONSerializer = require('../util/JSONSerializer');
 var Typing = require('../util/Typing');
 var SubscriptionQos = require('../proxy/SubscriptionQos');
 var LoggerFactory = require('../system/LoggerFactory');
+var JoynrException = require('../exceptions/JoynrException');
 
 /**
  * @name Dispatcher
@@ -147,6 +148,10 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         }
 
         joynrMessage.setIsLocalMessage(settings.toDiscoveryEntry.isLocal);
+
+        if (log.isDebugEnabled()) {
+            log.debug("sendJoynrMessage, message = " + JSON.stringify(joynrMessage));
+        }
         // send message
         return clusterControllerMessagingStub.transmit(joynrMessage);
     }
@@ -445,6 +450,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      *            settings.customHeaders custom headers from request
      * @param {Reply|SubscriptionReply}
      *            settings.reply the reply to be transmitted. It can either be a Reply or a SubscriptionReply object
+     * @returns {Object} A+ promise object
      */
     function sendReply(settings) {
         // reply with the result in a JoynrMessage
@@ -461,7 +467,10 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         // set custom headers
         joynrMessage.setCustomHeaders(settings.customHeaders);
 
-        clusterControllerMessagingStub.transmit(joynrMessage);
+        if (log.isDebugEnabled()) {
+            log.debug("sendReply, message = " + JSON.stringify(joynrMessage));
+        }
+        return clusterControllerMessagingStub.transmit(joynrMessage);
     }
     /**
      * @private
@@ -480,15 +489,29 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      *            reply
      */
     function sendRequestReply(settings, reply) {
+        var toParticipantId = settings.to;
+        var requestReplyId = reply.requestReplyId;
         log.info("replying", DiagnosticTags.forReply({
             reply : reply,
-            to : settings.to,
+            to : toParticipantId,
             from : settings.from
         }));
 
         settings.reply = JSONSerializer.stringify(reply, reply.error !== undefined);
         settings.messageType = JoynrMessage.JOYNRMESSAGE_TYPE_REPLY;
-        sendReply(settings);
+        try {
+            sendReply(settings)
+            .catch(function(error) {
+                log.error("Failed to send reply for request "
+                        + requestReplyId + " to " + toParticipantId + ": " + error
+                        + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+            });
+        } catch (error) {
+            // Errors should be returned via the Promise
+            log.fatal("Failed to send reply for request "
+                    + requestReplyId + " to " + toParticipantId + ": " + error
+                    + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+        }
     }
     /**
      * @private
@@ -507,16 +530,30 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      *            subscriptionReply
      */
     function sendSubscriptionReply(settings, subscriptionReply) {
+        var toParticipantId = settings.to;
+        var subscriptionId = subscriptionReply.subscriptionId;
         log.info("replying", DiagnosticTags.forSubscriptionReply({
             subscriptionReply : subscriptionReply,
-            to : settings.to,
+            to : toParticipantId,
             from : settings.from
         }));
 
         settings.reply =
                 JSONSerializer.stringify(subscriptionReply, subscriptionReply.error !== undefined);
         settings.messageType = JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY;
-        sendReply(settings);
+        try {
+            sendReply(settings)
+            .catch(function(error) {
+                log.error("Failed to send subscription reply for subscription "
+                        + subscriptionId + " to " + toParticipantId + ": " + error
+                        + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+            });
+        } catch (error) {
+            // Errors should be returned via the Promise
+            log.fatal("Failed to send subscription reply for subscription "
+                    + subscriptionId + " to " + toParticipantId + ": " + error
+                    + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+        }
     }
 
     function sendPublicationInternal(settings, type, publication) {
@@ -527,11 +564,25 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         });
 
         // set reply headers
+        var toParticipantId = settings.to;
         publicationMessage.from = settings.from;
-        publicationMessage.to = settings.to;
+        publicationMessage.to = toParticipantId;
         publicationMessage.expiryDate = upLiftTtl(settings.expiryDate).toString();
 
-        clusterControllerMessagingStub.transmit(publicationMessage);
+        if (log.isDebugEnabled()) {
+            log.debug("sendPublicationInternal, message = " + JSON.stringify(publicationMessage));
+        }
+        try {
+            clusterControllerMessagingStub.transmit(publicationMessage)
+            .catch(function(error) {
+                log.error("Failed to send publication to " + toParticipantId + error
+                        + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+            });
+        } catch(error) {
+            // Errors should be returned via the Promise
+            log.fatal("Failed to send publication to " + toParticipantId + error
+                    + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+        }
     }
 
     /**
@@ -591,6 +642,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
      *
      */
     this.sendMulticastPublication = function sendMulticastPublication(settings, publication) {
+        var multicastId = publication.multicastId;
         log.info("publication", DiagnosticTags.forMulticastPublication({
             publication : publication,
             from : settings.from
@@ -602,12 +654,26 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
             payload : JSONSerializer.stringify(publication),
             header : {
                 from : settings.from,
-                to : publication.multicastId,
+                to : multicastId,
                 expiryDate : upLiftTtl(settings.expiryDate).toString()
             }
         });
 
-        clusterControllerMessagingStub.transmit(publicationMessage);
+        if (log.isDebugEnabled()) {
+            log.debug("sendMulticastPublication, message = " + JSON.stringify(publicationMessage));
+        }
+        try {
+            clusterControllerMessagingStub.transmit(publicationMessage)
+            .catch(function(error) {
+                // TODO error could be caught by the provider implementation when calling the fire method
+                log.error("Failed to send MulticastPublication to " + multicastId + ", error: " + error
+                        + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+            });
+        } catch (error) {
+            // Errors should be returned via the Promise
+            log.fatal("Failed to send MulticastPublication to " + multicastId + ", error: " + error
+                    + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+        }
     };
 
     /**
@@ -621,12 +687,21 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
     this.receive =
             function receive(joynrMessage) {
                 log.debug("received message with id \"" + joynrMessage.msgId + "\"");
+                if (log.isDebugEnabled()) {
+                    log.debug("receive, message = " + JSON.stringify(joynrMessage));
+                }
                 switch (joynrMessage.type) {
 
                     case JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST:
                         try {
                             var request = new Request(parsePayload(joynrMessage));
-
+                            log.info(
+                                    "received request for " + request.methodName + ".",
+                                    DiagnosticTags.forRequest({
+                                        request : request,
+                                        to : joynrMessage.to,
+                                        from : joynrMessage.from
+                                    }));
                             requestReplyManager.handleRequest(joynrMessage.to, request, function(
                                     reply) {
                                 sendRequestReply({
@@ -644,7 +719,13 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
                     case JoynrMessage.JOYNRMESSAGE_TYPE_REPLY:
                         try {
-                            requestReplyManager.handleReply(new Reply(parsePayload(joynrMessage)));
+                            var reply = new Reply(parsePayload(joynrMessage));
+                            log.info("received reply ", DiagnosticTags.forReply({
+                                reply : reply,
+                                to : joynrMessage.to,
+                                from : joynrMessage.from
+                            }));
+                            requestReplyManager.handleReply(reply);
                         } catch (errorInReply) {
                             // TODO handle error in handling the reply
                             log.error("error handling reply: " + errorInReply);
@@ -653,9 +734,15 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
                     case JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY:
                         try {
-                            requestReplyManager.handleOneWayRequest(
-                                    joynrMessage.to,
-                                    new OneWayRequest(parsePayload(joynrMessage)));
+                            var oneWayRequest = new OneWayRequest(parsePayload(joynrMessage));
+                            log.info("received one way request for "
+                                + oneWayRequest.methodName
+                                + ".", DiagnosticTags.forOneWayRequest({
+                                request : oneWayRequest,
+                                to : joynrMessage.to,
+                                from : joynrMessage.from
+                            }));
+                            requestReplyManager.handleOneWayRequest(joynrMessage.to, oneWayRequest);
                         } catch (errorInOneWayRequest) {
                             log.error("error handling one way: " + errorInOneWayRequest);
                         }
@@ -663,11 +750,20 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
                     case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST:
                         try {
+                            var subscriptionRequest =
+                                    upLiftExpiryDateInSubscriptionRequest(new SubscriptionRequest(
+                                            parsePayload(joynrMessage)));
+                            log.info("received subscription to "
+                                + subscriptionRequest.subscribedToName, DiagnosticTags
+                                    .forSubscriptionRequest({
+                                        subscriptionRequest : subscriptionRequest,
+                                        to : joynrMessage.to,
+                                        from : joynrMessage.from
+                                    }));
                             publicationManager.handleSubscriptionRequest(
                                     joynrMessage.from,
                                     joynrMessage.to,
-                                    upLiftExpiryDateInSubscriptionRequest(new SubscriptionRequest(
-                                            parsePayload(joynrMessage))),
+                                    subscriptionRequest,
                                     function(subscriptionReply) {
                                         sendSubscriptionReply({
                                             from : joynrMessage.to,
@@ -685,20 +781,28 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
                     case JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST:
                         try {
-                            publicationManager
-                                    .handleBroadcastSubscriptionRequest(
-                                            joynrMessage.from,
-                                            joynrMessage.to,
-                                            upLiftExpiryDateInSubscriptionRequest(new BroadcastSubscriptionRequest(
-                                                    parsePayload(joynrMessage))),
-                                            function(subscriptionReply) {
-                                                sendSubscriptionReply({
-                                                    from : joynrMessage.to,
-                                                    to : joynrMessage.from,
-                                                    expiryDate : joynrMessage.expiryDate,
-                                                    customHeaders : joynrMessage.getCustomHeaders()
-                                                }, subscriptionReply);
-                                            });
+                            var broadcastSubscriptionRequest =
+                                    upLiftExpiryDateInSubscriptionRequest(new BroadcastSubscriptionRequest(
+                                            parsePayload(joynrMessage)));
+                            log.info("received broadcast subscription to "
+                                + broadcastSubscriptionRequest.subscribedToName, DiagnosticTags
+                                    .forBroadcastSubscriptionRequest({
+                                        subscriptionRequest : broadcastSubscriptionRequest,
+                                        to : joynrMessage.to,
+                                        from : joynrMessage.from
+                                    }));
+                            publicationManager.handleBroadcastSubscriptionRequest(
+                                    joynrMessage.from,
+                                    joynrMessage.to,
+                                    broadcastSubscriptionRequest,
+                                    function(subscriptionReply) {
+                                        sendSubscriptionReply({
+                                            from : joynrMessage.to,
+                                            to : joynrMessage.from,
+                                            expiryDate : joynrMessage.expiryDate,
+                                            customHeaders : joynrMessage.getCustomHeaders()
+                                        }, subscriptionReply);
+                                    });
                         } catch (errorInBroadcastSubscriptionRequest) {
                             // TODO handle error in handling the subscriptionRequest
                             log.error("error handling broadcastSubscriptionRequest: "
@@ -708,20 +812,28 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
                     case JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST:
                         try {
-                            publicationManager
-                                    .handleMulticastSubscriptionRequest(
-                                            joynrMessage.from,
-                                            joynrMessage.to,
-                                            upLiftExpiryDateInSubscriptionRequest(new MulticastSubscriptionRequest(
-                                                    parsePayload(joynrMessage))),
-                                            function(subscriptionReply) {
-                                                sendSubscriptionReply({
-                                                    from : joynrMessage.to,
-                                                    to : joynrMessage.from,
-                                                    expiryDate : joynrMessage.expiryDate,
-                                                    customHeaders : joynrMessage.getCustomHeaders()
-                                                }, subscriptionReply);
-                                            });
+                            var multicastSubscriptionRequest =
+                                    upLiftExpiryDateInSubscriptionRequest(new MulticastSubscriptionRequest(
+                                            parsePayload(joynrMessage)));
+                            log.info("received broadcast subscription to "
+                                + multicastSubscriptionRequest.subscribedToName, DiagnosticTags
+                                    .forMulticastSubscriptionRequest({
+                                        subscriptionRequest : multicastSubscriptionRequest,
+                                        to : joynrMessage.to,
+                                        from : joynrMessage.from
+                                    }));
+                            publicationManager.handleMulticastSubscriptionRequest(
+                                    joynrMessage.from,
+                                    joynrMessage.to,
+                                    multicastSubscriptionRequest,
+                                    function(subscriptionReply) {
+                                        sendSubscriptionReply({
+                                            from : joynrMessage.to,
+                                            to : joynrMessage.from,
+                                            expiryDate : joynrMessage.expiryDate,
+                                            customHeaders : joynrMessage.getCustomHeaders()
+                                        }, subscriptionReply);
+                                    });
                         } catch (errorInMulticastSubscriptionRequest) {
                             // TODO handle error in handling the subscriptionRequest
                             log.error("error handling multicastSubscriptionRequest: "
@@ -731,8 +843,15 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
                     case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY:
                         try {
-                            subscriptionManager.handleSubscriptionReply(new SubscriptionReply(
-                                    parsePayload(joynrMessage)));
+                            var subscriptionReply =
+                                    new SubscriptionReply(parsePayload(joynrMessage));
+                            log.info("received subscription reply", DiagnosticTags
+                                    .forSubscriptionReply({
+                                        subscriptionReply : subscriptionReply,
+                                        to : joynrMessage.to,
+                                        from : joynrMessage.from
+                                    }));
+                            subscriptionManager.handleSubscriptionReply(subscriptionReply);
                         } catch (errorInSubscriptionReply) {
                             // TODO handle error in handling the subscriptionReply
                             log.error("error handling subscriptionReply: "
@@ -742,8 +861,15 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
                     case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP:
                         try {
-                            publicationManager.handleSubscriptionStop(new SubscriptionStop(
-                                    parsePayload(joynrMessage)));
+                            var subscriptionStop = new SubscriptionStop(parsePayload(joynrMessage));
+                            log.info(
+                                    "subscription stop " + subscriptionStop.subscriptionId,
+                                    DiagnosticTags.forSubscriptionStop({
+                                        subscriptionId : subscriptionStop.subscriptionId,
+                                        to : joynrMessage.to,
+                                        from : joynrMessage.from
+                                    }));
+                            publicationManager.handleSubscriptionStop(subscriptionStop);
                         } catch (errorInSubscriptionStop) {
                             // TODO handle error in handling the subscriptionStop
                             log
@@ -754,8 +880,14 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
                     case JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION:
                         try {
-                            subscriptionManager.handlePublication(new SubscriptionPublication(
-                                    parsePayload(joynrMessage)));
+                            var subscriptionPublication =
+                                    new SubscriptionPublication(parsePayload(joynrMessage));
+                            log.info("received publication", DiagnosticTags.forPublication({
+                                publication : subscriptionPublication,
+                                to : joynrMessage.to,
+                                from : joynrMessage.from
+                            }));
+                            subscriptionManager.handlePublication(subscriptionPublication);
                         } catch (errorInPublication) {
                             // TODO handle error in handling the publication
                             log.error("error handling publication: " + errorInPublication);
@@ -764,9 +896,14 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
                     case JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST:
                         try {
-                            subscriptionManager
-                                    .handleMulticastPublication(new MulticastPublication(
-                                            parsePayload(joynrMessage)));
+                            var multicastPublication =
+                                    new MulticastPublication(parsePayload(joynrMessage));
+                            log.info("received publication", DiagnosticTags
+                                    .forMulticastPublication({
+                                        publication : multicastPublication,
+                                        from : joynrMessage.from
+                                    }));
+                            subscriptionManager.handleMulticastPublication(multicastPublication);
                         } catch (errorInMulticastPublication) {
                             // TODO handle error in handling the multicast publication
                             log.error("error handling multicast publication: "

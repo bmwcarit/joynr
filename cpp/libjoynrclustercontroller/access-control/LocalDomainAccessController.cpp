@@ -38,8 +38,6 @@ namespace joynr
 using namespace infrastructure;
 using namespace infrastructure::DacTypes;
 
-INIT_LOGGER(LocalDomainAccessController);
-
 // 10 years
 std::chrono::milliseconds LocalDomainAccessController::broadcastSubscriptionValidity =
         std::chrono::hours(24) * 365 * 10;
@@ -286,7 +284,7 @@ bool LocalDomainAccessController::hasRole(const std::string& userId,
                                           const std::string& domain,
                                           Role::Enum role)
 {
-    JOYNR_LOG_TRACE(logger, "execute: entering hasRole");
+    JOYNR_LOG_TRACE(logger(), "execute: entering hasRole");
 
     // See if the user has the given role
     bool hasRole = false;
@@ -313,7 +311,7 @@ void LocalDomainAccessController::getConsumerPermission(
         TrustLevel::Enum trustLevel,
         std::shared_ptr<IGetPermissionCallback> callback)
 {
-    JOYNR_LOG_TRACE(logger, "Entering getConsumerPermission with unknown operation");
+    JOYNR_LOG_TRACE(logger(), "Entering getConsumerPermission with unknown operation");
 
     // If we only use the local domain access store, we assume that all required ACEs
     // were already provisioned. Otherwise we need to query them from the backend.
@@ -372,7 +370,7 @@ Permission::Enum LocalDomainAccessController::getConsumerPermission(
         const std::string& operation,
         TrustLevel::Enum trustLevel)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "Entering getConsumerPermission with userID={} domain={} interfaceName={}",
                     userId,
                     domain,
@@ -527,7 +525,7 @@ void LocalDomainAccessController::getProviderPermission(
         TrustLevel::Enum trustLevel,
         std::shared_ptr<IGetPermissionCallback> callback)
 {
-    JOYNR_LOG_TRACE(logger, "Entering getProviderPermission with callback");
+    JOYNR_LOG_TRACE(logger(), "Entering getProviderPermission with callback");
 
     // If we only use the local domain access store, we assume that all required RCEs
     // were already provisioned. Otherwise we need to query them from the backend.
@@ -577,7 +575,7 @@ Permission::Enum LocalDomainAccessController::getProviderPermission(
         const std::string& interfaceName,
         TrustLevel::Enum trustLevel)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "Entering getProviderPermission with userID={} domain={} interfaceName={}",
                     uid,
                     domain,
@@ -725,7 +723,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
         }
     }
     if (subscriptionsFound) {
-        JOYNR_LOG_TRACE(logger,
+        JOYNR_LOG_TRACE(logger(),
                         "Unsubscribing from ACL broadcasts for domain {}, interface {}",
                         domain,
                         interfaceName);
@@ -737,7 +735,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
                     ->unsubscribeFromMasterAccessControlEntryChangedBroadcast(
                             masterAceSubscriptionId);
         } catch (const exceptions::JoynrException& error) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "Unsubscribe from MasterAccessControlEntryChangedBroadcast failed: " +
                                     error.getMessage());
         }
@@ -748,7 +746,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
                     ->unsubscribeFromMediatorAccessControlEntryChangedBroadcast(
                             mediatorAceSubscriptionId);
         } catch (const exceptions::JoynrException& error) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "Unsubscribe from MediatorAccessControlEntryChangedBroadcast failed: " +
                                     error.getMessage());
         }
@@ -758,7 +756,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
                     ->unsubscribeFromOwnerAccessControlEntryChangedBroadcast(
                             ownerAceSubscriptionId);
         } catch (const exceptions::JoynrException& error) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "Unsubscribe from OwnerAccessControlEntryChangedBroadcast failed: " +
                                     error.getMessage());
         }
@@ -776,7 +774,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
         }
     }
     if (subscriptionsFound) {
-        JOYNR_LOG_TRACE(logger,
+        JOYNR_LOG_TRACE(logger(),
                         "Unsubscribing from RCL broadcasts for domain {}, interface {}",
                         domain,
                         interfaceName);
@@ -789,7 +787,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
                             masterRceSubscriptionId);
         } catch (const exceptions::JoynrException& error) {
             JOYNR_LOG_ERROR(
-                    logger,
+                    logger(),
                     "Unsubscribe from MasterRegistrationControlEntryChangedBroadcast failed: " +
                             error.getMessage());
         }
@@ -801,7 +799,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
                             mediatorRceSubscriptionId);
         } catch (const exceptions::JoynrException& error) {
             JOYNR_LOG_ERROR(
-                    logger,
+                    logger(),
                     "Unsubscribe from MediatorRegistrationControlEntryChangedBroadcast failed: " +
                             error.getMessage());
         }
@@ -812,7 +810,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
                             ownerRceSubscriptionId);
         } catch (const exceptions::JoynrException& error) {
             JOYNR_LOG_ERROR(
-                    logger,
+                    logger(),
                     "Unsubscribe from OwnerRegistrationControlEntryChangedBroadcast failed: " +
                             error.getMessage());
         }
@@ -832,7 +830,7 @@ void LocalDomainAccessController::initializeDomainRoleTable(const std::string& u
 
     std::function<void(const exceptions::JoynrException&)> domainRoleOnError =
             [](const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Aborting ACL initialisation due to communication error:\n{}",
                         error.getMessage());
     };
@@ -865,7 +863,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreAces(
 
     std::function<void(const exceptions::JoynrException& error)> masterAceOnError =
             [initializer](const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Aborting ACL initialisation due to communication error:\n{}",
                         error.getMessage());
 
@@ -889,7 +887,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreAces(
 
     std::function<void(const exceptions::JoynrException& error)> mediatorAceOnError =
             [this, initializer](const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Aborting ACL initialisation due to communication error:\n{}",
                         error.getMessage());
 
@@ -912,7 +910,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreAces(
 
     std::function<void(const exceptions::JoynrException& error)> ownerAceOnError =
             [initializer](const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Aborting ACL initialisation due to communication error:\n{}",
                         error.getMessage());
 
@@ -949,7 +947,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreRces(
 
     std::function<void(const exceptions::JoynrException& error)> masterRceOnError =
             [initializer](const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Aborting RCL initialisation due to communication error:\n{}",
                         error.getMessage());
 
@@ -973,7 +971,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreRces(
 
     std::function<void(const exceptions::JoynrException& error)> mediatorRceOnError =
             [this, initializer](const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Aborting RCL initialisation due to communication error:\n{}",
                         error.getMessage());
 
@@ -997,7 +995,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreRces(
 
     std::function<void(const exceptions::JoynrException& error)> ownerRceOnError =
             [initializer](const exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Aborting RCL initialisation due to communication error:\n{}",
                         error.getMessage());
 
@@ -1075,7 +1073,7 @@ void LocalDomainAccessController::abortInitialization(const std::string& domain,
                                                       const bool handleAces,
                                                       const bool handleRces)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "Removing outstanding ACL requests for domain {}, interface {}",
                     domain,
                     interfaceName);
@@ -1292,14 +1290,14 @@ void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onRec
     } else {
         parent.localDomainAccessStore->removeDomainRole(changedDre.getUid(), changedDre.getRole());
     }
-    JOYNR_LOG_TRACE(parent.logger, "Changed DRE: {}", changedDre.toString());
+    JOYNR_LOG_TRACE(parent.logger(), "Changed DRE: {}", changedDre.toString());
 }
 
 void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger, "Change of DRE failed!");
+    JOYNR_LOG_ERROR(parent.logger(), "Change of DRE failed!");
 }
 
 LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::
@@ -1320,14 +1318,14 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
 {
     if (changeType != ChangeType::REMOVE) {
         parent.localDomainAccessStore->updateMasterAccessControlEntry(changedMasterAce);
-        JOYNR_LOG_TRACE(parent.logger, "Changed MasterAce: {}", changedMasterAce.toString());
+        JOYNR_LOG_TRACE(parent.logger(), "Changed MasterAce: {}", changedMasterAce.toString());
     } else {
         parent.localDomainAccessStore->removeMasterAccessControlEntry(
                 changedMasterAce.getUid(),
                 changedMasterAce.getDomain(),
                 changedMasterAce.getInterfaceName(),
                 changedMasterAce.getOperation());
-        JOYNR_LOG_TRACE(parent.logger, "Removed MasterAce: {}", changedMasterAce.toString());
+        JOYNR_LOG_TRACE(parent.logger(), "Removed MasterAce: {}", changedMasterAce.toString());
     }
 }
 
@@ -1335,7 +1333,7 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger, "Change of MasterAce failed!");
+    JOYNR_LOG_ERROR(parent.logger(), "Change of MasterAce failed!");
 }
 
 LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::
@@ -1363,14 +1361,14 @@ void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastList
                 changedMediatorAce.getInterfaceName(),
                 changedMediatorAce.getOperation());
     }
-    JOYNR_LOG_TRACE(parent.logger, "Changed MediatorAce: {}", changedMediatorAce.toString());
+    JOYNR_LOG_TRACE(parent.logger(), "Changed MediatorAce: {}", changedMediatorAce.toString());
 }
 
 void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger, "Change of MediatorAce failed!");
+    JOYNR_LOG_ERROR(parent.logger(), "Change of MediatorAce failed!");
 }
 
 LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::
@@ -1398,14 +1396,14 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
                 changedOwnerAce.getInterfaceName(),
                 changedOwnerAce.getOperation());
     }
-    JOYNR_LOG_TRACE(parent.logger, "Changed OwnerAce: {}", changedOwnerAce.toString());
+    JOYNR_LOG_TRACE(parent.logger(), "Changed OwnerAce: {}", changedOwnerAce.toString());
 }
 
 void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger, "Change of OwnerAce failed!");
+    JOYNR_LOG_ERROR(parent.logger(), "Change of OwnerAce failed!");
 }
 
 LocalDomainAccessController::MasterRegistrationControlEntryChangedBroadcastListener::
@@ -1426,13 +1424,13 @@ void LocalDomainAccessController::MasterRegistrationControlEntryChangedBroadcast
 {
     if (changeType != ChangeType::REMOVE) {
         parent.localDomainAccessStore->updateMasterRegistrationControlEntry(changedMasterRce);
-        JOYNR_LOG_TRACE(parent.logger, "Changed MasterAce: {}", changedMasterRce.toString());
+        JOYNR_LOG_TRACE(parent.logger(), "Changed MasterAce: {}", changedMasterRce.toString());
     } else {
         parent.localDomainAccessStore->removeMasterRegistrationControlEntry(
                 changedMasterRce.getUid(),
                 changedMasterRce.getDomain(),
                 changedMasterRce.getInterfaceName());
-        JOYNR_LOG_TRACE(parent.logger, "Removed MasterAce: {}", changedMasterRce.toString());
+        JOYNR_LOG_TRACE(parent.logger(), "Removed MasterAce: {}", changedMasterRce.toString());
     }
 }
 
@@ -1440,7 +1438,7 @@ void LocalDomainAccessController::MasterRegistrationControlEntryChangedBroadcast
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger, "Change of MasterAce failed!");
+    JOYNR_LOG_ERROR(parent.logger(), "Change of MasterAce failed!");
 }
 
 LocalDomainAccessController::MediatorRegistrationControlEntryChangedBroadcastListener::
@@ -1468,14 +1466,14 @@ void LocalDomainAccessController::MediatorRegistrationControlEntryChangedBroadca
                 changedMediatorRce.getDomain(),
                 changedMediatorRce.getInterfaceName());
     }
-    JOYNR_LOG_TRACE(parent.logger, "Changed MediatorRce: {}", changedMediatorRce.toString());
+    JOYNR_LOG_TRACE(parent.logger(), "Changed MediatorRce: {}", changedMediatorRce.toString());
 }
 
 void LocalDomainAccessController::MediatorRegistrationControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger, "Change of MediatorRce failed!");
+    JOYNR_LOG_ERROR(parent.logger(), "Change of MediatorRce failed!");
 }
 
 LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastListener::
@@ -1502,14 +1500,14 @@ void LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastL
                 changedOwnerRce.getDomain(),
                 changedOwnerRce.getInterfaceName());
     }
-    JOYNR_LOG_TRACE(parent.logger, "Changed OwnerRce: {}", changedOwnerRce.toString());
+    JOYNR_LOG_TRACE(parent.logger(), "Changed OwnerRce: {}", changedOwnerRce.toString());
 }
 
 void LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger, "Change of OwnerRce failed!");
+    JOYNR_LOG_ERROR(parent.logger(), "Change of OwnerRce failed!");
 }
 
 } // namespace joynr

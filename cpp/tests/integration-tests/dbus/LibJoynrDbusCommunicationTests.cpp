@@ -42,7 +42,7 @@ public:
     std::string settingsFilename;
     Settings settings;
     MessagingSettings* messagingSettings;
-    ADD_LOGGER(LibJoynrDbusCommunicationTests);
+    ADD_LOGGER(LibJoynrDbusCommunicationTests)
 
     LibJoynrDbusCommunicationTests():
         settingsFilename("test-resources/integrationtest.settings"),
@@ -61,8 +61,6 @@ public:
         if(result) JOYNR_LOG_ERROR(logger, "{} SUCCESS", text); else JOYNR_LOG_ERROR(logger, "{} ERROR", text);
     }
 };
-
-INIT_LOGGER(LibJoynrDbusCommunicationTests);
 
 TEST_F(LibJoynrDbusCommunicationTests, dbus_commonapi_runtime_feature_check) {
     std::string ccMessagingAddress("local:cc.messaging:cc.messaging8");

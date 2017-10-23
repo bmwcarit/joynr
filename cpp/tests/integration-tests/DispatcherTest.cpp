@@ -98,7 +98,7 @@ public:
     }
 
 protected:
-    ADD_LOGGER(DispatcherTest);
+    ADD_LOGGER(DispatcherTest)
     SingleThreadedIOService singleThreadIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::shared_ptr<MockCallbackWithJoynrException<types::Localisation::GpsLocation> > mockCallback;
@@ -122,8 +122,6 @@ protected:
     joynr::Semaphore getLocationCalledSemaphore;
     const bool isLocalMessage;
 };
-
-INIT_LOGGER(DispatcherTest);
 
 // from JoynrDispatcher.receive(Request) to IRequestCaller.operation(params)
 // this test goes a step further and makes sure that the response is visible in Messaging
@@ -169,7 +167,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation) {
                 reply
     );
 
-    JOYNR_LOG_DEBUG(logger, "expectedReply.payload()={}",expectedReply.getPayload());
+    JOYNR_LOG_DEBUG(logger(), "expectedReply.payload()={}",expectedReply.getPayload());
 
     // setup MockMessaging to expect the response
     EXPECT_CALL(

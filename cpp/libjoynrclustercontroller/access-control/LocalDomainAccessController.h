@@ -560,7 +560,7 @@ private:
     std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore;
     bool useOnlyLocalDomainAccessStore;
 
-    ADD_LOGGER(LocalDomainAccessController);
+    ADD_LOGGER(LocalDomainAccessController)
     static std::chrono::milliseconds broadcastSubscriptionValidity;
 
     // Initialize MasterACE, MediatorACE and OwnerACE for the given data/interface. This function is

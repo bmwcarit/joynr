@@ -30,8 +30,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(WebSocketLibJoynrMessagingSkeleton);
-
 WebSocketLibJoynrMessagingSkeleton::WebSocketLibJoynrMessagingSkeleton(
         std::weak_ptr<IMessageRouter> messageRouter)
         : messageRouter(std::move(messageRouter))
@@ -58,14 +56,14 @@ void WebSocketLibJoynrMessagingSkeleton::onMessageReceived(smrf::ByteVector&& me
     try {
         immutableMessage = std::make_shared<ImmutableMessage>(std::move(message));
     } catch (const smrf::EncodingException& e) {
-        JOYNR_LOG_ERROR(logger, "Unable to deserialize message - error: {}", e.what());
+        JOYNR_LOG_ERROR(logger(), "Unable to deserialize message - error: {}", e.what());
         return;
     } catch (const std::invalid_argument& e) {
-        JOYNR_LOG_ERROR(logger, "deserialized message is not valid - error: {}", e.what());
+        JOYNR_LOG_ERROR(logger(), "deserialized message is not valid - error: {}", e.what());
         return;
     }
 
-    JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+    JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
 
     if (immutableMessage->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
         immutableMessage->setReceivedFromGlobal(true);
@@ -74,7 +72,7 @@ void WebSocketLibJoynrMessagingSkeleton::onMessageReceived(smrf::ByteVector&& me
     auto onFailure = [messageId = immutableMessage->getId()](
             const exceptions::JoynrRuntimeException& e)
     {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Incoming Message with ID {} could not be sent! reason: {}",
                         messageId,
                         e.getMessage());

@@ -42,8 +42,6 @@ using namespace infrastructure;
 using namespace infrastructure::DacTypes;
 using namespace types;
 
-INIT_LOGGER(AccessController);
-
 //--------- InternalConsumerPermissionCallbacks --------------------------------
 
 class AccessController::LdacConsumerPermissionCallback
@@ -95,7 +93,7 @@ void AccessController::LdacConsumerPermissionCallback::permission(Permission::En
     bool hasPermission = convertToBool(permission);
 
     if (!hasPermission) {
-        JOYNR_LOG_ERROR(owningAccessController.logger,
+        JOYNR_LOG_ERROR(owningAccessController.logger(),
                         "Message {} to domain {}, interface {} failed ACL check",
                         message->getId(),
                         domain,
@@ -117,7 +115,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
             joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
             operation = request.getMethodName();
         } catch (const std::exception& e) {
-            JOYNR_LOG_ERROR(logger, "could not deserialize OneWayRequest - error {}", e.what());
+            JOYNR_LOG_ERROR(logger(), "could not deserialize OneWayRequest - error {}", e.what());
         }
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST()) {
         try {
@@ -125,7 +123,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
             joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
             operation = request.getMethodName();
         } catch (const std::exception& e) {
-            JOYNR_LOG_ERROR(logger, "could not deserialize Request - error {}", e.what());
+            JOYNR_LOG_ERROR(logger(), "could not deserialize Request - error {}", e.what());
         }
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST()) {
         try {
@@ -135,7 +133,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_ERROR(
-                    logger, "could not deserialize SubscriptionRequest - error {}", e.what());
+                    logger(), "could not deserialize SubscriptionRequest - error {}", e.what());
         }
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST()) {
         try {
@@ -144,7 +142,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
             operation = request.getSubscribeToName();
 
         } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "could not deserialize BroadcastSubscriptionRequest - error {}",
                             e.what());
         }
@@ -154,14 +152,14 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
             joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
             operation = request.getSubscribeToName();
         } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "could not deserialize MulticastSubscriptionRequest - error {}",
                             e.what());
         }
     }
 
     if (operation.empty()) {
-        JOYNR_LOG_ERROR(owningAccessController.logger, "Could not deserialize request");
+        JOYNR_LOG_ERROR(owningAccessController.logger(), "Could not deserialize request");
         callback->hasConsumerPermission(false);
         return;
     }
@@ -174,7 +172,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     bool hasPermission = convertToBool(permission);
 
     if (!hasPermission) {
-        JOYNR_LOG_ERROR(owningAccessController.logger,
+        JOYNR_LOG_ERROR(owningAccessController.logger(),
                         "Message {} to domain {}, interface/operation {}/{} failed ACL check",
                         message->getId(),
                         domain,
@@ -295,7 +293,7 @@ void AccessController::hasConsumerPermission(
         const std::string& participantId = message->getRecipient();
         if (discoveryEntry.getParticipantId() != participantId) {
             JOYNR_LOG_ERROR(
-                    logger, "Failed to get capabilities for participantId {}", participantId);
+                    logger(), "Failed to get capabilities for participantId {}", participantId);
             callback->hasConsumerPermission(false);
             return;
         }

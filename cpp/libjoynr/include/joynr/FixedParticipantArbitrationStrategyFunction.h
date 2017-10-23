@@ -51,7 +51,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(FixedParticipantArbitrationStrategyFunction);
-    ADD_LOGGER(FixedParticipantArbitrationStrategyFunction);
+    ADD_LOGGER(FixedParticipantArbitrationStrategyFunction)
 };
 
 } // namespace joynr

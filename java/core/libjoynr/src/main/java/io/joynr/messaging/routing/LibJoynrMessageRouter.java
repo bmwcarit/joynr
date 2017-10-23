@@ -28,9 +28,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.ShutdownNotifier;
@@ -107,25 +104,17 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
 
     @Override
     protected Set<Address> getAddresses(ImmutableMessage message) {
-        Set<Address> result;
-        JoynrRuntimeException noAddressException = null;
-        try {
-            result = super.getAddresses(message);
-        } catch (JoynrMessageNotSentException | JoynrIllegalStateException e) {
-            noAddressException = e;
-            result = new HashSet<>();
-        }
-        String toParticipantId = message.getRecipient();
+        Set<Address> result = super.getAddresses(message);
+
         if (result.isEmpty() && parentRouter != null) {
+            String toParticipantId = message.getRecipient();
             Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
             if (parentHasNextHop) {
                 super.addNextHop(toParticipantId, parentRouterMessagingAddress, true); // TODO: use appropriate boolean value in subsequent patch
                 result.add(parentRouterMessagingAddress);
             }
         }
-        if (result.isEmpty() && noAddressException != null) {
-            throw noAddressException;
-        }
+
         return result;
     }
 

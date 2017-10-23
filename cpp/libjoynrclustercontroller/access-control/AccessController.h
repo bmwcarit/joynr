@@ -70,7 +70,7 @@ private:
     std::shared_ptr<ProviderRegistrationObserver> providerRegistrationObserver;
     std::vector<std::string> whitelistParticipantIds;
 
-    ADD_LOGGER(AccessController);
+    ADD_LOGGER(AccessController)
 };
 
 } // namespace joynr

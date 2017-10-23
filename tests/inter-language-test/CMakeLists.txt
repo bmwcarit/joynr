@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(inter-language-test-0.30.0)
+project(inter-language-test-0.30.1)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -23,7 +23,7 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.30.0 REQUIRED)
+find_package(Joynr 0.30.1 REQUIRED)
 
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
@@ -80,7 +80,6 @@ set(ilt-consumer_HEADERS
 # Use the generated source files for the consumer application
 set(ilt-consumer_SOURCES
     "src/main/cpp/IltHelper.cpp"
-    "src/main/cpp/IltUtil.cpp"
     "src/main/cpp/IltConsumerAsyncMethodTest.cpp"
     "src/main/cpp/IltConsumerAttributeSubscriptionTest.cpp"
     "src/main/cpp/IltConsumerBroadcastSubscriptionTest.cpp"
@@ -104,7 +103,6 @@ set(ilt-provider_HEADERS
 set(ilt-provider_SOURCES
     "src/main/cpp/IltProvider.cpp"
     "src/main/cpp/IltHelper.cpp"
-    "src/main/cpp/IltUtil.cpp"
     "src/main/cpp/IltProviderApplication.cpp"
     "src/main/cpp/IltStringBroadcastFilter.cpp"
 )

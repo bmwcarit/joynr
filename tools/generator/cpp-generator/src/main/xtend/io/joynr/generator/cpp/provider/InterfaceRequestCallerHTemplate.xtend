@@ -171,7 +171,7 @@ protected:
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);
 	std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider;
-	ADD_LOGGER(«interfaceName»RequestCaller);
+	ADD_LOGGER(«interfaceName»RequestCaller)
 };
 
 «getNamespaceEnder(francaIntf)»

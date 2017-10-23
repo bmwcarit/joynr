@@ -61,7 +61,8 @@ public:
 
         // early exit if the providerParticipantId could not be found
         if (requestCaller == nullptr) {
-            JOYNR_LOG_ERROR(logger, "Cannot create connector: Provider participant ID not found.");
+            JOYNR_LOG_ERROR(
+                    logger(), "Cannot create connector: Provider participant ID not found.");
             return nullptr;
         }
 
@@ -84,7 +85,7 @@ private:
     std::weak_ptr<InProcessPublicationSender> inProcessPublicationSender;
     std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
     std::shared_ptr<IPlatformSecurityManager> securityManager;
-    ADD_LOGGER(InProcessConnectorFactory);
+    ADD_LOGGER(InProcessConnectorFactory)
 };
 
 } // namespace joynr

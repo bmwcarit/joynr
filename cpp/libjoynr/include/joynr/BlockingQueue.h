@@ -89,7 +89,7 @@ private:
 
 private:
     /*! Logger */
-    ADD_LOGGER(BlockingQueue);
+    ADD_LOGGER(BlockingQueue)
 
     /*! Flag indicating scheduler is shutting down */
     std::atomic_bool stoppingScheduler;
