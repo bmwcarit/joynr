@@ -95,7 +95,7 @@ public:
         websocketpp::lib::error_code initializationError;
         endpoint.init_asio(&ioService, initializationError);
         if (initializationError) {
-            JOYNR_LOG_FATAL(logger,
+            JOYNR_LOG_FATAL(logger(),
                             "error during WebSocketCcMessagingSkeleton initialization: ",
                             initializationError.message());
             return;
@@ -141,7 +141,7 @@ public:
         websocketpp::lib::error_code shutdownError;
         endpoint.stop_listening(shutdownError);
         if (shutdownError) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "error during WebSocketCcMessagingSkeleton shutdown: ",
                             shutdownError.message());
         }
@@ -163,7 +163,7 @@ protected:
     using Server = websocketpp::server<Config>;
     using ConnectionHandle = websocketpp::connection_hdl;
 
-    ADD_LOGGER(WebSocketCcMessagingSkeleton);
+    ADD_LOGGER(WebSocketCcMessagingSkeleton)
     boost::asio::io_service& ioService;
     Server endpoint;
 
@@ -178,7 +178,7 @@ protected:
             endpoint.listen(port);
             endpoint.start_accept();
         } catch (const std::exception& e) {
-            JOYNR_LOG_FATAL(logger, "WebSocket server could not be started: \"{}\"", e.what());
+            JOYNR_LOG_FATAL(logger(), "WebSocket server could not be started: \"{}\"", e.what());
         }
     }
 
@@ -220,14 +220,14 @@ private:
         const value mode = message->get_opcode();
         if (mode != value::binary) {
             JOYNR_LOG_ERROR(
-                    logger,
+                    logger(),
                     "received an initial message of unsupported message type {}, dropping message",
                     mode);
             return;
         }
         const std::string& initMessage = message->get_payload();
         if (isInitializationMessage(initMessage)) {
-            JOYNR_LOG_DEBUG(logger,
+            JOYNR_LOG_DEBUG(logger(),
                             "received initialization message from websocket client: {}",
                             initMessage);
             // register client with messaging stub factory
@@ -236,7 +236,7 @@ private:
                 joynr::serializer::deserializeFromJson(clientAddress, initMessage);
             } catch (const std::invalid_argument& e) {
                 JOYNR_LOG_FATAL(
-                        logger,
+                        logger(),
                         "client address must be valid, otherwise libjoynr and CC are deployed "
                         "in different versions - raw: {} - error: {}",
                         initMessage,
@@ -274,7 +274,7 @@ private:
             messageRouter->sendMessages(std::move(clientAddress));
         } else {
             JOYNR_LOG_ERROR(
-                    logger, "received an initial message with wrong format: \"{}\"", initMessage);
+                    logger(), "received an initial message with wrong format: \"{}\"", initMessage);
         }
     }
 
@@ -285,29 +285,29 @@ private:
         try {
             immutableMessage = std::make_shared<ImmutableMessage>(std::move(message));
         } catch (const smrf::EncodingException& e) {
-            JOYNR_LOG_ERROR(logger, "Unable to deserialize message - error: {}", e.what());
+            JOYNR_LOG_ERROR(logger(), "Unable to deserialize message - error: {}", e.what());
             return;
         } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_ERROR(logger, "deserialized message is not valid - error: {}", e.what());
+            JOYNR_LOG_ERROR(logger(), "deserialized message is not valid - error: {}", e.what());
             return;
         }
 
-        JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+        JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
 
         if (!preprocessIncomingMessage(immutableMessage)) {
-            JOYNR_LOG_ERROR(logger, "Dropping message with ID {}", immutableMessage->getId());
+            JOYNR_LOG_ERROR(logger(), "Dropping message with ID {}", immutableMessage->getId());
             return;
         }
 
         if (!validateIncomingMessage(hdl, immutableMessage)) {
-            JOYNR_LOG_ERROR(logger, "Dropping message with ID {}", immutableMessage->getId());
+            JOYNR_LOG_ERROR(logger(), "Dropping message with ID {}", immutableMessage->getId());
             return;
         }
 
         auto onFailure = [messageId = immutableMessage->getId()](
                 const exceptions::JoynrRuntimeException& e)
         {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "Incoming Message with ID {} could not be sent! reason: {}",
                             messageId,
                             e.getMessage());
@@ -331,9 +331,6 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(WebSocketCcMessagingSkeleton);
 };
-
-template <typename Config>
-INIT_LOGGER(WebSocketCcMessagingSkeleton<Config>);
 
 } // namespace joynr
 #endif // WEBSOCKETCCMESSAGINGSKELETON_H

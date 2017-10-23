@@ -26,8 +26,6 @@ namespace ptree = boost::property_tree;
 namespace joynr
 {
 
-INIT_LOGGER(Settings);
-
 Settings::Settings() : filename(), propertyTree(), loaded(false)
 {
 }
@@ -38,7 +36,7 @@ Settings::Settings(const std::string& filename) : filename(filename), propertyTr
         ptree::read_ini(filename, propertyTree);
         loaded = true;
     } catch (const ptree::ini_parser_error& e) {
-        JOYNR_LOG_ERROR(logger, "Could not read settings file: {}", e.what());
+        JOYNR_LOG_ERROR(logger(), "Could not read settings file: {}", e.what());
         // The file does not exist or is an invalid format.
         // Match the behaviour of QSettings and ignore/overwrite
         // But leave loaded as false
@@ -67,7 +65,7 @@ void Settings::sync()
     try {
         ptree::write_ini(filename, propertyTree);
     } catch (const ptree::ini_parser_error& e) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "settings file \"{}\" cannot be written due to the following error: {})",
                         filename,
                         e.message());

@@ -253,7 +253,7 @@ private:
     std::mutex queuedBroadcastSubscriptionRequestsMutex;
 
     // Logging
-    ADD_LOGGER(PublicationManager);
+    ADD_LOGGER(PublicationManager)
 
     // List of subscriptionId's of runnables scheduled with delay <= qos.getMinIntervalMs_ms()
     std::vector<std::string> currentScheduledPublications;
@@ -413,14 +413,14 @@ private:
 template <typename T>
 void PublicationManager::attributeValueChanged(const std::string& subscriptionId, const T& value)
 {
-    JOYNR_LOG_DEBUG(logger, "attributeValueChanged for onChange subscription {}", subscriptionId);
+    JOYNR_LOG_DEBUG(logger(), "attributeValueChanged for onChange subscription {}", subscriptionId);
 
     // See if the subscription is still valid
     std::shared_ptr<Publication> publication = publications.value(subscriptionId);
     std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest =
             subscriptionId2SubscriptionRequest.value(subscriptionId);
     if (!publication || !subscriptionRequest) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "attributeValueChanged called for non-existing subscription {}",
                         subscriptionId);
         return;
@@ -461,7 +461,7 @@ void PublicationManager::broadcastOccurred(const std::string& broadcastName,
     if (auto messageSenderSharedPtr = messageSender.lock()) {
         messageSenderSharedPtr->sendMulticast(providerParticipantId, publication, mQos);
     } else {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "broadcastOccurred for broadcastName {}, providerParticipantId {} "
                         "could not be sent because messageSender is not available");
     }
@@ -470,7 +470,7 @@ void PublicationManager::broadcastOccurred(const std::string& broadcastName,
 template <typename... Ts>
 void PublicationManager::broadcastOccurred(const std::string& subscriptionId, const Ts&... values)
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "broadcastOccurred for subscription {}.  Number of values: ",
                     subscriptionId,
                     sizeof...(Ts));
@@ -480,7 +480,7 @@ void PublicationManager::broadcastOccurred(const std::string& subscriptionId, co
             subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
     // See if the subscription is still valid
     if (!publication || !subscriptionRequest) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "broadcastOccurred called for non-existing subscription {}",
                         subscriptionId);
         return;
@@ -500,14 +500,14 @@ void PublicationManager::broadcastOccurred(const std::string& subscriptionId, co
                     publication, subscriptionRequest, subscriptionRequest, std::move(replyValues));
         } else {
             if (timeUntilNextPublication > 0) {
-                JOYNR_LOG_DEBUG(logger,
+                JOYNR_LOG_DEBUG(logger(),
                                 "Omitting broadcast publication for subscription {} because of too "
                                 "short interval. Next publication possible in {} ms",
                                 subscriptionId,
                                 timeUntilNextPublication);
             } else {
                 JOYNR_LOG_DEBUG(
-                        logger,
+                        logger(),
                         "Omitting broadcast publication for subscription {} because of error.",
                         subscriptionId);
             }
@@ -522,7 +522,7 @@ void PublicationManager::selectiveBroadcastOccurred(
         const Ts&... values)
 {
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "selectiveBroadcastOccurred for subscription {}.  Number of values: ",
                     subscriptionId,
                     sizeof...(Ts));
@@ -533,7 +533,7 @@ void PublicationManager::selectiveBroadcastOccurred(
 
     // See if the subscription is still valid
     if (!publication || !subscriptionRequest) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "broadcastOccurred called for non-existing subscription {}",
                         subscriptionId);
         return;
@@ -558,14 +558,14 @@ void PublicationManager::selectiveBroadcastOccurred(
             }
         } else {
             if (timeUntilNextPublication > 0) {
-                JOYNR_LOG_DEBUG(logger,
+                JOYNR_LOG_DEBUG(logger(),
                                 "Omitting broadcast publication for subscription {} because of too "
                                 "short interval. Next publication possible in {} ms",
                                 subscriptionId,
                                 timeUntilNextPublication);
             } else {
                 JOYNR_LOG_WARN(
-                        logger,
+                        logger(),
                         "Omitting broadcast publication for subscription {} because of error.",
                         subscriptionId);
             }

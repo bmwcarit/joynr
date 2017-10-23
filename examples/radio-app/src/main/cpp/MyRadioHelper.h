@@ -46,7 +46,7 @@ public:
     static void prettyLog(joynr::Logger& logger, const std::string& message);
 
 private:
-    ADD_LOGGER(MyRadioHelper);
+    ADD_LOGGER(MyRadioHelper)
 };
 
 #endif

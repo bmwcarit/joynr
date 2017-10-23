@@ -45,7 +45,7 @@ public:
                     filterParameters);
 
 private:
-    ADD_LOGGER(IltStringBroadcastFilter);
+    ADD_LOGGER(IltStringBroadcastFilter)
 };
 
 #endif // ILTSTRINGBROADCASTFILTER_H

@@ -214,7 +214,7 @@ private:
     void operator=(const MessagingSettings& other);
 
     Settings& settings;
-    ADD_LOGGER(MessagingSettings);
+    ADD_LOGGER(MessagingSettings)
     void checkSettings();
 };
 

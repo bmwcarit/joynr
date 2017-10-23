@@ -23,8 +23,6 @@
 #include "joynr/serializer/Serializer.h"
 #include "IltUtil.h"
 
-INIT_LOGGER(IltStringBroadcastFilter);
-
 IltStringBroadcastFilter::IltStringBroadcastFilter()
 {
 }
@@ -41,42 +39,42 @@ bool IltStringBroadcastFilter::filter(
         const interlanguagetest::TestInterfaceBroadcastWithFilteringBroadcastFilterParameters&
                 filterParameters)
 {
-    JOYNR_LOG_WARN(logger, "****************************************");
-    JOYNR_LOG_WARN(logger, "* IltStringBroadcastFilter::filter called");
-    JOYNR_LOG_WARN(logger, "****************************************");
+    JOYNR_LOG_WARN(logger(), "****************************************");
+    JOYNR_LOG_WARN(logger(), "* IltStringBroadcastFilter::filter called");
+    JOYNR_LOG_WARN(logger(), "****************************************");
 
     // check output parameter contents
     bool checkResult = true;
 
     if (!IltUtil::checkStringArray(stringArrayOut)) {
         JOYNR_LOG_WARN(
-                logger, "IltStringBroadcastFilter::filter: stringArrayOut has invalid value");
-        JOYNR_LOG_WARN(logger, "array size is {}", stringArrayOut.size());
+                logger(), "IltStringBroadcastFilter::filter: stringArrayOut has invalid value");
+        JOYNR_LOG_WARN(logger(), "array size is {}", stringArrayOut.size());
         checkResult = false;
     }
     if (enumerationOut != joynr::interlanguagetest::namedTypeCollection2::
                                   ExtendedTypeCollectionEnumerationInTypeCollection::
                                           ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
         JOYNR_LOG_WARN(
-                logger, "IltStringBroadcastFilter::filter: enumerationOut has invalid value");
+                logger(), "IltStringBroadcastFilter::filter: enumerationOut has invalid value");
         checkResult = false;
     }
     if (!IltUtil::checkStructWithStringArray(structWithStringArrayOut)) {
         JOYNR_LOG_WARN(
-                logger,
+                logger(),
                 "IltStringBroadcastFilter::filter: structWithStringArrayOut has invalid value");
         checkResult = false;
     }
 
     if (!IltUtil::checkStructWithStringArrayArray(structWithStringArrayArrayOut)) {
-        JOYNR_LOG_WARN(logger,
+        JOYNR_LOG_WARN(logger(),
                        "IltStringBroadcastFilter::filter: structWithStringArrayArrayOut "
                        "has invalid value");
         checkResult = false;
     }
 
     if (checkResult == false) {
-        JOYNR_LOG_WARN(logger, "IltStringBroadcastFilter::filter: check of out args failed");
+        JOYNR_LOG_WARN(logger(), "IltStringBroadcastFilter::filter: check of out args failed");
         return false;
     }
 
@@ -85,8 +83,8 @@ bool IltStringBroadcastFilter::filter(
     // variables to store deserialized values
     std::string stringOfInterest = filterParameters.getStringOfInterest();
     JOYNR_LOG_WARN(
-            logger, "IltStringBroadcastFilter::filter: stringOfInterest = {}", stringOfInterest);
-    JOYNR_LOG_WARN(logger, "IltStringBroadcastFilter::filter: stringOut = {}", stringOut);
+            logger(), "IltStringBroadcastFilter::filter: stringOfInterest = {}", stringOfInterest);
+    JOYNR_LOG_WARN(logger(), "IltStringBroadcastFilter::filter: stringOut = {}", stringOut);
 
     std::vector<std::string> stringArrayOfInterest;
     joynr::serializer::deserializeFromJson(
@@ -131,7 +129,7 @@ bool IltStringBroadcastFilter::filter(
         }
 
     } catch (const std::invalid_argument& e) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "could not deserialize StructWithStringArray from {} - error: {}",
                         filterParameters.getStructWithStringArrayOfInterest(),
                         e.what());
@@ -140,10 +138,10 @@ bool IltStringBroadcastFilter::filter(
 
     // decision for publication is made base on stringOfInterest
     if (stringOut == stringOfInterest) {
-        JOYNR_LOG_WARN(logger, "IltStringBroadcastFilter::filter: returns true");
+        JOYNR_LOG_WARN(logger(), "IltStringBroadcastFilter::filter: returns true");
         return true;
     } else {
-        JOYNR_LOG_WARN(logger, "IltStringBroadcastFilter::filter: returns false");
+        JOYNR_LOG_WARN(logger(), "IltStringBroadcastFilter::filter: returns false");
         return false;
     }
 }

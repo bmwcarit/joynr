@@ -59,8 +59,6 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 
 «getNamespaceStarter(francaIntf)»
 
-INIT_LOGGER(«interfaceName»RequestInterpreter);
-
 «val requestCallerName = interfaceName.toFirstLower+"RequestCallerVar"»
 «val attributes = getAttributes(francaIntf)»
 «val methodsWithoutFireAndForget = getMethods(francaIntf).filter[!fireAndForget]»
@@ -173,7 +171,7 @@ void «interfaceName»RequestInterpreter::execute(
 		std::ignore = onSuccess;
 	«ENDIF»
 
-	JOYNR_LOG_WARN(logger, "unknown method name for interface «interfaceName»: {}", request.getMethodName());
+	JOYNR_LOG_WARN(logger(), "unknown method name for interface «interfaceName»: {}", request.getMethodName());
 	onError(
 		std::make_shared<exceptions::MethodInvocationException>(
 			"unknown method name for interface «interfaceName»: " + request.getMethodName(),
@@ -220,14 +218,14 @@ void «interfaceName»RequestInterpreter::execute(
 					«ENDIF»
 					«requestCallerName»->«methodName»(«IF !method.inputParameters.empty»«inputUntypedParamList»«ENDIF»);
 				} catch (const std::exception& exception) {
-					JOYNR_LOG_ERROR(logger, exception.what());
+					JOYNR_LOG_ERROR(logger(), exception.what());
 				}
 				return;
 			}
 		«ENDFOR»
 	«ENDIF»
 
-	JOYNR_LOG_WARN(logger, "unknown method name for interface «interfaceName»: {}", request.getMethodName());
+	JOYNR_LOG_WARN(logger(), "unknown method name for interface «interfaceName»: {}", request.getMethodName());
 }
 «getNamespaceEnder(francaIntf)»
 '''

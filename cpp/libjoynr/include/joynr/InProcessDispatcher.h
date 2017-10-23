@@ -81,7 +81,7 @@ private:
     ReplyCallerDirectory replyCallerDirectory;
     std::weak_ptr<PublicationManager> publicationManager;
     std::shared_ptr<ISubscriptionManager> subscriptionManager;
-    ADD_LOGGER(InProcessDispatcher);
+    ADD_LOGGER(InProcessDispatcher)
 };
 
 } // namespace joynr

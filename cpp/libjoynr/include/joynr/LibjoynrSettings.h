@@ -66,7 +66,7 @@ private:
     void operator=(const LibjoynrSettings& other) = delete;
 
     Settings& settings;
-    ADD_LOGGER(LibjoynrSettings);
+    ADD_LOGGER(LibjoynrSettings)
     void checkSettings();
 };
 

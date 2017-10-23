@@ -69,7 +69,7 @@ protected:
     std::string providerParticipantId;
     MessagingQos qosSettings;
     types::DiscoveryEntryWithMetaInfo providerDiscoveryEntry;
-    ADD_LOGGER(AbstractJoynrMessagingConnector);
+    ADD_LOGGER(AbstractJoynrMessagingConnector)
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrMessagingConnector);

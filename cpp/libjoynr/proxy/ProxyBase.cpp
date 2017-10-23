@@ -26,8 +26,6 @@ namespace joynr
 
 class JoynrRuntime;
 
-INIT_LOGGER(ProxyBase);
-
 ProxyBase::ProxyBase(std::weak_ptr<JoynrRuntime> runtime,
                      ConnectorFactory* connectorFactory,
                      const std::string& domain,

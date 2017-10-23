@@ -25,7 +25,7 @@ using namespace joynr;
 
 class MqttMessagingTest : public AbstractMessagingTest {
 public:
-    ADD_LOGGER(MqttMessagingTest);
+    ADD_LOGGER(MqttMessagingTest)
     MqttMessagingTest() :
         mqttTopic("receiverChannelId"),
         brokerUri()
@@ -59,8 +59,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingTest);
     std::string brokerUri;
 };
-
-INIT_LOGGER(MqttMessagingTest);
 
 TEST_F(MqttMessagingTest, sendMsgFromMessageSenderViaInProcessMessagingAndMessageRouterToCommunicationManager)
 {

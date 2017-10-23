@@ -83,7 +83,7 @@ private:
             countryGeoPositionMap;
     std::mutex mutex; // Providers need to be threadsafe
 
-    ADD_LOGGER(MyRadioProvider);
+    ADD_LOGGER(MyRadioProvider)
 };
 
 #endif

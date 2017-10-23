@@ -132,7 +132,7 @@ private:
     std::mutex onReadyToSendChangedMutex;
     std::function<void(bool)> onReadyToSendChanged;
 
-    ADD_LOGGER(MosquittoConnection);
+    ADD_LOGGER(MosquittoConnection)
 };
 
 } // namespace joynr

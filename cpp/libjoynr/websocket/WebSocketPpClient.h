@@ -65,7 +65,7 @@ public:
         websocketpp::lib::error_code initializationError;
         endpoint.init_asio(&ioService, initializationError);
         if (initializationError) {
-            JOYNR_LOG_FATAL(logger,
+            JOYNR_LOG_FATAL(logger(),
                             "error during WebSocketPp initialization: ",
                             initializationError.message());
             return;
@@ -172,7 +172,7 @@ protected:
     enum class State { Disconnected, Disconnecting, Connecting, Connected };
 
     Client endpoint;
-    ADD_LOGGER(WebSocketPpClient);
+    ADD_LOGGER(WebSocketPpClient)
 
 private:
     void reconnect(
@@ -180,12 +180,12 @@ private:
     {
         if (reconnectTimerError == boost::asio::error::operation_aborted) {
             // Assume WebSocketPp.close() has been called
-            JOYNR_LOG_INFO(logger,
+            JOYNR_LOG_INFO(logger(),
                            "reconnect aborted after shutdown, error code from reconnect timer: {}",
                            reconnectTimerError.message());
             return;
         } else if (reconnectTimerError) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "reconnect called with error code from reconnect timer: {}",
                             reconnectTimerError.message());
         }
@@ -195,13 +195,13 @@ private:
                (secure && std::is_same<Config, websocketpp::config::asio_tls_client>::value));
 
         websocketpp::uri uri(secure, address.getHost(), address.getPort(), address.getPath());
-        JOYNR_LOG_INFO(logger, "Connecting to websocket server {}", uri.str());
+        JOYNR_LOG_INFO(logger(), "Connecting to websocket server {}", uri.str());
 
         websocketpp::lib::error_code websocketError;
         ConnectionPtr connectionPtr = endpoint.get_connection(uri.str(), websocketError);
 
         if (websocketError) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "could not try to connect to {} - error: {}",
                             uri.str(),
                             websocketError.message());
@@ -218,7 +218,7 @@ private:
         boost::system::error_code reconnectTimerError;
         reconnectTimer.expires_from_now(reconnectSleepTimeMs, reconnectTimerError);
         if (reconnectTimerError) {
-            JOYNR_LOG_FATAL(logger,
+            JOYNR_LOG_FATAL(logger(),
                             "Error from reconnect timer: {}: {}",
                             reconnectTimerError.value(),
                             reconnectTimerError.message());
@@ -234,7 +234,7 @@ private:
         endpoint.close(connection, websocketpp::close::status::normal, "", websocketError);
         if (websocketError) {
             if (websocketError != websocketpp::error::bad_connection) {
-                JOYNR_LOG_ERROR(logger,
+                JOYNR_LOG_ERROR(logger(),
                                 "Unable to close websocket connection. Error: {}",
                                 websocketError.message());
             }
@@ -246,7 +246,7 @@ private:
         connection = hdl;
         sender->setConnectionHandle(connection);
         state = State::Connected;
-        JOYNR_LOG_INFO(logger, "connection established");
+        JOYNR_LOG_INFO(logger(), "connection established");
 
         if (performingInitialConnect) {
             if (onConnectionOpenedCallback) {
@@ -271,12 +271,12 @@ private:
         state = State::Disconnected;
         sender->resetConnectionHandle();
         if (!isRunning) {
-            JOYNR_LOG_INFO(logger, "connection closed");
+            JOYNR_LOG_INFO(logger(), "connection closed");
             if (onConnectionClosedCallback) {
                 onConnectionClosedCallback();
             }
         } else {
-            JOYNR_LOG_WARN(logger, "connection closed unexpectedly. Trying to reconnect...");
+            JOYNR_LOG_WARN(logger(), "connection closed unexpectedly. Trying to reconnect...");
             delayedReconnect();
         }
     }
@@ -286,10 +286,10 @@ private:
         state = State::Disconnected;
         sender->resetConnectionHandle();
         if (!isRunning) {
-            JOYNR_LOG_INFO(logger, "connection closed");
+            JOYNR_LOG_INFO(logger(), "connection closed");
         } else {
             ConnectionPtr con = endpoint.get_con_from_hdl(hdl);
-            JOYNR_LOG_WARN(logger,
+            JOYNR_LOG_WARN(logger(),
                            "websocket connection failed - error: {}. Trying to reconnect...",
                            con->get_ec().message());
             delayedReconnect();
@@ -313,9 +313,6 @@ private:
     std::shared_ptr<WebSocketPpSender<Client>> sender;
     WebSocketPpReceiver<Client> receiver;
 };
-
-template <typename Config>
-INIT_LOGGER(WebSocketPpClient<Config>);
 
 } // namespace joynr
 

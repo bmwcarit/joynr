@@ -34,6 +34,7 @@ import javax.inject.Singleton;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.exceptions.JoynrDelayMessageException;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
@@ -57,7 +58,7 @@ import org.slf4j.LoggerFactory;
 abstract public class AbstractMessageRouter implements MessageRouter, ShutdownListener {
     private Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
     private final RoutingTable routingTable;
-    private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
+    private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss:sss");
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
     private long routingTableGracePeriodMs;
@@ -387,6 +388,21 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         return millis;
     }
 
+    private void checkFoundAddresses(Set<Address> foundAddresses, ImmutableMessage message) {
+        if (foundAddresses.isEmpty()) {
+            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+                throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
+                        + message);
+            } else if (message.isReply()) {
+                throw new JoynrMessageNotSentException("Failed to send Reply: No address found for given message: "
+                        + message);
+            } else {
+                throw new JoynrIllegalStateException("Unable to find address for recipient with participant ID "
+                        + message.getRecipient());
+            }
+        }
+    }
+
     class MessageWorker implements Runnable {
         private int number;
 
@@ -409,6 +425,8 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                     checkExpiry(message);
 
                     Set<Address> addresses = getAddresses(message);
+                    checkFoundAddresses(addresses, message);
+
                     if (addresses.isEmpty()) {
                         throw new JoynrMessageNotSentException("Failed to send Message: No route for given participantId: "
                                 + message.getRecipient());

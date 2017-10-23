@@ -70,7 +70,7 @@ private:
     std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address>
                                destinationAddress)> onMessagingStubClosedCallback;
 
-    ADD_LOGGER(WebSocketMessagingStubFactory);
+    ADD_LOGGER(WebSocketMessagingStubFactory)
 };
 
 } // namespace joynr

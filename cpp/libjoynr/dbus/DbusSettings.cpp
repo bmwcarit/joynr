@@ -24,8 +24,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(DbusSettings);
-
 DbusSettings::DbusSettings(Settings& settings) : settings(settings)
 {
     settings.fillEmptySettingsWithDefaults(DEFAULT_DBUS_SETTINGS_FILENAME());

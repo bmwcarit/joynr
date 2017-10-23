@@ -32,7 +32,7 @@ public:
     void shutdown();
     void run();
 private:
-    ADD_LOGGER(TestRunnable);
+    ADD_LOGGER(TestRunnable)
 };
 
 } // namespace joynr

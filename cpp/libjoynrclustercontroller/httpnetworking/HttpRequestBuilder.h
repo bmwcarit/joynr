@@ -68,7 +68,7 @@ private:
     std::string content;
     bool built;
 
-    ADD_LOGGER(HttpRequestBuilder);
+    ADD_LOGGER(HttpRequestBuilder)
 };
 
 } // namespace joynr

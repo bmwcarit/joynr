@@ -24,8 +24,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(LibjoynrSettings);
-
 LibjoynrSettings::LibjoynrSettings(Settings& settings) : settings(settings)
 {
     checkSettings();
@@ -143,12 +141,12 @@ void LibjoynrSettings::setSubscriptionRequestPersistenceFilename(const std::stri
 
 void LibjoynrSettings::printSettings() const
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME(),
                     settings.get<std::string>(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()));
 
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME(),
                     settings.get<std::string>(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));

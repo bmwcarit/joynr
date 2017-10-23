@@ -58,8 +58,6 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 {
 }
 
-INIT_LOGGER(«interfaceName»RequestCaller);
-
 «IF !francaIntf.attributes.empty»
 	// attributes
 «ENDIF»
@@ -175,7 +173,7 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 			«IF method.fireAndForget»
 				std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
 									e.getTypeName() + ":" + e.getMessage();
-				JOYNR_LOG_ERROR(logger, message);
+				JOYNR_LOG_ERROR(logger(), message);
 			«ELSE»
 				onError(std::make_shared<exceptions::ProviderRuntimeException>(e));
 			«ENDIF»
@@ -183,7 +181,7 @@ INIT_LOGGER(«interfaceName»RequestCaller);
 			std::string message = "Could not perform «interfaceName»RequestCaller::«methodName.toFirstUpper», caught exception: " +
 								e.getTypeName() + ":" + e.getMessage();
 			«IF method.fireAndForget»
-				JOYNR_LOG_ERROR(logger, message);
+				JOYNR_LOG_ERROR(logger(), message);
 			«ELSE»
 				onError(std::make_shared<exceptions::ProviderRuntimeException>(message));
 			«ENDIF»

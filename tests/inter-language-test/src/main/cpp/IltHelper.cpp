@@ -25,8 +25,6 @@
 
 using namespace joynr;
 
-INIT_LOGGER(IltHelper);
-
 IltHelper::IltHelper()
 {
 }
@@ -48,9 +46,9 @@ int IltHelper::getch()
 
 void IltHelper::pressQToContinue()
 {
-    JOYNR_LOG_INFO(logger, "*****************************************************");
-    JOYNR_LOG_INFO(logger, "Please press \"q\" to quit the application\n");
-    JOYNR_LOG_INFO(logger, "*****************************************************");
+    JOYNR_LOG_INFO(logger(), "*****************************************************");
+    JOYNR_LOG_INFO(logger(), "Please press \"q\" to quit the application\n");
+    JOYNR_LOG_INFO(logger(), "*****************************************************");
 
     while (getch() != 'q')
         ;
@@ -63,9 +61,9 @@ std::string IltHelper::getAbsolutePathToExecutable(const std::string& executable
     return fullPath.parent_path().string();
 }
 
-void IltHelper::prettyLog(joynr::Logger& logger, const std::string& message)
+void IltHelper::prettyLog(joynr::Logger& logger(), const std::string& message)
 {
-    JOYNR_LOG_INFO(logger, "--------------------------------------------------");
-    JOYNR_LOG_INFO(logger, message.c_str());
-    JOYNR_LOG_INFO(logger, "--------------------------------------------------");
+    JOYNR_LOG_INFO(logger(), "--------------------------------------------------");
+    JOYNR_LOG_INFO(logger(), message.c_str());
+    JOYNR_LOG_INFO(logger(), "--------------------------------------------------");
 }

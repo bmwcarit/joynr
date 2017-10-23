@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/InProcessMessagingAddress.h"
@@ -50,6 +51,7 @@ public:
     std::string settingsFileName;
     Settings settings;
     MessagingSettings messagingSettings;
+    ClusterControllerSettings clusterControllerSettings;
     std::string senderId;
     std::string globalClusterControllerAddress;
     std::string receiverId;
@@ -71,6 +73,7 @@ public:
         settingsFileName("MessagingTest.settings"),
         settings(settingsFileName),
         messagingSettings(settings),
+        clusterControllerSettings(settings),
         senderId("senderParticipantId"),
         globalClusterControllerAddress("senderChannelId"),
         receiverId("receiverParticipantId"),
@@ -93,6 +96,7 @@ public:
 
         messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
         messageRouter = std::make_shared<CcMessageRouter>(messagingSettings,
+                                                          clusterControllerSettings,
                                                           messagingStubFactory,
                                                           std::make_shared<MulticastMessagingSkeletonDirectory>(),
                                                           nullptr,

@@ -56,9 +56,17 @@ ChannelMessagingSkeleton.prototype.receiveMessage =
             joynrMessage = new JoynrMessage(joynrMessage);
             joynrMessage.setReceivedFromGlobal(true);
             try {
-                this._messageRouter.route(joynrMessage);
-            } catch (e) {
-                log.error("unable to process message: "
+                this._messageRouter.route(joynrMessage)
+                .catch (function(e) {
+                    log.error("unable to process message: "
+                        + e
+                        + (e instanceof JoynrException ? " " + e.detailMessage : "")
+                        + " \nmessage: "
+                        + DiagnosticTags.forJoynrMessage(joynrMessage));
+                });
+            } catch(e) {
+                // Errors should be returned via the Promise
+                log.fatal("unable to process message: "
                     + e
                     + (e instanceof JoynrException ? " " + e.detailMessage : "")
                     + " \nmessage: "

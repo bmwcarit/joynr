@@ -35,8 +35,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(Arbitrator);
-
 Arbitrator::Arbitrator(
         const std::string& domain,
         const std::string& interfaceName,
@@ -103,7 +101,7 @@ void Arbitrator::startArbitration(
         thisSharedPtr->arbitrationFinished = false;
 
         std::string serializedDomainsList = boost::algorithm::join(thisSharedPtr->domains, ", ");
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "DISCOVERY lookup for domain: [{}], interface: {}",
                         serializedDomainsList,
                         thisSharedPtr->interfaceName);
@@ -195,7 +193,7 @@ void Arbitrator::attemptArbitration()
                                (domains.empty() ? std::string("EMPTY") : domains.at(0)) +
                                ", interface: " + interfaceName + ") from discovery. Error: " +
                                e.getMessage();
-        JOYNR_LOG_ERROR(logger, errorMsg);
+        JOYNR_LOG_ERROR(logger(), errorMsg);
         arbitrationError.setMessage(errorMsg);
     }
 }
@@ -219,7 +217,7 @@ void Arbitrator::receiveCapabilitiesLookupResults(
     std::size_t providersWithIncompatibleVersion = 0;
     for (const joynr::types::DiscoveryEntryWithMetaInfo& discoveryEntry : discoveryEntries) {
         const types::ProviderQos& providerQos = discoveryEntry.getQos();
-        JOYNR_LOG_TRACE(logger, "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
+        JOYNR_LOG_TRACE(logger(), "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
         providerVersion = discoveryEntry.getProviderVersion();
 
         if (discoveryQos.getProviderMustSupportOnChange() &&
@@ -230,7 +228,7 @@ void Arbitrator::receiveCapabilitiesLookupResults(
 
         if (providerVersion.getMajorVersion() != interfaceVersion.getMajorVersion() ||
             providerVersion.getMinorVersion() < interfaceVersion.getMinorVersion()) {
-            JOYNR_LOG_TRACE(logger,
+            JOYNR_LOG_TRACE(logger(),
                             "Skipping capabilitiesEntry with incompatible version, expected: " +
                                     std::to_string(interfaceVersion.getMajorVersion()) + "." +
                                     std::to_string(interfaceVersion.getMinorVersion()));
@@ -247,13 +245,13 @@ void Arbitrator::receiveCapabilitiesLookupResults(
         if (providersWithoutSupportOnChange == discoveryEntries.size()) {
             errorMsg = "There was more than one entries in capabilitiesEntries, but none supported "
                        "on change subscriptions.";
-            JOYNR_LOG_WARN(logger, errorMsg);
+            JOYNR_LOG_WARN(logger(), errorMsg);
             arbitrationError.setMessage(errorMsg);
         } else if ((providersWithoutSupportOnChange + providersWithIncompatibleVersion) ==
                    discoveryEntries.size()) {
             errorMsg = "There was more than one entries in capabilitiesEntries, but none "
                        "was compatible.";
-            JOYNR_LOG_WARN(logger, errorMsg);
+            JOYNR_LOG_WARN(logger(), errorMsg);
             arbitrationError.setMessage(errorMsg);
         }
         return;

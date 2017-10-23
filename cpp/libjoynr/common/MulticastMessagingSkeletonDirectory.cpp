@@ -25,20 +25,18 @@
 namespace joynr
 {
 
-INIT_LOGGER(MulticastMessagingSkeletonDirectory);
-
 std::shared_ptr<IMessagingMulticastSubscriber> MulticastMessagingSkeletonDirectory::getSkeleton(
         std::shared_ptr<const system::RoutingTypes::Address> address)
 {
     const system::RoutingTypes::Address& addressRef = *address;
     std::type_index typeIndex(typeid(addressRef));
-    JOYNR_LOG_TRACE(logger, "get messaging skeleton for address type {}", typeIndex.name());
+    JOYNR_LOG_TRACE(logger(), "get messaging skeleton for address type {}", typeIndex.name());
     std::lock_guard<std::recursive_mutex> lock(mutex);
     if (contains(address)) {
         return multicastSkeletons[typeIndex];
     }
     JOYNR_LOG_WARN(
-            logger, "No messaging skeleton registered for address type {}", typeIndex.name());
+            logger(), "No messaging skeleton registered for address type {}", typeIndex.name());
     return std::shared_ptr<IMessagingMulticastSubscriber>();
 }
 

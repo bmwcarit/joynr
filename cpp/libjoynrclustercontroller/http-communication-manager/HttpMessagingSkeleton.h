@@ -51,7 +51,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingSkeleton);
-    ADD_LOGGER(HttpMessagingSkeleton);
+    ADD_LOGGER(HttpMessagingSkeleton)
 
     std::weak_ptr<IMessageRouter> messageRouter;
 };

@@ -91,14 +91,14 @@ protected:
         OutputStream stream;
         OutputArchive oarchive(stream);
         oarchive(value);
-        JOYNR_LOG_TRACE(logger, "serialized to " + stream.getString());
+        JOYNR_LOG_TRACE(logger(), "serialized to " + stream.getString());
         return stream.getString();
     }
 
     template <typename T>
     void deserialize(std::string str, T& value)
     {
-        JOYNR_LOG_TRACE(logger, "trying to deserialize from JSON: {}", str);
+        JOYNR_LOG_TRACE(logger(), "trying to deserialize from JSON: {}", str);
         InputStream stream(std::move(str));
         auto iarchive = std::make_shared<InputArchive>(stream);
         (*iarchive)(value);
@@ -232,12 +232,8 @@ protected:
     std::tuple<std::string, int, float, bool> primitiveParametersValues;
 
     std::tuple<std::string, int, float, bool, std::vector<int32_t>> responseValues;
-    ADD_LOGGER(RequestReplySerializerTest);
+    ADD_LOGGER(RequestReplySerializerTest)
 };
-
-template <typename Serializer>
-INIT_LOGGER(RequestReplySerializerTest<Serializer>);
-
 
 struct JsonSerializer
 {

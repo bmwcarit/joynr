@@ -42,8 +42,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(MutableMessageFactory);
-
 MutableMessageFactory::MutableMessageFactory(std::uint64_t ttlUpliftMs,
                                              std::shared_ptr<IKeychain> keyChain)
         : securityManager(std::make_unique<DummyPlatformSecurityManager>()),

@@ -21,8 +21,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(OnChangeWithKeepAliveSubscriptionQos);
-
 std::int64_t OnChangeWithKeepAliveSubscriptionQos::MIN_MAX_INTERVAL_MS()
 {
     static std::int64_t minMaxInterval = 50UL;
@@ -90,7 +88,7 @@ OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
 void OnChangeWithKeepAliveSubscriptionQos::setMaxIntervalMs(std::int64_t maxIntervalMs)
 {
     if (maxIntervalMs < MIN_MAX_INTERVAL_MS()) {
-        JOYNR_LOG_WARN(logger,
+        JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid maxIntervalMs ({} ms), which is smaller than "
                        "MIN_MAX_INTERVAL_MS ({} ms). MIN_MAX_INTERVAL_MS will be used instead.",
                        maxIntervalMs,
@@ -98,7 +96,7 @@ void OnChangeWithKeepAliveSubscriptionQos::setMaxIntervalMs(std::int64_t maxInte
         this->maxIntervalMs = MIN_MAX_INTERVAL_MS();
         // note: don't return here as we nned to check dependend values at the end of this method
     } else if (maxIntervalMs > MAX_MAX_INTERVAL_MS()) {
-        JOYNR_LOG_WARN(logger,
+        JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid maxIntervalMs ({} ms), which is bigger than "
                        "MAX_MAX_INTERVAL_MS "
                        "({} ms). MAX_MAX_INTERVAL_MS will be used instead.",
@@ -112,7 +110,7 @@ void OnChangeWithKeepAliveSubscriptionQos::setMaxIntervalMs(std::int64_t maxInte
     }
     // check dependendencies: maxIntervalMs is not smaller than minIntervalMs
     if (this->maxIntervalMs < getMinIntervalMs()) {
-        JOYNR_LOG_WARN(logger,
+        JOYNR_LOG_WARN(logger(),
                        "maxIntervalMs ({} ms) is smaller than minIntervalMs ({} ms). Setting "
                        "maxIntervalMs to minIntervalMs.",
                        maxIntervalMs,
@@ -123,7 +121,7 @@ void OnChangeWithKeepAliveSubscriptionQos::setMaxIntervalMs(std::int64_t maxInte
     if (alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() &&
         alertAfterIntervalMs < getMaxIntervalMs()) {
         JOYNR_LOG_WARN(
-                logger,
+                logger(),
                 "alertAfterIntervalMs ({} ms) is smaller than maxIntervalMs ({} ms). Setting "
                 "alertAfterIntervalMs to maxIntervalMs.",
                 alertAfterIntervalMs,
@@ -148,7 +146,7 @@ void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterIntervalMs(
         std::int64_t alertAfterIntervalMs)
 {
     if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS()) {
-        JOYNR_LOG_WARN(logger,
+        JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid alertAfterIntervalMs ({} ms), which is bigger than "
                        "MAX_ALERT_AFTER_INTERVAL_MS ({} ms). MAX_ALERT_AFTER_INTERVAL_MS will be "
                        "used instead.",
@@ -159,7 +157,7 @@ void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterIntervalMs(
     }
     if (alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() &&
         alertAfterIntervalMs < getMaxIntervalMs()) {
-        JOYNR_LOG_WARN(logger,
+        JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid alertAfterIntervalMs ({} ms), which is smaller than "
                        "maxIntervalMs ({} ms). maxIntervalMs will be used instead.",
                        alertAfterIntervalMs,

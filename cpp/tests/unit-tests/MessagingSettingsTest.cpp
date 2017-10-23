@@ -38,13 +38,11 @@ public:
     }
 
 protected:
-    ADD_LOGGER(MessagingSettingsTest);
+    ADD_LOGGER(MessagingSettingsTest)
     const std::string testSettingsFileNameNonExistent;
     const std::string testSettingsFileNameHttp;
     const std::string testSettingsFileNameMqtt;
 };
-
-INIT_LOGGER(MessagingSettingsTest);
 
 TEST_F(MessagingSettingsTest, intializedWithDefaultSettings) {
     Settings testSettings(testSettingsFileNameNonExistent);

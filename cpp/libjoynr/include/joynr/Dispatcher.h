@@ -96,7 +96,7 @@ private:
     std::weak_ptr<PublicationManager> publicationManager;
     std::shared_ptr<ISubscriptionManager> subscriptionManager;
     std::shared_ptr<ThreadPool> handleReceivedMessageThreadPool;
-    ADD_LOGGER(Dispatcher);
+    ADD_LOGGER(Dispatcher)
     std::mutex subscriptionHandlingMutex;
 
     friend class ReceivedMessageRunnable;

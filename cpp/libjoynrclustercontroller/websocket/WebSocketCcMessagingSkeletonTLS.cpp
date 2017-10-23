@@ -78,7 +78,7 @@ bool WebSocketCcMessagingSkeletonTLS::preprocessIncomingMessage(
     try {
         signature = message->getSignature();
     } catch (smrf::EncodingException& error) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Validation of message with ID {} failed: {}",
                         message->getId(),
                         error.what());
@@ -86,8 +86,8 @@ bool WebSocketCcMessagingSkeletonTLS::preprocessIncomingMessage(
     }
 
     std::string signatureString(reinterpret_cast<const char*>(signature.data()), signature.size());
-
-    message->setCreator(std::move(signatureString));
+    JOYNR_LOG_TRACE(logger(), "Received message with signature: {}", signatureString);
+    message->setCreator(signatureString);
 
     return true;
 }
@@ -101,7 +101,7 @@ bool WebSocketCcMessagingSkeletonTLS::validateIncomingMessage(
     auto it = clients.find(hdl);
     if (it == clients.cend()) {
         // This should never be the case
-        JOYNR_LOG_FATAL(logger,
+        JOYNR_LOG_FATAL(logger(),
                         "Clients map contains no entry for connection/ConnectionHandle of incoming "
                         "message with ID {}.",
                         message->getId());
@@ -111,12 +111,12 @@ bool WebSocketCcMessagingSkeletonTLS::validateIncomingMessage(
     if (expectedOwnerId.empty()) {
         // This should never happen because the ownerId is already checked in sslContext verify
         // callback
-        JOYNR_LOG_ERROR(logger, "OwnerId (common name) of the TLS certificate is empty.");
+        JOYNR_LOG_ERROR(logger(), "OwnerId (common name) of the TLS certificate is empty.");
         return false;
     }
 
     if (expectedOwnerId != message->getCreator()) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Validation of message with ID {} failed: invalid signature. "
                         "Message will be dropped.",
                         message->getId());
@@ -164,7 +164,7 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
                         mococrw::DistinguishedName::fromX509Name(certSubName);
                 const std::string ownerId(distinguishedName.commonName());
                 if (ownerId.empty()) {
-                    JOYNR_LOG_ERROR(logger,
+                    JOYNR_LOG_ERROR(logger(),
                                     "Rejecting secure websocket connection because the ownerId "
                                     "(common name) of the TLS client certificate is empty.");
                     return false;
@@ -177,7 +177,7 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
                 thisSharedPtr->clients[std::move(hdl)] = std::move(certEntry);
                 return preverified;
             } else {
-                JOYNR_LOG_ERROR(logger,
+                JOYNR_LOG_ERROR(logger(),
                                 "Rejecting secure websocket connection because the "
                                 "WebSocketCcMessagingSkeletonTLS "
                                 "is no longer available.");
@@ -189,14 +189,15 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
         sslContext->set_verify_callback(std::move(getCNFromCertificate));
 
     } catch (boost::system::system_error& e) {
-        JOYNR_LOG_FATAL(logger, "Failed to initialize TLS session {}", e.what());
+        JOYNR_LOG_FATAL(logger(), "Failed to initialize TLS session {}", e.what());
         return nullptr;
     }
 
     if (!useEncryptedTls) {
         int opensslResult = SSL_CTX_set_cipher_list(sslContext->native_handle(), "eNULL");
         if (opensslResult == 0) {
-            JOYNR_LOG_FATAL(logger, "Failed to initialize TLS session: Could not set NULL cipher");
+            JOYNR_LOG_FATAL(
+                    logger(), "Failed to initialize TLS session: Could not set NULL cipher");
             return nullptr;
         }
     }

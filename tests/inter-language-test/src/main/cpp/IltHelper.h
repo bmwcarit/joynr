@@ -42,11 +42,11 @@ public:
     /**
      * Output a prominent log message at level INFO
      */
-    static void prettyLog(joynr::Logger& logger, const std::string& message);
+    static void prettyLog(joynr::Logger& logger(), const std::string& message);
 
 private:
     // static joynr::joynr_logging::Logger* logger;
-    ADD_LOGGER(IltHelper);
+    ADD_LOGGER(IltHelper)
 };
 
 #endif

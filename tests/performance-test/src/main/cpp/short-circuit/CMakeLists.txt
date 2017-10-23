@@ -15,6 +15,7 @@ target_link_libraries(performance-short-circuit
 
 target_include_directories(performance-short-circuit
     SYSTEM PRIVATE "../../../../../../cpp/"
+    ${Joynr_LIB_INPROCESS_INCLUDE_DIRS}
 )
 
 AddClangFormat(performance-short-circuit)

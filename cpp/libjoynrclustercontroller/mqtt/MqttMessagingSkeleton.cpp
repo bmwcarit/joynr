@@ -31,8 +31,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(MqttMessagingSkeleton);
-
 std::string MqttMessagingSkeleton::translateMulticastWildcard(std::string topic)
 {
     static constexpr char MQTT_MULTI_LEVEL_WILDCARD = '#';
@@ -74,7 +72,7 @@ void MqttMessagingSkeleton::unregisterMulticastSubscription(const std::string& m
     auto countIterator = multicastSubscriptionCount.find(mqttTopic);
     if (countIterator == multicastSubscriptionCount.cend()) {
         JOYNR_LOG_ERROR(
-                logger, "unregister multicast subscription called for non existing subscription");
+                logger(), "unregister multicast subscription called for non existing subscription");
     } else if (countIterator->second == 1) {
         multicastSubscriptionCount.erase(mqttTopic);
         mqttReceiver->unsubscribeFromTopic(multicastTopicPrefix + mqttTopic);
@@ -109,14 +107,14 @@ void MqttMessagingSkeleton::onMessageReceived(smrf::ByteVector&& rawMessage)
     try {
         immutableMessage = std::make_shared<ImmutableMessage>(std::move(rawMessage));
     } catch (const smrf::EncodingException& e) {
-        JOYNR_LOG_ERROR(logger, "Unable to deserialize message - error: {}", e.what());
+        JOYNR_LOG_ERROR(logger(), "Unable to deserialize message - error: {}", e.what());
         return;
     } catch (const std::invalid_argument& e) {
-        JOYNR_LOG_ERROR(logger, "deserialized message is not valid - error: {}", e.what());
+        JOYNR_LOG_ERROR(logger(), "deserialized message is not valid - error: {}", e.what());
         return;
     }
 
-    JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+    JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
 
     /*
     // TODO remove uplift ???? cannot modify msg here!
@@ -134,7 +132,7 @@ void MqttMessagingSkeleton::onMessageReceived(smrf::ByteVector&& rawMessage)
     auto onFailure = [messageId = immutableMessage->getId()](
             const exceptions::JoynrRuntimeException& e)
     {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Incoming Message with ID {} could not be sent! reason: {}",
                         messageId,
                         e.getMessage());

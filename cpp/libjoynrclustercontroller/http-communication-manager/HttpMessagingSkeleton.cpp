@@ -28,8 +28,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(HttpMessagingSkeleton);
-
 HttpMessagingSkeleton::HttpMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter)
         : messageRouter(std::move(messageRouter))
 {
@@ -71,22 +69,22 @@ void HttpMessagingSkeleton::onMessageReceived(smrf::ByteVector&& message)
             auto immutableMessage = std::make_shared<ImmutableMessage>(std::move(splittedMessage));
             remainingSize -= immutableMessage->getMessageSize();
 
-            JOYNR_LOG_DEBUG(logger, "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+            JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
 
             auto onFailure = [messageId = immutableMessage->getId()](
                     const exceptions::JoynrRuntimeException& e)
             {
-                JOYNR_LOG_ERROR(logger,
+                JOYNR_LOG_ERROR(logger(),
                                 "Incoming Message with ID {} could not be sent! reason: {}",
                                 messageId,
                                 e.getMessage());
             };
             transmit(std::move(immutableMessage), onFailure);
         } catch (const smrf::EncodingException& e) {
-            JOYNR_LOG_ERROR(logger, "Unable to deserialize message - error: {}", e.what());
+            JOYNR_LOG_ERROR(logger(), "Unable to deserialize message - error: {}", e.what());
             return;
         } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_ERROR(logger, "deserialized message is not valid - error: {}", e.what());
+            JOYNR_LOG_ERROR(logger(), "deserialized message is not valid - error: {}", e.what());
             return;
         }
     }

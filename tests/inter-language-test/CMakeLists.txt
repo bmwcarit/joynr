@@ -80,7 +80,6 @@ set(ilt-consumer_HEADERS
 # Use the generated source files for the consumer application
 set(ilt-consumer_SOURCES
     "src/main/cpp/IltHelper.cpp"
-    "src/main/cpp/IltUtil.cpp"
     "src/main/cpp/IltConsumerAsyncMethodTest.cpp"
     "src/main/cpp/IltConsumerAttributeSubscriptionTest.cpp"
     "src/main/cpp/IltConsumerBroadcastSubscriptionTest.cpp"
@@ -104,7 +103,6 @@ set(ilt-provider_HEADERS
 set(ilt-provider_SOURCES
     "src/main/cpp/IltProvider.cpp"
     "src/main/cpp/IltHelper.cpp"
-    "src/main/cpp/IltUtil.cpp"
     "src/main/cpp/IltProviderApplication.cpp"
     "src/main/cpp/IltStringBroadcastFilter.cpp"
 )

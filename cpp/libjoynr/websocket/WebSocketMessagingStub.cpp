@@ -30,8 +30,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(WebSocketMessagingStub);
-
 WebSocketMessagingStub::WebSocketMessagingStub(std::shared_ptr<IWebSocketSendInterface> webSocket)
         : webSocket(std::move(webSocket))
 {
@@ -43,13 +41,14 @@ void WebSocketMessagingStub::transmit(
 {
 
     if (!webSocket->isInitialized()) {
-        JOYNR_LOG_WARN(
-                logger, "WebSocket not ready. Unable to send message {}", message->toLogMessage());
+        JOYNR_LOG_WARN(logger(),
+                       "WebSocket not ready. Unable to send message {}",
+                       message->toLogMessage());
         onFailure(exceptions::JoynrDelayMessageException(
                 "WebSocket not ready. Unable to send message"));
     }
 
-    JOYNR_LOG_DEBUG(logger, ">>> OUTGOING >>> {}", message->toLogMessage());
+    JOYNR_LOG_DEBUG(logger(), ">>> OUTGOING >>> {}", message->toLogMessage());
     smrf::ByteArrayView serializedMessageView(message->getSerializedMessage());
     webSocket->send(serializedMessageView, onFailure);
 }

@@ -24,7 +24,6 @@ import java.util.Set;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import joynr.ImmutableMessage;
@@ -107,15 +106,7 @@ public class AddressManager {
             }
         }
         logger.trace("Found the following addresses for {}: {}", new Object[]{ message, result });
-        if (result.size() == 0) {
-            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-                throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
-                        + message);
-            } else {
-                throw new JoynrIllegalStateException("Unable to find address for participant with ID "
-                        + toParticipantId);
-            }
-        }
+
         return result;
     }
 

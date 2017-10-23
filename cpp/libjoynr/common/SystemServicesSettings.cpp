@@ -25,7 +25,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(SystemServicesSettings);
 SystemServicesSettings::SystemServicesSettings(Settings& settings) : settings(settings)
 {
     settings.fillEmptySettingsWithDefaults(DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME());
@@ -138,20 +137,20 @@ void SystemServicesSettings::checkSettings() const
 
 void SystemServicesSettings::printSettings() const
 {
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {} = {}",
                     SETTING_DOMAIN(),
                     settings.get<std::string>(SETTING_DOMAIN()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
                     SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(),
                     settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {} = {}",
                     SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(),
                     settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
     JOYNR_LOG_DEBUG(
-            logger,
+            logger(),
             "SETTING: {} = {}",
             SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID(),
             settings.get<std::string>(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID()));

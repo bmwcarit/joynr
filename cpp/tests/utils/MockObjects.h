@@ -257,7 +257,7 @@ public:
 
 private:
     const std::uint64_t est_ms;
-    static joynr::Logger logger;
+    ADD_LOGGER(MockRunnableWithAccuracy)
 };
 
 class MockRunnableBlocking : public joynr::Runnable
@@ -801,7 +801,7 @@ public:
 
     ~MockGpsProvider()
     {
-        JOYNR_LOG_DEBUG(logger, "I am being destroyed");
+        JOYNR_LOG_DEBUG(logger(), "I am being destroyed");
     }
 
     MOCK_METHOD1(getLocation, void(joynr::types::Localisation::GpsLocation& result) );
@@ -812,7 +812,7 @@ public:
         return "Fake_ParticipantId_vehicle/DefaultGpsProvider";
     }
 private:
-    ADD_LOGGER(MockGpsProvider);
+    ADD_LOGGER(MockGpsProvider)
 };
 
 class MockTestRequestCaller : public joynr::tests::testRequestCaller {

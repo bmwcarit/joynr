@@ -58,17 +58,15 @@ using namespace joynr;
 
 class JsonSerializerTest : public testing::Test {
 protected:
-    ADD_LOGGER(JsonSerializerTest);
+    ADD_LOGGER(JsonSerializerTest)
 };
-
-INIT_LOGGER(JsonSerializerTest);
 
 TEST_F(JsonSerializerTest, serialize_deserialize_SubscriptionRequest) {
     SubscriptionRequest request;
     auto subscriptionQos = std::make_shared<SubscriptionQos>(5000);
     request.setQos(subscriptionQos);
     std::string result = joynr::serializer::serializeToJson(request);
-    JOYNR_LOG_DEBUG(logger, "result: {}", result);
+    JOYNR_LOG_DEBUG(logger(), "result: {}", result);
     SubscriptionRequest desRequest;
     joynr::serializer::deserializeFromJson(desRequest, result);
     EXPECT_TRUE(request == desRequest);
@@ -83,7 +81,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_BroadcastSubscriptionRequest) {
     request.setFilterParameters(filterParams);
     request.setSubscribeToName("myAttribute");
     std::string requestJson = joynr::serializer::serializeToJson(request);
-    JOYNR_LOG_DEBUG(logger, requestJson);
+    JOYNR_LOG_DEBUG(logger(), requestJson);
     BroadcastSubscriptionRequest desRequest;
     joynr::serializer::deserializeFromJson(desRequest, requestJson);
     EXPECT_TRUE(request == desRequest);
@@ -120,8 +118,8 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array) {
                 R"("requestReplyId":")" << request.getRequestReplyId() << R"("})";
     std::string expectedRequestJson = jsonStringStream.str();
 
-    JOYNR_LOG_DEBUG(logger, "expected: {}", expectedRequestJson);
-    JOYNR_LOG_DEBUG(logger, "serialized: {}", serializedRequestJson);
+    JOYNR_LOG_DEBUG(logger(), "expected: {}", expectedRequestJson);
+    JOYNR_LOG_DEBUG(logger(), "serialized: {}", serializedRequestJson);
     EXPECT_EQ(expectedRequestJson, serializedRequestJson);
 
     // Deserialize the request
@@ -258,7 +256,7 @@ TEST_F(JsonSerializerTest, serializeDeserializeTypeWithEnumList) {
 
     // Serialize
     std::string serializedContent = joynr::serializer::serializeToJson(expectedMac);
-    JOYNR_LOG_DEBUG(logger, "Serialized expectedMac: {}", serializedContent);
+    JOYNR_LOG_DEBUG(logger(), "Serialized expectedMac: {}", serializedContent);
 
     // Deserialize the result
     infrastructure::DacTypes::MasterAccessControlEntry mac;
@@ -288,9 +286,9 @@ void serializeAndDeserializePermission(const Permission::Enum& input, const std:
 TEST_F(JsonSerializerTest, serializeDeserializeTypeEnum) {
     using namespace infrastructure::DacTypes;
 
-    JOYNR_ASSERT_NO_THROW(serializeAndDeserializePermission(Permission::NO, R"("NO")", logger));
+    JOYNR_ASSERT_NO_THROW(serializeAndDeserializePermission(Permission::NO, R"("NO")", logger()));
 
-    ASSERT_ANY_THROW(serializeAndDeserializePermission(static_cast<Permission::Enum>(999), "999", logger));
+    ASSERT_ANY_THROW(serializeAndDeserializePermission(static_cast<Permission::Enum>(999), "999", logger()));
 }
 
 TEST_F(JsonSerializerTest, deserializeTypeEnum) {
@@ -324,8 +322,8 @@ TEST_F(JsonSerializerTest, serialize_operation_with_multiple_params2) {
 
     std::string expected = expectedStringStream.str();
 
-    JOYNR_LOG_DEBUG(logger, "Serialized method call: {}", serializedContent);
-    JOYNR_LOG_DEBUG(logger, "Expected method call: {}", expected);
+    JOYNR_LOG_DEBUG(logger(), "Serialized method call: {}", serializedContent);
+    JOYNR_LOG_DEBUG(logger(), "Expected method call: {}", expected);
 
     EXPECT_EQ(expected, serializedContent);
 }
@@ -348,7 +346,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStruct) {
                 );
 
     std::string serializedContent = joynr::serializer::serializeToJson(tStruct);
-    JOYNR_LOG_DEBUG(logger, serializedContent);
+    JOYNR_LOG_DEBUG(logger(), serializedContent);
     EXPECT_EQ(expectedTStruct, serializedContent);
 
     types::TestTypes::TStruct tStructDeserialized;
@@ -378,7 +376,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended) {
                 );
 
     std::string serializedTStructExt = joynr::serializer::serializeToJson(tStructExt);
-    JOYNR_LOG_DEBUG(logger, serializedTStructExt);
+    JOYNR_LOG_DEBUG(logger(), serializedTStructExt);
 
     EXPECT_EQ(expectedTStructExt, serializedTStructExt);
     types::TestTypes::TStructExtended deserializedTStructExt;
@@ -449,7 +447,7 @@ TEST_F(JsonSerializerTest, deserialize_replyWithVoid) {
 
     EXPECT_EQ(expected, jsonReply);
 
-    JOYNR_LOG_DEBUG(logger, "Serialized Reply: {}", jsonReply);
+    JOYNR_LOG_DEBUG(logger(), "Serialized Reply: {}", jsonReply);
 
     joynr::Reply receivedReply;
     joynr::serializer::deserializeFromJson(receivedReply, jsonReply);
@@ -504,7 +502,7 @@ TEST_F(JsonSerializerTest, serialize_deserialize_replyWithGpsLocationList) {
     std::string expectedReply = expectedReplyStringStream.str();
 
     std::string jsonReply = joynr::serializer::serializeToJson(reply);
-    JOYNR_LOG_DEBUG(logger, jsonReply);
+    JOYNR_LOG_DEBUG(logger(), jsonReply);
     EXPECT_EQ(expectedReply, jsonReply);
 
     joynr::Reply receivedReply;
@@ -663,10 +661,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
     std::string wsServerSerialized = joynr::serializer::serializeToJson(wsServer);
     std::string wsClientSerialized = joynr::serializer::serializeToJson(wsClient);
 
-    JOYNR_LOG_DEBUG(logger, "serialized Joynr address: {}", joynrSerialized);
-    JOYNR_LOG_DEBUG(logger, "serialized Dbus address: {}", dbusSerialized);
-    JOYNR_LOG_DEBUG(logger, "serialized WS server address: {}", wsServerSerialized);
-    JOYNR_LOG_DEBUG(logger, "serialized WS client address: {}", wsClientSerialized);
+    JOYNR_LOG_DEBUG(logger(), "serialized Joynr address: {}", joynrSerialized);
+    JOYNR_LOG_DEBUG(logger(), "serialized Dbus address: {}", dbusSerialized);
+    JOYNR_LOG_DEBUG(logger(), "serialized WS server address: {}", wsServerSerialized);
+    JOYNR_LOG_DEBUG(logger(), "serialized WS client address: {}", wsClientSerialized);
 
     // deserialize
     joynr::system::RoutingTypes::ChannelAddress joynrDeserialized;
@@ -715,17 +713,17 @@ TEST_F(JsonSerializerTest, serialize_deserialize_GlobalDiscoveryEntry) {
     globalDiscoveryEntry.setAddress("serialized_address");
     globalDiscoveryEntry.setInterfaceName("testInterface");
     globalDiscoveryEntry.setPublicKeyId("publicKeyId");
-    JOYNR_LOG_DEBUG(logger, "GlobalDiscoveryEntry {}", globalDiscoveryEntry.toString());
+    JOYNR_LOG_DEBUG(logger(), "GlobalDiscoveryEntry {}", globalDiscoveryEntry.toString());
 
     std::string serialized = joynr::serializer::serializeToJson(globalDiscoveryEntry);
-    JOYNR_LOG_DEBUG(logger, "serialized GlobalDiscoveryEntry {} ",serialized);
+    JOYNR_LOG_DEBUG(logger(), "serialized GlobalDiscoveryEntry {} ",serialized);
     EXPECT_EQ(expected, serialized);
 
     types::GlobalDiscoveryEntry deserializedGDE;
     joynr::serializer::deserializeFromJson(deserializedGDE, serialized);
 
     EXPECT_EQ(globalDiscoveryEntry, deserializedGDE);
-    JOYNR_LOG_DEBUG(logger, "deserialized GlobalDiscoveryEntry {}", deserializedGDE.toString());
+    JOYNR_LOG_DEBUG(logger(), "deserialized GlobalDiscoveryEntry {}", deserializedGDE.toString());
 }
 
 TEST_F(JsonSerializerTest, deserialize_ProviderQos) {
@@ -780,13 +778,13 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
     OnChangeWithKeepAliveSubscriptionQos qos(750, 1000, 100, 900, 1050);
 
     std::string jsonQos = joynr::serializer::serializeToJson(qos);
-    JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
+    JOYNR_LOG_DEBUG(logger(), "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
 
     OnChangeWithKeepAliveSubscriptionQos desQos;
     joynr::serializer::deserializeFromJson(desQos, jsonQos);
 
     jsonQos = joynr::serializer::serializeToJson(desQos);
-    JOYNR_LOG_DEBUG(logger, "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
+    JOYNR_LOG_DEBUG(logger(), "serialized OnChangeWithKeepAliveSubscriptionQos {}", jsonQos);
 
     EXPECT_EQ(qos, desQos);
 }
@@ -835,7 +833,7 @@ TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
 
 
     const std::string serializedRoutingTable = joynr::serializer::serializeToJson(routingTable);
-    JOYNR_LOG_TRACE(logger, serializedRoutingTable);
+    JOYNR_LOG_TRACE(logger(), serializedRoutingTable);
 
     RoutingTable deserializedRoutingTable("deserializedRoutingTable", singleThreadedIoService.getIOService());
     joynr::serializer::deserializeFromJson(deserializedRoutingTable, serializedRoutingTable);

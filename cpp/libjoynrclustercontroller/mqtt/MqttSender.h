@@ -54,7 +54,7 @@ private:
     std::shared_ptr<ITransportMessageReceiver> receiver;
     const std::int64_t mqttMaxMessageSizeBytes;
 
-    ADD_LOGGER(MqttSender);
+    ADD_LOGGER(MqttSender)
 };
 
 } // namespace joynr

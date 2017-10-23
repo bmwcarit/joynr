@@ -179,4 +179,10 @@ public class ImmutableMessage extends Message {
             gen.writeString(new String(value, Charsets.UTF_8));
         }
     }
+
+    public boolean isReply() {
+        final String messageType = getType();
+        return VALUE_MESSAGE_TYPE_REPLY.equals(messageType)
+                || VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(messageType);
+    }
 }

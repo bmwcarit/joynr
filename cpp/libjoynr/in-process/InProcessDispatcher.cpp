@@ -28,8 +28,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(InProcessDispatcher);
-
 InProcessDispatcher::InProcessDispatcher(boost::asio::io_service& ioService)
         : requestCallerDirectory("InProcessDispatcher-RequestCallerDirectory", ioService),
           replyCallerDirectory("InProcessDispatcher-ReplyCallerDirectory", ioService),
@@ -40,7 +38,7 @@ InProcessDispatcher::InProcessDispatcher(boost::asio::io_service& ioService)
 
 InProcessDispatcher::~InProcessDispatcher()
 {
-    JOYNR_LOG_TRACE(logger, "Deleting InProcessDispatcher");
+    JOYNR_LOG_TRACE(logger(), "Deleting InProcessDispatcher");
 }
 
 void InProcessDispatcher::addReplyCaller(const std::string& requestReplyId,
@@ -71,7 +69,7 @@ void InProcessDispatcher::removeRequestCaller(const std::string& participantId)
 void InProcessDispatcher::receive(std::shared_ptr<ImmutableMessage> message)
 {
     std::ignore = message;
-    JOYNR_LOG_FATAL(logger, "Not implemented");
+    JOYNR_LOG_FATAL(logger(), "Not implemented");
     assert(false);
 }
 

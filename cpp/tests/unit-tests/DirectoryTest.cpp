@@ -33,7 +33,7 @@ public:
     TrackableObject()
     {
         ++instances;
-        JOYNR_LOG_TRACE(logger,
+        JOYNR_LOG_TRACE(logger(),
                         "Creating TrackableObject at address {}. Now we have {} instances.",
                         static_cast<const void*>(this),
                         instances);
@@ -42,7 +42,7 @@ public:
     ~TrackableObject()
     {
         --instances;
-        JOYNR_LOG_TRACE(logger,
+        JOYNR_LOG_TRACE(logger(),
                         "Deleting TrackableObject at address {}. Now we have {} instances.",
                         static_cast<const void*>(this),
                         instances);
@@ -55,11 +55,10 @@ public:
 
 private:
     static std::atomic_int instances;
-    ADD_LOGGER(TrackableObject);
+    ADD_LOGGER(TrackableObject)
 };
 
 std::atomic_int TrackableObject::instances;
-INIT_LOGGER(TrackableObject);
 
 class DirectoryTest : public ::testing::Test
 {

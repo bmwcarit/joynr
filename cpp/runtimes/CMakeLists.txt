@@ -29,13 +29,6 @@ set(
 
 include(GenerateJoynrExports)
 
-option(
-    ENABLE_ACCESS_CONTROL
-    "Should access control be enabled for the cluster-controller?"
-    ON
-)
-message(STATUS "option ENABLE_ACCESS_CONTROL=" ${ENABLE_ACCESS_CONTROL})
-
 get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
 set(
     JoynrClusterControllerRuntime_INCLUDE_DIRECTORIES
@@ -83,13 +76,6 @@ add_library(
     ${JoynrClusterControllerRuntime_HEADERS}
     ${JoynrClusterControllerRuntime_SOURCES}
 )
-
-if(ENABLE_ACCESS_CONTROL)
-    target_compile_definitions(
-        JoynrClusterControllerRuntime
-        PRIVATE
-        JOYNR_ENABLE_ACCESS_CONTROL)
-endif(ENABLE_ACCESS_CONTROL)
 
 target_include_directories(JoynrClusterControllerRuntime SYSTEM PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
 

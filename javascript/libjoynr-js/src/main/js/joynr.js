@@ -1,5 +1,5 @@
 /*jslint es5: true, node: true, nomen: true */
-/*global requireJsDefine: true, requirejs: true*/
+/*global requireJsDefine: true, requirejs: true, process: true*/
 /*
  * #%L
  * %%
@@ -101,6 +101,23 @@ var joynr = {
                     delete joynr.Runtime;
                     populateJoynrApi(joynr, runtime);
                     freeze(joynr, capabilitiesWritable);
+
+                    // make sure the runtime is shutdown when process.exit(...)
+                    // gets called since otherwise the process might not
+                    // terminate. Ignore any exception thrown in case shutdown
+                    // had already been invoked manually before reaching this
+                    // point.
+                    if (typeof process === 'object' &&
+                        typeof process.on === 'function') {
+                        process.on('exit', function() {
+                            try {
+                                joynr.shutdown();
+                            } catch(error) {
+                                // ignore
+                            }
+                        });
+                    }
+
                     resolve(joynr);
                     return;
                 }).catch(function(error) {

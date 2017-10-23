@@ -43,8 +43,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(AbstractMessageRouter);
-
 //------ AbstractMessageRouter ---------------------------------------------------------
 AbstractMessageRouter::AbstractMessageRouter(
         MessagingSettings& messagingSettings,
@@ -167,7 +165,7 @@ void AbstractMessageRouter::checkExpiryDate(const ImmutableMessage& message)
     if (now > message.getExpiryDate()) {
         std::string errorMessage("Received expired message. Dropping the message (ID: " +
                                  message.getId() + ").");
-        JOYNR_LOG_WARN(logger, errorMessage);
+        JOYNR_LOG_WARN(logger(), errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 }
@@ -190,7 +188,7 @@ void AbstractMessageRouter::registerGlobalRoutingEntryIfRequired(const Immutable
         if (!optionalReplyTo) {
             std::string errorMessage("message " + message.getId() +
                                      " did not contain replyTo header, discarding");
-            JOYNR_LOG_ERROR(logger, errorMessage);
+            JOYNR_LOG_ERROR(logger(), errorMessage);
             throw exceptions::JoynrMessageNotSentException(errorMessage);
         }
         const std::string& replyTo = *optionalReplyTo;
@@ -215,7 +213,7 @@ void AbstractMessageRouter::registerGlobalRoutingEntryIfRequired(const Immutable
         } catch (const std::invalid_argument& e) {
             std::string errorMessage("could not deserialize Address from " + replyTo +
                                      " - error: " + e.what());
-            JOYNR_LOG_FATAL(logger, errorMessage);
+            JOYNR_LOG_FATAL(logger(), errorMessage);
             // do not try to route the message if address is not valid
             throw exceptions::JoynrMessageNotSentException(errorMessage);
         }
@@ -233,7 +231,7 @@ void AbstractMessageRouter::route(std::shared_ptr<ImmutableMessage> message, std
 void AbstractMessageRouter::sendMessages(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
-    JOYNR_LOG_TRACE(logger, "sendMessages: sending messages for {}", address->toString());
+    JOYNR_LOG_TRACE(logger(), "sendMessages: sending messages for {}", address->toString());
     std::unordered_set<std::string> participantIdSet;
     {
         ReadLocker lock(routingTableLock);
@@ -250,7 +248,7 @@ void AbstractMessageRouter::sendMessages(
         const std::string& destinationPartId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
-    JOYNR_LOG_TRACE(logger,
+    JOYNR_LOG_TRACE(logger(),
                     "sendMessages: sending messages for destinationPartId {} and {}",
                     destinationPartId,
                     address->toString());
@@ -279,7 +277,7 @@ void AbstractMessageRouter::sendMessages(
                                                                         tryCount),
                                       std::chrono::milliseconds(0));
         } catch (const exceptions::JoynrMessageNotSentException& e) {
-            JOYNR_LOG_ERROR(logger,
+            JOYNR_LOG_ERROR(logger(),
                             "Message with Id {} could not be sent. Error: {}",
                             item->getContent()->getId(),
                             e.getMessage());
@@ -296,7 +294,7 @@ void AbstractMessageRouter::scheduleMessage(
     for (const auto& transportStatus : transportStatuses) {
         if (transportStatus->isReponsibleFor(destAddress)) {
             if (!transportStatus->isAvailable()) {
-                JOYNR_LOG_TRACE(logger,
+                JOYNR_LOG_TRACE(logger(),
                                 "Transport not available. Message queued: {}",
                                 message->toLogMessage());
 
@@ -316,7 +314,7 @@ void AbstractMessageRouter::scheduleMessage(
                                   delay);
     } else {
         JOYNR_LOG_WARN(
-                logger,
+                logger(),
                 "Message with id {} could not be send to {}. Stub creation failed. => Queueing "
                 "message.",
                 message->getId(),
@@ -371,7 +369,7 @@ void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
         try {
             route(message);
         } catch (const exceptions::JoynrRuntimeException& e) {
-            JOYNR_LOG_DEBUG(logger,
+            JOYNR_LOG_DEBUG(logger(),
                             "could not route queued message '{}' due to '{}'",
                             message->toLogMessage(),
                             e.getMessage());
@@ -387,7 +385,7 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(
         thisSharedPtr->messageQueue->removeOutdatedMessages();
         thisSharedPtr->activateMessageCleanerTimer();
     } else if (errorCode != boost::system::errc::operation_canceled) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Failed to schedule timer to remove outdated messages: {}",
                         errorCode.message());
     }
@@ -396,14 +394,14 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(
 void AbstractMessageRouter::onRoutingTableCleanerTimerExpired(
         const boost::system::error_code& errorCode)
 {
-    JOYNR_LOG_DEBUG(logger, "AbstractMessageRouter::onRoutingTableCleanerTimerExpired");
+    JOYNR_LOG_DEBUG(logger(), "AbstractMessageRouter::onRoutingTableCleanerTimerExpired");
 
     if (!errorCode) {
         WriteLocker lock(routingTableLock);
         routingTable.purge();
         activateRoutingTableCleanerTimer();
     } else if (errorCode != boost::system::errc::operation_canceled) {
-        JOYNR_LOG_ERROR(logger,
+        JOYNR_LOG_ERROR(logger(),
                         "Failed to schedule timer to remove outdated routing table entries: {}",
                         errorCode.message());
     }
@@ -411,7 +409,7 @@ void AbstractMessageRouter::onRoutingTableCleanerTimerExpired(
 
 void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
 {
-    JOYNR_LOG_TRACE(logger, "message queued: {}", message->toLogMessage());
+    JOYNR_LOG_TRACE(logger(), "message queued: {}", message->toLogMessage());
     std::string recipient = message->getRecipient();
     messageQueue->queueMessage(std::move(recipient), std::move(message));
 }
@@ -432,9 +430,9 @@ void AbstractMessageRouter::loadRoutingTable(std::string fileName)
         joynr::serializer::deserializeFromJson(
                 routingTable, joynr::util::loadStringFromFile(routingTableFileName));
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger, ex.what());
+        JOYNR_LOG_ERROR(logger(), ex.what());
     } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger, "could not deserialize from JSON: {}", ex.what());
+        JOYNR_LOG_ERROR(logger(), "could not deserialize from JSON: {}", ex.what());
     }
 }
 
@@ -445,7 +443,7 @@ void AbstractMessageRouter::saveRoutingTable()
         joynr::util::saveStringToFile(
                 routingTableFileName, joynr::serializer::serializeToJson(routingTable));
     } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_INFO(logger, ex.what());
+        JOYNR_LOG_INFO(logger(), ex.what());
     }
 }
 
@@ -462,7 +460,7 @@ void AbstractMessageRouter::addToRoutingTable(
         if (routingEntry) {
             if ((*(routingEntry->address) != *address) ||
                 (routingEntry->isGloballyVisible != isGloballyVisible)) {
-                JOYNR_LOG_WARN(logger,
+                JOYNR_LOG_WARN(logger(),
                                "unable to update participantId={} in routing table, since "
                                "the participantId is already associated with routing entry {}",
                                participantId,
@@ -494,8 +492,6 @@ void AbstractMessageRouter::addToRoutingTable(
 /**
  * IMPLEMENTATION of MessageRunnable class
  */
-
-INIT_LOGGER(MessageRunnable);
 
 MessageRunnable::MessageRunnable(
         std::shared_ptr<ImmutableMessage> message,
@@ -534,7 +530,7 @@ void MessageRunnable::run()
 
                     if (auto messageRouterSharedPtr = thisSharedPtr->messageRouter.lock()) {
                         JOYNR_LOG_TRACE(
-                                logger,
+                                logger(),
                                 "Rescheduling message after error: messageId: {}, new delay {}ms, "
                                 "reason: {}",
                                 thisSharedPtr->message->getId(),
@@ -546,25 +542,25 @@ void MessageRunnable::run()
                                                                 delay);
                     } else {
                         JOYNR_LOG_ERROR(
-                                logger,
+                                logger(),
                                 "Message with ID {} could not be sent! reason: messageRouter "
                                 "not available",
                                 thisSharedPtr->message->getId());
                     }
                 } catch (const std::bad_cast&) {
-                    JOYNR_LOG_ERROR(logger,
+                    JOYNR_LOG_ERROR(logger(),
                                     "Message with ID {} could not be sent! reason: {}",
                                     thisSharedPtr->message->getId(),
                                     e.getMessage());
                 }
             } else {
-                JOYNR_LOG_ERROR(
-                        logger, "Message could not be sent! reason: MessageRunnable not available");
+                JOYNR_LOG_ERROR(logger(),
+                                "Message could not be sent! reason: MessageRunnable not available");
             }
         };
         messagingStub->transmit(message, onFailure);
     } else {
-        JOYNR_LOG_ERROR(logger, "Message with ID {}  expired: dropping!", message->getId());
+        JOYNR_LOG_ERROR(logger(), "Message with ID {}  expired: dropping!", message->getId());
     }
 }
 

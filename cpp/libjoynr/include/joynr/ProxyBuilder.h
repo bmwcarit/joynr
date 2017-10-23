@@ -135,7 +135,7 @@ private:
     DiscoveryQos discoveryQos;
     static const std::string runtimeAlreadyDestroyed;
 
-    ADD_LOGGER(ProxyBuilder);
+    ADD_LOGGER(ProxyBuilder)
 };
 
 template <class T>
@@ -229,7 +229,7 @@ void ProxyBuilder<T>::buildAsync(
             return;
         }
 
-        JOYNR_LOG_DEBUG(logger,
+        JOYNR_LOG_DEBUG(logger(),
                         "DISCOVERY proxy created for provider participantId: {}, domain: [{}], "
                         "interface: {}",
                         discoverEntry.getParticipantId(),
@@ -284,9 +284,6 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     }
     return this;
 }
-
-template <class T>
-INIT_LOGGER(ProxyBuilder<T>);
 
 } // namespace joynr
 #endif // PROXYBUILDER_H

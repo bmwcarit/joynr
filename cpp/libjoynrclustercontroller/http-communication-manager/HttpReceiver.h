@@ -106,7 +106,7 @@ private:
 
     friend class ::CapabilitiesClientTest;
 
-    ADD_LOGGER(HttpReceiver);
+    ADD_LOGGER(HttpReceiver)
 };
 
 } // namespace joynr

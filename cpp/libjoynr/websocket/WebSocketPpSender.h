@@ -47,7 +47,7 @@ public:
             const smrf::ByteArrayView& msg,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) override
     {
-        JOYNR_LOG_TRACE(logger, "outgoing binary message of size {}", msg.size());
+        JOYNR_LOG_TRACE(logger(), "outgoing binary message of size {}", msg.size());
         websocketpp::lib::error_code websocketError;
         endpoint.send(connectionHandle,
                       msg.data(),
@@ -83,7 +83,7 @@ public:
             }
         } catch (websocketpp::exception e) {
             JOYNR_LOG_ERROR(
-                    logger, "websocket not connected (websocketpp error message: {})", e.what());
+                    logger(), "websocket not connected (websocketpp error message: {})", e.what());
         }
 
         return false;
@@ -102,11 +102,8 @@ public:
 private:
     Endpoint& endpoint;
     ConnectionHandle connectionHandle;
-    ADD_LOGGER(WebSocketPpSender);
+    ADD_LOGGER(WebSocketPpSender)
 };
-
-template <typename Endpoint>
-INIT_LOGGER(SINGLE_MACRO_ARG(WebSocketPpSender<Endpoint>));
 
 } // namespace joynr
 

@@ -239,7 +239,7 @@ protected:
     std::int64_t alertAfterIntervalMs;
 
 private:
-    ADD_LOGGER(OnChangeWithKeepAliveSubscriptionQos);
+    ADD_LOGGER(OnChangeWithKeepAliveSubscriptionQos)
 };
 
 } // namespace joynr

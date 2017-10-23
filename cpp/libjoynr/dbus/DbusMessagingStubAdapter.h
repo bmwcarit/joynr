@@ -48,7 +48,7 @@ public:
     virtual void transmit(JoynrMessage& message, const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
 private:
-    ADD_LOGGER(DbusMessagingStubAdapter);
+    ADD_LOGGER(DbusMessagingStubAdapter)
     DISALLOW_COPY_AND_ASSIGN(DbusMessagingStubAdapter);
 };
 

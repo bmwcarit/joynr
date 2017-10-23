@@ -67,7 +67,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessPublicationSender);
     std::shared_ptr<ISubscriptionManager> subscriptionManager;
-    ADD_LOGGER(InProcessPublicationSender);
+    ADD_LOGGER(InProcessPublicationSender)
 };
 
 } // namespace joynr

@@ -51,7 +51,7 @@ public:
 
     static bool useRestricted64BitRange;
     static bool useRestrictedUnsignedRange;
-    ADD_LOGGER(IltUtil);
+    ADD_LOGGER(IltUtil)
 
     // static methods
 
@@ -81,11 +81,11 @@ public:
     static bool checkStringArray(const std::vector<std::string>& stringArray)
     {
         if (stringArray.size() != 2) {
-            JOYNR_LOG_TRACE(logger, "checkStringArray: array has invalid size");
+            JOYNR_LOG_TRACE(logger(), "checkStringArray: array has invalid size");
             return false;
         }
         if (stringArray.at(0) != "Hello" || stringArray.at(1) != "World") {
-            JOYNR_LOG_TRACE(logger, "checkStringArray: invalid content found");
+            JOYNR_LOG_TRACE(logger(), "checkStringArray: invalid content found");
             return false;
         }
         return true;
@@ -94,11 +94,11 @@ public:
     static bool checkStringArray(const std::vector<std::string*>& stringArray)
     {
         if (stringArray.size() != 2) {
-            JOYNR_LOG_TRACE(logger, "checkStringArray: array has invalid size");
+            JOYNR_LOG_TRACE(logger(), "checkStringArray: array has invalid size");
             return false;
         }
         if (*stringArray.at(0) != "Hello" || *stringArray.at(1) != "World") {
-            JOYNR_LOG_TRACE(logger, "checkStringArray: invalid content found");
+            JOYNR_LOG_TRACE(logger(), "checkStringArray: invalid content found");
             return false;
         }
         return true;
@@ -126,11 +126,11 @@ public:
     static bool checkByteArray(const std::vector<int8_t>& byteArray)
     {
         if (byteArray.size() != 2) {
-            JOYNR_LOG_TRACE(logger, "checkByteArray: invalid array size");
+            JOYNR_LOG_TRACE(logger(), "checkByteArray: invalid array size");
             return false;
         }
         if (byteArray.at(0) != 1 || byteArray.at(1) != 127) {
-            JOYNR_LOG_TRACE(logger, "checkByteArray: invalid content found");
+            JOYNR_LOG_TRACE(logger(), "checkByteArray: invalid content found");
             return false;
         }
         return true;
@@ -169,11 +169,11 @@ public:
     static bool checkUInt64Array(const std::vector<uint64_t>& uInt64Array)
     {
         if (uInt64Array.size() != 2) {
-            JOYNR_LOG_TRACE(logger, "checkUInt64Array: array has invalid size");
+            JOYNR_LOG_TRACE(logger(), "checkUInt64Array: array has invalid size");
             return false;
         }
         if (uInt64Array.at(0) != 1 || uInt64Array.at(1) != 127) {
-            JOYNR_LOG_TRACE(logger, "checkUInt64Array: array has invalid content");
+            JOYNR_LOG_TRACE(logger(), "checkUInt64Array: array has invalid content");
             return false;
         }
         return true;
@@ -202,12 +202,12 @@ public:
     static bool checkDoubleArray(const std::vector<double>& doubleArray)
     {
         if (doubleArray.size() != 3) {
-            JOYNR_LOG_TRACE(logger, "checkDoubleArray: array has invalid size");
+            JOYNR_LOG_TRACE(logger(), "checkDoubleArray: array has invalid size");
             return false;
         }
         if (!cmpDouble(doubleArray.at(0), 1.1) || !cmpDouble(doubleArray.at(1), 2.2) ||
             !cmpDouble(doubleArray.at(2), 3.3)) {
-            JOYNR_LOG_TRACE(logger, "checkDoubleArray: array has invalid content");
+            JOYNR_LOG_TRACE(logger(), "checkDoubleArray: array has invalid content");
             return false;
         }
         return true;
@@ -255,7 +255,7 @@ public:
                     extendedInterfaceEnumerationInTypeCollection)
     {
         if (extendedInterfaceEnumerationInTypeCollection.size() != 2) {
-            JOYNR_LOG_TRACE(logger,
+            JOYNR_LOG_TRACE(logger(),
                             "checkExtendedInterfaceEnumerationInTypeCollectionArray: array has "
                             "invalid size");
             return false;
@@ -267,7 +267,7 @@ public:
             extendedInterfaceEnumerationInTypeCollection.at(1) !=
                     joynr::interlanguagetest::namedTypeCollection2::
                             ExtendedInterfaceEnumerationInTypeCollection::Enum::ENUM_I1_VALUE_3) {
-            JOYNR_LOG_TRACE(logger,
+            JOYNR_LOG_TRACE(logger(),
                             "checkExtendedInterfaceEnumerationInTypeCollectionArray: array has "
                             "invalid content");
             return false;
@@ -309,7 +309,7 @@ public:
     {
         if (extendedExtendedEnumerationArray.size() != 2) {
             JOYNR_LOG_TRACE(
-                    logger, "checkExtendedExtendedEnumerationArray: array has invalid size");
+                    logger(), "checkExtendedExtendedEnumerationArray: array has invalid size");
             return false;
         }
         if (extendedExtendedEnumerationArray.at(0) !=
@@ -319,7 +319,7 @@ public:
                     joynr::interlanguagetest::namedTypeCollection2::ExtendedExtendedEnumeration::
                             Enum::ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
             JOYNR_LOG_TRACE(
-                    logger, "checkExtendedExtendedEnumerationArray: array has invalid content");
+                    logger(), "checkExtendedExtendedEnumerationArray: array has invalid content");
             return false;
         }
         return true;
@@ -352,11 +352,11 @@ public:
     {
         std::vector<std::string> stringArray = structWithStringArray.getStringArrayElement();
         if (stringArray.size() != 2) {
-            JOYNR_LOG_TRACE(logger, "checkStructWithStringArray: array size != 2");
+            JOYNR_LOG_TRACE(logger(), "checkStructWithStringArray: array size != 2");
             return false;
         }
         if (stringArray.at(0) != "Hello" || stringArray.at(1) != "World") {
-            JOYNR_LOG_TRACE(logger, "checkStructWithStringArray: invalid content found");
+            JOYNR_LOG_TRACE(logger(), "checkStructWithStringArray: invalid content found");
             return false;
         }
         return true;
@@ -392,13 +392,13 @@ public:
                                                         structWithStringArrayArray)
     {
         if (structWithStringArrayArray.size() != 2) {
-            JOYNR_LOG_TRACE(logger, "checkStructWithStringArrayArray: size != 2");
+            JOYNR_LOG_TRACE(logger(), "checkStructWithStringArrayArray: size != 2");
             return false;
         }
         if (!checkStructWithStringArray(structWithStringArrayArray.at(0)) ||
             !checkStructWithStringArray(structWithStringArrayArray.at(1))) {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructWithStringArrayArray: checkStructWithStringArray fails");
+                    logger(), "checkStructWithStringArrayArray: checkStructWithStringArray fails");
             return false;
         }
         return true;
@@ -409,13 +409,13 @@ public:
                                                         structWithStringArrayArray)
     {
         if (structWithStringArrayArray.size() != 2) {
-            JOYNR_LOG_TRACE(logger, "checkStructWithStringArrayArray: size != 2");
+            JOYNR_LOG_TRACE(logger(), "checkStructWithStringArrayArray: size != 2");
             return false;
         }
         if (!checkStructWithStringArray(*structWithStringArrayArray.at(0)) ||
             !checkStructWithStringArray(*structWithStringArrayArray.at(1))) {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructWithStringArrayArray: checkStructWithStringArray fails");
+                    logger(), "checkStructWithStringArrayArray: checkStructWithStringArray fails");
             return false;
         }
         return true;
@@ -461,7 +461,7 @@ public:
             const joynr::interlanguagetest::namedTypeCollection2::BaseStruct& baseStruct)
     {
         if (baseStruct.getBaseStructString() != "Hiya") {
-            JOYNR_LOG_TRACE(logger, "checkBaseStruct: baseStructString has invalid content");
+            JOYNR_LOG_TRACE(logger(), "checkBaseStruct: baseStructString has invalid content");
             return false;
         }
         return true;
@@ -491,12 +491,12 @@ public:
     {
         if (extendedBaseStruct.getEnumElement() !=
             joynr::interlanguagetest::Enumeration::ENUM_0_VALUE_3) {
-            JOYNR_LOG_TRACE(logger, "checkExtendedBaseStruct: enumElement has invalid content");
+            JOYNR_LOG_TRACE(logger(), "checkExtendedBaseStruct: enumElement has invalid content");
             return false;
         }
         // check inherited parts
         if (!checkBaseStruct(extendedBaseStruct)) {
-            JOYNR_LOG_TRACE(logger, "checkExtendedBaseStruct: baseStruct has invalid content");
+            JOYNR_LOG_TRACE(logger(), "checkExtendedBaseStruct: baseStruct has invalid content");
             return false;
         }
         return true;
@@ -533,7 +533,7 @@ public:
     {
         if (extendedExtendedBaseStruct.getEnumWithoutDefinedValuesElement() !=
             joynr::interlanguagetest::EnumerationWithoutDefinedValues::ENUM_0_VALUE_1) {
-            JOYNR_LOG_TRACE(logger,
+            JOYNR_LOG_TRACE(logger(),
                             "checkExtendedExtendedBaseStruct: enumWithoutDefinedValuesElement has "
                             "invalid content");
             return false;
@@ -541,7 +541,7 @@ public:
         // check inherited parts
         if (!checkExtendedBaseStruct(extendedExtendedBaseStruct)) {
             JOYNR_LOG_TRACE(
-                    logger,
+                    logger(),
                     "checkExtendedExtendedBaseStruct: extendedBaseStruct has invalid content");
             return false;
         }
@@ -704,74 +704,82 @@ public:
             const joynr::interlanguagetest::namedTypeCollection2::StructOfPrimitives&
                     structOfPrimitives)
     {
-        JOYNR_LOG_TRACE(logger, "DUMP checkStructOfPrimitives");
-        JOYNR_LOG_TRACE(logger, "\tbooleanElement {}", structOfPrimitives.getBooleanElement());
-        JOYNR_LOG_TRACE(logger, "\tdoubleElement {}", structOfPrimitives.getDoubleElement());
-        JOYNR_LOG_TRACE(logger, "\tfloatElement {}", structOfPrimitives.getFloatElement());
-        JOYNR_LOG_TRACE(logger, "\tint8MinElement {}", (int)structOfPrimitives.getInt8MinElement());
-        JOYNR_LOG_TRACE(logger, "\tint8MaxElement {}", (int)structOfPrimitives.getInt8MaxElement());
-        JOYNR_LOG_TRACE(logger, "\tint16MinElement {}", structOfPrimitives.getInt16MinElement());
-        JOYNR_LOG_TRACE(logger, "\tint16MaxElement {}", structOfPrimitives.getInt16MaxElement());
-        JOYNR_LOG_TRACE(logger, "\tint32MinElement {}", structOfPrimitives.getInt32MinElement());
-        JOYNR_LOG_TRACE(logger, "\tint32MaxElement {}", structOfPrimitives.getInt32MaxElement());
-        JOYNR_LOG_TRACE(logger, "\tint64MinElement {}", structOfPrimitives.getInt64MinElement());
-        JOYNR_LOG_TRACE(logger, "\tint64MaxElement {}", structOfPrimitives.getInt64MaxElement());
-        JOYNR_LOG_TRACE(logger,
+        JOYNR_LOG_TRACE(logger(), "DUMP checkStructOfPrimitives");
+        JOYNR_LOG_TRACE(logger(), "\tbooleanElement {}", structOfPrimitives.getBooleanElement());
+        JOYNR_LOG_TRACE(logger(), "\tdoubleElement {}", structOfPrimitives.getDoubleElement());
+        JOYNR_LOG_TRACE(logger(), "\tfloatElement {}", structOfPrimitives.getFloatElement());
+        JOYNR_LOG_TRACE(
+                logger(), "\tint8MinElement {}", (int)structOfPrimitives.getInt8MinElement());
+        JOYNR_LOG_TRACE(
+                logger(), "\tint8MaxElement {}", (int)structOfPrimitives.getInt8MaxElement());
+        JOYNR_LOG_TRACE(logger(), "\tint16MinElement {}", structOfPrimitives.getInt16MinElement());
+        JOYNR_LOG_TRACE(logger(), "\tint16MaxElement {}", structOfPrimitives.getInt16MaxElement());
+        JOYNR_LOG_TRACE(logger(), "\tint32MinElement {}", structOfPrimitives.getInt32MinElement());
+        JOYNR_LOG_TRACE(logger(), "\tint32MaxElement {}", structOfPrimitives.getInt32MaxElement());
+        JOYNR_LOG_TRACE(logger(), "\tint64MinElement {}", structOfPrimitives.getInt64MinElement());
+        JOYNR_LOG_TRACE(logger(), "\tint64MaxElement {}", structOfPrimitives.getInt64MaxElement());
+        JOYNR_LOG_TRACE(logger(),
                         "\tuInt8MinElement {}",
                         (unsigned int)structOfPrimitives.getUInt8MinElement());
-        JOYNR_LOG_TRACE(logger,
+        JOYNR_LOG_TRACE(logger(),
                         "\tuInt8MaxElement {}",
                         (unsigned int)structOfPrimitives.getUInt8MaxElement());
-        JOYNR_LOG_TRACE(logger, "\tuInt16MinElement {}", structOfPrimitives.getUInt16MinElement());
-        JOYNR_LOG_TRACE(logger, "\tuInt16MaxElement {}", structOfPrimitives.getUInt16MaxElement());
-        JOYNR_LOG_TRACE(logger, "\tuInt32MinElement {}", structOfPrimitives.getUInt32MinElement());
-        JOYNR_LOG_TRACE(logger, "\tuInt32MaxElement {}", structOfPrimitives.getUInt32MaxElement());
-        JOYNR_LOG_TRACE(logger, "\tuInt64MinElement {}", structOfPrimitives.getUInt64MinElement());
-        JOYNR_LOG_TRACE(logger, "\tuInt64MaxElement {}", structOfPrimitives.getUInt64MaxElement());
-        JOYNR_LOG_TRACE(logger, "END DUMP checkStructOfPrimitives");
+        JOYNR_LOG_TRACE(
+                logger(), "\tuInt16MinElement {}", structOfPrimitives.getUInt16MinElement());
+        JOYNR_LOG_TRACE(
+                logger(), "\tuInt16MaxElement {}", structOfPrimitives.getUInt16MaxElement());
+        JOYNR_LOG_TRACE(
+                logger(), "\tuInt32MinElement {}", structOfPrimitives.getUInt32MinElement());
+        JOYNR_LOG_TRACE(
+                logger(), "\tuInt32MaxElement {}", structOfPrimitives.getUInt32MaxElement());
+        JOYNR_LOG_TRACE(
+                logger(), "\tuInt64MinElement {}", structOfPrimitives.getUInt64MinElement());
+        JOYNR_LOG_TRACE(
+                logger(), "\tuInt64MaxElement {}", structOfPrimitives.getUInt64MaxElement());
+        JOYNR_LOG_TRACE(logger(), "END DUMP checkStructOfPrimitives");
 
         if (structOfPrimitives.getBooleanElement() != true) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter booleanElement");
+            JOYNR_LOG_TRACE(logger(), "checkStructOfPrimitives: invalid parameter booleanElement");
             return false;
         }
 
         if (!cmpDouble(structOfPrimitives.getDoubleElement(), 1.1)) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter doubleElement");
+            JOYNR_LOG_TRACE(logger(), "checkStructOfPrimitives: invalid parameter doubleElement");
             return false;
         }
 
         if (!cmpFloat(structOfPrimitives.getFloatElement(), 1.1f)) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter floatElement");
+            JOYNR_LOG_TRACE(logger(), "checkStructOfPrimitives: invalid parameter floatElement");
             return false;
         }
 
         if (structOfPrimitives.getInt8MinElement() != SCHAR_MIN) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter int8MinElement");
+            JOYNR_LOG_TRACE(logger(), "checkStructOfPrimitives: invalid parameter int8MinElement");
             return false;
         }
 
         if (structOfPrimitives.getInt8MaxElement() != SCHAR_MAX) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter int8MaxElement");
+            JOYNR_LOG_TRACE(logger(), "checkStructOfPrimitives: invalid parameter int8MaxElement");
             return false;
         }
 
         if (structOfPrimitives.getInt16MinElement() != SHRT_MIN) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter int16MinElement");
+            JOYNR_LOG_TRACE(logger(), "checkStructOfPrimitives: invalid parameter int16MinElement");
             return false;
         }
 
         if (structOfPrimitives.getInt16MaxElement() != SHRT_MAX) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter int16MaxElement");
+            JOYNR_LOG_TRACE(logger(), "checkStructOfPrimitives: invalid parameter int16MaxElement");
             return false;
         }
 
         if (structOfPrimitives.getInt32MinElement() != INT_MIN) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter int32MinElement");
+            JOYNR_LOG_TRACE(logger(), "checkStructOfPrimitives: invalid parameter int32MinElement");
             return false;
         }
 
         if (structOfPrimitives.getInt32MaxElement() != INT_MAX) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter int32MaxElement");
+            JOYNR_LOG_TRACE(logger(), "checkStructOfPrimitives: invalid parameter int32MaxElement");
             return false;
         }
 
@@ -783,37 +791,37 @@ public:
 
             if (structOfPrimitives.getInt64MinElement() != -9007199254740991L) {
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter int64MinElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter int64MinElement");
                 return false;
             }
 
             if (structOfPrimitives.getInt64MaxElement() != 9007199254740991L) {
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter int64MaxElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter int64MaxElement");
                 return false;
             }
         } else {
             // Java, C++
             if (structOfPrimitives.getInt64MinElement() != LLONG_MIN) {
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter int64MinElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter int64MinElement");
                 return false;
             }
 
             if (structOfPrimitives.getInt64MaxElement() != LLONG_MAX) {
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter int64MaxElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter int64MaxElement");
                 return false;
             }
         }
 
         if (structOfPrimitives.getConstString() != "Hiya") {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter constString");
+            JOYNR_LOG_TRACE(logger(), "checkStructOfPrimitives: invalid parameter constString");
             return false;
         }
 
         if (structOfPrimitives.getUInt8MinElement() != 0) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter uint8MinElement");
+            JOYNR_LOG_TRACE(logger(), "checkStructOfPrimitives: invalid parameter uint8MinElement");
             return false;
         }
 
@@ -821,20 +829,21 @@ public:
             // Java
             if (structOfPrimitives.getUInt8MaxElement() != CHAR_MAX) {
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter uint8MaxElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter uint8MaxElement");
                 return false;
             }
         } else {
             // C++, Javascript
             if (structOfPrimitives.getUInt8MaxElement() != UCHAR_MAX) {
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter uint8MaxElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter uint8MaxElement");
                 return false;
             }
         }
 
         if (structOfPrimitives.getUInt16MinElement() != 0) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter uint16MinElement");
+            JOYNR_LOG_TRACE(
+                    logger(), "checkStructOfPrimitives: invalid parameter uint16MinElement");
             return false;
         }
 
@@ -842,20 +851,21 @@ public:
             // Java
             if (structOfPrimitives.getUInt16MaxElement() != SHRT_MAX) {
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter uint16MaxElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter uint16MaxElement");
                 return false;
             }
         } else {
             // C++, Javascript
             if (structOfPrimitives.getUInt16MaxElement() != USHRT_MAX) {
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter uint16MaxElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter uint16MaxElement");
                 return false;
             }
         }
 
         if (structOfPrimitives.getUInt32MinElement() != 0) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter uint32MinElement");
+            JOYNR_LOG_TRACE(
+                    logger(), "checkStructOfPrimitives: invalid parameter uint32MinElement");
             return false;
         }
 
@@ -863,20 +873,21 @@ public:
             // Java
             if (structOfPrimitives.getUInt32MaxElement() != INT_MAX) {
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter uint32MaxElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter uint32MaxElement");
                 return false;
             }
         } else {
             // Javascript, C++
             if (structOfPrimitives.getUInt32MaxElement() != UINT_MAX) {
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter uint32MaxElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter uint32MaxElement");
                 return false;
             }
         }
 
         if (structOfPrimitives.getUInt64MinElement() != 0L) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: invalid parameter uint64MinElement");
+            JOYNR_LOG_TRACE(
+                    logger(), "checkStructOfPrimitives: invalid parameter uint64MinElement");
             return false;
         }
 
@@ -884,14 +895,14 @@ public:
             // Javascript and Java compatible
             if (structOfPrimitives.getUInt64MaxElement() != 9007199254740991ULL) {
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter uint64MaxElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter uint64MaxElement");
                 return false;
             }
         } else if (useRestrictedUnsignedRange) {
             // Java compatible
             if (structOfPrimitives.getUInt64MaxElement() != LLONG_MAX) {
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter uint64MaxElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter uint64MaxElement");
                 return false;
             }
         } else {
@@ -899,7 +910,7 @@ public:
             if (structOfPrimitives.getUInt64MaxElement() !=
                 ULLONG_MAX) { // should be 18446744073709551615
                 JOYNR_LOG_TRACE(
-                        logger, "checkStructOfPrimitives: invalid parameter uint64MaxElement");
+                        logger(), "checkStructOfPrimitives: invalid parameter uint64MaxElement");
                 return false;
             }
         }
@@ -907,7 +918,8 @@ public:
         if (structOfPrimitives.getBooleanArray().size() != 2 ||
             structOfPrimitives.getBooleanArray().at(0) != true ||
             structOfPrimitives.getBooleanArray().at(1) != false) {
-            JOYNR_LOG_TRACE(logger, "checkStructOfPrimitives: parameter x: invalid boolean array");
+            JOYNR_LOG_TRACE(
+                    logger(), "checkStructOfPrimitives: parameter x: invalid boolean array");
             return false;
         }
 
@@ -915,7 +927,7 @@ public:
             !cmpDouble(structOfPrimitives.getDoubleArray().at(0), 1.1) ||
             !cmpDouble(structOfPrimitives.getDoubleArray().at(1), 2.2)) {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructOfPrimitives: invalid parameter x: invalid double array");
+                    logger(), "checkStructOfPrimitives: invalid parameter x: invalid double array");
             return false;
         }
 
@@ -923,7 +935,7 @@ public:
             !cmpFloat(structOfPrimitives.getFloatArray().at(0), 1.1) ||
             !cmpFloat(structOfPrimitives.getFloatArray().at(1), 2.2)) {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructOfPrimitives: invalid parameter x: invalid float array");
+                    logger(), "checkStructOfPrimitives: invalid parameter x: invalid float array");
             return false;
         }
 
@@ -931,7 +943,7 @@ public:
             structOfPrimitives.getInt16Array().at(0) != 1 ||
             structOfPrimitives.getInt16Array().at(1) != 2) {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructOfPrimitives: invalid parameter x: invalid int16 array");
+                    logger(), "checkStructOfPrimitives: invalid parameter x: invalid int16 array");
             return false;
         }
 
@@ -939,7 +951,7 @@ public:
             structOfPrimitives.getInt32Array().at(0) != 1 ||
             structOfPrimitives.getInt32Array().at(1) != 2) {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructOfPrimitives: invalid parameter x: invalid int32 array");
+                    logger(), "checkStructOfPrimitives: invalid parameter x: invalid int32 array");
             return false;
         }
 
@@ -947,7 +959,7 @@ public:
             structOfPrimitives.getInt64Array().at(0) != 1L ||
             structOfPrimitives.getInt64Array().at(1) != 2L) {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructOfPrimitives: invalid parameter x: invalid int64 array");
+                    logger(), "checkStructOfPrimitives: invalid parameter x: invalid int64 array");
             return false;
         }
 
@@ -955,7 +967,7 @@ public:
             structOfPrimitives.getInt8Array().at(0) != 1 ||
             structOfPrimitives.getInt8Array().at(1) != 2) {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructOfPrimitives: invalid parameter x: invalid int8 array");
+                    logger(), "checkStructOfPrimitives: invalid parameter x: invalid int8 array");
             return false;
         }
 
@@ -963,7 +975,7 @@ public:
             structOfPrimitives.getStringArray().at(0) != "Hello" ||
             structOfPrimitives.getStringArray().at(1) != "World") {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructOfPrimitives: invalid parameter x: invalid string array");
+                    logger(), "checkStructOfPrimitives: invalid parameter x: invalid string array");
             return false;
         }
 
@@ -971,7 +983,7 @@ public:
             structOfPrimitives.getUInt8Array().at(0) != 1 ||
             structOfPrimitives.getUInt8Array().at(1) != 2) {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructOfPrimitives: invalid parameter x: invalid uint8 array");
+                    logger(), "checkStructOfPrimitives: invalid parameter x: invalid uint8 array");
             return false;
         }
 
@@ -979,7 +991,7 @@ public:
             structOfPrimitives.getUInt16Array().at(0) != 1 ||
             structOfPrimitives.getUInt16Array().at(1) != 2) {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructOfPrimitives: invalid parameter x: invalid uint16 array");
+                    logger(), "checkStructOfPrimitives: invalid parameter x: invalid uint16 array");
             return false;
         }
 
@@ -987,7 +999,7 @@ public:
             structOfPrimitives.getUInt32Array().at(0) != 1 ||
             structOfPrimitives.getUInt32Array().at(1) != 2) {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructOfPrimitives: invalid parameter x: invalid uint32 array");
+                    logger(), "checkStructOfPrimitives: invalid parameter x: invalid uint32 array");
             return false;
         }
 
@@ -995,7 +1007,7 @@ public:
             structOfPrimitives.getUInt64Array().at(0) != 1L ||
             structOfPrimitives.getUInt64Array().at(1) != 2L) {
             JOYNR_LOG_TRACE(
-                    logger, "checkStructOfPrimitives: invalid parameter x: invalid uint64 array");
+                    logger(), "checkStructOfPrimitives: invalid parameter x: invalid uint64 array");
             return false;
         }
 
@@ -1039,7 +1051,7 @@ public:
                     ExtendedTypeCollectionEnumerationInTypeCollection::
                             ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
             JOYNR_LOG_TRACE(
-                    logger,
+                    logger(),
                     "checkExtendedStructOfPrimitives: extendedEnumElement has invalid content");
             return false;
         }
@@ -1047,14 +1059,14 @@ public:
         // check inherited parts
         if (!checkExtendedBaseStruct(extendedStructOfPrimitives.getExtendedStructElement())) {
             JOYNR_LOG_TRACE(
-                    logger,
+                    logger(),
                     "checkExtendedStructOfPrimitives: extendedBaseStruct has invalid content");
             return false;
         }
 
         if (!checkStructOfPrimitives(extendedStructOfPrimitives)) {
             JOYNR_LOG_TRACE(
-                    logger,
+                    logger(),
                     "checkExtendedStructOfPrimitives: structOfPrimitives has invalid content");
             return false;
         }
@@ -1064,16 +1076,16 @@ public:
     // returns true, if values are nearly equal
     static bool cmpFloat(float a, float b)
     {
-        JOYNR_LOG_TRACE(logger, "cmpFloat: Comparing {} with {}", a, b);
-        JOYNR_LOG_TRACE(logger, "Result: {}", (bool)(fabsf(a - b) < 0.001));
+        JOYNR_LOG_TRACE(logger(), "cmpFloat: Comparing {} with {}", a, b);
+        JOYNR_LOG_TRACE(logger(), "Result: {}", (bool)(fabsf(a - b) < 0.001));
         return fabsf(a - b) < 0.001;
     }
 
     // returns true, if values are nearly equal
     static bool cmpDouble(double a, double b)
     {
-        JOYNR_LOG_TRACE(logger, "cmpDouble: Comparing {} with {}", a, b);
-        JOYNR_LOG_TRACE(logger, "Result: {}", (bool)(fabs(a - b) < 0.001));
+        JOYNR_LOG_TRACE(logger(), "cmpDouble: Comparing {} with {}", a, b);
+        JOYNR_LOG_TRACE(logger(), "Result: {}", (bool)(fabs(a - b) < 0.001));
         return fabs(a - b) < 0.001;
     }
 };

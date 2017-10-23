@@ -21,8 +21,6 @@
 namespace joynr
 {
 
-INIT_LOGGER(PeriodicSubscriptionQos);
-
 std::int64_t PeriodicSubscriptionQos::MIN_PERIOD_MS()
 {
     return 50;
@@ -82,7 +80,7 @@ PeriodicSubscriptionQos::PeriodicSubscriptionQos(const PeriodicSubscriptionQos& 
 void PeriodicSubscriptionQos::setPeriodMs(std::int64_t periodMs)
 {
     if (periodMs > MAX_PERIOD_MS()) {
-        JOYNR_LOG_WARN(logger,
+        JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid periodMs ({} ms), which is bigger than MAX_PERIOD_MS "
                        "({} ms). MAX_PERIOD_MS will be used instead.",
                        periodMs,
@@ -90,7 +88,7 @@ void PeriodicSubscriptionQos::setPeriodMs(std::int64_t periodMs)
         this->periodMs = MAX_PERIOD_MS();
         // note: don't return here as we need to check dependent values at the end of this method
     } else if (periodMs < MIN_PERIOD_MS()) {
-        JOYNR_LOG_WARN(logger,
+        JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid periodMs ({} ms), which is smaller than "
                        "MIN_PERIOD_MS ({} ms). MIN_PERIOD_MS will be used instead.",
                        periodMs,
@@ -103,7 +101,7 @@ void PeriodicSubscriptionQos::setPeriodMs(std::int64_t periodMs)
     }
     // check dependencies: alertAfterIntervalMs is not smaller than periodMs
     if (alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() && alertAfterIntervalMs < getPeriodMs()) {
-        JOYNR_LOG_WARN(logger,
+        JOYNR_LOG_WARN(logger(),
                        "alertAfterIntervalMs ({} ms) is smaller than periodMs ({} ms). Setting "
                        "alertAfterIntervalMs to periodMs.",
                        alertAfterIntervalMs,
@@ -120,7 +118,7 @@ std::int64_t PeriodicSubscriptionQos::getPeriodMs() const
 void PeriodicSubscriptionQos::setAlertAfterIntervalMs(std::int64_t alertAfterIntervalMs)
 {
     if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS()) {
-        JOYNR_LOG_WARN(logger,
+        JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid alertAfterIntervalMs ({} ms), which is bigger than "
                        "MAX_ALERT_AFTER_INTERVAL_MS ({} ms). MAX_ALERT_AFTER_INTERVAL_MS will be "
                        "used instead.",
@@ -130,7 +128,7 @@ void PeriodicSubscriptionQos::setAlertAfterIntervalMs(std::int64_t alertAfterInt
         return;
     }
     if (alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() && alertAfterIntervalMs < getPeriodMs()) {
-        JOYNR_LOG_WARN(logger,
+        JOYNR_LOG_WARN(logger(),
                        "alertAfterIntervalMs ({} ms) is smaller than periodMs ({} ms). Setting "
                        "alertAfterIntervalMs to periodMs.",
                        alertAfterIntervalMs,

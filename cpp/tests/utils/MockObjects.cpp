@@ -21,8 +21,6 @@
 
 using namespace joynr;
 
-INIT_LOGGER(MockGpsProvider);
-
 const std::uint32_t MockProvider::MAJOR_VERSION = 1337;
 const std::uint32_t MockProvider::MINOR_VERSION = 42;
 
@@ -36,8 +34,6 @@ const std::string& MockProvider::getInterfaceName() const
 {
     return INTERFACE_NAME();
 }
-
-INIT_LOGGER(MockRunnableWithAccuracy);
 
 MockRunnableWithAccuracy::MockRunnableWithAccuracy(
     const std::uint64_t delay)
@@ -58,10 +54,10 @@ void MockRunnableWithAccuracy::run()
     const std::uint64_t now_ms = TimeUtils::getCurrentMillisSinceEpoch();
 
     const std::uint64_t diff = (now_ms > est_ms) ? now_ms - est_ms : est_ms - now_ms;
-    JOYNR_LOG_TRACE(logger, "Runnable run() is called");
-    JOYNR_LOG_TRACE(logger, " ETA        : {}",est_ms);
-    JOYNR_LOG_TRACE(logger, " current    : {}",now_ms);
-    JOYNR_LOG_TRACE(logger, " difference : {}",diff);
+    JOYNR_LOG_TRACE(logger(), "Runnable run() is called");
+    JOYNR_LOG_TRACE(logger(), " ETA        : {}",est_ms);
+    JOYNR_LOG_TRACE(logger(), " current    : {}",now_ms);
+    JOYNR_LOG_TRACE(logger(), " difference : {}",diff);
 
     if (diff <= timerAccuracyTolerance_ms)
     {

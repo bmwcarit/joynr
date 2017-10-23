@@ -281,18 +281,26 @@ var JSONSerializer = require('../../util/JSONSerializer');
                     };
 
                 /*
-                 * this method is called when no address can be found in the local routing table 
+                 * This method is called when no address can be found in the local routing table.
+                 *
+                 * It tries to resolve the next hop from the persistency and parent router.
                  */
                 function resolveNextHopInternal(participantId) {
                     var address, addressString;
 
-                    addressString = persistency.getItem(that.getStorageKey(participantId));
-                    if (addressString === undefined
-                        || addressString === null || addressString === "{}") {
-                        persistency.removeItem(that.getStorageKey(participantId));
-                    } else {
-                        address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
-                        routingTable[participantId] = address;
+                    try {
+                        addressString = persistency.getItem(that.getStorageKey(participantId));
+                        if (addressString === undefined
+                            || addressString === null || addressString === "{}") {
+                            persistency.removeItem(that.getStorageKey(participantId));
+                        } else {
+                            address = Typing.augmentTypes(JSON.parse(addressString), typeRegistry);
+                            routingTable[participantId] = address;
+                        }
+                    } catch (error) {
+                        log.error("Failed to get address from persisted routing entries for participant "
+                                + participantId);
+                        return Promise.reject(error);
                     }
 
                     function resolveNextHopOnSuccess(opArgs) {
@@ -402,11 +410,13 @@ var JSONSerializer = require('../../util/JSONSerializer');
                         errorMsg =
                                 "No message receiver found for participantId: "
                                     + joynrMessage.to
-                                    + ". Queuing request message.";
-                        log.info(errorMsg, DiagnosticTags
+                                    + ". Queuing message.";
+                        log.warn(errorMsg, DiagnosticTags
                                 .forJoynrMessage(joynrMessage));
+                        // message is queued until the participant is registered
+                        // TODO remove expired messages from queue
                         settings.messageQueue.putMessage(joynrMessage);
-                        throw new Error(errorMsg);
+                        return Promise.resolve();
                     }
 
                     if (!joynrMessage.isLocalMessage) {
@@ -419,19 +429,15 @@ var JSONSerializer = require('../../util/JSONSerializer');
                                 + ". Queuing message.";
                             log.warn(errorMsg, JSON.stringify(DiagnosticTags
                                     .forJoynrMessage(joynrMessage)));
-                            throw new Error(errorMsg);
+                            return Promise.resolve();
                         }
-                    }
-
-                    function transmitOnSuccess() {
-                        //succeeded, do nothing
-                        return null;
                     }
 
                     function transmitOnError(error) {
 
                         //error while transmitting message
-                        log.debug("Error while transmitting message: " + error);
+                        log.debug("Error while transmitting message: " + error
+                                + (error instanceof JoynrException ? " " + error.detailMessage : ""));
                         //TODO queue message and retry later
                         return null;
                     }
@@ -444,10 +450,10 @@ var JSONSerializer = require('../../util/JSONSerializer');
                                     + " queuing message.";
                         log.info(errorMsg, DiagnosticTags
                                 .forJoynrMessage(joynrMessage));
-                        throw new Error(errorMsg);
-                    } else {
-                        return messagingStub.transmit(joynrMessage).then(transmitOnSuccess).catch(transmitOnError);
+                        // TODO queue message and retry later
+                        return Promise.resolve();
                     }
+                    return messagingStub.transmit(joynrMessage).catch(transmitOnError);
                 }
 
                 function registerGlobalRoutingEntryIfRequired(joynrMessage) {
@@ -488,7 +494,7 @@ var JSONSerializer = require('../../util/JSONSerializer');
                     if (now > joynrMessage.expiryDate) {
                         var errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
                         log.warn(errorMsg);
-                        throw new JoynrRuntimeException({ detailMessage: errorMsg });
+                        return Promise.reject(new JoynrRuntimeException({ detailMessage: errorMsg }));
                     }
 
                     registerGlobalRoutingEntryIfRequired(joynrMessage);
@@ -691,14 +697,19 @@ var JSONSerializer = require('../../util/JSONSerializer');
                         var i, msgContainer, messageQueue =
                                 settings.messageQueue.getAndRemoveMessages(participantId);
 
+                        function handleError(error) {
+                            log.error("queued message could not be sent to " + participantId + ", error: " + error
+                                    + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                        }
+
                         if (messageQueue !== undefined) {
                             i = messageQueue.length;
                             while (i--) {
                                 try {
-                                    that.route(messageQueue[i]);
+                                    that.route(messageQueue[i])
+                                    .catch (handleError);
                                 } catch (error) {
-                                    log.error("queued message could not be sent to " + participantId + ", error: " + error
-                                            + (error instanceof JoynrException ? " " + error.detailMessage : ""));
+                                    handleError(error);
                                 }
                             }
                         }

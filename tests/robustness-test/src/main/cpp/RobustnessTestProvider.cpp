@@ -26,8 +26,6 @@ namespace joynr
 using joynr::JoynrTimePoint;
 using joynr::DispatcherUtils;
 
-INIT_LOGGER(RobustnessTestProvider);
-
 RobustnessTestProvider::RobustnessTestProvider()
         : joynr::tests::robustness::DefaultTestInterfaceProvider()
 {
@@ -40,9 +38,9 @@ void RobustnessTestProvider::methodWithStringParameters(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    JOYNR_LOG_INFO(logger, "***********************");
-    JOYNR_LOG_INFO(logger, "* methodWithStringParameters called. stringArg: {}", stringArg);
-    JOYNR_LOG_INFO(logger, "***********************");
+    JOYNR_LOG_INFO(logger(), "***********************");
+    JOYNR_LOG_INFO(logger(), "* methodWithStringParameters called. stringArg: {}", stringArg);
+    JOYNR_LOG_INFO(logger(), "***********************");
     std::string stringOut = "received stringArg: " + stringArg;
     onSuccess(stringOut);
 }
@@ -52,11 +50,11 @@ void RobustnessTestProvider::methodWithDelayedResponse(
         std::function<void(const std::string& stringOut)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
 {
-    JOYNR_LOG_WARN(logger, "methodWithDelayedResponse - START");
+    JOYNR_LOG_WARN(logger(), "methodWithDelayedResponse - START");
 
     std::this_thread::sleep_for(std::chrono::milliseconds(delayArg));
 
-    JOYNR_LOG_WARN(logger, "methodWithDelayedResponse - OK");
+    JOYNR_LOG_WARN(logger(), "methodWithDelayedResponse - OK");
     onSuccess("done");
 }
 
@@ -66,11 +64,11 @@ void RobustnessTestProvider::methodToFireBroadcastWithSingleStringParameter(
 {
     std::ignore = onError;
     JOYNR_LOG_WARN(
-            logger, "**********************************************************************");
+            logger(), "**********************************************************************");
+    JOYNR_LOG_WARN(logger(),
+                   "* RobustnessProvider::methodToFireBroadcastWithSingleStringParameter called");
     JOYNR_LOG_WARN(
-            logger, "* RobustnessProvider::methodToFireBroadcastWithSingleStringParameter called");
-    JOYNR_LOG_WARN(
-            logger, "**********************************************************************");
+            logger(), "**********************************************************************");
     std::string stringOut = "boom";
     fireBroadcastWithSingleStringParameter(stringOut);
     onSuccess();
@@ -82,11 +80,11 @@ void RobustnessTestProvider::startFireBroadcastWithSingleStringParameter(
 {
     std::ignore = onError;
     auto stringOut = std::make_shared<std::string>("BroadcastWithSingleStringParameter_stringOut");
-    JOYNR_LOG_INFO(logger, "***********************");
-    JOYNR_LOG_INFO(logger,
+    JOYNR_LOG_INFO(logger(), "***********************");
+    JOYNR_LOG_INFO(logger(),
                    "* startFireBroadcastWithSingleStringParameter called. stringOut: {}",
                    *stringOut);
-    JOYNR_LOG_INFO(logger, "***********************");
+    JOYNR_LOG_INFO(logger(), "***********************");
 
     stopBroadcastWithSingleStringParameter = false;
     std::int64_t period_ms = 250;
@@ -106,9 +104,9 @@ void RobustnessTestProvider::stopFireBroadcastWithSingleStringParameter(
 {
     std::ignore = onError;
     std::string stringOut = "BroadcastWithSingleStringParameter_stringOut";
-    JOYNR_LOG_INFO(logger, "***********************");
-    JOYNR_LOG_INFO(logger, "* stopFireBroadcastWithSingleStringParameter called.");
-    JOYNR_LOG_INFO(logger, "***********************");
+    JOYNR_LOG_INFO(logger(), "***********************");
+    JOYNR_LOG_INFO(logger(), "* stopFireBroadcastWithSingleStringParameter called.");
+    JOYNR_LOG_INFO(logger(), "***********************");
 
     stopBroadcastWithSingleStringParameter = true;
     onSuccess();

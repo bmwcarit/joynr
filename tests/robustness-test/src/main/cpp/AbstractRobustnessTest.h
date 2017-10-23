@@ -57,7 +57,7 @@ protected:
     static void SetUpTestCase()
     {
         // Get the provider domain
-        JOYNR_LOG_INFO(logger, "Creating proxy for provider on domain {}", providerDomain);
+        JOYNR_LOG_INFO(logger(), "Creating proxy for provider on domain {}", providerDomain);
 
         // Initialise the JOYn runtime
         std::string pathToMessagingSettings("resources/robustness-test-consumer.settings");
@@ -81,9 +81,9 @@ protected:
                         ->setDiscoveryQos(discoveryQos)
                         ->build();
 
-        JOYNR_LOG_INFO(logger, "***********************");
-        JOYNR_LOG_INFO(logger, "Proxy built.");
-        JOYNR_LOG_INFO(logger, "***********************");
+        JOYNR_LOG_INFO(logger(), "***********************");
+        JOYNR_LOG_INFO(logger(), "Proxy built.");
+        JOYNR_LOG_INFO(logger(), "***********************");
     }
 
     static void TearDownTestCase()
@@ -189,7 +189,7 @@ protected:
     static std::string providerDomain;
 
 private:
-    ADD_LOGGER(AbstractRobustnessTest);
+    ADD_LOGGER(AbstractRobustnessTest)
 };
 
 ACTION_P(ReleaseSemaphore, semaphore)

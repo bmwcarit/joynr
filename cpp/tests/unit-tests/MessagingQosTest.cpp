@@ -35,11 +35,9 @@ public:
     }
 
 protected:
-    ADD_LOGGER(MessagingQosTest);
+    ADD_LOGGER(MessagingQosTest)
     MessagingQos qos;
 };
-
-INIT_LOGGER(MessagingQosTest);
 
 TEST_F(MessagingQosTest, addCustomHeader_validData)
 {
