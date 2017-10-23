@@ -27,6 +27,7 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
+#include "joynr/DiscoveryQos.h"
 
 #include "tests/mock/MockProxyBuilder.h"
 

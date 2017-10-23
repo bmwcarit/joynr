@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-#include "joynr/ProxyBuilder.h"
+#include "joynr/IProxyBuilder.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/DiscoveryQos.h"
