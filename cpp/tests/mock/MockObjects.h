@@ -144,13 +144,6 @@ public:
     MOCK_METHOD0(getMessageRouter, std::shared_ptr<joynr::IMessageRouter>());
 };
 
-class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
-{
-public:
-    MockInProcessMessagingSkeleton(std::weak_ptr<joynr::IDispatcher> dispatcher) : InProcessMessagingSkeleton(dispatcher){}
-    MOCK_METHOD2(transmit, void(std::shared_ptr<joynr::ImmutableMessage> message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
-};
-
 class MockDelayedScheduler : public joynr::DelayedScheduler
 {
 public:

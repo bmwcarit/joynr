@@ -32,6 +32,7 @@
 
 #include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockTestRequestCaller.h"
+#include "tests/mock/MockInProcessMessagingSkeleton.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;

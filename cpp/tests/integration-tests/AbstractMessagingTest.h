@@ -39,6 +39,7 @@
 #include "joynr/IPlatformSecurityManager.h"
 
 #include "tests/mock/MockMessageSender.h"
+#include "tests/mock/MockInProcessMessagingSkeleton.h"
 
 using namespace ::testing;
 using namespace joynr;

@@ -42,6 +42,8 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/IPlatformSecurityManager.h"
 
+#include "tests/mock/MockInProcessMessagingSkeleton.h"
+
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::WhenDynamicCastTo;
