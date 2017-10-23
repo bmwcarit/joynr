@@ -735,12 +735,6 @@ public:
             ));
 };
 
-class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback
-{
-public:
-    MOCK_METHOD1(hasConsumerPermission, void(bool hasPermission));
-};
-
 #ifdef _MSC_VER
     #pragma warning( push )
 #endif

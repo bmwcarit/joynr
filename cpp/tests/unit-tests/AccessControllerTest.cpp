@@ -46,6 +46,11 @@ using namespace joynr::types;
 using namespace joynr::infrastructure;
 using namespace joynr::infrastructure::DacTypes;
 
+class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback
+{
+public:
+    MOCK_METHOD1(hasConsumerPermission, void(bool hasPermission));
+};
 
 template <typename... Ts>
 joynr::Request initOutgoingRequest(std::string methodName, std::vector<std::string> paramDataTypes, Ts... paramValues)
