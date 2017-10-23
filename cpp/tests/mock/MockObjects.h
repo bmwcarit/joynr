@@ -188,11 +188,6 @@ public:
     MOCK_METHOD1(init,void(const joynr::MessagingSettings& settings));
 };
 
-class GlobalCapabilitiesMock {
-public:
-    MOCK_METHOD1(capabilitiesReceived, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& results));
-};
-
 #ifdef _MSC_VER
     #pragma warning( push )
 #endif

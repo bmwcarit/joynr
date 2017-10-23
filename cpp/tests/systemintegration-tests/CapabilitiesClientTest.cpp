@@ -40,6 +40,12 @@ using namespace joynr;
 static const std::string messagingPropertiesPersistenceFileName("CapabilitiesClientTest-joynr.settings");
 static const std::string libJoynrSettingsFilename("test-resources/libjoynrSystemIntegration1.settings");
 
+class GlobalCapabilitiesMock {
+public:
+    MOCK_METHOD1(capabilitiesReceived, void(const std::vector<joynr::types::GlobalDiscoveryEntry>& results));
+};
+
+
 class CapabilitiesClientTest : public TestWithParam< std::string > {
 public:
     ADD_LOGGER(CapabilitiesClientTest)
