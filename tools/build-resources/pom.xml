@@ -60,7 +60,6 @@
 						<root>.</root>
 					</roots>
 					<excludes>
-						<exclude>src/main/resources/js-test-driver/phantomjs-jstd.js</exclude>
 						<exclude>src/main/resources/almond/almond-0.2.5.js</exclude>
 					</excludes>
 				</configuration>
