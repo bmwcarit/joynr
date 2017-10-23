@@ -49,6 +49,7 @@
 #include "tests/mock/MockCallback.h"
 #include "tests/mock/MockMessageRouter.h"
 #include "tests/mock/MockSubscriptionManager.h"
+#include "tests/mock/MockSubscriptionCallback.h"
 
 using namespace ::testing;
 using namespace joynr;

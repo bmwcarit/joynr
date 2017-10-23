@@ -720,17 +720,6 @@ public:
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, std::shared_ptr<joynr::SubscriptionAttributeListener> attributeListener));
 };
 
-class MockSubscriptionCallback : public joynr::ISubscriptionCallback {
-public:
-    MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
-    MOCK_METHOD1(executePublication, void(joynr::BasePublication& publication));
-    MOCK_METHOD1(execute, void(const joynr::SubscriptionReply& subscriptionReply));
-
-    void execute(joynr::BasePublication&& subscriptionPublication) override {
-        executePublication(subscriptionPublication);
-    }
-};
-
 class MockParticipantIdStorage : public joynr::ParticipantIdStorage {
 public:
     MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock filename")) {
