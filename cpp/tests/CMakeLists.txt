@@ -252,6 +252,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockCapabilitiesClient.h
         mock/MockSubscriptionManager.h
         mock/MockSubscriptionCallback.h
+        mock/MockParticipantIdStorage.h
     )
 
     add_library(

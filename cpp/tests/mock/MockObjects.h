@@ -720,15 +720,6 @@ public:
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, std::shared_ptr<joynr::SubscriptionAttributeListener> attributeListener));
 };
 
-class MockParticipantIdStorage : public joynr::ParticipantIdStorage {
-public:
-    MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock filename")) {
-
-    }
-    MOCK_METHOD2(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName));
-    MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, const std::string& defaultValue));
-};
-
 class MockLocationUpdatedSelectiveFilter : public joynr::tests::TestLocationUpdateSelectiveBroadcastFilter {
 public:
     MOCK_METHOD2(filter,

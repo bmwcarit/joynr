@@ -34,6 +34,7 @@
 #include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockProvider.h"
 #include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/MockParticipantIdStorage.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;
