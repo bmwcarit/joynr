@@ -834,11 +834,11 @@ void MessagingSettings::printSettings() const
                     "SETTING: {}  = {})",
                     SETTING_MQTT_RECONNECT_MAX_DELAY(),
                     settings.get<std::string>(SETTING_MQTT_RECONNECT_MAX_DELAY()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED(),
                     settings.get<std::string>(SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED()));
-    JOYNR_LOG_DEBUG(logger,
+    JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_INDEX(),
                     settings.get<std::string>(SETTING_INDEX()));
