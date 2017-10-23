@@ -246,6 +246,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockDispatcher.h
         mock/MockMessagingStub.h
         mock/MockMessagingStubFactory.h
+        mock/MockMessageRouter.h
     )
 
     add_library(

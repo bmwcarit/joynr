@@ -42,8 +42,9 @@
 #include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
 
-#include "tests/mock/MockObjects.h"
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockObjects.h"
+#include "tests/mock/MockMessageRouter.h"
 
 using ::testing::A;
 using ::testing::_;

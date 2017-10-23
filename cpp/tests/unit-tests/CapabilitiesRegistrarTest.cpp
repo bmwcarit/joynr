@@ -33,6 +33,7 @@
 #include "tests/mock/MockDiscovery.h"
 #include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockProvider.h"
+#include "tests/mock/MockMessageRouter.h"
 
 using ::testing::DoAll;
 using ::testing::InvokeArgument;

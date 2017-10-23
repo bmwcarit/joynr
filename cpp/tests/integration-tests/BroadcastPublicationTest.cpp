@@ -30,6 +30,7 @@
 #include "joynr/UnicastBroadcastListener.h"
 
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockMessageRouter.h"
 
 using namespace ::testing;
 using ::testing::InSequence;

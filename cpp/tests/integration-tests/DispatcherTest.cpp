@@ -47,6 +47,7 @@
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockObjects.h"
 #include "tests/mock/MockCallback.h"
+#include "tests/mock/MockMessageRouter.h"
 
 using namespace ::testing;
 using namespace joynr;

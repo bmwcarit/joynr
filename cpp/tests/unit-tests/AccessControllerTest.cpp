@@ -37,6 +37,8 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
 
+#include "tests/mock/MockMessageRouter.h"
+
 using namespace ::testing;
 using namespace joynr;
 using namespace joynr::types;
