@@ -32,7 +32,7 @@
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockMessageRouter.h"
 #include "tests/mock/MockPublicationSender.h"
-
+#include "tests/mock/MockLocationUpdatedSelectiveFilter.h"
 using namespace ::testing;
 using ::testing::InSequence;
 

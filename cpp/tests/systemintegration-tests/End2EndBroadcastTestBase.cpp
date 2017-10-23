@@ -38,6 +38,7 @@
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockObjects.h"
+#include "tests/mock/MockLocationUpdatedSelectiveFilter.h"
 
 using namespace ::testing;
 using namespace joynr;

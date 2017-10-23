@@ -720,14 +720,6 @@ public:
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, std::shared_ptr<joynr::SubscriptionAttributeListener> attributeListener));
 };
 
-class MockLocationUpdatedSelectiveFilter : public joynr::tests::TestLocationUpdateSelectiveBroadcastFilter {
-public:
-    MOCK_METHOD2(filter,
-                 bool(
-                     const joynr::types::Localisation::GpsLocation &location,
-                     const joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters &filterParameters));
-};
-
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
     MockLocalCapabilitiesDirectory(joynr::ClusterControllerSettings& ccSettings, std::shared_ptr<joynr::IMessageRouter> mockMessageRouter, boost::asio::io_service& ioService):

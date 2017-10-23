@@ -256,6 +256,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockGlobalDomainAccessControllerProxy.h
         mock/MockGlobalDomainRoleControllerProxy.h
         mock/MockLocalDomainAccessController.h
+        mock/MockLocationUpdatedSelectiveFilter.h
     )
 
     add_library(
