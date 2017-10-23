@@ -279,6 +279,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockMessagingMulticastSubscriber.h
         mock/MockRoutingProxy.h
         mock/MockTransportMessageSender.h
+        mock/MockTransportMessageReceiver.h
     )
 
     add_library(

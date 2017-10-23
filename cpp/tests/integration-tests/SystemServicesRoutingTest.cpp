@@ -32,6 +32,7 @@
 #include "tests/mock/MockObjects.h"
 #include "tests/utils/PtrUtils.h"
 #include "tests/mock/MockTransportMessageSender.h"
+#include "tests/mock/MockTransportMessageReceiver.h"
 
 using namespace joynr;
 using ::testing::Mock;

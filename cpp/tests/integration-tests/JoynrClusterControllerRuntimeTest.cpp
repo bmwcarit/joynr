@@ -42,6 +42,7 @@
 #include "tests/mock/MockObjects.h"
 #include "tests/mock/MockMqttMessagingSkeleton.h"
 #include "tests/mock/MockTransportMessageSender.h"
+#include "tests/mock/MockTransportMessageReceiver.h"
 
 using namespace ::testing;
 using namespace joynr;
