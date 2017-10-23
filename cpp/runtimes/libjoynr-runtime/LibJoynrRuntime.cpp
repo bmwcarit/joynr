@@ -194,6 +194,8 @@ void LibJoynrRuntime::init(
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
 
+    libJoynrMessageRouter->setParentRouter(routingProxy);
+
     auto globalAddressFuture = routingProxy->getGlobalAddressAsync();
     auto onSuccessWrapper = [
         this,
@@ -233,8 +235,6 @@ void LibJoynrRuntime::init(
     };
 
     routingProxy->getReplyToAddressAsync(onSuccessWrapper, onError);
-
-    libJoynrMessageRouter->setParentRouter(std::move(routingProxy));
 
     // setup discovery
     std::string discoveryProviderParticipantId =
