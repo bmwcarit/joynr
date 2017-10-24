@@ -1,7 +1,9 @@
 # joynr 0.31.0
 
 ## API relevant changes
-None.
+* **[JS]** Joynr now uses node native Promise if available, otherwise it falls
+  back to bluebird as before. Please make sure to use only Promise APIs available
+  in the node standard.
 
 ## Configuration property changes
 * **[C++]** allow to load multiple ACL/RCL Json files for the cluster-controller.
