@@ -206,3 +206,33 @@ cd target/test-classes
 chmod u+x node_run_unit_tests.sh
 ./node_run_unit_tests.sh
 ```
+
+## Speed up JavaScript build for manual test execution
+
+### Skip automatic test execution during build with tests enabled
+If tests are enabled ("-DskipTests=false"), automatic test execution during the maven build can be
+skipped while still preparing the tests for later execution.
+This allows to run only the required tests or run them manually later without having to run the
+whole maven build.
+
+Node based test execution can be skipped by deactivation of the profile "run-node-tests":
+`-P \!run-node-tests` or `-P -run-node-tests`.
+
+Karma test execution can be skipped by deactivation of the profile "run-karma-tests":
+`-P \!run-karma-tests` or `-P -run-karma-tests`.
+
+In order to build the tests without executing them automatically, run:
+```
+cd <JOYNR_REPO>
+cd javascript/libjoynr-js
+mvn clean install -DskipTests=false -P \!run-node-tests -P \!run-karma-tests
+```
+
+### Skip npm install in consecutive maven build
+If `mvn clean install -DskipTests=false` has already been run, npm install can also be skipped in
+later maven builds to speed up the build process with `-P \!npm-install-with-enabled-tests`
+or `-P -npm-install-with-enabled-tests`. The maven goal "clean" has to be skipped in this case:
+```
+mvn install -DskipTests=false -P \!run-node-tests -P \!run-karma-tests -P \!npm-install-with-enabled-tests
+```
+

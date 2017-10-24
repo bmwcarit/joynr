@@ -839,7 +839,7 @@
 
 	<profiles>
 		<profile>
-			<id>build-with-skippped-tests</id>
+			<id>npm-install-with-skippped-tests</id>
 			<activation>
 				<property>
 					<!-- Tests are disabled by default
@@ -896,8 +896,43 @@
 		</profile>
 
 		<profile>
-			<id>build-with-tests</id>
+			<id>npm-install-with-enabled-tests</id>
+			<activation>
+				<property>
+					<name>skipTests</name>
+					<value>false</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<!-- configuration options documentation:
+							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
+						<executions>
+							<execution>
+								<id>npm-install</id>
+								<phase>generate-resources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+										<argument>--prefix=${project.build.directory}/node-classes</argument>
+									</arguments>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 
+		<profile>
+			<id>prepare-tests</id>
 			<activation>
 				<property>
 					<name>skipTests</name>
@@ -978,30 +1013,12 @@
 					</plugin>
 					-->
 
-					<!-- run the tests -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
 						<!-- configuration options documentation:
 							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
 						<executions>
-							<execution>
-								<id>npm-install</id>
-								<phase>generate-resources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>install</argument>
-										<argument>--prefix=${project.build.directory}/node-classes</argument>
-									</arguments>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-
-							<!-- run nodejs based unit tests -->
-
 							<!-- maven doesn't keep the execution permission of
 								${project.build.testOutputDirectory}/node_run_unit_tests.sh.
 								So we fix it here -->
@@ -1016,6 +1033,48 @@
 									<goal>exec</goal>
 								</goals>
 							</execution>
+							<!-- maven doesn't keep the execution permission of
+								${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh.
+								So we fix it here -->
+							<execution>
+								<configuration>
+									<executable>chmod</executable>
+									<commandlineArgs>+x ${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh</commandlineArgs>
+								</configuration>
+								<id>process-integration-tests-nodejs</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- To speed up development with "-DskipTests=false", node based test execution during
+			     the maven build can be skipped while still being prepared for execution with maven
+			     option "-P \!run-node-tests" or "-P -run-node-tests"
+			     This allows to run only the required tests manually after the sped up maven build.
+			 -->
+			<id>run-node-tests</id>
+			<activation>
+				<property>
+					<name>skipTests</name>
+					<value>false</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<!-- run the tests -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<!-- configuration options documentation:
+							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
+						<executions>
+							<!-- run nodejs based unit tests -->
 							<execution>
 								<configuration>
 									<executable>${project.build.testOutputDirectory}/node_run_unit_tests.sh</executable>
@@ -1034,21 +1093,6 @@
 							</execution>
 
 							<!-- run nodejs based integration tests -->
-
-							<!-- maven doesn't keep the execution permission of
-								${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh.
-								So we fix it here -->
-							<execution>
-								<configuration>
-									<executable>chmod</executable>
-									<commandlineArgs>+x ${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh</commandlineArgs>
-								</configuration>
-								<id>process-integration-tests-nodejs</id>
-								<phase>process-test-classes</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
 							<execution>
 								<configuration>
 									<executable>${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh</executable>
@@ -1062,7 +1106,24 @@
 							</execution>
 						</executions>
 					</plugin>
-
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- To speed up development with "-DskipTests=false", automatic karma test execution
+			     during the maven build can be skipped while still being prepared for execution with
+			     maven option: "-P \!run-karma-tests" or "-P -run-karma-tests".
+			     This allows to run only the required tests manually after the sped up maven build.
+			 -->
+			<id>run-karma-tests</id>
+			<activation>
+				<property>
+					<name>skipTests</name>
+					<value>false</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
 					<!-- run karma -->
 					<plugin>
 						<groupId>com.kelveden</groupId>
