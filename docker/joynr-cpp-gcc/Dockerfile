@@ -69,7 +69,7 @@ RUN cd /opt \
     && git checkout ddb8012e \
     && mkdir build \
     && cd build \
-    && cmake .. \
+    && cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. \
     && make install -j"$(nproc)" \
     && cd /opt/ \
     && rm -rf googletest

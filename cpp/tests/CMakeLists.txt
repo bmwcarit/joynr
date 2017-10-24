@@ -286,7 +286,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
 
     add_library(
         JoynrMocks
-        SHARED
+        STATIC
         ${MOCK_SOURCES}
     )
 
