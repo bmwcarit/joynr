@@ -138,6 +138,11 @@ public:
         return container.end();
     }
 
+    auto size() const
+    {
+        return container.size();
+    }
+
     /**
      * @brief removes expired entries based on expiryDate
      * @return number of removed elements
