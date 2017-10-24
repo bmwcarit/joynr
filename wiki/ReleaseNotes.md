@@ -1,3 +1,17 @@
+# joynr 0.31.0
+
+## API relevant changes
+None.
+
+## Configuration property changes
+* **[C++]** make the delay of the attempt to reconnect in mosquitto loop exponential until the connection succeeds.
+     By default this property is not enabled mqtt-exponential-backoff-enabled = false.
+  * `messaging/mqtt-reconnect-max-delay`
+  * `messaging/mqtt-exponential-backoff-enabled`
+
+## Other changes
+None.
+
 # joynr 0.30.1
 
 ## API relevant changes

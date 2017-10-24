@@ -232,7 +232,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }
 
         provider = new TestProvider();
-        ProviderQos testProviderQos = new ProviderQos();
         testProviderQos.setPriority(System.currentTimeMillis());
 
         providerAsync = new TestAsyncProviderImpl();
@@ -262,9 +261,14 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             Thread.sleep(1000);
             providerRuntime.shutdown(true);
         }
+
         if (consumerRuntime != null) {
             consumerRuntime.shutdown(true);
         }
+
+        //do not shutdown runtimes twice
+        createdRuntimes.remove(providerRuntime);
+        createdRuntimes.remove(consumerRuntime);
 
         for (JoynrRuntime createdRuntime : createdRuntimes) {
             createdRuntime.shutdown(true);
