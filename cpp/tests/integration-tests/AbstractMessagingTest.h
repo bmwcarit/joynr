@@ -34,9 +34,14 @@
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/IPlatformSecurityManager.h"
+
+#include "tests/mock/MockMessageSender.h"
+#include "tests/mock/MockInProcessMessagingSkeleton.h"
+#include "tests/mock/MockTransportMessageSender.h"
+#include "tests/mock/MockTransportMessageReceiver.h"
+#include "tests/mock/MockDispatcher.h"
 
 using namespace ::testing;
 using namespace joynr;

@@ -32,7 +32,9 @@
 #include "joynr/SubscriptionManager.h"
 #include "joynr/MulticastSubscriptionCallback.h"
 #include "joynr/Util.h"
-#include "tests/utils/MockObjects.h"
+
+#include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/MockSubscriptionListener.h"
 
 using ::testing::_;
 

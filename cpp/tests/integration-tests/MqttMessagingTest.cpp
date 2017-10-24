@@ -18,6 +18,7 @@
  */
 #include "AbstractMessagingTest.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/BrokerUrl.h"
 #include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
 
 using namespace ::testing;

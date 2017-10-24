@@ -29,10 +29,11 @@
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
 #include "joynr/Semaphore.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
-#include "tests/utils/MockObjects.h"
+
+#include "tests/mock/MockLocalDomainAccessController.h"
 
 using namespace joynr;
-
+using ::testing::Return;
 
 class MockLocalDomainAccessStore : public LocalDomainAccessStore {
 public:

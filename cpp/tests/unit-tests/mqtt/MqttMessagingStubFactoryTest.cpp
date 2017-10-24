@@ -28,7 +28,7 @@
 #include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
 #include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStub.h"
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockTransportMessageSender.h"
 
 using namespace ::testing;
 

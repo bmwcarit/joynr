@@ -25,6 +25,9 @@
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "AbstractSyncAsyncTest.cpp"
 
+#include "tests/mock/MockInProcessConnectorFactory.h"
+#include "tests/mock/MockJoynrRuntime.h"
+
 using ::testing::A;
 using ::testing::_;
 using ::testing::Return;

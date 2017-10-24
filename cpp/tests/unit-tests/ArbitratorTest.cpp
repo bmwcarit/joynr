@@ -34,12 +34,16 @@
 #include "joynr/KeywordArbitrationStrategyFunction.h"
 #include "joynr/Semaphore.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/Future.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockDiscovery.h"
 
 using ::testing::AtLeast;
 using ::testing::Throw;
+using ::testing::Return;
+using ::testing::_;
+using ::testing::A;
 
 using namespace joynr;
 

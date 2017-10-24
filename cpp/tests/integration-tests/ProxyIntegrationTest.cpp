@@ -28,9 +28,11 @@
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/vehicle/GpsProxy.h"
-
-#include "tests/utils/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
+
+#include "tests/mock/MockInProcessConnectorFactory.h"
+#include "tests/mock/MockJoynrRuntime.h"
+#include "tests/mock/MockMessageSender.h"
 
 using ::testing::Return;
 

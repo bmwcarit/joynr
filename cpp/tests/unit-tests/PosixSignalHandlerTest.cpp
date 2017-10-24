@@ -25,7 +25,7 @@
 #include <gmock/gmock.h>
 
 #include "runtimes/cluster-controller-runtime/signal-handler/PosixSignalHandler.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockClusterControllerSignalHandler.h"
 
 using namespace joynr;
 using namespace ::testing;

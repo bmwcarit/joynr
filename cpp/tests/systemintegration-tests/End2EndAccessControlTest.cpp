@@ -32,7 +32,8 @@
 #include "joynr/JoynrClusterControllerRuntime.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/LibJoynrMockObjects.h"
+#include "tests/mock/MockSubscriptionListener.h"
+#include "tests/mock/MockTestProvider.h"
 
 using namespace ::testing;
 using namespace joynr;

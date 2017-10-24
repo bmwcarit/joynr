@@ -25,8 +25,8 @@
 #include "joynr/ImmutableMessage.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
-
-#include "tests/utils/MockObjects.h"
+#include "joynr/Settings.h"
+#include "tests/mock/MockMosquittoConnection.h"
 
 using namespace ::testing;
 

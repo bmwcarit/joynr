@@ -31,9 +31,10 @@
 #include "joynr/tests/testAbstractProvider.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/exceptions/JoynrException.h"
-
+#include "joynr/tests/DefaulttestProvider.h"
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
+#include "joynr/Semaphore.h"
+#include "tests/mock/MockSubscriptionListener.h"
 
 using namespace ::testing;
 using namespace joynr;

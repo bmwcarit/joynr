@@ -33,7 +33,9 @@
 #include "joynr/PrivateCopyAssign.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockGlobalDomainAccessControllerProxy.h"
+#include "tests/mock/MockGlobalDomainRoleControllerProxy.h"
+#include "tests/mock/MockJoynrRuntime.h"
 
 using namespace ::testing;
 using namespace joynr;

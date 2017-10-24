@@ -38,6 +38,7 @@ else (USE_PLATFORM_GTEST_GMOCK)
         BUILD_BYPRODUCTS "${EP_PREFIX}/src/googletest-build/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}"
         CMAKE_ARGS -Dgtest_force_shared_crt=ON
                    -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
+                   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
     )
 
     ExternalProject_Get_Property(googletest binary_dir)
@@ -52,7 +53,7 @@ else (USE_PLATFORM_GTEST_GMOCK)
     set(googletest_source_dir ${source_dir})
     message(STATUS "variable googletest_source_dir=${googletest_source_dir}")
     set(GTEST_INCLUDE_DIRS ${googletest_source_dir}/include)
-    set(GTEST_LIBRARIES ${googletest_binary_dir}/libgtest.a)
+    set(GTEST_LIBRARIES ${googletest_binary_dir}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX})
 
     ### Add google mock ###########################################################
 
@@ -64,6 +65,7 @@ else (USE_PLATFORM_GTEST_GMOCK)
         BUILD_BYPRODUCTS "${EP_PREFIX}/src/googlemock-build/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${CMAKE_STATIC_LIBRARY_SUFFIX}"
         CMAKE_ARGS -Dgtest_force_shared_crt=ON
                    -Dgtest_disable_pthreads=${DISABLE_PTHREAD_CMAKE_ARG}
+                   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
     )
 
     ExternalProject_Get_Property(googlemock binary_dir)
@@ -78,7 +80,7 @@ else (USE_PLATFORM_GTEST_GMOCK)
     set(googlemock_source_dir ${source_dir})
     message(STATUS "variable googlemock_source_dir=${googlemock_source_dir}")
     set(GMOCK_INCLUDE_DIRS ${googlemock_source_dir}/include)
-    set(GMOCK_LIBRARIES ${googlemock_binary_dir}/libgmock.a)
+    set(GMOCK_LIBRARIES ${googlemock_binary_dir}/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${CMAKE_STATIC_LIBRARY_SUFFIX})
 endif(USE_PLATFORM_GTEST_GMOCK)
 
 function(AddTest TARGET)

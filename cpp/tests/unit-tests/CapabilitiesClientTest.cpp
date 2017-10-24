@@ -27,7 +27,9 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
-#include "tests/utils/MockObjects.h"
+#include "joynr/DiscoveryQos.h"
+
+#include "tests/mock/MockProxyBuilder.h"
 
 using namespace joynr;
 
@@ -54,6 +56,7 @@ TEST_F(CapabilitiesClientTestFixture, callWithoutSetProxyBuilder)
 
     // Attempt to call add, remove or lookup without settting ProxyBuilder should
     // trigger an assertion
+    using ::testing::_;
     EXPECT_CALL(*(proxyBuilder.get()), build()).Times(0);
     EXPECT_CALL(*(proxyBuilder.get()), setCached(_)).Times(0);
     EXPECT_CALL(*(proxyBuilder.get()), setMessagingQos(_)).Times(0);

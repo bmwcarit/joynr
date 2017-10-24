@@ -34,6 +34,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/PublicationManager.h"
+#include "joynr/ProxyBuilder.h"
 #include "joynr/Settings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionManager.h"

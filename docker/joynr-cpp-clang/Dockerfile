@@ -59,7 +59,7 @@ RUN cd /opt \
     && git checkout ddb8012e \
     && mkdir build \
     && cd build \
-    && cmake -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ .. \
+    && cmake -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. \
     && make install -j"$(nproc)" \
     && cd /opt/ \
     && rm -rf googletest

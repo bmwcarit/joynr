@@ -28,8 +28,8 @@
 #include "joynr/ImmutableMessage.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/Request.h"
+#include "joynr/Settings.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "tests/utils/MockObjects.h"
 #include "libjoynrclustercontroller/access-control/AccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 #include "joynr/types/DiscoveryEntry.h"
@@ -37,12 +37,21 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
 
+#include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/MockLocalDomainAccessController.h"
+#include "tests/mock/MockLocalCapabilitiesDirectory.h"
+
 using namespace ::testing;
 using namespace joynr;
 using namespace joynr::types;
 using namespace joynr::infrastructure;
 using namespace joynr::infrastructure::DacTypes;
 
+class MockConsumerPermissionCallback : public joynr::IAccessController::IHasConsumerPermissionCallback
+{
+public:
+    MOCK_METHOD1(hasConsumerPermission, void(bool hasPermission));
+};
 
 template <typename... Ts>
 joynr::Request initOutgoingRequest(std::string methodName, std::vector<std::string> paramDataTypes, Ts... paramValues)
