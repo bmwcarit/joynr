@@ -26,12 +26,15 @@
 
 #include "joynr/IProxyBuilder.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
-#include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 
 namespace joynr
 {
+
+namespace infrastructure
+{
+class GlobalCapabilitiesDirectoryProxy;
+} // namespace infrastructure
 
 class ICapabilitiesClient
 {

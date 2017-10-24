@@ -25,7 +25,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
-#include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/types/Version.h"
 
 #include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
