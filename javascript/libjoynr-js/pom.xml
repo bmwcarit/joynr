@@ -906,8 +906,8 @@
 			</activation>
 			<build>
 				<plugins>
-					<!-- Unpack JavaScript dependencies -->
-					<plugin>
+					<!-- Unpack JavaScript dependencies for jetty -->
+					<!-- plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-dependency-plugin</artifactId>
 						<executions>
@@ -949,7 +949,7 @@
 								</configuration>
 							</execution>
 						</executions>
-					</plugin>
+					</plugin-->
 					<!-- jetty only needs to run in case of test execution -->
 					<!--
 					<plugin>
