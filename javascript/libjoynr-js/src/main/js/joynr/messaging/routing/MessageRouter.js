@@ -165,43 +165,48 @@ var JSONSerializer = require('../../util/JSONSerializer');
                  * @param {String} participantId
                  * @param {boolean} isGloballyVisible
                  *
-                 * @returns result
+                 * @returns {Promise} promise
                  */
                 this.addNextHopToParentRoutingTable =
                         function addNextHopToParentRoutingTable(participantId, isGloballyVisible) {
-                            var result;
-                            if (Typing.getObjectType(incomingAddress) === "BrowserAddress") {
-                                result = routingProxy.addNextHop({
-                                    participantId    : participantId,
-                                    browserAddress   : incomingAddress,
-                                    isGloballyVisible: isGloballyVisible
-                                });
-                            } else if (Typing.getObjectType(incomingAddress) === "ChannelAddress") {
-                                result = routingProxy.addNextHop({
-                                    participantId    : participantId,
-                                    channelAddress   : incomingAddress,
-                                    isGloballyVisible: isGloballyVisible
-                                });
-                            } else if (Typing.getObjectType(incomingAddress) === "WebSocketAddress") {
-                                result = routingProxy.addNextHop({
-                                    participantId    : participantId,
-                                    webSocketAddress : incomingAddress,
-                                    isGloballyVisible: isGloballyVisible
-                                });
-                            } else if (Typing.getObjectType(incomingAddress) === "WebSocketClientAddress") {
-                                result = routingProxy.addNextHop({
+                            if (Typing.getObjectType(incomingAddress) === "WebSocketClientAddress") {
+                                return routingProxy.addNextHop({
                                     participantId         : participantId,
                                     webSocketClientAddress: incomingAddress,
                                     isGloballyVisible     : isGloballyVisible
                                 });
-                            } else if (Typing.getObjectType(incomingAddress) === "CommonApiDbusAddress") {
-                                result = routingProxy.addNextHop({
+                            }
+                            if (Typing.getObjectType(incomingAddress) === "BrowserAddress") {
+                                return routingProxy.addNextHop({
+                                    participantId    : participantId,
+                                    browserAddress   : incomingAddress,
+                                    isGloballyVisible: isGloballyVisible
+                                });
+                            }
+                            if (Typing.getObjectType(incomingAddress) === "WebSocketAddress") {
+                                return routingProxy.addNextHop({
+                                    participantId    : participantId,
+                                    webSocketAddress : incomingAddress,
+                                    isGloballyVisible: isGloballyVisible
+                                });
+                            }
+                            if (Typing.getObjectType(incomingAddress) === "ChannelAddress") {
+                                return routingProxy.addNextHop({
+                                    participantId    : participantId,
+                                    channelAddress   : incomingAddress,
+                                    isGloballyVisible: isGloballyVisible
+                                });
+                            }
+                            if (Typing.getObjectType(incomingAddress) === "CommonApiDbusAddress") {
+                                return routingProxy.addNextHop({
                                     participantId       : participantId,
                                     commonApiDbusAddress: incomingAddress,
                                     isGloballyVisible   : isGloballyVisible
                                 });
                             }
-                            return result;
+                            var errorMsg = "Invalid address type of incomingAddress: " + Typing.getObjectType(incomingAddress);
+                            log.fatal(errorMsg);
+                            return Promise.reject(new JoynrRuntimeException({ detailMessage: errorMsg }));
                         };
 
                 /**
