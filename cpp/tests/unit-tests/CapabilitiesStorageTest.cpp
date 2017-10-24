@@ -95,3 +95,15 @@ TYPED_TEST(CapabilitiesStorageTest, lookupNonExistingParticipantId)
         ASSERT_FALSE(optionalEntry);
     }
 }
+
+TYPED_TEST(CapabilitiesStorageTest, insertWithSameParticipantIdOverwritesExistingEntry)
+{
+    TypeParam storage;
+    storage.insert(this->entry);
+    this->entry.setDomain("new-domain");
+    storage.insert(this->entry);
+    ASSERT_EQ(1, storage.size());
+    auto optionalEntry = storage.lookupByParticipantId(this->participantId);
+    ASSERT_TRUE(optionalEntry);
+    EXPECT_EQ(this->entry, *optionalEntry);
+}
