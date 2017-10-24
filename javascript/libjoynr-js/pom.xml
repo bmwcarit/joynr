@@ -310,6 +310,17 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
+				<configuration>
+					<artifactItems>
+						<artifactItem>
+							<groupId>io.joynr.tools</groupId>
+							<artifactId>build-resources</artifactId>
+							<version>${project.version}</version>
+							<outputDirectory>${project.build.directory}/build-resources</outputDirectory>
+							<includes>js-formatter/code-formatter-config.xml</includes>
+						</artifactItem>
+					</artifactItems>
+				</configuration>
 				<executions>
 					<execution>
 						<id>unpack-public-js-source-dependencies</id>

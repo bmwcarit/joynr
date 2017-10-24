@@ -126,20 +126,20 @@
 							<goals>
 								<goal>format</goal>
 							</goals>
-							<configuration>
-								<lineEnding>KEEP</lineEnding>
-								<configJsFile>${project.build.directory}/build-resources/js-formatter/code-formatter-config.xml</configJsFile>
-								<configFile>${project.build.directory}/build-resources/js-formatter/code-formatter-config.xml</configFile>
-								<directories>
-									<directory>${basedir}/src/main/js</directory>
-									<directory>${basedir}/src/test/js</directory>
-								</directories>
-								<includes>
-									<include>**/*.js</include>
-								</includes>
-							</configuration>
 						</execution>
 					</executions>
+					<configuration>
+						<lineEnding>KEEP</lineEnding>
+						<configJsFile>${project.build.directory}/build-resources/js-formatter/code-formatter-config.xml</configJsFile>
+						<configFile>${project.build.directory}/build-resources/js-formatter/code-formatter-config.xml</configFile>
+						<directories>
+							<directory>${basedir}/src/main/js</directory>
+							<directory>${basedir}/src/test/js</directory>
+						</directories>
+						<includes>
+							<include>**/*.js</include>
+						</includes>
+					</configuration>
 					<dependencies>
 						<dependency>
 							<groupId>io.joynr.tools</groupId>
