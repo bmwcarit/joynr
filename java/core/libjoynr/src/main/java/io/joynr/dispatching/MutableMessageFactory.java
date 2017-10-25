@@ -49,7 +49,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MutableMessageFactory {
-
     private static final String REQUEST_REPLY_ID_CUSTOM_HEADER = "z4";
     private final Set<JoynrMessageProcessor> messageProcessors;
     private ObjectMapper objectMapper;
@@ -102,6 +101,9 @@ public class MutableMessageFactory {
         for (JoynrMessageProcessor processor : messageProcessors) {
             message = processor.processOutgoing(message);
         }
+
+        logger.debug("Message {} has expiry date: {}", message.getId(), expiryDate);
+
         return message;
     }
 
