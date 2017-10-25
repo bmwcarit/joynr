@@ -116,26 +116,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 		«val getAttributeName = "get" + attribute.joynrName.toFirstUpper»
 		«produceSyncGetterSignature(attribute, className)»
 		{
-			assert(address);
-			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
-			assert(caller);
-			std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-			assert(«francaIntf.interfaceCaller»);
-
-			auto future = std::make_shared<joynr::Future<«returnType»>>();
-
-			std::function<void(const «returnType»&)> onSuccess =
-					[future] (const «returnType»& «attributeName») {
-						future->onSuccess(«attributeName»);
-					};
-
-			std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)> onError =
-					[future] (const std::shared_ptr<exceptions::ProviderRuntimeException>& error) {
-						future->onError(error);
-					};
-
-			//see header for more information
-			«francaIntf.interfaceCaller»->«getAttributeName»(std::move(onSuccess), std::move(onError));
+			auto future = get«attributeName.toFirstUpper»Async();
 			future->get(«attributeName»);
 		}
 
@@ -348,34 +329,13 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 «var outputTypedConstParamList = method.commaSeperatedTypedConstOutputParameterList»
 «var outputUntypedParamList = method.commaSeperatedUntypedOutputParameterList»
 
-«produceSyncMethodSignature(method, className)»
-{
-	assert(address);
-	std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
-	assert(caller);
-	std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-	assert(«francaIntf.interfaceCaller»);
-	«IF method.fireAndForget»
-		«francaIntf.interfaceCaller»->«methodname»(«inputParamList»);
-	«ELSE»
-		auto future = std::make_shared<joynr::Future<«outputParameters»>>();
-
-		std::function<void(«outputTypedConstParamList»)> onSuccess =
-				[future] («outputTypedConstParamList») {
-					future->onSuccess(
-							«outputUntypedParamList»
-					);
-				};
-
-		std::function<void(const std::shared_ptr<exceptions::JoynrException>&)> onError =
-				[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
-					future->onError(error);
-				};
-		«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»std::move(onSuccess), std::move(onError));
-		future->get(«method.commaSeperatedUntypedOutputParameterList»);
-	«ENDIF»
-}
 «IF !method.fireAndForget»
+	«produceSyncMethodSignature(method, className)»
+	{
+		auto future = «method.joynrName»Async(«method.commaSeperatedUntypedInputParameterList»);
+		future->get(«method.commaSeperatedUntypedOutputParameterList»);
+	}
+
 	«produceAsyncMethodSignature(francaIntf, method, className)»
 	{
 		assert(address);
@@ -402,6 +362,16 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 
 		«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»std::move(onSuccessWrapper), std::move(onErrorWrapper));
 		return future;
+	}
+«ELSE»
+  «produceFireAndForgetMethodSignature(method, className)»
+	{
+		assert(address);
+		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
+		assert(caller);
+		std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+		assert(«francaIntf.interfaceCaller»);
+		«francaIntf.interfaceCaller»->«methodname»(«inputParamList»);
 	}
 «ENDIF»
 
