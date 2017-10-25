@@ -85,7 +85,7 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
             // this happens, when a reply was already received and the replyCaller has been removed.
             return;
         }
-        logger.debug("Replycaller with requestReplyId " + requestReplyId + " was removed because TTL expired");
+        logger.debug("Replycaller with requestReplyId {} was removed because TTL expired", requestReplyId);
 
         // notify the caller that the request has expired now
         outstandingReplyCaller.error(new JoynrTimeoutException(System.currentTimeMillis()));
