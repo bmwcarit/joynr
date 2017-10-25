@@ -222,7 +222,9 @@ void SubscriptionManager::registerSubscription(
                                                 std::move(onError));
             multicastSubscribers.registerMulticastReceiver(multicastId, subscriptionId);
         } else {
-            onSuccess();
+            if (onSuccess) {
+                onSuccess();
+            }
         }
     }
 }
