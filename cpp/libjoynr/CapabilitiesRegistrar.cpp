@@ -33,9 +33,9 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
         const std::string& globalAddress)
         : dispatcherList(std::move(dispatcherList)),
           discoveryProxy(discoveryProxy),
-          participantIdStorage(participantIdStorage),
-          dispatcherAddress(dispatcherAddress),
-          messageRouter(messageRouter),
+          participantIdStorage(std::move(participantIdStorage)),
+          dispatcherAddress(std::move(dispatcherAddress)),
+          messageRouter(std::move(messageRouter)),
           defaultExpiryIntervalMs(defaultExpiryIntervalMs),
           publicationManager(std::move(publicationManager)),
           globalAddress(globalAddress)
@@ -56,7 +56,7 @@ void CapabilitiesRegistrar::removeAsync(
         participantId,
         onSuccess = std::move(onSuccess),
         onError
-    ]
+    ]() mutable
     {
         if (auto ptr = messageRouter.lock()) {
             ptr->removeNextHop(participantId, std::move(onSuccess), std::move(onError));

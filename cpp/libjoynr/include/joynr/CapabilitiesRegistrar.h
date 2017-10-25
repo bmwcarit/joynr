@@ -102,7 +102,7 @@ public:
             dispatcherAddress = dispatcherAddress,
             onSuccess = std::move(onSuccess),
             onError
-        ]()
+        ]() mutable
         {
             auto onSuccessAddNextHop = [
                 domain,
@@ -113,7 +113,7 @@ public:
                 participantId,
                 onSuccess = std::move(onSuccess),
                 onError
-            ]()
+            ]() mutable
             {
                 for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
                     // TODO will the provider be registered at all dispatchers or

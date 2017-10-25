@@ -99,7 +99,7 @@ void LibJoynrWebSocketRuntime::connect(
         factory,
         libjoynrMessagingAddress,
         ccMessagingAddress
-    ]()
+    ]() mutable
     {
         sendInitializationMsg();
 
@@ -129,7 +129,7 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
                         e.getMessage());
     };
     smrf::ByteVector rawMessage(initializationMsg.begin(), initializationMsg.end());
-    websocket->send(smrf::ByteArrayView(rawMessage), onFailure);
+    websocket->send(smrf::ByteArrayView(rawMessage), std::move(onFailure));
 }
 
 void LibJoynrWebSocketRuntime::createWebsocketClient()
