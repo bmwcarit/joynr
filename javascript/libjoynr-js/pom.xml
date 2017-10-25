@@ -316,7 +316,7 @@
 							<artifactId>build-resources</artifactId>
 							<version>${project.version}</version>
 							<outputDirectory>${project.build.directory}/build-resources</outputDirectory>
-							<includes>js-formatter/code-formatter-config.xml</includes>
+							<includes>js-formatter/prettier.config.json</includes>
 						</artifactItem>
 					</artifactItems>
 				</configuration>
@@ -342,8 +342,8 @@
 									<artifactId>build-resources</artifactId>
 									<version>${project.version}</version>
 									<outputDirectory>${project.build.directory}/build-resources</outputDirectory>
-									<includes>js-formatter/code-formatter-config.xml,
-											  almond/almond-0.2.5.js</includes>
+									<includes>js-formatter/prettier.config.json,
+												almond/almond-0.2.5.js</includes>
 								</artifactItem>
 								<artifactItem>
 									<groupId>org.atmosphere.client</groupId>
@@ -381,16 +381,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--
-			  Since the configuration of the maven-java-formatter-plugin is changed
-			  in the plugin management section, we need to add the plugin again in the
-			  plugin section, even it is already configured in the super POM. Otherwise
-			  the configuration is not set correctly on sub modules.
-			-->
-			<plugin>
-				<groupId>com.marvinformatics.formatter</groupId>
-				<artifactId>formatter-maven-plugin</artifactId>
-			</plugin>
 
 			<!-- jslint-ing src/main/js -->
 			<plugin>
@@ -403,6 +393,7 @@
 					</execution>
 				</executions>
 			</plugin>
+
 			<!-- Copy over dependencies to lib -->
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
@@ -612,6 +603,31 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<executions>
+					<!-- maven doesn't keep the execution permission of
+						${project.build.directory}/run_formatter.sh.
+						So we fix it here -->
+					<execution>
+						<configuration>
+							<executable>chmod</executable>
+							<commandlineArgs>+x ${project.build.outputDirectory}/run_formatter.sh</commandlineArgs>
+						</configuration>
+						<id>process-run-formatter-script</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>format-sources</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>${project.build.outputDirectory}/run_formatter.sh</executable>
+						</configuration>
+					</execution>
+
 					<execution>
 						<configuration>
 							<executable>${project.build.directory}/node-classes/node_modules/.bin/browserify</executable>
@@ -810,25 +826,6 @@
 										<ignore></ignore>
 									</action>
 								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											com.marvinformatics.formatter
-										</groupId>
-										<artifactId>
-											formatter-maven-plugin
-										</artifactId>
-										<versionRange>
-											[1.4.0,)
-										</versionRange>
-										<goals>
-											<goal>format</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
@@ -883,6 +880,7 @@
 										<!-- ignore-scripts speeds the build up a lot -->
 										<argument>--ignore-scripts</argument>
 										<argument>browserify</argument>
+										<argument>prettier</argument>
 									</arguments>
 								</configuration>
 								<goals>
