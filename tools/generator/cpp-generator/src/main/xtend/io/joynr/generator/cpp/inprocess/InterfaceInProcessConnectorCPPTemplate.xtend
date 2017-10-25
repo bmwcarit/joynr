@@ -124,7 +124,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
-			std::function<void(const «returnType»& «attributeName»)> onSuccess =
+			std::function<void(const «returnType»&)> onSuccess =
 					[future] (const «returnType»& «attributeName») {
 						future->onSuccess(«attributeName»);
 					};
@@ -149,7 +149,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
-			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
+			std::function<void(const «returnType»&)> onSuccessWrapper =
 					[future, onSuccess = std::move(onSuccess)] (const «returnType»& «attributeName») {
 						future->onSuccess(«attributeName»);
 						if (onSuccess) {

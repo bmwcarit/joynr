@@ -125,9 +125,8 @@ public:
     ...
     void addFavoriteStation(
         const joynr::vehicle::RadioStation& newFavoriteStation,
-        std::function<void(const bool& success)> onSuccess,
-        std::function<void(const joynr::vehicle::Radio::AddFavoriteStationErrorEnum::Enum&
-            errorEnum)> onError);
+        std::function<void(const bool&)> onSuccess,
+        std::function<void(const joynr::vehicle::Radio::AddFavoriteStationErrorEnum::Enum&)> onError);
     ...
 }
 ```
