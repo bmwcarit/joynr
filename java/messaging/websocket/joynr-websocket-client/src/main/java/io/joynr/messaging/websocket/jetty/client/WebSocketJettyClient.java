@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
@@ -55,7 +56,8 @@ import joynr.system.RoutingTypes.WebSocketClientAddress;
 public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSocketEndpoint {
     private static final Logger logger = LoggerFactory.getLogger(JoynrWebSocketEndpoint.class);
 
-    Timer reconnectTimer = new Timer();
+    private Timer reconnectTimer = new Timer();
+    private AtomicBoolean reconnectTimerRunning = new AtomicBoolean(false);
     private long reconnectDelay;
 
     private WebSocketClient jettyClient;
@@ -108,12 +110,16 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
             if (shutdown) {
                 return;
             }
-            reconnectTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    start();
-                }
-            }, reconnectDelay);
+
+            if (reconnectTimerRunning.compareAndSet(false, true)) {
+                reconnectTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        reconnectTimerRunning.set(false);
+                        start();
+                    }
+                }, reconnectDelay);
+            }
         }
     }
 
