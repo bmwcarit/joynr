@@ -409,6 +409,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     }
 
     class MessageWorker implements Runnable {
+        private Logger logger = LoggerFactory.getLogger(MessageWorker.class);
         private int number;
 
         public MessageWorker(int number) {
