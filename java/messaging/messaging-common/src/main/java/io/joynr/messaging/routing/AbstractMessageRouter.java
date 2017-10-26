@@ -75,7 +75,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     private AddressManager addressManager;
     protected final MulticastReceiverRegistry multicastReceiverRegistry;
 
-    private DelayQueue<DelayableImmutableMessage> messageQueue;
+    private final DelayQueue<DelayableImmutableMessage> messageQueue;
 
     private List<MessageProcessedListener> messageProcessedListeners;
     private List<MessageWorker> messageWorkers;
