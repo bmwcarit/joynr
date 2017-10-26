@@ -31,6 +31,7 @@ var JoynrRuntimeException = require('../joynr/exceptions/JoynrRuntimeException')
 var LoggerFactory = require('../joynr/system/LoggerFactory');
 var Util = require('../joynr/util/UtilInternal.js');
 
+// prettier-ignore
 module.exports =
         global.window !== undefined
                 ? require('./WebSocket')

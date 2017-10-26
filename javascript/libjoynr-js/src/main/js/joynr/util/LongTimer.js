@@ -77,7 +77,8 @@ LongTimer.setTimeout = function(func, timeout) {
 
     // get next timeout id and prefix it to avoid possible collisions in environents
     // where setTimeout returns a number (e.g. in browsers).
-    var timeoutId = LongTimer.idPrefix + (++highestTimeoutId);
+    highestTimeoutId++;
+    var timeoutId = LongTimer.idPrefix + highestTimeoutId;
 
     // put timeout object into map
     LongTimer.timeoutMap[timeoutId] = {

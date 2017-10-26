@@ -24,6 +24,7 @@ var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
 
 var typeRegistry = TypeRegistrySingleton.getInstance();
 
+// prettier-ignore
 var asNotify = (function() {
 
     /**
@@ -80,6 +81,7 @@ var asNotify = (function() {
 
 }());
 
+// prettier-ignore
 var asWrite =
         (function() {
 
@@ -139,6 +141,7 @@ var asWrite =
 
         }());
 
+// prettier-ignore
 var asRead = (function() {
 
     /**
@@ -193,6 +196,7 @@ var asRead = (function() {
     };
 }());
 
+// prettier-ignore
 var asReadOrWrite =
         (function() {
 

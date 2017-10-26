@@ -42,6 +42,7 @@ function checkArgument(value) {
     }
 }
 
+// prettier-ignore
 var asRead = (function() {
 
     /**
@@ -71,6 +72,7 @@ var asRead = (function() {
     };
 }());
 
+// prettier-ignore
 var asWrite =
         (function() {
 
@@ -113,6 +115,7 @@ var asWrite =
             };
         }());
 
+// prettier-ignore
 var asNotify =
         (function() {
 
