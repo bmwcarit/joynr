@@ -185,8 +185,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput) {
         ) {
             testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
         },
-        &tests::testProvider::fireBroadcastWithEnumOutput,
-        "broadcastWithEnumOutput"
+        &tests::testProvider::fireBroadcastWithEnumOutput
     );
 }
 
@@ -217,8 +216,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter) {
         ) {
             testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
         },
-        &tests::testProvider::fireBroadcastWithByteBufferParameter,
-        "broadcastWithByteBufferParameter"
+        &tests::testProvider::fireBroadcastWithByteBufferParameter
     );
 }
 

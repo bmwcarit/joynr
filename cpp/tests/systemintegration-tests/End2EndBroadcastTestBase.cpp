@@ -246,8 +246,7 @@ protected:
     void testOneShotBroadcastSubscription(const T& expectedValue,
                                           SubscribeTo subscribeTo,
                                           UnsubscribeFrom unsubscribeFrom,
-                                          FireBroadcast fireBroadcast,
-                                          const std::string& broadcastName) {
+                                          FireBroadcast fireBroadcast) {
         auto mockListener = std::make_shared<MockSubscriptionListenerOneType<T>>();
 
         // Use a semaphore to count and wait on calls to the mock listener
@@ -258,7 +257,6 @@ protected:
                                          subscribeTo,
                                          unsubscribeFrom,
                                          fireBroadcast,
-                                         broadcastName,
                                          expectedValue);
     }
 
@@ -271,7 +269,6 @@ protected:
                                           SubscribeTo subscribeTo,
                                           UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
-                                          const std::string& broadcastName,
                                           T... expectedValues) {
         std::vector<std::string> partitions({}); // TODO test with real partitions
         std::shared_ptr<MyTestProvider> testProvider = registerProvider();
@@ -315,7 +312,6 @@ protected:
                                           SubscribeTo subscribeTo,
                                           UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
-                                          const std::string& broadcastName,
                                           BroadcastFilterPtr filter,
                                           T... expectedValues) {
         std::shared_ptr<MyTestProvider> testProvider = registerProvider();

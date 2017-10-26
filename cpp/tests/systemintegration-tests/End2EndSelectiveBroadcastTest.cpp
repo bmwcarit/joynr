@@ -138,7 +138,6 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToBroadcastWithFiltering) {
             testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
         },
         &tests::testProvider::fireBroadcastWithFiltering,
-        "broadcastWithFiltering",
         filter,
         stringOut,
         stringArrayOut,
