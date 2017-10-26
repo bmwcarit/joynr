@@ -26,6 +26,8 @@
 #include "joynr/types/ProviderQos.h"
 
 #include "joynr/JoynrClusterControllerRuntime.h"
+#include "tests/utils/PtrUtils.h"
+#include "tests/JoynrTest.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -78,15 +80,11 @@ public:
     {
         const bool deleteChannel = true;
         runtime1->stop(deleteChannel);
-        runtime1.reset();
+        test::util::resetAndWaitUntilDestroyed(runtime1);
         runtime2->stop(deleteChannel);
-        runtime2.reset();
+        test::util::resetAndWaitUntilDestroyed(runtime2);
 
-        // Delete persisted files
-        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
+        test::util::removeAllCreatedSettingsAndPersistencyFiles();
     }
 
 protected:
