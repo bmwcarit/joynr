@@ -79,7 +79,7 @@ public:
         domainName("cppEnd2EndBroadcastTest_Domain" + uuid),
         semaphore(0),
         altSemaphore(0),
-        filter(new MockLocationUpdatedSelectiveFilter),
+        filter(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
         registerProviderWait(1000),
         subscribeToAttributeWait(2000),
         subscribeToBroadcastWait(2000),
@@ -248,16 +248,13 @@ protected:
                                           UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
                                           const std::string& broadcastName) {
-        MockSubscriptionListenerOneType<T>* mockListener =
-                new MockSubscriptionListenerOneType<T>();
+        auto mockListener = std::make_shared<MockSubscriptionListenerOneType<T>>();
 
         // Use a semaphore to count and wait on calls to the mock listener
         ON_CALL(*mockListener, onReceive(Eq(expectedValue)))
                 .WillByDefault(ReleaseSemaphore(&semaphore));
 
-        std::shared_ptr<ISubscriptionListener<T>> subscriptionListener(
-                        mockListener);
-        testOneShotBroadcastSubscription(subscriptionListener,
+        testOneShotBroadcastSubscription(mockListener,
                                          subscribeTo,
                                          unsubscribeFrom,
                                          fireBroadcast,
@@ -265,8 +262,12 @@ protected:
                                          expectedValue);
     }
 
-    template <typename FireBroadcast, typename SubscribeTo, typename UnsubscribeFrom, typename ...T>
-    void testOneShotBroadcastSubscription(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
+    template <typename SubscriptionListener,
+              typename FireBroadcast,
+              typename SubscribeTo,
+              typename UnsubscribeFrom,
+              typename ...T>
+    void testOneShotBroadcastSubscription(SubscriptionListener subscriptionListener,
                                           SubscribeTo subscribeTo,
                                           UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
@@ -304,8 +305,13 @@ protected:
         std::ignore = filter;
     }
 
-    template <typename FireBroadcast, typename SubscribeTo, typename UnsubscribeFrom, typename BroadcastFilterPtr, typename ...T>
-    void testOneShotBroadcastSubscriptionWithFiltering(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
+    template <typename SubscriptionListener,
+              typename FireBroadcast,
+              typename SubscribeTo,
+              typename UnsubscribeFrom,
+              typename BroadcastFilterPtr,
+              typename ...T>
+    void testOneShotBroadcastSubscriptionWithFiltering(SubscriptionListener subscriptionListener,
                                           SubscribeTo subscribeTo,
                                           UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
@@ -335,4 +341,3 @@ protected:
 };
 
 } // namespace joynr
-
