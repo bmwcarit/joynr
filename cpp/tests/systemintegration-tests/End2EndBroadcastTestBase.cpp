@@ -52,71 +52,18 @@ static const std::string messagingPropertiesPersistenceFileName2(
 
 namespace joynr {
 
+// this class exposes the protected members of testAbstractProvider
 class MyTestProvider : public tests::DefaulttestProvider {
 public:
-    void locationChanged(const joynr::types::Localisation::GpsLocation& location) override {
-        tests::testAbstractProvider::locationChanged(location);
-    }
-
-    void fireLocation(
-            const joynr::types::Localisation::GpsLocation& location,
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override {
-        tests::testAbstractProvider::fireLocation(location, partitions);
-    }
-
-    void fireBroadcastWithEnumOutput(
-            const joynr::tests::testTypes::TestEnum::Enum& testEnum,
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override {
-        tests::testAbstractProvider::fireBroadcastWithEnumOutput(testEnum, partitions);
-    }
-
-    void fireLocationUpdate(
-            const joynr::types::Localisation::GpsLocation& location,
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override {
-        tests::testAbstractProvider::fireLocationUpdate(location, partitions);
-    }
-
-    void fireEmptyBroadcast(
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override {
-        tests::testAbstractProvider::fireEmptyBroadcast(partitions);
-    }
-
-    void fireLocationUpdateWithSpeed(
-            const joynr::types::Localisation::GpsLocation& location,
-            const float& currentSpeed,
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override {
-        tests::testAbstractProvider::fireLocationUpdateWithSpeed(location, currentSpeed, partitions);
-    }
-
-    void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) override {
-        tests::testAbstractProvider::fireLocationUpdateSelective(location);
-    }
-
-    void fireBroadcastWithByteBufferParameter(
-            const joynr::ByteBuffer& byteBufferParameter,
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override {
-        tests::testAbstractProvider::fireBroadcastWithByteBufferParameter(byteBufferParameter, partitions);
-    }
-
-    void fireBroadcastWithFiltering(
-            const std::string& stringOut,
-            const std::vector<std::string> & stringArrayOut,
-            const std::vector<joynr::tests::testTypes::TestEnum::Enum>& enumerationArrayOut,
-            const joynr::types::TestTypes::TEverythingStruct& structWithStringArrayOut,
-            const std::vector<joynr::types::TestTypes::TEverythingStruct> & structWithStringArrayArrayOut
-    ) override {
-        tests::testAbstractProvider::fireBroadcastWithFiltering(stringOut,
-                                                                stringArrayOut,
-                                                                enumerationArrayOut,
-                                                                structWithStringArrayOut,
-                                                                structWithStringArrayArrayOut);
-    }
+    using testAbstractProvider::locationChanged;
+    using testAbstractProvider::fireLocation;
+    using testAbstractProvider::fireBroadcastWithEnumOutput;
+    using testAbstractProvider::fireLocationUpdate;
+    using testAbstractProvider::fireEmptyBroadcast;
+    using testAbstractProvider::fireLocationUpdateWithSpeed;
+    using testAbstractProvider::fireLocationUpdateSelective;
+    using testAbstractProvider::fireBroadcastWithByteBufferParameter;
+    using testAbstractProvider::fireBroadcastWithFiltering;
 };
 
 class End2EndBroadcastTestBase : public TestWithParam< std::tuple<std::string, std::string> > {
