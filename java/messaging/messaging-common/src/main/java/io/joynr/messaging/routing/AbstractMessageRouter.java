@@ -18,9 +18,7 @@
  */
 package io.joynr.messaging.routing;
 
-import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -53,13 +51,15 @@ import joynr.Message;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class AbstractMessageRouter implements MessageRouter, ShutdownListener {
     private Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
     private final RoutingTable routingTable;
-    private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss:sss z");
+    private static final FastDateFormat dateFormatter = FastDateFormat.getInstance("dd/MM/yyyy HH:mm:ss:sss z",
+                                                                                   TimeZone.getTimeZone("UTC"));
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
     private long routingTableGracePeriodMs;
@@ -106,7 +106,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         this.addressManager = addressManager;
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
-        DateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         shutdownNotifier.registerForShutdown(this);
         messageProcessedListeners = new ArrayList<MessageProcessedListener>();
         startMessageWorkerThreads(maxParallelSends);
@@ -335,9 +334,10 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                     delayMs = createDelayWithExponentialBackoff(sendMsgRetryIntervalMs, retriesCount);
                 }
 
-                logger.error("Rescheduling messageId: {} with delay " + delayMs + " ms, TTL is: {} ms",
+                logger.error("Rescheduling messageId: {} with delay {} ms, TTL is: {}",
                              messageId,
-                             DateFormatter.format(message.getTtlMs()));
+                             delayMs,
+                             dateFormatter.format(message.getTtlMs()));
                 try {
                     routeInternal(message, delayMs, retriesCount + 1);
                 } catch (Exception e) {
