@@ -393,27 +393,27 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         return millis;
     }
 
-    private void checkFoundAddresses(Set<Address> foundAddresses, ImmutableMessage message) {
-        if (foundAddresses.isEmpty()) {
-            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-                throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
-                        + message);
-            } else if (message.isReply()) {
-                throw new JoynrMessageNotSentException("Failed to send Reply: No address found for given message: "
-                        + message);
-            } else {
-                throw new JoynrIllegalStateException("Unable to find address for recipient with participant ID "
-                        + message.getRecipient());
-            }
-        }
-    }
-
     class MessageWorker implements Runnable {
         private Logger logger = LoggerFactory.getLogger(MessageWorker.class);
         private int number;
 
         public MessageWorker(int number) {
             this.number = number;
+        }
+
+        private void checkFoundAddresses(Set<Address> foundAddresses, ImmutableMessage message) {
+            if (foundAddresses.isEmpty()) {
+                if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+                    throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
+                            + message);
+                } else if (message.isReply()) {
+                    throw new JoynrMessageNotSentException("Failed to send Reply: No address found for given message: "
+                            + message);
+                } else {
+                    throw new JoynrIllegalStateException("Unable to find address for recipient with participant ID "
+                            + message.getRecipient());
+                }
+            }
         }
 
         @Override
