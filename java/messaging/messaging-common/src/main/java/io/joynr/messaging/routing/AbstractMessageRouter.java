@@ -290,9 +290,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         long ttlExpirationDateMs = message.getTtlMs();
 
         if (ttlExpirationDateMs <= currentTimeMillis) {
-            String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} abs_ttl: {1} msg_id: {2}",
+            String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} ({1}) abs_ttl: {2} ({3}) msg_id: {4}",
                                                        currentTimeMillis,
+                                                       dateFormatter.format(currentTimeMillis),
                                                        ttlExpirationDateMs,
+                                                       dateFormatter.format(ttlExpirationDateMs),
                                                        message.getId());
             logger.error(errorMessage);
             callMessageProcessedListeners(message.getId());
