@@ -417,8 +417,9 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
 
         @Override
         public void run() {
+            Thread.currentThread().setName("joynrMessageWorker-" + number);
+
             while (!Thread.interrupted()) {
-                Thread.currentThread().setName("joynrMessageWorker-" + number);
                 ImmutableMessage message = null;
                 DelayableImmutableMessage delayableMessage;
                 int retriesCount = 0;
