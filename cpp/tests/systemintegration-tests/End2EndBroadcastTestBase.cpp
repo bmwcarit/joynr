@@ -36,11 +36,11 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/BrokerUrl.h"
-#include "joynr/tests/DefaulttestProvider.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockLocationUpdatedSelectiveFilter.h"
 #include "tests/mock/MockSubscriptionListener.h"
+#include "tests/utils/MyTestProvider.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -51,20 +51,6 @@ static const std::string messagingPropertiesPersistenceFileName2(
         "End2EndBroadcastTest-runtime2-joynr.persist");
 
 namespace joynr {
-
-// this class exposes the protected members of testAbstractProvider
-class MyTestProvider : public tests::DefaulttestProvider {
-public:
-    using testAbstractProvider::locationChanged;
-    using testAbstractProvider::fireLocation;
-    using testAbstractProvider::fireBroadcastWithEnumOutput;
-    using testAbstractProvider::fireLocationUpdate;
-    using testAbstractProvider::fireEmptyBroadcast;
-    using testAbstractProvider::fireLocationUpdateWithSpeed;
-    using testAbstractProvider::fireLocationUpdateSelective;
-    using testAbstractProvider::fireBroadcastWithByteBufferParameter;
-    using testAbstractProvider::fireBroadcastWithFiltering;
-};
 
 class End2EndBroadcastTestBase : public TestWithParam< std::tuple<std::string, std::string> > {
 public:

@@ -217,6 +217,7 @@ set(
     "utils/TimeUtils.h"
     "utils/TestRunnable.h"
     "utils/TestLibJoynrWebSocketRuntime.h"
+    "utils/MyTestProvider.h"
 )
 
 ## Collect common source files for tests
