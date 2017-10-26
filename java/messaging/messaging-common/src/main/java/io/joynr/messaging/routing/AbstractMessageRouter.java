@@ -78,7 +78,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     private DelayQueue<DelayableImmutableMessage> messageQueue;
 
     private List<MessageProcessedListener> messageProcessedListeners;
-    private List<ScheduledFuture<?>> workerFutures;
+    private List<MessageWorker> messageWorkers;
 
     @Inject
     @Singleton
@@ -113,14 +113,15 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     }
 
     private void startMessageWorkerThreads(int numberOfWorkThreads) {
-        workerFutures = new ArrayList<ScheduledFuture<?>>(numberOfWorkThreads);
+        messageWorkers = new ArrayList<MessageWorker>(numberOfWorkThreads);
         for (int i = 0; i < numberOfWorkThreads; i++) {
-            ScheduledFuture<?> messageWorkerFuture = scheduler.schedule(new MessageWorker(i), 0, TimeUnit.MILLISECONDS);
+            MessageWorker messageWorker = new MessageWorker(i);
+            ScheduledFuture<?> messageWorkerFuture = scheduler.schedule(messageWorker, 0, TimeUnit.MILLISECONDS);
             if (messageWorkerFuture == null) {
-                logger.warn("scheduling messageWorker-" + i + "returned a null future. Cancel at shutdown not possible");
+                logger.warn("scheduling messageWorker-{} returned a null future.", i);
                 continue;
             }
-            workerFutures.add(messageWorkerFuture);
+            messageWorkers.add(messageWorker);
         }
     }
 
@@ -377,8 +378,8 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
 
     @Override
     public void shutdown() {
-        for (ScheduledFuture<?> workerFuture : workerFutures) {
-            workerFuture.cancel(true);
+        for (MessageWorker worker : messageWorkers) {
+            worker.stopWorker();
         }
     }
 
@@ -396,9 +397,15 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     class MessageWorker implements Runnable {
         private Logger logger = LoggerFactory.getLogger(MessageWorker.class);
         private int number;
+        private volatile boolean stopped;
 
         public MessageWorker(int number) {
             this.number = number;
+            stopped = false;
+        }
+
+        void stopWorker() {
+            stopped = true;
         }
 
         private void checkFoundAddresses(Set<Address> foundAddresses, ImmutableMessage message) {
@@ -420,7 +427,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         public void run() {
             Thread.currentThread().setName("joynrMessageWorker-" + number);
 
-            while (!Thread.interrupted()) {
+            while (!stopped) {
                 ImmutableMessage message = null;
                 DelayableImmutableMessage delayableMessage;
                 int retriesCount = 0;
