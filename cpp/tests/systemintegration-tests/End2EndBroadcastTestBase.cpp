@@ -56,10 +56,6 @@ class End2EndBroadcastTestBase : public TestWithParam< std::tuple<std::string, s
 public:
     std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
     std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
-    std::unique_ptr<Settings> settings1;
-    std::unique_ptr<Settings> settings2;
-    MessagingSettings messagingSettings1;
-    MessagingSettings messagingSettings2;
     std::string baseUuid;
     std::string uuid;
     std::string domainName;
@@ -78,10 +74,6 @@ public:
     End2EndBroadcastTestBase() :
         runtime1(),
         runtime2(),
-        settings1(std::make_unique<Settings>(std::get<0>(GetParam()))),
-        settings2(std::make_unique<Settings>(std::get<1>(GetParam()))),
-        messagingSettings1(*settings1),
-        messagingSettings2(*settings2),
         baseUuid(util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppEnd2EndBroadcastTest_Domain" + uuid),
@@ -130,13 +122,20 @@ public:
                          4)),
         providerParticipantId(),
         integration1Settings("test-resources/libjoynrSystemIntegration1.settings"),
-        integration2Settings("test-resources/libjoynrSystemIntegration2.settings")
-
+        integration2Settings("test-resources/libjoynrSystemIntegration2.settings"),
+        httpTransport(false)
     {
+        auto settings1 = std::make_unique<Settings>(std::get<0>(GetParam()));
+        auto settings2 = std::make_unique<Settings>(std::get<1>(GetParam()));
+        MessagingSettings messagingSettings1(*settings1);
+        MessagingSettings messagingSettings2(*settings2);
         messagingSettings1.setMessagingPropertiesPersistenceFilename(
                     messagingPropertiesPersistenceFileName1);
         messagingSettings2.setMessagingPropertiesPersistenceFilename(
                     messagingPropertiesPersistenceFileName2);
+
+        std::string brokerProtocol = messagingSettings1.getBrokerUrl().getBrokerChannelsBaseUrl().getProtocol();
+        httpTransport = boost::iequals(brokerProtocol, "http") || boost::iequals(brokerProtocol, "https");
 
         Settings::merge(integration1Settings, *settings1, false);
 
@@ -188,13 +187,11 @@ private:
     Settings integration1Settings;
     Settings integration2Settings;
     DISALLOW_COPY_AND_ASSIGN(End2EndBroadcastTestBase);
+    bool httpTransport;
 
 protected:
     bool usesHttpTransport() {
-        std::string brokerProtocol = messagingSettings1.getBrokerUrl()
-                .getBrokerChannelsBaseUrl().getProtocol();
-        return (boost::iequals(brokerProtocol, "http")
-                || boost::iequals(brokerProtocol, "https"));
+       return httpTransport;
     }
 
     std::shared_ptr<MyTestProvider> registerProvider() {
