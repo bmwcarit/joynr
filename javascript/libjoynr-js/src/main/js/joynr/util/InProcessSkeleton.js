@@ -35,7 +35,6 @@ function InProcessSkeleton(proxyObject) {
         return new InProcessSkeleton(proxyObject);
     }
     this._proxyObject = proxyObject;
-
 }
 
 /**

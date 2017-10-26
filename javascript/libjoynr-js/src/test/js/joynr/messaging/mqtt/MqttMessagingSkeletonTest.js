@@ -1,6 +1,6 @@
 /*jslint node: true */
 
-/* *
+/**
  * #%L
  * %%
  * Copyright (C) 2011 - 2017 BMW Car IT GmbH
@@ -8,9 +8,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,14 +18,12 @@
  * limitations under the License.
  * #L%
  */
-var MqttMessagingSkeleton =
-        require('../../../../classes/joynr/messaging/mqtt/MqttMessagingSkeleton');
-var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
-var MessageRouter = require('../../../../classes/joynr/messaging/routing/MessageRouter');
-var Promise = require('../../../../classes/global/Promise');
+var MqttMessagingSkeleton = require("../../../../classes/joynr/messaging/mqtt/MqttMessagingSkeleton");
+var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
+var MessageRouter = require("../../../../classes/joynr/messaging/routing/MessageRouter");
+var Promise = require("../../../../classes/global/Promise");
 
 describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
-
     var sharedMqttClient, mqttMessagingSkeleton;
     var messageRouterSpy;
 
@@ -45,9 +43,9 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
         spyOn(sharedMqttClient, "subscribe");
 
         mqttMessagingSkeleton = new MqttMessagingSkeleton({
-            address : new MqttAddress(),
-            client : sharedMqttClient,
-            messageRouter : messageRouterSpy
+            address: new MqttAddress(),
+            client: sharedMqttClient,
+            messageRouter: messageRouterSpy
         });
 
         sharedMqttClient.subscribe.calls.reset();
@@ -78,17 +76,17 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", function() {
 
     it("sets receivedFromGlobal", function() {
         var requestMessage = new JoynrMessage({
-            type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         setsReceivedFromGlobal(requestMessage);
 
         var multicastMessage = new JoynrMessage({
-            type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
         });
         setsReceivedFromGlobal(multicastMessage);
 
         var subscriptionRequestMessage = new JoynrMessage({
-            type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
         });
         setsReceivedFromGlobal(subscriptionRequestMessage);
     });

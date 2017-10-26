@@ -19,9 +19,9 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../util/Typing');
-var Util = require('../util/UtilInternal');
-var LoggerFactory = require('../system/LoggerFactory');
+var Typing = require("../util/Typing");
+var Util = require("../util/UtilInternal");
+var LoggerFactory = require("../system/LoggerFactory");
 
 /**
  * Constructor of BroadcastFilterParameters object used for subscriptions in generated proxy objects
@@ -62,28 +62,27 @@ function BroadcastFilterParameters(filterParameterProperties) {
 
     if (filterParameterProperties === undefined) {
         var filterParameters = null;
-        Object.defineProperty(this, 'filterParameters', {
-            readable : true,
-            enumerable : true,
-            configurable : false,
-            get : function() {
+        Object.defineProperty(this, "filterParameters", {
+            readable: true,
+            enumerable: true,
+            configurable: false,
+            get: function() {
                 return filterParameters;
             },
-            set : function(value) {
+            set: function(value) {
                 filterParameters = value;
             }
         });
     } else {
         for (parameterName in filterParameterProperties) {
             if (filterParameterProperties.hasOwnProperty(parameterName)) {
-                funcName =
-                        "set" + parameterName.charAt(0).toUpperCase() + parameterName.substring(1);
+                funcName = "set" + parameterName.charAt(0).toUpperCase() + parameterName.substring(1);
                 //filter[funcName] = makeSetterFunction(filter, parameterName);
                 Object.defineProperty(this, funcName, {
-                    configurable : false,
-                    writable : false,
-                    enumerable : false,
-                    value : makeSetterFunction(this, parameterName)
+                    configurable: false,
+                    writable: false,
+                    enumerable: false,
+                    value: makeSetterFunction(this, parameterName)
                 });
             }
         }
@@ -94,7 +93,6 @@ function BroadcastFilterParameters(filterParameterProperties) {
          */
         this.filterParameters = {};
     }
-
 }
 
 module.exports = BroadcastFilterParameters;

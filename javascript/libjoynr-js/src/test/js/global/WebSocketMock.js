@@ -19,19 +19,20 @@
  * limitations under the License.
  * #L%
  */
-var JoynrMessage = require('../../classes/joynr/messaging/JoynrMessage');
-var JSONSerializer = require('../../classes/joynr/util/JSONSerializer');
-var JoynrRuntimeException = require('../../classes/joynr/exceptions/JoynrRuntimeException');
-var LoggerFactory = require('../../classes/joynr/system/LoggerFactory');
+var JoynrMessage = require("../../classes/joynr/messaging/JoynrMessage");
+var JSONSerializer = require("../../classes/joynr/util/JSONSerializer");
+var JoynrRuntimeException = require("../../classes/joynr/exceptions/JoynrRuntimeException");
+var LoggerFactory = require("../../classes/joynr/system/LoggerFactory");
 if (typeof Buffer !== "function" && typeof TextDecoder !== "function") {
     throw new JoynrRuntimeException(
-            "Encoding/Decoding of binary websocket messages not possible. Buffer and TextEncoder/TextDecoder not available.");
+        "Encoding/Decoding of binary websocket messages not possible. Buffer and TextEncoder/TextDecoder not available."
+    );
 }
 var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocketMock");
 
 var websocket = {
-    mock : true,
-    send : function() {}
+    mock: true,
+    send: function() {}
 };
 var WebSocket = function WebSocket(newUrl) {
     websocket.url = newUrl;

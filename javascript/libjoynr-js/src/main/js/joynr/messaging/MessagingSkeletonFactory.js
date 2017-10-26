@@ -18,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../util/Typing');
-var Util = require('../util/UtilInternal');
-var LoggerFactory = require('../system/LoggerFactory');
+var Typing = require("../util/Typing");
+var Util = require("../util/UtilInternal");
+var LoggerFactory = require("../system/LoggerFactory");
 
 var log = LoggerFactory.getLogger("joynr/messaging/MessagingSkeletonFactory");
 /**
@@ -30,7 +30,6 @@ var log = LoggerFactory.getLogger("joynr/messaging/MessagingSkeletonFactory");
  */
 function MessagingSkeletonFactory() {
     this._messagingSkeletons = undefined;
-
 }
 
 MessagingSkeletonFactory.prototype.setSkeletons = function setSkeletons(newMessagingSkeletons) {
@@ -43,22 +42,21 @@ MessagingSkeletonFactory.prototype.setSkeletons = function setSkeletons(newMessa
  *
  * return {MessagingSkeleton} the skeleton matching the address
  */
-MessagingSkeletonFactory.prototype.getSkeleton =
-        function getSkeleton(address) {
-            var className = address._typeName;
-            var skeleton = this._messagingSkeletons[className];
+MessagingSkeletonFactory.prototype.getSkeleton = function getSkeleton(address) {
+    var className = address._typeName;
+    var skeleton = this._messagingSkeletons[className];
 
-            if (Util.checkNullUndefined(skeleton)) {
-                var errorMsg =
-                        "Could not find a messaging skeleton for \""
-                            + className
-                            + "\" within messagingSkeletons ["
-                            + Object.keys(this._messagingSkeletons).join(",")
-                            + "]";
-                log.debug(errorMsg);
-                throw new Error(errorMsg);
-            }
-            return skeleton;
-        };
+    if (Util.checkNullUndefined(skeleton)) {
+        var errorMsg =
+            'Could not find a messaging skeleton for "' +
+            className +
+            '" within messagingSkeletons [' +
+            Object.keys(this._messagingSkeletons).join(",") +
+            "]";
+        log.debug(errorMsg);
+        throw new Error(errorMsg);
+    }
+    return skeleton;
+};
 
 module.exports = MessagingSkeletonFactory;

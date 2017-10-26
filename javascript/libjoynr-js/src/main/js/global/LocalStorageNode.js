@@ -22,10 +22,10 @@
  */
 
 if (global.window !== undefined) {
-    module.exports = require('./LocalStorage');
+    module.exports = require("./LocalStorage");
 } else {
-    var Typing = require('../joynr/util/Typing');
-    var storage = require('node-persist');
+    var Typing = require("../joynr/util/Typing");
+    var storage = require("node-persist");
     /**
      * LocalStorage constructor (node wrapper for LocalStorage)
      * @constructor LocalStorageWrapper
@@ -38,28 +38,24 @@ if (global.window !== undefined) {
      * @param {String}
      *            settings.location optional, passed on to node-persist LocalStorage constructor
      */
-    var LocalStorageWrapper =
-            function(settings) {
-                settings = settings || {};
-                //the local storage wrapper uses the optionally given location
-                var location = settings.location || "./localStorageStorage";
+    var LocalStorageWrapper = function(settings) {
+        settings = settings || {};
+        //the local storage wrapper uses the optionally given location
+        var location = settings.location || "./localStorageStorage";
 
-                this._myStorage = storage.create({
-                    dir : location,
-                    ttl : false,
-                    forgiveParseErrors : true
-                });
+        this._myStorage = storage.create({
+            dir: location,
+            ttl: false,
+            forgiveParseErrors: true
+        });
 
-                this._myStorage.initSync();
+        this._myStorage.initSync();
 
-                Typing.checkPropertyIfDefined(
-                        settings.clearPersistency,
-                        "Boolean",
-                        "settings.clearPersistency");
-                if (settings.clearPersistency) {
-                    this._myStorage.clearSync();
-                }
-            };
+        Typing.checkPropertyIfDefined(settings.clearPersistency, "Boolean", "settings.clearPersistency");
+        if (settings.clearPersistency) {
+            this._myStorage.clearSync();
+        }
+    };
     LocalStorageWrapper.prototype.setItem = function(key, value) {
         return this._myStorage.setItemSync(key, value);
     };

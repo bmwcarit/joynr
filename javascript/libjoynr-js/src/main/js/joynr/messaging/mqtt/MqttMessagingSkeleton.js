@@ -18,10 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../../util/Typing');
-var LoggerFactory = require('../../system/LoggerFactory');
-var DiagnosticTags = require('../../system/DiagnosticTags');
-var JoynrException = require('../../exceptions/JoynrException');
+var Typing = require("../../util/Typing");
+var LoggerFactory = require("../../system/LoggerFactory");
+var DiagnosticTags = require("../../system/DiagnosticTags");
+var JoynrException = require("../../exceptions/JoynrException");
 
 var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
 /**
@@ -31,41 +31,41 @@ var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingSkeleton");
  * @param {MessageRouter} settings.messageRouter the message router
  * @param {MqttAddress} settings.address own address of joynr client
  */
-var MqttMessagingSkeleton =
-        function MqttMessagingSkeleton(settings) {
-            Typing.checkProperty(settings, "Object", "settings");
-            Typing.checkProperty(settings.client, "SharedMqttClient", "settings.client");
-            Typing.checkProperty(settings.messageRouter, "MessageRouter", "settings.messageRouter");
-            Typing.checkProperty(settings.address, "MqttAddress", "settings.address");
+var MqttMessagingSkeleton = function MqttMessagingSkeleton(settings) {
+    Typing.checkProperty(settings, "Object", "settings");
+    Typing.checkProperty(settings.client, "SharedMqttClient", "settings.client");
+    Typing.checkProperty(settings.messageRouter, "MessageRouter", "settings.messageRouter");
+    Typing.checkProperty(settings.address, "MqttAddress", "settings.address");
 
-            this._multicastSubscriptionCount = {};
-            this._settings = settings;
+    this._multicastSubscriptionCount = {};
+    this._settings = settings;
 
-            settings.client.onmessage =
-                    function(topic, message) {
-                        message.setReceivedFromGlobal(true);
-                        try {
-                            settings.messageRouter.route(message)
-                            .catch (function(e) {
-                                log.error("unable to process message: "
-                                    + e
-                                    + (e instanceof JoynrException ? " " + e.detailMessage : "")
-                                    + " \nmessage: "
-                                    + DiagnosticTags.forJoynrMessage(message));
-                            });
-                        } catch(e) {
-                            // Errors should be returned via the Promise
-                            log.fatal("unable to process message: "
-                                + e
-                                + (e instanceof JoynrException ? " " + e.detailMessage : "")
-                                + " \nmessage: "
-                                + DiagnosticTags.forJoynrMessage(message));
-                        }
-                    };
+    settings.client.onmessage = function(topic, message) {
+        message.setReceivedFromGlobal(true);
+        try {
+            settings.messageRouter.route(message).catch(function(e) {
+                log.error(
+                    "unable to process message: " +
+                        e +
+                        (e instanceof JoynrException ? " " + e.detailMessage : "") +
+                        " \nmessage: " +
+                        DiagnosticTags.forJoynrMessage(message)
+                );
+            });
+        } catch (e) {
+            // Errors should be returned via the Promise
+            log.fatal(
+                "unable to process message: " +
+                    e +
+                    (e instanceof JoynrException ? " " + e.detailMessage : "") +
+                    " \nmessage: " +
+                    DiagnosticTags.forJoynrMessage(message)
+            );
+        }
+    };
 
-            settings.client.subscribe(settings.address.topic + "/#");
-
-        };
+    settings.client.subscribe(settings.address.topic + "/#");
+};
 
 MqttMessagingSkeleton.prototype._translateWildcard = function(multicastId) {
     if (multicastId.match(/[\w\W]*\/[*]$/)) {
@@ -74,15 +74,13 @@ MqttMessagingSkeleton.prototype._translateWildcard = function(multicastId) {
     return multicastId;
 };
 
-MqttMessagingSkeleton.prototype.registerMulticastSubscription =
-        function(multicastId) {
-            if (this._multicastSubscriptionCount[multicastId] === undefined) {
-                this._multicastSubscriptionCount[multicastId] = 0;
-            }
-            this._settings.client.subscribe(this._translateWildcard(multicastId));
-            this._multicastSubscriptionCount[multicastId] =
-                    this._multicastSubscriptionCount[multicastId] + 1;
-        };
+MqttMessagingSkeleton.prototype.registerMulticastSubscription = function(multicastId) {
+    if (this._multicastSubscriptionCount[multicastId] === undefined) {
+        this._multicastSubscriptionCount[multicastId] = 0;
+    }
+    this._settings.client.subscribe(this._translateWildcard(multicastId));
+    this._multicastSubscriptionCount[multicastId] = this._multicastSubscriptionCount[multicastId] + 1;
+};
 
 MqttMessagingSkeleton.prototype.unregisterMulticastSubscription = function(multicastId) {
     var subscribersCount = this._multicastSubscriptionCount[multicastId];

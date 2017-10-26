@@ -21,7 +21,7 @@
 /**
  * waitsFor helper function for jasmine 2.x
  */
-var Promise = require('../../classes/global/Promise');
+var Promise = require("../../classes/global/Promise");
 var originalSetInterval = setInterval;
 var originalClearInterval = clearInterval;
 var originalSetTimeout = setTimeout;

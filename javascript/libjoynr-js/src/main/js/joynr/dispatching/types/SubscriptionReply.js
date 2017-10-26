@@ -18,8 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var Util = require('../../util/UtilInternal');
-var Typing = require('../../util/Typing');
+var Util = require("../../util/UtilInternal");
+var Typing = require("../../util/Typing");
 
 /**
  * @name SubscriptionReply
@@ -35,10 +35,7 @@ var Typing = require('../../util/Typing');
 function SubscriptionReply(settings) {
     Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
 
-    Typing.checkPropertyIfDefined(settings.error, [
-        "Object",
-        "SubscriptionException"
-    ], "settings.error");
+    Typing.checkPropertyIfDefined(settings.error, ["Object", "SubscriptionException"], "settings.error");
 
     /**
      * @name SubscriptionReply#subscriptionId

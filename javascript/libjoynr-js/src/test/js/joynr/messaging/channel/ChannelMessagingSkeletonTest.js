@@ -18,36 +18,31 @@
  * limitations under the License.
  * #L%
  */
-var ChannelMessagingSkeleton =
-        require('../../../../classes/joynr/messaging/channel/ChannelMessagingSkeleton');
-var ChannelAddress = require('../../../../classes/joynr/system/RoutingTypes/ChannelAddress');
-var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
-var Promise = require('../../../../classes/global/Promise');
+var ChannelMessagingSkeleton = require("../../../../classes/joynr/messaging/channel/ChannelMessagingSkeleton");
+var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
+var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
+var Promise = require("../../../../classes/global/Promise");
 
 describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", function() {
-
     var channelMessagingSkeleton, joynrMessage1, joynrMessage2, messageRouterSpy;
     var channelAddress = new ChannelAddress({
-        channelId : "channelId",
-        messagingEndpointUrl : "http://testurl"
+        channelId: "channelId",
+        messagingEndpointUrl: "http://testurl"
     });
 
     beforeEach(function(done) {
-        messageRouterSpy = jasmine.createSpyObj("messageRouterSpy", [
-            "addNextHop",
-            "route"
-        ]);
+        messageRouterSpy = jasmine.createSpyObj("messageRouterSpy", ["addNextHop", "route"]);
         messageRouterSpy.route.and.returnValue(Promise.resolve());
         channelMessagingSkeleton = new ChannelMessagingSkeleton({
-            messageRouter : messageRouterSpy
+            messageRouter: messageRouterSpy
         });
 
         joynrMessage1 = {
-            key : "joynrMessage2"
+            key: "joynrMessage2"
         };
         joynrMessage2 = {
-            key : "joynrMessage1",
-            replyChannelId : JSON.stringify(channelAddress)
+            key: "joynrMessage1",
+            replyChannelId: JSON.stringify(channelAddress)
         };
         done();
     });
@@ -66,7 +61,7 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", functio
         }).toThrow(); // correct call
         expect(function() {
             channelMessagingSkeleton = new ChannelMessagingSkeleton({
-                messageRouter : messageRouterSpy
+                messageRouter: messageRouterSpy
             });
         }).not.toThrow(); // correct call
         done();
@@ -98,17 +93,17 @@ describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingSkeleton", functio
 
     it("sets receivedFromGlobal", function() {
         var requestMessage = new JoynrMessage({
-            type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         setsReceivedFromGlobal(requestMessage);
 
         var multicastMessage = new JoynrMessage({
-            type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
         });
         setsReceivedFromGlobal(multicastMessage);
 
         var subscriptionRequestMessage = new JoynrMessage({
-            type : JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
         });
         setsReceivedFromGlobal(subscriptionRequestMessage);
     });

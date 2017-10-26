@@ -17,10 +17,10 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../global/Promise');
-var Util = require('../util/UtilInternal');
-var Typing = require('../util/Typing');
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var Promise = require("../../global/Promise");
+var Util = require("../util/UtilInternal");
+var Typing = require("../util/Typing");
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 
 var typeRegistry = TypeRegistrySingleton.getInstance();
 
@@ -247,12 +247,7 @@ function ProviderAttribute(parent, implementation, attributeName, attributeType,
     // a function from the publication manager to be called when the attribute value changes
     if (!(this instanceof ProviderAttribute)) {
         // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-        return new ProviderAttribute(
-                parent,
-                implementation,
-                attributeName,
-                attributeType,
-                attributeCaps);
+        return new ProviderAttribute(parent, implementation, attributeName, attributeType, attributeCaps);
     }
 
     this.parent = parent;
@@ -287,7 +282,6 @@ function ProviderAttribute(parent, implementation, attributeName, attributeType,
     this.privateSetterFunc = implementation ? implementation.set : undefined;
 
     return Object.freeze(publicProviderAttribute);
-
 }
 
 ProviderAttribute.prototype.isNotifiable = function() {

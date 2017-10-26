@@ -18,7 +18,7 @@
  * limitations under the License.
  * #L%
  */
-var InProcessSkeleton = require('./InProcessSkeleton');
+var InProcessSkeleton = require("./InProcessSkeleton");
 
 /**
  * Creates a proxy function that calls the proxyObjectFunction with the original arguments
@@ -55,7 +55,6 @@ function InProcessStub(inProcessSkeleton) {
     if (inProcessSkeleton !== undefined) {
         this.setSkeleton(inProcessSkeleton);
     }
-
 }
 
 /**
@@ -77,7 +76,8 @@ InProcessStub.prototype.setSkeleton = function(inProcessSkeleton) {
     }
 
     // get proxy object from skeleton
-    var key, proxyObject = inProcessSkeleton.getProxyObject();
+    var key,
+        proxyObject = inProcessSkeleton.getProxyObject();
 
     // cycle over all members in the proxy object
     for (key in proxyObject) {

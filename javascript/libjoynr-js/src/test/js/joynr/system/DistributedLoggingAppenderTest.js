@@ -18,18 +18,16 @@
  * limitations under the License.
  * #L%
  */
-var LoggingManager = require('../../../classes/joynr/system/LoggingManager');
-var DistributedLoggingAppender =
-        require('../../../classes/joynr/system/DistributedLoggingAppender');
+var LoggingManager = require("../../../classes/joynr/system/LoggingManager");
+var DistributedLoggingAppender = require("../../../classes/joynr/system/DistributedLoggingAppender");
 var loggingProxy;
 
 loggingProxy = {
-    log : function(value) {},
-    providerDiscoveryEntry : {}
+    log: function(value) {},
+    providerDiscoveryEntry: {}
 };
 
 describe("libjoynr-js.joynr.system.DistributedLoggingAppender", function() {
-
     beforeEach(function(done) {
         jasmine.clock().install();
         done();
@@ -50,8 +48,8 @@ describe("libjoynr-js.joynr.system.DistributedLoggingAppender", function() {
 
         context = {};
         config = {
-            flushInterval : 1000,
-            flushMaxLogEventsCount : 3
+            flushInterval: 1000,
+            flushMaxLogEventsCount: 3
         };
 
         spyOn(loggingProxy, "log");
@@ -62,14 +60,13 @@ describe("libjoynr-js.joynr.system.DistributedLoggingAppender", function() {
         expect(loggingProxy.log).not.toHaveBeenCalled();
 
         loggingEvent = {
-            logger : {
-                name : "loggerName"
+            logger: {
+                name: "loggerName"
             },
-            timeStampInMilliseconds : 10000000,
-            messages : [ "log message"
-            ],
-            level : {
-                name : "DEBUG"
+            timeStampInMilliseconds: 10000000,
+            messages: ["log message"],
+            level: {
+                name: "DEBUG"
             }
         };
         appender.append(loggingEvent);
@@ -87,9 +84,8 @@ describe("libjoynr-js.joynr.system.DistributedLoggingAppender", function() {
 
         context = {};
         config = {
-            flushInterval : 1000,
-            flushMaxLogEventsCount : 3
-
+            flushInterval: 1000,
+            flushMaxLogEventsCount: 3
         };
 
         spyOn(loggingProxy, "log");
@@ -99,14 +95,13 @@ describe("libjoynr-js.joynr.system.DistributedLoggingAppender", function() {
 
         expect(loggingProxy.log).not.toHaveBeenCalled();
         loggingEvent = {
-            logger : {
-                name : "loggerName"
+            logger: {
+                name: "loggerName"
             },
-            timeStampInMilliseconds : 10000000,
-            messages : [ "log message"
-            ],
-            level : {
-                name : "DEBUG"
+            timeStampInMilliseconds: 10000000,
+            messages: ["log message"],
+            level: {
+                name: "DEBUG"
             }
         };
         appender.append(loggingEvent);
@@ -119,5 +114,4 @@ describe("libjoynr-js.joynr.system.DistributedLoggingAppender", function() {
         expect(loggingProxy.log).toHaveBeenCalled();
         done();
     });
-
 });

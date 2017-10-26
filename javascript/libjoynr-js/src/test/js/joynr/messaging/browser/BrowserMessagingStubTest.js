@@ -18,11 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var BrowserMessagingStub =
-        require('../../../../classes/joynr/messaging/browser/BrowserMessagingStub');
+var BrowserMessagingStub = require("../../../../classes/joynr/messaging/browser/BrowserMessagingStub");
 
 describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() {
-
     var webMessagingStub, browserMessagingStub, windowId, joynrMessage;
 
     beforeEach(function() {
@@ -31,7 +29,7 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() 
         webMessagingStub.transmit = jasmine.createSpy("transmit");
 
         browserMessagingStub = new BrowserMessagingStub({
-            webMessagingStub : webMessagingStub
+            webMessagingStub: webMessagingStub
         });
 
         windowId = "mywindowId";
@@ -51,22 +49,21 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", function() 
     it("calls correctly webMessagingStub.transmit correctly", function() {
         browserMessagingStub.transmit(joynrMessage);
         expect(webMessagingStub.transmit).toHaveBeenCalledWith({
-            windowId : undefined,
-            message : joynrMessage
+            windowId: undefined,
+            message: joynrMessage
         });
     });
 
     it("calls correctly webMessagingStub.transmit with windowId correctly", function() {
         browserMessagingStub = new BrowserMessagingStub({
-            windowId : windowId,
-            webMessagingStub : webMessagingStub
+            windowId: windowId,
+            webMessagingStub: webMessagingStub
         });
 
         browserMessagingStub.transmit(joynrMessage);
         expect(webMessagingStub.transmit).toHaveBeenCalledWith({
-            windowId : windowId,
-            message : joynrMessage
+            windowId: windowId,
+            message: joynrMessage
         });
     });
-
 });

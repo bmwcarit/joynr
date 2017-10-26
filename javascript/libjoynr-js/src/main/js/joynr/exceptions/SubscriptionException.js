@@ -18,11 +18,11 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var Typing = require('../util/Typing');
-var Util = require('../util/UtilInternal');
-var JoynrRuntimeException = require('./JoynrRuntimeException');
-var LoggerFactory = require('../system/LoggerFactory');
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+var Typing = require("../util/Typing");
+var Util = require("../util/UtilInternal");
+var JoynrRuntimeException = require("./JoynrRuntimeException");
+var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings;
 
 /**
@@ -73,9 +73,7 @@ function SubscriptionException(settings) {
 
 defaultSettings = {};
 
-TypeRegistrySingleton.getInstance().addType(
-        "joynr.exceptions.SubscriptionException",
-        SubscriptionException);
+TypeRegistrySingleton.getInstance().addType("joynr.exceptions.SubscriptionException", SubscriptionException);
 
 SubscriptionException.prototype = new Error();
 SubscriptionException.prototype.constructor = SubscriptionException;

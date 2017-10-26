@@ -26,8 +26,8 @@
  *
  * @returns constructor for a localStorage object
  */
-var LocalStorage = require('../../classes/global/LocalStorageNode');
-var uuid = require('../../classes/joynr/util/uuid');
+var LocalStorage = require("../../classes/global/LocalStorageNode");
+var uuid = require("../../classes/joynr/util/uuid");
 /**
  * LocalStorage constructor (node wrapper for LocalStorage)
  * @constructor LocalStorageWrapper

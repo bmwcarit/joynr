@@ -18,12 +18,12 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../global/Promise');
-var Util = require('../util/UtilInternal');
-var DiscoveryEntry = require('../../joynr/types/DiscoveryEntry');
-var ProviderScope = require('../../joynr/types/ProviderScope');
-var ParticipantIdStorage = require('./ParticipantIdStorage');
-var Version = require('../../joynr/types/Version');
+var Promise = require("../../global/Promise");
+var Util = require("../util/UtilInternal");
+var DiscoveryEntry = require("../../joynr/types/DiscoveryEntry");
+var ProviderScope = require("../../joynr/types/ProviderScope");
+var ParticipantIdStorage = require("./ParticipantIdStorage");
+var Version = require("../../joynr/types/Version");
 var defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
 /**
  * The Capabilities Registrar
@@ -57,7 +57,6 @@ function CapabilitiesRegistrar(dependencies) {
     this._publicationManager = dependencies.publicationManager;
     this._loggingManager = dependencies.loggingManager;
     this._started = true;
-
 }
 
 /**
@@ -114,16 +113,16 @@ CapabilitiesRegistrar.prototype._checkIfReady = function() {
  *
  * @returns {Object} an A+ promise
  */
-CapabilitiesRegistrar.prototype.register =
-        function register(settings) {
-            return this.registerProvider(
-                    settings.domain,
-                    settings.provider,
-                    settings.providerQos,
-                    settings.expiryDateMs,
-                    settings.loggingContext,
-                    settings.participantId);
-        };
+CapabilitiesRegistrar.prototype.register = function register(settings) {
+    return this.registerProvider(
+        settings.domain,
+        settings.provider,
+        settings.providerQos,
+        settings.expiryDateMs,
+        settings.loggingContext,
+        settings.participantId
+    );
+};
 
 /**
  * Registers a provider so that it is publicly available
@@ -150,76 +149,72 @@ CapabilitiesRegistrar.prototype.register =
  *
  * @returns {Object} an A+ promise
  */
-CapabilitiesRegistrar.prototype.registerProvider =
-        function registerProvider(
-                domain,
-                provider,
-                providerQos,
-                expiryDateMs,
-                loggingContext,
-                participantId) {
-            this._checkIfReady();
+CapabilitiesRegistrar.prototype.registerProvider = function registerProvider(
+    domain,
+    provider,
+    providerQos,
+    expiryDateMs,
+    loggingContext,
+    participantId
+) {
+    this._checkIfReady();
 
-            var missingImplementations = provider.checkImplementation();
+    var missingImplementations = provider.checkImplementation();
 
-            if (missingImplementations.length > 0) {
-                throw new Error("provider: "
-                    + domain
-                    + "/"
-                    + provider.interfaceName
-                    + " is missing: "
-                    + missingImplementations.toString());
-            }
+    if (missingImplementations.length > 0) {
+        throw new Error(
+            "provider: " + domain + "/" + provider.interfaceName + " is missing: " + missingImplementations.toString()
+        );
+    }
 
-            // retrieve participantId if not passed in
-            if (participantId === undefined || participantId === null) {
-                participantId = this._participantIdStorage.getParticipantId(domain, provider);
-            }
+    // retrieve participantId if not passed in
+    if (participantId === undefined || participantId === null) {
+        participantId = this._participantIdStorage.getParticipantId(domain, provider);
+    }
 
-            if (loggingContext !== undefined) {
-                this._loggingManager.setLoggingContext(participantId, loggingContext);
-            }
+    if (loggingContext !== undefined) {
+        this._loggingManager.setLoggingContext(participantId, loggingContext);
+    }
 
-            // register provider at RequestReplyManager
-            this._requestReplyManager.addRequestCaller(participantId, provider);
+    // register provider at RequestReplyManager
+    this._requestReplyManager.addRequestCaller(participantId, provider);
 
-            // register routing address at routingTable
-            var isGloballyVisible = (providerQos.scope === ProviderScope.GLOBAL);
-            var messageRouterPromise =
-                    this._messageRouter.addNextHop(
-                            participantId,
-                            this._libjoynrMessagingAddress,
-                            isGloballyVisible);
+    // register routing address at routingTable
+    var isGloballyVisible = providerQos.scope === ProviderScope.GLOBAL;
+    var messageRouterPromise = this._messageRouter.addNextHop(
+        participantId,
+        this._libjoynrMessagingAddress,
+        isGloballyVisible
+    );
 
-            // if provider has at least one attribute, add it as publication provider
-            this._publicationManager.addPublicationProvider(participantId, provider);
+    // if provider has at least one attribute, add it as publication provider
+    this._publicationManager.addPublicationProvider(participantId, provider);
 
-            // TODO: Must be later provided by the user or retrieved from somewhere
-            var defaultPublicKeyId = "";
+    // TODO: Must be later provided by the user or retrieved from somewhere
+    var defaultPublicKeyId = "";
 
-            var discoveryStubPromise = this._discoveryStub.add(new DiscoveryEntry({
-                providerVersion : new Version({
-                    majorVersion : provider.constructor.MAJOR_VERSION,
-                    minorVersion : provider.constructor.MINOR_VERSION
-                }),
-                domain : domain,
-                interfaceName : provider.interfaceName,
-                participantId : participantId,
-                qos : providerQos,
-                publicKeyId : defaultPublicKeyId,
-                expiryDateMs : expiryDateMs || Date.now() + defaultExpiryIntervalMs,
-                lastSeenDateMs : Date.now()
-            }));
+    var discoveryStubPromise = this._discoveryStub.add(
+        new DiscoveryEntry({
+            providerVersion: new Version({
+                majorVersion: provider.constructor.MAJOR_VERSION,
+                minorVersion: provider.constructor.MINOR_VERSION
+            }),
+            domain: domain,
+            interfaceName: provider.interfaceName,
+            participantId: participantId,
+            qos: providerQos,
+            publicKeyId: defaultPublicKeyId,
+            expiryDateMs: expiryDateMs || Date.now() + defaultExpiryIntervalMs,
+            lastSeenDateMs: Date.now()
+        })
+    );
 
-            function registerProviderFinished() {
-                return participantId;
-            }
+    function registerProviderFinished() {
+        return participantId;
+    }
 
-            return Promise.all([
-                messageRouterPromise,
-                discoveryStubPromise
-            ]).then(registerProviderFinished);
-        };
+    return Promise.all([messageRouterPromise, discoveryStubPromise]).then(registerProviderFinished);
+};
 
 /**
  * Unregisters a provider so that it is not publicly available anymore
@@ -251,10 +246,7 @@ CapabilitiesRegistrar.prototype.unregisterProvider = function unregisterProvider
     // unregister provider at RequestReplyManager
     this._requestReplyManager.removeRequestCaller(participantId);
 
-    return Promise.all([
-        discoveryStubPromise,
-        messageRouterPromise
-    ]);
+    return Promise.all([discoveryStubPromise, messageRouterPromise]);
 };
 
 /**

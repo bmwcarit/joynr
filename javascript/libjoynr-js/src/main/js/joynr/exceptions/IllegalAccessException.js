@@ -18,10 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var Util = require('../util/UtilInternal');
-var JoynrRuntimeException = require('./JoynrRuntimeException');
-var LoggerFactory = require('../system/LoggerFactory');
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+var Util = require("../util/UtilInternal");
+var JoynrRuntimeException = require("./JoynrRuntimeException");
+var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings;
 
 /**
@@ -72,9 +72,7 @@ function IllegalAccessException(settings) {
 
 defaultSettings = {};
 
-TypeRegistrySingleton.getInstance().addType(
-        "joynr.exceptions.IllegalAccessException",
-        IllegalAccessException);
+TypeRegistrySingleton.getInstance().addType("joynr.exceptions.IllegalAccessException", IllegalAccessException);
 
 IllegalAccessException.prototype = new Error();
 IllegalAccessException.prototype.constructor = IllegalAccessException;

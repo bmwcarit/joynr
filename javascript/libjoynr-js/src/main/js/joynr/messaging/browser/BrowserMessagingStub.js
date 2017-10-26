@@ -18,7 +18,7 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../../util/Typing');
+var Typing = require("../../util/Typing");
 
 /**
  * @name BrowserMessagingStub
@@ -29,9 +29,7 @@ var Typing = require('../../util/Typing');
  * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
  */
 function BrowserMessagingStub(settings) {
-
     this._settings = settings;
-
 }
 /**
  * @name BrowserMessagingStub#transmit
@@ -41,8 +39,8 @@ function BrowserMessagingStub(settings) {
  */
 BrowserMessagingStub.prototype.transmit = function transmit(joynrMessage) {
     return this._settings.webMessagingStub.transmit({
-        windowId : this._settings.windowId,
-        message : joynrMessage
+        windowId: this._settings.windowId,
+        message: joynrMessage
     });
 };
 

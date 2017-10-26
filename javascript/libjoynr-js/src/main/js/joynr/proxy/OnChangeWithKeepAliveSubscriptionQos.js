@@ -18,10 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../util/Typing');
-var Util = require('../util/UtilInternal');
-var OnChangeSubscriptionQos = require('./OnChangeSubscriptionQos');
-var LoggerFactory = require('../system/LoggerFactory');
+var Typing = require("../util/Typing");
+var Util = require("../util/UtilInternal");
+var OnChangeSubscriptionQos = require("./OnChangeSubscriptionQos");
+var LoggerFactory = require("../system/LoggerFactory");
 
 var defaultSettings;
 
@@ -117,10 +117,7 @@ function OnChangeWithKeepAliveSubscriptionQos(settings) {
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
     if (settings && !(settings instanceof OnChangeWithKeepAliveSubscriptionQos)) {
         Typing.checkPropertyIfDefined(settings.maxIntervalMs, "Number", "settings.maxIntervalMs");
-        Typing.checkPropertyIfDefined(
-                settings.alertAfterIntervalMs,
-                "Number",
-                "settings.alertAfterIntervalMs");
+        Typing.checkPropertyIfDefined(settings.alertAfterIntervalMs, "Number", "settings.alertAfterIntervalMs");
     }
 
     /**
@@ -151,14 +148,18 @@ function OnChangeWithKeepAliveSubscriptionQos(settings) {
     Util.extend(this, defaultSettings, settings, onChangeSubscriptionQos);
 
     if (this.maxIntervalMs < OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS) {
-        log.warn("maxIntervalMs < MIN_MAX_INTERVAL_MS. Using MIN_MAX_INTERVAL_MS: "
-            + OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS);
+        log.warn(
+            "maxIntervalMs < MIN_MAX_INTERVAL_MS. Using MIN_MAX_INTERVAL_MS: " +
+                OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS
+        );
         this.maxIntervalMs = OnChangeWithKeepAliveSubscriptionQos.MIN_MAX_INTERVAL_MS;
     }
 
     if (this.maxIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS) {
-        log.warn("maxIntervalMs > MAX_MAX_INTERVAL_MS. Using MAX_MAX_INTERVAL_MS: "
-            + OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS);
+        log.warn(
+            "maxIntervalMs > MAX_MAX_INTERVAL_MS. Using MAX_MAX_INTERVAL_MS: " +
+                OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS
+        );
         this.maxIntervalMs = OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS;
     }
 
@@ -167,20 +168,20 @@ function OnChangeWithKeepAliveSubscriptionQos(settings) {
         this.maxIntervalMs = this.minIntervalMs;
     }
 
-    if (this.alertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL
-        && this.alertAfterIntervalMs < this.maxIntervalMs) {
-        log
-                .warn("alertAfterIntervalMs < maxIntervalMs. Using maxIntervalMs: "
-                    + this.maxIntervalMs);
+    if (
+        this.alertAfterIntervalMs !== OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL &&
+        this.alertAfterIntervalMs < this.maxIntervalMs
+    ) {
+        log.warn("alertAfterIntervalMs < maxIntervalMs. Using maxIntervalMs: " + this.maxIntervalMs);
         this.alertAfterIntervalMs = this.maxIntervalMs;
     }
 
     if (this.alertAfterIntervalMs > OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS) {
-        log
-                .warn("alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: "
-                    + OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
-        this.alertAfterIntervalMs =
-                OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS;
+        log.warn(
+            "alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: " +
+                OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+        );
+        this.alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS;
     }
 
     /**
@@ -194,7 +195,6 @@ function OnChangeWithKeepAliveSubscriptionQos(settings) {
     this.clearAlertAfterInterval = function clearAlertAfterInterval() {
         this.alertAfterIntervalMs = OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
     };
-
 }
 
 /**
@@ -232,7 +232,7 @@ OnChangeWithKeepAliveSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS = 2592000000;
  * @readonly
  */
 OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS =
-        OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
+    OnChangeWithKeepAliveSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
 
 /**
  * Minimal value for [maxIntervalMs]{@link OnChangeWithKeepAliveSubscriptionQos#maxIntervalMs}.
@@ -271,8 +271,8 @@ OnChangeWithKeepAliveSubscriptionQos.MAX_MAX_INTERVAL_MS = 2592000000;
 OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS = 60000;
 
 defaultSettings = {
-    alertAfterIntervalMs : OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS,
-    maxIntervalMs : OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS
+    alertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS,
+    maxIntervalMs: OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS
 };
 
 module.exports = OnChangeWithKeepAliveSubscriptionQos;

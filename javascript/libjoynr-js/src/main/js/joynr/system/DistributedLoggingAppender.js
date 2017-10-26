@@ -19,11 +19,11 @@
  * limitations under the License.
  * #L%
  */
-var JoynrLogEvent = require('./JoynrLogEvent');
-var JoynrLoggingContextTag = require('./JoynrLoggingContextTag');
-var LoggingManager = require('./LoggingManager');
-var Util = require('../util/UtilInternal');
-var JSONSerializer = require('../util/JSONSerializer');
+var JoynrLogEvent = require("./JoynrLogEvent");
+var JoynrLoggingContextTag = require("./JoynrLoggingContextTag");
+var LoggingManager = require("./LoggingManager");
+var Util = require("../util/UtilInternal");
+var JSONSerializer = require("../util/JSONSerializer");
 
 var DEFAULT_FLUSH_INTERVAL_MS = 60000;
 var DEFAULT_FLUSH_MAX_LOGEVENTS_COUNT = 20;
@@ -45,22 +45,17 @@ function DistributedLoggingAppender(config, loggingContexts) {
     queuedEvents = [];
     config = config || {};
     flushInterval = Number(config.flushInterval) || DEFAULT_FLUSH_INTERVAL_MS;
-    flushMaxLogEventsCount =
-            Number(config.flushMaxLogEventsCount) || DEFAULT_FLUSH_MAX_LOGEVENTS_COUNT;
+    flushMaxLogEventsCount = Number(config.flushMaxLogEventsCount) || DEFAULT_FLUSH_MAX_LOGEVENTS_COUNT;
 
     function logLostEventsCount(count) {
-        var logLostEventsEvent =
-                new JoynrLogEvent({
-                    timestamp : Date.now(),
-                    eventVersion : "1",
-                    path : "joynr/system/logging/",
-                    message : count
-                        + " newer events were discarded because"
-                        + " the logging queue was full.",
-                    priority : "ERROR"
-                });
+        var logLostEventsEvent = new JoynrLogEvent({
+            timestamp: Date.now(),
+            eventVersion: "1",
+            path: "joynr/system/logging/",
+            message: count + " newer events were discarded because" + " the logging queue was full.",
+            priority: "ERROR"
+        });
         loggingProxy.log(logLostEventsEvent);
-
     }
 
     /**
@@ -74,7 +69,7 @@ function DistributedLoggingAppender(config, loggingContexts) {
 
         try {
             loggingProxy.log({
-                logEvents : queuedEvents
+                logEvents: queuedEvents
             });
             queuedEvents.length = 0;
             if (eventsLostCount > 0) {
@@ -114,8 +109,10 @@ function DistributedLoggingAppender(config, loggingContexts) {
         var from;
         if (loggingProxy !== null) {
             from = getDiagnosticTag(loggingEvent, "from");
-            if (from === loggingProxy.proxyParticipantId
-                || from === loggingProxy.providerDiscoveryEntry.participantId) {
+            if (
+                from === loggingProxy.proxyParticipantId ||
+                from === loggingProxy.providerDiscoveryEntry.participantId
+            ) {
                 return true;
             }
         }
@@ -148,18 +145,18 @@ function DistributedLoggingAppender(config, loggingContexts) {
             }
 
             return new JoynrLoggingContextTag({
-                key : key,
-                value : stringValue
+                key: key,
+                value: stringValue
             });
         });
 
         loggedEvent = new JoynrLogEvent({
-            timestamp : loggingEvent.timeStampInMilliseconds,
-            eventVersion : "1",
-            path : loggingEvent.logger.name,
-            message : JSONSerializer.stringify(loggingEvent.messages),
-            priority : loggingEvent.level.name,
-            tags : tags
+            timestamp: loggingEvent.timeStampInMilliseconds,
+            eventVersion: "1",
+            path: loggingEvent.logger.name,
+            message: JSONSerializer.stringify(loggingEvent.messages),
+            priority: loggingEvent.level.name,
+            tags: tags
         });
         queuedEvents.push(loggedEvent);
 

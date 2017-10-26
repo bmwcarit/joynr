@@ -18,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../global/Promise');
-var BroadcastFilterParameters = require('./BroadcastFilterParameters');
-var SubscriptionUtil = require('../dispatching/subscription/util/SubscriptionUtil');
+var Promise = require("../../global/Promise");
+var BroadcastFilterParameters = require("./BroadcastFilterParameters");
+var SubscriptionUtil = require("../dispatching/subscription/util/SubscriptionUtil");
 
 /**
  * Checks if the given datatypes and values match the given broadcast parameters
@@ -38,7 +38,11 @@ var SubscriptionUtil = require('../dispatching/subscription/util/SubscriptionUti
  * @returns undefined if unnamedBroadcastValues does not match broadcastSignature
  */
 function getNamedParameters(unnamedBroadcastValues, broadcastParameter) {
-    var i, parameter, parameterName, namedParameters = {}, filteredParameterType;
+    var i,
+        parameter,
+        parameterName,
+        namedParameters = {},
+        filteredParameterType;
 
     // check if number of given parameters matches number
     // of parameters in broadcast signature (keys.length)
@@ -120,44 +124,43 @@ function ProxyEvent(parent, settings) {
      *          be used to unsubscribe from this subscription later.
      * @throws {Error} if subscribeParameters.partitions contains invalid characters
      */
-    this.subscribe =
-            function subscribe(subscribeParameters) {
-                SubscriptionUtil.validatePartitions(subscribeParameters.partitions);
-                if (subscribeParameters.filterParameters !== undefined
-                    && subscribeParameters.filterParameters !== null) {
-                    var checkResult =
-                            SubscriptionUtil.checkFilterParameters(
-                                    settings.filterParameters,
-                                    subscribeParameters.filterParameters.filterParameters,
-                                    settings.broadcastName);
-                    if (checkResult.caughtErrors.length !== 0) {
-                        var errorMessage = JSON.stringify(checkResult.caughtErrors);
-                        return Promise.reject(new Error(
-                                "SubscriptionRequest could not be processed, as the filterParameters \""
-                                    + JSON.stringify(subscribeParameters.filterParameters)
-                                    + "\" are wrong: "
-                                    + errorMessage));
-                    }
-                }
-                return settings.dependencies.subscriptionManager.registerBroadcastSubscription({
-                    proxyId : parent.proxyParticipantId,
-                    providerDiscoveryEntry : parent.providerDiscoveryEntry,
-                    broadcastName : settings.broadcastName,
-                    broadcastParameter : settings.broadcastParameter,
-                    subscriptionQos : subscribeParameters.subscriptionQos,
-                    subscriptionId : subscribeParameters.subscriptionId,
-                    onReceive : function(response) {
-                        subscribeParameters.onReceive(getNamedParameters(
-                                response,
-                                settings.broadcastParameter));
-                    },
-                    selective : settings.selective,
-                    partitions : subscribeParameters.partitions || [],
-                    onError : subscribeParameters.onError,
-                    onSubscribed : subscribeParameters.onSubscribed,
-                    filterParameters : subscribeParameters.filterParameters
-                });
-            };
+    this.subscribe = function subscribe(subscribeParameters) {
+        SubscriptionUtil.validatePartitions(subscribeParameters.partitions);
+        if (subscribeParameters.filterParameters !== undefined && subscribeParameters.filterParameters !== null) {
+            var checkResult = SubscriptionUtil.checkFilterParameters(
+                settings.filterParameters,
+                subscribeParameters.filterParameters.filterParameters,
+                settings.broadcastName
+            );
+            if (checkResult.caughtErrors.length !== 0) {
+                var errorMessage = JSON.stringify(checkResult.caughtErrors);
+                return Promise.reject(
+                    new Error(
+                        'SubscriptionRequest could not be processed, as the filterParameters "' +
+                            JSON.stringify(subscribeParameters.filterParameters) +
+                            '" are wrong: ' +
+                            errorMessage
+                    )
+                );
+            }
+        }
+        return settings.dependencies.subscriptionManager.registerBroadcastSubscription({
+            proxyId: parent.proxyParticipantId,
+            providerDiscoveryEntry: parent.providerDiscoveryEntry,
+            broadcastName: settings.broadcastName,
+            broadcastParameter: settings.broadcastParameter,
+            subscriptionQos: subscribeParameters.subscriptionQos,
+            subscriptionId: subscribeParameters.subscriptionId,
+            onReceive: function(response) {
+                subscribeParameters.onReceive(getNamedParameters(response, settings.broadcastParameter));
+            },
+            selective: settings.selective,
+            partitions: subscribeParameters.partitions || [],
+            onError: subscribeParameters.onError,
+            onSubscribed: subscribeParameters.onSubscribed,
+            filterParameters: subscribeParameters.filterParameters
+        });
+    };
 
     this.createFilterParameters = function createFilterParameters() {
         return new BroadcastFilterParameters(settings.filterParameters);
@@ -176,8 +179,8 @@ function ProxyEvent(parent, settings) {
      */
     this.unsubscribe = function unsubscribe(unsubscribeParameters) {
         return settings.dependencies.subscriptionManager.unregisterSubscription({
-            messagingQos : settings.messagingQos,
-            subscriptionId : unsubscribeParameters.subscriptionId
+            messagingQos: settings.messagingQos,
+            subscriptionId: unsubscribeParameters.subscriptionId
         });
     };
 

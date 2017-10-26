@@ -36,17 +36,13 @@ var Typing = require("../joynr/util/Typing");
  *
  * @constructor LocalStorage
  */
-var LocalStorage =
-        function(settings) {
-            settings = settings || {};
-            Typing.checkPropertyIfDefined(
-                    settings.clearPersistency,
-                    "Boolean",
-                    "settings.clearPersistency");
-            if (settings.clearPersistency) {
-                localStorage.clear();
-            }
-            return localStorage;
-        };
+var LocalStorage = function(settings) {
+    settings = settings || {};
+    Typing.checkPropertyIfDefined(settings.clearPersistency, "Boolean", "settings.clearPersistency");
+    if (settings.clearPersistency) {
+        localStorage.clear();
+    }
+    return localStorage;
+};
 
 module.exports = LocalStorage;

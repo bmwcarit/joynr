@@ -18,73 +18,100 @@
  * limitations under the License.
  * #L%
  */
-var defaultMessagingSettings =
-        require('../../../classes/joynr/start/settings/defaultMessagingSettings');
-var MessagingQos = require('../../../classes/joynr/messaging/MessagingQos');
-var MessagingQosEffort = require('../../../classes/joynr/messaging/MessagingQosEffort');
+var defaultMessagingSettings = require("../../../classes/joynr/start/settings/defaultMessagingSettings");
+var MessagingQos = require("../../../classes/joynr/messaging/MessagingQos");
+var MessagingQosEffort = require("../../../classes/joynr/messaging/MessagingQosEffort");
 
 describe("libjoynr-js.joynr.messaging.MessagingQos", function() {
     it("is instantiable", function() {
         expect(new MessagingQos()).toBeDefined();
-        expect(new MessagingQos({
-            ttl : 60000
-        })).toBeDefined();
-        expect(new MessagingQos({
-            ttl : 60000,
-            effort : MessagingQosEffort.BEST_EFFORT
-        })).toBeDefined();
-        expect(new MessagingQos({
-            ttl : 60000,
-            encrypt : true
-        })).toBeDefined();
-        expect(new MessagingQos({
-            ttl : 60000,
-            effort : MessagingQosEffort.BEST_EFFORT,
-            encrypt : true
-        })).toBeDefined();
-        expect(new MessagingQos({
-            effort : MessagingQosEffort.BEST_EFFORT,
-            encrypt : true
-        })).toBeDefined();
-        expect(new MessagingQos({
-            encrypt : true
-        })).toBeDefined();
-        expect(new MessagingQos({
-            ttl : 60000,
-            compress : true
-        })).toBeDefined();
-        expect(new MessagingQos({
-            ttl : 60000,
-            effort : MessagingQosEffort.BEST_EFFORT,
-            compress : true
-        })).toBeDefined();
-        expect(new MessagingQos({
-            effort : MessagingQosEffort.BEST_EFFORT,
-            compress : true
-        })).toBeDefined();
-        expect(new MessagingQos({
-            compress : true
-        })).toBeDefined();
-        expect(new MessagingQos({
-            ttl : 60000,
-            encrypt : true,
-            compress : true
-        })).toBeDefined();
-        expect(new MessagingQos({
-            ttl : 60000,
-            effort : MessagingQosEffort.BEST_EFFORT,
-            encrypt : true,
-            compress : true
-        })).toBeDefined();
-        expect(new MessagingQos({
-            effort : MessagingQosEffort.BEST_EFFORT,
-            encrypt : true,
-            compress : true
-        })).toBeDefined();
-        expect(new MessagingQos({
-            compress : true,
-            encrypt : true
-        })).toBeDefined();
+        expect(
+            new MessagingQos({
+                ttl: 60000
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                ttl: 60000,
+                effort: MessagingQosEffort.BEST_EFFORT
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                ttl: 60000,
+                encrypt: true
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                ttl: 60000,
+                effort: MessagingQosEffort.BEST_EFFORT,
+                encrypt: true
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                effort: MessagingQosEffort.BEST_EFFORT,
+                encrypt: true
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                encrypt: true
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                ttl: 60000,
+                compress: true
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                ttl: 60000,
+                effort: MessagingQosEffort.BEST_EFFORT,
+                compress: true
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                effort: MessagingQosEffort.BEST_EFFORT,
+                compress: true
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                compress: true
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                ttl: 60000,
+                encrypt: true,
+                compress: true
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                ttl: 60000,
+                effort: MessagingQosEffort.BEST_EFFORT,
+                encrypt: true,
+                compress: true
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                effort: MessagingQosEffort.BEST_EFFORT,
+                encrypt: true,
+                compress: true
+            })
+        ).toBeDefined();
+        expect(
+            new MessagingQos({
+                compress: true,
+                encrypt: true
+            })
+        ).toBeDefined();
     });
 
     it("is of correct type", function() {
@@ -102,16 +129,18 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", function() {
     });
 
     it("constructs correct default object", function() {
-        expect(new MessagingQos()).toEqual(new MessagingQos({
-            ttl : MessagingQos.DEFAULT_TTL
-        }));
+        expect(new MessagingQos()).toEqual(
+            new MessagingQos({
+                ttl: MessagingQos.DEFAULT_TTL
+            })
+        );
         expect(new MessagingQos().encrypt).toEqual(false);
         expect(new MessagingQos().compress).toEqual(false);
     });
 
     function testTtlValues(ttl) {
         var messagingQos = new MessagingQos({
-            ttl : ttl
+            ttl: ttl
         });
         expect(messagingQos.ttl).toBe(ttl);
     }
@@ -123,16 +152,20 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", function() {
     });
 
     it("prevents ttl values larger than maxTtl", function() {
-        expect(new MessagingQos({
-            ttl : defaultMessagingSettings.MAX_MESSAGING_TTL_MS + 1
-        })).toEqual(new MessagingQos({
-            ttl : defaultMessagingSettings.MAX_MESSAGING_TTL_MS
-        }));
+        expect(
+            new MessagingQos({
+                ttl: defaultMessagingSettings.MAX_MESSAGING_TTL_MS + 1
+            })
+        ).toEqual(
+            new MessagingQos({
+                ttl: defaultMessagingSettings.MAX_MESSAGING_TTL_MS
+            })
+        );
     });
 
     function testEffortValues(effort, expected) {
         var messagingQos = new MessagingQos({
-            effort : effort
+            effort: effort
         });
         expect(messagingQos.effort).toBe(expected);
     }
@@ -146,7 +179,7 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", function() {
 
     function testEncryptValues(encrypt) {
         var messagingQos = new MessagingQos({
-            encrypt : encrypt
+            encrypt: encrypt
         });
         expect(messagingQos.encrypt).toBe(encrypt);
     }
@@ -158,7 +191,7 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", function() {
 
     function testCompressValues(compress) {
         var messagingQos = new MessagingQos({
-            compress : compress
+            compress: compress
         });
         expect(messagingQos.compress).toBe(compress);
     }
@@ -170,225 +203,220 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", function() {
 
     var runsWithCustomHeaders = [
         {
-            params : {
-                key : "key",
-                value : "value"
+            params: {
+                key: "key",
+                value: "value"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "1key",
-                value : "1value"
+            params: {
+                key: "1key",
+                value: "1value"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key1",
-                value : "value1"
+            params: {
+                key: "key1",
+                value: "value1"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key-1",
-                value : "value1"
+            params: {
+                key: "key-1",
+                value: "value1"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "123",
-                value : "123"
+            params: {
+                key: "123",
+                value: "123"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "one two"
+            params: {
+                key: "key",
+                value: "one two"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "one;two"
+            params: {
+                key: "key",
+                value: "one;two"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "one:two"
+            params: {
+                key: "key",
+                value: "one:two"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "one,two"
+            params: {
+                key: "key",
+                value: "one,two"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "one+two"
+            params: {
+                key: "key",
+                value: "one+two"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "one&two"
+            params: {
+                key: "key",
+                value: "one&two"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "one?two"
+            params: {
+                key: "key",
+                value: "one?two"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "one-two"
+            params: {
+                key: "key",
+                value: "one-two"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "one.two"
+            params: {
+                key: "key",
+                value: "one.two"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "one*two"
+            params: {
+                key: "key",
+                value: "one*two"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "one/two"
+            params: {
+                key: "key",
+                value: "one/two"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "one\\two"
+            params: {
+                key: "key",
+                value: "one\\two"
             },
-            ok : true
+            ok: true
         },
         {
-            params : {
-                key : "key",
-                value : "wrongvalue$"
+            params: {
+                key: "key",
+                value: "wrongvalue$"
             },
-            ok : false
+            ok: false
         },
         {
-            params : {
-                key : "key",
-                value : "wrongvalue%"
+            params: {
+                key: "key",
+                value: "wrongvalue%"
             },
-            ok : false
+            ok: false
         },
         {
-            params : {
-                key : "wrongkey ",
-                value : "value"
+            params: {
+                key: "wrongkey ",
+                value: "value"
             },
-            ok : false
+            ok: false
         },
         {
-            params : {
-                key : "wrongkey;",
-                value : "value"
+            params: {
+                key: "wrongkey;",
+                value: "value"
             },
-            ok : false
+            ok: false
         },
         {
-            params : {
-                key : "wrongkey:",
-                value : "value"
+            params: {
+                key: "wrongkey:",
+                value: "value"
             },
-            ok : false
+            ok: false
         },
         {
-            params : {
-                key : "wrongkey,",
-                value : "value"
+            params: {
+                key: "wrongkey,",
+                value: "value"
             },
-            ok : false
+            ok: false
         },
         {
-            params : {
-                key : "wrongkey+",
-                value : "value"
+            params: {
+                key: "wrongkey+",
+                value: "value"
             },
-            ok : false
+            ok: false
         },
         {
-            params : {
-                key : "wrongkey&",
-                value : "value"
+            params: {
+                key: "wrongkey&",
+                value: "value"
             },
-            ok : false
+            ok: false
         },
         {
-            params : {
-                key : "wrongkey?",
-                value : "value"
+            params: {
+                key: "wrongkey?",
+                value: "value"
             },
-            ok : false
+            ok: false
         },
         {
-            params : {
-                key : "wrongkey.",
-                value : "value"
+            params: {
+                key: "wrongkey.",
+                value: "value"
             },
-            ok : false
+            ok: false
         },
         {
-            params : {
-                key : "wrongkey*",
-                value : "value"
+            params: {
+                key: "wrongkey*",
+                value: "value"
             },
-            ok : false
+            ok: false
         },
         {
-            params : {
-                key : "wrongkey/",
-                value : "value"
+            params: {
+                key: "wrongkey/",
+                value: "value"
             },
-            ok : false
+            ok: false
         },
         {
-            params : {
-                key : "wrongkey\\",
-                value : "value"
+            params: {
+                key: "wrongkey\\",
+                value: "value"
             },
-            ok : false
+            ok: false
         }
     ];
     runsWithCustomHeaders.forEach(function(run) {
         var expectedTo = run.ok ? "passes" : "fails";
         var params = run.params;
-        it("setting custom header "
-            + expectedTo
-            + " when key: "
-            + params.key
-            + " value: "
-            + params.value, function() {
+        it("setting custom header " + expectedTo + " when key: " + params.key + " value: " + params.value, function() {
             var key = params.key;
             var value = params.value;
             var messagingQos = new MessagingQos();

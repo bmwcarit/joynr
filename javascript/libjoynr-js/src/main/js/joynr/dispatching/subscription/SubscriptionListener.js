@@ -52,7 +52,6 @@ function SubscriptionListener(settings) {
      * @name SubscriptionListener#onError
      */
     this.onError = settings.onError;
-
 }
 
 module.exports = SubscriptionListener;

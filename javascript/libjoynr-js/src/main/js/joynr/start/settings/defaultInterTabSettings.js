@@ -19,12 +19,11 @@
  */
 
 var window = global.window || {
-    location : {}
+    location: {}
 };
 var location = global.location || {};
 var defaultSettings = {};
 defaultSettings.window = window;
 defaultSettings.parentWindow = window.opener || window.top;
-defaultSettings.parentOrigin =
-        location.origin || (window.location.protocol + '//' + window.location.host);
+defaultSettings.parentOrigin = location.origin || window.location.protocol + "//" + window.location.host;
 module.exports = defaultSettings;

@@ -17,14 +17,14 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../../classes/global/Promise');
-var CapabilitiesUtil = require('../../../classes/joynr/util/CapabilitiesUtil');
-var DiscoveryEntry = require('../../../classes/joynr/types/DiscoveryEntry');
-var DiscoveryEntryWithMetaInfo = require('../../../classes/joynr/types/DiscoveryEntryWithMetaInfo');
-var GlobalDiscoveryEntry = require('../../../classes/joynr/types/GlobalDiscoveryEntry');
-var Version = require('../../../classes/joynr/types/Version');
-var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
-var MqttAddress = require('../../../classes/joynr/system/RoutingTypes/MqttAddress');
+var Promise = require("../../../classes/global/Promise");
+var CapabilitiesUtil = require("../../../classes/joynr/util/CapabilitiesUtil");
+var DiscoveryEntry = require("../../../classes/joynr/types/DiscoveryEntry");
+var DiscoveryEntryWithMetaInfo = require("../../../classes/joynr/types/DiscoveryEntryWithMetaInfo");
+var GlobalDiscoveryEntry = require("../../../classes/joynr/types/GlobalDiscoveryEntry");
+var Version = require("../../../classes/joynr/types/Version");
+var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
+var MqttAddress = require("../../../classes/joynr/system/RoutingTypes/MqttAddress");
 
 describe("libjoynr-js.joynr.CapabilitiesUtil", function() {
     it("is of correct type and has all members", function() {
@@ -36,14 +36,11 @@ describe("libjoynr-js.joynr.CapabilitiesUtil", function() {
         expect(CapabilitiesUtil.toDiscoveryEntries).toBeDefined();
         expect(typeof CapabilitiesUtil.toDiscoveryEntries === "function").toBeTruthy();
         expect(CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry).toBeDefined();
-        expect(typeof CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry === "function")
-                .toBeTruthy();
+        expect(typeof CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry === "function").toBeTruthy();
         expect(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo).toBeDefined();
-        expect(typeof CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo === "function")
-                .toBeTruthy();
+        expect(typeof CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo === "function").toBeTruthy();
         expect(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray).toBeDefined();
-        expect(typeof CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray === "function")
-                .toBeTruthy();
+        expect(typeof CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray === "function").toBeTruthy();
     });
 });
 
@@ -66,8 +63,8 @@ describe("libjoynr-js.joynr.CapabilitiesUtil.discoveryEntryConversions", functio
 
     beforeEach(function() {
         providerVersion = new Version({
-            majorVersion : 47,
-            minorVersion : 11
+            majorVersion: 47,
+            minorVersion: 11
         });
         providerDomain = "providerDomain";
         interfaceName = "interfaceName";
@@ -83,50 +80,50 @@ describe("libjoynr-js.joynr.CapabilitiesUtil.discoveryEntryConversions", functio
         serializedAddress = JSON.stringify(address);
 
         discoveryEntry = new DiscoveryEntry({
-            providerVersion : providerVersion,
-            domain : providerDomain,
-            interfaceName : interfaceName,
-            participantId : providerParticipantId,
-            qos : providerQos,
-            lastSeenDateMs : lastSeenDateMs,
-            expiryDateMs : expiryDateMs,
-            publicKeyId : publicKeyId
+            providerVersion: providerVersion,
+            domain: providerDomain,
+            interfaceName: interfaceName,
+            participantId: providerParticipantId,
+            qos: providerQos,
+            lastSeenDateMs: lastSeenDateMs,
+            expiryDateMs: expiryDateMs,
+            publicKeyId: publicKeyId
         });
 
         globalDiscoveryEntry = new GlobalDiscoveryEntry({
-            providerVersion : providerVersion,
-            domain : providerDomain,
-            interfaceName : interfaceName,
-            participantId : providerParticipantId,
-            qos : providerQos,
-            lastSeenDateMs : lastSeenDateMs,
-            expiryDateMs : expiryDateMs,
-            publicKeyId : publicKeyId,
-            address : serializedAddress
+            providerVersion: providerVersion,
+            domain: providerDomain,
+            interfaceName: interfaceName,
+            participantId: providerParticipantId,
+            qos: providerQos,
+            lastSeenDateMs: lastSeenDateMs,
+            expiryDateMs: expiryDateMs,
+            publicKeyId: publicKeyId,
+            address: serializedAddress
         });
 
         localDiscoveryEntryWithMetaInfo = new DiscoveryEntryWithMetaInfo({
-            providerVersion : providerVersion,
-            domain : providerDomain,
-            interfaceName : interfaceName,
-            participantId : providerParticipantId,
-            qos : providerQos,
-            lastSeenDateMs : lastSeenDateMs,
-            expiryDateMs : expiryDateMs,
-            publicKeyId : publicKeyId,
-            isLocal : true
+            providerVersion: providerVersion,
+            domain: providerDomain,
+            interfaceName: interfaceName,
+            participantId: providerParticipantId,
+            qos: providerQos,
+            lastSeenDateMs: lastSeenDateMs,
+            expiryDateMs: expiryDateMs,
+            publicKeyId: publicKeyId,
+            isLocal: true
         });
 
         globalDiscoveryEntryWithMetaInfo = new DiscoveryEntryWithMetaInfo({
-            providerVersion : providerVersion,
-            domain : providerDomain,
-            interfaceName : interfaceName,
-            participantId : providerParticipantId,
-            qos : providerQos,
-            lastSeenDateMs : lastSeenDateMs,
-            expiryDateMs : expiryDateMs,
-            publicKeyId : publicKeyId,
-            isLocal : false
+            providerVersion: providerVersion,
+            domain: providerDomain,
+            interfaceName: interfaceName,
+            participantId: providerParticipantId,
+            qos: providerQos,
+            lastSeenDateMs: lastSeenDateMs,
+            expiryDateMs: expiryDateMs,
+            publicKeyId: publicKeyId,
+            isLocal: false
         });
     });
 
@@ -153,92 +150,68 @@ describe("libjoynr-js.joynr.CapabilitiesUtil.discoveryEntryConversions", functio
     }
 
     it("convert to GlobalDiscoveryEntry", function() {
-        var convertedDiscoveryEntry =
-                CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, address);
-        compareGlobalDiscoveryEntries(
-                serializedAddress,
-                globalDiscoveryEntry,
-                convertedDiscoveryEntry);
+        var convertedDiscoveryEntry = CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, address);
+        compareGlobalDiscoveryEntries(serializedAddress, globalDiscoveryEntry, convertedDiscoveryEntry);
 
-        convertedDiscoveryEntry =
-                CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(
-                        localDiscoveryEntryWithMetaInfo,
-                        address);
-        compareGlobalDiscoveryEntries(
-                serializedAddress,
-                globalDiscoveryEntry,
-                convertedDiscoveryEntry);
+        convertedDiscoveryEntry = CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(
+            localDiscoveryEntryWithMetaInfo,
+            address
+        );
+        compareGlobalDiscoveryEntries(serializedAddress, globalDiscoveryEntry, convertedDiscoveryEntry);
 
-        convertedDiscoveryEntry =
-                CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(
-                        globalDiscoveryEntryWithMetaInfo,
-                        address);
-        compareGlobalDiscoveryEntries(
-                serializedAddress,
-                globalDiscoveryEntry,
-                convertedDiscoveryEntry);
+        convertedDiscoveryEntry = CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(
+            globalDiscoveryEntryWithMetaInfo,
+            address
+        );
+        compareGlobalDiscoveryEntries(serializedAddress, globalDiscoveryEntry, convertedDiscoveryEntry);
     });
 
     it("convert to local DiscoveryEntryWithMetaInfo", function() {
-        var convertedDiscoveryEntry =
-                CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(true, discoveryEntry);
-        compareDiscoveryEntriesWithMetaInfo(
-                true,
-                localDiscoveryEntryWithMetaInfo,
-                convertedDiscoveryEntry);
+        var convertedDiscoveryEntry = CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(true, discoveryEntry);
+        compareDiscoveryEntriesWithMetaInfo(true, localDiscoveryEntryWithMetaInfo, convertedDiscoveryEntry);
 
-        convertedDiscoveryEntry =
-                CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(true, globalDiscoveryEntry);
-        compareDiscoveryEntriesWithMetaInfo(
-                true,
-                localDiscoveryEntryWithMetaInfo,
-                convertedDiscoveryEntry);
+        convertedDiscoveryEntry = CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(true, globalDiscoveryEntry);
+        compareDiscoveryEntriesWithMetaInfo(true, localDiscoveryEntryWithMetaInfo, convertedDiscoveryEntry);
     });
 
     it("convert to global DiscoveryEntryWithMetaInfo", function() {
-        var convertedDiscoveryEntry =
-                CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(false, discoveryEntry);
-        compareDiscoveryEntriesWithMetaInfo(
-                false,
-                localDiscoveryEntryWithMetaInfo,
-                convertedDiscoveryEntry);
+        var convertedDiscoveryEntry = CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(false, discoveryEntry);
+        compareDiscoveryEntriesWithMetaInfo(false, localDiscoveryEntryWithMetaInfo, convertedDiscoveryEntry);
 
-        convertedDiscoveryEntry =
-                CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(false, globalDiscoveryEntry);
-        compareDiscoveryEntriesWithMetaInfo(
-                false,
-                localDiscoveryEntryWithMetaInfo,
-                convertedDiscoveryEntry);
+        convertedDiscoveryEntry = CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(false, globalDiscoveryEntry);
+        compareDiscoveryEntriesWithMetaInfo(false, localDiscoveryEntryWithMetaInfo, convertedDiscoveryEntry);
     });
 
     function createArrayOfDiscoveryEntries() {
         var discoveryEntries = [];
         discoveryEntries.push(discoveryEntry);
-        discoveryEntries.push(new DiscoveryEntry({
-            providerVersion : providerVersion,
-            domain : "providerDomain2",
-            interfaceName : interfaceName,
-            participantId : "providerParticipantId2",
-            qos : providerQos,
-            lastSeenDateMs : 4711,
-            expiryDateMs : 4712,
-            publicKeyId : "testPublicKeyId2"
-        }));
+        discoveryEntries.push(
+            new DiscoveryEntry({
+                providerVersion: providerVersion,
+                domain: "providerDomain2",
+                interfaceName: interfaceName,
+                participantId: "providerParticipantId2",
+                qos: providerQos,
+                lastSeenDateMs: 4711,
+                expiryDateMs: 4712,
+                publicKeyId: "testPublicKeyId2"
+            })
+        );
         return discoveryEntries;
     }
 
     function createArrayOfDiscoveryEntriesWithMetaInfo(isLocal) {
         var discoveryEntries = [];
         var discoveryEntry2 = new DiscoveryEntryWithMetaInfo({
-            providerVersion : providerVersion,
-            domain : "providerDomain2",
-            interfaceName : interfaceName,
-            participantId : "providerParticipantId2",
-            qos : providerQos,
-            lastSeenDateMs : 4711,
-            expiryDateMs : 4712,
-            publicKeyId : "testPublicKeyId2",
-            isLocal : false
+            providerVersion: providerVersion,
+            domain: "providerDomain2",
+            interfaceName: interfaceName,
+            participantId: "providerParticipantId2",
+            qos: providerQos,
+            lastSeenDateMs: 4711,
+            expiryDateMs: 4712,
+            publicKeyId: "testPublicKeyId2",
+            isLocal: false
         });
         if (isLocal === true) {
             discoveryEntries.push(localDiscoveryEntryWithMetaInfo);
@@ -260,21 +233,21 @@ describe("libjoynr-js.joynr.CapabilitiesUtil.discoveryEntryConversions", functio
 
     it("convert to array of local DiscoveryEntryWithMetaInfo", function() {
         var discoveryEntryArray = createArrayOfDiscoveryEntries();
-        var convertedDiscoveryEntryArray =
-                CapabilitiesUtil
-                        .convertToDiscoveryEntryWithMetaInfoArray(true, discoveryEntryArray);
+        var convertedDiscoveryEntryArray = CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(
+            true,
+            discoveryEntryArray
+        );
         var expected = createArrayOfDiscoveryEntriesWithMetaInfo(true);
         compareArrayOfDiscoveryEntriesWithMetaInfo(true, expected, convertedDiscoveryEntryArray);
     });
 
     it("convert to array of global DiscoveryEntryWithMetaInfo", function() {
         var discoveryEntryArray = createArrayOfDiscoveryEntries();
-        var convertedDiscoveryEntryArray =
-                CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(
-                        false,
-                        discoveryEntryArray);
+        var convertedDiscoveryEntryArray = CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(
+            false,
+            discoveryEntryArray
+        );
         var expected = createArrayOfDiscoveryEntriesWithMetaInfo(false);
         compareArrayOfDiscoveryEntriesWithMetaInfo(false, expected, convertedDiscoveryEntryArray);
     });
-
 });

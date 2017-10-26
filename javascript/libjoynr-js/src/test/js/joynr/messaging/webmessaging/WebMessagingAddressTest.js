@@ -18,20 +18,19 @@
  * limitations under the License.
  * #L%
  */
-var WebMessagingAddress =
-        require('../../../../classes/joynr/messaging/webmessaging/WebMessagingAddress');
+var WebMessagingAddress = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingAddress");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingAddress", function() {
     var window, origin, webMessagingAddress;
 
     beforeEach(function() {
         window = {
-            key : "window"
+            key: "window"
         };
         origin = "origin";
         webMessagingAddress = new WebMessagingAddress({
-            window : window,
-            origin : origin
+            window: window,
+            origin: origin
         });
     });
 
@@ -48,35 +47,40 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingAddress", functio
 
     it("throws on missing or wrongly typed arguments in transmit", function() {
         expect(function() {
-            webMessagingAddress = new WebMessagingAddress({ // correct arguments
-                window : window,
-                origin : origin
+            webMessagingAddress = new WebMessagingAddress({
+                // correct arguments
+                window: window,
+                origin: origin
             });
         }).not.toThrow();
 
         expect(function() {
-            webMessagingAddress = new WebMessagingAddress({ // window is of wrong type
-                window : "",
-                origin : origin
+            webMessagingAddress = new WebMessagingAddress({
+                // window is of wrong type
+                window: "",
+                origin: origin
             });
         }).toThrow();
 
         expect(function() {
-            webMessagingAddress = new WebMessagingAddress({ // origin is of wrong type
-                window : window,
-                origin : {}
+            webMessagingAddress = new WebMessagingAddress({
+                // origin is of wrong type
+                window: window,
+                origin: {}
             });
         }).toThrow();
 
         expect(function() {
-            webMessagingAddress = new WebMessagingAddress({ // missing window argument
-                origin : origin
+            webMessagingAddress = new WebMessagingAddress({
+                // missing window argument
+                origin: origin
             });
         }).toThrow();
 
         expect(function() {
-            webMessagingAddress = new WebMessagingAddress({ // missing origin argument
-                window : window
+            webMessagingAddress = new WebMessagingAddress({
+                // missing origin argument
+                window: window
             });
         }).toThrow();
 
@@ -100,5 +104,4 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingAddress", functio
     it("retrieves origin correctly", function() {
         expect(webMessagingAddress.getOrigin()).toEqual(origin);
     });
-
 });

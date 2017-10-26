@@ -18,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../../global/Promise');
-var JSONSerializer = require('../../util/JSONSerializer');
-var LoggerFactory = require('../../system/LoggerFactory');
+var Promise = require("../../../global/Promise");
+var JSONSerializer = require("../../util/JSONSerializer");
+var LoggerFactory = require("../../system/LoggerFactory");
 
 var log = LoggerFactory.getLogger("joynr/messaging/webmessaging/WebMessagingStub");
 /**
@@ -41,11 +41,10 @@ function WebMessagingStub(settings) {
  *
  * @param {Object|JoynrMessage} message the message to transmit
  */
-WebMessagingStub.prototype.transmit =
-        function transmit(message) {
-            //TODO: check why sending a JoynrMessage provokes the following error
-            // maybe enumerability or visibility of members while using Object.defineProperties
-            /*
+WebMessagingStub.prototype.transmit = function transmit(message) {
+    //TODO: check why sending a JoynrMessage provokes the following error
+    // maybe enumerability or visibility of members while using Object.defineProperties
+    /*
              DataCloneError: An object could not be cloned.
              code: 25
              message: "An object could not be cloned."
@@ -53,12 +52,10 @@ WebMessagingStub.prototype.transmit =
              stack: "Error: An object could not be cloned.
              __proto__: DOMException
              */
-            log.debug("transmit message: \"" + JSONSerializer.stringify(message) + "\"");
-            this._settings.window.postMessage(
-                    JSON.parse(JSONSerializer.stringify(message)),
-                    this._settings.origin);
+    log.debug('transmit message: "' + JSONSerializer.stringify(message) + '"');
+    this._settings.window.postMessage(JSON.parse(JSONSerializer.stringify(message)), this._settings.origin);
 
-            return Promise.resolve();
-        };
+    return Promise.resolve();
+};
 
 module.exports = WebMessagingStub;

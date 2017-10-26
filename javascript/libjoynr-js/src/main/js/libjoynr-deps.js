@@ -27,71 +27,69 @@ var libjoynrExports;
 
 // place the require.js module name of all modules that are part of the external joynr API.
 libjoynrExports = [
-    './joynr/Runtime',
-    './joynr/buildSignature',
-    './joynr/messaging/MessagingQos',
-    './joynr/proxy/PeriodicSubscriptionQos',
-    './joynr/proxy/OnChangeSubscriptionQos',
-    './joynr/proxy/MulticastSubscriptionQos',
-    './joynr/proxy/OnChangeWithKeepAliveSubscriptionQos',
-    './joynr/proxy/BroadcastFilterParameters',
-    './joynr/types/ArbitrationStrategyCollection',
-    './joynr/util/Util',
-    './joynr/exceptions/JoynrException',
-    './joynr/exceptions/JoynrRuntimeException',
-    './joynr/exceptions/ApplicationException',
-    './joynr/exceptions/DiscoveryException',
-    './joynr/exceptions/IllegalAccessException',
-    './joynr/exceptions/MethodInvocationException',
-    './joynr/exceptions/NoCompatibleProviderFoundException',
-    './joynr/exceptions/ProviderRuntimeException',
-    './joynr/exceptions/PublicationMissedException',
-    './joynr/exceptions/SubscriptionException',
-    './joynr/types/ProviderQos',
-    './joynr/types/ProviderScope',
-    './joynr/types/CustomParameter',
-    './joynr/proxy/DiscoveryQos',
-    './joynr/types/DiscoveryScope',
-    './joynr/system/RoutingTypes/BrowserAddress',
-    './joynr/system/RoutingTypes/ChannelAddress',
-    './joynr/system/RoutingTypes/CommonApiDbusAddress',
-    './joynr/system/RoutingTypes/WebSocketAddress',
-    './joynr/system/RoutingTypes/WebSocketClientAddress',
-    './joynr/util/LongTimer'
+    "./joynr/Runtime",
+    "./joynr/buildSignature",
+    "./joynr/messaging/MessagingQos",
+    "./joynr/proxy/PeriodicSubscriptionQos",
+    "./joynr/proxy/OnChangeSubscriptionQos",
+    "./joynr/proxy/MulticastSubscriptionQos",
+    "./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
+    "./joynr/proxy/BroadcastFilterParameters",
+    "./joynr/types/ArbitrationStrategyCollection",
+    "./joynr/util/Util",
+    "./joynr/exceptions/JoynrException",
+    "./joynr/exceptions/JoynrRuntimeException",
+    "./joynr/exceptions/ApplicationException",
+    "./joynr/exceptions/DiscoveryException",
+    "./joynr/exceptions/IllegalAccessException",
+    "./joynr/exceptions/MethodInvocationException",
+    "./joynr/exceptions/NoCompatibleProviderFoundException",
+    "./joynr/exceptions/ProviderRuntimeException",
+    "./joynr/exceptions/PublicationMissedException",
+    "./joynr/exceptions/SubscriptionException",
+    "./joynr/types/ProviderQos",
+    "./joynr/types/ProviderScope",
+    "./joynr/types/CustomParameter",
+    "./joynr/proxy/DiscoveryQos",
+    "./joynr/types/DiscoveryScope",
+    "./joynr/system/RoutingTypes/BrowserAddress",
+    "./joynr/system/RoutingTypes/ChannelAddress",
+    "./joynr/system/RoutingTypes/CommonApiDbusAddress",
+    "./joynr/system/RoutingTypes/WebSocketAddress",
+    "./joynr/system/RoutingTypes/WebSocketClientAddress",
+    "./joynr/util/LongTimer"
 ];
-var Runtime = require('./joynr/Runtime');
-var buildSignature = require('./joynr/buildSignature');
-var MessagingQos = require('./joynr/messaging/MessagingQos');
-var PeriodicSubscriptionQos = require('./joynr/proxy/PeriodicSubscriptionQos');
-var OnChangeSubscriptionQos = require('./joynr/proxy/OnChangeSubscriptionQos');
-var MulticastSubscriptionQos = require('./joynr/proxy/MulticastSubscriptionQos');
-var OnChangeWithKeepAliveSubscriptionQos =
-        require('./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
-var BroadcastFilterParameters = require('./joynr/proxy/BroadcastFilterParameters');
-var ArbitrationStrategyCollection = require('./joynr/types/ArbitrationStrategyCollection');
-var Util = require('./joynr/util/Util');
-var JoynrException = require('./joynr/exceptions/JoynrException');
-var JoynrRuntimeException = require('./joynr/exceptions/JoynrRuntimeException');
-var ApplicationException = require('./joynr/exceptions/ApplicationException');
-var DiscoveryException = require('./joynr/exceptions/DiscoveryException');
-var IllegalAccessException = require('./joynr/exceptions/IllegalAccessException');
-var MethodInvocationException = require('./joynr/exceptions/MethodInvocationException');
-var NoCompatibleProviderFoundException =
-        require('./joynr/exceptions/NoCompatibleProviderFoundException');
-var ProviderRuntimeException = require('./joynr/exceptions/ProviderRuntimeException');
-var PublicationMissedException = require('./joynr/exceptions/PublicationMissedException');
-var SubscriptionException = require('./joynr/exceptions/SubscriptionException');
-var ProviderQos = require('./joynr/types/ProviderQos');
-var ProviderScope = require('./joynr/types/ProviderScope');
-var CustomParameter = require('./joynr/types/CustomParameter');
-var DiscoveryQos = require('./joynr/proxy/DiscoveryQos');
-var DiscoveryScope = require('./joynr/types/DiscoveryScope');
-var BrowserAddress = require('./joynr/system/RoutingTypes/BrowserAddress');
-var ChannelAddress = require('./joynr/system/RoutingTypes/ChannelAddress');
-var CommonApiDbusAddress = require('./joynr/system/RoutingTypes/CommonApiDbusAddress');
-var WebSocketAddress = require('./joynr/system/RoutingTypes/WebSocketAddress');
-var WebSocketClientAddress = require('./joynr/system/RoutingTypes/WebSocketClientAddress');
-var LongTimer = require('./joynr/util/LongTimer');
+var Runtime = require("./joynr/Runtime");
+var buildSignature = require("./joynr/buildSignature");
+var MessagingQos = require("./joynr/messaging/MessagingQos");
+var PeriodicSubscriptionQos = require("./joynr/proxy/PeriodicSubscriptionQos");
+var OnChangeSubscriptionQos = require("./joynr/proxy/OnChangeSubscriptionQos");
+var MulticastSubscriptionQos = require("./joynr/proxy/MulticastSubscriptionQos");
+var OnChangeWithKeepAliveSubscriptionQos = require("./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+var BroadcastFilterParameters = require("./joynr/proxy/BroadcastFilterParameters");
+var ArbitrationStrategyCollection = require("./joynr/types/ArbitrationStrategyCollection");
+var Util = require("./joynr/util/Util");
+var JoynrException = require("./joynr/exceptions/JoynrException");
+var JoynrRuntimeException = require("./joynr/exceptions/JoynrRuntimeException");
+var ApplicationException = require("./joynr/exceptions/ApplicationException");
+var DiscoveryException = require("./joynr/exceptions/DiscoveryException");
+var IllegalAccessException = require("./joynr/exceptions/IllegalAccessException");
+var MethodInvocationException = require("./joynr/exceptions/MethodInvocationException");
+var NoCompatibleProviderFoundException = require("./joynr/exceptions/NoCompatibleProviderFoundException");
+var ProviderRuntimeException = require("./joynr/exceptions/ProviderRuntimeException");
+var PublicationMissedException = require("./joynr/exceptions/PublicationMissedException");
+var SubscriptionException = require("./joynr/exceptions/SubscriptionException");
+var ProviderQos = require("./joynr/types/ProviderQos");
+var ProviderScope = require("./joynr/types/ProviderScope");
+var CustomParameter = require("./joynr/types/CustomParameter");
+var DiscoveryQos = require("./joynr/proxy/DiscoveryQos");
+var DiscoveryScope = require("./joynr/types/DiscoveryScope");
+var BrowserAddress = require("./joynr/system/RoutingTypes/BrowserAddress");
+var ChannelAddress = require("./joynr/system/RoutingTypes/ChannelAddress");
+var CommonApiDbusAddress = require("./joynr/system/RoutingTypes/CommonApiDbusAddress");
+var WebSocketAddress = require("./joynr/system/RoutingTypes/WebSocketAddress");
+var WebSocketClientAddress = require("./joynr/system/RoutingTypes/WebSocketClientAddress");
+var LongTimer = require("./joynr/util/LongTimer");
 
 // load all external modules
 var nsContext, nsElem, nsElems, i, value;
@@ -100,7 +98,10 @@ var root = {};
 for (i = 0; i < libjoynrExports.length; ++i) {
     // Window in case of a Browser or DedicatedWebWorkerContext in a WebWorker Environment
     nsContext = root;
-    nsElems = libjoynrExports[i].replace(/^\.\/joynr\//, '').split('/').reverse();
+    nsElems = libjoynrExports[i]
+        .replace(/^\.\/joynr\//, "")
+        .split("/")
+        .reverse();
     //remove "joynr";
     // go through namespace elements of require.js namespace, i.e. "some/namespace/NameSpaceTest"
     while (nsElems.length) {
@@ -119,11 +120,11 @@ for (i = 0; i < libjoynrExports.length; ++i) {
         }
         // export namespace fragment or module read-only to the parent namespace
         Object.defineProperty(nsContext, nsElem, {
-            readable : true,
-            enumerable : true,
-            configurable : false,
-            writable : false,
-            value : value
+            readable: true,
+            enumerable: true,
+            configurable: false,
+            writable: false,
+            value: value
         });
         nsContext = value;
     }

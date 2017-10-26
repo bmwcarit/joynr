@@ -17,12 +17,12 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../global/Promise');
-var Util = require('../util/UtilInternal');
-var Request = require('../dispatching/types/Request');
-var MessagingQos = require('../messaging/MessagingQos');
-var Typing = require('../util/Typing');
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var Promise = require("../../global/Promise");
+var Util = require("../util/UtilInternal");
+var Request = require("../dispatching/types/Request");
+var MessagingQos = require("../messaging/MessagingQos");
+var Typing = require("../util/Typing");
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 
 var typeRegistry = TypeRegistrySingleton.getInstance();
 
@@ -279,28 +279,29 @@ function ProxyAttribute(parent, settings, attributeName, attributeType, attribut
  *            requestSettings.messagingQos
  * @returns {Object} an A+ promise
  */
-ProxyAttribute.prototype.executeRequest =
-        function(request, requestSettings) {
-            // passed in (right-most) messagingQos have precedence; undefined values are
-            // ignored
-            var messagingQos =
-                    Util.extend(
-                            new MessagingQos(),
-                            this.parent.messagingQos,
-                            this.settings.messagingQos,
-                            requestSettings.messagingQos);
+ProxyAttribute.prototype.executeRequest = function(request, requestSettings) {
+    // passed in (right-most) messagingQos have precedence; undefined values are
+    // ignored
+    var messagingQos = Util.extend(
+        new MessagingQos(),
+        this.parent.messagingQos,
+        this.settings.messagingQos,
+        requestSettings.messagingQos
+    );
 
-            function sendRequestOnSuccess(response) {
-                return Typing.augmentTypes(response[0], typeRegistry, this.attributeType);
-            }
+    function sendRequestOnSuccess(response) {
+        return Typing.augmentTypes(response[0], typeRegistry, this.attributeType);
+    }
 
-            // return promise to caller
-            return this.settings.dependencies.requestReplyManager.sendRequest({
-                toDiscoveryEntry : this.parent.providerDiscoveryEntry,
-                from : this.parent.proxyParticipantId,
-                messagingQos : messagingQos,
-                request : request
-            }).then(sendRequestOnSuccess.bind(this));
-        };
+    // return promise to caller
+    return this.settings.dependencies.requestReplyManager
+        .sendRequest({
+            toDiscoveryEntry: this.parent.providerDiscoveryEntry,
+            from: this.parent.proxyParticipantId,
+            messagingQos: messagingQos,
+            request: request
+        })
+        .then(sendRequestOnSuccess.bind(this));
+};
 
 module.exports = ProxyAttribute;

@@ -18,7 +18,6 @@
  */
 
 define("joynr/security/PlatformSecurityManager", [], function() {
-
     /**
      * @name PlatformSecurityManager
      * @constructor
@@ -27,9 +26,7 @@ define("joynr/security/PlatformSecurityManager", [], function() {
      *            messageType the message type as defined by
      *            [JoynrMessage.JOYNRMESSAGE_TYPE_*]{@link JoynrMessage}
      */
-    function PlatformSecurityManager() {
-
-    }
+    function PlatformSecurityManager() {}
 
     /**
      * @name PlatformSecurityManager#getCurrentProcessUserId
@@ -42,5 +39,4 @@ define("joynr/security/PlatformSecurityManager", [], function() {
     };
 
     return PlatformSecurityManager;
-
 });

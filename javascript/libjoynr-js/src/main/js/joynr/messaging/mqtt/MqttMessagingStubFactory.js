@@ -18,8 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../../util/Typing');
-var MqttMessagingStub = require('./MqttMessagingStub');
+var Typing = require("../../util/Typing");
+var MqttMessagingStub = require("./MqttMessagingStub");
 
 /**
  * @constructor
@@ -43,8 +43,8 @@ MqttMessagingStubFactory.prototype.build = function build(address) {
     Typing.checkProperty(address, "MqttAddress", "address");
 
     return new MqttMessagingStub({
-        address : address,
-        client : this._settings.client
+        address: address,
+        client: this._settings.client
     });
 };
 

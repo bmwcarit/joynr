@@ -18,9 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var Util = require('../../../../classes/joynr/util/Util');
-var BrowserMessagingStubFactory =
-        require('../../../../classes/joynr/messaging/browser/BrowserMessagingStubFactory');
+var Util = require("../../../../classes/joynr/util/Util");
+var BrowserMessagingStubFactory = require("../../../../classes/joynr/messaging/browser/BrowserMessagingStubFactory");
 
 describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", function() {
     var returnValue, webMessagingStub, browserMessagingStubFactory;
@@ -28,14 +27,14 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", func
 
     beforeEach(function(done) {
         returnValue = {
-            key : "returnValue"
+            key: "returnValue"
         };
         function WebMessagingStub() {}
         webMessagingStub = new WebMessagingStub();
         webMessagingStub.transmit = jasmine.createSpy("transmit");
         webMessagingStub.transmit.and.returnValue(returnValue);
         browserMessagingStubFactory = new BrowserMessagingStubFactory({
-            webMessagingStub : webMessagingStub
+            webMessagingStub: webMessagingStub
         });
         windowId = "windowId";
         function BrowserAddress() {}
@@ -68,17 +67,17 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", func
         }).toThrow(); // webMessagingStub is missing
         expect(function() {
             browserMessagingStubFactory = new BrowserMessagingStubFactory({
-                webMessagingStub : {}
+                webMessagingStub: {}
             });
         }).toThrow(); // webMessagingStub is of wrong type
         expect(function() {
             browserMessagingStubFactory = new BrowserMessagingStubFactory({
-                webMessagingStub : ""
+                webMessagingStub: ""
             });
         }).toThrow(); // webMessagingStub is of wrong type
         expect(function() {
             browserMessagingStubFactory = new BrowserMessagingStubFactory({
-                webMessagingStub : webMessagingStub
+                webMessagingStub: webMessagingStub
             });
         }).not.toThrow(); // correct call
         done();
@@ -100,11 +99,10 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", func
 
         var result = browserMessagingStub.transmit(joynrMessage);
         expect(webMessagingStub.transmit).toHaveBeenCalledWith({
-            windowId : windowId,
-            message : joynrMessage
+            windowId: windowId,
+            message: joynrMessage
         });
         expect(result).toEqual(returnValue);
         done();
     });
-
 });

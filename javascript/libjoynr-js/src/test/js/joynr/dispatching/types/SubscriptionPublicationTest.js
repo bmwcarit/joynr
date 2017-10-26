@@ -18,12 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var SubscriptionPublication =
-        require('../../../../classes/joynr/dispatching/types/SubscriptionPublication');
-var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+var SubscriptionPublication = require("../../../../classes/joynr/dispatching/types/SubscriptionPublication");
+var RadioStation = require("../../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
 
 describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", function() {
-
     it("is defined", function() {
         expect(SubscriptionPublication).toBeDefined();
     });
@@ -31,14 +29,13 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", function
     it("is instantiable", function() {
         var response = "response";
         var publication = new SubscriptionPublication({
-            subscriptionId : "testSubscriptionId",
-            response : response
+            subscriptionId: "testSubscriptionId",
+            response: response
         });
         expect(publication).toBeDefined();
         expect(publication).not.toBeNull();
         expect(typeof publication === "object").toBeTruthy();
         expect(publication instanceof SubscriptionPublication).toBeTruthy();
-
     });
 
     it("is constructs with correct member values", function() {
@@ -46,12 +43,11 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", function
         var response = "response";
 
         var publication = new SubscriptionPublication({
-            subscriptionId : subscriptionId,
-            response : response
+            subscriptionId: subscriptionId,
+            response: response
         });
 
         expect(publication.subscriptionId).toEqual(subscriptionId);
         expect(publication.response).toEqual(response);
     });
-
 });

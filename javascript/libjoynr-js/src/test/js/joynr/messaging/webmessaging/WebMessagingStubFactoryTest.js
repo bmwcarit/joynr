@@ -18,9 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var WebMessagingStubFactory =
-        require('../../../../classes/joynr/messaging/webmessaging/WebMessagingStubFactory');
-var JSONSerializer = require('../../../../classes/joynr/util/JSONSerializer');
+var WebMessagingStubFactory = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingStubFactory");
+var JSONSerializer = require("../../../../classes/joynr/util/JSONSerializer");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", function() {
     var returnValue;
@@ -33,7 +32,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", fun
 
     beforeEach(function(done) {
         returnValue = {
-            key : "returnValue"
+            key: "returnValue"
         };
         webMessagingStubFactory = new WebMessagingStubFactory();
 
@@ -42,10 +41,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", fun
         window.postMessage = jasmine.createSpy("postMessage");
 
         origin = "origin";
-        webMessagingAddress = jasmine.createSpyObj("webMessagingAddress", [
-            "getWindow",
-            "getOrigin"
-        ]);
+        webMessagingAddress = jasmine.createSpyObj("webMessagingAddress", ["getWindow", "getOrigin"]);
         webMessagingAddress.getWindow.and.returnValue(window);
         webMessagingAddress.getOrigin.and.returnValue(origin);
         function JoynrMessage() {}
@@ -69,13 +65,10 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStubFactory", fun
         expect(webMessagingAddress.getOrigin).toHaveBeenCalledWith();
 
         var param = {
-            message : joynrMessage
+            message: joynrMessage
         };
         var result = webMessagingStub.transmit(param);
-        expect(window.postMessage).toHaveBeenCalledWith(
-                JSON.parse(JSONSerializer.stringify(param)),
-                origin);
+        expect(window.postMessage).toHaveBeenCalledWith(JSON.parse(JSONSerializer.stringify(param)), origin);
         done();
     });
-
 });

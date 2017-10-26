@@ -18,7 +18,7 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistry = require('../start/TypeRegistry');
+var TypeRegistry = require("../start/TypeRegistry");
 var instance;
 
 /**

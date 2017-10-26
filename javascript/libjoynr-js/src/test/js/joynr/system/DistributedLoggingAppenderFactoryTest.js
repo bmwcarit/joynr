@@ -18,122 +18,120 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../../classes/global/Promise');
-var LoggingManager = require('../../../classes/joynr/system/LoggingManager');
-var DistributedLoggingAppenderConstructorFactory = require('../../../classes/joynr/system/DistributedLoggingAppenderConstructorFactory');
-var DistributedLoggingAppender = require('../../../classes/joynr/system/DistributedLoggingAppender');
-var LoggerFactory = require('../../../classes/joynr/system/LoggerFactory');
-var waitsFor = require('../../../test-classes/global/WaitsFor');
-            var asyncTimeout = 5000;
+var Promise = require("../../../classes/global/Promise");
+var LoggingManager = require("../../../classes/joynr/system/LoggingManager");
+var DistributedLoggingAppenderConstructorFactory = require("../../../classes/joynr/system/DistributedLoggingAppenderConstructorFactory");
+var DistributedLoggingAppender = require("../../../classes/joynr/system/DistributedLoggingAppender");
+var LoggerFactory = require("../../../classes/joynr/system/LoggerFactory");
+var waitsFor = require("../../../test-classes/global/WaitsFor");
+var asyncTimeout = 5000;
 
-            var log =
-                    LoggerFactory
-                            .getLogger("joynr.system.TestDistributedLoggingAppenderConstructorFactory");
+var log = LoggerFactory.getLogger("joynr.system.TestDistributedLoggingAppenderConstructorFactory");
 
-            var configLogging = {
-                configuration : {
-                    name : "TestLogging",
-                    appenders : {
-                        Console : {
-                            name : "STDOUT",
-                            PatternLayout : {
-                                pattern : "%m%n"
-                            }
-                        },
-                        DistributedLogging : {
-                            name : "DISTRIBUTED",
-                            ThresholdFilter : {
-                                level : "debug"
-                            }
-                        }
-                    },
-                    loggers : {
-                        root : {
-                            level : "debug",
-                            "AppenderRef" : [
-                                {
-                                    "ref" : "STDOUT",
-                                    "level" : "warn"
-                                },
-                                {
-                                    "ref" : "DISTRIBUTED",
-                                    "level" : "debug"
-                                }
-                            ]
-                        }
-                    }
+var configLogging = {
+    configuration: {
+        name: "TestLogging",
+        appenders: {
+            Console: {
+                name: "STDOUT",
+                PatternLayout: {
+                    pattern: "%m%n"
                 }
-            };
+            },
+            DistributedLogging: {
+                name: "DISTRIBUTED",
+                ThresholdFilter: {
+                    level: "debug"
+                }
+            }
+        },
+        loggers: {
+            root: {
+                level: "debug",
+                AppenderRef: [
+                    {
+                        ref: "STDOUT",
+                        level: "warn"
+                    },
+                    {
+                        ref: "DISTRIBUTED",
+                        level: "debug"
+                    }
+                ]
+            }
+        }
+    }
+};
 
-            describe(
-                    "libjoynr-js.joynr.system.DistributedLoggingAppenderConstructorFactory",
-                    function() {
+describe("libjoynr-js.joynr.system.DistributedLoggingAppenderConstructorFactory", function() {
+    it("is instantiable", function(done) {
+        expect(DistributedLoggingAppenderConstructorFactory).toBeDefined();
+        done();
+    });
 
-                        it("is instantiable", function(done) {
-                            expect(DistributedLoggingAppenderConstructorFactory).toBeDefined();
-                            done();
-                        });
+    it("creates a constructor of type DistributedLoggingAppender", function(done) {
+        var proxyBuilder, messagingQos, DistributedLoggingAppenderConstructor, newAppender;
 
-                        it(
-                                "creates a constructor of type DistributedLoggingAppender",
-                                function(done) {
-                                    var proxyBuilder, messagingQos, DistributedLoggingAppenderConstructor, newAppender;
+        proxyBuilder = {
+            build: function() {
+                return Promise.resolve();
+            }
+        };
 
-                                    proxyBuilder = {
-                                        build : function() {
-                                            return Promise.resolve();
-                                        }
-                                    };
+        messagingQos = {};
 
-                                    messagingQos = {};
+        DistributedLoggingAppenderConstructor = DistributedLoggingAppenderConstructorFactory.build(
+            proxyBuilder,
+            messagingQos
+        );
+        newAppender = new DistributedLoggingAppenderConstructor();
+        expect(newAppender.constructor).toEqual(DistributedLoggingAppender.prototype.constructor);
+        done();
+    });
 
-                                    DistributedLoggingAppenderConstructor =
-                                            DistributedLoggingAppenderConstructorFactory.build(
-                                                    proxyBuilder,
-                                                    messagingQos);
-                                    newAppender = new DistributedLoggingAppenderConstructor();
-                                    expect(newAppender.constructor).toEqual(
-                                            DistributedLoggingAppender.prototype.constructor);
-                                    done();
-                                });
+    it("creates a loggingProxy and sets the proxy on the distributedLoggingAppender", function(done) {
+        var proxyBuilder,
+            resolve,
+            messagingQos,
+            DistributedLoggingAppenderConstructor,
+            newAppender,
+            newProxy = {};
 
-                        it(
-                                "creates a loggingProxy and sets the proxy on the distributedLoggingAppender",
-                                function(done) {
-                                    var proxyBuilder, resolve, messagingQos, DistributedLoggingAppenderConstructor, newAppender, newProxy =
-                                            {};
+        proxyBuilder = {
+            build: function() {}
+        };
+        spyOn(proxyBuilder, "build").and.returnValue(
+            new Promise(function(internalResolve) {
+                resolve = internalResolve;
+            })
+        );
 
-                                    proxyBuilder = {
-                                        build : function() { }
-                                    };
-                                    spyOn(proxyBuilder, "build").and
-                                            .returnValue(new Promise(
-                                                    function(internalResolve) {
-                                                        resolve = internalResolve;
-                                                    }));
+        messagingQos = {};
 
-                                    messagingQos = {};
+        DistributedLoggingAppenderConstructor = DistributedLoggingAppenderConstructorFactory.build(
+            proxyBuilder,
+            messagingQos
+        );
+        newAppender = new DistributedLoggingAppenderConstructor();
+        expect(newAppender.constructor).toEqual(DistributedLoggingAppender.prototype.constructor);
 
-                                    DistributedLoggingAppenderConstructor =
-                                            DistributedLoggingAppenderConstructorFactory.build(
-                                                    proxyBuilder,
-                                                    messagingQos);
-                                    newAppender = new DistributedLoggingAppenderConstructor();
-                                    expect(newAppender.constructor).toEqual(
-                                            DistributedLoggingAppender.prototype.constructor);
+        spyOn(newAppender, "setProxy");
+        expect(proxyBuilder.build).toHaveBeenCalled();
 
-                                    spyOn(newAppender, "setProxy");
-                                    expect(proxyBuilder.build).toHaveBeenCalled();
+        resolve(newProxy);
 
-                                    resolve(newProxy);
-
-                                    waitsFor(function() {
-                                        return newAppender.setProxy.calls.count() > 0;
-                                    }, "setProxy has been called", asyncTimeout).then(function() {
-                                        expect(newAppender.setProxy).toHaveBeenCalledWith(newProxy);
-                                        done();
-                                        return null;
-                                    }).catch(fail);
-                                });
-
-                    });
+        waitsFor(
+            function() {
+                return newAppender.setProxy.calls.count() > 0;
+            },
+            "setProxy has been called",
+            asyncTimeout
+        )
+            .then(function() {
+                expect(newAppender.setProxy).toHaveBeenCalledWith(newProxy);
+                done();
+                return null;
+            })
+            .catch(fail);
+    });
+});

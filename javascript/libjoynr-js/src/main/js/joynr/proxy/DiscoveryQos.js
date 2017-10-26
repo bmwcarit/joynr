@@ -18,19 +18,19 @@
  * limitations under the License.
  * #L%
  */
-var ArbitrationStrategyCollection = require('../../joynr/types/ArbitrationStrategyCollection');
-var DiscoveryScope = require('../../joynr/types/DiscoveryScope');
-var Util = require('../util/UtilInternal');
-var LoggerFactory = require('../system/LoggerFactory');
+var ArbitrationStrategyCollection = require("../../joynr/types/ArbitrationStrategyCollection");
+var DiscoveryScope = require("../../joynr/types/DiscoveryScope");
+var Util = require("../util/UtilInternal");
+var LoggerFactory = require("../system/LoggerFactory");
 
 var defaultSettings = {
-    discoveryTimeoutMs : 10 * 60 * 1000, // 10 minutes
-    discoveryRetryDelayMs : 10 * 1000, // 10 seconds
-    arbitrationStrategy : ArbitrationStrategyCollection.LastSeen,
-    cacheMaxAgeMs : 0,
-    discoveryScope : DiscoveryScope.LOCAL_THEN_GLOBAL,
-    providerMustSupportOnChange : false,
-    additionalParameters : {}
+    discoveryTimeoutMs: 10 * 60 * 1000, // 10 minutes
+    discoveryRetryDelayMs: 10 * 1000, // 10 seconds
+    arbitrationStrategy: ArbitrationStrategyCollection.LastSeen,
+    cacheMaxAgeMs: 0,
+    discoveryScope: DiscoveryScope.LOCAL_THEN_GLOBAL,
+    providerMustSupportOnChange: false,
+    additionalParameters: {}
 };
 
 /**

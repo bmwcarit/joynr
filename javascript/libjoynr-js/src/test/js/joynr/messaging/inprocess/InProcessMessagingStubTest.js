@@ -18,23 +18,20 @@
  * limitations under the License.
  * #L%
  */
-var InProcessMessagingStub =
-        require('../../../../classes/joynr/messaging/inprocess/InProcessMessagingStub');
+var InProcessMessagingStub = require("../../../../classes/joynr/messaging/inprocess/InProcessMessagingStub");
 
 describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub", function() {
     var skeletonCallReturn, inProcessMessagingSkeleton, inProcessMessagingStub, joynrMessage;
 
     beforeEach(function(done) {
         skeletonCallReturn = {
-            key : "skeletonCallReturn"
+            key: "skeletonCallReturn"
         };
-        inProcessMessagingSkeleton =
-                jasmine.createSpyObj("inProcessMessagingSkeleton", [ "receiveMessage"
-                ]);
+        inProcessMessagingSkeleton = jasmine.createSpyObj("inProcessMessagingSkeleton", ["receiveMessage"]);
         inProcessMessagingSkeleton.receiveMessage.and.returnValue(skeletonCallReturn);
         inProcessMessagingStub = new InProcessMessagingStub(inProcessMessagingSkeleton);
         joynrMessage = {
-            key : "joynrMessage"
+            key: "joynrMessage"
         };
         done();
     });
@@ -55,5 +52,4 @@ describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub", functio
         expect(result).toEqual(skeletonCallReturn);
         done();
     });
-
 });

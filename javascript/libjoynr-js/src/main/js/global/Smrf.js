@@ -19,7 +19,6 @@
  * #L%
  */
 
-define([ "smrf"
-], function(smrf) {
+define(["smrf"], function(smrf) {
     return smrf;
 });

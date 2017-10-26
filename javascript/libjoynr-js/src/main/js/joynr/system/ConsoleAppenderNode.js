@@ -36,7 +36,8 @@ function ConsoleAppender() {}
  * @function
  */
 ConsoleAppender.prototype.append = function(loggingEvent) {
-    var formattedMessage = loggingEvent.getCombinedMessages(), appender = this;
+    var formattedMessage = loggingEvent.getCombinedMessages(),
+        appender = this;
 
     var getFormattedMessage = function() {
         try {
@@ -45,9 +46,7 @@ ConsoleAppender.prototype.append = function(loggingEvent) {
             if (layout.ignoresThrowable() && loggingEvent.exception) {
                 formattedMessage += loggingEvent.getThrowableStrRep();
             }
-        } catch (e) {
-
-        }
+        } catch (e) {}
         return formattedMessage;
     };
 

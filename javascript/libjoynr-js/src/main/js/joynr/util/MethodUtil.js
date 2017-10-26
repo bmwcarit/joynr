@@ -17,57 +17,58 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('./Typing');
-var Util = require('./UtilInternal');
+var Typing = require("./Typing");
+var Util = require("./UtilInternal");
 var MethodUtil = {};
 
-MethodUtil.transformParameterMapToArray =
-        function transformParameterMapToArray(operationArguments, parameters) {
-            var argument, objectType, argumentId, argumentValue, params = [], paramDatatypes = [];
+MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(operationArguments, parameters) {
+    var argument,
+        objectType,
+        argumentId,
+        argumentValue,
+        params = [],
+        paramDatatypes = [];
 
-            // check if number of parameters in signature matches number of arguments
-            if (Object.keys(parameters).length !== Object.keys(operationArguments).length) {
-                throw new Error("signature does not match: wrong number of arguments");
-            }
+    // check if number of parameters in signature matches number of arguments
+    if (Object.keys(parameters).length !== Object.keys(operationArguments).length) {
+        throw new Error("signature does not match: wrong number of arguments");
+    }
 
-            for (argumentId = 0; argumentId < parameters.length; argumentId++) {
-                // check if there's a parameters with the given name
-                argument = parameters[argumentId];
-                // retrieve the argument value
-                argumentValue = operationArguments[argument.name];
-                // if argument value is not given by the application
-                if (Util.checkNullUndefined(argumentValue)) {
-                    throw new Error("Cannot call operation with nullable value \""
-                        + argumentValue
-                        + "\" of argument \""
-                        + argument.name
-                        + "\"");
-                }
-                // check if the parameter type matches the type of the argument value
-                /*jslint nomen: true */// allow dangling _ in variable once
-                objectType =
-                        argumentValue.constructor === Array
-                                ? "Array"
-                                : (argumentValue._typeName || typeof argumentValue);
-                /*jslint nomen: false */
-                if (argument.javascriptType !== objectType) {
-                    // signature does not match
-                    throw new Error("Signature does not match: type \""
-                        + objectType
-                        + "\" of argument \""
-                        + argument.name
-                        + "\" does not match with expected type \""
-                        + argument.javascriptType
-                        + "\"");
-                }
+    for (argumentId = 0; argumentId < parameters.length; argumentId++) {
+        // check if there's a parameters with the given name
+        argument = parameters[argumentId];
+        // retrieve the argument value
+        argumentValue = operationArguments[argument.name];
+        // if argument value is not given by the application
+        if (Util.checkNullUndefined(argumentValue)) {
+            throw new Error(
+                'Cannot call operation with nullable value "' + argumentValue + '" of argument "' + argument.name + '"'
+            );
+        } // allow dangling _ in variable once
+        // check if the parameter type matches the type of the argument value
+        /*jslint nomen: true */ objectType =
+            argumentValue.constructor === Array ? "Array" : argumentValue._typeName || typeof argumentValue;
+        /*jslint nomen: false */
+        if (argument.javascriptType !== objectType) {
+            // signature does not match
+            throw new Error(
+                'Signature does not match: type "' +
+                    objectType +
+                    '" of argument "' +
+                    argument.name +
+                    '" does not match with expected type "' +
+                    argument.javascriptType +
+                    '"'
+            );
+        }
 
-                paramDatatypes.push(argument.type);
-                params.push(argumentValue);
-            }
-            return {
-                paramDatatypes : paramDatatypes,
-                params : params
-            };
-        };
+        paramDatatypes.push(argument.type);
+        params.push(argumentValue);
+    }
+    return {
+        paramDatatypes: paramDatatypes,
+        params: params
+    };
+};
 
 module.exports = MethodUtil;

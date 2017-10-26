@@ -18,10 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../util/Typing');
-var Util = require('../util/UtilInternal');
-var SubscriptionQos = require('./SubscriptionQos');
-var LoggerFactory = require('../system/LoggerFactory');
+var Typing = require("../util/Typing");
+var Util = require("../util/UtilInternal");
+var SubscriptionQos = require("./SubscriptionQos");
+var LoggerFactory = require("../system/LoggerFactory");
 
 var defaultSettings;
 
@@ -97,10 +97,7 @@ function PeriodicSubscriptionQos(settings) {
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
     if (settings && !(settings instanceof PeriodicSubscriptionQos)) {
         Typing.checkPropertyIfDefined(settings.periodMs, "Number", "settings.periodMs");
-        Typing.checkPropertyIfDefined(
-                settings.alertAfterIntervalMs,
-                "Number",
-                "settings.alertAfterIntervalMs");
+        Typing.checkPropertyIfDefined(settings.alertAfterIntervalMs, "Number", "settings.alertAfterIntervalMs");
     }
 
     /**
@@ -126,29 +123,36 @@ function PeriodicSubscriptionQos(settings) {
     Util.extend(this, defaultSettings, settings, subscriptionQos);
 
     if (this.periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS) {
-        throw new Error("Wrong periodMs with value "
-            + this.periodMs
-            + ": it shall be higher than "
-            + PeriodicSubscriptionQos.MIN_PERIOD_MS);
+        throw new Error(
+            "Wrong periodMs with value " +
+                this.periodMs +
+                ": it shall be higher than " +
+                PeriodicSubscriptionQos.MIN_PERIOD_MS
+        );
     }
 
     if (this.periodMs > PeriodicSubscriptionQos.MAX_PERIOD_MS) {
-        throw new Error("Wrong periodMs with value "
-            + this.periodMs
-            + ": it shall be lower than "
-            + PeriodicSubscriptionQos.MAX_PERIOD_MS);
+        throw new Error(
+            "Wrong periodMs with value " +
+                this.periodMs +
+                ": it shall be lower than " +
+                PeriodicSubscriptionQos.MAX_PERIOD_MS
+        );
     }
 
-    if (this.alertAfterIntervalMs !== PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL
-        && this.alertAfterIntervalMs < this.periodMs) {
+    if (
+        this.alertAfterIntervalMs !== PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL &&
+        this.alertAfterIntervalMs < this.periodMs
+    ) {
         log.warn("alertAfterIntervalMs < periodMs. Using periodMs: " + this.periodMs);
         this.alertAfterIntervalMs = this.periodMs;
     }
 
     if (this.alertAfterIntervalMs > PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS) {
-        log
-                .warn("alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: "
-                    + PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS);
+        log.warn(
+            "alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: " +
+                PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS
+        );
         this.alertAfterIntervalMs = PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS;
     }
 
@@ -163,7 +167,6 @@ function PeriodicSubscriptionQos(settings) {
     this.clearAlertAfterInterval = function clearAlertAfterInterval() {
         this.alertAfterIntervalMs = PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
     };
-
 }
 
 /**
@@ -237,12 +240,11 @@ PeriodicSubscriptionQos.MAX_ALERT_AFTER_INTERVAL_MS = 2592000000;
  * @static
  * @readonly
  */
-PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS =
-        PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
+PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS = PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL;
 
 defaultSettings = {
-    periodMs : PeriodicSubscriptionQos.DEFAULT_PERIOD_MS,
-    alertAfterIntervalMs : PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS
+    periodMs: PeriodicSubscriptionQos.DEFAULT_PERIOD_MS,
+    alertAfterIntervalMs: PeriodicSubscriptionQos.DEFAULT_ALERT_AFTER_INTERVAL_MS
 };
 
 module.exports = PeriodicSubscriptionQos;

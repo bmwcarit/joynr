@@ -18,15 +18,13 @@
  * limitations under the License.
  * #L%
  */
-var InProcessMessagingStub = require('./InProcessMessagingStub');
+var InProcessMessagingStub = require("./InProcessMessagingStub");
 
 /**
  * @constructor
  * @name InProcessMessagingStubFactory
  */
-function InProcessMessagingStubFactory() {
-
-}
+function InProcessMessagingStubFactory() {}
 
 /**
  * @name InProcessMessagingStubFactory#build

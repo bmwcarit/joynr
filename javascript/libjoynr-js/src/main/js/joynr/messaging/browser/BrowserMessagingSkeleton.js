@@ -18,11 +18,11 @@
  * limitations under the License.
  * #L%
  */
-var JoynrMessage = require('../JoynrMessage');
-var Typing = require('../../util/Typing');
-var Util = require('../../util/UtilInternal');
-var JSONSerializer = require('../../util/JSONSerializer');
-var LoggerFactory = require('../../system/LoggerFactory');
+var JoynrMessage = require("../JoynrMessage");
+var Typing = require("../../util/Typing");
+var Util = require("../../util/UtilInternal");
+var JSONSerializer = require("../../util/JSONSerializer");
+var LoggerFactory = require("../../system/LoggerFactory");
 
 /**
  * @constructor BrowserMessagingSkeleton
@@ -44,14 +44,11 @@ function BrowserMessagingSkeleton(settings) {
 
             Util.fire(that.receiverCallbacks, joynrMessage);
         } else {
-            log.warn("message with content \""
-                + JSONSerializer.stringify(message)
-                + "\" could not be processed");
+            log.warn('message with content "' + JSONSerializer.stringify(message) + '" could not be processed');
         }
     }
 
     settings.webMessagingSkeleton.registerListener(webMessagingSkeletonListener);
-
 }
 
 /**

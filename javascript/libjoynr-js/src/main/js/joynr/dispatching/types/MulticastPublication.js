@@ -18,8 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var Util = require('../../util/UtilInternal');
-var Typing = require('../../util/Typing');
+var Util = require("../../util/UtilInternal");
+var Typing = require("../../util/Typing");
 
 /**
  * @name MulticastPublication

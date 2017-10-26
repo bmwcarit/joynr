@@ -28,7 +28,8 @@ var LoggerFactory = require("../joynr/system/LoggerFactory");
 
 if (typeof TextDecoder !== "function") {
     throw new JoynrRuntimeException(
-            "Encoding/Decoding of binary websocket messages not possible. TextEncoder/TextDecoder not available.");
+        "Encoding/Decoding of binary websocket messages not possible. TextEncoder/TextDecoder not available."
+    );
 }
 var log = LoggerFactory.getLogger("joynr.messaging.websocket.WebSocket");
 var fileReader = new FileReader();
@@ -43,7 +44,8 @@ WebSocket.encodeString = function(string) {
 };
 WebSocket.decodeEventData = function(event, callback) {
     if (event.target.binaryType.toLocaleLowerCase() === "blob") {
-        fileReader.onload = function(event) { // TODO error handling, unit test for WebSocket+WebSocketNode
+        fileReader.onload = function(event) {
+            // TODO error handling, unit test for WebSocket+WebSocketNode
             callback(event.target.result);
         };
         fileReader.readAsText(event.data);

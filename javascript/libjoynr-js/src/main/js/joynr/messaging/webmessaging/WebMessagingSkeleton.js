@@ -18,8 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../../util/Typing');
-var Util = require('../../util/UtilInternal');
+var Typing = require("../../util/Typing");
+var Util = require("../../util/UtilInternal");
 
 /**
  * @constructor WebMessagingSkeleton
@@ -33,10 +33,10 @@ function WebMessagingSkeleton(settings) {
         throw new Error("WebMessagingSkeleton constructor parameter windows is undefined");
     }
 
-    if (settings.window.addEventListener === undefined
-        || settings.window.removeEventListener === undefined) {
+    if (settings.window.addEventListener === undefined || settings.window.removeEventListener === undefined) {
         throw new Error(
-                "WebMessagingSkeleton constructor parameter window does not provide the expected functions \"addEventListener\" and \"removeEventListener\"");
+            'WebMessagingSkeleton constructor parameter window does not provide the expected functions "addEventListener" and "removeEventListener"'
+        );
     }
 
     var receiverCallbacks = [];
@@ -76,7 +76,6 @@ function WebMessagingSkeleton(settings) {
     this.shutdown = function shutdown() {
         settings.window.removeEventListener("message", callbackFct);
     };
-
 }
 
 module.exports = WebMessagingSkeleton;

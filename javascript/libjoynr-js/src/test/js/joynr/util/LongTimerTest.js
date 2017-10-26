@@ -18,15 +18,14 @@
  * limitations under the License.
  * #L%
  */
-var LongTimer = require('../../../classes/joynr/util/LongTimer');
-var Typing = require('../../../classes/joynr/util/Typing');
+var LongTimer = require("../../../classes/joynr/util/LongTimer");
+var Typing = require("../../../classes/joynr/util/Typing");
 
 var maxPow = 35; // make sure this is at lease 31 to test cases with long timeout (> Math.pow(2, 31)-1)
 var concurrentTimeouts = 10;
 var testIntervals = 10;
 
 describe("libjoynr-js.joynr.LongTimer.Timeout", function() {
-
     function testCallTimeout(timeout) {
         jasmine.clock().uninstall();
         jasmine.clock().install();
@@ -133,7 +132,6 @@ describe("libjoynr-js.joynr.LongTimer.Timeout", function() {
 });
 
 describe("libjoynr-js.joynr.LongTimer.Interval", function() {
-
     function testCallInterval(interval) {
         var i;
         jasmine.clock().uninstall();

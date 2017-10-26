@@ -25,11 +25,11 @@
  * See: http://dev.w3.org/html5/websockets/#the-websocket-interface
  *
  */
-var Smrf = require('./SmrfNode');
-var JoynrMessage = require('../joynr/messaging/JoynrMessage');
-var JoynrRuntimeException = require('../joynr/exceptions/JoynrRuntimeException');
-var LoggerFactory = require('../joynr/system/LoggerFactory');
-var Util = require('../joynr/util/UtilInternal.js');
+var Smrf = require("./SmrfNode");
+var JoynrMessage = require("../joynr/messaging/JoynrMessage");
+var JoynrRuntimeException = require("../joynr/exceptions/JoynrRuntimeException");
+var LoggerFactory = require("../joynr/system/LoggerFactory");
+var Util = require("../joynr/util/UtilInternal.js");
 
 // prettier-ignore
 module.exports =

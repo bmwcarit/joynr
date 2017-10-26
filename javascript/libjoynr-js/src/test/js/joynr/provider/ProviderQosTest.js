@@ -18,34 +18,38 @@
  * limitations under the License.
  * #L%
  */
-var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
-var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
-var CustomParameter = require('../../../classes/joynr/types/CustomParameter');
+var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
+var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
+var CustomParameter = require("../../../classes/joynr/types/CustomParameter");
 
 describe("libjoynr-js.joynr.types.ProviderQos", function() {
     it("is instantiable", function() {
-        expect(new ProviderQos({
-            customParameters : [ new CustomParameter({
-                name : "theName",
-                value : "theValue"
+        expect(
+            new ProviderQos({
+                customParameters: [
+                    new CustomParameter({
+                        name: "theName",
+                        value: "theValue"
+                    })
+                ],
+                priority: 1234,
+                scope: ProviderScope.LOCAL,
+                supportsOnChangeSubscriptions: true
             })
-            ],
-            priority : 1234,
-            scope : ProviderScope.LOCAL,
-            supportsOnChangeSubscriptions : true
-        })).toBeDefined();
+        ).toBeDefined();
     });
 
     it("is of correct type", function() {
         var providerQos = new ProviderQos({
-            customParameters : [ new CustomParameter({
-                name : "theName",
-                value : "theValue"
-            })
+            customParameters: [
+                new CustomParameter({
+                    name: "theName",
+                    value: "theValue"
+                })
             ],
-            priority : 1234,
-            scope : ProviderScope.LOCAL,
-            supportsOnChangeSubscriptions : true
+            priority: 1234,
+            scope: ProviderScope.LOCAL,
+            supportsOnChangeSubscriptions: true
         });
         expect(providerQos).toBeDefined();
         expect(providerQos).not.toBeNull();
@@ -55,10 +59,10 @@ describe("libjoynr-js.joynr.types.ProviderQos", function() {
 
     function testValues(customParameters, version, priority, scope, supportsOnChangeSubscriptions) {
         var providerQos = new ProviderQos({
-            customParameters : customParameters,
-            priority : priority,
-            scope : scope,
-            supportsOnChangeSubscriptions : supportsOnChangeSubscriptions
+            customParameters: customParameters,
+            priority: priority,
+            scope: scope,
+            supportsOnChangeSubscriptions: supportsOnChangeSubscriptions
         });
         expect(providerQos.customParameters).toEqual(customParameters);
         expect(providerQos.priority).toEqual(priority);
@@ -98,15 +102,20 @@ describe("libjoynr-js.joynr.types.ProviderQos", function() {
 
     it("constructs with correct member values", function() {
         testValues([], 0, 0, ProviderScope.LOCAL);
-        testValues([
-            new CustomParameter({
-                name : "theName",
-                value : "theValue"
-            }),
-            new CustomParameter({
-                name : "anotherName",
-                value : "anotherValue"
-            })
-        ], 123, 1234, ProviderScope.GLOBAL);
+        testValues(
+            [
+                new CustomParameter({
+                    name: "theName",
+                    value: "theValue"
+                }),
+                new CustomParameter({
+                    name: "anotherName",
+                    value: "anotherValue"
+                })
+            ],
+            123,
+            1234,
+            ProviderScope.GLOBAL
+        );
     });
 });

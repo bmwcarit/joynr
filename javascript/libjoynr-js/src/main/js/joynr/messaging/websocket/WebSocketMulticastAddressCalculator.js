@@ -18,7 +18,7 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../../util/Typing');
+var Typing = require("../../util/Typing");
 
 /**
  * @constructor WebSocketMulticastAddressCalculator

@@ -18,7 +18,7 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../util/Typing');
+var Typing = require("../util/Typing");
 
 /**
  * Private function. This function returns the hashCode of the given discovery entry, this should uniquely identify a
@@ -32,11 +32,13 @@ var Typing = require('../util/Typing');
  *            discoveryEntry - discovery entry
  */
 function hashCode(discoveryEntry) {
-    return discoveryEntry.domain
-        + discoveryEntry.interfaceName
-        + discoveryEntry.participantId
-        + discoveryEntry.providerVersion
-        + discoveryEntry.publicKeyId;
+    return (
+        discoveryEntry.domain +
+        discoveryEntry.interfaceName +
+        discoveryEntry.participantId +
+        discoveryEntry.providerVersion +
+        discoveryEntry.publicKeyId
+    );
 }
 
 /**
@@ -84,7 +86,7 @@ function CapabilitiesStore(initialCapabilities) {
 
     if (initialCapabilities && initialCapabilities.length > 0) {
         this.add({
-            discoveryEntries : initialCapabilities
+            discoveryEntries: initialCapabilities
         });
     }
 }
@@ -98,41 +100,41 @@ function CapabilitiesStore(initialCapabilities) {
  * @param {String}
  *            participantId - the participant ID uniquely identifying the discovery entry to be removed
  */
-CapabilitiesStore.prototype._removeDiscoveryEntryFromStore =
-        function(participantId) {
-            var domainInterfaceKey, key, capabilities, capId, cap, capFound = false, discoveryEntry;
+CapabilitiesStore.prototype._removeDiscoveryEntryFromStore = function(participantId) {
+    var domainInterfaceKey,
+        key,
+        capabilities,
+        capId,
+        cap,
+        capFound = false,
+        discoveryEntry;
 
-            discoveryEntry = this._discoveryEntryStoreByParticipantId[participantId];
+    discoveryEntry = this._discoveryEntryStoreByParticipantId[participantId];
 
-            // unregister by participant id
-            this._discoveryEntryStoreByParticipantId[participantId] = undefined;
+    // unregister by participant id
+    this._discoveryEntryStoreByParticipantId[participantId] = undefined;
 
-            if (discoveryEntry !== undefined) {
-                // unregister by domain and interface
-                domainInterfaceKey =
-                        getDomainInterfaceNameKey(
-                                discoveryEntry.domain,
-                                discoveryEntry.interfaceName);
-                capabilities = this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey];
+    if (discoveryEntry !== undefined) {
+        // unregister by domain and interface
+        domainInterfaceKey = getDomainInterfaceNameKey(discoveryEntry.domain, discoveryEntry.interfaceName);
+        capabilities = this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey];
 
-                capFound = false;
-                for (capId in capabilities) {
-                    if (capabilities.hasOwnProperty(capId) && !capFound) {
-                        cap = capabilities[capId];
-                        if (cap.interfaceName === discoveryEntry.interfaceName
-                            && cap.domain === discoveryEntry.domain) {
-                            capFound = true;
-                            this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey]
-                                    .splice(capId, 1);
-                        }
-                    }
+        capFound = false;
+        for (capId in capabilities) {
+            if (capabilities.hasOwnProperty(capId) && !capFound) {
+                cap = capabilities[capId];
+                if (cap.interfaceName === discoveryEntry.interfaceName && cap.domain === discoveryEntry.domain) {
+                    capFound = true;
+                    this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey].splice(capId, 1);
                 }
-
-                // unregister master store
-                key = hashCode(discoveryEntry);
-                delete this._discoveryEntryStore[key];
             }
-        };
+        }
+
+        // unregister master store
+        key = hashCode(discoveryEntry);
+        delete this._discoveryEntryStore[key];
+    }
+};
 
 /**
  * Registers discovery entry to the store.
@@ -144,45 +146,47 @@ CapabilitiesStore.prototype._removeDiscoveryEntryFromStore =
  *            discoveryEntry - the capability to register
  *
  */
-CapabilitiesStore.prototype._addDiscoveryEntryToStore =
-        function(discoveryEntry) {
-            var entryFound = false, isAlreadyThere, discoveryEntries, entryId, entry, domainInterfaceKey, discoveryEntryKey =
-                    hashCode(discoveryEntry);
+CapabilitiesStore.prototype._addDiscoveryEntryToStore = function(discoveryEntry) {
+    var entryFound = false,
+        isAlreadyThere,
+        discoveryEntries,
+        entryId,
+        entry,
+        domainInterfaceKey,
+        discoveryEntryKey = hashCode(discoveryEntry);
 
-            // master store, storing key to actual discovery entry object
-            isAlreadyThere = this._discoveryEntryStore[discoveryEntryKey];
-            if (isAlreadyThere !== undefined) {
-                this._removeDiscoveryEntryFromStore(isAlreadyThere);
+    // master store, storing key to actual discovery entry object
+    isAlreadyThere = this._discoveryEntryStore[discoveryEntryKey];
+    if (isAlreadyThere !== undefined) {
+        this._removeDiscoveryEntryFromStore(isAlreadyThere);
+    }
+    this._discoveryEntryStore[discoveryEntryKey] = discoveryEntry;
+    this._registeredCapabilitiesTime[discoveryEntryKey] = Date.now();
+
+    // by participant id
+    this._discoveryEntryStoreByParticipantId[discoveryEntry.participantId] = discoveryEntry;
+
+    // by domain interface and provider qos
+    domainInterfaceKey = getDomainInterfaceNameKey(discoveryEntry.domain, discoveryEntry.interfaceName);
+    if (this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey] === undefined) {
+        this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey] = [];
+    }
+
+    discoveryEntries = this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey];
+
+    for (entryId in discoveryEntries) {
+        if (discoveryEntries.hasOwnProperty(entryId) && !entryFound) {
+            entry = discoveryEntries[entryId];
+            if (entry.participantId === discoveryEntry.participantId) {
+                entryFound = true;
             }
-            this._discoveryEntryStore[discoveryEntryKey] = discoveryEntry;
-            this._registeredCapabilitiesTime[discoveryEntryKey] = Date.now();
+        }
+    }
 
-            // by participant id
-            this._discoveryEntryStoreByParticipantId[discoveryEntry.participantId] = discoveryEntry;
-
-            // by domain interface and provider qos
-            domainInterfaceKey =
-                    getDomainInterfaceNameKey(discoveryEntry.domain, discoveryEntry.interfaceName);
-            if (this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey] === undefined) {
-                this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey] = [];
-            }
-
-            discoveryEntries = this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey];
-
-            for (entryId in discoveryEntries) {
-                if (discoveryEntries.hasOwnProperty(entryId) && !entryFound) {
-                    entry = discoveryEntries[entryId];
-                    if (entry.participantId === discoveryEntry.participantId) {
-                        entryFound = true;
-                    }
-                }
-            }
-
-            if (!entryFound) {
-                this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey]
-                        .push(discoveryEntry);
-            }
-        };
+    if (!entryFound) {
+        this._discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey].push(discoveryEntry);
+    }
+};
 
 /**
  * Registers either a single discovery entry or a list of discovery entry to the store.
@@ -202,22 +206,21 @@ CapabilitiesStore.prototype._addDiscoveryEntryToStore =
  * @returns {CapabilitiesStore} returns this for a fluent interface
  *
  */
-CapabilitiesStore.prototype.add =
-        function add(settings) {
-            var i;
-            if (settings.discoveryEntries !== undefined
-                && Typing.getObjectType(settings.discoveryEntries) === "Array") {
-                for (i = 0; i < settings.discoveryEntries.length; i++) {
-                    this._addDiscoveryEntryToStore(settings.discoveryEntries[i]);
-                }
-            } else if (settings.discoveryEntry !== undefined) {
-                this._addDiscoveryEntryToStore(settings.discoveryEntry);
-            } else {
-                throw new Error(
-                        "missing arguments for function CapabilitiesStore.add: neither settings.discoveryEntries nor settings.discoveryEntry are provided");
-            }
-            return this;
-        };
+CapabilitiesStore.prototype.add = function add(settings) {
+    var i;
+    if (settings.discoveryEntries !== undefined && Typing.getObjectType(settings.discoveryEntries) === "Array") {
+        for (i = 0; i < settings.discoveryEntries.length; i++) {
+            this._addDiscoveryEntryToStore(settings.discoveryEntries[i]);
+        }
+    } else if (settings.discoveryEntry !== undefined) {
+        this._addDiscoveryEntryToStore(settings.discoveryEntry);
+    } else {
+        throw new Error(
+            "missing arguments for function CapabilitiesStore.add: neither settings.discoveryEntries nor settings.discoveryEntry are provided"
+        );
+    }
+    return this;
+};
 
 /**
  * checks if the provided discoveryEntry is not older than the second argument maxAge
@@ -289,32 +292,31 @@ CapabilitiesStore.prototype._filterEntries = function filterEntries(entries, cac
  *
  * @returns {Array} a list of matching discovery entries.
  */
-CapabilitiesStore.prototype.lookup =
-        function lookup(settings) {
-            var i, key, returnValue = [], storedEntries;
-            if (settings.domains !== undefined && settings.interfaceName !== undefined) {
-                for (i = 0; i < settings.domains.length; ++i) {
-                    key = getDomainInterfaceNameKey(settings.domains[i], settings.interfaceName);
-                    storedEntries = this._discoveryEntryStoreByDomainInterfaceName[key] || [];
-                    returnValue =
-                            returnValue.concat(this._filterEntries(
-                                    storedEntries,
-                                    settings.cacheMaxAge));
-                }
-            } else if (settings.participantId !== undefined) {
-                storedEntries = this._discoveryEntryStoreByParticipantId[settings.participantId];
-                if (this._qosMatches(storedEntries, settings.cacheMaxAge)) {
-                    returnValue = [ storedEntries
-                    ];
-                } else {
-                    returnValue = undefined;
-                }
-            } else {
-                throw new Error(
-                        "missing arguments for function CapabilitiesStore.lookup: neither settings.domain + settings.interfaceName nor settings.participantId are provided");
-            }
-            return returnValue;
-        };
+CapabilitiesStore.prototype.lookup = function lookup(settings) {
+    var i,
+        key,
+        returnValue = [],
+        storedEntries;
+    if (settings.domains !== undefined && settings.interfaceName !== undefined) {
+        for (i = 0; i < settings.domains.length; ++i) {
+            key = getDomainInterfaceNameKey(settings.domains[i], settings.interfaceName);
+            storedEntries = this._discoveryEntryStoreByDomainInterfaceName[key] || [];
+            returnValue = returnValue.concat(this._filterEntries(storedEntries, settings.cacheMaxAge));
+        }
+    } else if (settings.participantId !== undefined) {
+        storedEntries = this._discoveryEntryStoreByParticipantId[settings.participantId];
+        if (this._qosMatches(storedEntries, settings.cacheMaxAge)) {
+            returnValue = [storedEntries];
+        } else {
+            returnValue = undefined;
+        }
+    } else {
+        throw new Error(
+            "missing arguments for function CapabilitiesStore.lookup: neither settings.domain + settings.interfaceName nor settings.participantId are provided"
+        );
+    }
+    return returnValue;
+};
 
 /**
  * Unregisters either a list of discovery entries or a single discovery entry from the store.
@@ -331,22 +333,21 @@ CapabilitiesStore.prototype.lookup =
  *
  * @returns {CapabilitiesStore} returns this for a fluent interface
  */
-CapabilitiesStore.prototype.remove =
-        function remove(settings) {
-            var i;
-            if (settings.participantIds !== undefined
-                && Typing.getObjectType(settings.participantIds) === "Array") {
-                for (i = 0; i < settings.participantIds.length; i++) {
-                    this._removeDiscoveryEntryFromStore(settings.participantIds[i]);
-                }
-            } else if (settings.participantId !== undefined) {
-                this._removeDiscoveryEntryFromStore(settings.participantId);
-            } else {
-                throw new Error(
-                        "missing arguments for function CapabilitiesStore.remove: neither settings.participantIds nor settings.participantId are provided");
-            }
+CapabilitiesStore.prototype.remove = function remove(settings) {
+    var i;
+    if (settings.participantIds !== undefined && Typing.getObjectType(settings.participantIds) === "Array") {
+        for (i = 0; i < settings.participantIds.length; i++) {
+            this._removeDiscoveryEntryFromStore(settings.participantIds[i]);
+        }
+    } else if (settings.participantId !== undefined) {
+        this._removeDiscoveryEntryFromStore(settings.participantId);
+    } else {
+        throw new Error(
+            "missing arguments for function CapabilitiesStore.remove: neither settings.participantIds nor settings.participantId are provided"
+        );
+    }
 
-            return this;
-        };
+    return this;
+};
 
 module.exports = CapabilitiesStore;

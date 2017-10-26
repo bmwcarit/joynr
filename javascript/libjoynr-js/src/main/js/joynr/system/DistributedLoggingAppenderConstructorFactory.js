@@ -17,59 +17,59 @@
  * limitations under the License.
  * #L%
  */
-var DistributedLoggingAppender = require('./DistributedLoggingAppender');
-var LoggingProxy = require('./LoggingProxy');
-var DiscoveryQos = require('../proxy/DiscoveryQos');
-var DiscoveryScope = require('../../joynr/types/DiscoveryScope');
-var LoggerFactory = require('./LoggerFactory');
-var Util = require('../util/UtilInternal');
+var DistributedLoggingAppender = require("./DistributedLoggingAppender");
+var LoggingProxy = require("./LoggingProxy");
+var DiscoveryQos = require("../proxy/DiscoveryQos");
+var DiscoveryScope = require("../../joynr/types/DiscoveryScope");
+var LoggerFactory = require("./LoggerFactory");
+var Util = require("../util/UtilInternal");
 
-            /**
-             * A Factory to create a DistributedLoggingAppender constructor that contains a closure
-             * to register a loggingProxy once the proxy has been created
-             *
-             * @name DistributedLoggingAppenderConstructorFactory
-             * @class
-             */
-            var DistributedLoggingAppenderConstructorFactory = {};
+/**
+ * A Factory to create a DistributedLoggingAppender constructor that contains a closure
+ * to register a loggingProxy once the proxy has been created
+ *
+ * @name DistributedLoggingAppenderConstructorFactory
+ * @class
+ */
+var DistributedLoggingAppenderConstructorFactory = {};
 
-            /**
-             * builds a DistributedLoggingAppender constructor that contains a closure to register a
-             * loggingProxy once the proxy has been created
-             * @function
-             * @name DistributedLoggingAppenderConstructorFactory#build
-             * @param {ProxyBuilder} proxyBuilder
-             * @param {MessagingQos} messagingQos
-             */
-            DistributedLoggingAppenderConstructorFactory.build =
-                    function build(proxyBuilder, messagingQos) {
-                        var log =
-                                LoggerFactory
-                                        .getLogger("joynr.system.DistributedLoggingAppenderConstructorFactory");
+/**
+ * builds a DistributedLoggingAppender constructor that contains a closure to register a
+ * loggingProxy once the proxy has been created
+ * @function
+ * @name DistributedLoggingAppenderConstructorFactory#build
+ * @param {ProxyBuilder} proxyBuilder
+ * @param {MessagingQos} messagingQos
+ */
+DistributedLoggingAppenderConstructorFactory.build = function build(proxyBuilder, messagingQos) {
+    var log = LoggerFactory.getLogger("joynr.system.DistributedLoggingAppenderConstructorFactory");
 
-                        return function(config, loggingContexts) {
-                            var errorString, newAppender;
+    return function(config, loggingContexts) {
+        var errorString, newAppender;
 
-                            newAppender = new DistributedLoggingAppender(config, loggingContexts);
+        newAppender = new DistributedLoggingAppender(config, loggingContexts);
 
-                            proxyBuilder.build(LoggingProxy, {
-                                domain : "io.joynr",
-                                messagingQos : messagingQos,
-                                discoveryQos : new DiscoveryQos({
-                                    discoveryScope : DiscoveryScope.GLOBAL_ONLY,
-                                    cacheMaxAgeMs : Util.getMaxLongValue()
-                                })
-                            }).then(function(newLoggingProxy) {
-                                newAppender.setProxy(newLoggingProxy);
-                                return newLoggingProxy;
-                            }).catch(function(error) {
-                                errorString = "Failed to create proxy for logging: " + error;
-                                log.debug(errorString);
-                                return error;
-                            });
+        proxyBuilder
+            .build(LoggingProxy, {
+                domain: "io.joynr",
+                messagingQos: messagingQos,
+                discoveryQos: new DiscoveryQos({
+                    discoveryScope: DiscoveryScope.GLOBAL_ONLY,
+                    cacheMaxAgeMs: Util.getMaxLongValue()
+                })
+            })
+            .then(function(newLoggingProxy) {
+                newAppender.setProxy(newLoggingProxy);
+                return newLoggingProxy;
+            })
+            .catch(function(error) {
+                errorString = "Failed to create proxy for logging: " + error;
+                log.debug(errorString);
+                return error;
+            });
 
-                            return newAppender;
-                        };
-                    };
+        return newAppender;
+    };
+};
 
 module.exports = DistributedLoggingAppenderConstructorFactory;

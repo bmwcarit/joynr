@@ -36,7 +36,8 @@ function WebWorkerMessagingAppender() {}
  * @function
  */
 WebWorkerMessagingAppender.prototype.append = function(loggingEvent) {
-    var formattedMessage = loggingEvent.getCombinedMessages(), appender = this;
+    var formattedMessage = loggingEvent.getCombinedMessages(),
+        appender = this;
 
     var getFormattedMessage = function() {
         try {
@@ -51,9 +52,9 @@ WebWorkerMessagingAppender.prototype.append = function(loggingEvent) {
 
     formattedMessage = "[WEBWORKER]" + getFormattedMessage();
     postMessage({
-        type : "log",
-        level : loggingEvent.level.name.toLowerCase(),
-        message : formattedMessage
+        type: "log",
+        level: loggingEvent.level.name.toLowerCase(),
+        message: formattedMessage
     });
 };
 

@@ -17,51 +17,47 @@
  * #L%
  */
 
-define([
-    "joynr/messaging/MessagingSkeletonFactory",
-    "joynr/system/RoutingTypes/BrowserAddress",
-    "joynr/system/RoutingTypes/MqttAddress",
-    "joynr/messaging/inprocess/InProcessAddress"
-], function(MessagingSkeletonFactory, BrowserAddress, MqttAddress, InProcessAddress) {
+define(
+    [
+        "joynr/messaging/MessagingSkeletonFactory",
+        "joynr/system/RoutingTypes/BrowserAddress",
+        "joynr/system/RoutingTypes/MqttAddress",
+        "joynr/messaging/inprocess/InProcessAddress"
+    ],
+    function(MessagingSkeletonFactory, BrowserAddress, MqttAddress, InProcessAddress) {
+        describe("libjoynr-js.joynr.messaging.MessagingSkeletonFactory", function() {
+            var messagingSkeletonFactory;
+            var mqttMessagingSkeleton, inProcessMessagingSkeleton;
 
-    describe("libjoynr-js.joynr.messaging.MessagingSkeletonFactory", function() {
-        var messagingSkeletonFactory;
-        var mqttMessagingSkeleton, inProcessMessagingSkeleton;
+            beforeEach(function() {
+                mqttMessagingSkeleton = jasmine.createSpyObj("mqttMessagingSkeleton", ["shutdown"]);
+                inProcessMessagingSkeleton = jasmine.createSpyObj("inProcessMessagingSkeleton", ["shutdown"]);
+                messagingSkeletonFactory = new MessagingSkeletonFactory();
+                var messagingSkeletons = {};
+                /*jslint nomen: true */
+                messagingSkeletons[InProcessAddress._typeName] = inProcessMessagingSkeleton;
+                messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
+                /*jslint nomen: false */
+                messagingSkeletonFactory.setSkeletons(messagingSkeletons);
+            });
 
-        beforeEach(function() {
-            mqttMessagingSkeleton = jasmine.createSpyObj("mqttMessagingSkeleton", [ "shutdown"
-            ]);
-            inProcessMessagingSkeleton =
-                    jasmine.createSpyObj("inProcessMessagingSkeleton", [ "shutdown"
-                    ]);
-            messagingSkeletonFactory = new MessagingSkeletonFactory();
-            var messagingSkeletons = {};
-            /*jslint nomen: true */
-            messagingSkeletons[InProcessAddress._typeName] = inProcessMessagingSkeleton;
-            messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
-            /*jslint nomen: false */
-            messagingSkeletonFactory.setSkeletons(messagingSkeletons);
+            it("provides expected API", function() {
+                expect(MessagingSkeletonFactory).toBeDefined();
+                expect(messagingSkeletonFactory).toBeDefined();
+                expect(messagingSkeletonFactory instanceof MessagingSkeletonFactory).toBeTruthy();
+                expect(messagingSkeletonFactory.getSkeleton).toBeDefined();
+            });
+
+            it("returns the appropriate messaging skeleton depending on object type", function() {
+                expect(messagingSkeletonFactory.getSkeleton(new MqttAddress())).toBe(mqttMessagingSkeleton);
+                expect(messagingSkeletonFactory.getSkeleton(new InProcessAddress())).toBe(inProcessMessagingSkeleton);
+            });
+
+            it("throws exception if address type is unknown", function() {
+                expect(function() {
+                    messagingSkeletonFactory.getSkeleton(new BrowserAddress());
+                }).toThrow();
+            });
         });
-
-        it("provides expected API", function() {
-            expect(MessagingSkeletonFactory).toBeDefined();
-            expect(messagingSkeletonFactory).toBeDefined();
-            expect(messagingSkeletonFactory instanceof MessagingSkeletonFactory).toBeTruthy();
-            expect(messagingSkeletonFactory.getSkeleton).toBeDefined();
-        });
-
-        it("returns the appropriate messaging skeleton depending on object type", function() {
-            expect(messagingSkeletonFactory.getSkeleton(new MqttAddress())).toBe(
-                    mqttMessagingSkeleton);
-            expect(messagingSkeletonFactory.getSkeleton(new InProcessAddress())).toBe(
-                    inProcessMessagingSkeleton);
-        });
-
-        it("throws exception if address type is unknown", function() {
-            expect(function() {
-                messagingSkeletonFactory.getSkeleton(new BrowserAddress());
-            }).toThrow();
-        });
-    });
-
-});
+    }
+);

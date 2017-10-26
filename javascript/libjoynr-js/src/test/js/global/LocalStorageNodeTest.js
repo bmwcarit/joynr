@@ -22,10 +22,9 @@ var LocalStorage = require("../../classes/global/LocalStorageNode");
 var fs = require("fs");
 
 describe("local storage", function() {
-
     var storage;
     var item = {
-        hi : "bla"
+        hi: "bla"
     };
     var testNum = 0;
     var location;
@@ -33,7 +32,6 @@ describe("local storage", function() {
     var corruptData = "corrupted Data";
 
     afterEach(function() {
-
         fs.readdirSync(location).forEach(function(file) {
             var filePath = location + "/" + file;
             fs.unlinkSync(filePath);
@@ -45,21 +43,19 @@ describe("local storage", function() {
         testNum++;
         location = "${project.build.directory}/LocalStorage-" + testNum;
         storage = new LocalStorage({
-            clearPersistency : false,
-            location : location
+            clearPersistency: false,
+            location: location
         });
         done();
     });
 
     it("can set and load item", function() {
-
         storage.setItem(key, JSON.stringify(item));
         var result = JSON.parse(storage.getItem(key));
         expect(result).toEqual(item);
     });
 
     it("can set and load long items", function() {
-
         var longString = new Array(200).join("a");
 
         storage.setItem(longString, JSON.stringify(item));
@@ -68,7 +64,6 @@ describe("local storage", function() {
     });
 
     it("can remove items", function() {
-
         storage.setItem(key, JSON.stringify(item));
         storage.removeItem(key);
         var result = storage.getItem(key);
@@ -76,7 +71,6 @@ describe("local storage", function() {
     });
 
     it("can clear items", function() {
-
         storage.setItem(key, JSON.stringify(item));
         storage.clear();
         var result = storage.getItem(key);
@@ -84,48 +78,42 @@ describe("local storage", function() {
     });
 
     it("ignores corrupt files", function() {
-
         storage.setItem(key, JSON.stringify(item));
         var filename = fs.readdirSync(location)[0];
         fs.writeFileSync(location + "/" + filename, corruptData);
 
         storage = new LocalStorage({
-            clearPersistency : false,
-            location : location
+            clearPersistency: false,
+            location: location
         });
         expect(storage.getItem(key)).toBe(null);
     });
 
     it("overwrites corrupt files", function() {
-
         storage.setItem(key, JSON.stringify(item));
         var filename = fs.readdirSync(location)[0];
         fs.writeFileSync(location + "/" + filename, corruptData);
 
         storage = new LocalStorage({
-            clearPersistency : false,
-            location : location
+            clearPersistency: false,
+            location: location
         });
 
         storage.setItem(key, JSON.stringify(item));
         var files = fs.readdirSync(location);
         expect(files.length).toBe(1);
-
     });
 
     it("ignores other files", function() {
-
         storage.setItem(key, JSON.stringify(item));
         fs.writeFileSync(location + "/otherFile", "other Data");
 
         storage = new LocalStorage({
-            clearPersistency : false,
-            location : location
+            clearPersistency: false,
+            location: location
         });
 
         var files = fs.readdirSync(location);
         expect(files.length).toBe(2);
-
     });
-
 });

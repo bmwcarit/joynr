@@ -27,10 +27,8 @@
  * @param {Function} uuid - a function generating a uuid string
  */
 function ParticipantIdStorage(persistency, uuid) {
-
     this._persistency = persistency;
     this._uuid = uuid;
-
 }
 
 /**

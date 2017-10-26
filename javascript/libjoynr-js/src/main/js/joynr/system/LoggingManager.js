@@ -18,8 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var log4javascript = require('../../lib/log4javascriptNode');
-var ConsoleAppender = require('./ConsoleAppenderNode');
+var log4javascript = require("../../lib/log4javascriptNode");
+var ConsoleAppender = require("./ConsoleAppenderNode");
 
 /**
  * @name LoggingManager
@@ -300,21 +300,18 @@ function LoggingManager() {
      * @param {Config} settings - log4j2-style JSON config, but as JavaScript object
      *            (i.e. already parsed)
      */
-    this.configure =
-            function configure(settings) {
-                if (settings.appenderClasses !== undefined) {
-                    var appenderClassKey;
-                    for (appenderClassKey in settings.appenderClasses) {
-                        if (settings.appenderClasses.hasOwnProperty(appenderClassKey)) {
-                            this.registerAppenderClass(
-                                    appenderClassKey,
-                                    settings.appenderClasses[appenderClassKey]);
-                        }
-                    }
+    this.configure = function configure(settings) {
+        if (settings.appenderClasses !== undefined) {
+            var appenderClassKey;
+            for (appenderClassKey in settings.appenderClasses) {
+                if (settings.appenderClasses.hasOwnProperty(appenderClassKey)) {
+                    this.registerAppenderClass(appenderClassKey, settings.appenderClasses[appenderClassKey]);
                 }
-                appenders = createConfiguredAppenders(settings.configuration.appenders || {});
-                createConfiguredLoggers(settings.configuration.loggers);
-            };
+            }
+        }
+        appenders = createConfiguredAppenders(settings.configuration.appenders || {});
+        createConfiguredLoggers(settings.configuration.loggers);
+    };
 
     this.shutdown = function() {
         var i, appender;
@@ -335,12 +332,12 @@ function LoggingManager() {
  * @enum {String}
  */
 LoggingManager.LogLevel = {
-    TRACE : "trace",
-    DEBUG : "debug",
-    INFO : "info",
-    WARN : "warn",
-    ERROR : "error",
-    FATAL : "fatal"
+    TRACE: "trace",
+    DEBUG: "debug",
+    INFO: "info",
+    WARN: "warn",
+    ERROR: "error",
+    FATAL: "fatal"
 };
 
 LoggingManager.Appender = log4javascript.Appender;

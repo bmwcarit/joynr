@@ -17,7 +17,6 @@
  * #L%
  */
 
-define("joynr/system/ConsoleAppender", [ "log4javascriptDependency"
-], function(log4javascript) {
+define("joynr/system/ConsoleAppender", ["log4javascriptDependency"], function(log4javascript) {
     return log4javascript.BrowserConsoleAppender;
 });

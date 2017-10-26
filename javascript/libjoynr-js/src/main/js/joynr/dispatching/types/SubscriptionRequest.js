@@ -18,15 +18,14 @@
  * limitations under the License.
  * #L%
  */
-var Util = require('../../util/UtilInternal');
-var Typing = require('../../util/Typing');
-var PeriodicSubscriptionQos = require('../../proxy/PeriodicSubscriptionQos');
-var OnChangeSubscriptionQos = require('../../proxy/OnChangeSubscriptionQos');
-var OnChangeWithKeepAliveSubscriptionQos =
-        require('../../proxy/OnChangeWithKeepAliveSubscriptionQos');
+var Util = require("../../util/UtilInternal");
+var Typing = require("../../util/Typing");
+var PeriodicSubscriptionQos = require("../../proxy/PeriodicSubscriptionQos");
+var OnChangeSubscriptionQos = require("../../proxy/OnChangeSubscriptionQos");
+var OnChangeWithKeepAliveSubscriptionQos = require("../../proxy/OnChangeWithKeepAliveSubscriptionQos");
 
 var defaultSettings = {
-    qos : new PeriodicSubscriptionQos()
+    qos: new PeriodicSubscriptionQos()
 };
 
 /**
@@ -44,12 +43,11 @@ function SubscriptionRequest(settings) {
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
     Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
-    Typing.checkPropertyIfDefined(settings.qos, [
-        "Object",
-        "OnChangeSubscriptionQos",
-        "PeriodicSubscriptionQos",
-        "OnChangeWithKeepAliveSubscriptionQos"
-    ], "settings.qos");
+    Typing.checkPropertyIfDefined(
+        settings.qos,
+        ["Object", "OnChangeSubscriptionQos", "PeriodicSubscriptionQos", "OnChangeWithKeepAliveSubscriptionQos"],
+        "settings.qos"
+    );
 
     /**
      * @name SubscriptionRequest#subscriptionId
@@ -73,11 +71,11 @@ function SubscriptionRequest(settings) {
      */
 
     Object.defineProperty(this, "_typeName", {
-        value : "joynr.SubscriptionRequest",
-        readable : true,
-        writable : false,
-        enumerable : true,
-        configurable : false
+        value: "joynr.SubscriptionRequest",
+        readable: true,
+        writable: false,
+        enumerable: true,
+        configurable: false
     });
 
     return Object.freeze(this);
@@ -90,11 +88,11 @@ function SubscriptionRequest(settings) {
  * @type String
  */
 Object.defineProperty(SubscriptionRequest, "_typeName", {
-    value : "joynr.SubscriptionRequest",
-    readable : true,
-    writable : false,
-    enumerable : true,
-    configurable : false
+    value: "joynr.SubscriptionRequest",
+    readable: true,
+    writable: false,
+    enumerable: true,
+    configurable: false
 });
 
 module.exports = SubscriptionRequest;

@@ -22,9 +22,7 @@
  * @name InProcessMessagingSkeleton
  * @constructor
  */
-function InProcessMessagingSkeleton() {
-
-}
+function InProcessMessagingSkeleton() {}
 
 /**
  * @name InProcessMessagingSkeleton#receiveMessage

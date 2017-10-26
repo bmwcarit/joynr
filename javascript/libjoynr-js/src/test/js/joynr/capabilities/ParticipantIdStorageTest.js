@@ -19,7 +19,7 @@
  * #L%
  */
 //TODO: some of this relies on the dummy implementation, change accordingly when implementating
-var ParticipantIdStorage = require('../../../classes/joynr/capabilities/ParticipantIdStorage');
+var ParticipantIdStorage = require("../../../classes/joynr/capabilities/ParticipantIdStorage");
 
 describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", function() {
     var participantIdStorage, localStorageSpy, uuidSpy;
@@ -31,13 +31,10 @@ describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", function() {
         interfaceName = "interface/Name";
         domain = "domain-1";
         provider = {
-            interfaceName : interfaceName
+            interfaceName: interfaceName
         };
         var interfaceNameDotted = interfaceName.replace("/", ".");
-        localStorageSpy = jasmine.createSpyObj("localStorageSpy", [
-            "getItem",
-            "setItem"
-        ]);
+        localStorageSpy = jasmine.createSpyObj("localStorageSpy", ["getItem", "setItem"]);
         uuidSpy = jasmine.createSpy("uuid");
         uuidSpy.and.returnValue(uuid);
         participantIdStorage = new ParticipantIdStorage(localStorageSpy, uuidSpy);

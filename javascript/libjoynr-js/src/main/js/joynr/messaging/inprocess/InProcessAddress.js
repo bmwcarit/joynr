@@ -33,10 +33,10 @@ function InProcessAddress(inProcessMessagingSkeleton) {
      * @readonly
      */
     Object.defineProperty(this, "_typeName", {
-        configurable : false,
-        writable : false,
-        enumerable : false,
-        value : InProcessAddress._typeName
+        configurable: false,
+        writable: false,
+        enumerable: false,
+        value: InProcessAddress._typeName
     });
 }
 
@@ -46,18 +46,18 @@ function InProcessAddress(inProcessMessagingSkeleton) {
  * @readonly
  */
 Object.defineProperty(InProcessAddress, "_typeName", {
-    configurable : false,
-    writable : false,
-    enumerable : false,
-    value : "joynr.system.RoutingTypes.InProcessAddress"
+    configurable: false,
+    writable: false,
+    enumerable: false,
+    value: "joynr.system.RoutingTypes.InProcessAddress"
 });
 
 Object.defineProperty(InProcessAddress.prototype, "equals", {
-    enumerable : false,
-    configurable : false,
-    writable : false,
-    readable : true,
-    value : function equals(other) {
+    enumerable: false,
+    configurable: false,
+    writable: false,
+    readable: true,
+    value: function equals(other) {
         var i;
         if (this === other) {
             return true;

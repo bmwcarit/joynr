@@ -35,7 +35,7 @@ function recursiveFreeze(object) {
     for (propertyKey in object) {
         if (object.hasOwnProperty(propertyKey)) {
             property = object[propertyKey];
-            if ((typeof property === 'object') && !Object.isFrozen(property)) {
+            if (typeof property === "object" && !Object.isFrozen(property)) {
                 recursiveFreeze(property);
             }
         }
@@ -44,32 +44,32 @@ function recursiveFreeze(object) {
 
 function freeze(joynr, capabilitiesWritable) {
     Object.defineProperties(joynr, {
-        "messaging" : {
-            writable : false
+        messaging: {
+            writable: false
         },
-        "types" : {
-            writable : false
+        types: {
+            writable: false
         },
-        "start" : {
-            writable : false
+        start: {
+            writable: false
         },
-        "shutdown" : {
-            writable : true
+        shutdown: {
+            writable: true
         },
-        "typeRegistry" : {
-            writable : false
+        typeRegistry: {
+            writable: false
         },
-        "capabilities" : {
-            writable : capabilitiesWritable === true
+        capabilities: {
+            writable: capabilitiesWritable === true
         },
-        "proxy" : {
-            writable : false
+        proxy: {
+            writable: false
         },
-        "proxyBuilder" : {
-            writable : true
+        proxyBuilder: {
+            writable: true
         },
-        "providerBuilder" : {
-            writable : false
+        providerBuilder: {
+            writable: false
         }
     });
 }
@@ -81,7 +81,7 @@ var Promise = require("./global/Promise");
  * @class
  */
 var joynr = {
-    loaded : false,
+    loaded: false,
     /**
      * @name joynr#load
      * @function
@@ -89,13 +89,15 @@ var joynr = {
      * @param capabilitiesWriteable
      * @return Promise object being resolved in case all libjoynr dependencies are loaded
      */
-    load : function load(provisioning, capabilitiesWritable) {
+    load: function load(provisioning, capabilitiesWritable) {
         return new Promise(function(resolve, reject) {
             joynr.loaded = true;
-            var joynrapi = require('./libjoynr-deps');
-                var runtime;
-                runtime = new joynrapi.Runtime(provisioning);
-                runtime.start().then(function() {
+            var joynrapi = require("./libjoynr-deps");
+            var runtime;
+            runtime = new joynrapi.Runtime(provisioning);
+            runtime
+                .start()
+                .then(function() {
                     populateJoynrApi(joynr, joynrapi);
                     //remove Runtime, as it is not required for the end user
                     delete joynr.Runtime;
@@ -107,12 +109,11 @@ var joynr = {
                     // terminate. Ignore any exception thrown in case shutdown
                     // had already been invoked manually before reaching this
                     // point.
-                    if (typeof process === 'object' &&
-                        typeof process.on === 'function') {
-                        process.on('exit', function() {
+                    if (typeof process === "object" && typeof process.on === "function") {
+                        process.on("exit", function() {
                             try {
                                 joynr.shutdown();
-                            } catch(error) {
+                            } catch (error) {
                                 // ignore
                             }
                         });
@@ -120,7 +121,8 @@ var joynr = {
 
                     resolve(joynr);
                     return;
-                }).catch(function(error) {
+                })
+                .catch(function(error) {
                     reject(error);
                     return error;
                 });
@@ -140,35 +142,33 @@ var joynr = {
      * @param {boolean}
      *            isEnum - optional flag if the added type is an enumeration type
      */
-    addType : function registerType(name, type, isEnum) {
-        var TypeRegistrySingleton = require('./joynr/types/TypeRegistrySingleton');
+    addType: function registerType(name, type, isEnum) {
+        var TypeRegistrySingleton = require("./joynr/types/TypeRegistrySingleton");
         TypeRegistrySingleton.getInstance().addType(name, type, isEnum);
     },
-    JoynrObject : function JoynrObject() {}
+    JoynrObject: function JoynrObject() {}
 };
 
 if (typeof window === "object") {
     // export namespace fragment or module read-only to the parent namespace
     Object.defineProperty(window, "joynr", {
-        readable : true,
-        enumerable : true,
-        configurable : false,
-        writable : false,
-        value : joynr
+        readable: true,
+        enumerable: true,
+        configurable: false,
+        writable: false,
+        value: joynr
     });
-
 }
 
 joynr.selectRuntime = function selectRuntime(runtime) {
     if (joynr.loaded) {
-        throw new Error("joynr.selectRuntime: this method must " +
-                        "be invoked before calling joynr.load()");
+        throw new Error("joynr.selectRuntime: this method must " + "be invoked before calling joynr.load()");
     }
     joynr._selectedRuntime = runtime;
 };
 joynr.selectRuntime("websocket.libjoynr");
 
-if ((module !== undefined) && module.exports) {
+if (module !== undefined && module.exports) {
     exports.joynr = module.exports = joynr;
 } else {
     // support CommonJS module 1.1.1 spec (`exports` cannot be a function)

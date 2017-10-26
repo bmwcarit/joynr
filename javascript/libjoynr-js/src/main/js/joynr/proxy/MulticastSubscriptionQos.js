@@ -18,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../util/Typing');
-var Util = require('../util/UtilInternal');
-var SubscriptionQos = require('./SubscriptionQos');
+var Typing = require("../util/Typing");
+var Util = require("../util/UtilInternal");
+var SubscriptionQos = require("./SubscriptionQos");
 
 var defaultSettings;
 

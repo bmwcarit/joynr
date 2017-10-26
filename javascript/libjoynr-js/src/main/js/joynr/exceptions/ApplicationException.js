@@ -18,11 +18,11 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var Typing = require('../util/Typing');
-var Util = require('../util/UtilInternal');
-var JoynrException = require('./JoynrException');
-var LoggerFactory = require('../system/LoggerFactory');
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+var Typing = require("../util/Typing");
+var Util = require("../util/UtilInternal");
+var JoynrException = require("./JoynrException");
+var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings;
 
 /**
@@ -66,22 +66,17 @@ function ApplicationException(settings) {
     Typing.checkPropertyIfDefined(settings, "Object", "settings");
     if (settings && settings.error) {
         Typing.checkProperty(settings.error.name, "String", "settings.error.name");
-        Typing.checkProperty(settings.error.value, [
-            "String",
-            "Number"
-        ], "settings.error.value");
+        Typing.checkProperty(settings.error.value, ["String", "Number"], "settings.error.value");
     }
 
     Util.extend(this, defaultSettings, settings, exception);
 }
 
 defaultSettings = {
-    detailMessage : "This is an application exception."
+    detailMessage: "This is an application exception."
 };
 
-TypeRegistrySingleton.getInstance().addType(
-        "joynr.exceptions.ApplicationException",
-        ApplicationException);
+TypeRegistrySingleton.getInstance().addType("joynr.exceptions.ApplicationException", ApplicationException);
 
 ApplicationException.prototype = new Error();
 ApplicationException.prototype.constructor = ApplicationException;

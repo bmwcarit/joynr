@@ -19,7 +19,7 @@
  * limitations under the License.
  * #L%
  */
-if (typeof Promise === 'function') {
+if (typeof Promise === "function") {
     module.exports = Promise;
 } else {
     module.exports = require("bluebird");

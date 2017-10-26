@@ -17,8 +17,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('./Typing');
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var Typing = require("./Typing");
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 
 /**
  * @name Util

@@ -18,13 +18,13 @@
  * limitations under the License.
  * #L%
  */
-var Util = require('../../util/UtilInternal');
-var Typing = require('../../util/Typing');
-var uuid = require('../../../lib/uuid-annotated');
+var Util = require("../../util/UtilInternal");
+var Typing = require("../../util/Typing");
+var uuid = require("../../../lib/uuid-annotated");
 
 var defaultSettings = {
-    paramDatatypes : [],
-    params : []
+    paramDatatypes: [],
+    params: []
 };
 
 var rrBase = uuid();
@@ -53,7 +53,7 @@ Util.enrichObjectWithSetPrototypeOf();
  */
 function Request(settings) {
     var i;
-    settings.requestReplyId = settings.requestReplyId || (rrBase + "_" + rrIndex++);
+    settings.requestReplyId = settings.requestReplyId || rrBase + "_" + rrIndex++;
 
     if (settings.params) {
         for (i = 0; i < settings.params.length; i++) {

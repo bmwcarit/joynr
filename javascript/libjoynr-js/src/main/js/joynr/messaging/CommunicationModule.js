@@ -18,10 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../global/Promise');
-var XMLHttpRequestDependency = require('../../global/XMLHttpRequestNode');
-var atmosphereDependency = require('../../lib/atmosphereNode');
-var LongTimer = require('../util/LongTimer');
+var Promise = require("../../global/Promise");
+var XMLHttpRequestDependency = require("../../global/XMLHttpRequestNode");
+var atmosphereDependency = require("../../lib/atmosphereNode");
+var LongTimer = require("../util/LongTimer");
 
 /**
  * Constructor of CommunicationModule object that is used to stsub communication with the outer world
@@ -44,7 +44,6 @@ function CommunicationModule() {
      * @type Object
      */
     this.atmosphere = atmosphereDependency;
-
 }
 
 /**

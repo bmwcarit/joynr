@@ -18,12 +18,12 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../../util/Typing');
-var MulticastSubscriptionQos = require('../../proxy/MulticastSubscriptionQos');
-var LoggerFactory = require('../../system/LoggerFactory');
+var Typing = require("../../util/Typing");
+var MulticastSubscriptionQos = require("../../proxy/MulticastSubscriptionQos");
+var LoggerFactory = require("../../system/LoggerFactory");
 var log = LoggerFactory.getLogger("joynr/dispatching/types/MulticastSubscriptionRequest");
 var defaultSettings = {
-    qos : new MulticastSubscriptionQos()
+    qos: new MulticastSubscriptionQos()
 };
 
 /**
@@ -43,16 +43,15 @@ function MulticastSubscriptionRequest(settings) {
     Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
 
     try {
-        Typing.checkPropertyIfDefined(settings.qos, [
-            "Object",
-            "MulticastSubscriptionQos"
-        ], "settings.qos");
+        Typing.checkPropertyIfDefined(settings.qos, ["Object", "MulticastSubscriptionQos"], "settings.qos");
     } catch (e) {
         if (Typing.getObjectType(settings.qos) === "OnChangeSubscriptionQos") {
-            log.warn("multicast subscription was passed an OnChangeSubscriptionQos. "
-                + "The minIntervalMs and publicationTtlMs will be discarded");
+            log.warn(
+                "multicast subscription was passed an OnChangeSubscriptionQos. " +
+                    "The minIntervalMs and publicationTtlMs will be discarded"
+            );
             settings.qos = new MulticastSubscriptionQos({
-                expiryDateMs : settings.qos.expiryDateMs
+                expiryDateMs: settings.qos.expiryDateMs
             });
         } else {
             throw e;
@@ -86,11 +85,11 @@ function MulticastSubscriptionRequest(settings) {
      * @type String
      */
     Object.defineProperty(this, "_typeName", {
-        value : "joynr.MulticastSubscriptionRequest",
-        readable : true,
-        writable : false,
-        enumerable : true,
-        configurable : false
+        value: "joynr.MulticastSubscriptionRequest",
+        readable: true,
+        writable: false,
+        enumerable: true,
+        configurable: false
     });
 
     return Object.freeze(this);
@@ -103,11 +102,11 @@ function MulticastSubscriptionRequest(settings) {
  * @type String
  */
 Object.defineProperty(MulticastSubscriptionRequest, "_typeName", {
-    value : "joynr.MulticastSubscriptionRequest",
-    readable : true,
-    writable : false,
-    enumerable : true,
-    configurable : false
+    value: "joynr.MulticastSubscriptionRequest",
+    readable: true,
+    writable: false,
+    enumerable: true,
+    configurable: false
 });
 
 module.exports = MulticastSubscriptionRequest;

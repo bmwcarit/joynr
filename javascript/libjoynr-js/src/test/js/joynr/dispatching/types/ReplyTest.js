@@ -17,17 +17,15 @@
  * limitations under the License.
  * #L%
  */
-var Reply = require('../../../../classes/joynr/dispatching/types/Reply');
-var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+var Reply = require("../../../../classes/joynr/dispatching/types/Reply");
+var RadioStation = require("../../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
 
 describe("libjoynr-js.joynr.dispatching.types.Reply", function() {
-
     it("is instantiable", function() {
-        var response = [ "response"
-        ];
+        var response = ["response"];
         var reply = new Reply({
-            requestReplyId : "id",
-            response : response
+            requestReplyId: "id",
+            response: response
         });
         expect(reply).toBeDefined();
         expect(reply instanceof Reply).toBeTruthy();
@@ -37,17 +35,15 @@ describe("libjoynr-js.joynr.dispatching.types.Reply", function() {
 
     it("converts an untyped param to typed", function() {
         var outParameter = {
-            _typeName : "joynr.vehicle.radiotypes.RadioStation",
-            name : "myRadioStation"
+            _typeName: "joynr.vehicle.radiotypes.RadioStation",
+            name: "myRadioStation"
         };
         var reply = new Reply({
-            requestReplyId : "id",
-            response : [ outParameter
-            ]
+            requestReplyId: "id",
+            response: [outParameter]
         });
         expect(reply).toBeDefined();
         expect(reply instanceof Reply).toBeTruthy();
         expect(reply.response[0] instanceof RadioStation).toBeTruthy();
     });
-
 });

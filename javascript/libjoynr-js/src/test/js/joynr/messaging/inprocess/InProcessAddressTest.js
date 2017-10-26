@@ -18,14 +18,14 @@
  * limitations under the License.
  * #L%
  */
-var InProcessAddress = require('../../../../classes/joynr/messaging/inprocess/InProcessAddress');
+var InProcessAddress = require("../../../../classes/joynr/messaging/inprocess/InProcessAddress");
 
 describe("libjoynr-js.joynr.messaging.inprocess.InProcessAddress", function() {
     var skeleton, inProcessAddress;
 
     beforeEach(function() {
         skeleton = {
-            key : "skeleton"
+            key: "skeleton"
         };
         inProcessAddress = new InProcessAddress(skeleton);
     });
@@ -50,5 +50,4 @@ describe("libjoynr-js.joynr.messaging.inprocess.InProcessAddress", function() {
         expect(inProcessAddress.equals("")).toBeFalsy();
         expect(inProcessAddress.equals(new InProcessAddress(skeleton))).toBeTruthy();
     });
-
 });

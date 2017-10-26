@@ -18,8 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../../util/Typing');
-var SubscriptionRequest = require('./SubscriptionRequest');
+var Typing = require("../../util/Typing");
+var SubscriptionRequest = require("./SubscriptionRequest");
 
 /**
  * @name SubscriptionInformation
@@ -31,12 +31,7 @@ var SubscriptionRequest = require('./SubscriptionRequest');
  * @param {Object|SubscriptionRequest}
  *            [request] the subscription request
  */
-function SubscriptionInformation(
-        subscriptionType,
-        proxyParticipantId,
-        providerParticipantId,
-        request) {
-
+function SubscriptionInformation(subscriptionType, proxyParticipantId, providerParticipantId, request) {
     this.subscriptionType = subscriptionType;
     this.proxyParticipantId = proxyParticipantId;
     this.providerParticipantId = providerParticipantId;
@@ -56,17 +51,17 @@ function SubscriptionInformation(
      * the following members may contain native timer objects, which cannot
      * be serialized via JSON.stringify(), hence they must be excluded
      */
-    Object.defineProperty(this, 'endDateTimeout', {
-        enumerable : false,
-        configurable : false,
-        writable : true,
-        value : undefined
+    Object.defineProperty(this, "endDateTimeout", {
+        enumerable: false,
+        configurable: false,
+        writable: true,
+        value: undefined
     });
-    Object.defineProperty(this, 'subscriptionInterval', {
-        enumerable : false,
-        configurable : false,
-        writable : true,
-        value : undefined
+    Object.defineProperty(this, "subscriptionInterval", {
+        enumerable: false,
+        configurable: false,
+        writable: true,
+        value: undefined
     });
 
     /**

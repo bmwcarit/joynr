@@ -18,15 +18,13 @@
  * limitations under the License.
  * #L%
  */
-var SharedWebSocket = require('../../../../classes/joynr/messaging/websocket/SharedWebSocket');
-var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
-var WebSocketAddress = require('../../../../classes/joynr/system/RoutingTypes/WebSocketAddress');
-var WebSocketClientAddress =
-        require('../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress');
-var WebSocket = require('../../../../test-classes/global/WebSocketMock');
+var SharedWebSocket = require("../../../../classes/joynr/messaging/websocket/SharedWebSocket");
+var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
+var WebSocketAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketAddress");
+var WebSocketClientAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress");
+var WebSocket = require("../../../../test-classes/global/WebSocketMock");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() {
-
     var window = null;
     var localAddress;
     var ccAddress;
@@ -49,18 +47,18 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() 
         websocket = new WebSocket("ws://test");
         websocket.send = jasmine.createSpy("send");
         localAddress = new WebSocketClientAddress({
-            id : "1234"
+            id: "1234"
         });
         ccAddress = new WebSocketAddress({
-            protocol : "ws",
-            host : "host",
-            port : 1234,
-            path : "/test"
+            protocol: "ws",
+            host: "host",
+            port: 1234,
+            path: "/test"
         });
 
         sharedWebSocket = new SharedWebSocket({
-            localAddress : localAddress,
-            remoteAddress : ccAddress
+            localAddress: localAddress,
+            remoteAddress: ccAddress
         });
 
         listener1 = jasmine.createSpy("listener1");
@@ -68,7 +66,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() 
         function MessageEvent() {}
         event = new MessageEvent();
         data = new JoynrMessage({
-            type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         event.data = JSON.stringify(data);
         done();
@@ -87,8 +85,8 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() 
     it("throws if arguments are missing or of wrong type", function(done) {
         expect(function() {
             sharedWebSocket = new SharedWebSocket({
-                localAddress : localAddress,
-                remoteAddress : ccAddress
+                localAddress: localAddress,
+                remoteAddress: ccAddress
             });
         }).not.toThrow(); // correct
         // call
@@ -114,7 +112,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", function() 
         websocket.readyState = WebSocket.OPEN;
         sharedWebSocket.send(joynrMessage);
         expect(websocket.send).toHaveBeenCalledWith(websocket.marshalJoynrMessage(joynrMessage), {
-            binary : true
+            binary: true
         });
 
         websocket.send.calls.reset();
