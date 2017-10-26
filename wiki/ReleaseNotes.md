@@ -1,3 +1,22 @@
+# joynr 0.31.0
+
+## API relevant changes
+* **[JS]** Joynr now uses node native Promise if available, otherwise it falls
+  back to bluebird as before. Please make sure to use only Promise APIs available
+  in the node standard.
+
+## Configuration property changes
+* **[C++]** allow to load multiple ACL/RCL Json files for the cluster-controller.
+  * `cluster-controller/acl-entries-directory`
+
+* **[C++]** make the delay of the attempt to reconnect in mosquitto loop exponential until the connection succeeds.
+     By default this property is not enabled mqtt-exponential-backoff-enabled = false.
+  * `messaging/mqtt-reconnect-max-delay`
+  * `messaging/mqtt-exponential-backoff-enabled`
+
+## Other changes
+None.
+
 # joynr 0.30.1
 
 ## API relevant changes

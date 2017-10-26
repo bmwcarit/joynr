@@ -23,8 +23,9 @@
 #include "joynr/Message.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/DispatcherUtils.h"
+#include "joynr/PrivateCopyAssign.h"
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockKeychain.h"
 
 using namespace ::testing;
 using namespace joynr;

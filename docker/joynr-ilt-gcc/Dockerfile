@@ -101,7 +101,7 @@ RUN cd /opt \
     && git checkout ddb8012e \
     && mkdir build \
     && cd build \
-    && cmake .. \
+    && cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. \
     && make install -j"$(nproc)" \
     && cd /opt/ \
     && rm -rf googletest
@@ -136,7 +136,7 @@ RUN export FLATBUFFERS_VERSION=v1.6.0 \
 # install smrf
 ###################################################
 
-RUN export SMRF_VERSION=0.2.1 \
+RUN export SMRF_VERSION=0.2.2 \
     && cd /opt \
     && git clone https://github.com/bmwcarit/smrf.git \
     && cd smrf \

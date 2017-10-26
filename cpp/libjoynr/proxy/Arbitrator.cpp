@@ -155,11 +155,13 @@ void Arbitrator::startArbitration(
         }
 
         // If this point is reached the arbitration timed out
-        if (!(thisSharedPtr->discoveredIncompatibleVersions.empty())) {
-            thisSharedPtr->onErrorCallback(exceptions::NoCompatibleProviderFoundException(
-                    thisSharedPtr->discoveredIncompatibleVersions));
-        } else {
-            thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
+        if (thisSharedPtr->onErrorCallback) {
+            if (!(thisSharedPtr->discoveredIncompatibleVersions.empty())) {
+                thisSharedPtr->onErrorCallback(exceptions::NoCompatibleProviderFoundException(
+                        thisSharedPtr->discoveredIncompatibleVersions));
+            } else {
+                thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
+            }
         }
 
         thisSharedPtr->arbitrationRunning = false;
@@ -265,7 +267,9 @@ void Arbitrator::receiveCapabilitiesLookupResults(
             arbitrationError = e;
         }
         if (!res.getParticipantId().empty()) {
-            onSuccessCallback(res);
+            if (onSuccessCallback) {
+                onSuccessCallback(res);
+            }
             arbitrationFinished = true;
         }
     }

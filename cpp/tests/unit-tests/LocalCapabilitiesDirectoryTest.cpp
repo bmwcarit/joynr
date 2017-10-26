@@ -38,11 +38,14 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Settings.h"
 
-#include "tests/utils/MockObjects.h"
-#include "tests/utils/MockCallback.h"
-#include "tests/utils/MockLocalCapabilitiesDirectoryCallback.h"
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockCallback.h"
+#include "tests/mock/MockLocalCapabilitiesDirectoryCallback.h"
+#include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/MockCapabilitiesClient.h"
+#include "tests/mock/MockAccessController.h"
 
 using ::testing::Property;
 using ::testing::WhenDynamicCastTo;

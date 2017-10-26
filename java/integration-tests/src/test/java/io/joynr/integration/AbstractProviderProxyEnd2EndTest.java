@@ -232,7 +232,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         }
 
         provider = new TestProvider();
-        ProviderQos testProviderQos = new ProviderQos();
         testProviderQos.setPriority(System.currentTimeMillis());
 
         providerAsync = new TestAsyncProviderImpl();
@@ -262,9 +261,14 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             Thread.sleep(1000);
             providerRuntime.shutdown(true);
         }
+
         if (consumerRuntime != null) {
             consumerRuntime.shutdown(true);
         }
+
+        //do not shutdown runtimes twice
+        createdRuntimes.remove(providerRuntime);
+        createdRuntimes.remove(consumerRuntime);
 
         for (JoynrRuntime createdRuntime : createdRuntimes) {
             createdRuntime.shutdown(true);
@@ -784,7 +788,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void testSimpleBroadcast() throws DiscoveryException, JoynrIllegalStateException, InterruptedException {
+    public void testSimpleBroadcast() throws InterruptedException, JoynrWaitExpiredException, JoynrRuntimeException,
+                                     ApplicationException {
         final Semaphore broadcastReceived = new Semaphore(0);
         final GpsLocation gpsLocation = new GpsLocation(1.0,
                                                         2.0,
@@ -801,22 +806,24 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
-        proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastAdapter() {
-
-            @Override
-            public void onReceive(GpsLocation receivedGpsLocation, Float receivedCurrentSpeed) {
-                assertEquals(gpsLocation, receivedGpsLocation);
-                assertEquals(currentSpeed, receivedCurrentSpeed);
-                broadcastReceived.release();
-
-            }
-        }, new MulticastSubscriptionQos());
+        Future<String> subscriptionIdFuture = proxy.subscribeToLocationUpdateWithSpeedBroadcast(new LocationUpdateWithSpeedBroadcastAdapter() {
+                                                                                                    @Override
+                                                                                                    public void onReceive(GpsLocation receivedGpsLocation,
+                                                                                                                          Float receivedCurrentSpeed) {
+                                                                                                        assertEquals(gpsLocation,
+                                                                                                                     receivedGpsLocation);
+                                                                                                        assertEquals(currentSpeed,
+                                                                                                                     receivedCurrentSpeed);
+                                                                                                        broadcastReceived.release();
+                                                                                                    }
+                                                                                                },
+                                                                                                new MulticastSubscriptionQos());
 
         // wait to allow the subscription request to arrive at the provider
-        Thread.sleep(500);
+        subscriptionIdFuture.get();
+
         provider.fireLocationUpdateWithSpeed(gpsLocation, currentSpeed);
         broadcastReceived.acquire();
-
     }
 
     @Ignore

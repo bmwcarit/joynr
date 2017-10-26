@@ -27,7 +27,7 @@
 
 #include "systemintegration-tests/CombinedEnd2EndTest.h"
 #include "systemintegration-tests/TestConfiguration.h"
-#include "tests/utils/LibJoynrMockObjects.h"
+#include "tests/mock/MockSubscriptionListener.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/exceptions/MethodInvocationException.h"
@@ -45,6 +45,7 @@
 
 #include "tests/PrettyPrint.h"
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockTestProvider.h"
 
 using namespace ::testing;
 using namespace joynr;

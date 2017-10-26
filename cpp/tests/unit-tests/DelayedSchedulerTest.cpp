@@ -29,7 +29,7 @@
 
 #include "tests/JoynrTest.h"
 #include "tests/utils/TimeUtils.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockRunnable.h"
 
 using namespace joynr;
 

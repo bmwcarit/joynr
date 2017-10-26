@@ -29,8 +29,9 @@
 #include "joynr/serializer/Serializer.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
 #include "tests/utils/PtrUtils.h"
+#include "tests/mock/MockTransportMessageSender.h"
+#include "tests/mock/MockTransportMessageReceiver.h"
 
 using namespace joynr;
 using ::testing::Mock;
@@ -99,6 +100,8 @@ public:
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp).get()));
 
         test::util::resetAndWaitUntilDestroyed(runtime);
+        test::util::resetAndWaitUntilDestroyed(mockMessageReceiverHttp);
+        test::util::resetAndWaitUntilDestroyed(mockMessageReceiverMqtt);
 
         std::remove(settingsFilename.c_str());
 

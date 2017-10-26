@@ -34,9 +34,9 @@
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/tests/testProxy.h"
-#include "tests/utils/MockObjects.h"
 
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockGpsFloatSubscriptionListener.h"
 
 using namespace ::testing;
 using namespace joynr;

@@ -32,13 +32,19 @@
 #include "joynr/MessageSender.h"
 #include "joynr/Request.h"
 #include "joynr/Reply.h"
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/BroadcastFilterParameters.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/SingleThreadedIOService.h"
 
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockDispatcher.h"
+#include "tests/mock/MockMessagingStub.h"
+#include "tests/mock/MockMessageRouter.h"
 
 using ::testing::A;
 using ::testing::_;

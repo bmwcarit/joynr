@@ -118,7 +118,9 @@ var LoggerFactory = require('../../system/LoggerFactory');
         this._queuedMessages = [];
         this._closed = false;
         this._connected = false;
-        this._onConnectedPromise = Promise.pending().promise;
+        this._onConnectedPromise = new Promise(function(resolve, reject) {
+            this._onConnectedPromiseResolve = resolve;
+        }.bind(this));
 
         this._qosLevel = settings.provisioning.qosLevel !== undefined ?
             settings.provisioning.qosLevel : SharedMqttClient.DEFAULT_QOS_LEVEL;
@@ -175,7 +177,7 @@ var LoggerFactory = require('../../system/LoggerFactory');
                 this._connected = true;
                 sendQueuedMessages(this._client, this._queuedMessages);
                 sendQueuedUnsubscriptions(this._client, this._queuedUnsubscriptions);
-                sendQueuedSubscriptions(this._client, this._queuedSubscriptions, this._qosLevel).then(this._onConnectedPromise.resolve);
+                sendQueuedSubscriptions(this._client, this._queuedSubscriptions, this._qosLevel).then(this._onConnectedPromiseResolve);
             } catch (e) {
                 this._resetConnection();
             }

@@ -57,9 +57,13 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
     try {
         runtime =
                 createRuntime(pathToLibjoynrSettings, pathToMessagingSettings, std::move(keyChain));
-        onSuccess();
+        if (onSuccess) {
+            onSuccess();
+        }
     } catch (exceptions::JoynrRuntimeException& exception) {
-        onError(exception);
+        if (onError) {
+            onError(exception);
+        }
     }
     return runtime;
 }
@@ -73,9 +77,13 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
     std::shared_ptr<JoynrRuntime> runtime;
     try {
         runtime = createRuntime(std::move(settings), std::move(keyChain));
-        onSuccess();
+        if (onSuccess) {
+            onSuccess();
+        }
     } catch (exceptions::JoynrRuntimeException& exception) {
-        onError(exception);
+        if (onError) {
+            onError(exception);
+        }
     }
     return runtime;
 }

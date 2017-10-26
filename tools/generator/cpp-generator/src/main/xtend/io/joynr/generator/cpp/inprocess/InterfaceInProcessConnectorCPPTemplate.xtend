@@ -116,26 +116,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 		«val getAttributeName = "get" + attribute.joynrName.toFirstUpper»
 		«produceSyncGetterSignature(attribute, className)»
 		{
-			assert(address);
-			std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
-			assert(caller);
-			std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-			assert(«francaIntf.interfaceCaller»);
-
-			auto future = std::make_shared<joynr::Future<«returnType»>>();
-
-			std::function<void(const «returnType»& «attributeName»)> onSuccess =
-					[future] (const «returnType»& «attributeName») {
-						future->onSuccess(«attributeName»);
-					};
-
-			std::function<void(const std::shared_ptr<exceptions::ProviderRuntimeException>&)> onError =
-					[future] (const std::shared_ptr<exceptions::ProviderRuntimeException>& error) {
-						future->onError(error);
-					};
-
-			//see header for more information
-			«francaIntf.interfaceCaller»->«getAttributeName»(std::move(onSuccess), std::move(onError));
+			auto future = get«attributeName.toFirstUpper»Async();
 			future->get(«attributeName»);
 		}
 
@@ -149,7 +130,7 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
-			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper =
+			std::function<void(const «returnType»&)> onSuccessWrapper =
 					[future, onSuccess = std::move(onSuccess)] (const «returnType»& «attributeName») {
 						future->onSuccess(«attributeName»);
 						if (onSuccess) {
@@ -262,7 +243,11 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 				auto subscriptionManagerSharedPtr = subscriptionManager.lock();
 				auto future = std::make_shared<Future<std::string>>();
 				if (!subscriptionManagerSharedPtr) {
-					JOYNR_LOG_FATAL(logger(), "Subscribing to attribute name «interfaceName».«attributeName» failed, because SubscriptionManager is not available");
+					const std::string errorText("Subscribing to attribute name «interfaceName».«attributeName» failed, because SubscriptionManager is not available");
+					JOYNR_LOG_FATAL(logger(), errorText);
+					auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
+					subscriptionListener->onError(*error);
+					future->onError(error);
 					return future;
 				}
 				auto subscriptionCallback = std::make_shared<
@@ -296,7 +281,11 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 						publicationManagerSharedPtr->add(proxyParticipantId, providerParticipantId, caller, subscriptionRequest, inProcessPublicationSender);
 					}
 				} else {
-					JOYNR_LOG_FATAL(logger(), "Subscribing to attribute name «interfaceName».«attributeName» failed, because PublicationManager is not available");
+					const std::string errorText = "Subscribing to attribute name «interfaceName».«attributeName» failed, because PublicationManager is not available";
+					JOYNR_LOG_FATAL(logger(), errorText);
+					auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
+					subscriptionListener->onError(*error);
+					future->onError(error);
 					assert(false);
 				}
 				return future;
@@ -340,34 +329,13 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 «var outputTypedConstParamList = method.commaSeperatedTypedConstOutputParameterList»
 «var outputUntypedParamList = method.commaSeperatedUntypedOutputParameterList»
 
-«produceSyncMethodSignature(method, className)»
-{
-	assert(address);
-	std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
-	assert(caller);
-	std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-	assert(«francaIntf.interfaceCaller»);
-	«IF method.fireAndForget»
-		«francaIntf.interfaceCaller»->«methodname»(«inputParamList»);
-	«ELSE»
-		auto future = std::make_shared<joynr::Future<«outputParameters»>>();
-
-		std::function<void(«outputTypedConstParamList»)> onSuccess =
-				[future] («outputTypedConstParamList») {
-					future->onSuccess(
-							«outputUntypedParamList»
-					);
-				};
-
-		std::function<void(const std::shared_ptr<exceptions::JoynrException>&)> onError =
-				[future] (const std::shared_ptr<exceptions::JoynrException>& error) {
-					future->onError(error);
-				};
-		«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»std::move(onSuccess), std::move(onError));
-		future->get(«method.commaSeperatedUntypedOutputParameterList»);
-	«ENDIF»
-}
 «IF !method.fireAndForget»
+	«produceSyncMethodSignature(method, className)»
+	{
+		auto future = «method.joynrName»Async(«method.commaSeperatedUntypedInputParameterList»);
+		future->get(«method.commaSeperatedUntypedOutputParameterList»);
+	}
+
 	«produceAsyncMethodSignature(francaIntf, method, className)»
 	{
 		assert(address);
@@ -394,6 +362,16 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 
 		«francaIntf.interfaceCaller»->«methodname»(«IF !method.inputParameters.empty»«inputParamList», «ENDIF»std::move(onSuccessWrapper), std::move(onErrorWrapper));
 		return future;
+	}
+«ELSE»
+  «produceFireAndForgetMethodSignature(method, className)»
+	{
+		assert(address);
+		std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
+		assert(caller);
+		std::shared_ptr<«interfaceName»RequestCaller> «francaIntf.interfaceCaller» = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
+		assert(«francaIntf.interfaceCaller»);
+		«francaIntf.interfaceCaller»->«methodname»(«inputParamList»);
 	}
 «ENDIF»
 
@@ -461,12 +439,16 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 		JOYNR_LOG_TRACE(logger(), "Subscribing to «broadcastName».");
 		std::string broadcastName("«broadcastName»");
 		auto subscriptionManagerSharedPtr = subscriptionManager.lock();
+		auto future = std::make_shared<Future<std::string>>();
 		if (!subscriptionManagerSharedPtr) {
-			JOYNR_LOG_FATAL(logger(), "Subscribing to selective broadcast name «interfaceName».«broadcastName» failed, because SubscriptionManager is not available");
+			const std::string errorText = "Subscribing to selective broadcast name «interfaceName».«broadcastName» failed, because SubscriptionManager is not available";
+			JOYNR_LOG_FATAL(logger(), errorText);
+			auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
+			subscriptionListener->onError(*error);
+			future->onError(error);
 			assert(false);
 		}
 
-		auto future = std::make_shared<Future<std::string>>();
 		assert(address);
 		«IF broadcast.selective»
 			auto subscriptionCallback = std::make_shared<
@@ -567,7 +549,11 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 								std::move(onSuccess),
 								std::move(onError));
 			} else {
-				JOYNR_LOG_FATAL(logger(), "Subscribing to broadcast name «interfaceName».«broadcastName» failed, because PublicationManager is not available");
+				const std::string errorText = "Subscribing to broadcast name «interfaceName».«broadcastName» failed, because PublicationManager is not available";
+				JOYNR_LOG_FATAL(logger(), errorText);
+				auto error = std::make_shared<exceptions::JoynrRuntimeException>(errorText);
+				subscriptionListener->onError(*error);
+				future->onError(error);
 				assert(false);
 			}
 		«ENDIF»

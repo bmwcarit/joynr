@@ -27,7 +27,6 @@
 #include "MessageRouterTest.h"
 
 #include "joynr/Semaphore.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -42,9 +41,15 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/IPlatformSecurityManager.h"
 
+#include "tests/mock/MockInProcessMessagingSkeleton.h"
+#include "tests/mock/MockMessagingMulticastSubscriber.h"
+#include "tests/mock/MockDispatcher.h"
+
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::WhenDynamicCastTo;
+using ::testing::Eq;
+using ::testing::Property;
 
 using namespace joynr;
 

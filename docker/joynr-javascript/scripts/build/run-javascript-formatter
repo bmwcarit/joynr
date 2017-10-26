@@ -24,6 +24,7 @@ set -e -x
 
 (
   echo "format javascript"
-  cd javascript
-  mvn java-formatter:format
+  cd javascript/libjoynr-js
+  mvn dependency:unpack
+  mvn formatter:format
 )

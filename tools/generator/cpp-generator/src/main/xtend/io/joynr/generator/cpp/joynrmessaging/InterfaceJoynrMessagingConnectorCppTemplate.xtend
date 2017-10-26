@@ -171,7 +171,7 @@ request.setParams(
 			request.setMethodName("get«attributeName.toFirstUpper»");
 			auto future = std::make_shared<joynr::Future<«returnType»>>();
 
-			std::function<void(const «returnType»& «attributeName»)> onSuccessWrapper = [
+			std::function<void(const «returnType»&)> onSuccessWrapper = [
 					future,
 					onSuccess = std::move(onSuccess),
 					requestReplyId = request.getRequestReplyId(),

@@ -213,10 +213,6 @@ set(
     test_HEADERS
     "JoynrTest.h"
     "PrettyPrint.h"
-    "utils/MockCallback.h"
-    "utils/MockObjects.h"
-    "utils/LibJoynrMockObjects.h"
-    "utils/MockLocalCapabilitiesDirectoryCallback.h"
     "utils/PtrUtils.h"
     "utils/TimeUtils.h"
     "utils/TestRunnable.h"
@@ -228,11 +224,97 @@ set(
     test_SOURCES
     "JoynrTest.cpp"
     "PrettyPrint.cpp"
-    "utils/MockObjects.cpp"
     "utils/TestRunnable.cpp"
-    "utils/MockLocalCapabilitiesDirectoryCallback.cpp"
     "TestMain.cpp"
 )
+
+################
+# Mock objects #
+################
+if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATION_TESTS})
+    set(
+        MOCK_SOURCES
+        mock/MockSubscriptionListener.h
+        mock/MockCallback.h
+        mock/MockLocalCapabilitiesDirectoryCallback.cpp
+        mock/MockLocalCapabilitiesDirectoryCallback.h
+        mock/MockDiscovery.h
+        mock/MockProvider.cpp
+        mock/MockProvider.h
+        mock/MockDispatcher.h
+        mock/MockMessagingStub.h
+        mock/MockMessagingStubFactory.h
+        mock/MockMessageRouter.h
+        mock/MockPublicationSender.h
+        mock/MockProxyBuilder.h
+        mock/MockCapabilitiesClient.h
+        mock/MockSubscriptionManager.h
+        mock/MockSubscriptionCallback.h
+        mock/MockParticipantIdStorage.h
+        mock/MockGlobalDomainAccessControllerProxy.h
+        mock/MockGlobalDomainRoleControllerProxy.h
+        mock/MockLocalDomainAccessController.h
+        mock/MockLocationUpdatedSelectiveFilter.h
+        mock/MockMqttMessagingSkeleton.h
+        mock/MockMosquittoConnection.h
+        mock/MockAccessController.h
+        mock/MockTransportStatus.h
+        mock/MockClusterControllerSignalHandler.h
+        mock/MockWebSocketSendInterface.h
+        mock/MockWebSocketClient.h
+        mock/MockLocalCapabilitiesDirectory.h
+        mock/MockTestRequestCaller.h
+        mock/MockRunnable.h
+        mock/MockRunnableWithAccuracy.cpp
+        mock/MockRunnableWithAccuracy.h
+        mock/MockRunnableBlocking.h
+        mock/MockInProcessConnectorFactory.h
+        mock/MockKeychain.h
+        mock/MockMessageSender.h
+        mock/MockReplyCaller.h
+        mock/MockGpsFloatSubscriptionListener.h
+        mock/MockInProcessMessagingSkeleton.h
+        mock/MockGpsProvider.h
+        mock/MockMessagingMulticastSubscriber.h
+        mock/MockRoutingProxy.h
+        mock/MockTransportMessageSender.h
+        mock/MockTransportMessageReceiver.h
+        mock/MockJoynrRuntime.h
+        mock/MockDelayedScheduler.h
+        mock/MockTestProvider.h
+    )
+
+    add_library(
+        JoynrMocks
+        STATIC
+        ${MOCK_SOURCES}
+    )
+
+    if(NOT USE_PLATFORM_GTEST_GMOCK)
+        add_dependencies(JoynrMocks googletest)
+        add_dependencies(JoynrMocks googlemock)
+    endif(NOT USE_PLATFORM_GTEST_GMOCK)
+
+    target_link_libraries(
+        JoynrMocks
+        PUBLIC
+        ${test_TARGET_LIBRARIES}
+    )
+
+    target_include_directories(
+        JoynrMocks
+        SYSTEM
+        PUBLIC
+        ${GTEST_INCLUDE_DIRS}
+        ${GMOCK_INCLUDE_DIRS}
+    )
+
+    target_include_directories(
+        JoynrMocks
+        PUBLIC
+        ${test_INCLUDE_DIRECTORIES}
+    )
+endif(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATION_TESTS})
 
 ###############
 # g_UnitTests #
@@ -272,6 +354,7 @@ if(${BUILD_UNIT_TESTS})
         g_UnitTests
         TestGenerated
         ${test_TARGET_LIBRARIES}
+        JoynrMocks
     )
 
     target_include_directories(
@@ -318,6 +401,7 @@ if(${BUILD_INTEGRATION_TESTS})
         g_IntegrationTests
         TestGenerated
         ${test_TARGET_LIBRARIES}
+        JoynrMocks
     )
 
     target_include_directories(
@@ -362,6 +446,7 @@ if(${BUILD_SYSTEM_INTEGRATION_TESTS})
         g_SystemIntegrationTests
         TestGenerated
         ${test_TARGET_LIBRARIES}
+        JoynrMocks
     )
 
     set_target_properties(

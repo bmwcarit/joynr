@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global Promise: true */
 
 /*
  * #%L
@@ -18,4 +19,8 @@
  * limitations under the License.
  * #L%
  */
-module.exports = require("bluebird").Promise;
+if (typeof Promise === 'function') {
+    module.exports = Promise;
+} else {
+    module.exports = require("bluebird");
+}

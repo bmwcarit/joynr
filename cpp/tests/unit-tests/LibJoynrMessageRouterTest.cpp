@@ -30,11 +30,19 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/LibjoynrSettings.h"
 
+#include "tests/mock/MockDispatcher.h"
+#include "tests/mock/MockTestRequestCaller.h"
+#include "tests/mock/MockInProcessMessagingSkeleton.h"
+#include "tests/mock/MockRoutingProxy.h"
+#include "tests/mock/MockJoynrRuntime.h"
+#include "tests/mock/MockTestProvider.h"
+
 using ::testing::DoAll;
 using ::testing::InvokeArgument;
 using ::testing::InSequence;
 using ::testing::Pointee;
 using ::testing::Return;
+using ::testing::Eq;
 
 using namespace joynr;
 

@@ -103,6 +103,18 @@ const std::string& MessagingSettings::SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS(
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_MQTT_RECONNECT_MAX_DELAY()
+{
+    static const std::string value("messaging/mqtt-reconnect-max-delay");
+    return value;
+}
+
+const std::string& MessagingSettings::SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED()
+{
+    static const std::string value("messaging/mqtt-exponential-backoff-enabled");
+    return value;
+}
+
 const std::string& MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()
 {
     static const std::string value("messaging/mqtt-connection-timeout-ms");
@@ -134,6 +146,12 @@ std::int64_t MessagingSettings::NO_MQTT_MAX_MESSAGE_SIZE_BYTES()
 std::chrono::seconds MessagingSettings::DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS()
 {
     static const std::chrono::seconds value(1);
+    return value;
+}
+
+bool MessagingSettings::DEFAULT_MQTT_ENABLED()
+{
+    static const bool value = false;
     return value;
 }
 
@@ -435,6 +453,17 @@ void MessagingSettings::setMqttReconnectDelayTimeSeconds(
             SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS(), mqttReconnectDelayTimeSeconds.count());
 }
 
+std::chrono::seconds MessagingSettings::getMqttReconnectMaxDelayTimeSeconds() const
+{
+    return std::chrono::seconds(settings.get<std::int64_t>(SETTING_MQTT_RECONNECT_MAX_DELAY()));
+}
+
+void MessagingSettings::setMqttReconnectMaxDelayTimeSeconds(
+        std::chrono::seconds mqttReconnectMaxDelayTimeSeconds)
+{
+    settings.set(SETTING_MQTT_RECONNECT_MAX_DELAY(), mqttReconnectMaxDelayTimeSeconds.count());
+}
+
 std::chrono::milliseconds MessagingSettings::getMqttConnectionTimeoutMs() const
 {
     return std::chrono::milliseconds(
@@ -539,6 +568,16 @@ bool MessagingSettings::getHttpDebug() const
 void MessagingSettings::setHttpDebug(const bool& httpDebug)
 {
     settings.set(SETTING_HTTP_DEBUG(), httpDebug);
+}
+
+bool MessagingSettings::getMqttExponentialBackoffEnabled() const
+{
+    return settings.get<bool>(SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED());
+}
+
+void MessagingSettings::setMqttExponentialBackoffEnabled(const bool& enable)
+{
+    settings.set(SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED(), enable);
 }
 
 std::string MessagingSettings::getMessagingPropertiesPersistenceFilename() const
@@ -697,6 +736,13 @@ void MessagingSettings::checkSettings()
         settings.set(SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS(),
                      DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS().count());
     }
+    if (!settings.contains(SETTING_MQTT_RECONNECT_MAX_DELAY())) {
+        settings.set(
+                SETTING_MQTT_RECONNECT_MAX_DELAY(), getMqttReconnectDelayTimeSeconds().count());
+    }
+    if (!settings.contains(SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED())) {
+        settings.set(SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED(), DEFAULT_MQTT_ENABLED());
+    }
     if (!settings.contains(SETTING_MQTT_CONNECTION_TIMEOUT_MS())) {
         settings.set(
                 SETTING_MQTT_CONNECTION_TIMEOUT_MS(), DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
@@ -784,6 +830,14 @@ void MessagingSettings::printSettings() const
                     "SETTING: {}  = {})",
                     SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS(),
                     settings.get<std::string>(SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS()));
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {}  = {})",
+                    SETTING_MQTT_RECONNECT_MAX_DELAY(),
+                    settings.get<std::string>(SETTING_MQTT_RECONNECT_MAX_DELAY()));
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {}  = {})",
+                    SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED(),
+                    settings.get<std::string>(SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED()));
     JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {})",
                     SETTING_INDEX(),

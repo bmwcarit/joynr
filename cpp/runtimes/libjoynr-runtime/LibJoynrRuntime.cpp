@@ -34,6 +34,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/PublicationManager.h"
+#include "joynr/ProxyBuilder.h"
 #include "joynr/Settings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionManager.h"
@@ -193,6 +194,8 @@ void LibJoynrRuntime::init(
                                 ->setDiscoveryQos(routingProviderDiscoveryQos)
                                 ->build();
 
+    libJoynrMessageRouter->setParentRouter(routingProxy);
+
     auto globalAddressFuture = routingProxy->getGlobalAddressAsync();
     auto onSuccessWrapper = [
         this,
@@ -209,7 +212,9 @@ void LibJoynrRuntime::init(
             exceptions::JoynrRuntimeException wrappedError(
                     "Failed to retrieve global address from cluster controller: " +
                     error.getMessage());
-            onError(wrappedError);
+            if (onError) {
+                onError(wrappedError);
+            }
             return;
         }
         messageSender->setReplyToAddress(replyAddress);
@@ -228,12 +233,12 @@ void LibJoynrRuntime::init(
                 publicationManager,
                 globalAddress);
 
-        onSuccess();
+        if (onSuccess) {
+            onSuccess();
+        }
     };
 
-    routingProxy->getReplyToAddressAsync(onSuccessWrapper, onError);
-
-    libJoynrMessageRouter->setParentRouter(std::move(routingProxy));
+    routingProxy->getReplyToAddressAsync(std::move(onSuccessWrapper), std::move(onError));
 
     // setup discovery
     std::string discoveryProviderParticipantId =

@@ -31,7 +31,6 @@
 #include "joynr/LibJoynrMessageRouter.h"
 
 #include "joynr/Semaphore.h"
-#include "tests/utils/MockObjects.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
@@ -44,6 +43,10 @@
 #include "joynr/Message.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
+#include "joynr/Settings.h"
+
+#include "tests/mock/MockMessagingStub.h"
+#include "tests/mock/MockMessagingStubFactory.h"
 
 using namespace joynr;
 
@@ -170,6 +173,9 @@ protected:
         joynr::Semaphore semaphore(0);
         std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
         auto mockMessagingStub = std::make_shared<MockMessagingStub>();
+        using ::testing::Return;
+        using ::testing::_;
+        using ::testing::A;
         ON_CALL(*messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
         ON_CALL(*mockMessagingStub, transmit(immutableMessage, A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
                 .WillByDefault(ReleaseSemaphore(&semaphore));

@@ -20,7 +20,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <memory>
-#include "tests/utils/MockObjects.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/MessageSender.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
@@ -28,8 +27,14 @@
 #include "joynr/SingleThreadedIOService.h"
 
 #include "joynr/UnicastBroadcastListener.h"
+#include "joynr/MulticastBroadcastListener.h"
 
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/MockPublicationSender.h"
+#include "tests/mock/MockLocationUpdatedSelectiveFilter.h"
+#include "tests/mock/MockSubscriptionListener.h"
+#include "tests/mock/MockTestProvider.h"
 
 using namespace ::testing;
 using ::testing::InSequence;

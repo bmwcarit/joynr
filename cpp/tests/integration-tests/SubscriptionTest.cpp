@@ -39,10 +39,15 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/SubscriptionManager.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
-#include "tests/utils/MockCallback.h"
+#include "tests/mock/MockCallback.h"
+#include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/MockTestRequestCaller.h"
+#include "tests/mock/MockReplyCaller.h"
+#include "tests/mock/MockTestProvider.h"
+#include "tests/mock/MockSubscriptionListener.h"
 
 using namespace ::testing;
 using namespace joynr;

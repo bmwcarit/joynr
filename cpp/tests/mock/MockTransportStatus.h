@@ -1,16 +1,14 @@
-/*global jstestdriver: true */
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,12 +16,20 @@
  * limitations under the License.
  * #L%
  */
+#ifndef TESTS_MOCK_MOCKTRANSPORTSTATUS_H
+#define TESTS_MOCK_MOCKTRANSPORTSTATUS_H
 
-describe("libjoynr-js.Console", function() {
-    it("has all correctly typed members", function() {
-        expect(jstestdriver).toBeDefined();
-        expect(jstestdriver.console).toBeDefined();
-        expect(jstestdriver.console.log).toBeDefined();
-        jstestdriver.console.log("Hello Console!");
-    });
-});
+#include <gmock/gmock.h>
+
+#include "joynr/ITransportStatus.h"
+
+class MockTransportStatus : public joynr::ITransportStatus
+{
+public:
+    MOCK_METHOD1(isReponsibleFor, bool(std::shared_ptr<const joynr::system::RoutingTypes::Address>));
+    MOCK_METHOD0(isAvailable, bool());
+
+    MOCK_METHOD1(setAvailabilityChangedCallback, void(std::function<void(bool)> availabilityChangedCallback));
+};
+
+#endif // TESTS_MOCK_MOCKTRANSPORTSTATUS_H

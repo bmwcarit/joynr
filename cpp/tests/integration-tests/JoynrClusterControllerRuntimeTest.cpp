@@ -39,7 +39,11 @@
 #include "joynr/serializer/Serializer.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockMqttMessagingSkeleton.h"
+#include "tests/mock/MockTransportMessageSender.h"
+#include "tests/mock/MockTransportMessageReceiver.h"
+#include "tests/mock/MockSubscriptionListener.h"
+#include "tests/mock/MockTestProvider.h"
 
 using namespace ::testing;
 using namespace joynr;

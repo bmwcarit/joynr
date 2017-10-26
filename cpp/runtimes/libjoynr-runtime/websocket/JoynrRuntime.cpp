@@ -79,8 +79,7 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
     auto runtime =
             std::make_shared<LibJoynrWebSocketRuntime>(std::move(settings), std::move(keyChain));
     runtime->connect(std::move(onSuccess), std::move(onError));
-    // this is necessary for gcc 4.9
-    return std::move(runtime);
+    return runtime;
 }
 
 std::unique_ptr<Settings> JoynrRuntime::createSettings(const std::string& pathToLibjoynrSettings,

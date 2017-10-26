@@ -184,7 +184,7 @@ std::shared_ptr<T> ProxyBuilder<T>::build()
         proxyFuture.onError(std::make_shared<exceptions::DiscoveryException>(exception));
     };
 
-    buildAsync(onSuccess, onError);
+    buildAsync(std::move(onSuccess), std::move(onError));
 
     std::shared_ptr<T> createdProxy;
     proxyFuture.get(createdProxy);
@@ -206,9 +206,12 @@ void ProxyBuilder<T>::buildAsync(
             domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
 
     std::shared_ptr<ProxyBuilder<T>> thisSharedPtr = this->shared_from_this();
-    auto arbitrationSucceeds =
-            [ thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr), this, onSuccess, onError ](
-                    const types::DiscoveryEntryWithMetaInfo& discoverEntry)
+    auto arbitrationSucceeds = [
+        thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr),
+        this,
+        onSuccess = std::move(onSuccess),
+        onError
+    ](const types::DiscoveryEntryWithMetaInfo& discoverEntry) mutable
     {
         // need to make sure own instance still exists before
         // accesssing internal inherited member runtime
@@ -254,7 +257,7 @@ void ProxyBuilder<T>::buildAsync(
         onSuccess(std::move(proxy));
     };
 
-    arbitrator->startArbitration(arbitrationSucceeds, onError);
+    arbitrator->startArbitration(std::move(arbitrationSucceeds), std::move(onError));
 }
 
 template <class T>

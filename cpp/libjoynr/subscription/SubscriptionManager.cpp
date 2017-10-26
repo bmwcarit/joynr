@@ -218,11 +218,13 @@ void SubscriptionManager::registerSubscription(
             messageRouter->addMulticastReceiver(multicastId,
                                                 subscriberParticipantId,
                                                 providerParticipantId,
-                                                onSuccess,
-                                                onError);
+                                                std::move(onSuccess),
+                                                std::move(onError));
             multicastSubscribers.registerMulticastReceiver(multicastId, subscriptionId);
         } else {
-            onSuccess();
+            if (onSuccess) {
+                onSuccess();
+            }
         }
     }
 }
@@ -288,8 +290,8 @@ void SubscriptionManager::unregisterSubscription(const std::string& subscription
             messageRouter->removeMulticastReceiver(multicastId,
                                                    subscription->subscriberParticipantId,
                                                    subscription->providerParticipantId,
-                                                   onSuccess,
-                                                   onError);
+                                                   std::move(onSuccess),
+                                                   std::move(onError));
             return;
         }
     }

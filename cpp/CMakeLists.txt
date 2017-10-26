@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.30.1)
+project(joynr-0.31.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 30)
-set(JOYNR_PATCH_VERSION 1)
+set(JOYNR_MINOR_VERSION 31)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -79,8 +79,8 @@ message(STATUS "option ENABLE_CCACHE=" ${ENABLE_CCACHE})
 if(ENABLE_CCACHE)
     find_program(CCACHE_FOUND ccache)
     if(CCACHE_FOUND)
-        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_FOUND})
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_FOUND})
     else(CCACHE_FOUND)
         message(WARNING "ccache was not found. Fall-back to default compiler.")
     endif(CCACHE_FOUND)
@@ -735,7 +735,7 @@ else(USE_PLATFORM_MOCOCRW)
 endif(USE_PLATFORM_MOCOCRW)
 
 if (USE_PLATFORM_SMRF)
-    find_package(smrf 0.2.1 REQUIRED CONFIG)
+    find_package(smrf 0.2.2 REQUIRED CONFIG)
 else(USE_PLATFORM_SMRF)
     message(STATUS "############ Download: smrf ############")
 
@@ -746,7 +746,7 @@ else(USE_PLATFORM_SMRF)
     AddExternalProject(
         smrf
         GIT_REPOSITORY https://github.com/bmwcarit/smrf
-        GIT_TAG 0.2.1
+        GIT_TAG 0.2.2
         TIMEOUT 10
         # Disable configure step
         #CONFIGURE_COMMAND ""

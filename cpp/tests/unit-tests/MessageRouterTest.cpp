@@ -41,13 +41,16 @@
 #include "joynr/Util.h"
 #include "joynr/IPlatformSecurityManager.h"
 
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockTransportStatus.h"
 
 using ::testing::InvokeArgument;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::Truly;
 using ::testing::SaveArg;
+using ::testing::A;
+using ::testing::_;
+using ::testing::Eq;
 
 using namespace joynr;
 

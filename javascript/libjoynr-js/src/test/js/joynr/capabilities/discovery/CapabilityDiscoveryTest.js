@@ -321,7 +321,7 @@ var CapabilitiesUtil = require('../../../../classes/joynr/util/CapabilitiesUtil'
                                         return (localCapStoreSpy.lookup.calls.count() >= 1 &&
                                                 globalCapCacheSpy.lookup.calls.count() >= 1 &&
                                                 globalCapDirSpy.lookup.calls.count() >= 1);
-                                    }, "wait for lookups to be done", 1000).finally(function() {
+                                    }, "wait for lookups to be done", 1000).then(function() {
                                         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
                                             domains : [domain],
                                             interfaceName : interfaceName
@@ -337,7 +337,7 @@ var CapabilitiesUtil = require('../../../../classes/joynr/util/CapabilitiesUtil'
                                         });
                                         done();
                                         return null;
-                                    });
+                                    }).catch(done.fail);
                                 });
 
                         it(
@@ -363,7 +363,7 @@ var CapabilitiesUtil = require('../../../../classes/joynr/util/CapabilitiesUtil'
                                     waitsFor(function() {
                                         return (globalCapCacheSpy.lookup.calls.count() >= 1 &&
                                             globalCapDirSpy.lookup.calls.count() >= 1);
-                                    }, "waiting for globalCapCacheSpy to get called", 1000).finally(function() {
+                                    }, "waiting for globalCapCacheSpy to get called", 1000).then(function() {
                                         expect(localCapStoreSpy.lookup).not.toHaveBeenCalled();
                                         expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
                                             domains : [domain],
@@ -376,7 +376,7 @@ var CapabilitiesUtil = require('../../../../classes/joynr/util/CapabilitiesUtil'
                                         });
                                         done();
                                         return null;
-                                    });
+                                    }).catch(done.fail);
                                 });
 
                         it(

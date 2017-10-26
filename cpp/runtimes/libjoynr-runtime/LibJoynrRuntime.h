@@ -29,7 +29,6 @@
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/ProxyBuilder.h"
 #include "joynr/Semaphore.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/SystemServicesSettings.h"

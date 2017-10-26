@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -58,7 +59,7 @@ import org.slf4j.LoggerFactory;
 abstract public class AbstractMessageRouter implements MessageRouter, ShutdownListener {
     private Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
     private final RoutingTable routingTable;
-    private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss:sss");
+    private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss:sss z");
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
     private long routingTableGracePeriodMs;
@@ -105,6 +106,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         this.addressManager = addressManager;
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
+        DateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         shutdownNotifier.registerForShutdown(this);
         messageProcessedListeners = new ArrayList<MessageProcessedListener>();
         startMessageWorkerThreads(maxParallelSends);
@@ -289,9 +291,10 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         long ttlExpirationDateMs = message.getTtlMs();
 
         if (ttlExpirationDateMs <= currentTimeMillis) {
-            String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} abs_ttl: {1}",
+            String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} abs_ttl: {1} msg_id: {2}",
                                                        currentTimeMillis,
-                                                       ttlExpirationDateMs);
+                                                       ttlExpirationDateMs,
+                                                       message.getId());
             logger.error(errorMessage);
             callMessageProcessedListeners(message.getId());
             throw new JoynrMessageNotSentException(errorMessage);

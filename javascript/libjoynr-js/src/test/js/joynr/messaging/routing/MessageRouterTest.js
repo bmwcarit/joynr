@@ -747,17 +747,16 @@ var uuid = require('../../../../classes/lib/uuid-annotated');
 
                                     messageRouter.setRoutingProxy(routingProxySpy);
 
-                                    waitsFor(function() {
+                                    return waitsFor(function() {
                                         return (messagingStubSpy.transmit.calls.count() >= 1);
-                                    }, "wait for tranmsit to be done", 1000).finally(function() {
-                                        expect(messagingStubSpy.transmit).toHaveBeenCalledWith(expectedJoynrMessage);
-                                        done();
-                                        return null;
-                                    });
+                                    }, "wait for tranmsit to be done", 1000);
                                 })
-                                .catch(function(error) {
-                                    done.fail("unexpected error from messageRouter.route: " + error);
-                                });
+                                .then(function() {
+                                    expect(messagingStubSpy.transmit).toHaveBeenCalledWith(expectedJoynrMessage);
+                                    done();
+                                    return null;
+                                })
+                                .catch(done.fail);
                             });
 
                             it(

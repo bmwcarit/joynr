@@ -25,7 +25,6 @@
 #include <vector>
 
 #include "joynr/IClusterControllerSignalHandler.h"
-
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/IKeychain.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"

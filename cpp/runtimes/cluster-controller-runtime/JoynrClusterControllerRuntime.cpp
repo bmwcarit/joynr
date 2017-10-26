@@ -25,6 +25,7 @@
 #include <memory>
 
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/filesystem.hpp>
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/CapabilitiesRegistrar.h"
@@ -109,8 +110,6 @@
 
 namespace joynr
 {
-
-static const std::string ACC_ENTRIES_FILE = "CCAccessControl.entries";
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::unique_ptr<Settings> settings,
@@ -673,35 +672,25 @@ void JoynrClusterControllerRuntime::enableAccessController(
 
     JOYNR_LOG_DEBUG(logger(),
                     "AccessControl was enabled attempting to load entries from {}.",
-                    ACC_ENTRIES_FILE);
-
-    std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry> accessControlEntries;
-
-    if (joynr::util::fileExists(ACC_ENTRIES_FILE)) {
-        try {
-            joynr::serializer::deserializeFromJson(
-                    accessControlEntries, joynr::util::loadStringFromFile(ACC_ENTRIES_FILE));
-        } catch (const std::runtime_error& ex) {
-            JOYNR_LOG_ERROR(logger(), ex.what());
-            accessControlEntries.clear();
-        } catch (const std::invalid_argument& ex) {
-            JOYNR_LOG_ERROR(logger(),
-                            "Could not deserialize access control entries from {}: {}",
-                            ACC_ENTRIES_FILE,
-                            ex.what());
-            accessControlEntries.clear();
-        }
-    } else {
-        JOYNR_LOG_INFO(
-                logger(), "Access control file with entries does not exists.", ACC_ENTRIES_FILE);
-    }
+                    clusterControllerSettings.getAclEntriesDirectory());
 
     auto localDomainAccessStore = std::make_shared<joynr::LocalDomainAccessStore>(
             clusterControllerSettings.getLocalDomainAccessStorePersistenceFilename());
 
-    // Use update methods to insert deserialized entries in access store
-    for (const auto& entry : accessControlEntries) {
-        localDomainAccessStore->updateMasterAccessControlEntry(entry);
+    namespace fs = boost::filesystem;
+
+    fs::path aclEntriesPath(clusterControllerSettings.getAclEntriesDirectory());
+
+    if (fs::is_directory(aclEntriesPath)) {
+        for (const auto& entry : fs::directory_iterator(aclEntriesPath)) {
+            if (fs::is_regular_file(entry.path())) {
+                localDomainAccessStore->mergeDomainAccessStore(
+                        LocalDomainAccessStore(entry.path().string()));
+            }
+        }
+    } else {
+        JOYNR_LOG_ERROR(
+                logger(), "Access control directory: {} does not exist.", aclEntriesPath.string());
     }
 
     localDomainAccessController = std::make_shared<joynr::LocalDomainAccessController>(

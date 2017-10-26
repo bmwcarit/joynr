@@ -320,8 +320,10 @@ void LibJoynrMessageRouter::removeNextHop(
         return;
     }
 
-    std::function<void(const exceptions::JoynrRuntimeException&)> onErrorWrapper =
-            [onError](const exceptions::JoynrRuntimeException& error) {
+    std::function<void(const exceptions::JoynrRuntimeException&)>
+            onErrorWrapper = [onError = std::move(onError)](
+                    const exceptions::JoynrRuntimeException& error)
+    {
         JOYNR_LOG_ERROR(logger(),
                         "Unable to report error (received by calling "
                         "parentRouter->removeNextHopAsync), since onError function is "
@@ -411,7 +413,7 @@ void LibJoynrMessageRouter::addMulticastReceiver(
             providerParticipantId,
             onSuccessWrapper = std::move(onSuccessWrapper),
             onErrorWrapper
-        ](const bool& resolved)
+        ](const bool& resolved) mutable
         {
             if (resolved) {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
@@ -440,8 +442,10 @@ void LibJoynrMessageRouter::addMulticastReceiver(
                 onErrorWrapper(exception);
             }
         };
-        auto onResolveError = [onErrorWrapper, providerParticipantId](
-                const joynr::exceptions::JoynrRuntimeException& error) {
+        auto onResolveError =
+                [ onErrorWrapper = std::move(onErrorWrapper), providerParticipantId ](
+                        const joynr::exceptions::JoynrRuntimeException& error)
+        {
             exceptions::ProviderRuntimeException exception(
                     "error resolving next hop for multicast provider (providerParticipantId=" +
                     providerParticipantId + "). Error from parent router: " + error.getMessage());

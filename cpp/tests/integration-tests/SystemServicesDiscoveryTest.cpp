@@ -33,7 +33,9 @@
 #include "joynr/serializer/Serializer.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockTransportMessageSender.h"
+#include "tests/mock/MockTransportMessageReceiver.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace joynr;
 
@@ -108,6 +110,7 @@ public:
                 mockMessageSenderMqtt);
         // discovery provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->init();
+
         discoveryProxyBuilder = runtime->createProxyBuilder<joynr::system::DiscoveryProxy>(discoveryDomain);
     }
 
@@ -116,7 +119,11 @@ public:
         discoveryProxyBuilder.reset();
         runtime->deleteChannel();
         runtime->stopExternalCommunication();
-        runtime.reset();
+
+        test::util::resetAndWaitUntilDestroyed(runtime);
+        test::util::resetAndWaitUntilDestroyed(mockMessageReceiverHttp);
+        test::util::resetAndWaitUntilDestroyed(mockMessageReceiverMqtt);
+        test::util::resetAndWaitUntilDestroyed(mockMessageSenderMqtt);
 
         // Delete persisted files
         std::remove(settingsFilename.c_str());

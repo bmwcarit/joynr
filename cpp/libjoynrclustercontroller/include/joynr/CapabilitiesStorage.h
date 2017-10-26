@@ -138,6 +138,11 @@ public:
         return container.end();
     }
 
+    auto size() const
+    {
+        return container.size();
+    }
+
     /**
      * @brief removes expired entries based on expiryDate
      * @return number of removed elements
@@ -202,7 +207,17 @@ public:
     void insert(const DiscoveryEntry& entry)
     {
         auto& index = container.get<tags::ParticipantId>();
-        index.insert(entry);
+        auto insertResult = index.insert(entry);
+
+        // entry already existed
+        if (!insertResult.second) {
+
+            auto existingIt = insertResult.first;
+
+            // replace
+            bool replaceResult = index.replace(existingIt, entry);
+            assert(replaceResult);
+        }
     }
 };
 

@@ -22,10 +22,12 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "tests/utils/MockObjects.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/tests/testProxy.h"
+
+#include "tests/mock/MockSubscriptionListener.h"
+#include "tests/mock/MockTestProvider.h"
 
 using namespace ::testing;
 using namespace joynr;

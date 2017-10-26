@@ -45,7 +45,9 @@
 #include "joynr/IMessageSender.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/MockObjects.h"
+#include "tests/mock/MockPublicationSender.h"
+#include "tests/mock/MockTestRequestCaller.h"
+#include "tests/mock/MockMessageSender.h"
 
 using ::testing::A;
 using ::testing::_;
@@ -58,6 +60,7 @@ using ::testing::MatcherInterface;
 using ::testing::MatchResultListener;
 using ::testing::Matcher;
 using ::testing::MakeMatcher;
+using ::testing::Eq;
 
 using namespace joynr;
 

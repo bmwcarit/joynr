@@ -55,6 +55,7 @@ public:
     static const std::string& SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS();
     static const std::string&
     SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID();
+    static const std::string& SETTING_ACL_ENTRIES_DIRECTORY();
 
     static std::chrono::milliseconds DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME();
@@ -136,6 +137,9 @@ public:
     std::chrono::milliseconds getCapabilitiesFreshnessUpdateIntervalMs() const;
     void setCapabilitiesFreshnessUpdateIntervalMs(
             std::chrono::milliseconds capabilitiesFreshnessUpdateIntervalMs);
+
+    void setAclEntriesDirectory(const std::string& directoryPath);
+    std::string getAclEntriesDirectory() const;
 
     void printSettings() const;
 

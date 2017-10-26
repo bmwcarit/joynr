@@ -48,6 +48,7 @@ void SteadyTimer::expiresFromNow(std::chrono::milliseconds duration)
 
 void SteadyTimer::asyncWait(std::function<void(const boost::system::error_code&)>&& callback)
 {
+    assert(callback);
     steady_timer->async_wait(std::move(callback));
 }
 
