@@ -291,7 +291,8 @@ bool LocalDomainAccessController::hasRole(const std::string& userId,
     boost::optional<DomainRoleEntry> dre = localDomainAccessStore->getDomainRole(userId, role);
     if (dre) {
         std::vector<std::string> domains = dre->getDomains();
-        if (util::vectorContains(domains, domain)) {
+        const std::string wildcard = "*";
+        if (util::vectorContains(domains, domain) || util::vectorContains(domains, wildcard)) {
             hasRole = true;
         }
     }

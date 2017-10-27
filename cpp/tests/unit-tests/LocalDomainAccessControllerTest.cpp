@@ -219,6 +219,19 @@ TEST_P(LocalDomainAccessControllerTest, testHasRole) {
                                                      Role::OWNER));
 }
 
+TEST_P(LocalDomainAccessControllerTest, testHasRoleWithWildcard) {
+    const std::string wildcard = "*";
+    userDre.setDomains({wildcard});
+    localDomainAccessStorePtr->updateDomainRole(userDre);
+
+    std::string defaultString;
+    DefaultValue<std::string>::Set(defaultString);
+
+    EXPECT_TRUE(localDomainAccessController->hasRole(LocalDomainAccessControllerTest::TEST_USER,
+                                                     LocalDomainAccessControllerTest::TEST_DOMAIN1,
+                                                     Role::OWNER));
+}
+
 TEST_P(LocalDomainAccessControllerTest, consumerPermission) {
     localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
 
