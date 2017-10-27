@@ -59,6 +59,7 @@ class JoynrClusterControllerRuntimeTest : public ::testing::Test {
 public:
     std::string settingsFilenameMqtt;
     std::string settingsFilenameHttp;
+    std::string settingsFilenameMultipleAclRclFiles;
     std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     joynr::types::Localisation::GpsLocation gpsLocation;
     std::shared_ptr<MockTransportMessageReceiver> mockHttpMessageReceiver;
@@ -72,6 +73,7 @@ public:
     JoynrClusterControllerRuntimeTest() :
         settingsFilenameMqtt("test-resources/MqttJoynrClusterControllerRuntimeTest.settings"),
         settingsFilenameHttp("test-resources/HttpJoynrClusterControllerRuntimeTest.settings"),
+        settingsFilenameMultipleAclRclFiles("test-resources/AclRclJoynrClusterControllerRuntimeTest.settings"),
             runtime(nullptr),
             gpsLocation(
                 1.1,                        // longitude
@@ -168,6 +170,31 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntimeTest);
 };
+
+TEST_F(JoynrClusterControllerRuntimeTest, loadMultipleAclRclFiles)
+{
+    //runtime can only be created, after MockMessageReceiver has been told to return
+    //a channelId for getReceiveChannelId.
+    EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
+            .WillOnce(::testing::ReturnRefOfCopy(serializedChannelAddress));
+    EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
+            .Times(0);
+
+    runtime = std::make_shared<JoynrClusterControllerRuntime>(
+                std::make_unique<Settings>(settingsFilenameMultipleAclRclFiles),
+                nullptr,
+                nullptr,
+                mockHttpMessageReceiver,
+                mockHttpMessageSender,
+                mockMqttMessageReceiver,
+                mockMqttMessageSender
+    );
+
+    runtime->init();
+
+    ASSERT_TRUE(runtime != nullptr);
+
+}
 
 TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeMqtt)
 {

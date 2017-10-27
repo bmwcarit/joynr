@@ -26,17 +26,19 @@
 
 using namespace joynr;
 
-TEST(ClusterControllerSettingsTest, accessControlIsEnabled) {
+TEST(ClusterControllerSettingsTest, accessControlIsEnabled)
+{
     Settings testSettings("test-resources/CCSettingsWithAccessControlEnabled.settings");
     ASSERT_TRUE(testSettings.isLoaded());
 
     ClusterControllerSettings clusterControllerSettings(testSettings);
 
-    // In the loaded setting file the access control is set to false
+    // In the loaded setting file the access control is set to true
     EXPECT_TRUE(clusterControllerSettings.enableAccessController());
 }
 
-TEST(ClusterControllerSettingsTest, accessControlIsDisabled) {
+TEST(ClusterControllerSettingsTest, accessControlIsDisabled)
+{
     Settings testSettings("test-resources/CCSettingsWithAccessControlDisabled.settings");
     ASSERT_TRUE(testSettings.isLoaded());
 
@@ -44,4 +46,13 @@ TEST(ClusterControllerSettingsTest, accessControlIsDisabled) {
 
     // In the loaded setting file the access control is set to false
     EXPECT_FALSE(clusterControllerSettings.enableAccessController());
+}
+
+TEST(ClusterControllerSettingsTest, clusterControllerAclEntriesPathSet)
+{
+    Settings testSettings("test-resources/CCSettingsWithAccessControlEnabledAndAclFilePathSet.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
+
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+    EXPECT_EQ("test-resources", clusterControllerSettings.getAclEntriesDirectory());
 }

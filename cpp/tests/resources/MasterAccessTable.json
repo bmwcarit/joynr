@@ -1,0 +1,45 @@
+{
+   "masterAccessTable":[
+      {
+         "_typeName":"joynr.infrastructure.DacTypes.MasterAccessControlEntry",
+         "uid":"testUser",
+         "domain":"testDomain",
+         "interfaceName":"this/is/a/test/interface",
+         "defaultRequiredTrustLevel":"LOW",
+         "possibleRequiredTrustLevels":[
+            "LOW",
+            "MID"
+         ],
+         "defaultRequiredControlEntryChangeTrustLevel":"LOW",
+         "possibleRequiredControlEntryChangeTrustLevels":[
+            "LOW",
+            "MID"
+         ],
+         "operation":"*",
+         "defaultConsumerPermission":"NO",
+         "possibleConsumerPermissions":[
+            "YES",
+            "NO",
+            "ASK"
+         ]
+      }
+   ],
+   "mediatorAccessTable":[
+
+   ],
+   "ownerAccessTable":[
+
+   ],
+   "domainRoleTable":[
+
+   ],
+   "masterRegistrationTable":[
+
+   ],
+   "mediatorRegistrationTable":[
+
+   ],
+   "ownerRegistrationTable":[
+
+   ]
+}

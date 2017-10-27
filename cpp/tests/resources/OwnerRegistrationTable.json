@@ -1,0 +1,31 @@
+{
+   "masterAccessTable":[
+
+   ],
+   "mediatorAccessTable":[
+
+   ],
+   "ownerAccessTable":[
+
+   ],
+   "domainRoleTable":[
+
+   ],
+   "masterRegistrationTable":[
+
+   ],
+   "mediatorRegistrationTable":[
+
+   ],
+   "ownerRegistrationTable":[
+      {
+         "_typeName":"joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry",
+         "uid":"testUser",
+         "domain":"testDomain",
+         "interfaceName":"this/is/a/test/interface",
+         "requiredTrustLevel":"LOW",
+         "requiredAceChangeTrustLevel":"LOW",
+         "providerPermission":"NO"
+      }
+   ]
+}

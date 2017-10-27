@@ -233,6 +233,10 @@
 					</roots>
                         		<excludes>
         		                    <exclude>resources/ListOfCapabilitiesToInject.json</exclude>
+                                            <exclude>resources/MasterAccessTable.json</exclude>
+                                            <exclude>resources/MasterRegistrationTable.json</exclude>
+                                            <exclude>resources/OwnerAccessTable.json</exclude>
+                                            <exclude>resources/OwnerRegistrationTable.json</exclude>
 	                       		</excludes>
 				</configuration>
 			</plugin>

@@ -21,6 +21,7 @@
 
 #include "JoynrTest.h"
 
+#include "joynr/Settings.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 
@@ -76,6 +77,7 @@ protected:
     MasterAccessControlEntry expectedMasterAccessControlEntry;
     OwnerAccessControlEntry expectedOwnerAccessControlEntry;
 
+    static const std::string TEST_USER;
     static const std::string TEST_USER1;
     static const std::string TEST_USER2;
     static const std::string TEST_DOMAIN1;
@@ -115,6 +117,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalDomainAccessStoreTest);
 };
 
+const std::string LocalDomainAccessStoreTest::TEST_USER("testUser");
 const std::string LocalDomainAccessStoreTest::TEST_USER1("testUser1");
 const std::string LocalDomainAccessStoreTest::TEST_USER2("testUser2");
 const std::string LocalDomainAccessStoreTest::TEST_DOMAIN1("domain1");
@@ -127,6 +130,52 @@ const std::vector<Permission::Enum> LocalDomainAccessStoreTest::PERMISSIONS = {P
 const std::vector<TrustLevel::Enum> LocalDomainAccessStoreTest::TRUST_LEVELS = {TrustLevel::LOW, TrustLevel::MID};
 
 //----- Tests ------------------------------------------------------------------
+
+TEST_F(LocalDomainAccessStoreTest, mergeMultipleLocalDomainAccessStores) {
+    Settings testSettings("test-resources/AclRclJoynrClusterControllerRuntimeTest.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+
+    LocalDomainAccessStore masterAccess(clusterControllerSettings.getAclEntriesDirectory() + "/MasterAccessTable.json");
+    LocalDomainAccessStore masterRegistration(clusterControllerSettings.getAclEntriesDirectory() + "/MasterRegistrationTable.json");
+    LocalDomainAccessStore ownerRegistration(clusterControllerSettings.getAclEntriesDirectory() + "/OwnerRegistrationTable.json");
+    LocalDomainAccessStore ownerAccess(clusterControllerSettings.getAclEntriesDirectory() + "/OwnerAccessTable.json");
+    LocalDomainAccessStore mergedLocalDomainAccessStore;
+
+    EXPECT_EQ(mergedLocalDomainAccessStore.getMasterAccessControlEntries(TEST_USER).size(), 0);
+    EXPECT_EQ(mergedLocalDomainAccessStore.getMasterRegistrationControlEntries(TEST_USER).size(), 0);
+    EXPECT_EQ(mergedLocalDomainAccessStore.getOwnerAccessControlEntries(TEST_USER).size(), 0);
+    EXPECT_EQ(mergedLocalDomainAccessStore.getOwnerRegistrationControlEntries(TEST_USER).size(), 0);
+
+    EXPECT_TRUE(mergedLocalDomainAccessStore.mergeDomainAccessStore(masterAccess));
+    EXPECT_TRUE(mergedLocalDomainAccessStore.mergeDomainAccessStore(masterRegistration));
+    EXPECT_TRUE(mergedLocalDomainAccessStore.mergeDomainAccessStore(ownerRegistration));
+    EXPECT_TRUE(mergedLocalDomainAccessStore.mergeDomainAccessStore(ownerAccess));
+
+    EXPECT_EQ(mergedLocalDomainAccessStore.getMasterAccessControlEntries(TEST_USER).size(), 1);
+    EXPECT_EQ(mergedLocalDomainAccessStore.getMasterRegistrationControlEntries(TEST_USER).size(), 1);
+    EXPECT_EQ(mergedLocalDomainAccessStore.getOwnerAccessControlEntries(TEST_USER).size(), 1);
+    EXPECT_EQ(mergedLocalDomainAccessStore.getOwnerRegistrationControlEntries(TEST_USER).size(), 1);
+}
+
+TEST_F(LocalDomainAccessStoreTest, mergeLocalDomainAccessStoreSingleEntryOnEmptyStore) {
+    localDomainAccessStore.updateDomainRole(expectedDomainRoleEntry);
+    LocalDomainAccessStore otherStore;
+
+    EXPECT_TRUE(otherStore.mergeDomainAccessStore(localDomainAccessStore));
+
+    boost::optional<DomainRoleEntry> domainRole = localDomainAccessStore.getDomainRole(expectedDomainRoleEntry.getUid(),
+                                                                                 expectedDomainRoleEntry.getRole());
+    boost::optional<DomainRoleEntry> domainRoleOther = otherStore.getDomainRole(expectedDomainRoleEntry.getUid(),
+                                                                                 expectedDomainRoleEntry.getRole());
+    EXPECT_EQ(*domainRole, *domainRoleOther);
+}
+
+TEST_F(LocalDomainAccessStoreTest, mergeEmptyLocalDomainAccessStores) {
+    LocalDomainAccessStore store;
+    LocalDomainAccessStore otherStore;
+    EXPECT_TRUE(otherStore.mergeDomainAccessStore(store));
+}
 
 TEST_F(LocalDomainAccessStoreTest, getDomainRoles) {
     localDomainAccessStore.updateDomainRole(expectedDomainRoleEntry);
