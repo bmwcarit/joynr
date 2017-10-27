@@ -44,7 +44,6 @@ function checkArgument(value) {
 
 // prettier-ignore
 var asRead = (function() {
-
     /**
      * Getter for attribute
      *
@@ -52,17 +51,15 @@ var asRead = (function() {
      * @function
      *
      * @param {Object}
-     *            [settings] the settings object for this function call
-     * @returns {Object} returns an A+ promise object that will alternatively accept
-     *            callback functions through its setters
-     *          "then(function ({?}value){..}).catch(function ({string}error){..})"
+     *      [settings] the settings object for this function call
+     * @returns {Object} returns an A+ promise object
      */
     function get(settings) {
         // ensure settings variable holds a valid object and initialize
         // deferred object
         settings = settings || {};
         var request = new Request({
-            methodName : "get" + Util.firstUpper(this.attributeName)
+            methodName: "get" + Util.firstUpper(this.attributeName)
         });
         return this.executeRequest(request, settings);
     }
@@ -73,137 +70,121 @@ var asRead = (function() {
 }());
 
 // prettier-ignore
-var asWrite =
-        (function() {
+var asWrite = (function() {
+    /**
+     * Setter for attribute
+     *
+     * @name ProxyAttribute#set
+     * @function
+     *
+     * @param {Object}
+     *      settings - the settings object for this function call
+     * @param {Object}
+     *      settings.value - the attribute value to set
+     * @returns {Object} returns an A+ promise
+     */
+    function set(settings) {
+        // ensure settings variable holds a valid object and initialize deferred
+        // object
+        settings = settings || {};
+        var error = checkArgument(settings.value);
+        if (error) {
+            return Promise.reject(
+                new Error("error setting attribute: " + this.attributeName + ": " + error.toString())
+            );
+        }
 
-            /**
-             * Setter for attribute
-             *
-             * @name ProxyAttribute#set
-             * @function
-             *
-             * @param {Object}
-             *            settings the settings object for this function call
-             * @param {Object}
-             *            settings.value the attribute value to set
-             * @returns {Object} returns an A+ promise
-             */
-            function set(settings) {
-                // ensure settings variable holds a valid object and initialize deferred
-                // object
-                settings = settings || {};
-                var error = checkArgument(settings.value);
-                if (error) {
-                    return Promise.reject(new Error("error setting attribute: "
-                        + this.attributeName
-                        + ": "
-                        + error.toString()));
-                }
+        var request = new Request({
+            methodName: "set" + Util.firstUpper(this.attributeName),
+            paramDatatypes: [this.attributeType],
+            params: [settings.value]
+        });
+        return this.executeRequest(request, settings);
+    }
 
-                var request = new Request({
-                    methodName : "set" + Util.firstUpper(this.attributeName),
-                    paramDatatypes : [ this.attributeType
-                    ],
-                    params : [ settings.value
-                    ]
-                });
-                return this.executeRequest(request, settings);
-            }
-
-            return function() {
-                this.set = set;
-            };
-        }());
+    return function() {
+        this.set = set;
+    };
+}());
 
 // prettier-ignore
-var asNotify =
-        (function() {
+var asNotify = (function() {
+    /**
+     * Subscription to isOn attribute
+     *
+     * @name ProxyAttribute#subscribe
+     * @function
+     *
+     * @param {Object}
+     *      settings the settings object for this function call
+     * @param {SubscriptionQos}
+     *      settings.subscriptionQos - the subscription quality of service object
+     * @param {MessagingQos}
+     *      settings.messagingQos - The messagingQos to use for this subscriptionRequest.
+     *
+     * @param {Function}
+     *      settings.onReceive this function is called if the attribute has
+     *            been published successfully, method signature:
+     *            "void onReceive({?}value)"
+     * @param {Function}
+     *      settings.onError - this function is called if a publication of the attribute value was
+     *          missed, method signature: "void onError({Error} error)"
+     * @param {Function}
+     *      settings.onSubscribed - the callback to inform once the subscription request has been
+     *          delivered successfully
+     * @param {String}
+     *      [settings.subscriptionId] - optional subscriptionId to be used for the new subscription
+     * @returns {Object} returns an A+ promise object
+     */
+    function subscribe(requestSettings) {
+        // return promise to caller
+        return this.settings.dependencies.subscriptionManager.registerSubscription({
+            proxyId: this.parent.proxyParticipantId,
+            providerDiscoveryEntry: this.parent.providerDiscoveryEntry,
+            attributeName: this.attributeName,
+            attributeType: this.attributeType,
+            qos: requestSettings.subscriptionQos,
+            subscriptionId: requestSettings.subscriptionId,
+            onReceive: requestSettings.onReceive,
+            onError: requestSettings.onError,
+            onSubscribed: requestSettings.onSubscribed
+        });
+    }
 
-            /**
-             * Subscription to isOn attribute
-             *
-             * @name ProxyAttribute#subscribe
-             * @function
-             *
-             * @param {Object}
-             *            settings the settings object for this function call
-             *
-             * @param {SubscriptionQos}
-             *            settings.subscriptionQos the subscription quality of service object
-             * @param {MessagingQos}
-             *            settings.messagingQos The messagingQos to use for this
-             *            subscriptionRequest.
-             *
-             * @param {Function}
-             *            settings.onReceive this function is called if the attribute has
-             *            been published successfully, method signature:
-             *            "void onReceive({?}value)"
-             * @param {Function}
-             *            settings.onError this function is called if a publication of the
-             *            attribute value was missed, method signature: "void onError({Error} error)"
-             * @param {Function}
-             *            settings.onSubscribed the callback to inform once the subscription request has
-             *            been delivered successfully
-             * @param {String}
-             *            settings.subscriptionId optional subscriptionId to be used for the
-             *            new subscription
-             * @returns {Object} returns an A+ promise object
-             */
-            function subscribe(requestSettings) {
-                // return promise to caller
-                return this.settings.dependencies.subscriptionManager.registerSubscription({
-                    proxyId : this.parent.proxyParticipantId,
-                    providerDiscoveryEntry : this.parent.providerDiscoveryEntry,
-                    attributeName : this.attributeName,
-                    attributeType : this.attributeType,
-                    qos : requestSettings.subscriptionQos,
-                    subscriptionId : requestSettings.subscriptionId,
-                    onReceive : requestSettings.onReceive,
-                    onError : requestSettings.onError,
-                    onSubscribed : requestSettings.onSubscribed
-                });
-            }
+    /**
+     * Unsubscribe from the attribute
+     *
+     * @name ProxyAttribute#unsubscribe
+     * @function
+     *
+     * @param {Object}
+     *      settings - the settings object for this function call
+     * @param {String}
+     *      settings.subscriptionId - the subscription id retrieved from the
+     *          subscribe function
+     * @returns {Object} returns an A+ promise object
+     *
+     * @see ProxyAttribute#subscribe
+     */
+    function unsubscribe(requestSettings) {
+        // passed in (right-most) messagingQos have precedence; undefined values are
+        // ignored
+        var messagingQos = new MessagingQos(
+            Util.extend({}, this.parent.messagingQos, this.settings.messagingQos, requestSettings.messagingQos)
+        );
 
-            /**
-             * Unsubscribe from the attribute
-             *
-             * @name ProxyAttribute#unsubscribe
-             * @function
-             *
-             * @param {Object}
-             *            settings the settings object for this function call
-             * @param {String}
-             *            settings.subscriptionId the subscription id retrieved from the
-             *            subscribe function
-             * @returns {Object} returns an A+ promise object that will alternatively accept
-             *            the callback functions through the its
-             *            functions "then(function()).catch(function ({string}error){..})"
-             * @throws {String}
-             *             if the subscription does not exist
-             * @see ProxyAttribute#subscribe
-             */
-            function unsubscribe(requestSettings) {
-                // passed in (right-most) messagingQos have precedence; undefined values are
-                // ignored
-                var messagingQos =
-                        new MessagingQos(Util.extend(
-                                {},
-                                this.parent.messagingQos,
-                                this.settings.messagingQos,
-                                requestSettings.messagingQos));
+        // return promise to caller
+        return this.settings.dependencies.subscriptionManager.unregisterSubscription({
+            messagingQos: messagingQos,
+            subscriptionId: requestSettings.subscriptionId
+        });
+    }
 
-                // return promise to caller
-                return this.settings.dependencies.subscriptionManager.unregisterSubscription({
-                    messagingQos : messagingQos,
-                    subscriptionId : requestSettings.subscriptionId
-                });
-            }
-
-            return function() {
-                this.subscribe = subscribe;
-                this.unsubscribe = unsubscribe;
-            };
-        }());
+    return function() {
+        this.subscribe = subscribe;
+        this.unsubscribe = unsubscribe;
+    };
+}());
 
 /**
  * Constructor of ProxyAttribute object that is used in the generation of proxy objects
@@ -212,32 +193,32 @@ var asNotify =
  * @name ProxyAttribute
  *
  * @param {Object}
- *            parent is the proxy object that contains this attribute
+ *      parent - the proxy object that contains this attribute
  * @param {String}
- *            parent.fromParticipantId of the proxy itself
+ *      parent.fromParticipantId - participantId of the proxy itself
  * @param {String}
- *            parent.toParticipantId of the provider being addressed
+ *      parent.toParticipantId - participantId of the provider being addressed
  * @param {Object}
- *            settings the settings object for this function call
+ *      settings - the settings object for this function call
  * @param {Object}
- *            settings.dependencies the dependencies object for this function call
+ *      settings.dependencies - the dependencies object for this function call
  * @param {RequestReplyManager}
- *            settings.dependencies.requestReplyManager
+ *      settings.dependencies.requestReplyManager
  * @param {SubscriptionManager}
- *            settings.dependencies.subscriptionManager
+ *      settings.dependencies.subscriptionManager
  * @param {DiscoveryQos}
- *            settings.discoveryQos the Quality of Service parameters for arbitration
+ *      settings.discoveryQos - the Quality of Service parameters for arbitration
  * @param {MessagingQos}
- *            settings.messagingQos the Quality of Service parameters for messaging
+ *      settings.messagingQos - the Quality of Service parameters for messaging
  * @param {String}
- *            attributeName the name of the attribute
+ *      attributeName - the name of the attribute
  * @param {String}
- *            attributeType the type of the attribute
+ *      attributeType - the type of the attribute
  * @param {String}
- *            attributeCaps the capabilities of the attribute:
- *            [NOTIFY][READWRITE|READONLY|WRITEONLY], e.g. NOTIFYREADWRITE
- *            if the string == 'NOTIFY' this attribute has subscribe and unsubscribe
- *            if the string contains 'READ' or'WRITE' this attribute has the get and set
+ *      attributeCaps - the capabilities of the attribute:
+ *      [NOTIFY][READWRITE|READONLY|WRITEONLY], e.g. NOTIFYREADWRITE
+ *      if the string == 'NOTIFY' this attribute has subscribe and unsubscribe
+ *      if the string contains 'READ' or'WRITE' this attribute has the get and set
  */
 function ProxyAttribute(parent, settings, attributeName, attributeType, attributeCaps) {
     if (!(this instanceof ProxyAttribute)) {
@@ -271,12 +252,13 @@ function ProxyAttribute(parent, settings, attributeName, attributeType, attribut
  * @name ProxyAttribute#executeRequest
  * @function
  * @private
+ *
  * @param {Request}
- *            request
+ *      request
  * @param {Object}
- *            requestSettings
+ *      requestSettings
  * @param {MessagingQos}
- *            requestSettings.messagingQos
+ *      requestSettings.messagingQos
  * @returns {Object} an A+ promise
  */
 ProxyAttribute.prototype.executeRequest = function(request, requestSettings) {
