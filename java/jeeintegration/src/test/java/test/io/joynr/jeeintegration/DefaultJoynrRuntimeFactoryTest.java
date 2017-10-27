@@ -44,6 +44,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.dispatching.MutableMessageFactory;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -58,6 +59,8 @@ import joynr.Request;
 import joynr.jeeintegration.servicelocator.MyService;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
 
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -72,6 +75,7 @@ public class DefaultJoynrRuntimeFactoryTest {
     private ScheduledExecutorService scheduledExecutorService;
 
     private DefaultJoynrRuntimeFactory fixture;
+    @Rule public ExpectedException expectedException = ExpectedException.none();
 
     @Stateless
     private class JoynrMessageProcessorTest implements JoynrMessageProcessor {
@@ -90,8 +94,12 @@ public class DefaultJoynrRuntimeFactoryTest {
         createFixture(null);
     }
 
-    @SuppressWarnings("unchecked")
     private void createFixture(Properties additionalProperties) throws Exception {
+        createFixture(createPropertiesMock(additionalProperties), createLocalDomainMock());
+    }
+
+    @SuppressWarnings("unchecked")
+    private Instance<Properties> createPropertiesMock(Properties additionalProperties) {
         Instance<Properties> joynrProperties = mock(Instance.class);
         Properties joynrPropertiesValues = new Properties();
         joynrPropertiesValues.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT, "/");
@@ -100,9 +108,27 @@ public class DefaultJoynrRuntimeFactoryTest {
         if (additionalProperties != null) {
             joynrPropertiesValues.putAll(additionalProperties);
         }
+
+        when(joynrProperties.isAmbiguous()).thenReturn(false);
+        when(joynrProperties.isUnsatisfied()).thenReturn(false);
         when(joynrProperties.get()).thenReturn(joynrPropertiesValues);
+
+        return joynrProperties;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Instance<String> createLocalDomainMock() {
         Instance<String> joynrLocalDomain = mock(Instance.class);
+
         when(joynrLocalDomain.get()).thenReturn(LOCAL_DOMAIN);
+        when(joynrLocalDomain.isAmbiguous()).thenReturn(false);
+        when(joynrLocalDomain.isUnsatisfied()).thenReturn(false);
+
+        return joynrLocalDomain;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void createFixture(Instance<Properties> joynrProperties, Instance<String> joynrLocalDomain) throws Exception {
         Instance<RawMessagingPreprocessor> rawMessageProcessor = mock(Instance.class);
         when(rawMessageProcessor.get()).thenReturn(new NoOpRawMessagingPreprocessor());
         BeanManager beanManager = mock(BeanManager.class);
@@ -193,4 +219,41 @@ public class DefaultJoynrRuntimeFactoryTest {
         assertEquals("myvalue", value);
     }
 
+    @Test
+    public void testJoynrLocalDomainUnsatisfiedThrows() throws Exception {
+        Instance<String> joynrLocalDomain = createLocalDomainMock();
+        when(joynrLocalDomain.isUnsatisfied()).thenReturn(true);
+
+        expectedException.expect(JoynrIllegalStateException.class);
+        expectedException.expectMessage("No local domain name specified. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.");
+        createFixture(createPropertiesMock(null), joynrLocalDomain);
+    }
+
+    @Test
+    public void testJoynrLocalDomainAmbiguousThrows() throws Exception {
+        Instance<String> joynrLocalDomain = createLocalDomainMock();
+        when(joynrLocalDomain.isAmbiguous()).thenReturn(true);
+
+        expectedException.expect(JoynrIllegalStateException.class);
+        expectedException.expectMessage("Multiple local domain names specified. Please provide only one configuration EJB containing a value for the local domain via @JoynrLocalDomain.");
+        createFixture(createPropertiesMock(null), joynrLocalDomain);
+    }
+
+    @Test
+    public void testJoynrPropertiesUnsatisfiedDoesNotThrow() throws Exception {
+        Instance<Properties> joynrProperties = createPropertiesMock(null);
+        when(joynrProperties.isUnsatisfied()).thenReturn(true);
+
+        createFixture(joynrProperties, createLocalDomainMock());
+    }
+
+    @Test
+    public void testJoynrPropertiesAmbiguousThrows() throws Exception {
+        Instance<Properties> joynrProperties = createPropertiesMock(null);
+        when(joynrProperties.isAmbiguous()).thenReturn(true);
+
+        expectedException.expect(JoynrIllegalStateException.class);
+        expectedException.expectMessage("Multiple joynrProperties specified. Please provide only one configuration EJB containing a value for the joynrProperties via @JoynrProperties.");
+        createFixture(joynrProperties, createLocalDomainMock());
+    }
 }
