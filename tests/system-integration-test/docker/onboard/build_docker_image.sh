@@ -177,11 +177,16 @@ cat > $BUILDDIR/Dockerfile <<-EOF
     RUN echo "current date: $CURRENTDATE" && curl www.google.de > /dev/null
 
     ###################################################
+    # Install boost
+    ###################################################
+    RUN dnf install -y \
+        boost
+
+    ###################################################
     # Install joynr
     ###################################################
     COPY joynr.rpm /tmp/joynr.rpm
-    RUN dnf install -y \
-        boost \
+    RUN rpm -i --nodeps \
         /tmp/joynr.rpm \
         && rm /tmp/joynr.rpm
 
