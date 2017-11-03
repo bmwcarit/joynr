@@ -40,6 +40,14 @@ echo "running the tests"
 #currently, we assume npm and node is installed on the machine running this script
 #${project.build.directory}/nodejs/node ${project.build.directory}/node_modules/jasmine-node/lib/jasmine-node/cli.js --requireJsSetup ${project.build.testOutputDirectory}/node_require.config.js --matchall $@ $TESTS
 cd ${project.build.directory}
-node ${project.build.directory}/test-classes/node-run-unit-tests.js
+
+NODE_VERSION_MAJOR=$(node --version | cut -d v -f 2 | cut -d . -f 1)
+if [ $NODE_VERSION_MAJOR -ge 6 ]
+then
+    # --trace-warnings was added in node v6.0.0
+    node --trace-warnings --trace-deprecation ${project.build.directory}/test-classes/node-run-unit-tests.js
+else
+    node --trace-deprecation ${project.build.directory}/test-classes/node-run-unit-tests.js
+fi
 
 exit

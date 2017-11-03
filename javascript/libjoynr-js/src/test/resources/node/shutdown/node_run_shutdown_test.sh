@@ -27,6 +27,13 @@ npm run-script preinstall
 
 echo "running the node shutdown test"
 
-node NodeShutdownTest.js
+NODE_VERSION_MAJOR=$(node --version | cut -d v -f 2 | cut -d . -f 1)
+if [ $NODE_VERSION_MAJOR -ge 6 ]
+then
+    # --trace-warnings was added in node v6.0.0
+    node --trace-warnings --trace-deprecation NodeShutdownTest.js
+else
+    node --trace-deprecation NodeShutdownTest.js
+fi
 
 exit
