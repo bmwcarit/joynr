@@ -105,6 +105,13 @@ var JSONSerializer = require('../../util/JSONSerializer');
                     return started;
                 }
 
+                /**
+                 * @function MessageRouter#setReplyToAddress
+                 *
+                 * @param {String} newAddress - the address to be used as replyTo  address
+                 *
+                 * @returns void
+                 */
                 this.setReplyToAddress = function (newAddress) {
                     replyToAddress = newAddress;
                     messageReplyToAddressCalculator.setReplyToAddress(replyToAddress);
@@ -275,6 +282,7 @@ var JSONSerializer = require('../../util/JSONSerializer');
                  * @function MessageRouter#setRoutingProxy
                  *
                  * @param {RoutingProxy} newRoutingproxy - the routing proxy to be set
+                 * @returns {Object} A+ promise object
                  */
                 this.setRoutingProxy =
                     function setRoutingProxy(newRoutingProxy) {
@@ -341,7 +349,7 @@ var JSONSerializer = require('../../util/JSONSerializer');
                  *
                  * @param {String}
                  *            participantId
-                 * @returns {InProcessAddress|BrowserAddress|ChannelAddress} the address of the next hop in the direction of the given
+                 * @returns {Address} the address of the next hop in the direction of the given
                  *          participantId, or undefined if not found
                  */
                 this.resolveNextHop = function resolveNextHop(participantId) {
@@ -534,10 +542,11 @@ var JSONSerializer = require('../../util/JSONSerializer');
                  *
                  * @param {String}
                  *            participantId
-                 * @param {InProcessAddress|BrowserAddress|ChannelAddress}
+                 * @param {Address}
                  *            address the address to register
                  * @param {boolean}
                  *            isGloballyVisible
+                 * @returns {Object} A+ promise object
                  */
                 this.addNextHop =
                     function addNextHop(participantId, address, isGloballyVisible) {
@@ -597,6 +606,7 @@ var JSONSerializer = require('../../util/JSONSerializer');
                  *            parameters.subscriberParticipantId
                  * @param {String}
                  *            parameters.providerParticipantId
+                 * @returns {Object} A+ promise object
                  */
                 this.addMulticastReceiver = function addMulticastReceiver(parameters) {
                     //1. handle call in local router
@@ -650,6 +660,7 @@ var JSONSerializer = require('../../util/JSONSerializer');
                  *            parameters.subscriberParticipantId
                  * @param {String}
                  *            parameters.providerParticipantId
+                 * @returns {Object} A+ promise object
                  */
                 this.removeMulticastReceiver = function removeMulticastReceiver(parameters) {
                     //1. handle call in local router
@@ -701,7 +712,7 @@ var JSONSerializer = require('../../util/JSONSerializer');
                  *
                  * @param {String} participantId
                  *
-                 * @returns {Promise} a Promise object
+                 * @returns void
                  */
                 this.participantRegistered =
                     function participantRegistered(participantId) {
