@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Singleton;
@@ -117,11 +116,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         messageWorkers = new ArrayList<MessageWorker>(numberOfWorkThreads);
         for (int i = 0; i < numberOfWorkThreads; i++) {
             MessageWorker messageWorker = new MessageWorker(i);
-            ScheduledFuture<?> messageWorkerFuture = scheduler.schedule(messageWorker, 0, TimeUnit.MILLISECONDS);
-            if (messageWorkerFuture == null) {
-                logger.warn("scheduling messageWorker-{} returned a null future.", i);
-                continue;
-            }
+            scheduler.schedule(messageWorker, 0, TimeUnit.MILLISECONDS);
             messageWorkers.add(messageWorker);
         }
     }
