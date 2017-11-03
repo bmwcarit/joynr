@@ -73,7 +73,7 @@ echo "start cluster controller + providers with domain prefix $DOMAIN_PREFIX"
 (
 	cd ${CPP_HOME}/bin
 	/usr/bin/cluster-controller ${DATA_DIR}/onboard-cc-messaging.settings & CLUSTER_CONTROLLER_PID=$!
-	./jsit-provider-ws $DOMAIN_PREFIX.cpp runForever & CPP_PROVIDER_PID=$!
+	./jsit-provider-ws $DOMAIN_PREFIX.cpp --runForever true & CPP_PROVIDER_PID=$!
 
 	cd ${NODE_APP_HOME}
 	npm run-script startprovider --sit-node-app:domain=$DOMAIN_PREFIX.node --sit-node-app:cc:host=127.0.0.1 --sit-node-app:cc:port=4242 & NODE_PROVIDER_PID=$!
