@@ -56,10 +56,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class AbstractMessageRouter implements MessageRouter, ShutdownListener {
-    private Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
-    private final RoutingTable routingTable;
+    private static final Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
     private static final FastDateFormat dateFormatter = FastDateFormat.getInstance("dd/MM/yyyy HH:mm:ss:sss z",
                                                                                    TimeZone.getTimeZone("UTC"));
+
+    private final RoutingTable routingTable;
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
     private long routingTableGracePeriodMs;
