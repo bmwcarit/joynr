@@ -140,6 +140,7 @@ else
 	execute_in_docker "echo \"Building joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --additionalcmakeargs \"-DUSE_PLATFORM_MUESLI=OFF\" --jobs ${JOBS} --enableclangformatter OFF --buildtests OFF 2>&1"
 	execute_in_docker "echo \"Packaging joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-rpm-package.sh --rpm-spec tests/system-integration-test/docker/onboard/joynr-without-test.spec 2>&1"
 	execute_in_docker "echo \"Building and packaging smrf\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-smrf-rpm-package.sh 2>&1"
+	execute_in_docker "echo \"Building MoCOCrW tarball\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-create-MoCOCrW-tarball.sh 2>&1"
 fi
 
 if [ $NO_CPP_TEST_BUILD ]; then
@@ -168,6 +169,11 @@ cp ../../sit-java-app/target/sit-java-app-*-jar-with-dependencies.jar ${BUILDDIR
 # Find a file with a name which matches 'joynr-[version].rpm'
 find  ../../../../build/joynr/package/RPM/x86_64/ -iregex ".*joynr-[0-9].*rpm" -exec cp {} $BUILDDIR/joynr.rpm \;
 
+# Find a file with a name which matches 'smrf-[version].rpm'
+find  ../../../../build/smrf/package/RPM/x86_64/ -iregex ".*smrf-[0-9].*rpm" -exec cp {} $BUILDDIR/smrf.rpm \;
+
+cp ../../../../build/MoCOCrW.tar.gz $BUILDDIR/MoCOCrW.tar.gz
+
 CURRENTDATE=`date`
 cp onboard-cc-messaging.settings ${BUILDDIR}
 cp run-onboard-sit.sh ${BUILDDIR}
@@ -180,15 +186,26 @@ cat > $BUILDDIR/Dockerfile <<-EOF
     # Install boost
     ###################################################
     RUN dnf install -y \
-        boost
+        boost \
+        mosquitto
 
     ###################################################
-    # Install joynr
+    # Install MoCOCrW
+    ###################################################
+    COPY MoCOCrW.tar.gz /tmp/MoCOCrW.tar.gz
+    RUN cd / && \
+        tar xvf /tmp/MoCOCrW.tar.gz
+
+    ###################################################
+    # Install joynr and smrf
     ###################################################
     COPY joynr.rpm /tmp/joynr.rpm
+    COPY smrf.rpm /tmp/smrf.rpm
     RUN rpm -i --nodeps \
+        /tmp/smrf.rpm \
         /tmp/joynr.rpm \
         && rm /tmp/joynr.rpm
+    RUN echo "/usr/local/lib64" > /etc/ld.so.conf.d/joynr.conf && ldconfig
 
     ###################################################
     # Copy C++ binaries
