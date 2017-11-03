@@ -44,5 +44,8 @@ joynr.load(provisioning).then(function(loadedJoynr) {
             }).catch(reject);
         }, 100);
     });
+}).catch(function(error) {
+    console.log("Error from joynr.load: " + error);
+    process.exit(-1);
 });
 
