@@ -41,7 +41,7 @@
 		<jetty.version>9.2.13.v20150730</jetty.version>
 		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
 		<project.build.optimizerResources>${project.build.directory}/build-resources/almond</project.build.optimizerResources>
-		<joynr.provisioning.brokerUri>tcp://127.0.0.1:9001</joynr.provisioning.brokerUri>
+		<joynr.provisioning.brokerUri>tcp://127.0.0.1:1883</joynr.provisioning.brokerUri>
 		<joynr.provisioning.bounceProxyBaseUrl>http://127.0.0.1:8080</joynr.provisioning.bounceProxyBaseUrl>
 		<joynr.provisioning.testTtl>10000</joynr.provisioning.testTtl>
 	</properties>
