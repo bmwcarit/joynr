@@ -19,12 +19,11 @@
  */
 var Promise = require("../../../global/Promise");
 var Mqtt = require("../../../global/Mqtt");
-var JoynrMessage = require("../JoynrMessage");
 var MessagingQosEffort = require("../MessagingQosEffort");
-var JSONSerializer = require("../../util/JSONSerializer");
 var LongTimer = require("../../util/LongTimer");
 var Typing = require("../../util/Typing");
 var LoggerFactory = require("../../system/LoggerFactory");
+var MessageSerializer = require("../MessageSerializer");
 var log = LoggerFactory.getLogger("joynr.messaging.mqtt.SharedMqttClient");
 
 /**
@@ -38,7 +37,7 @@ function sendQueuedMessages(client, queuedMessages) {
     while (queuedMessages.length) {
         queued = queuedMessages.shift();
         try {
-            client.publish(queued.topic, JSONSerializer.stringify(queued.message), queued.options);
+            client.publish(queued.topic, MessageSerializer.stringify(queued.message), queued.options);
             queued.resolve();
             // Error is thrown if the connection is no longer open
         } catch (e) {
@@ -79,7 +78,7 @@ function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel) {
 function sendMessage(client, topic, joynrMessage, sendQosLevel, queuedMessages) {
     function sendMessageResolver(resolve, reject) {
         try {
-            client.publish(topic, JSONSerializer.stringify(joynrMessage), { qos: sendQosLevel });
+            client.publish(topic, MessageSerializer.stringify(joynrMessage), { qos: sendQosLevel });
             resolve();
             // Error is thrown if the socket is no longer open, so requeue to the front
         } catch (e) {
@@ -152,7 +151,7 @@ var SharedMqttClient = function SharedMqttClient(settings) {
 
 SharedMqttClient.prototype._onMessage = function(topic, payload) {
     if (this._onmessageCallback !== undefined) {
-        this._onmessageCallback(topic, new JoynrMessage(JSON.parse(payload.toString())));
+        this._onmessageCallback(topic, MessageSerializer.parse(payload));
     }
 };
 
