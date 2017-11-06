@@ -1023,9 +1023,9 @@
 							<execution>
 								<configuration>
 									<executable>chmod</executable>
-									<commandlineArgs>+x ${project.build.testOutputDirectory}/node_run_unit_tests.sh</commandlineArgs>
+									<commandlineArgs>+x ${project.build.testOutputDirectory}/node_run_tests.sh</commandlineArgs>
 								</configuration>
-								<id>process-unit-tests-nodejs</id>
+								<id>process-tests-nodejs</id>
 								<phase>process-test-classes</phase>
 								<goals>
 									<goal>exec</goal>
@@ -1072,10 +1072,10 @@
 						<!-- configuration options documentation:
 							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
 						<executions>
-							<!-- run nodejs based unit tests -->
+							<!-- run nodejs based tests -->
 							<execution>
 								<configuration>
-									<executable>${project.build.testOutputDirectory}/node_run_unit_tests.sh</executable>
+									<executable>${project.build.testOutputDirectory}/node_run_tests.sh</executable>
 									<commandlineArgs>node-run-unit-tests.js --captureExceptions --verbose</commandlineArgs>
 									<environmentVariables>
 										<LD_LIBRARY_PATH>

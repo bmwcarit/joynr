@@ -45,9 +45,14 @@ NODE_VERSION_MAJOR=$(node --version | cut -d v -f 2 | cut -d . -f 1)
 if [ $NODE_VERSION_MAJOR -ge 6 ]
 then
     # --trace-warnings was added in node v6.0.0
-    node --trace-warnings --trace-deprecation ${project.build.directory}/test-classes/node-run-unit-tests.js
+    FLAGS="--trace-warnings --trace-deprecation"
 else
-    node --trace-deprecation ${project.build.directory}/test-classes/node-run-unit-tests.js
+    FLAGS="--trace-deprecation"
 fi
+
+node $FLAGS ${project.build.directory}/test-classes/node-run-unit-tests.js
+
+echo "running node-system-integration-tests"
+node $FLAGS ${project.build.directory}/test-classes/node-run-system-integration-tests.js
 
 exit
