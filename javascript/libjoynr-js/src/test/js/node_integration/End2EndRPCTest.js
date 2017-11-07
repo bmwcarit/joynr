@@ -598,7 +598,8 @@ describe("libjoynr-js.integration.end2end.rpc", function() {
                     "addFavoriteStation",
                     {
                         radioStation: new RadioStation({
-                            name: 'truelyContainingTheRadioStationString"True"'
+                            name: 'truelyContainingTheRadioStationString"True"',
+                            byteBuffer: []
                         })
                     },
                     {
@@ -611,7 +612,8 @@ describe("libjoynr-js.integration.end2end.rpc", function() {
                     "addFavoriteStation",
                     {
                         radioStation: new RadioStation({
-                            name: "This is a false RadioStation!"
+                            name: "This is a false RadioStation!",
+                            byteBuffer: []
                         })
                     },
                     {
