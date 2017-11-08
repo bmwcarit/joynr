@@ -297,7 +297,7 @@ bool LocalDomainAccessController::hasRole(const std::string& userId,
     }
 
     // Subscribe changes in the users roles
-    if (dreSubscriptions.count(userId) == 0) {
+    if (!useOnlyLocalDomainAccessStore && dreSubscriptions.count(userId) == 0) {
         dreSubscriptions.insert(std::make_pair(userId, subscribeForDreChange(userId)));
     }
 
