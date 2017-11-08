@@ -456,11 +456,17 @@ void LibJoynrMessageRouter::addMulticastReceiver(
         return;
     }
 
-    parentRouter->addMulticastReceiverAsync(multicastId,
-                                            subscriberParticipantId,
-                                            providerParticipantId,
-                                            std::move(onSuccessWrapper),
-                                            std::move(onErrorWrapper));
+    auto inProcessAddress =
+            std::dynamic_pointer_cast<const joynr::InProcessMessagingAddress>(providerAddress);
+    if (!inProcessAddress) {
+        parentRouter->addMulticastReceiverAsync(multicastId,
+                                                subscriberParticipantId,
+                                                providerParticipantId,
+                                                std::move(onSuccessWrapper),
+                                                std::move(onErrorWrapper));
+    } else {
+        onSuccessWrapper();
+    }
 }
 
 void LibJoynrMessageRouter::removeMulticastReceiver(
