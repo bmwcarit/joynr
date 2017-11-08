@@ -129,6 +129,15 @@ const std::vector<std::string> LocalDomainAccessStoreTest::DOMAINS = {TEST_DOMAI
 const std::vector<Permission::Enum> LocalDomainAccessStoreTest::PERMISSIONS = {Permission::NO, Permission::ASK};
 const std::vector<TrustLevel::Enum> LocalDomainAccessStoreTest::TRUST_LEVELS = {TrustLevel::LOW, TrustLevel::MID};
 
+const std::vector<Permission::Enum> PERMISSIONS_EMPTY;
+const std::vector<Permission::Enum> PERMISSIONS_ALL = {Permission::YES, Permission::NO, Permission::ASK};
+const std::vector<Permission::Enum> PERMISSIONS_WITHOUT_NO = {Permission::YES, Permission::ASK};
+const std::vector<Permission::Enum> PERMISSIONS_WITHOUT_YES = {Permission::NO, Permission::ASK};
+const std::vector<TrustLevel::Enum> TRUST_LEVELS_EMPTY;
+const std::vector<TrustLevel::Enum> TRUST_LEVELS_ALL = {TrustLevel::NONE, TrustLevel::LOW, TrustLevel::MID, TrustLevel::HIGH};
+const std::vector<TrustLevel::Enum> TRUST_LEVELS_WITHOUT_LOW = {TrustLevel::NONE, TrustLevel::MID, TrustLevel::HIGH};
+const std::vector<TrustLevel::Enum> TRUST_LEVELS_WITHOUT_NONE = {TrustLevel::LOW, TrustLevel::MID, TrustLevel::HIGH};
+
 //----- Tests ------------------------------------------------------------------
 
 TEST_F(LocalDomainAccessStoreTest, mergeMultipleLocalDomainAccessStores) {
@@ -381,6 +390,186 @@ TEST_F(LocalDomainAccessStoreTest, removeOwnerAce) {
                                                   expectedOwnerAccessControlEntry.getDomain(),
                                                   expectedOwnerAccessControlEntry.getInterfaceName());
     EXPECT_TRUE(ownerAces.empty());
+}
+
+TEST_F(LocalDomainAccessStoreTest, updateOwnerRce_notAllowedByMasterRce) {
+    // test no Owner RCE allowed
+    MasterRegistrationControlEntry testMasterRce = MasterRegistrationControlEntry(TEST_USER1,
+                                                                                  TEST_DOMAIN1,
+                                                                                  TEST_INTERFACE1,
+                                                                                  TrustLevel::LOW,
+                                                                                  TRUST_LEVELS_EMPTY,
+                                                                                  TrustLevel::LOW,
+                                                                                  TRUST_LEVELS_EMPTY,
+                                                                                  Permission::NO,
+                                                                                  PERMISSIONS_EMPTY);
+    OwnerRegistrationControlEntry testOwnerRce = OwnerRegistrationControlEntry(TEST_USER1,
+                                                                               TEST_DOMAIN1,
+                                                                               TEST_INTERFACE1,
+                                                                               TrustLevel::LOW,
+                                                                               TrustLevel::LOW,
+                                                                               Permission::NO);
+    OwnerRegistrationControlEntry allowedOwnerRce = OwnerRegistrationControlEntry(TEST_USER1,
+                                                                                  TEST_DOMAIN1,
+                                                                                  TEST_INTERFACE1,
+                                                                                  TrustLevel::MID,
+                                                                                  TrustLevel::HIGH,
+                                                                                  Permission::ASK);
+
+    EXPECT_TRUE(localDomainAccessStore.updateMasterRegistrationControlEntry(testMasterRce));
+    EXPECT_FALSE(localDomainAccessStore.updateOwnerRegistrationControlEntry(testOwnerRce));
+    EXPECT_FALSE(localDomainAccessStore.updateOwnerRegistrationControlEntry(allowedOwnerRce));
+
+    // test Owner RCE with required trust level LOW not allowed
+    testMasterRce.setPossibleRequiredTrustLevels(TRUST_LEVELS_WITHOUT_LOW);
+    testMasterRce.setPossibleRequiredControlEntryChangeTrustLevels(TRUST_LEVELS_ALL);
+    testMasterRce.setPossibleProviderPermissions(PERMISSIONS_ALL);
+
+    EXPECT_TRUE(localDomainAccessStore.updateMasterRegistrationControlEntry(testMasterRce));
+    EXPECT_FALSE(localDomainAccessStore.updateOwnerRegistrationControlEntry(testOwnerRce));
+    EXPECT_TRUE(localDomainAccessStore.updateOwnerRegistrationControlEntry(allowedOwnerRce));
+
+    // test Owner RCE with provider permission NO not allowed
+    testMasterRce.setPossibleRequiredTrustLevels(TRUST_LEVELS_ALL);
+    testMasterRce.setPossibleRequiredControlEntryChangeTrustLevels(TRUST_LEVELS_ALL);
+    testMasterRce.setPossibleProviderPermissions(PERMISSIONS_WITHOUT_NO);
+
+    EXPECT_TRUE(localDomainAccessStore.updateMasterRegistrationControlEntry(testMasterRce));
+    EXPECT_FALSE(localDomainAccessStore.updateOwnerRegistrationControlEntry(testOwnerRce));
+    EXPECT_TRUE(localDomainAccessStore.updateOwnerRegistrationControlEntry(allowedOwnerRce));
+}
+
+TEST_F(LocalDomainAccessStoreTest, updateOwnerRce_notAllowedByMediatorRce) {
+    // test no Owner RCE allowed
+    MasterRegistrationControlEntry testMediatorRce = MasterRegistrationControlEntry(TEST_USER1,
+                                                                                  TEST_DOMAIN1,
+                                                                                  TEST_INTERFACE1,
+                                                                                  TrustLevel::LOW,
+                                                                                  TRUST_LEVELS_EMPTY,
+                                                                                  TrustLevel::LOW,
+                                                                                  TRUST_LEVELS_EMPTY,
+                                                                                  Permission::NO,
+                                                                                  PERMISSIONS_EMPTY);
+    OwnerRegistrationControlEntry testOwnerRce = OwnerRegistrationControlEntry(TEST_USER1,
+                                                                               TEST_DOMAIN1,
+                                                                               TEST_INTERFACE1,
+                                                                               TrustLevel::LOW,
+                                                                               TrustLevel::LOW,
+                                                                               Permission::NO);
+    OwnerRegistrationControlEntry allowedOwnerRce = OwnerRegistrationControlEntry(TEST_USER1,
+                                                                                  TEST_DOMAIN1,
+                                                                                  TEST_INTERFACE1,
+                                                                                  TrustLevel::MID,
+                                                                                  TrustLevel::HIGH,
+                                                                                  Permission::ASK);
+
+    EXPECT_TRUE(localDomainAccessStore.updateMediatorRegistrationControlEntry(testMediatorRce));
+    EXPECT_FALSE(localDomainAccessStore.updateOwnerRegistrationControlEntry(testOwnerRce));
+    EXPECT_FALSE(localDomainAccessStore.updateOwnerRegistrationControlEntry(allowedOwnerRce));
+
+    // test Owner RCE with required trust level LOW not allowed
+    testMediatorRce.setPossibleRequiredTrustLevels(TRUST_LEVELS_WITHOUT_LOW);
+    testMediatorRce.setPossibleRequiredControlEntryChangeTrustLevels(TRUST_LEVELS_ALL);
+    testMediatorRce.setPossibleProviderPermissions(PERMISSIONS_ALL);
+
+    EXPECT_TRUE(localDomainAccessStore.updateMediatorRegistrationControlEntry(testMediatorRce));
+    EXPECT_FALSE(localDomainAccessStore.updateOwnerRegistrationControlEntry(testOwnerRce));
+    EXPECT_TRUE(localDomainAccessStore.updateOwnerRegistrationControlEntry(allowedOwnerRce));
+
+    // test Owner RCE with provider permission NO not allowed
+    testMediatorRce.setPossibleRequiredTrustLevels(TRUST_LEVELS_ALL);
+    testMediatorRce.setPossibleRequiredControlEntryChangeTrustLevels(TRUST_LEVELS_ALL);
+    testMediatorRce.setPossibleProviderPermissions(PERMISSIONS_WITHOUT_NO);
+
+    EXPECT_TRUE(localDomainAccessStore.updateMediatorRegistrationControlEntry(testMediatorRce));
+    EXPECT_FALSE(localDomainAccessStore.updateOwnerRegistrationControlEntry(testOwnerRce));
+    EXPECT_TRUE(localDomainAccessStore.updateOwnerRegistrationControlEntry(allowedOwnerRce));
+}
+TEST_F(LocalDomainAccessStoreTest, updateMediatorRce_notAllowedByMasterRce) {
+    // test no Mediator RCE allowed
+    MasterRegistrationControlEntry testMasterRce = MasterRegistrationControlEntry(TEST_USER1,
+                                                                                  TEST_DOMAIN1,
+                                                                                  TEST_INTERFACE1,
+                                                                                  TrustLevel::LOW,
+                                                                                  TRUST_LEVELS_EMPTY,
+                                                                                  TrustLevel::LOW,
+                                                                                  TRUST_LEVELS_EMPTY,
+                                                                                  Permission::NO,
+                                                                                  PERMISSIONS_EMPTY);
+    MasterRegistrationControlEntry testMediatorRce = MasterRegistrationControlEntry(TEST_USER1,
+                                                                                    TEST_DOMAIN1,
+                                                                                    TEST_INTERFACE1,
+                                                                                    TrustLevel::LOW,
+                                                                                    TRUST_LEVELS_EMPTY,
+                                                                                    TrustLevel::LOW,
+                                                                                    TRUST_LEVELS_EMPTY,
+                                                                                    Permission::NO,
+                                                                                    PERMISSIONS_EMPTY);
+    MasterRegistrationControlEntry allowedMediatorRce = MasterRegistrationControlEntry(TEST_USER1,
+                                                                                       TEST_DOMAIN1,
+                                                                                       TEST_INTERFACE1,
+                                                                                       TrustLevel::MID,
+                                                                                       TRUST_LEVELS_WITHOUT_LOW,
+                                                                                       TrustLevel::HIGH,
+                                                                                       TRUST_LEVELS_WITHOUT_LOW,
+                                                                                       Permission::ASK,
+                                                                                       PERMISSIONS_WITHOUT_NO);
+
+    EXPECT_TRUE(localDomainAccessStore.updateMasterRegistrationControlEntry(testMasterRce));
+    EXPECT_FALSE(localDomainAccessStore.updateMediatorRegistrationControlEntry(testMediatorRce));
+    EXPECT_FALSE(localDomainAccessStore.updateMediatorRegistrationControlEntry(allowedMediatorRce));
+
+    // test Mediator RCE with required trust level LOW
+    // as default required trust level not allowed
+    testMasterRce.setPossibleRequiredTrustLevels(TRUST_LEVELS_WITHOUT_LOW);
+    testMasterRce.setPossibleRequiredControlEntryChangeTrustLevels(TRUST_LEVELS_ALL);
+    testMasterRce.setPossibleProviderPermissions(PERMISSIONS_ALL);
+
+    EXPECT_TRUE(localDomainAccessStore.updateMasterRegistrationControlEntry(testMasterRce));
+    EXPECT_FALSE(localDomainAccessStore.updateMediatorRegistrationControlEntry(testMediatorRce));
+    EXPECT_TRUE(
+                localDomainAccessStore.updateMediatorRegistrationControlEntry(allowedMediatorRce)
+                );
+
+    // test Mediator RCE with provider permission NO
+    // in default provider permission not allowed
+    testMasterRce.setPossibleRequiredTrustLevels(TRUST_LEVELS_ALL);
+    testMasterRce.setPossibleRequiredControlEntryChangeTrustLevels(TRUST_LEVELS_ALL);
+    testMasterRce.setPossibleProviderPermissions(PERMISSIONS_WITHOUT_NO);
+
+    EXPECT_TRUE(localDomainAccessStore.updateMasterRegistrationControlEntry(testMasterRce));
+    EXPECT_FALSE(localDomainAccessStore.updateMediatorRegistrationControlEntry(testMediatorRce));
+    EXPECT_TRUE(localDomainAccessStore.updateMediatorRegistrationControlEntry(allowedMediatorRce));
+
+    // test Mediator RCE with required trust level NONE
+    // in possible required trust levels not allowed
+    testMediatorRce.setPossibleRequiredTrustLevels(TRUST_LEVELS_WITHOUT_LOW);
+    allowedMediatorRce.setPossibleRequiredTrustLevels(TRUST_LEVELS_WITHOUT_NONE);
+
+    testMasterRce.setPossibleRequiredTrustLevels(TRUST_LEVELS_WITHOUT_NONE);
+    testMasterRce.setPossibleRequiredControlEntryChangeTrustLevels(TRUST_LEVELS_ALL);
+    testMasterRce.setPossibleProviderPermissions(PERMISSIONS_ALL);
+
+    EXPECT_TRUE(localDomainAccessStore.updateMasterRegistrationControlEntry(testMasterRce));
+    EXPECT_FALSE(localDomainAccessStore.updateMediatorRegistrationControlEntry(testMediatorRce));
+    EXPECT_TRUE(
+                localDomainAccessStore.updateMediatorRegistrationControlEntry(allowedMediatorRce)
+                );
+    testMediatorRce.setPossibleRequiredTrustLevels(TRUST_LEVELS_EMPTY);
+    allowedMediatorRce.setPossibleRequiredTrustLevels(TRUST_LEVELS_WITHOUT_LOW);
+
+    // test Mediator RCE with provider permission NO
+    // in possible provider permissions not allowed
+    testMediatorRce.setDefaultProviderPermission(Permission::ASK);
+    testMediatorRce.setPossibleProviderPermissions(PERMISSIONS_WITHOUT_YES);
+
+    testMasterRce.setPossibleRequiredTrustLevels(TRUST_LEVELS_ALL);
+    testMasterRce.setPossibleRequiredControlEntryChangeTrustLevels(TRUST_LEVELS_ALL);
+    testMasterRce.setPossibleProviderPermissions(PERMISSIONS_WITHOUT_NO);
+
+    EXPECT_TRUE(localDomainAccessStore.updateMasterRegistrationControlEntry(testMasterRce));
+    EXPECT_FALSE(localDomainAccessStore.updateMediatorRegistrationControlEntry(testMediatorRce));
+    EXPECT_TRUE(localDomainAccessStore.updateMediatorRegistrationControlEntry(allowedMediatorRce));
 }
 
 TEST_F(LocalDomainAccessStoreTest, restoreFromPersistenceFile) {
