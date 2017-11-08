@@ -29,9 +29,11 @@ namespace joynr
 
 AccessControlListEditor::AccessControlListEditor(
         std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore,
-        std::shared_ptr<LocalDomainAccessController> localDomainAccessController)
+        std::shared_ptr<LocalDomainAccessController> localDomainAccessController,
+        bool auditMode)
         : localDomainAccessStore(std::move(localDomainAccessStore)),
-          localDomainAccessController(std::move(localDomainAccessController))
+          localDomainAccessController(std::move(localDomainAccessController)),
+          aclAudit(auditMode)
 {
 }
 
@@ -234,13 +236,37 @@ void AccessControlListEditor::removeOwnerRegistrationControlEntry(
 bool AccessControlListEditor::hasRoleMaster(const std::string& uid, const std::string& domain)
 {
     JOYNR_LOG_TRACE(logger(), "Lookup domain {} for userId {} and role MASTER", domain, uid);
-    return localDomainAccessController->hasRole(uid, domain, Role::MASTER);
+    return hasRoleWorker(uid, domain, Role::MASTER);
 }
 
 bool AccessControlListEditor::hasRoleOwner(const std::string& uid, const std::string& domain)
 {
     JOYNR_LOG_TRACE(logger(), "Lookup domain {} for userId {} and role OWNER", domain, uid);
-    return localDomainAccessController->hasRole(uid, domain, Role::OWNER);
+    return hasRoleWorker(uid, domain, Role::OWNER);
+}
+
+bool AccessControlListEditor::hasRoleWorker(const std::string& uid,
+                                            const std::string& domain,
+                                            joynr::infrastructure::DacTypes::Role::Enum role)
+{
+    bool hasRole = localDomainAccessController->hasRole(uid, domain, role);
+
+    if (aclAudit) {
+        if (!hasRole) {
+            JOYNR_LOG_ERROR(logger(),
+                            "ACL AUDIT: id '{}' does NOT have the roles to modify domain {}",
+                            uid,
+                            domain);
+            hasRole = true;
+        } else {
+            JOYNR_LOG_TRACE(logger(),
+                            "ACL AUDIT: id '{}' does have the roles to modify domain {}",
+                            uid,
+                            domain);
+        }
+    }
+
+    return hasRole;
 }
 
 } // namespace joynr
