@@ -59,20 +59,20 @@ public:
             mockProvider(new MockProvider()),
             domain("testDomain"),
             expectedParticipantId("testParticipantId"),
-            singleThreadedIOService(),
-            mockMessageRouter(new MockMessageRouter(singleThreadedIOService.getIOService())),
+            singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+            mockMessageRouter(new MockMessageRouter(singleThreadedIOService->getIOService())),
             expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION),
             mockMessageSender(std::make_shared<MockMessageSender>()),
-            pubManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), mockMessageSender))
+            pubManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), mockMessageSender))
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
     }
 
     ~CapabilitiesRegistrarTest()
     {
         delete capabilitiesRegistrar;
         pubManager->shutdown();
-        singleThreadedIOService.stop();
+        singleThreadedIOService->stop();
         pubManager.reset();
         mockMessageSender.reset();
     }
@@ -105,7 +105,7 @@ protected:
     std::shared_ptr<MockProvider> mockProvider;
     std::string domain;
     std::string expectedParticipantId;
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     const types::Version expectedProviderVersion;
     std::shared_ptr<IMessageSender> mockMessageSender;

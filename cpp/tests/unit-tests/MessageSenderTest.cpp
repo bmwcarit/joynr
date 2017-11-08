@@ -67,11 +67,11 @@ public:
         mockDispatcher(std::make_shared<MockDispatcher>()),
         mockMessagingStub(),
         callBack(),
-        singleThreadedIOService(),
-        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
+        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
         isLocalMessage(true)
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
     }
 
 
@@ -106,7 +106,7 @@ protected:
     std::shared_ptr<MockDispatcher> mockDispatcher;
     MockMessagingStub mockMessagingStub;
     std::shared_ptr<IReplyCaller> callBack;
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     const bool isLocalMessage;
 };

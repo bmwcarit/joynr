@@ -45,8 +45,8 @@ class SimpleDelayedScheduler :
 
 public:
 
-    SimpleDelayedScheduler(SingleThreadedIOService& singleThreadedIOService)
-        : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1), singleThreadedIOService.getIOService()),
+    SimpleDelayedScheduler(std::shared_ptr<SingleThreadedIOService> singleThreadedIOService)
+        : DelayedScheduler(std::bind(&SimpleDelayedScheduler::workAvailable, this, std::placeholders::_1), singleThreadedIOService->getIOService()),
           est_ms(0)
     {
     }
@@ -101,8 +101,8 @@ private:
 
 TEST(DelayedSchedulerTest, startAndShutdownWithoutWork)
 {
-    SingleThreadedIOService singleThreadedIOService;
-    singleThreadedIOService.start();
+    auto singleThreadedIOService = std::make_shared<SingleThreadedIOService>();
+    singleThreadedIOService->start();
     auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
 
     scheduler->shutdown();
@@ -110,8 +110,8 @@ TEST(DelayedSchedulerTest, startAndShutdownWithoutWork)
 
 TEST(DelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCorrect)
 {
-    SingleThreadedIOService singleThreadedIOService;
-    singleThreadedIOService.start();
+    auto singleThreadedIOService = std::make_shared<SingleThreadedIOService>();
+    singleThreadedIOService->start();
     auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
 
     // Dtor should be called
@@ -136,8 +136,8 @@ TEST(DelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCo
 TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
 {
     joynr::Semaphore semaphore;
-    SingleThreadedIOService singleThreadedIOService;
-    singleThreadedIOService.start();
+    auto singleThreadedIOService = std::make_shared<SingleThreadedIOService>();
+    singleThreadedIOService->start();
     auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
     scheduler->schedule(runnable1, std::chrono::milliseconds(5));
@@ -155,8 +155,8 @@ TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
 TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
 {
     joynr::Semaphore semaphore;
-    SingleThreadedIOService singleThreadedIOService;
-    singleThreadedIOService.start();
+    auto singleThreadedIOService = std::make_shared<SingleThreadedIOService>();
+    singleThreadedIOService->start();
     auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
     scheduler->schedule(runnable1, std::chrono::milliseconds(5));
@@ -172,8 +172,8 @@ TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
 
 TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
 {
-    SingleThreadedIOService singleThreadedIOService;
-    singleThreadedIOService.start();
+    auto singleThreadedIOService = std::make_shared<SingleThreadedIOService>();
+    singleThreadedIOService->start();
     auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
     DelayedScheduler::RunnableHandle handle = scheduler->schedule(runnable1, std::chrono::milliseconds(50));
@@ -191,8 +191,8 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
 TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
 {
     joynr::Semaphore semaphore;
-    SingleThreadedIOService singleThreadedIOService;
-    singleThreadedIOService.start();
+    auto singleThreadedIOService = std::make_shared<SingleThreadedIOService>();
+    singleThreadedIOService->start();
     auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
     DelayedScheduler::RunnableHandle handle = scheduler->schedule(runnable1, std::chrono::milliseconds(50));

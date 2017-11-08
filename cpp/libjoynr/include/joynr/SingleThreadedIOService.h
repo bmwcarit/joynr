@@ -27,22 +27,23 @@
 namespace joynr
 {
 
-class SingleThreadedIOService
+class SingleThreadedIOService : public std::enable_shared_from_this<SingleThreadedIOService>
 {
 public:
-    SingleThreadedIOService() : ioService(), ioServiceWork(), ioServiceThread()
+    SingleThreadedIOService()
+            : std::enable_shared_from_this<SingleThreadedIOService>(),
+              ioService(),
+              ioServiceWork(),
+              ioServiceThread()
     {
     }
 
-    ~SingleThreadedIOService()
-    {
-        stop();
-    }
+    ~SingleThreadedIOService() = default;
 
     void start()
     {
         ioServiceWork = std::make_unique<boost::asio::io_service::work>(ioService);
-        ioServiceThread = std::thread(&runIOService, std::ref(ioService));
+        ioServiceThread = std::thread(&runIOService, shared_from_this());
     }
 
     void stop()
@@ -50,7 +51,13 @@ public:
         ioServiceWork.reset();
         ioService.stop();
 
-        if (ioServiceThread.joinable()) {
+        // do not join here since we could be joining ourselves
+        // the destructor here will not get called until thread has ended due to
+        // shared_ptr reference count
+
+        if (std::this_thread::get_id() == ioServiceThread.get_id()) {
+            ioServiceThread.detach();
+        } else if (ioServiceThread.joinable()) {
             ioServiceThread.join();
         }
     }
@@ -60,17 +67,10 @@ public:
         return ioService;
     }
 
-    void join()
-    {
-        if (ioServiceThread.joinable()) {
-            ioServiceThread.join();
-        }
-    }
-
 private:
-    static void runIOService(boost::asio::io_service& ioService)
+    static void runIOService(std::shared_ptr<SingleThreadedIOService> singleThreadedIOService)
     {
-        ioService.run();
+        singleThreadedIOService->ioService.run();
     }
 
 private:

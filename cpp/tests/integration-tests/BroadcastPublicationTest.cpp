@@ -48,15 +48,15 @@ using namespace joynr::tests;
 class BroadcastPublicationTest : public ::testing::Test {
 public:
     BroadcastPublicationTest() :
-        singleThreadedIOService(),
+        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
         speed1(100),
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         subscriptionId("subscriptionId"),
-        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
+        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
         messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
-        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender)),
+        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender)),
         publicationSender(std::make_shared<MockPublicationSender>()),
         request(),
         subscriptionBroadcastListener(std::make_shared<UnicastBroadcastListener>(subscriptionId, publicationManager)),
@@ -66,13 +66,13 @@ public:
         filter1(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
         filter2(std::make_shared<MockLocationUpdatedSelectiveFilter>())
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
     }
 
     ~BroadcastPublicationTest()
     {
         publicationManager->shutdown();
-        singleThreadedIOService.stop();
+        singleThreadedIOService->stop();
     }
 
     void SetUp(){
@@ -113,7 +113,7 @@ public:
     }
 
 protected:
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     types::Localisation::GpsLocation gpsLocation1;
     double speed1;
 

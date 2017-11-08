@@ -813,8 +813,8 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription) {
 TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
 {
     using RoutingTable = Directory<std::string, RoutingEntry>;
-    SingleThreadedIOService singleThreadedIoService;
-    RoutingTable routingTable("routingTable", singleThreadedIoService.getIOService());
+    auto singleThreadedIoService = std::make_shared<SingleThreadedIOService>();
+    RoutingTable routingTable("routingTable", singleThreadedIoService->getIOService());
 
     bool isGloballyVisible = true;
     auto ptrToRoutingWebSocketEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::WebSocketAddress>(), !isGloballyVisible);
@@ -835,7 +835,7 @@ TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
     const std::string serializedRoutingTable = joynr::serializer::serializeToJson(routingTable);
     JOYNR_LOG_TRACE(logger(), serializedRoutingTable);
 
-    RoutingTable deserializedRoutingTable("deserializedRoutingTable", singleThreadedIoService.getIOService());
+    RoutingTable deserializedRoutingTable("deserializedRoutingTable", singleThreadedIoService->getIOService());
     joynr::serializer::deserializeFromJson(deserializedRoutingTable, serializedRoutingTable);
 
     EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("WebSocketAddress")->address->toString(), "WebSocketAddress"));

@@ -52,8 +52,8 @@ class TestJoynrMessagingConnectorTest : public AbstractSyncAsyncTest {
 public:
 
     TestJoynrMessagingConnectorTest():
-        singleThreadedIOService(),
-        mockSubscriptionManager(std::make_shared<MockSubscriptionManager>(singleThreadedIOService.getIOService(), nullptr)),
+        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+        mockSubscriptionManager(std::make_shared<MockSubscriptionManager>(singleThreadedIOService->getIOService(), nullptr)),
         gpsLocation(types::Localisation::GpsLocation(
                         9.0,
                         51.0,
@@ -69,7 +69,7 @@ public:
         floatValue(123.45),
         semaphore(0)
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
     }
 
     // sets the expectations on the call expected on the MessageSender from the connector
@@ -94,7 +94,7 @@ public:
         );
     }
 
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockSubscriptionManager> mockSubscriptionManager;
     joynr::types::Localisation::GpsLocation gpsLocation;
     float floatValue;

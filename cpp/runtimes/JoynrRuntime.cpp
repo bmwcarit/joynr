@@ -28,7 +28,7 @@ namespace joynr
 {
 
 JoynrRuntime::JoynrRuntime(Settings& settings, std::shared_ptr<IKeychain> keyChain)
-        : singleThreadIOService(std::make_unique<SingleThreadedIOService>()),
+        : singleThreadIOService(std::make_shared<SingleThreadedIOService>()),
           proxyFactory(nullptr),
           requestCallerDirectory(nullptr),
           participantIdStorage(nullptr),

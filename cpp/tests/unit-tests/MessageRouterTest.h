@@ -54,7 +54,7 @@ template <typename T>
 class MessageRouterTest : public ::testing::Test {
 public:
     MessageRouterTest() :
-        singleThreadedIOService(),
+        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
         settings(),
         messagingSettings(settings),
         clusterControllerSettings(settings),
@@ -74,7 +74,7 @@ public:
         webSocketClientAddress(std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("testWebSocketClientAddress")),
         globalTransport(std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerURL, mqttTopic))
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
 
         messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
         messageRouter = createMessageRouter();
@@ -103,7 +103,7 @@ protected:
                     messagingSettings,
                     webSocketClientAddress,
                     messagingStubFactory,
-                    singleThreadedIOService.getIOService(),
+                    singleThreadedIOService->getIOService(),
                     std::make_unique<WebSocketMulticastAddressCalculator>(localTransport),
                     std::move(transportStatuses),
                     6,
@@ -136,7 +136,7 @@ protected:
                     messagingStubFactory,
                     multicastMessagingSkeletonDirectory,
                     std::unique_ptr<IPlatformSecurityManager>(),
-                    singleThreadedIOService.getIOService(),
+                    singleThreadedIOService->getIOService(),
                     std::make_unique<MqttMulticastAddressCalculator>(globalTransport, ccSettings.getMqttMulticastTopicPrefix()),
                     globalCcAddress,
                     messageNotificationProviderParticipantId,
@@ -149,7 +149,7 @@ protected:
         return std::move(ccMessageRouter);
     }
 
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::string settingsFileName;
     Settings settings;
     MessagingSettings messagingSettings;
