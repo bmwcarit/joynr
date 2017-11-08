@@ -233,11 +233,13 @@ void AccessControlListEditor::removeOwnerRegistrationControlEntry(
 
 bool AccessControlListEditor::hasRoleMaster(const std::string& uid, const std::string& domain)
 {
+    JOYNR_LOG_TRACE(logger(), "Lookup domain {} for userId {} and role MASTER", domain, uid);
     return localDomainAccessController->hasRole(uid, domain, Role::MASTER);
 }
 
 bool AccessControlListEditor::hasRoleOwner(const std::string& uid, const std::string& domain)
 {
+    JOYNR_LOG_TRACE(logger(), "Lookup domain {} for userId {} and role OWNER", domain, uid);
     return localDomainAccessController->hasRole(uid, domain, Role::OWNER);
 }
 
