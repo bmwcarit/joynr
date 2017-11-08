@@ -304,13 +304,14 @@ bool LocalDomainAccessStore::removeMediatorAccessControlEntry(const std::string&
                                                               const std::string& interfaceName,
                                                               const std::string& operation)
 {
-    JOYNR_LOG_TRACE(logger(),
-                    "execute: entering removeMediatorAce with userId: {}, domain: {}, "
-                    "interfaceName: {}, operation: {}",
-                    userId,
-                    domain,
-                    interfaceName,
-                    operation);
+    JOYNR_LOG_TRACE(
+            logger(),
+            "execute: entering removeMediatorAccessControlEntry with userId: {}, domain: {}, "
+            "interfaceName: {}, operation: {}",
+            userId,
+            domain,
+            interfaceName,
+            operation);
     return removeFromTable(mediatorAccessTable, userId, domain, interfaceName, operation);
 }
 
@@ -354,6 +355,12 @@ boost::optional<OwnerAccessControlEntry> LocalDomainAccessStore::getOwnerAccessC
 {
     // ignoring operation as not yet supported
     std::ignore = operation;
+    JOYNR_LOG_TRACE(logger(),
+                    "execute: entering getOwnerAccessControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    userId,
+                    domain,
+                    interfaceName);
     return lookupOptionalWithWildcard(ownerAccessTable, userId, domain, interfaceName);
 }
 
@@ -395,7 +402,8 @@ bool LocalDomainAccessStore::removeOwnerAccessControlEntry(const std::string& us
                                                            const std::string& operation)
 {
     JOYNR_LOG_TRACE(logger(),
-                    "execute: entering removeOwnerAce with userId: {}, domain: {}, interface: {}, "
+                    "execute: entering removeOwnerAccessControlEntry with userId: {}, domain: {}, "
+                    "interface: {}, "
                     "operation: {}",
                     userId,
                     domain,
@@ -432,6 +440,12 @@ boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
                                           const std::string& domain,
                                           const std::string& interfaceName)
 {
+    JOYNR_LOG_TRACE(logger(),
+                    "execute: entering getMasterRegistrationControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    uid,
+                    domain,
+                    interfaceName);
     return lookupOptionalWithWildcard(masterRegistrationTable, uid, domain, interfaceName);
 }
 
@@ -452,6 +466,12 @@ bool LocalDomainAccessStore::removeMasterRegistrationControlEntry(const std::str
                                                                   const std::string& domain,
                                                                   const std::string& interfaceName)
 {
+    JOYNR_LOG_TRACE(logger(),
+                    "execute: entering removeMasterRegistrationControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    uid,
+                    domain,
+                    interfaceName);
     return removeFromTable(masterRegistrationTable, uid, domain, interfaceName);
 }
 
@@ -480,6 +500,12 @@ boost::optional<MasterRegistrationControlEntry> LocalDomainAccessStore::
                                             const std::string& domain,
                                             const std::string& interfaceName)
 {
+    JOYNR_LOG_TRACE(logger(),
+                    "execute: entering getMediatorRegistrationControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    uid,
+                    domain,
+                    interfaceName);
     return convertMediator(
             lookupOptionalWithWildcard(mediatorRegistrationTable, uid, domain, interfaceName));
 }
@@ -501,6 +527,13 @@ bool LocalDomainAccessStore::removeMediatorRegistrationControlEntry(
         const std::string& domain,
         const std::string& interfaceName)
 {
+    JOYNR_LOG_TRACE(
+            logger(),
+            "execute: entering removeMediatorRegistrationControlEntry with uId={} domain={} "
+            "interfaceName={}",
+            uid,
+            domain,
+            interfaceName);
     return removeFromTable(mediatorRegistrationTable, uid, domain, interfaceName);
 }
 
@@ -520,7 +553,6 @@ std::vector<infrastructure::DacTypes::OwnerRegistrationControlEntry> LocalDomain
     JOYNR_LOG_TRACE(logger(),
                     "execute: entering getEditableOwnerRegistrationControlEntry with uid {}",
                     uid);
-
     return getEntries(ownerRegistrationTable, uid, Role::OWNER);
 }
 
@@ -529,6 +561,12 @@ boost::optional<OwnerRegistrationControlEntry> LocalDomainAccessStore::
                                          const std::string& domain,
                                          const std::string& interfaceName)
 {
+    JOYNR_LOG_TRACE(logger(),
+                    "execute: entering getOwnerRegistrationControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    userId,
+                    domain,
+                    interfaceName);
     return lookupOptionalWithWildcard(ownerRegistrationTable, userId, domain, interfaceName);
 }
 
@@ -549,6 +587,12 @@ bool LocalDomainAccessStore::removeOwnerRegistrationControlEntry(const std::stri
                                                                  const std::string& domain,
                                                                  const std::string& interfaceName)
 {
+    JOYNR_LOG_TRACE(logger(),
+                    "execute: entering removeOwnerRegistrationControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    uid,
+                    domain,
+                    interfaceName);
     return removeFromTable(ownerRegistrationTable, uid, domain, interfaceName);
 }
 

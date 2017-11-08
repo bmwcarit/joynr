@@ -25,6 +25,7 @@
 #include "joynr/infrastructure/AccessControlListEditorAbstractProvider.h"
 
 #include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
@@ -118,6 +119,8 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AccessControlListEditor);
+    ADD_LOGGER(AccessControlListEditor)
+
     bool hasRoleMaster(const std::string& uid, const std::string& domain);
     bool hasRoleOwner(const std::string& uid, const std::string& domain);
 
