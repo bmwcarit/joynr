@@ -53,7 +53,7 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 
 «getNamespaceStarter(francaIntf)»
 «interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider)
-	: joynr::RequestCaller(provider->getInterfaceName()),
+	: joynr::RequestCaller(«interfaceName»Provider::INTERFACE_NAME()),
 	  provider(std::move(provider))
 {
 }

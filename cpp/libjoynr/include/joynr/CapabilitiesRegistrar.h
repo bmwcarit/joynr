@@ -137,7 +137,7 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
     {
-        std::string interfaceName = provider->getInterfaceName();
+        std::string interfaceName = T::INTERFACE_NAME();
         // Get the provider participant Id - the persisted provider Id has priority
         std::string participantId =
                 participantIdStorage->getProviderParticipantId(domain, interfaceName);

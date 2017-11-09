@@ -181,7 +181,7 @@ private:
                                                       const std::string& participantId)
     {
         const std::string domain(systemServicesSettings.getDomain());
-        const std::string interfaceName(provider->getInterfaceName());
+        const std::string interfaceName(T::INTERFACE_NAME());
 
         participantIdStorage->setProviderParticipantId(domain, interfaceName, participantId);
 
