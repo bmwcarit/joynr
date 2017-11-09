@@ -376,10 +376,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities) {
     EXPECT_CALL(*capabilitiesClient,
              add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry2)),_,_))
             .Times(1);
-    EXPECT_CALL(*capabilitiesClient,
-             add(Matcher<const std::vector<joynr::types::GlobalDiscoveryEntry>&>(ElementsAre(AnConvertedGlobalDiscoveryEntry(entry1), AnConvertedGlobalDiscoveryEntry(entry2))),_,_))
-            .Times(1)
-            .WillRepeatedly(testing::InvokeArgument<1>());
 
     localCapabilitiesDirectory->add(entry1,
                                     defaultOnSuccess,
@@ -389,41 +385,23 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities) {
                                     defaultOnSuccess,
                                     defaultOnError);
 
+    Mock::VerifyAndClearExpectations(capabilitiesClient.get());
+
+    EXPECT_CALL(*capabilitiesClient,
+             add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry1)),_,_))
+            .Times(1);
+    EXPECT_CALL(*capabilitiesClient,
+             add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry2)),_,_))
+            .Times(1);
+
     bool onSuccessCalled = false;
     localCapabilitiesDirectory->triggerGlobalProviderReregistration(
             [&onSuccessCalled]() { onSuccessCalled=true; },
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL(); }
     );
 
+    Mock::VerifyAndClearExpectations(capabilitiesClient.get());
     EXPECT_TRUE(onSuccessCalled);
-}
-
-TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities_Fails) {
-    joynr::types::DiscoveryEntry entry(defaultProviderVersion,
-                                       DOMAIN_1_NAME,
-                                       INTERFACE_1_NAME,
-                                       dummyParticipantId1,
-                                       types::ProviderQos(),
-                                       lastSeenDateMs,
-                                       expiryDateMs,
-                                       PUBLIC_KEY_ID);
-
-    localCapabilitiesDirectory->add(entry,
-                                    defaultOnSuccess,
-                                    defaultOnError);
-
-    EXPECT_CALL(*capabilitiesClient,
-             add(Matcher<const std::vector<joynr::types::GlobalDiscoveryEntry>&>(ElementsAre(AnConvertedGlobalDiscoveryEntry(entry))),_,_))
-            .Times(1)
-            .WillRepeatedly(testing::InvokeArgument<2>(joynr::exceptions::ProviderRuntimeException("Test error")));
-
-    bool onErrorCalled = false;
-    localCapabilitiesDirectory->triggerGlobalProviderReregistration(
-            []() { FAIL(); },
-            [&onErrorCalled](const joynr::exceptions::ProviderRuntimeException&) { onErrorCalled = true; }
-    );
-
-    EXPECT_TRUE(onErrorCalled);
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities_BackendNotCalledIfNoGlobalProvidersArePresent) {
