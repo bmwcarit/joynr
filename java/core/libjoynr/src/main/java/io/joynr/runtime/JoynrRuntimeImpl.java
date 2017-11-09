@@ -21,7 +21,9 @@ package io.joynr.runtime;
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
 import java.util.HashSet;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.reflections.Reflections;
@@ -35,6 +37,7 @@ import com.google.inject.name.Named;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
@@ -50,6 +53,7 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
+import joynr.exceptions.ApplicationException;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.ProviderQos;
 
@@ -73,6 +77,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     ScheduledExecutorService cleanupScheduler;
 
     private final ProxyBuilderFactory proxyBuilderFactory;
+
+    private Queue<Future<Void>> unregisterProviderQueue = new ConcurrentLinkedQueue<Future<Void>>();
 
     // CHECKSTYLE:OFF
     @Inject
@@ -155,13 +161,30 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     @Override
     public void unregisterProvider(String domain, Object provider) {
-        capabilitiesRegistrar.unregisterProvider(domain, provider);
 
+        synchronized (unregisterProviderQueue) {
+            unregisterProviderQueue.add(capabilitiesRegistrar.unregisterProvider(domain, provider));
+        }
     }
 
     @Override
     public void shutdown(boolean clear) {
         logger.info("SHUTTING DOWN runtime");
-        shutdownNotifier.shutdown();
+
+        synchronized (unregisterProviderQueue) {
+            // wait till all unregister provider calls are finished
+            while (unregisterProviderQueue.peek() != null) {
+                try {
+                    logger.trace("unregister Provider Requests pending: " + unregisterProviderQueue.size());
+                    // while this waits till a provider is unregistered in the local discovery it won't wait for global
+                    Future<Void> unregisterFinished = unregisterProviderQueue.poll();
+                    unregisterFinished.get(5000);
+                } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
+                    logger.error("unregister Provider failed", e);
+                    break; // break if unregistering a provider takes more than 5s
+                }
+            }
+            shutdownNotifier.shutdown();
+        }
     }
 }

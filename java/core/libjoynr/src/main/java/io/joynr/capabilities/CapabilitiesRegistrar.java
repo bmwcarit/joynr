@@ -36,5 +36,5 @@ public interface CapabilitiesRegistrar {
      */
     Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos);
 
-    void unregisterProvider(String domain, Object provider);
+    Future<Void> unregisterProvider(String domain, Object provider);
 }

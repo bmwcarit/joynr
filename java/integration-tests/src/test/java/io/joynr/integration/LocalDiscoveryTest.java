@@ -86,6 +86,7 @@ import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.runtime.SystemServicesSettings;
 import io.joynr.util.VersionUtil;
 import joynr.system.RoutingTypes.Address;
@@ -161,6 +162,8 @@ public class LocalDiscoveryTest {
     private ScheduledExecutorService capabilitiesFreshnessUpdateExecutorMock;
     @Mock
     private JoynrMessagingConnectorFactory joynrMessagingConnectorFactoryMock;
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
 
     @Captor
     private ArgumentCaptor<Set<DiscoveryEntryWithMetaInfo>> discoveryEntryWithMetaInfoArgumentCaptor;
@@ -181,7 +184,8 @@ public class LocalDiscoveryTest {
                                                                                                              expiredDiscoveryEntryCacheCleanerMock,
                                                                                                              3600000,
                                                                                                              capabilitiesFreshnessUpdateExecutorMock,
-                                                                                                             defaultDiscoveryRetryIntervalMs);
+                                                                                                             defaultDiscoveryRetryIntervalMs,
+                                                                                                             shutdownNotifier);
 
         Module testModule = Modules.override(new CCInProcessRuntimeModule()).with(new TestGlobalAddressModule(),
                                                                                   new AbstractModule() {

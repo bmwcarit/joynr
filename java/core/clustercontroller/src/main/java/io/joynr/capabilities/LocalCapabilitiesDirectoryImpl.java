@@ -55,6 +55,7 @@ import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingTypes.Address;
@@ -129,7 +130,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleaner,
                                           @Named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS) long freshnessUpdateIntervalMs,
                                           @Named(JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS) ScheduledExecutorService freshnessUpdateScheduler,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_RETRY_INTERVAL_MS) long defaultDiscoveryRetryInterval) {
+                                          @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_RETRY_INTERVAL_MS) long defaultDiscoveryRetryInterval,
+                                          ShutdownNotifier shutdownNotifier) {
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
         this.defaultDiscoveryRetryInterval = defaultDiscoveryRetryInterval;
@@ -150,6 +152,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                    localDiscoveryEntryStore);
         this.freshnessUpdateScheduler = freshnessUpdateScheduler;
         setUpPeriodicFreshnessUpdate(freshnessUpdateIntervalMs);
+        shutdownNotifier.registerForShutdown(this);
     }
 
     private void setUpPeriodicFreshnessUpdate(final long freshnessUpdateIntervalMs) {
@@ -245,7 +248,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     public void remove(final DiscoveryEntry discoveryEntry) {
         localDiscoveryEntryStore.remove(discoveryEntry.getParticipantId());
         notifyCapabilityRemoved(discoveryEntry);
-
         // Remove from the global capabilities directory if needed
         if (discoveryEntry.getQos().getScope() != ProviderScope.LOCAL) {
 
