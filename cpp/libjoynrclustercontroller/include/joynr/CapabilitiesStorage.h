@@ -133,9 +133,19 @@ public:
         return container.begin();
     }
 
+    auto cbegin() const
+    {
+        return container.cbegin();
+    }
+
     auto end()
     {
         return container.end();
+    }
+
+    auto cend() const
+    {
+        return container.cend();
     }
 
     /**

@@ -1581,11 +1581,16 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
     std::vector<std::string> participantIds{
             util::createUuid(), util::createUuid(), util::createUuid()};
 
+    types::ProviderQos localProviderQos;
+    localProviderQos.setScope(types::ProviderScope::LOCAL);
+    types::ProviderQos globalProviderQos;
+    globalProviderQos.setScope(types::ProviderScope::GLOBAL);
+
     joynr::types::DiscoveryEntry entry1(defaultProviderVersion,
                                         DOMAIN_NAME,
                                         INTERFACE_NAME,
                                         participantIds[0],
-                                        types::ProviderQos(),
+                                        localProviderQos,
                                         lastSeenDateMs,
                                         expiryDateMs,
                                         PUBLIC_KEY_ID);
@@ -1593,7 +1598,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                         DOMAIN_NAME,
                                         INTERFACE_NAME,
                                         participantIds[1],
-                                        types::ProviderQos(),
+                                        globalProviderQos,
                                         lastSeenDateMs,
                                         expiryDateMs,
                                         PUBLIC_KEY_ID);
@@ -1601,7 +1606,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                         DOMAIN_NAME,
                                         INTERFACE_NAME,
                                         participantIds[2],
-                                        types::ProviderQos(),
+                                        globalProviderQos,
                                         lastSeenDateMs,
                                         expiryDateMs,
                                         PUBLIC_KEY_ID);
@@ -1633,6 +1638,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
         EXPECT_EQ(1, callback->getResults(1000).size());
         callback->clearResults();
     }
+
+    auto globalDiscoveryEntries = localCapabilitiesDirectory2->getCachedGlobalDiscoveryEntries();
+    EXPECT_EQ(2, globalDiscoveryEntries.size());
+    EXPECT_EQ(entry2, globalDiscoveryEntries[0]);
+    EXPECT_EQ(entry3, globalDiscoveryEntries[1]);
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, loadCapabilitiesFromFile)

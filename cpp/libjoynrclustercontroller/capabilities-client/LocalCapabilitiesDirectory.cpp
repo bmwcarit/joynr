@@ -269,6 +269,13 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
     }
 }
 
+std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedGlobalDiscoveryEntries()
+        const
+{
+    return std::vector<types::DiscoveryEntry>(
+            globalCapabilities.cbegin(), globalCapabilities.cend());
+}
+
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
         const std::vector<InterfaceAddress>& interfaceAddresses,
         const joynr::types::DiscoveryQos& discoveryQos,
@@ -752,7 +759,9 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
 
     // insert all global capability entries into global cache
     for (const auto& entry : localCapabilities) {
-        globalCapabilities.insert(entry);
+        if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
+            globalCapabilities.insert(entry);
+        }
     }
 }
 

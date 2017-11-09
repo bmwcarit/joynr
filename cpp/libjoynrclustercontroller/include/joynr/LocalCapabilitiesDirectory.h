@@ -207,6 +207,8 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             final override;
 
+    std::vector<types::DiscoveryEntry> getCachedGlobalDiscoveryEntries() const;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     ClusterControllerSettings& clusterControllerSettings; // to retrieve info about persistency
