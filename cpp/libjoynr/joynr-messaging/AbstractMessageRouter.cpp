@@ -23,6 +23,7 @@
 
 #include <boost/asio/io_service.hpp>
 
+#include "joynr/DispatcherUtils.h"
 #include "joynr/IMessagingStub.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/ImmutableMessage.h"
@@ -162,6 +163,12 @@ void AbstractMessageRouter::checkExpiryDate(const ImmutableMessage& message)
 {
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now());
+    JOYNR_LOG_TRACE(
+            logger(),
+            "now: {} --- expiryDate: {}",
+            std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count(),
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    message.getExpiryDate().time_since_epoch()).count());
     if (now > message.getExpiryDate()) {
         std::string errorMessage("Received expired message. Dropping the message (ID: " +
                                  message.getId() + ").");

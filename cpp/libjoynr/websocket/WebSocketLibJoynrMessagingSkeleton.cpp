@@ -63,11 +63,11 @@ void WebSocketLibJoynrMessagingSkeleton::onMessageReceived(smrf::ByteVector&& me
         return;
     }
 
-    JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
-
     if (immutableMessage->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
         immutableMessage->setReceivedFromGlobal(true);
     }
+
+    JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
 
     auto onFailure = [messageId = immutableMessage->getId()](
             const exceptions::JoynrRuntimeException& e)
