@@ -33,6 +33,8 @@
 
 #include "IWebSocketPpClient.h"
 #include "joynr/Logger.h"
+#include "joynr/Semaphore.h"
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/WebSocketSettings.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketProtocol.h"
@@ -52,6 +54,9 @@ public:
 
     WebSocketPpClient(const WebSocketSettings& wsSettings, boost::asio::io_service& ioService)
             : endpoint(),
+              webSocketPpSingleThreadedIOServiceDestructed(std::make_shared<Semaphore>(0)),
+              webSocketPpSingleThreadedIOService(std::make_shared<SingleThreadedIOService>(
+                      webSocketPpSingleThreadedIOServiceDestructed)),
               connection(),
               isRunning(true),
               reconnectTimer(ioService),
@@ -62,8 +67,15 @@ public:
               sender(nullptr),
               receiver()
     {
+        webSocketPpSingleThreadedIOService->start();
+        boost::asio::io_service& endpointIoService =
+                webSocketPpSingleThreadedIOService->getIOService();
+
         websocketpp::lib::error_code initializationError;
-        endpoint.init_asio(&ioService, initializationError);
+
+        endpoint.clear_access_channels(websocketpp::log::alevel::all);
+        endpoint.clear_error_channels(websocketpp::log::alevel::all);
+        endpoint.init_asio(&endpointIoService, initializationError);
         if (initializationError) {
             JOYNR_LOG_FATAL(logger(),
                             "error during WebSocketPp initialization: ",
@@ -71,8 +83,8 @@ public:
             return;
         }
 
-        endpoint.clear_access_channels(websocketpp::log::alevel::all);
-        endpoint.clear_error_channels(websocketpp::log::alevel::all);
+        endpoint.start_perpetual();
+
         // register handlers
         endpoint.set_open_handler(
                 std::bind(&WebSocketPpClient::onConnectionOpened, this, std::placeholders::_1));
@@ -90,7 +102,14 @@ public:
 
     ~WebSocketPpClient() override
     {
+        endpoint.stop_perpetual();
         close();
+        // prior to destruction of the endpoint, the background thread
+        // must have finished its work, thus wait for it here
+        assert(webSocketPpSingleThreadedIOService);
+        webSocketPpSingleThreadedIOService->stop();
+        webSocketPpSingleThreadedIOService.reset();
+        webSocketPpSingleThreadedIOServiceDestructed->wait();
     }
 
     void registerConnectCallback(std::function<void()> callback) final
@@ -296,6 +315,8 @@ private:
         }
     }
 
+    std::shared_ptr<Semaphore> webSocketPpSingleThreadedIOServiceDestructed;
+    std::shared_ptr<SingleThreadedIOService> webSocketPpSingleThreadedIOService;
     ConnectionHandle connection;
     std::atomic<bool> isRunning;
     boost::asio::steady_timer reconnectTimer;
