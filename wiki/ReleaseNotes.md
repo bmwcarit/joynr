@@ -1,3 +1,11 @@
+# joynr 0.29.3
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Fixed provider reregistration trigger call
+
 # joynr 0.29.2
 
 ## API relevant changes
