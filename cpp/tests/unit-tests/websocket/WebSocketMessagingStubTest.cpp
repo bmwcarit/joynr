@@ -130,6 +130,10 @@ public:
         server.start();
     }
 
+    ~WebSocketMessagingStubTest() {
+        singleThreadedIOService->stop();
+    }
+
     MOCK_METHOD1(onWebSocketConnectionClosed, void (const joynr::system::RoutingTypes::Address&));
 
     virtual void SetUp()
