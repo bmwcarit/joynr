@@ -100,13 +100,13 @@ public:
     float floatValue;
     Semaphore semaphore;
 
-    tests::testJoynrMessagingConnector* createConnector() {
+    std::shared_ptr<tests::testJoynrMessagingConnector> createConnector() {
         types::DiscoveryEntryWithMetaInfo discoveryEntry;
 
         discoveryEntry.setParticipantId(providerParticipantId);
         discoveryEntry.setIsLocal(false);
 
-        return new tests::testJoynrMessagingConnector(
+        return std::make_shared<tests::testJoynrMessagingConnector>(
                     mockMessageSender,
                     mockSubscriptionManager,
                     "myDomain",
@@ -115,8 +115,8 @@ public:
                     discoveryEntry);
     }
 
-    tests::Itest* createFixture() override {
-        return dynamic_cast<tests::Itest*>(createConnector());
+    std::shared_ptr<tests::Itest> createFixture() override {
+        return std::dynamic_pointer_cast<tests::Itest>(createConnector());
     }
 
     void invokeMulticastSubscriptionCallback(const std::string& subscribeToName,
@@ -248,7 +248,7 @@ TEST_F(TestJoynrMessagingConnectorTest, subscribeToAttribute) {
 }
 
 TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper) {
-    std::unique_ptr<tests::testJoynrMessagingConnector> connector (createConnector());
+    std::shared_ptr<tests::testJoynrMessagingConnector> connector (createConnector());
 
     auto mockListener = std::make_shared<MockGpsFloatSubscriptionListener>();
 
