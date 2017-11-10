@@ -89,9 +89,9 @@ public:
         );
     }
 
-    tests::testProxy* createFixture() override {
+    std::shared_ptr<tests::Itest> createFixture() override {
         EXPECT_CALL(*mockInProcessConnectorFactory, canBeCreated(_)).WillRepeatedly(Return(false));
-        tests::testProxy* proxy = new tests::testProxy(
+        std::shared_ptr<tests::testProxy> proxy = std::make_shared<tests::testProxy>(
                     runtime,
                     mockConnectorFactory,
                     "myDomain",
@@ -101,7 +101,7 @@ public:
         discoveryEntry.setParticipantId(providerParticipantId);
         discoveryEntry.setIsLocal(true);
         proxy->handleArbitrationFinished(discoveryEntry, useInProcessCommunication);
-        return proxy;
+        return std::dynamic_pointer_cast<tests::Itest>(proxy);
     }
 
 protected:
@@ -212,7 +212,7 @@ TEST_F(ProxyTest, subscribeToAttribute) {
 }
 
 TEST_F(ProxyTest, subscribeToBroadcastWithInvalidPartitionsReturnsError) {
-    tests::testProxy* testProxy = createFixture();
+    auto testProxy = std::dynamic_pointer_cast<tests::testProxy>(createFixture());
     auto subscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
     auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
 
