@@ -26,6 +26,7 @@
 #include "joynr/SingleThreadedIOService.h"
 
 #include "tests/mock/MockRunnable.h"
+#include "tests/utils/PtrUtils.h"
 #include "tests/utils/TestRunnable.h"
 #include "tests/mock/MockRunnableWithAccuracy.h"
 
@@ -42,6 +43,10 @@ public:
     ThreadPoolDelayedSchedulerTest() : singleThreadedIOService(std::make_shared<SingleThreadedIOService>())
     {
         singleThreadedIOService->start();
+    }
+
+    ~ThreadPoolDelayedSchedulerTest() {
+        singleThreadedIOService->stop();
     }
 protected:
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
@@ -67,6 +72,7 @@ TEST_F(ThreadPoolDelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorO
     scheduler->schedule(runnable2, std::chrono::milliseconds(100));
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    EXPECT_CALL(*runnable2, dtorCalled()).Times(1);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
@@ -74,7 +80,8 @@ TEST_F(ThreadPoolDelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorO
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    EXPECT_CALL(*runnable2, dtorCalled()).Times(1);
+    test::util::resetAndWaitUntilDestroyed(runnable1);
+    test::util::resetAndWaitUntilDestroyed(runnable2);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, testAccuracyOfDelayedScheduler)
@@ -87,12 +94,13 @@ TEST_F(ThreadPoolDelayedSchedulerTest, testAccuracyOfDelayedScheduler)
 
     EXPECT_CALL(*runnable1, runCalled()).Times(1);
     EXPECT_CALL(*runnable1, runCalledInTime()).Times(1);
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     scheduler->shutdown();
 
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExpired)
@@ -109,6 +117,7 @@ TEST_F(ThreadPoolDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExpir
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     scheduler->shutdown();
+    test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
@@ -119,6 +128,8 @@ TEST_F(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
 
     joynr::DelayedScheduler::RunnableHandle handle = scheduler->schedule(runnable1, std::chrono::milliseconds(5));
 
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     scheduler->unschedule(handle);
@@ -127,7 +138,7 @@ TEST_F(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
 
     scheduler->shutdown();
 
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
@@ -147,6 +158,7 @@ TEST_F(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnU
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     scheduler->shutdown();
+    test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, useDefaultDelay)
@@ -165,6 +177,7 @@ TEST_F(ThreadPoolDelayedSchedulerTest, useDefaultDelay)
     scheduler->shutdown();
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, schedule_deletingRunnablesCorrectly)
