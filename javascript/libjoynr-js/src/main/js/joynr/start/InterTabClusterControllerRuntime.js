@@ -315,8 +315,11 @@ function InterTabClusterControllerRuntime(provisioning) {
         untypedCapabilities = provisioning.capabilities || [];
         var defaultCapabilities = clusterControllerSettings.capabilities || [];
 
-        untypedCapabilities = untypedCapabilities.concat(defaultCapabilities); // allow use of _typeName once //typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
-        /*jslint nomen: true */ typeRegistry.addType(new MqttAddress()._typeName, MqttAddress, false);
+        untypedCapabilities = untypedCapabilities.concat(defaultCapabilities);
+        // allow use of _typeName once
+        /*jslint nomen: true */
+        //typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
+        typeRegistry.addType(new MqttAddress()._typeName, MqttAddress, false);
         /*jslint nomen: false */
         typedCapabilities = [];
         for (i = 0; i < untypedCapabilities.length; i++) {

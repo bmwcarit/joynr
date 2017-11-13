@@ -286,8 +286,10 @@ function InProcessRuntime(provisioning) {
         });
         var defaultClusterControllerCapabilities = clusterControllerSettings.capabilities || [];
 
-        untypedCapabilities = untypedCapabilities.concat(defaultClusterControllerCapabilities); // allow use of _typeName once
-        /*jslint nomen: true */ typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
+        untypedCapabilities = untypedCapabilities.concat(defaultClusterControllerCapabilities);
+        // allow use of _typeName once
+        /*jslint nomen: true */
+        typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
         typeRegistry.addType(new MqttAddress()._typeName, MqttAddress, false);
         /*jslint nomen: false */
         typedCapabilities = [];

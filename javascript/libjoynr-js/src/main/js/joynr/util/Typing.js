@@ -145,8 +145,7 @@ Typing.augmentTypes = function(untyped, typeRegistry, typeHint) {
         // leave integral data types untyped
         typedObj = untyped;
     } else if (type === "Object") {
-        // try to type each single member of an object, and use registered constructor if
-        // available
+        // try to type each single member of an object, and use registered constructor if available
         /*jslint nomen: true */
         var Constructor = typeRegistry.getConstructor(untyped._typeName);
         var isEnumType = typeRegistry.isEnumType(untyped._typeName);

@@ -44,10 +44,11 @@ MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(
             throw new Error(
                 'Cannot call operation with nullable value "' + argumentValue + '" of argument "' + argument.name + '"'
             );
-        } // allow dangling _ in variable once
+        }
         // check if the parameter type matches the type of the argument value
-        /*jslint nomen: true */ objectType =
-            argumentValue.constructor === Array ? "Array" : argumentValue._typeName || typeof argumentValue;
+        // allow dangling _ in variable once
+        /*jslint nomen: true */
+        objectType = argumentValue.constructor === Array ? "Array" : argumentValue._typeName || typeof argumentValue;
         /*jslint nomen: false */
         if (argument.javascriptType !== objectType) {
             // signature does not match
