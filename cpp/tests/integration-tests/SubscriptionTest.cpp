@@ -42,10 +42,8 @@
 #include "joynr/SubscriptionManager.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockCallback.h"
 #include "tests/mock/MockMessageRouter.h"
 #include "tests/mock/MockTestRequestCaller.h"
-#include "tests/mock/MockReplyCaller.h"
 #include "tests/mock/MockTestProvider.h"
 #include "tests/mock/MockSubscriptionListener.h"
 
@@ -60,14 +58,7 @@ public:
     SubscriptionTest() :
         singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
         mockMessageRouter(new MockMessageRouter(singleThreadedIOService->getIOService())),
-        mockCallback(new MockCallbackWithJoynrException<types::Localisation::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
-        mockReplyCaller(new MockReplyCaller<types::Localisation::GpsLocation>(
-                [this](const types::Localisation::GpsLocation& location) {
-                    mockCallback->onSuccess(location);
-                },
-                [] (const std::shared_ptr<exceptions::JoynrException>& error){
-                })),
         mockGpsLocationListener(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         mockTestEnumSubscriptionListener(new MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
@@ -105,10 +96,8 @@ public:
 protected:
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    std::shared_ptr<MockCallbackWithJoynrException<types::Localisation::GpsLocation> > mockCallback;
 
     std::shared_ptr<MockTestRequestCaller> mockRequestCaller;
-    std::shared_ptr<MockReplyCaller<types::Localisation::GpsLocation> > mockReplyCaller;
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockGpsLocationListener;
     std::shared_ptr<MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum> > mockTestEnumSubscriptionListener;
 
@@ -184,11 +173,6 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
   *             Interpreter executes it correctly
   */
 TEST_F(SubscriptionTest, receive_publication ) {
-
-    // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
-    // so this has to match with the type being passed to the dispatcher in the reply
-    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(std::string("GpsLocation")));
-
     // Use a semaphore to count and wait on calls to the mockGpsLocationListener
     Semaphore publicationSemaphore(0);
     EXPECT_CALL(*mockGpsLocationListener, onReceive(A<const types::Localisation::GpsLocation&>()))
@@ -241,11 +225,6 @@ TEST_F(SubscriptionTest, receive_publication ) {
   *             Interpreter executes it correctly
   */
 TEST_F(SubscriptionTest, receive_enumPublication ) {
-
-    // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
-    // so this has to match with the type being passed to the dispatcher in the reply
-    ON_CALL(*mockReplyCaller, getType()).WillByDefault(Return(std::string("TestEnum")));
-
     // Use a semaphore to count and wait on calls to the mockTestEnumSubscriptionListener
     Semaphore semaphore(0);
     EXPECT_CALL(*mockTestEnumSubscriptionListener, onReceive(A<const joynr::tests::testTypes::TestEnum::Enum&>()))
