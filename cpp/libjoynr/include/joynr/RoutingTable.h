@@ -61,7 +61,12 @@ struct ExpiryDate;
 // record to be stored in multi index
 struct RoutingEntry
 {
-    RoutingEntry() : participantId(), address(), isGloballyVisible(true)
+    RoutingEntry()
+            : participantId(),
+              address(),
+              isGloballyVisible(true),
+              expiryDateMs(std::numeric_limits<std::int64_t>::max()),
+              isSticky(false)
     {
     }
 
