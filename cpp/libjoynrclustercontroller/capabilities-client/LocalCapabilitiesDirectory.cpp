@@ -241,35 +241,25 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::vector<joynr::types::GlobalDiscoveryEntry> convertedGlobalCapabilities;
+    std::ignore = onError;
 
     {
         std::lock_guard<std::mutex> lock(cacheLock);
-
-        const std::size_t numOfGlobalCapabilities =
-                std::distance(globalCapabilities.begin(), globalCapabilities.end());
-        convertedGlobalCapabilities.reserve(numOfGlobalCapabilities);
-
         for (const auto& globalCapability : globalCapabilities) {
-            convertedGlobalCapabilities.push_back(toGlobalDiscoveryEntry(globalCapability));
+            if (globalCapability.getQos().getScope() == types::ProviderScope::GLOBAL) {
+                capabilitiesClient->add(toGlobalDiscoveryEntry(globalCapability), nullptr, nullptr);
+            }
         }
     }
 
-    auto onErrorWrapper = [onError = std::move(onError)](
-            const joynr::exceptions::JoynrRuntimeException& exception)
-    {
-        if (onError) {
-            onError(joynr::exceptions::ProviderRuntimeException(exception.getMessage()));
-        }
-    };
+    onSuccess();
+}
 
-    if (convertedGlobalCapabilities.empty()) {
-        if (onSuccess) {
-            onSuccess();
-        }
-    } else {
-        capabilitiesClient->add(convertedGlobalCapabilities, onSuccess, onErrorWrapper);
-    }
+std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedGlobalDiscoveryEntries()
+        const
+{
+    return std::vector<types::DiscoveryEntry>(
+            globalCapabilities.cbegin(), globalCapabilities.cend());
 }
 
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
@@ -788,7 +778,9 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
 
     // insert all global capability entries into global cache
     for (const auto& entry : localCapabilities) {
-        globalCapabilities.insert(entry);
+        if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
+            globalCapabilities.insert(entry);
+        }
     }
 }
 
