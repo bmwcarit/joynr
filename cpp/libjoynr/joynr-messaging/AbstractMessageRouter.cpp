@@ -50,6 +50,7 @@ AbstractMessageRouter::AbstractMessageRouter(
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+        bool persistRoutingTable,
         int maxThreads,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
@@ -60,6 +61,7 @@ AbstractMessageRouter::AbstractMessageRouter(
           routingTableLock(),
           multicastReceiverDirectory(),
           messagingSettings(messagingSettings),
+          persistRoutingTable(persistRoutingTable),
           messagingStubFactory(std::move(messagingStubFactory)),
           messageScheduler(std::make_shared<ThreadPoolDelayedScheduler>(maxThreads,
                                                                         "AbstractMessageRouter",
@@ -429,7 +431,12 @@ void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> messa
 
 void AbstractMessageRouter::loadRoutingTable(std::string fileName)
 {
-    // always update reference file
+
+    if (!persistRoutingTable) {
+        return;
+    }
+
+    // update reference file
     if (fileName != routingTableFileName) {
         routingTableFileName = std::move(fileName);
     }
@@ -451,6 +458,9 @@ void AbstractMessageRouter::loadRoutingTable(std::string fileName)
 
 void AbstractMessageRouter::saveRoutingTable()
 {
+    if (!persistRoutingTable) {
+        return;
+    }
     WriteLocker lock(routingTableLock);
     try {
         joynr::util::saveStringToFile(

@@ -91,6 +91,7 @@ public:
                     std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                     const std::string& globalClusterControllerAddress,
                     const std::string& messageNotificationProviderParticipantId,
+                    bool persistRoutingTable,
                     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
                     int maxThreads = 1,
                     std::unique_ptr<MessageQueue<std::string>> messageQueue =
@@ -230,6 +231,7 @@ private:
     std::shared_ptr<CcMessageNotificationProvider> messageNotificationProvider;
     const std::string messageNotificationProviderParticipantId;
     ClusterControllerSettings& clusterControllerSettings;
+    const bool multicastReceiverDirectoryPersistencyEnabled;
 };
 
 } // namespace joynr

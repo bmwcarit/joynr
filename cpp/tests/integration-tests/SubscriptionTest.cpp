@@ -75,12 +75,13 @@ public:
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         requestReplyId("requestReplyId"),
+        persistencyEnabled(true),
         messageFactory(),
         messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
         dispatcher(messageSender, singleThreadedIOService->getIOService()),
         subscriptionManager(),
         provider(new MockTestProvider),
-        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender)),
+        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, persistencyEnabled)),
         requestCaller(new joynr::tests::testRequestCaller(provider)),
         isLocalMessage(true)
     {
@@ -118,6 +119,7 @@ protected:
     std::string providerParticipantId;
     std::string proxyParticipantId;
     std::string requestReplyId;
+    const bool persistencyEnabled;
 
     MutableMessageFactory messageFactory;
     std::shared_ptr<MessageSender> messageSender;

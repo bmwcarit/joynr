@@ -66,6 +66,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           pendingLookups(),
           accessController(),
           checkExpiredDiscoveryEntriesTimer(ioService),
+          isLocalCapabilitiesDirectoryPersistencyEnabled(
+                  clusterControllerSettings.isLocalCapabilitiesDirectoryPersistencyEnabled()),
           freshnessUpdateTimer(ioService),
           clusterControllerId(clusterControllerId)
 {
@@ -748,6 +750,14 @@ void LocalCapabilitiesDirectory::updatePersistedFile()
 
 void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& fileName)
 {
+    if (!isLocalCapabilitiesDirectoryPersistencyEnabled) {
+        return;
+    }
+
+    if (fileName.empty()) {
+        return;
+    }
+
     try {
         joynr::util::saveStringToFile(
                 fileName, joynr::serializer::serializeToJson(localCapabilities));
@@ -758,8 +768,17 @@ void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& 
 
 void LocalCapabilitiesDirectory::loadPersistedFile()
 {
+    if (!isLocalCapabilitiesDirectoryPersistencyEnabled) {
+        return;
+    }
+
     const std::string persistencyFile =
             clusterControllerSettings.getLocalCapabilitiesDirectoryPersistenceFilename();
+
+    if (persistencyFile.empty()) { // Persistency disabled
+        return;
+    }
+
     std::string jsonString;
     try {
         jsonString = joynr::util::loadStringFromFile(persistencyFile);

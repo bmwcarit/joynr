@@ -81,6 +81,7 @@ class JOYNR_EXPORT PublicationManager : public std::enable_shared_from_this<Publ
 public:
     PublicationManager(boost::asio::io_service& ioService,
                        std::weak_ptr<IMessageSender> messageSender,
+                       bool enableSubscriptionStorage,
                        std::uint64_t ttlUplift = 0,
                        int maxThreads = 1);
     virtual ~PublicationManager();
@@ -263,6 +264,9 @@ private:
     mutable ReadWriteLock broadcastFilterLock;
 
     std::uint64_t ttlUplift;
+
+    // Configuration if persistency is enabled or not
+    bool enableSubscriptionStorage;
 
     // PublisherRunnables are used to send publications via a ThreadPool
     class PublisherRunnable;

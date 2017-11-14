@@ -78,6 +78,7 @@ public:
         singleThreadedIOService->start();
         clusterControllerSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(100);
         settings.set(ClusterControllerSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(), 200);
+        settings.set(ClusterControllerSettings::SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(), true);
         localCapabilitiesDirectory =
                 std::make_unique<LocalCapabilitiesDirectory>(clusterControllerSettings,
                                                              capabilitiesClient,

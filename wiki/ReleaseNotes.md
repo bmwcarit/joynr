@@ -1,3 +1,16 @@
+# joynr 0.32.0
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Disabled persistency for the routing table, local discovery cache and multicast
+  receiver directory by default. Persistency for subscriptions is still enabled. The
+  corresponding properties are called `lib-joynr/message-router-persistency`,
+  `lib-joynr/local-capabilities-directory-persistency-enabled`,
+  `cluster-controller/multicast-receiver-directory-persistency-enabled` and
+  `lib-joynr/subscription-persistency`.
+
 # joynr 0.31.1
 
 ## API relevant changes

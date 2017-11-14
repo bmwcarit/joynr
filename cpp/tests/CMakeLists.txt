@@ -56,6 +56,8 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "MessagingSettingsDiscoveryEntryExpiryIntervalMs.settings"
         "libjoynrSystemIntegration1.settings"
         "libjoynrSystemIntegration2.settings"
+        "persistency-cc-disabled.settings"
+        "persistency-cc-enabled.settings"
         "ca.crt"
         "testclient.pem"
     )

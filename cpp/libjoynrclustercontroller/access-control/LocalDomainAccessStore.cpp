@@ -634,6 +634,7 @@ bool LocalDomainAccessStore::onlyWildcardOperations(const std::string& userId,
 void LocalDomainAccessStore::persistToFile() const
 {
     if (persistenceFileName.empty()) {
+        JOYNR_LOG_TRACE(logger(), "No persistency specified");
         return;
     }
     try {

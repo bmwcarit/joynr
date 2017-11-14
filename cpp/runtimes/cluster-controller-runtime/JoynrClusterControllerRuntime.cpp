@@ -293,6 +293,7 @@ void JoynrClusterControllerRuntime::init()
             messagingSettings.getMessagingPropertiesPersistenceFilename());
     std::string clusterControllerId = persist.getChannelId();
     std::string receiverId = persist.getReceiverId();
+
     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
 
     if (doHttpMessaging) {
@@ -355,9 +356,12 @@ void JoynrClusterControllerRuntime::init()
             std::move(addressCalculator),
             globalClusterControllerAddress,
             systemServicesSettings.getCcMessageNotificationProviderParticipantId(),
+            libjoynrSettings.isMessageRouterPersistencyEnabled(),
             std::move(transportStatuses));
     ccMessageRouter->init();
-    ccMessageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
+    if (libjoynrSettings.isMessageRouterPersistencyEnabled()) {
+        ccMessageRouter->loadRoutingTable(libjoynrSettings.getMessageRouterPersistenceFilename());
+    }
     ccMessageRouter->loadMulticastReceiverDirectory(
             clusterControllerSettings.getMulticastReceiverDirectoryPersistenceFilename());
 
@@ -507,9 +511,11 @@ void JoynrClusterControllerRuntime::init()
       * libJoynr side
       *
       */
-    publicationManager = std::make_shared<PublicationManager>(singleThreadIOService->getIOService(),
-                                                              messageSender,
-                                                              messagingSettings.getTtlUpliftMs());
+    publicationManager = std::make_shared<PublicationManager>(
+            singleThreadIOService->getIOService(),
+            messageSender,
+            libjoynrSettings.isSubscriptionPersistencyEnabled(),
+            messagingSettings.getTtlUpliftMs());
     publicationManager->loadSavedAttributeSubscriptionRequestsMap(
             libjoynrSettings.getSubscriptionRequestPersistenceFilename());
     publicationManager->loadSavedBroadcastSubscriptionRequestsMap(

@@ -59,11 +59,12 @@ public:
             mockProvider(new MockProvider()),
             domain("testDomain"),
             expectedParticipantId("testParticipantId"),
+            enablePersistency(true),
             singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
             mockMessageRouter(new MockMessageRouter(singleThreadedIOService->getIOService())),
             expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION),
             mockMessageSender(std::make_shared<MockMessageSender>()),
-            pubManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), mockMessageSender))
+            pubManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), mockMessageSender, enablePersistency))
     {
         singleThreadedIOService->start();
     }
@@ -105,6 +106,7 @@ protected:
     std::shared_ptr<MockProvider> mockProvider;
     std::string domain;
     std::string expectedParticipantId;
+    const bool enablePersistency;
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     const types::Version expectedProviderVersion;

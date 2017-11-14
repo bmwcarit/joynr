@@ -260,6 +260,7 @@ private:
     std::weak_ptr<IAccessController> accessController;
 
     boost::asio::steady_timer checkExpiredDiscoveryEntriesTimer;
+    const bool isLocalCapabilitiesDirectoryPersistencyEnabled;
 
     void scheduleCleanupTimer();
     void checkExpiredDiscoveryEntries(const boost::system::error_code& errorCode);

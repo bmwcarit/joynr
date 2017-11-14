@@ -54,9 +54,10 @@ public:
         providerParticipantId("providerParticipantId"),
         proxyParticipantId("proxyParticipantId"),
         subscriptionId("subscriptionId"),
+        persistencyEnabled(true),
         mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
         messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
-        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender)),
+        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, persistencyEnabled)),
         publicationSender(std::make_shared<MockPublicationSender>()),
         request(),
         subscriptionBroadcastListener(std::make_shared<UnicastBroadcastListener>(subscriptionId, publicationManager)),
@@ -120,6 +121,7 @@ protected:
     std::string providerParticipantId;
     std::string proxyParticipantId;
     std::string subscriptionId;
+    const bool persistencyEnabled;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::shared_ptr<IMessageSender> messageSender;
     std::shared_ptr<PublicationManager> publicationManager;

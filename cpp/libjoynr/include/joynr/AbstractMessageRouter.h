@@ -123,6 +123,7 @@ protected:
                           std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                           boost::asio::io_service& ioService,
                           std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+                          bool persistRoutingTable,
                           int maxThreads = 1,
                           std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
                           std::unique_ptr<MessageQueue<std::string>> messageQueue =
@@ -168,6 +169,7 @@ protected:
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
     MessagingSettings messagingSettings;
+    bool persistRoutingTable;
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
     std::shared_ptr<ThreadPoolDelayedScheduler> messageScheduler;
     std::unique_ptr<MessageQueue<std::string>> messageQueue;
