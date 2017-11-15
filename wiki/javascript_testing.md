@@ -138,12 +138,6 @@ Start mosquitto:
 mosquitto -c src/test/resources/mosquitto-test.conf -v
 ```
 
-Start joynr http infrastructure:
-
-```
-mvn jetty:run
-```
-
 Start joynr mqtt infrastructure:
 
 ```
