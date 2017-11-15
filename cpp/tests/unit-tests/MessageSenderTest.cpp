@@ -74,6 +74,9 @@ public:
         singleThreadedIOService->start();
     }
 
+    ~MessageSenderTest() {
+        singleThreadedIOService->stop();
+    }
 
     void SetUp(){
         postFix = "_" + util::createUuid();
