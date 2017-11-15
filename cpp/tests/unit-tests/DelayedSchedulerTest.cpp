@@ -106,6 +106,7 @@ TEST(DelayedSchedulerTest, startAndShutdownWithoutWork)
     auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
 
     scheduler->shutdown();
+    singleThreadedIOService->stop();
 }
 
 TEST(DelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCorrect)
@@ -131,6 +132,7 @@ TEST(DelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCo
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     EXPECT_CALL(*runnable2, dtorCalled()).Times(1);
+    singleThreadedIOService->stop();
 }
 
 TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
@@ -150,6 +152,7 @@ TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
     scheduler->shutdown();
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    singleThreadedIOService->stop();
 }
 
 TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
@@ -168,6 +171,7 @@ TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(100)));
 
     scheduler->shutdown();
+    singleThreadedIOService->stop();
 }
 
 TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
@@ -186,6 +190,7 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     scheduler->shutdown();
+    singleThreadedIOService->stop();
 }
 
 TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
@@ -207,4 +212,5 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(100)));
 
     scheduler->shutdown();
+    singleThreadedIOService->stop();
 }
