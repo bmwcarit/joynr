@@ -41,6 +41,10 @@ public:
     {
         singleThreadedIOService->start();
     }
+
+    ~SingleThreadedDelayedSchedulerTest() {
+        singleThreadedIOService->stop();
+    }
 protected:
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
 };
