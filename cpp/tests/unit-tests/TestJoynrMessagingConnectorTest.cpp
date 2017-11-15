@@ -72,6 +72,10 @@ public:
         singleThreadedIOService->start();
     }
 
+    ~TestJoynrMessagingConnectorTest() {
+        singleThreadedIOService->stop();
+    }
+
     // sets the expectations on the call expected on the MessageSender from the connector
     testing::internal::TypedExpectation<void(
             const std::string&, // sender participant ID
