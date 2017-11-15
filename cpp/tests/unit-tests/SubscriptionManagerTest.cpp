@@ -66,6 +66,10 @@ public:
     {
         singleThreadedIOService->start();
     }
+
+    ~SubscriptionManagerTest() {
+        singleThreadedIOService->stop();
+    }
 protected:
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
 };
