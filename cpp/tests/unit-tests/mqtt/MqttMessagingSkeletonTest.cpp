@@ -79,6 +79,10 @@ public:
         singleThreadedIOService->start();
     }
 
+    ~MqttMessagingSkeletonTest() {
+        singleThreadedIOService->stop();
+    }
+
     void SetUp(){
         // create a fake message
         std::string postFix;
