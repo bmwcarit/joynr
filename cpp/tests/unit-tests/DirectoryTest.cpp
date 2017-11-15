@@ -74,6 +74,10 @@ public:
         singleThreadedIOService->start();
     }
 
+    ~DirectoryTest() {
+        singleThreadedIOService->stop();
+    }
+
     void SetUp(){
         testValue = std::make_shared<std::string>("testValue");
         secondTestValue = std::make_shared<std::string>("secondTestValue");
