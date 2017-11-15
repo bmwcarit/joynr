@@ -59,6 +59,10 @@ public:
         singleThreadedIOService->start();
     }
 
+    ~MqttMessagingSkeletonTtlUpliftTest() {
+        singleThreadedIOService->stop();
+    }
+
     void SetUp(){
         joynr::system::RoutingTypes::MqttAddress replyAddress;
         replyAddressSerialized = joynr::serializer::serializeToJson(replyAddress);
