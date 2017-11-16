@@ -23,6 +23,7 @@
 #include <thread>
 
 #include <boost/asio/io_service.hpp>
+#include "joynr/Semaphore.h"
 
 namespace joynr
 {
@@ -30,15 +31,21 @@ namespace joynr
 class SingleThreadedIOService : public std::enable_shared_from_this<SingleThreadedIOService>
 {
 public:
-    SingleThreadedIOService()
+    SingleThreadedIOService(std::shared_ptr<Semaphore> destructed = nullptr)
             : std::enable_shared_from_this<SingleThreadedIOService>(),
               ioService(),
               ioServiceWork(),
-              ioServiceThread()
+              ioServiceThread(),
+              destructed(destructed)
     {
     }
 
-    ~SingleThreadedIOService() = default;
+    ~SingleThreadedIOService()
+    {
+        if (destructed) {
+            destructed->notify();
+        }
+    }
 
     void start()
     {
@@ -77,6 +84,7 @@ private:
     boost::asio::io_service ioService;
     std::unique_ptr<boost::asio::io_service::work> ioServiceWork;
     std::thread ioServiceThread;
+    std::shared_ptr<Semaphore> destructed;
 };
 
 } // namespace joynr
