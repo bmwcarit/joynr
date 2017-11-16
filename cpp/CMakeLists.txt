@@ -561,6 +561,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Winvalid-pch -Wunsafe-loop-optimizations -Wmissing-include-dirs")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wmissing-braces -Wpacked -Wredundant-decls -Wstack-protector")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wswitch-enum -Wuninitialized -Wformat-security")
+    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wfatal-errors")
     if(${WIN32})
             # This setting does not work in linux:
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX_FLAGS} -enable-auto-import")
@@ -1014,4 +1015,3 @@ install(
     FILES "${CMAKE_CURRENT_SOURCE_DIR}/NOTICE-CPP"
     DESTINATION "${CMAKE_INSTALL_DOCDIR}"
 )
-
