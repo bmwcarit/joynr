@@ -19,8 +19,11 @@
 
 #include <cstdint>
 #include <string>
+#include <thread>
+#include <chrono>
 
 #include <gtest/gtest.h>
+#include <gmock/gmock-matchers.h>
 
 #include "joynr/CapabilitiesStorage.h"
 #include "joynr/types/Version.h"
@@ -106,4 +109,37 @@ TYPED_TEST(CapabilitiesStorageTest, insertWithSameParticipantIdOverwritesExistin
     auto optionalEntry = storage.lookupByParticipantId(this->participantId);
     ASSERT_TRUE(optionalEntry);
     EXPECT_EQ(this->entry, *optionalEntry);
+}
+
+TYPED_TEST(CapabilitiesStorageTest, removeExpiredEntries)
+{
+    TypeParam storage;
+    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+    joynr::types::DiscoveryEntry entry1(this->version,
+                                        this->domain,
+                                        "interface1",
+                                        "participantId1",
+                                        types::ProviderQos(),
+                                        0,
+                                        now + 100,
+                                        "publicKeyId");
+    joynr::types::DiscoveryEntry entry2(this->version,
+                                        this->domain,
+                                        "interface2",
+                                        "participantId2",
+                                        types::ProviderQos(),
+                                        0,
+                                        now + 10000,
+                                        "publicKeyId");
+
+    storage.insert(entry1);
+    storage.insert(entry2);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+    auto removedEntries = storage.removeExpired();
+
+    EXPECT_THAT(removedEntries, Contains(entry1));
+    EXPECT_THAT(removedEntries, Not(Contains(entry2)));
 }

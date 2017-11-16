@@ -947,8 +947,8 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
 
     std::lock_guard<std::mutex> lock(cacheLock);
 
-    std::size_t removedCount = localCapabilities.removeExpired();
-    removedCount += globalCapabilities.removeExpired();
+    std::size_t removedCount = localCapabilities.removeExpired().size();
+    removedCount += globalCapabilities.removeExpired().size();
 
     if (removedCount > 0) {
         updatePersistedFile();
