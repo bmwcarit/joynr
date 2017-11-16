@@ -68,11 +68,11 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", function() {
         myOperation.registerOperation(operationSpy);
 
         /*
-             * Make sure 'TestEnum' is properly registered as a type.
-             * Just requiring the module is insufficient since the
-             * automatically generated code called async methods.
-             * Execution might be still in progress.
-             */
+         * Make sure 'TestEnum' is properly registered as a type.
+         * Just requiring the module is insufficient since the
+         * automatically generated code called async methods.
+         * Execution might be still in progress.
+         */
         TypeRegistrySingleton.getInstance()
             .getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000)
             .then(function() {

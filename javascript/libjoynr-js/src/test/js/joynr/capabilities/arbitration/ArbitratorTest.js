@@ -262,9 +262,9 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", function() {
             .then(function() {
                 expect(capDiscoverySpy.lookup).toHaveBeenCalled();
                 /* The arbitrator.startArbitration does a deep copy of its arguments.
-                                 * Thus, two discoveryScope objects cannot be compared, as during deep copy
-                                 * complex types are created as pure objects
-                                 */
+                 * Thus, two discoveryScope objects cannot be compared, as during deep copy
+                 * complex types are created as pure objects
+                 */
                 //expect(capDiscoverySpy.lookup.calls.mostRecent().args[0]).toBe([domain]);
                 expect(capDiscoverySpy.lookup.calls.mostRecent().args[0]).toEqual([domain]);
                 //expect(capDiscoverySpy.lookup.calls.mostRecent().args[1]).toBe(interfaceName);

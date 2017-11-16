@@ -326,17 +326,17 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     }
 
     /**
-                 * Gives the list of subscriptions for the given providerId and attribute name
-                 * @name PublicationManager#getSubscriptionsForProviderAttribute
-                 * @private
-                 *
-                 * @param {String}
-                 *            providerId
-                 * @param {String}
-                 *            attributeName
-                 * @returns {Array} a list of subscriptions
-                              e.g. [{ participantId : "...", attributeName : "..." }]
-                 */
+     * Gives the list of subscriptions for the given providerId and attribute name
+     * @name PublicationManager#getSubscriptionsForProviderAttribute
+     * @private
+     *
+     * @param {String}
+     *            providerId
+     * @param {String}
+     *            attributeName
+     * @returns {Array} a list of subscriptions
+                  e.g. [{ participantId : "...", attributeName : "..." }]
+     */
     function getSubscriptionsForProviderAttribute(providerId, attributeName) {
         var key = getProviderIdAttributeKey(providerId, attributeName);
         // make sure the mapping exists, so that subscriptions can register here
@@ -453,17 +453,17 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     // Broadcast specific implementation
 
     /**
-                 * Gives the list of subscriptions for the given providerId and event name
-                 * @name PublicationManager#getSubscriptionsForProviderEvent
-                 * @private
-                 *
-                 * @param {String}
-                 *            providerId
-                 * @param {String}
-                 *            eventName
-                 * @returns {Array} a list of subscriptions
-                              e.g. [{ participantId : "...", eventName : "..." }]
-                 */
+     * Gives the list of subscriptions for the given providerId and event name
+     * @name PublicationManager#getSubscriptionsForProviderEvent
+     * @private
+     *
+     * @param {String}
+     *            providerId
+     * @param {String}
+     *            eventName
+     * @returns {Array} a list of subscriptions
+                  e.g. [{ participantId : "...", eventName : "..." }]
+     */
     function getSubscriptionsForProviderEvent(providerId, eventName) {
         var key = getProviderIdEventKey(providerId, eventName);
         // make sure the mapping exists, so that subscriptions can register here
@@ -877,8 +877,8 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
     };
 
     /* the parameter "callbackDispatcher" is optional, as in case of restoring
-                 * subscriptions, no reply must be sent back via the dispatcher
-                 */
+     * subscriptions, no reply must be sent back via the dispatcher
+     */
     function callbackDispatcherAsync(reply, callbackDispatcher) {
         function asyncCallbackDispatcher() {
             callbackDispatcher(new SubscriptionReply(reply));

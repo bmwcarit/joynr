@@ -124,11 +124,11 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         dispatcher.registerMessageRouter(messageRouter);
 
         /*
-                             * Make sure 'TestEnum' is properly registered as a type.
-                             * Just requiring the module is insufficient since the
-                             * automatically generated code called async methods.
-                             * Execution might be still in progress.
-                             */
+         * Make sure 'TestEnum' is properly registered as a type.
+         * Just requiring the module is insufficient since the
+         * automatically generated code called async methods.
+         * Execution might be still in progress.
+         */
         TypeRegistrySingleton.getInstance()
             .getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000)
             .then(function() {
@@ -588,12 +588,12 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         var subscriptionReply = new SubscriptionReply(payload);
 
         /*
-                                     * The dispatcher.receive() based on the message type calls
-                                     * publicationManager.handleSubscriptionRequest()
-                                     * and hands over a callback that invokes sendSubscriptionReply().
-                                     * The resulting message is finally sent out using
-                                     * clusterControllerMessagingStub.transmit().
-                                     */
+         * The dispatcher.receive() based on the message type calls
+         * publicationManager.handleSubscriptionRequest()
+         * and hands over a callback that invokes sendSubscriptionReply().
+         * The resulting message is finally sent out using
+         * clusterControllerMessagingStub.transmit().
+         */
 
         publicationManager.handleSubscriptionRequest.and.callFake(function(
             proxyId,
@@ -607,10 +607,10 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         dispatcher.receive(joynrMessage);
 
         /*
-                                     * Note: We can directly expect stuff here only just because
-                                     * the jasmine spies do not emulate async action which would
-                                     * otherwise occur in real code.
-                                     */
+         * Note: We can directly expect stuff here only just because
+         * the jasmine spies do not emulate async action which would
+         * otherwise occur in real code.
+         */
         expect(publicationManager.handleSubscriptionRequest).toHaveBeenCalled();
         expect(publicationManager.handleSubscriptionRequest).toHaveBeenCalledWith(
             proxyId,

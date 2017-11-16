@@ -88,8 +88,8 @@ function returnValueToResponseArray(returnValue, outputParameter) {
         return [];
     }
     /*
-                 * In case of multiple output parameters, we expect that the provider returns a key-value-pair
-                 */
+     * In case of multiple output parameters, we expect that the provider returns a key-value-pair
+     */
     return MethodUtil.transformParameterMapToArray(returnValue || {}, outputParameter).params;
 }
 /**
@@ -215,10 +215,10 @@ function ProviderOperation(parent, implementation, operationName, operationSigna
 
             try {
                 /*
-                                 * call the operation function
-                                 * may return either promise (preferred) or direct result
-                                 * and may possibly also throw exception in the latter case.
-                                 */
+                 * call the operation function
+                 * may return either promise (preferred) or direct result
+                 * and may possibly also throw exception in the latter case.
+                 */
                 result = privateOperationFunc(namedArguments);
                 if (Util.isPromise(result)) {
                     // return promise
@@ -229,11 +229,11 @@ function ProviderOperation(parent, implementation, operationName, operationSigna
                 return returnValueToResponseArray(result, signature.outputParameter || []);
             } catch (exceptionOrErrorEnumValue) {
                 /*
-                                 * If the method was implemented synchronously, we can get an
-                                 * exception. The content of the exception is either an instance
-                                 * of ProviderRuntimeException or an error enumeration value. In
-                                 * the latter case, it must be wrapped into an ApplicationException.
-                                 */
+                 * If the method was implemented synchronously, we can get an
+                 * exception. The content of the exception is either an instance
+                 * of ProviderRuntimeException or an error enumeration value. In
+                 * the latter case, it must be wrapped into an ApplicationException.
+                 */
                 if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
                     exception = exceptionOrErrorEnumValue;
                 } else if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {

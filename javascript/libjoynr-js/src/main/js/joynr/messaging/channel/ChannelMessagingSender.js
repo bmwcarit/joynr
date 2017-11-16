@@ -230,16 +230,15 @@ function ChannelMessagingSender(settings) {
     };
 
     /**
-         * Resend in the event of an error, and call the error callback if the ttl is
-         expired.
-         *
-         * @name ChannelMessagingSender#resend
-         * @function
-         * @private
-         *
-         * @param {JoynrMessage}
-         * queuedMessage
-         */
+     * Resend in the event of an error, and call the error callback if the ttl is expired.
+     *
+     * @name ChannelMessagingSender#resend
+     * @function
+     * @private
+     *
+     * @param {JoynrMessage}
+     * queuedMessage
+     */
     function resend(queuedMessage) {
         if (terminated) {
             queuedMessage.reject(new Error("ChannelMessagingSender is already shut down"));

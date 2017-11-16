@@ -121,11 +121,11 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
         ).buildFunction();
 
         /*
-                             * Make sure 'TestEnum' is properly registered as a type.
-                             * Just requiring the module is insufficient since the
-                             * automatically generated code called async methods.
-                             * Execution might be still in progress.
-                             */
+         * Make sure 'TestEnum' is properly registered as a type.
+         * Just requiring the module is insufficient since the
+         * automatically generated code called async methods.
+         * Execution might be still in progress.
+         */
         TypeRegistrySingleton.getInstance()
             .getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000)
             .then(function() {
@@ -256,8 +256,8 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", function() {
                 checkSpy(spy);
                 var expectedSpy = expect(spy.onFulfilled);
                 /* The following line takes all arguments expect the first 3 and passes them to the toHaveBeenCalledWith function.
-                                * This way, it is possible to use the testForCorrectReturnValues function with a
-                                */
+                 * This way, it is possible to use the testForCorrectReturnValues function with a
+                 */
                 expectedSpy.toHaveBeenCalledWith.apply(expectedSpy, Array.prototype.slice.call(originalArguments, 3));
             })
             .catch(function() {

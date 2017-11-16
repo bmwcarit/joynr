@@ -319,14 +319,14 @@ function RequestReplyManager(dispatcher, typeRegistry) {
         }
 
         /* Asynchronously pass the result back to the dispatcher
-                         *
-                         * Call operations can be a sync or async method. In the sync case,
-                         * the return value of the call operation
-                         * is simply the result of the call. In the async case, the provider has
-                         * the possibility to return a promise
-                         * object. In this case, we wait until the promise object is resolved
-                         * and call then the callbackDispatcher
-                         */
+         *
+         * Call operations can be a sync or async method. In the sync case,
+         * the return value of the call operation
+         * is simply the result of the call. In the async case, the provider has
+         * the possibility to return a promise
+         * object. In this case, we wait until the promise object is resolved
+         * and call then the callbackDispatcher
+         */
         function resultSuccess(response) {
             callbackDispatcher(
                 new Reply({
