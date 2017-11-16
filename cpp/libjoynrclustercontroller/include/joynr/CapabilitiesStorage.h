@@ -155,17 +155,17 @@ public:
 
     /**
      * @brief removes expired entries based on expiryDate
-     * @return number of removed elements
+     * @return expired/removed entries
      */
-    std::size_t removeExpired()
+    std::vector<DiscoveryEntry> removeExpired()
     {
         auto& index = container.template get<tags::ExpiryDate>();
         auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
                            std::chrono::system_clock::now().time_since_epoch()).count();
         auto last = index.lower_bound(now);
-        std::size_t count = std::distance(index.begin(), last);
+        std::vector<DiscoveryEntry> removedEntries(index.begin(), last);
         index.erase(index.begin(), last);
-        return count;
+        return removedEntries;
     }
 
 protected:
