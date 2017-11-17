@@ -169,7 +169,8 @@ struct Logger
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
         spdlog = spdlog::create(prefix, begin(sinks), end(sinks));
-        spdlog->set_pattern("%Y-%m-%d %H:%M:%S.%e [thread ID:%t] [%l] %n %v");
+        spdlog->set_pattern(
+                "%Y-%m-%d %H:%M:%S.%e [thread ID:%t] [%l] %n %v", spdlog::pattern_time_type::utc);
     }
 
     template <typename Parent>
