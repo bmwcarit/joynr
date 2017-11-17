@@ -51,6 +51,7 @@ public class MqttPahoClientFactory implements MqttClientFactory {
     private int maxMsgSizeBytes;
     private ScheduledExecutorService scheduledExecutorService;
     private MqttClientIdProvider clientIdProvider;
+    private boolean cleanSession;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -61,6 +62,7 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS) int timeToWaitMs,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT) int maxMsgsInflight,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES) int maxMsgSizeBytes,
+                                 @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                  @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                  MqttClientIdProvider mqttClientIdProvider) {
         this.ownAddress = ownAddress;
@@ -72,6 +74,7 @@ public class MqttPahoClientFactory implements MqttClientFactory {
         this.timeToWaitMs = timeToWaitMs;
         this.maxMsgsInflight = maxMsgsInflight;
         this.maxMsgSizeBytes = maxMsgSizeBytes;
+        this.cleanSession = cleanSession;
     }
 
     @Override
@@ -100,7 +103,8 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                             connectionTimeoutSec,
                                             timeToWaitMs,
                                             maxMsgsInflight,
-                                            maxMsgSizeBytes);
+                                            maxMsgSizeBytes,
+                                            cleanSession);
         } catch (MqttException e) {
             logger.error("Create MqttClient failed", e);
         }

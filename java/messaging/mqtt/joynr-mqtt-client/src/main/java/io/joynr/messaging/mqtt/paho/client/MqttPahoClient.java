@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import io.joynr.messaging.mqtt.MqttMessagingStub;
+
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 
@@ -54,18 +55,21 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private int timeToWaitMs;
     private int maxMsgsInflight;
     private int maxMsgSizeBytes;
+    private boolean cleanSession;
 
     private Set<String> subscribedTopics = new HashSet<>();
 
     private volatile boolean shutdown = false;
 
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttPahoClient(MqttClient mqttClient,
                           int reconnectSleepMS,
                           int keepAliveTimerSec,
                           int connectionTimeoutSec,
                           int timeToWaitMs,
                           int maxMsgsInflight,
-                          int maxMsgSizeBytes) throws MqttException {
+                          int maxMsgSizeBytes,
+                          boolean cleanSession) throws MqttException {
         this.mqttClient = mqttClient;
         this.reconnectSleepMs = reconnectSleepMS;
         this.keepAliveTimerSec = keepAliveTimerSec;
@@ -73,6 +77,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         this.timeToWaitMs = timeToWaitMs;
         this.maxMsgsInflight = maxMsgsInflight;
         this.maxMsgSizeBytes = maxMsgSizeBytes;
+        this.cleanSession = cleanSession;
     }
 
     @Override
@@ -85,9 +90,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 mqttClient.setManualAcks(true);
                 mqttClient.connect(getConnectOptions());
                 logger.debug("MQTT Connected client");
-                for (String topic : subscribedTopics) {
-                    subscribe(topic);
-                }
+                reestablishSubscriptions();
             } catch (MqttException mqttError) {
                 logger.error("MQTT Connect failed. Error code {}", mqttError.getReasonCode(), mqttError);
                 switch (mqttError.getReasonCode()) {
@@ -124,13 +127,22 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         }
     }
 
+    private void reestablishSubscriptions() {
+        logger.debug("reestablishing {} Subscriptions for MQTT after restart", subscribedTopics.size());
+        Set<String> oldSubscribedTopics = subscribedTopics;
+        subscribedTopics = new HashSet<>();
+        for (String topic : oldSubscribedTopics) {
+            subscribe(topic);
+        }
+    }
+
     private MqttConnectOptions getConnectOptions() {
         MqttConnectOptions options = new MqttConnectOptions();
         options.setAutomaticReconnect(false);
         options.setConnectionTimeout(connectionTimeoutSec);
         options.setKeepAliveInterval(keepAliveTimerSec);
         options.setMaxInflight(maxMsgsInflight);
-        options.setCleanSession(false);
+        options.setCleanSession(cleanSession);
         return options;
     }
 
