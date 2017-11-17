@@ -139,6 +139,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMess
     EXPECT_FALSE(messagingStubFactory->contains(address));
     EXPECT_FALSE(messagingStubFactory->contains(addressCopy));
     EXPECT_TRUE(messagingStubFactory->create(address).get() == nullptr);
+    messagingStubFactory->shutdown();
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub) {
