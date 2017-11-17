@@ -208,7 +208,7 @@ bool LibJoynrMessageRouter::isParentMessageRouterSet()
     if (!parentRouter) {
         JOYNR_LOG_TRACE(logger(),
                         "Parent message router not set. Discard this message if it appears "
-                        "during libJoynr initlization. It can be related to a configuration "
+                        "during libJoynr initialization. It can be related to a configuration "
                         "problem. Check setting file.");
         return false;
     }
