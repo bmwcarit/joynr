@@ -263,6 +263,7 @@ private:
 
     void scheduleCleanupTimer();
     void checkExpiredDiscoveryEntries(const boost::system::error_code& errorCode);
+    std::string joinToString(const std::vector<types::DiscoveryEntry>& discoveryEntries) const;
     void remove(const types::DiscoveryEntry& discoveryEntry);
     boost::asio::steady_timer freshnessUpdateTimer;
     std::string clusterControllerId;

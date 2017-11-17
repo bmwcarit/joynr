@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <unordered_set>
+#include <ostream>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/asio/io_service.hpp>
@@ -947,14 +948,40 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
 
     std::lock_guard<std::mutex> lock(cacheLock);
 
-    std::size_t removedCount = localCapabilities.removeExpired().size();
-    removedCount += globalCapabilities.removeExpired().size();
+    auto removedLocalCapabilities = localCapabilities.removeExpired();
+    auto removedGlobalCapabilities = globalCapabilities.removeExpired();
 
-    if (removedCount > 0) {
+    if (!removedLocalCapabilities.empty()) {
+        JOYNR_LOG_DEBUG(logger(),
+                        "Following local discovery entries expired: {}",
+                        joinToString(removedLocalCapabilities));
+    }
+
+    if (!removedGlobalCapabilities.empty()) {
+        JOYNR_LOG_DEBUG(logger(),
+                        "Following global discovery entries expired: {}",
+                        joinToString(removedGlobalCapabilities));
+    }
+
+    if (!removedLocalCapabilities.empty() || !removedGlobalCapabilities.empty()) {
         updatePersistedFile();
     }
 
     scheduleCleanupTimer();
+}
+
+std::string LocalCapabilitiesDirectory::joinToString(
+        const std::vector<types::DiscoveryEntry>& discoveryEntries) const
+{
+    std::ostringstream outputStream;
+
+    std::transform(
+            discoveryEntries.cbegin(),
+            discoveryEntries.cend(),
+            std::ostream_iterator<std::string>(outputStream, ", "),
+            [](const types::DiscoveryEntry& discoveryEntry) { return discoveryEntry.toString(); });
+
+    return outputStream.str();
 }
 
 LocalCapabilitiesCallback::LocalCapabilitiesCallback(
