@@ -80,7 +80,7 @@ public:
         messageRouter = createMessageRouter();
 
         JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-        mutableMessage.setExpiryDate(now + std::chrono::milliseconds(100));
+        mutableMessage.setExpiryDate(now + std::chrono::milliseconds(500));
         mutableMessage.setType(Message::VALUE_MESSAGE_TYPE_ONE_WAY());
     }
 
