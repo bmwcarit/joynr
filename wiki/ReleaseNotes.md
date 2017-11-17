@@ -10,6 +10,8 @@ None.
   `lib-joynr/local-capabilities-directory-persistency-enabled`,
   `cluster-controller/multicast-receiver-directory-persistency-enabled` and
   `lib-joynr/subscription-persistency`.
+* **[C++]** Update spdlog to interim version >> 0.14.0
+  [Git commit 799ba2a57bb16b921099bd9ab64a513e4ebe4217]
 
 # joynr 0.31.1
 
