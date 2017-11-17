@@ -3,6 +3,11 @@
 ## API relevant changes
 None.
 
+## Configuration property changes
+* **[Java]** See the [Java Configuration Reference](JavaSettings.md) for
+  details about the newly introduced property:
+  * `PROPERTY_KEY_MQTT_CLEAN_SESSION`
+
 ## Other changes
 * **[C++]** Disabled persistency for the routing table, local discovery cache and multicast
   receiver directory by default. Persistency for subscriptions is still enabled. The

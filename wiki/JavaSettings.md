@@ -459,6 +459,15 @@ A message larger than this size is discarded. A value of 0 means that the check 
 * **User property**: `joynr.messaging.mqtt.maxmqttmessagesizebytes`
 * **Default value**: `0`
 
+### `PROPERTY_KEY_MQTT_CLEAN_SESSION`
+Configures whether the mqtt client shall establish a clean session to the broker.
+Subscriptions will be reestablished by joynr in any case.
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `messaging/joynr.messaging.mqtt.cleansession`
+* **Default value**: `false`
+
 ## SystemServicesSettings
 
 ### `PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID`
