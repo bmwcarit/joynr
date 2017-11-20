@@ -113,6 +113,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
     var localAddress;
     var TWO_DAYS_IN_MS = 172800000;
     var keychain = provisioning.keychain;
+    var internalShutdown;
 
     // this is required at load time of libjoynr
     typeRegistry = Object.freeze(TypeRegistrySingleton.getInstance());
@@ -469,8 +470,7 @@ function WebSocketLibjoynrRuntime(provisioning) {
         }
 
         function buildRoutingProxyOnSuccess(newRoutingProxy) {
-            messageRouter.setRoutingProxy(newRoutingProxy);
-            return newRoutingProxy;
+            return messageRouter.setRoutingProxy(newRoutingProxy);
         }
 
         discoveryProxyPromise = proxyBuilder
@@ -506,6 +506,9 @@ function WebSocketLibjoynrRuntime(provisioning) {
 
         function startOnFailure(error) {
             log.error("error starting up joynr: " + error);
+
+            internalShutdown();
+
             throw error;
         }
 
@@ -523,8 +526,8 @@ function WebSocketLibjoynrRuntime(provisioning) {
      * @throws {Error}
      *             if libjoynr is not in the STARTED state
      */
-    this.shutdown = function shutdown() {
-        if (joynrState !== JoynrStates.STARTED) {
+    internalShutdown = function shutdown() {
+        if (joynrState !== JoynrStates.STARTED && joynrState !== JoynrStates.STARTING) {
             throw new Error("Cannot shutdown libjoynr because it's currently \"" + joynrState + '"');
         }
         joynrState = JoynrStates.SHUTTINGDOWN;
@@ -572,6 +575,8 @@ function WebSocketLibjoynrRuntime(provisioning) {
         log.debug("joynr shut down");
         return Promise.resolve();
     };
+
+    this.shutdown = internalShutdown;
 
     // make every instance immutable
     return Object.freeze(this);
