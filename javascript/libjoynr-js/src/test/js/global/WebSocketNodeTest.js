@@ -25,20 +25,6 @@ var mod = require("module");
 var wscppSpy = jasmine.createSpy("wscppSyp");
 var overriddenRequire = mod.prototype.require;
 mod.prototype.require = function(md) {
-    if (md.endsWith("SmrfNode")) {
-        return {
-            serialize: function(message) {
-                var msg;
-                var callback = message.signingCallback;
-                if (callback && typeof callback === "function") {
-                    msg = "callback was called";
-                } else {
-                    msg = "callback wasn't called";
-                }
-                return msg;
-            }
-        };
-    }
     if (md.endsWith("wscpp")) {
         return wscppSpy;
     }

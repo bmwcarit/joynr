@@ -41,11 +41,14 @@ mod.prototype.require = function (md) {
     if (md === 'joynr') {
         return joynr;
     }
+    if (md.endsWith("SmrfNode")) {
+        return req("../test-classes/global/SmrfMock");
+    }
     if (md.endsWith('WebSocketNode')) {
         return req('../test-classes/global/WebSocketMock');
     }
     return req.apply(this, arguments);
-}
+};
 console.log('require config setup');
 var ProviderOperationTest = require('../test-classes/joynr/provider/ProviderOperationTest');
 var ProviderTest = require('../test-classes/joynr/provider/ProviderTest');

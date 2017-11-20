@@ -19,6 +19,8 @@
  */
 var JSONSerializer = require("../util/JSONSerializer");
 var JoynrMessage = require("./JoynrMessage");
+var LoggerFactory = require("../system/LoggerFactory");
+var log = LoggerFactory.getLogger("joynr.messaging.MessageSerializer");
 
 var MessageSerializer = {};
 
@@ -51,7 +53,7 @@ function useSmrf() {
         effort: true
     };
 
-    MessageSerializer.stringify = function(joynrMessage) {
+    MessageSerializer.stringify = function(joynrMessage, signingCallback) {
         var smrfMsg = {};
         var headerKey;
         smrfMsg.sender = joynrMessage.header.from;
@@ -66,7 +68,9 @@ function useSmrf() {
         smrfMsg.headers = {};
         smrfMsg.headers.t = joynrMessage.type;
         smrfMsg.headers.id = joynrMessage.header.msgId;
-        //  smrfMsg.signingCallback = signingCallback;
+        if (signingCallback) {
+            smrfMsg.signingCallback = signingCallback;
+        }
         if (joynrMessage.header.replyChannelId) {
             smrfMsg.headers.re = joynrMessage.header.replyChannelId;
         }
@@ -91,7 +95,7 @@ function useSmrf() {
 
     MessageSerializer.parse = function(data) {
         if (typeof data !== "object") {
-            throw new Error("unmarshalJoynrMessage received unsupported message.");
+            log.error("MessageSerializer received unsupported message.");
         } else {
             var headerKey;
             var smrfMsg;
