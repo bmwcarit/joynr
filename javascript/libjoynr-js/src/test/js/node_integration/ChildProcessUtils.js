@@ -1,5 +1,4 @@
-/*global postMessage: true, onmessage: true, document: false, window: false, initializeTest: true, startTest: true, terminateTest: true */
-/*jslint es5: true */
+/*jslint es5: true, node: true */
 
 /*
  * #%L
@@ -9,9 +8,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,122 +19,95 @@
  * #L%
  */
 
-var self = this,
-    ownWindow,
-    parentWindow,
-    listener,
-    workerId;
-var runtime;
+var ChildProcessUtils = {};
 
-var WorkerUtils = (function() {
-    var pub = {};
-
-    pub.postReady = function() {
-        postMessage({
-            type: "ready"
-        });
-    };
-
-    pub.postStarted = function(argument) {
-        var object = {
-            type: "started"
-        };
-        if (argument !== undefined) {
-            object.argument = argument;
-        }
-        postMessage(object);
-    };
-
-    pub.postLog = function(msg) {
-        postMessage({
-            type: "log",
-            level: "info",
-            message: msg
-        });
-    };
-
-    pub.postFinished = function() {
-        postMessage({
-            type: "finished"
-        });
-    };
-
-    return pub;
-})();
-
-/*
- * The ownWindow is used by the web worker to listen to incoming messages in case of intertab communication
- * For testing purposes, we immitate the own window on web worker side, allowing the joynr runtime to register for imcoming events
- * Next, wenn the main frame communicates joynr messages through the web worker postMessage API, these messages will be forwarded to registered event listeners
- */
-ownWindow = {
-    addEventListener: function(type, callback) {
-        if (type === "message") {
-            listener = callback;
-        }
-    },
-    removeEventListener: function(type, callback) {
-        if (type === "message" && listener === callback) {
-            listener = undefined;
-        }
-    }
+ChildProcessUtils.postReady = function() {
+    process.send({
+        type: "ready"
+    });
 };
 
-/*
- * The parent window is used by the web worker to postMessages in case of intertab communication
- * For testing purposes, we immitate the parent window, and directly forward the messages to be sent
- * to the main frame
- * The main frame itself implements the counterpart of this "tunnel", by forwarding incoming
- * messages from the web worker to its own window object
- */
-parentWindow = {
-    postMessage: function(message, origin) {
-        postMessage({
-            type: "message",
-            data: message.message
-        });
+ChildProcessUtils.postStarted = function(argument) {
+    var object = {
+        type: "started"
+    };
+    if (argument !== undefined) {
+        object.argument = argument;
     }
+    process.send(object);
 };
 
-onmessage = function(event) {
-    var msg = event.data;
-    if (msg.type === "initialize") {
-        if (!initializeTest) {
-            throw new Error("cannot initialize test, worker does not define an initializeTest method");
-        }
-        workerId = msg.workerId;
-        initializeTest(msg.provisioningSuffix, msg.domain, ownWindow, parentWindow).then(function(providedRuntime) {
-            runtime = providedRuntime;
-            WorkerUtils.postReady();
-        });
-    } else if (msg.type === "start") {
-        if (!startTest) {
-            throw new Error("cannot start test, worker does not define a startTest method");
-        }
-        startTest().then(function(argument) {
-            WorkerUtils.postStarted(argument);
-        });
-    } else if (msg.type === "terminate") {
-        if (!terminateTest) {
-            throw new Error("cannot terminate test, worker does not define a terminate method");
-        }
-        var workerFinished = function() {
-            WorkerUtils.postFinished();
-            self.close();
-        };
+ChildProcessUtils.postFinished = function() {
+    process.send({
+        type: "finished"
+    });
+};
 
-        terminateTest().then(function() {
-            return runtime.shutdown().then(workerFinished);
-        });
-    } else if (msg.type === "message") {
-        if (listener !== undefined) {
-            listener({
-                data: msg.message
+ChildProcessUtils.registerHandlers = function(initializeTest, startTest, terminateTest) {
+    var runtime;
+    var handler = function(msg) {
+        console.log(JSON.stringify(msg));
+        if (msg.type === "initialize") {
+            if (!initializeTest) {
+                throw new Error("cannot initialize test, child does not define an initializeTest method");
+            }
+            initializeTest(msg.provisioningSuffix, msg.domain).then(function(providedRuntime) {
+                runtime = providedRuntime;
+                ChildProcessUtils.postReady();
             });
+        } else if (msg.type === "start") {
+            if (!startTest) {
+                throw new Error("cannot start test, child does not define a startTest method");
+            }
+            startTest().then(function(argument) {
+                ChildProcessUtils.postStarted(argument);
+            });
+        } else if (msg.type === "terminate") {
+            if (!terminateTest) {
+                throw new Error("cannot terminate test, child does not define a terminate method");
+            }
+            terminateTest()
+                .then(runtime.shutdown)
+                .then(ChildProcessUtils.postFinished);
         }
-    }
+    };
+    process.on("message", handler);
 };
 
-// window is not available => emulate the window variable through exposure of this, which is the
-// DedicatedWorkerContext in case of a WebWorker
-var window = this;
+ChildProcessUtils.overrideRequirePaths = function() {
+    var mod = require("module");
+    var joynr = require("../../classes/joynr");
+    var req = mod.prototype.require;
+    var path = require("path");
+    mod.prototype.require = function(md) {
+        if (md === "joynr") {
+            return joynr;
+        }
+
+        // mock localStorage
+        if (md.endsWith("LocalStorageNode")) {
+            var appDir = path.dirname(require.main.filename);
+            return req.call(this, appDir + "/LocalStorageMock.js");
+        }
+
+        // joynr/vehicle
+        if (
+            md.startsWith("joynr/vehicle") ||
+            md.startsWith("joynr/datatypes") ||
+            md.startsWith("joynr/tests") ||
+            md.startsWith("joynr/provisioning")
+        ) {
+            return req.call(this, "../" + md);
+        }
+
+        if (md.startsWith("joynr")) {
+            return req.call(this, "../../classes/" + md);
+        }
+        if (md === "joynr/Runtime") {
+            return req.call(this, "joynr/Runtime.inprocess");
+        }
+        return req.apply(this, arguments);
+    };
+};
+
+module.exports = ChildProcessUtils;
