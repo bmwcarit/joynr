@@ -1,5 +1,4 @@
-/*jslint es5: true, nomen: true */
-/*global Promise: true, WorkerUtils: true, importScripts: true, joynr: true, Country: true, RadioStation: true, RadioProvider: true, domain: true, interfaceNameComm: true, providerParticipantIdComm: true, providerChannelIdComm: true, globalCapDirCapability: true, channelUrlDirCapability: true, ErrorList: true */
+/*jslint es5: true, node: true, nomen: true */
 
 /*
  * #%L
@@ -9,9 +8,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,30 +19,18 @@
  * #L%
  */
 
-// anything that you load here is served through the jsTestDriverServer, if you add an entry you
-// have to make it available through the jsTestDriverIntegrationTests.conf
+var ChildProcessUtils = require("./ChildProcessUtils");
+ChildProcessUtils.overrideRequirePaths();
 
-importScripts("WorkerUtils.js");
-importScripts("../joynr/provisioning/provisioning_root.js");
-importScripts("LocalStorageSimulator.js");
+var Promise = require("../../classes/global/Promise");
+var joynr = require("joynr.js");
 
-importScripts("../../jar-classes/joynr.js");
-importScripts("../joynr/provisioning/provisioning_cc.js");
+var provisioning = require("../joynr/provisioning/provisioning_cc.js");
+var RadioProvider = require("joynr/vehicle/RadioProvider.js");
+var RadioStation = require("joynr/vehicle/radiotypes/RadioStation.js");
+var Country = require("joynr/datatypes/exampleTypes/Country.js");
+var ErrorList = require("joynr/vehicle/radiotypes/ErrorList.js");
 
-var document = { URL: window.joynr.provisioning.brokerUri };
-
-importScripts("provisioning_end2end_common.js");
-importScripts("../joynr/vehicle/RadioProvider.js");
-importScripts("../joynr/vehicle/radiotypes/RadioStation.js");
-importScripts("../joynr/tests/testTypes/ComplexTestType.js");
-importScripts("../joynr/datatypes/exampleTypes/Country.js");
-importScripts("../joynr/datatypes/exampleTypes/StringMap.js");
-importScripts("../joynr/datatypes/exampleTypes/ComplexStructMap.js");
-importScripts("../joynr/datatypes/exampleTypes/ComplexStruct.js");
-importScripts("../joynr/vehicle/radiotypes/ErrorList.js");
-importScripts("../../classes/lib/bluebird.js");
-
-var Promise = Promise.Promise;
 // attribute value for provider
 var isOn = true;
 var startWithCapitalLetterValue = true;
@@ -66,41 +53,43 @@ var valueChangedInterval = 500;
 var mixedSubscriptionDelay = 1500;
 
 var radioProvider;
-
 var providerQos;
 
 function initializeTest(provisioningSuffix, providedDomain) {
     return new Promise(function(resolve, reject) {
         // set joynr provisioning
-        providerDomain = providedDomain !== undefined ? providedDomain : domain;
-        localStorage.setItem(
-            "joynr.participants." + providerDomain + interfaceNameComm,
-            providerParticipantIdComm + provisioningSuffix
-        );
-        joynr.provisioning.persistency = "localStorage";
-
-        joynr.provisioning.channelId = providerChannelIdComm + provisioningSuffix;
-        joynr.provisioning.logging = {
+        providerDomain = providedDomain;
+        provisioning.persistency = "localStorage";
+        provisioning.channelId = "End2EndCommTestParticipantId" + provisioningSuffix;
+        provisioning.logging = {
             configuration: {
-                name: "TestEnd2EndCommProviderWorkLogging",
                 appenders: {
-                    WebWorker: {
-                        name: "WEBWORKER"
-                    }
+                    appender: [
+                        {
+                            type: "Console",
+                            name: "STDOUT",
+                            PatternLayout: {
+                                pattern: "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+                            }
+                        }
+                    ]
                 },
                 loggers: {
                     root: {
                         level: "debug",
-                        AppenderRef: {
-                            ref: "WEBWORKER"
-                        }
+                        AppenderRef: [
+                            {
+                                ref: "STDOUT"
+                            }
+                        ]
                     }
                 }
             }
         };
 
+        joynr.selectRuntime("inprocess");
         joynr
-            .load(joynr.provisioning)
+            .load(provisioning)
             .then(function(asynclib) {
                 libjoynrAsync = asynclib;
                 providerQos = new libjoynrAsync.types.ProviderQos({
@@ -309,8 +298,8 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 // register operation function "operationWithEnumsAsInputAndOutput"
                 radioProvider.operationWithEnumsAsInputAndOutput.registerOperation(function(opArgs) {
                     /* the dummy implemetnation returns the first element of the enumArrayInput.
-                 * If the input array is empty, it returns the enumInput
-                 */
+                     * If the input array is empty, it returns the enumInput
+                     */
                     checkEnumInputs(opArgs);
                     var returnValue = opArgs.enumInput;
                     if (opArgs.enumArrayInput.length !== 0) {
@@ -340,8 +329,8 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 // register operation function "operationWithEnumsAsInputAndEnumArrayAsOutput"
                 radioProvider.operationWithEnumsAsInputAndEnumArrayAsOutput.registerOperation(function(opArgs) {
                     /* the dummy implementation returns the enumArrayInput.
-                 * If the enumInput is not empty, it add this entry to the return value as well
-                 */
+                     * If the enumInput is not empty, it add this entry to the return value as well
+                     */
                     checkEnumInputs(opArgs);
                     var returnValue = opArgs.enumArrayInput;
                     if (opArgs.enumInput !== undefined) {
@@ -355,8 +344,8 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 // register operation function "methodWithSingleArrayParameters"
                 radioProvider.methodWithSingleArrayParameters.registerOperation(function(opArgs) {
                     /* the dummy implementation transforms the incoming double values into
-                 * strings.
-                 */
+                     * strings.
+                     */
                     var stringArrayOut = [],
                         element;
                     if (opArgs.doubleArrayArg !== undefined) {
@@ -374,7 +363,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 // register operation function "methodWithByteBuffer"
                 radioProvider.methodWithByteBuffer.registerOperation(function(opArgs) {
                     /* the dummy implementation returns the incoming byteBuffer
-                 */
+                     */
 
                     return {
                         result: opArgs.input
@@ -384,7 +373,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                 // register operation function "methodWithTypeDef"
                 radioProvider.methodWithTypeDef.registerOperation(function(opArgs) {
                     /* the dummy implementation returns the incoming data
-                 */
+                     */
 
                     return {
                         typeDefStructOutput: opArgs.typeDefStructInput,
@@ -425,7 +414,7 @@ function initializeTest(provisioningSuffix, providedDomain) {
                         outputParams = broadcast.createBroadcastOutputParameters();
                         outputParams.setTypeDefStructOutput(
                             new RadioStation({
-                                name: "TestEnd2EndCommProviderWorker.broadcastWithTypeDefs.RadioStation",
+                                name: "TestEnd2EndCommProviderProcess.broadcastWithTypeDefs.RadioStation",
                                 byteBuffer: []
                             })
                         );
@@ -479,7 +468,6 @@ function initializeTest(provisioningSuffix, providedDomain) {
                     .then(function() {
                         // signal test driver that we are ready
                         resolve(libjoynrAsync);
-                        return;
                     })
                     .catch(function(error) {
                         reject(error);
@@ -515,3 +503,5 @@ function startTest() {
 function terminateTest() {
     return libjoynrAsync.registration.unregisterProvider(providerDomain, radioProvider);
 }
+
+ChildProcessUtils.registerHandlers(initializeTest, startTest, terminateTest);
