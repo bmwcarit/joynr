@@ -153,16 +153,18 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability) {
     JOYNR_LOG_DEBUG(logger(), "finished get capabilities");
 }
 
+using namespace std::string_literals;
+
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         CapabilitiesClientTest,
         testing::Values(
-            "test-resources/HttpSystemIntegrationTest1.settings"
+            "test-resources/HttpSystemIntegrationTest1.settings"s
         )
 );
 
 INSTANTIATE_TEST_CASE_P(Mqtt,
         CapabilitiesClientTest,
         testing::Values(
-            "test-resources/MqttSystemIntegrationTest1.settings"
+            "test-resources/MqttSystemIntegrationTest1.settings"s
         )
 );

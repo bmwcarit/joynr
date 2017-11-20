@@ -1150,22 +1150,24 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
     runtime1->unregisterProvider(testProviderParticipantId);
 }
 
+using namespace std::string_literals;
+
 INSTANTIATE_TEST_CASE_P(
         DISABLED_Http,
         CombinedEnd2EndTest,
-        testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings",
-                                        "test-resources/HttpSystemIntegrationTest2.settings")));
+        testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings"s,
+                                        "test-resources/HttpSystemIntegrationTest2.settings"s)));
 
 INSTANTIATE_TEST_CASE_P(
         Mqtt,
         CombinedEnd2EndTest,
         testing::Values(std::make_tuple(
-                "test-resources/MqttSystemIntegrationTest1.settings",
-                "test-resources/MqttSystemIntegrationTest2.settings")));
+                "test-resources/MqttSystemIntegrationTest1.settings"s,
+                "test-resources/MqttSystemIntegrationTest2.settings"s)));
 
 INSTANTIATE_TEST_CASE_P(
         MqttOverTLS,
         CombinedEnd2EndTest,
         testing::Values(std::make_tuple(
-                "test-resources/MqttOverTLSSystemIntegrationTest1.settings",
-                "test-resources/MqttOverTLSSystemIntegrationTest2.settings")));
+                "test-resources/MqttOverTLSSystemIntegrationTest1.settings"s,
+                "test-resources/MqttOverTLSSystemIntegrationTest2.settings"s)));

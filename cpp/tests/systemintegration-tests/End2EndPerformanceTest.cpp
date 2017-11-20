@@ -160,16 +160,19 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     std::ignore = stopTime;
     std::ignore = logger;
 }
+
+using namespace std::string_literals;
+
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         End2EndPerformanceTest,
         testing::Values(
-            std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings","test-resources/HttpSystemIntegrationTest2.settings")
+            std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings"s, "test-resources/HttpSystemIntegrationTest2.settings"s)
         )
 );
 
 INSTANTIATE_TEST_CASE_P(Mqtt,
         End2EndPerformanceTest,
         testing::Values(
-            std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings","test-resources/MqttSystemIntegrationTest2.settings")
+            std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings"s, "test-resources/MqttSystemIntegrationTest2.settings"s)
         )
 );
