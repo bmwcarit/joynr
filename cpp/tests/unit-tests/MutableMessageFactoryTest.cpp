@@ -82,7 +82,7 @@ public:
         EXPECT_EQ(senderID, mutableMessage.getSender());
         EXPECT_EQ(receiverID, mutableMessage.getRecipient());
         boost::optional<std::string> customHeader = mutableMessage.getCustomHeader("test-header");
-        ASSERT_TRUE(customHeader);
+        ASSERT_TRUE(customHeader.is_initialized());
         EXPECT_EQ("test-header-value", *customHeader);
     }
 
@@ -279,7 +279,7 @@ TEST_F(MutableMessageFactoryTest, testSetBestEffortHeader)
     qos.setEffort(MessagingQosEffort::Enum::BEST_EFFORT);
     MutableMessage mutableMessage = messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
     const boost::optional<std::string> optionalEffort = mutableMessage.getEffort();
-    ASSERT_TRUE(optionalEffort);
+    ASSERT_TRUE(optionalEffort.is_initialized());
     EXPECT_EQ(MessagingQosEffort::getLiteral(MessagingQosEffort::Enum::BEST_EFFORT),
               *optionalEffort);
 }
