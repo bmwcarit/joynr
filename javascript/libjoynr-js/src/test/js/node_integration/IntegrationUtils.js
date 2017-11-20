@@ -1,4 +1,3 @@
-/*global Worker: true */
 /*jslint es5: true, node: true */
 /*
  * #%L
@@ -8,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,19 +17,19 @@
  * limitations under the License.
  * #L%
  */
+
 var Promise = require("../../classes/global/Promise");
-var provisioning_root = require("../../test-classes/joynr/provisioning/provisioning_root");
-var provisioning_end2end = require("./provisioning_end2end_common");
-var defaultInterTabSettings = require("../../classes/joynr/start/settings/defaultInterTabSettings");
-var waitsFor = require("../../test-classes/global/WaitsFor");
+var provisioning_root = require("joynr/provisioning/provisioning_root");
+var waitsFor = require("../global/WaitsFor");
+var child_process = require("child_process");
 
 var IntegrationUtils = {};
-var currentlyRunningWebWorkerCC;
-var workerReady = {},
-    workerStarted = {},
-    workerFinished = {},
-    worker = {},
-    workerId = 0,
+var currentlyRunningChildCC;
+var childReady = {},
+    childStarted = {},
+    childFinished = {},
+    child = {},
+    processId = 0,
     queuedLogs = {};
 var joynr;
 
@@ -66,6 +65,7 @@ IntegrationUtils.initialize = function initialize(asynclib) {
 };
 
 IntegrationUtils.outputPromiseError = function outputPromiseError(error) {
+    console.log(error);
     expect(error.toString()).toBeFalsy();
 };
 
@@ -83,121 +83,55 @@ IntegrationUtils.checkValueAndType = function checkValueAndType(arg1, arg2) {
     expect(typeof arg1).toEqual(typeof arg2);
     expect(IntegrationUtils.getObjectType(arg1)).toEqual(IntegrationUtils.getObjectType(arg2));
 };
-
-IntegrationUtils.newWebWorker = function newWebWorker(workerName, onmessage) {
-    var worker = new Worker("/base/test-classes/integration/" + workerName + ".js");
-    worker.onmessage = onmessage;
-    worker.onerror = function(error) {
-        // workaround to show web worker errors: thrown errors do not interfere
-        // with the test execution
-        expect(workerName + " error: " + error.message).toBeFalsy();
-    };
-    return worker;
-};
-
 IntegrationUtils.createPromise = function createPromise() {
     var map = {};
     map.promise = new Promise(function(resolve, reject) {
         map.resolve = resolve;
         map.reject = reject;
     });
-    /*
-     * this seems not to work in the es6-promise implementation, v 2.0.1
-     * map.then = map.promise.then;
-     */
+
     return map;
 };
 
-IntegrationUtils.initializeWebWorker = function initializeWebWorker(workerName, provisioningSuffix, domain, cc) {
-    // initialize web worker
-    workerId++;
-    var newWorkerId = workerId;
+IntegrationUtils.initializeChildProcess = function(childName, provisioningSuffix, domain, cc) {
+    processId++;
+    var newChildId = processId;
     if (cc) {
-        currentlyRunningWebWorkerCC = newWorkerId;
+        currentlyRunningChildCC = newChildId;
     }
-    workerReady[workerId] = IntegrationUtils.createPromise();
-    workerStarted[workerId] = IntegrationUtils.createPromise();
-    workerFinished[workerId] = IntegrationUtils.createPromise();
-    worker[workerId] = IntegrationUtils.newWebWorker(workerName, function(event) {
-        var msg = event.data;
+    childReady[processId] = IntegrationUtils.createPromise();
+    childStarted[processId] = IntegrationUtils.createPromise();
+    childFinished[processId] = IntegrationUtils.createPromise();
+
+    var processConfig = process.env.debugPort ? { execArgv: ["--inspect-brk=" + process.env.debugPort] } : {};
+
+    var forked = child_process.fork("./test-classes/node_integration/" + childName + ".js", [], processConfig);
+    forked.on("message", function(msg) {
+        // Handle messages from child process
+        console.log("received message: " + JSON.stringify(msg));
         if (msg.type === "ready") {
-            workerReady[newWorkerId].resolve(newWorkerId);
-        } else if (msg.type === "log") {
-            var id = workerName + "." + provisioningSuffix + "." + domain;
-            IntegrationUtils.log(msg, "joynr.webworker." + workerName, provisioningSuffix, domain);
+            childReady[newChildId].resolve(newChildId);
         } else if (msg.type === "started") {
-            workerStarted[newWorkerId].resolve(msg.argument);
+            childStarted[newChildId].resolve(msg.argument);
         } else if (msg.type === "finished") {
-            workerFinished[newWorkerId].resolve(true);
-        } else if (msg.type === "message") {
-            /*
-             * In case the webworker transmits joynr messages to the
-             * mainframe, we forward this messages directly to the local
-             * window object In this case, event listeners for the local
-             * window object get notified about the incoming message
-             */
-            window.postMessage(msg.data, defaultInterTabSettings.parentOrigin);
+            childFinished[newChildId].resolve(true);
         }
     });
-    worker[newWorkerId].postMessage({
+    child[newChildId] = forked;
+    child[newChildId].send({
         type: "initialize",
-        workerId: newWorkerId,
         provisioningSuffix: provisioningSuffix,
         domain: domain
     });
 
-    return workerReady[newWorkerId].promise;
+    return childReady[newChildId].promise;
 };
 
-IntegrationUtils.initializeWebWorkerCC = function(workerName, provisioningSuffix, domain) {
-    if (currentlyRunningWebWorkerCC !== undefined) {
-        throw new Error(
-            "trying to start new web worker for cluster controller despite old cluster controller has not been terminated"
-        );
-    } else {
-        return IntegrationUtils.initializeWebWorker(workerName, provisioningSuffix, domain, true);
-    }
-};
-IntegrationUtils.startWebWorker = function startWebWorker(newWorkerId) {
-    worker[newWorkerId].postMessage({
+IntegrationUtils.startChildProcess = function(newChildId) {
+    child[newChildId].send({
         type: "start"
     });
-    return workerStarted[newWorkerId].promise;
-};
-
-IntegrationUtils.getWorkerReadyStatus = function getWorkerReadyStatus(newWorkerId) {
-    return workerReady[newWorkerId].promise;
-};
-
-IntegrationUtils.getWorker = function getWorker(newWorkerId) {
-    if (newWorkerId) {
-        return worker[newWorkerId];
-    }
-};
-
-IntegrationUtils.getCCWorker = function getCCWorker() {
-    return worker[currentlyRunningWebWorkerCC];
-};
-
-IntegrationUtils.getProvisioning = function getProvisioning(provisioning, identifier) {
-    var window = provisioning.window;
-    var parentWindow = provisioning.parentWindow;
-
-    // set to null when copying.
-    provisioning.window = null;
-    provisioning.parentWindow = null;
-
-    // this form of deep copy is very fast, but object size limited.
-    var provisioningCopy = JSON.parse(JSON.stringify(provisioning));
-    provisioningCopy.channelId = identifier;
-    provisioningCopy.window = window;
-    provisioningCopy.parentWindow = parentWindow;
-
-    // put window objects back on
-    provisioning.window = window;
-    provisioning.parentWindow = parentWindow;
-
-    return provisioningCopy;
+    return childStarted[newChildId].promise;
 };
 
 IntegrationUtils.buildProxy = function buildProxy(ProxyConstructor, domain) {
@@ -212,27 +146,27 @@ IntegrationUtils.buildProxy = function buildProxy(ProxyConstructor, domain) {
         .catch(IntegrationUtils.outputPromiseError);
 };
 
-IntegrationUtils.shutdownWebWorker = function shutdownWebWorker(newWorkerId) {
-    // signal worker to shut down
+IntegrationUtils.shutdownChildProcess = function(childId) {
+    // signal child to shut down
     var promise = null;
-    if (worker[newWorkerId]) {
-        worker[newWorkerId].postMessage({
+    if (child[childId]) {
+        child[childId].send({
             type: "terminate"
         });
 
-        // wait for worker to be shut down
-        workerFinished[newWorkerId].promise.then(function() {
-            if (currentlyRunningWebWorkerCC === newWorkerId) {
-                currentlyRunningWebWorkerCC = undefined;
+        // wait for child to be shut down
+        childFinished[childId].promise.then(function() {
+            if (currentlyRunningChildCC === childId) {
+                currentlyRunningChildCC = undefined;
             }
-            worker[newWorkerId].terminate();
-            worker[newWorkerId] = undefined;
-            workerReady[newWorkerId] = undefined;
-            workerStarted[newWorkerId] = undefined;
-            workerFinished[newWorkerId] = undefined;
+            child[childId].kill();
+            child[childId] = undefined;
+            childReady[childId] = undefined;
+            childStarted[childId] = undefined;
+            childFinished[childId] = undefined;
         });
 
-        promise = workerFinished[newWorkerId].promise;
+        promise = childFinished[childId].promise;
     } else {
         promise = new Promise(function(resolve) {
             resolve();
@@ -242,7 +176,7 @@ IntegrationUtils.shutdownWebWorker = function shutdownWebWorker(newWorkerId) {
     return promise;
 };
 
-IntegrationUtils.shutdownLibjoynr = function shutdownLibjoynr() {
+IntegrationUtils.shutdownLibjoynr = function() {
     var promise = joynr.shutdown();
 
     promise.catch(function(error) {
@@ -255,7 +189,7 @@ IntegrationUtils.waitALittle = function waitALittle(time) {
     var start;
     start = Date.now();
 
-    // wait for worker to be shut down
+    // wait for childProcess to be shut down
     return waitsFor(
         function() {
             return Date.now() - start > time;
