@@ -148,6 +148,9 @@ var SharedWebSocket = function SharedWebSocket(settings) {
     };
 
     onError = function onError(event) {
+        if (closed) {
+            return;
+        }
         log.error(
             "error in websocket: " +
                 event.code +
@@ -157,10 +160,17 @@ var SharedWebSocket = function SharedWebSocket(settings) {
         if (reconnectTimer !== undefined) {
             LongTimer.clearTimeout(reconnectTimer);
         }
+        if (websocket) {
+            websocket.close(SharedWebSocket.EVENT_CODE_SHUTDOWN, "shutdown");
+            websocket = null;
+        }
         reconnectTimer = LongTimer.setTimeout(resetConnection, reconnectSleepTimeMs);
     };
 
     onClose = function onClose(event) {
+        if (closed) {
+            return;
+        }
         if (event.code !== SharedWebSocket.EVENT_CODE_SHUTDOWN) {
             log.info(
                 "connection closed unexpectedly. code: " +
@@ -172,9 +182,17 @@ var SharedWebSocket = function SharedWebSocket(settings) {
             if (reconnectTimer !== undefined) {
                 LongTimer.clearTimeout(reconnectTimer);
             }
+            if (websocket) {
+                websocket.close(SharedWebSocket.EVENT_CODE_SHUTDOWN, "shutdown");
+                websocket = null;
+            }
             reconnectTimer = LongTimer.setTimeout(resetConnection, reconnectSleepTimeMs);
         } else {
             log.info("connection closed. reason: " + event.reason);
+            if (websocket) {
+                websocket.close(SharedWebSocket.EVENT_CODE_SHUTDOWN, "shutdown");
+                websocket = null;
+            }
         }
     };
 
@@ -216,6 +234,7 @@ var SharedWebSocket = function SharedWebSocket(settings) {
         }
         if (websocket !== null) {
             websocket.close(SharedWebSocket.EVENT_CODE_SHUTDOWN, "shutdown");
+            websocket = null;
         }
     };
 
