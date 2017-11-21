@@ -287,9 +287,7 @@ bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
                                         updatedMediatorAce.getDomain(),
                                         updatedMediatorAce.getInterfaceName(),
                                         updatedMediatorAce.getOperation());
-    AceValidator aceValidator(masterAceOptional,
-                              boost::optional<MasterAccessControlEntry>(updatedMediatorAce),
-                              boost::optional<OwnerAccessControlEntry>());
+    AceValidator aceValidator(masterAceOptional, updatedMediatorAce, boost::none);
 
     if (aceValidator.isMediatorValid()) {
         // Add/update a mediator ACE
@@ -386,9 +384,7 @@ bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
                                           updatedOwnerAce.getDomain(),
                                           updatedOwnerAce.getInterfaceName(),
                                           updatedOwnerAce.getOperation());
-    AceValidator aceValidator(masterAceOptional,
-                              mediatorAceOptional,
-                              boost::optional<OwnerAccessControlEntry>(updatedOwnerAce));
+    AceValidator aceValidator(masterAceOptional, mediatorAceOptional, updatedOwnerAce);
 
     if (aceValidator.isOwnerValid()) {
         updateSuccess = insertOrReplace(ownerAccessTable, updatedOwnerAce);
