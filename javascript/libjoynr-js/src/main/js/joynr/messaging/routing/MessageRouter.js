@@ -305,11 +305,10 @@ function MessageRouter(settings) {
             return Promise.resolve(); // TODO resolve or reject???
         }
 
-        return routingProxy.replyToAddress
-            .get()
+        return addRoutingProxyToParentRoutingTable()
+            .then(routingProxy.replyToAddress.get)
             .then(that.setReplyToAddress)
             .catch(getReplyToAddressOnError)
-            .then(addRoutingProxyToParentRoutingTable)
             .then(processQueuedRoutingProxyCalls);
     };
 

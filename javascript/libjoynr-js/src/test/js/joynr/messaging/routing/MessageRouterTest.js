@@ -157,6 +157,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
         routingProxySpy.replyToAddress = {
             get: null
         };
+        routingProxySpy.proxyParticipantId = "proxyParticipantId";
+        routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
         spyOn(routingProxySpy.replyToAddress, "get").and.returnValue(
             Promise.resolve(serializedTestGlobalClusterControllerAddress)
         );
@@ -690,6 +692,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
                 incomingAddress,
                 parentMessageRouterAddress
             );
+            routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
             messageRouter
                 .setRoutingProxy(routingProxySpy)
                 .then(function() {
@@ -963,9 +966,9 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
             messageRouter
                 .setRoutingProxy(routingProxySpy)
                 .then(function() {
-                    expect(routingProxySpy.addNextHop).toHaveBeenCalled();
-                    expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId).toEqual(joynrMessage.to);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress).toEqual(incomingAddress);
+                    expect(routingProxySpy.addNextHop).toHaveBeenCalledTimes(2);
+                    expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].participantId).toEqual(joynrMessage.to);
+                    expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].browserAddress).toEqual(incomingAddress);
                     done();
                 })
                 .catch(done.fail);
@@ -1005,11 +1008,11 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", function() {
             messageRouter
                 .setRoutingProxy(routingProxySpy)
                 .then(function() {
-                    expect(routingProxySpy.addNextHop).toHaveBeenCalled();
-                    expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId).toEqual(joynrMessage.to);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress).toEqual(incomingAddress);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].participantId).toEqual(joynrMessage2.to);
+                    expect(routingProxySpy.addNextHop).toHaveBeenCalledTimes(3);
+                    expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].participantId).toEqual(joynrMessage.to);
                     expect(routingProxySpy.addNextHop.calls.argsFor(1)[0].browserAddress).toEqual(incomingAddress);
+                    expect(routingProxySpy.addNextHop.calls.argsFor(2)[0].participantId).toEqual(joynrMessage2.to);
+                    expect(routingProxySpy.addNextHop.calls.argsFor(2)[0].browserAddress).toEqual(incomingAddress);
                     done();
                 })
                 .catch(done.fail);
