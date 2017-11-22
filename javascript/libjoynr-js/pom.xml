@@ -1097,7 +1097,10 @@
 									<commandlineArgs>--captureExceptions --verbose</commandlineArgs>
 								</configuration>
 								<id>run-integration-tests-nodejs</id>
+								<!-- Disable node shutdown test
 								<phase>integration-test</phase>
+								-->
+								<phase>none</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
