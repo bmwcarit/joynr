@@ -1,6 +1,7 @@
 FROM joynr-base:latest
 
 ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+COPY 0001-do-not-pass-empty-connection-to-async_accept-in-serv.patch /tmp/0001-do-not-pass-empty-connection-to-async_accept-in-serv.patch
 
 ###################################################
 # enable gold linker
@@ -49,6 +50,7 @@ RUN cd /opt \
     && git clone https://github.com/zaphoyd/websocketpp.git \
     && cd websocketpp \
     && git checkout 378437aecdcb1dfe62096ffd5d944bf1f640ccc3 \
+    && git apply /tmp/0001-do-not-pass-empty-connection-to-async_accept-in-serv.patch \
     && mkdir build \
     && cd build \
     && cmake .. \

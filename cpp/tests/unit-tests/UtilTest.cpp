@@ -139,3 +139,40 @@ TEST(UtilTest, isAdditionOnPointerSafe)
     payloadLength = 0x2;
     EXPECT_TRUE(util::isAdditionOnPointerSafe(address, payloadLength));
 }
+
+TEST(UtilTest, setContainsSet)
+{
+    const std::set<std::string> haystack {"s1", "s2", "s3", "s4"};
+
+    std::set<std::string> needles {"s1", "s2", "s3", "s4"};
+    EXPECT_TRUE(util::setContainsSet(haystack, needles));
+
+    needles = {};
+    EXPECT_TRUE(util::setContainsSet(haystack, needles));
+
+    needles = {"s2"};
+    EXPECT_TRUE(util::setContainsSet(haystack, needles));
+
+    needles = {"s1", "s2"};
+    EXPECT_TRUE(util::setContainsSet(haystack, needles));
+
+    needles = {"s1", "s4"};
+    EXPECT_TRUE(util::setContainsSet(haystack, needles));
+}
+
+TEST(UtilTest, setDoesNotContainSet)
+{
+    const std::set<std::string> haystack {"s1", "s2", "s3"};
+
+    std::set<std::string> needles {"s1", "s3", "s4"};
+    EXPECT_FALSE(util::setContainsSet(haystack, needles));
+
+    needles = {"s4"};
+    EXPECT_FALSE(util::setContainsSet(haystack, needles));
+
+    needles = {"s1", "s2", "s3", "s4"};
+    EXPECT_FALSE(util::setContainsSet(haystack, needles));
+
+    needles = {"s0", "s1", "s3"};
+    EXPECT_FALSE(util::setContainsSet(haystack, needles));
+}

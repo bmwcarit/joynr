@@ -306,10 +306,6 @@ TEST_F(LocalDomainAccessStoreTest, editableOwnerAccessControlEntryNoMatchingDre)
     EXPECT_TRUE(editableOwnerAces.empty());
 }
 
-TEST_F(LocalDomainAccessStoreTest, updateOwnerAccessControlEntry) {
-    EXPECT_TRUE(localDomainAccessStore.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry));
-}
-
 TEST_F(LocalDomainAccessStoreTest, updateOwnerAce) {
     EXPECT_TRUE(localDomainAccessStore.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry));
 

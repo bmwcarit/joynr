@@ -69,7 +69,6 @@ SubscriptionManager::~SubscriptionManager()
     // deleting the missed publication scheduler
 
     missedPublicationScheduler->shutdown();
-    delete missedPublicationScheduler;
     subscriptions.deleteAll();
 }
 
@@ -82,11 +81,11 @@ SubscriptionManager::SubscriptionManager(boost::asio::io_service& ioService,
           multicastSubscribersMutex(),
           messageRouter(messageRouter),
           missedPublicationScheduler(
-                  new SingleThreadedDelayedScheduler("MissedPublications", ioService))
+                  std::make_shared<SingleThreadedDelayedScheduler>("MissedPublications", ioService))
 {
 }
 
-SubscriptionManager::SubscriptionManager(DelayedScheduler* scheduler,
+SubscriptionManager::SubscriptionManager(std::shared_ptr<DelayedScheduler> scheduler,
                                          std::shared_ptr<IMessageRouter> messageRouter)
         : subscriptions(),
           multicastSubscribers(),

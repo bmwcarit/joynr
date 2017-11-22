@@ -69,7 +69,7 @@ MATCHER_P3(messagingQosWithTtl, expectedTtlMs, toleranceMs, logger, "") {
 class PublicationManagerTtlUpliftTest : public testing::Test {
 public:
     PublicationManagerTtlUpliftTest() :
-        singleThreadedIOService(),
+        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
         messageSender(std::make_shared<MockMessageSender>()),
         proxyId("ProxyId"),
         providerId("ProviderId"),
@@ -79,7 +79,7 @@ public:
         publicationTtlMs(1024),
         toleranceMs(50)
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
         onChangeSubscriptionQos = std::make_shared<OnChangeSubscriptionQos>(
                         0,
                         publicationTtlMs,
@@ -89,7 +89,7 @@ public:
     }
 
     ~PublicationManagerTtlUpliftTest() {
-        singleThreadedIOService.stop();
+        singleThreadedIOService->stop();
         //remove stored subscriptions;
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         //remove stored broadcastsubscriptions
@@ -127,7 +127,7 @@ protected:
                                        std::int64_t expectedSubscriptionReplyTtlMs,
                                        std::int64_t expectedPublicationTtlMs,
                                        std::function<void()> triggerPublication);
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<IMessageSender> messageSender;
 
     std::string proxyId;
@@ -272,7 +272,7 @@ void PublicationManagerTtlUpliftTest::testSubscriptionWithTtlUplift(const std::s
 }
 
 TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithoutTtlUplift) {
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender, 0);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, 0);
 
     //SubscriptionRequest
     std::string attributeName("Location");
@@ -311,7 +311,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithoutTtlUplif
 
 TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithoutTtlUplift) {
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender, 0);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, 0);
 
     //SubscriptionRequest
     std::string broadcastName("Location");
@@ -350,7 +350,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithoutTtlUplif
 
 TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUplift) {
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender, ttlUpliftMs);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, ttlUpliftMs);
 
     //SubscriptionRequest
     std::string attributeName("Location");
@@ -388,7 +388,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUplift) 
 
 TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUplift) {
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender, ttlUpliftMs);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, ttlUpliftMs);
 
     //SubscriptionRequest
     std::string broadcastName("Location");
@@ -426,7 +426,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUplift) 
 
 TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWithNoExpiryDate) {
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender, ttlUpliftMs);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, ttlUpliftMs);
 
     //SubscriptionRequest
     std::string attributeName("Location");
@@ -464,7 +464,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWi
 
 TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWithNoExpiryDate) {
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender, ttlUpliftMs);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, ttlUpliftMs);
 
     //SubscriptionRequest
     std::string broadcastName("Location");
@@ -502,7 +502,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWi
 
 TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testAttributeSubscriptionWithTtlUpliftWithLargeExpiryDate) {
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender, ttlUpliftMs);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, ttlUpliftMs);
 
     //SubscriptionRequest
     std::string attributeName("Location");
@@ -542,7 +542,7 @@ TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testAttributeSubscriptionWithTt
 
 TEST_F(PublicationManagerTtlUpliftTest, DISABLED_testBroadcastSubscriptionWithTtlUpliftWithLargeExpiryDate) {
 
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender, ttlUpliftMs);
+    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, ttlUpliftMs);
 
     //SubscriptionRequest
     std::string broadcastName("Location");

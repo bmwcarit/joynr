@@ -207,6 +207,8 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             final override;
 
+    std::vector<types::DiscoveryEntry> getCachedGlobalDiscoveryEntries() const;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     ClusterControllerSettings& clusterControllerSettings; // to retrieve info about persistency
@@ -261,6 +263,7 @@ private:
 
     void scheduleCleanupTimer();
     void checkExpiredDiscoveryEntries(const boost::system::error_code& errorCode);
+    std::string joinToString(const std::vector<types::DiscoveryEntry>& discoveryEntries) const;
     void remove(const types::DiscoveryEntry& discoveryEntry);
     boost::asio::steady_timer freshnessUpdateTimer;
     std::string clusterControllerId;

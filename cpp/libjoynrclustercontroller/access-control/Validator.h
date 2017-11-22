@@ -107,11 +107,12 @@ public:
 
     bool isMediatorValid() const
     {
+        // if mediator entry is missing, always return true
         if (!mediatorEntryOptional) {
             return true;
         }
 
-        // if both mediator and master entry are set, mediator is valid
+        // if master entry is not set, mediator is valid
         if (!masterEntryOptional) {
             return true;
         }
@@ -155,6 +156,7 @@ private:
 
     bool validateOwner(const MasterEntry& targetMasterEntry) const
     {
+        // if owner entry is missing, always return true
         if (!ownerEntryOptional) {
             return true;
         }

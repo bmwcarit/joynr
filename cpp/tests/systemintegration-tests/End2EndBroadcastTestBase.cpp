@@ -36,11 +36,11 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/BrokerUrl.h"
-#include "joynr/tests/DefaulttestProvider.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockLocationUpdatedSelectiveFilter.h"
 #include "tests/mock/MockSubscriptionListener.h"
+#include "tests/utils/MyTestProvider.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -52,81 +52,10 @@ static const std::string messagingPropertiesPersistenceFileName2(
 
 namespace joynr {
 
-class MyTestProvider : public tests::DefaulttestProvider {
-public:
-    void locationChanged(const joynr::types::Localisation::GpsLocation& location) override {
-        tests::testAbstractProvider::locationChanged(location);
-    }
-
-    void fireLocation(
-            const joynr::types::Localisation::GpsLocation& location,
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override {
-        tests::testAbstractProvider::fireLocation(location, partitions);
-    }
-
-    void fireBroadcastWithEnumOutput(
-            const joynr::tests::testTypes::TestEnum::Enum& testEnum,
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override {
-        tests::testAbstractProvider::fireBroadcastWithEnumOutput(testEnum, partitions);
-    }
-
-    void fireLocationUpdate(
-            const joynr::types::Localisation::GpsLocation& location,
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override {
-        tests::testAbstractProvider::fireLocationUpdate(location, partitions);
-    }
-
-    void fireEmptyBroadcast(
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override {
-        tests::testAbstractProvider::fireEmptyBroadcast(partitions);
-    }
-
-    void fireLocationUpdateWithSpeed(
-            const joynr::types::Localisation::GpsLocation& location,
-            const float& currentSpeed,
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override {
-        tests::testAbstractProvider::fireLocationUpdateWithSpeed(location, currentSpeed, partitions);
-    }
-
-    void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) override {
-        tests::testAbstractProvider::fireLocationUpdateSelective(location);
-    }
-
-    void fireBroadcastWithByteBufferParameter(
-            const joynr::ByteBuffer& byteBufferParameter,
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override {
-        tests::testAbstractProvider::fireBroadcastWithByteBufferParameter(byteBufferParameter, partitions);
-    }
-
-    void fireBroadcastWithFiltering(
-            const std::string& stringOut,
-            const std::vector<std::string> & stringArrayOut,
-            const std::vector<joynr::tests::testTypes::TestEnum::Enum>& enumerationArrayOut,
-            const joynr::types::TestTypes::TEverythingStruct& structWithStringArrayOut,
-            const std::vector<joynr::types::TestTypes::TEverythingStruct> & structWithStringArrayArrayOut
-    ) override {
-        tests::testAbstractProvider::fireBroadcastWithFiltering(stringOut,
-                                                                stringArrayOut,
-                                                                enumerationArrayOut,
-                                                                structWithStringArrayOut,
-                                                                structWithStringArrayArrayOut);
-    }
-};
-
 class End2EndBroadcastTestBase : public TestWithParam< std::tuple<std::string, std::string> > {
 public:
     std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
     std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
-    std::unique_ptr<Settings> settings1;
-    std::unique_ptr<Settings> settings2;
-    MessagingSettings messagingSettings1;
-    MessagingSettings messagingSettings2;
     std::string baseUuid;
     std::string uuid;
     std::string domainName;
@@ -145,16 +74,12 @@ public:
     End2EndBroadcastTestBase() :
         runtime1(),
         runtime2(),
-        settings1(std::make_unique<Settings>(std::get<0>(GetParam()))),
-        settings2(std::make_unique<Settings>(std::get<1>(GetParam()))),
-        messagingSettings1(*settings1),
-        messagingSettings2(*settings2),
         baseUuid(util::createUuid()),
         uuid( "_" + baseUuid.substr(1, baseUuid.length()-2)),
         domainName("cppEnd2EndBroadcastTest_Domain" + uuid),
         semaphore(0),
         altSemaphore(0),
-        filter(new MockLocationUpdatedSelectiveFilter),
+        filter(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
         registerProviderWait(1000),
         subscribeToAttributeWait(2000),
         subscribeToBroadcastWait(2000),
@@ -197,13 +122,20 @@ public:
                          4)),
         providerParticipantId(),
         integration1Settings("test-resources/libjoynrSystemIntegration1.settings"),
-        integration2Settings("test-resources/libjoynrSystemIntegration2.settings")
-
+        integration2Settings("test-resources/libjoynrSystemIntegration2.settings"),
+        httpTransport(false)
     {
+        auto settings1 = std::make_unique<Settings>(std::get<0>(GetParam()));
+        auto settings2 = std::make_unique<Settings>(std::get<1>(GetParam()));
+        MessagingSettings messagingSettings1(*settings1);
+        MessagingSettings messagingSettings2(*settings2);
         messagingSettings1.setMessagingPropertiesPersistenceFilename(
                     messagingPropertiesPersistenceFileName1);
         messagingSettings2.setMessagingPropertiesPersistenceFilename(
                     messagingPropertiesPersistenceFileName2);
+
+        std::string brokerProtocol = messagingSettings1.getBrokerUrl().getBrokerChannelsBaseUrl().getProtocol();
+        httpTransport = boost::iequals(brokerProtocol, "http") || boost::iequals(brokerProtocol, "https");
 
         Settings::merge(integration1Settings, *settings1, false);
 
@@ -255,13 +187,11 @@ private:
     Settings integration1Settings;
     Settings integration2Settings;
     DISALLOW_COPY_AND_ASSIGN(End2EndBroadcastTestBase);
+    bool httpTransport;
 
 protected:
     bool usesHttpTransport() {
-        std::string brokerProtocol = messagingSettings1.getBrokerUrl()
-                .getBrokerChannelsBaseUrl().getProtocol();
-        return (boost::iequals(brokerProtocol, "http")
-                || boost::iequals(brokerProtocol, "https"));
+       return httpTransport;
     }
 
     std::shared_ptr<MyTestProvider> registerProvider() {
@@ -316,31 +246,29 @@ protected:
     void testOneShotBroadcastSubscription(const T& expectedValue,
                                           SubscribeTo subscribeTo,
                                           UnsubscribeFrom unsubscribeFrom,
-                                          FireBroadcast fireBroadcast,
-                                          const std::string& broadcastName) {
-        MockSubscriptionListenerOneType<T>* mockListener =
-                new MockSubscriptionListenerOneType<T>();
+                                          FireBroadcast fireBroadcast) {
+        auto mockListener = std::make_shared<MockSubscriptionListenerOneType<T>>();
 
         // Use a semaphore to count and wait on calls to the mock listener
         ON_CALL(*mockListener, onReceive(Eq(expectedValue)))
                 .WillByDefault(ReleaseSemaphore(&semaphore));
 
-        std::shared_ptr<ISubscriptionListener<T>> subscriptionListener(
-                        mockListener);
-        testOneShotBroadcastSubscription(subscriptionListener,
+        testOneShotBroadcastSubscription(mockListener,
                                          subscribeTo,
                                          unsubscribeFrom,
                                          fireBroadcast,
-                                         broadcastName,
                                          expectedValue);
     }
 
-    template <typename FireBroadcast, typename SubscribeTo, typename UnsubscribeFrom, typename ...T>
-    void testOneShotBroadcastSubscription(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
+    template <typename SubscriptionListener,
+              typename FireBroadcast,
+              typename SubscribeTo,
+              typename UnsubscribeFrom,
+              typename ...T>
+    void testOneShotBroadcastSubscription(SubscriptionListener subscriptionListener,
                                           SubscribeTo subscribeTo,
                                           UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
-                                          const std::string& broadcastName,
                                           T... expectedValues) {
         std::vector<std::string> partitions({}); // TODO test with real partitions
         std::shared_ptr<MyTestProvider> testProvider = registerProvider();
@@ -374,12 +302,16 @@ protected:
         std::ignore = filter;
     }
 
-    template <typename FireBroadcast, typename SubscribeTo, typename UnsubscribeFrom, typename BroadcastFilterPtr, typename ...T>
-    void testOneShotBroadcastSubscriptionWithFiltering(std::shared_ptr<ISubscriptionListener<T...>> subscriptionListener,
+    template <typename SubscriptionListener,
+              typename FireBroadcast,
+              typename SubscribeTo,
+              typename UnsubscribeFrom,
+              typename BroadcastFilterPtr,
+              typename ...T>
+    void testOneShotBroadcastSubscriptionWithFiltering(SubscriptionListener subscriptionListener,
                                           SubscribeTo subscribeTo,
                                           UnsubscribeFrom unsubscribeFrom,
                                           FireBroadcast fireBroadcast,
-                                          const std::string& broadcastName,
                                           BroadcastFilterPtr filter,
                                           T... expectedValues) {
         std::shared_ptr<MyTestProvider> testProvider = registerProvider();
@@ -405,4 +337,3 @@ protected:
 };
 
 } // namespace joynr
-

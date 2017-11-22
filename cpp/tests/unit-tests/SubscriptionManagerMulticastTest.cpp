@@ -44,23 +44,24 @@ class SubscriptionManagerMulticastTest : public testing::Test
 {
 public:
     SubscriptionManagerMulticastTest() :
+        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
         subscribeToName("subscribeToName"),
         subscriberParticipantId("subscriberParticipantId"),
         providerParticipantId1("providerParticipantId"),
         partitions({ "partition1", "partition2" }),
         multicastId1("providerParticipantId/subscribeToName/partition1/partition2"),
-        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
+        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
         mockGpsSubscriptionListener(std::make_shared<MockSubscriptionListenerOneType<types::Localisation::GpsLocation>>()),
         qos(std::make_shared<MulticastSubscriptionQos>()),
         future(std::make_shared<Future<std::string>>()),
-        subscriptionManager(std::make_shared<SubscriptionManager>(singleThreadedIOService.getIOService(), mockMessageRouter)),
+        subscriptionManager(std::make_shared<SubscriptionManager>(singleThreadedIOService->getIOService(), mockMessageRouter)),
         subscriptionCallback(std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
             "testSubscriptionId", future, subscriptionManager))
     {
     }
 
 protected:
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
 
     const std::string subscribeToName;
     const std::string subscriberParticipantId;

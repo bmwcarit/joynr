@@ -57,8 +57,8 @@ using namespace joynr;
 class BroadcastSubscriptionTest : public ::testing::Test {
 public:
     BroadcastSubscriptionTest() :
-        singleThreadIOService(),
-        mockMessageRouter(new MockMessageRouter(singleThreadIOService.getIOService())),
+        singleThreadIOService(std::make_shared<SingleThreadedIOService>()),
+        mockMessageRouter(new MockMessageRouter(singleThreadIOService->getIOService())),
         mockSubscriptionListenerOne(new MockSubscriptionListenerOneType<types::Localisation::GpsLocation>()),
         mockSubscriptionListenerTwo(new MockSubscriptionListenerTwoTypes<types::Localisation::GpsLocation, double>()),
         gpsLocation1(1.1, 2.2, 3.3, types::Localisation::GpsFixEnum::MODE2D, 0.0, 0.0, 0.0, 0.0, 444, 444, 444),
@@ -68,22 +68,26 @@ public:
         proxyParticipantId("proxyParticipantId"),
         messageFactory(),
         messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
-        dispatcher(messageSender, singleThreadIOService.getIOService()),
+        dispatcher(messageSender, singleThreadIOService->getIOService()),
         subscriptionManager(nullptr)
     {
-        singleThreadIOService.start();
+        singleThreadIOService->start();
+    }
+
+    ~BroadcastSubscriptionTest() {
+        singleThreadIOService->stop();
     }
 
     void SetUp(){
         //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadIOService.getIOService(), mockMessageRouter);
+        subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadIOService->getIOService(), mockMessageRouter);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
     }
 
 protected:
-    SingleThreadedIOService singleThreadIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::shared_ptr<MockSubscriptionListenerOneType<types::Localisation::GpsLocation> > mockSubscriptionListenerOne;
     std::shared_ptr<MockSubscriptionListenerTwoTypes<types::Localisation::GpsLocation, double> > mockSubscriptionListenerTwo;

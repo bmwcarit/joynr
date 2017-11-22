@@ -23,8 +23,10 @@
 #include <memory>
 
 #include "joynr/infrastructure/AccessControlListEditorAbstractProvider.h"
+#include "joynr/infrastructure/DacTypes/Role.h"
 
 #include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
@@ -38,7 +40,8 @@ class JOYNRCLUSTERCONTROLLER_EXPORT AccessControlListEditor
 public:
     explicit AccessControlListEditor(
             std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore,
-            std::shared_ptr<LocalDomainAccessController> localDomainAccessController);
+            std::shared_ptr<LocalDomainAccessController> localDomainAccessController,
+            bool auditMode);
 
     void updateMasterAccessControlEntry(
             const joynr::infrastructure::DacTypes::MasterAccessControlEntry& updatedMasterAce,
@@ -118,11 +121,17 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AccessControlListEditor);
+    ADD_LOGGER(AccessControlListEditor)
+
     bool hasRoleMaster(const std::string& uid, const std::string& domain);
     bool hasRoleOwner(const std::string& uid, const std::string& domain);
+    bool hasRoleWorker(const std::string& uid,
+                       const std::string& domain,
+                       infrastructure::DacTypes::Role::Enum role);
 
     std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore;
     std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
+    bool aclAudit;
 };
 
 } // namespace joynr

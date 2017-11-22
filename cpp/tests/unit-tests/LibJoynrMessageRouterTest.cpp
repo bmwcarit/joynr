@@ -299,7 +299,7 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForWebSocketProvider_calls
     EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
-TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForInProcessProvider_callsParentRouter) {
+TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForInProcessProvider_DoesNotCallParentRouter) {
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
     auto mockRoutingProxyRef = mockRoutingProxy.get();
 
@@ -316,14 +316,9 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForInProcessProvider_calls
     messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
 
     EXPECT_CALL(*mockRoutingProxyRef,
-        addMulticastReceiverAsync(multicastId, subscriberParticipantId, providerParticipantId, _, _))
-            .Times(1)
-            .WillOnce(
-                DoAll(
-                    InvokeArgument<3>(),
-                    Return(nullptr)
-                )
-            );
+        addMulticastReceiverAsync(multicastId,
+                                  subscriberParticipantId,
+                                  providerParticipantId, _, _)).Times(0);
 
     Semaphore successCallbackCalled;
     messageRouter->addMulticastReceiver(multicastId,

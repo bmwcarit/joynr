@@ -26,13 +26,17 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/asio/io_service.hpp>
+
 #include <websocketpp/server.hpp>
+
 #include <smrf/exceptions.h>
 
 #include "joynr/IMessageRouter.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Semaphore.h"
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/Util.h"
@@ -83,24 +87,31 @@ public:
               endpoint(),
               clientsMutex(),
               clients(),
+              webSocketPpSingleThreadedIOServiceDestructed(std::make_shared<Semaphore>(0)),
+              webSocketPpSingleThreadedIOService(std::make_shared<SingleThreadedIOService>(
+                      webSocketPpSingleThreadedIOServiceDestructed)),
               receiver(),
               messageRouter(std::move(messageRouter)),
               messagingStubFactory(std::move(messagingStubFactory)),
-              port(port)
+              port(port),
+              shuttingDown(false)
     {
     }
 
     virtual void init() override
     {
+        webSocketPpSingleThreadedIOService->start();
+        boost::asio::io_service& endpointIoService =
+                webSocketPpSingleThreadedIOService->getIOService();
         websocketpp::lib::error_code initializationError;
-        endpoint.init_asio(&ioService, initializationError);
+
+        endpoint.init_asio(&endpointIoService, initializationError);
         if (initializationError) {
             JOYNR_LOG_FATAL(logger(),
                             "error during WebSocketCcMessagingSkeleton initialization: ",
                             initializationError.message());
             return;
         }
-
         endpoint.clear_access_channels(websocketpp::log::alevel::all);
         endpoint.clear_error_channels(websocketpp::log::alevel::all);
 
@@ -145,6 +156,26 @@ public:
                             "error during WebSocketCcMessagingSkeleton shutdown: ",
                             shutdownError.message());
         }
+
+        {
+            std::lock_guard<std::mutex> lock(clientsMutex);
+            shuttingDown = true;
+        }
+        for (const auto& elem : clients) {
+            websocketpp::lib::error_code websocketError;
+            endpoint.close(elem.first, websocketpp::close::status::normal, "", websocketError);
+            if (websocketError) {
+                if (websocketError != websocketpp::error::bad_connection) {
+                    JOYNR_LOG_ERROR(logger(),
+                                    "Unable to close websocket connection. Error: {}",
+                                    websocketError.message());
+                }
+            }
+        }
+
+        webSocketPpSingleThreadedIOService->stop();
+        webSocketPpSingleThreadedIOService.reset();
+        webSocketPpSingleThreadedIOServiceDestructed->wait();
     }
 
     void transmit(
@@ -207,6 +238,9 @@ private:
     void onConnectionClosed(ConnectionHandle hdl)
     {
         std::lock_guard<std::mutex> lock(clientsMutex);
+        if (shuttingDown) {
+            return;
+        }
         auto it = clients.find(hdl);
         if (it != clients.cend()) {
             messagingStubFactory->onMessagingStubClosed(it->second.webSocketClientAddress);
@@ -321,6 +355,8 @@ private:
                 message, "{\"_typeName\":\"joynr.system.RoutingTypes.WebSocketClientAddress\"");
     }
 
+    std::shared_ptr<Semaphore> webSocketPpSingleThreadedIOServiceDestructed;
+    std::shared_ptr<SingleThreadedIOService> webSocketPpSingleThreadedIOService;
     WebSocketPpReceiver<Server> receiver;
 
     /*! Router for incoming messages */
@@ -328,6 +364,7 @@ private:
     /*! Factory to build outgoing messaging stubs */
     std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory;
     std::uint16_t port;
+    bool shuttingDown;
 
     DISALLOW_COPY_AND_ASSIGN(WebSocketCcMessagingSkeleton);
 };

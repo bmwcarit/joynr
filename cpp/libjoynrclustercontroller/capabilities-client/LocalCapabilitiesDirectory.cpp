@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <unordered_set>
+#include <ostream>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/asio/io_service.hpp>
@@ -241,35 +242,25 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::vector<joynr::types::GlobalDiscoveryEntry> convertedGlobalCapabilities;
+    std::ignore = onError;
 
     {
         std::lock_guard<std::mutex> lock(cacheLock);
-
-        const std::size_t numOfGlobalCapabilities =
-                std::distance(globalCapabilities.begin(), globalCapabilities.end());
-        convertedGlobalCapabilities.reserve(numOfGlobalCapabilities);
-
         for (const auto& globalCapability : globalCapabilities) {
-            convertedGlobalCapabilities.push_back(toGlobalDiscoveryEntry(globalCapability));
+            if (globalCapability.getQos().getScope() == types::ProviderScope::GLOBAL) {
+                capabilitiesClient->add(toGlobalDiscoveryEntry(globalCapability), nullptr, nullptr);
+            }
         }
     }
 
-    auto onErrorWrapper = [onError = std::move(onError)](
-            const joynr::exceptions::JoynrRuntimeException& exception)
-    {
-        if (onError) {
-            onError(joynr::exceptions::ProviderRuntimeException(exception.getMessage()));
-        }
-    };
+    onSuccess();
+}
 
-    if (convertedGlobalCapabilities.empty()) {
-        if (onSuccess) {
-            onSuccess();
-        }
-    } else {
-        capabilitiesClient->add(convertedGlobalCapabilities, onSuccess, onErrorWrapper);
-    }
+std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedGlobalDiscoveryEntries()
+        const
+{
+    return std::vector<types::DiscoveryEntry>(
+            globalCapabilities.cbegin(), globalCapabilities.cend());
 }
 
 bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
@@ -788,7 +779,9 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
 
     // insert all global capability entries into global cache
     for (const auto& entry : localCapabilities) {
-        globalCapabilities.insert(entry);
+        if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
+            globalCapabilities.insert(entry);
+        }
     }
 }
 
@@ -955,14 +948,40 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
 
     std::lock_guard<std::mutex> lock(cacheLock);
 
-    std::size_t removedCount = localCapabilities.removeExpired();
-    removedCount += globalCapabilities.removeExpired();
+    auto removedLocalCapabilities = localCapabilities.removeExpired();
+    auto removedGlobalCapabilities = globalCapabilities.removeExpired();
 
-    if (removedCount > 0) {
+    if (!removedLocalCapabilities.empty()) {
+        JOYNR_LOG_DEBUG(logger(),
+                        "Following local discovery entries expired: {}",
+                        joinToString(removedLocalCapabilities));
+    }
+
+    if (!removedGlobalCapabilities.empty()) {
+        JOYNR_LOG_DEBUG(logger(),
+                        "Following global discovery entries expired: {}",
+                        joinToString(removedGlobalCapabilities));
+    }
+
+    if (!removedLocalCapabilities.empty() || !removedGlobalCapabilities.empty()) {
         updatePersistedFile();
     }
 
     scheduleCleanupTimer();
+}
+
+std::string LocalCapabilitiesDirectory::joinToString(
+        const std::vector<types::DiscoveryEntry>& discoveryEntries) const
+{
+    std::ostringstream outputStream;
+
+    std::transform(
+            discoveryEntries.cbegin(),
+            discoveryEntries.cend(),
+            std::ostream_iterator<std::string>(outputStream, ", "),
+            [](const types::DiscoveryEntry& discoveryEntry) { return discoveryEntry.toString(); });
+
+    return outputStream.str();
 }
 
 LocalCapabilitiesCallback::LocalCapabilitiesCallback(

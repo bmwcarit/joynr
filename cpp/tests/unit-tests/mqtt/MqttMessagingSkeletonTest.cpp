@@ -70,13 +70,17 @@ public:
 class MqttMessagingSkeletonTest : public ::testing::Test {
 public:
     MqttMessagingSkeletonTest() :
-        singleThreadedIOService(),
-        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
+        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+        mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
         isLocalMessage(false),
         settings(),
         ccSettings(settings)
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
+    }
+
+    ~MqttMessagingSkeletonTest() {
+        singleThreadedIOService->stop();
     }
 
     void SetUp(){
@@ -106,7 +110,7 @@ public:
 
 protected:
     void transmitSetsIsReceivedFromGlobal();
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     MutableMessageFactory messageFactory;
     MutableMessage mutableMessage;

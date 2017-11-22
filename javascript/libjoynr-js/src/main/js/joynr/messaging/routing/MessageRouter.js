@@ -498,9 +498,10 @@ var JSONSerializer = require('../../util/JSONSerializer');
                     var now = Date.now();
                     if (now > joynrMessage.expiryDate) {
                         var errorMsg = "Received expired message. Dropping the message. ID: " + joynrMessage.msgId;
-                        log.warn(errorMsg);
+                        log.warn(errorMsg + ", expiryDate: " + joynrMessage.expiryDate + ", now: " + now);
                         return Promise.reject(new JoynrRuntimeException({ detailMessage: errorMsg }));
                     }
+                    log.debug("Route message. ID: " + joynrMessage.msgId + ", expiryDate: " + joynrMessage.expiryDate + ", now: " + now);
 
                     registerGlobalRoutingEntryIfRequired(joynrMessage);
 

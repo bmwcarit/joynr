@@ -19,11 +19,13 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <chrono>
 
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/Settings.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/ProviderReregistrationControllerProxy.h"
+#include "utils/TestLibJoynrWebSocketRuntime.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -47,4 +49,30 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
 
     runtime->stop();
     runtime = nullptr;
+}
+
+TEST(ProviderReregistrationControllerTest, queryProviderReregistrationControllerSucceedsOnWsRuntime)
+{
+    auto integrationSettings = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
+    joynr::SystemServicesSettings systemServiceSettings(*integrationSettings);
+    const std::string domain(systemServiceSettings.getDomain());
+
+    auto ccRuntime = std::make_shared<JoynrClusterControllerRuntime>(std::move(integrationSettings));
+    ccRuntime->init();
+    ccRuntime->start();
+
+    auto wsRuntimeSettings = std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
+    auto wsRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(wsRuntimeSettings), nullptr);
+    wsRuntime->connect(std::chrono::seconds(2));
+
+    auto providerReregistrationControllerProxyBuilder = wsRuntime->createProxyBuilder<joynr::system::ProviderReregistrationControllerProxy>(domain);
+    auto providerReregistrationControllerProxy = providerReregistrationControllerProxyBuilder->build();
+
+    Semaphore finishedSemaphore;
+    providerReregistrationControllerProxy->triggerGlobalProviderReregistrationAsync([&finishedSemaphore]() { finishedSemaphore.notify(); }, [](const joynr::exceptions::JoynrRuntimeException&) { FAIL(); });
+    finishedSemaphore.waitFor(std::chrono::seconds(2));
+
+    wsRuntime = nullptr;
+    ccRuntime->stop();
+    ccRuntime = nullptr;
 }

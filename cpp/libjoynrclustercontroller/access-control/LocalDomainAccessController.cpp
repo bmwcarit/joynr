@@ -291,13 +291,14 @@ bool LocalDomainAccessController::hasRole(const std::string& userId,
     boost::optional<DomainRoleEntry> dre = localDomainAccessStore->getDomainRole(userId, role);
     if (dre) {
         std::vector<std::string> domains = dre->getDomains();
-        if (util::vectorContains(domains, domain)) {
+        const std::string wildcard = "*";
+        if (util::vectorContains(domains, domain) || util::vectorContains(domains, wildcard)) {
             hasRole = true;
         }
     }
 
     // Subscribe changes in the users roles
-    if (dreSubscriptions.count(userId) == 0) {
+    if (!useOnlyLocalDomainAccessStore && dreSubscriptions.count(userId) == 0) {
         dreSubscriptions.insert(std::make_pair(userId, subscribeForDreChange(userId)));
     }
 

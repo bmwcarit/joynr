@@ -520,9 +520,9 @@ bool ClusterControllerSettings::aclAudit() const
     return settings.get<bool>(SETTING_ACCESS_CONTROL_AUDIT());
 }
 
-void ClusterControllerSettings::setAclAudit(bool enable)
+void ClusterControllerSettings::setAclAudit(bool audit)
 {
-    settings.set(SETTING_ACCESS_CONTROL_ENABLE(), enable);
+    settings.set(SETTING_ACCESS_CONTROL_AUDIT(), audit);
 }
 
 std::string ClusterControllerSettings::getGlobalDomainAccessControlAddress() const

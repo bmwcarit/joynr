@@ -123,11 +123,15 @@ public:
         wsSettings(settings),
         server(),
         serverAddress(),
-        singleThreadedIOService(),
+        singleThreadedIOService(std::make_shared<joynr::SingleThreadedIOService>()),
         webSocket(nullptr)
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
         server.start();
+    }
+
+    ~WebSocketMessagingStubTest() {
+        singleThreadedIOService->stop();
     }
 
     MOCK_METHOD1(onWebSocketConnectionClosed, void (const joynr::system::RoutingTypes::Address&));
@@ -142,7 +146,7 @@ public:
         );
         JOYNR_LOG_DEBUG(logger(), "server URL: {}",serverAddress.toString());
         joynr::Semaphore connected(0);
-        webSocket = std::make_shared<joynr::WebSocketPpClient<websocketpp::config::asio_client>>(wsSettings, singleThreadedIOService.getIOService());
+        webSocket = std::make_shared<joynr::WebSocketPpClient<websocketpp::config::asio_client>>(wsSettings, singleThreadedIOService->getIOService());
         webSocket->registerConnectCallback([&connected](){connected.notify();});
         webSocket->connect(serverAddress);
 
@@ -157,7 +161,7 @@ protected:
     joynr::WebSocketSettings wsSettings;
     WebSocketServer server;
     joynr::system::RoutingTypes::WebSocketAddress serverAddress;
-    joynr::SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<joynr::SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<joynr::IWebSocketPpClient> webSocket;
 };
 

@@ -125,7 +125,7 @@ public:
         mockMessageSender(),
         proxyParticipantId(),
         providerParticipantId(),
-        asyncTestFixture(nullptr),
+        asyncTestFixture(),
         error(nullptr)
     {}
     virtual ~AbstractSyncAsyncTest() = default;
@@ -136,12 +136,6 @@ public:
         mockMessageSender = std::make_shared<MockMessageSender>();
         // asyncGpsFixture must be created after derived objects have run Setup()
     }
-
-    void TearDown(){
-        delete asyncTestFixture;
-    }
-
-
 
     // sets the expectations on the call expected on the MessageSender from the connector
     virtual testing::internal::TypedExpectation<void(
@@ -192,7 +186,7 @@ public:
         EXPECT_EQ(expectedEnum, actual.getError<T>());
     }
 
-    virtual tests::Itest* createFixture()=0;
+    virtual std::shared_ptr<tests::Itest> createFixture()=0;
 
     void testAsync_getAttributeNotCached() {
         asyncTestFixture = createFixture();
@@ -204,10 +198,12 @@ public:
                 [callback] (const joynr::types::Localisation::GpsLocation& location) {
                     callback->onSuccess(location);
                 });
+
+        delete callback;
     }
 
     void testSync_setAttributeNotCached() {
-        tests::Itest* testFixture = createFixture();
+        auto testFixture = createFixture();
 
         EXPECT_CALL(
                     *mockMessageSender,
@@ -225,12 +221,11 @@ public:
         ).WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackVoidResult));
 
         testFixture->setLocation(expectedGpsLocation);
-        delete testFixture;
     }
 
 
     void testSync_getAttributeNotCached() {
-        tests::Itest* testFixture = createFixture();
+        auto testFixture = createFixture();
         setExpectationsForSendRequestCall("getLocation")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
@@ -241,7 +236,6 @@ public:
             ADD_FAILURE()<< "getLocation was not successful";
         }
         EXPECT_EQ(expectedGpsLocation, gpsLocation);
-        delete testFixture;
     }
 
     void testAsync_getterCallReturnsProviderRuntimeException() {
@@ -268,7 +262,7 @@ public:
     }
 
     void testSync_getterCallReturnsProviderRuntimeException() {
-        tests::Itest* testFixture = createFixture();
+        auto testFixture = createFixture();
 
         exceptions::ProviderRuntimeException expected("getterCallReturnsProviderRuntimeExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
@@ -283,8 +277,6 @@ public:
         } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "getterCallReturnsProviderRuntimeException was not successful (unexpected exception)";
         }
-
-        delete testFixture;
     }
 
     void testAsync_getterCallReturnsMethodInvocationException() {
@@ -311,7 +303,7 @@ public:
     }
 
     void testSync_getterCallReturnsMethodInvocationException() {
-        tests::Itest* testFixture = createFixture();
+        auto testFixture = createFixture();
 
         exceptions::MethodInvocationException expected("getterCallReturnsMethodInvocationExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
@@ -326,8 +318,6 @@ public:
         } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "getterCallReturnsMethodInvocationException was not successful (unexpected exception)";
         }
-
-        delete testFixture;
     }
 
     void testAsync_setterCallReturnsProviderRuntimeException() {
@@ -356,12 +346,12 @@ public:
     }
 
     void testSync_setterCallReturnsProviderRuntimeException() {
-        tests::Itest* testFixture = createFixture();
+        auto testFixture = createFixture();
 
         exceptions::ProviderRuntimeException expected("setterCallReturnsProviderRuntimeExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
 
-        std::int32_t value;
+        std::int32_t value = 0;
         try {
             testFixture->setAttributeWithProviderRuntimeException(value);
             ADD_FAILURE()<< "setterCallReturnsProviderRuntimeException was not successful (expected ProviderRuntimeException)";
@@ -371,8 +361,6 @@ public:
         } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "setterCallReturnsProviderRuntimeException was not successful (unexpected exception)";
         }
-
-        delete testFixture;
     }
 
     void testAsync_setterCallReturnsMethodInvocationException() {
@@ -400,12 +388,12 @@ public:
         delete callback;    }
 
     void testSync_setterCallReturnsMethodInvocationException() {
-        tests::Itest* testFixture = createFixture();
+        auto testFixture = createFixture();
 
         exceptions::MethodInvocationException expected("setterCallReturnsMethodInvocationExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
 
-        std::int32_t value;
+        std::int32_t value = 0;
         try {
             testFixture->setAttributeWithProviderRuntimeException(value);
             ADD_FAILURE()<< "setterCallReturnsMethodInvocationException was not successful (expected MethodInvocationException)";
@@ -415,8 +403,6 @@ public:
         } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "setterCallReturnsMethodInvocationException was not successful (unexpected exception)";
         }
-
-        delete testFixture;
     }
 
     void testAsync_methodCallReturnsProviderRuntimeException() {
@@ -443,7 +429,7 @@ public:
     }
 
     void testSync_methodCallReturnsProviderRuntimeException() {
-        tests::Itest* testFixture = createFixture();
+        auto testFixture = createFixture();
 
         exceptions::ProviderRuntimeException expected("testSync_methodCallReturnsProviderRuntimeException-ERROR");
         setExpectedExceptionForSendRequestCall(expected);
@@ -457,7 +443,6 @@ public:
         } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "testSync_methodCallReturnsProviderRuntimeException was not successful (unexpected exception)";
         }
-        delete testFixture;
     }
 
     void testAsync_methodCallReturnsMethodInvocationException() {
@@ -484,7 +469,7 @@ public:
     }
 
     void testSync_methodCallReturnsMethodInvocationException() {
-        tests::Itest* testFixture = createFixture();
+        auto testFixture = createFixture();
 
         exceptions::MethodInvocationException expected("testSync_methodCallReturnsMethodInvocationException-ERROR");
         setExpectedExceptionForSendRequestCall(expected);
@@ -498,8 +483,6 @@ public:
         } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "testSync_methodCallReturnsMethodInvocationException was not successful (unexpected exception)";
         }
-
-        delete testFixture;
     }
 
     void testAsync_methodCallReturnsErrorEnum() {
@@ -532,7 +515,7 @@ public:
     }
 
     void testSync_methodCallReturnsErrorEnum() {
-        tests::Itest* testFixture = createFixture();
+        auto testFixture = createFixture();
 
         using tests::testTypes::ErrorEnumBase;
 
@@ -552,8 +535,6 @@ public:
         } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "testSync_methodCallReturnsErrorEnum was not successful (unexpected exception)";
         }
-
-        delete testFixture;
     }
 
     void testAsync_methodCallReturnsExtendedErrorEnum() {
@@ -586,7 +567,7 @@ public:
     }
 
     void testSync_methodCallReturnsExtendedErrorEnum() {
-        tests::Itest* testFixture = createFixture();
+        auto testFixture = createFixture();
 
         using tests::test::MethodWithErrorEnumExtendedErrorEnum;
         MethodWithErrorEnumExtendedErrorEnum::Enum error = MethodWithErrorEnumExtendedErrorEnum::IMPLICIT_ERROR_TYPECOLLECTION;
@@ -605,8 +586,6 @@ public:
         } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "testSync_methodCallReturnsExtendedErrorEnum was not successful (unexpected exception)";
         }
-
-        delete testFixture;
     }
 
     void testAsync_methodCallReturnsInlineErrorEnum() {
@@ -640,7 +619,7 @@ public:
     }
 
     void testSync_methodCallReturnsInlineErrorEnum() {
-        tests::Itest* testFixture = createFixture();
+        auto testFixture = createFixture();
 
         using tests::test::MethodWithImplicitErrorEnumErrorEnum;
 
@@ -660,8 +639,6 @@ public:
         } catch (const exceptions::JoynrException& e) {
             ADD_FAILURE()<< "testSync_methodCallReturnsInlineErrorEnum was not successful (unexpected exception)";
         }
-
-        delete testFixture;
     }
 
     void testAsync_OperationWithNoArguments() {
@@ -675,10 +652,11 @@ public:
                 [callback] (const int& value) {
                     callback->onSuccess(value);
                 });
+        delete callback;
     }
 
     void testSync_OperationWithNoArguments() {
-        tests::Itest* testFixture = createFixture();
+        auto testFixture = createFixture();
         setExpectationsForSendRequestCall("methodWithNoInputParameters")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackIntResult));
 
@@ -689,7 +667,6 @@ public:
             ADD_FAILURE()<< "methodWithNoInputParameters was not successful";
         }
         EXPECT_EQ(expectedInt, result);
-        delete testFixture;
     }
 
     void testSubscribeToAttribute() {
@@ -699,10 +676,9 @@ public:
         std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation> > subscriptionListener(
                     new MockGpsSubscriptionListener());
         //TODO uncomment once the connector has the correct signature!
-        //vehicle::IGps* gpsFixture = createFixture(false);
+        //std::shared_ptr<vehicle::IGps> gpsFixture = createFixture(false);
         //SubscriptionQos subscriptionQos(100, 200, true, 80, 80);
         //gpsFixture->subscribeToLocation(subscriptionListener, subscriptionQos);
-        //delete gpsFixture;
     }
 
 protected:
@@ -716,7 +692,7 @@ protected:
     std::shared_ptr<MockMessageSender> mockMessageSender;
     std::string proxyParticipantId;
     std::string providerParticipantId;
-    tests::Itest* asyncTestFixture;
+    std::shared_ptr<tests::Itest> asyncTestFixture;
     std::shared_ptr<exceptions::JoynrException> error;
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractSyncAsyncTest);

@@ -208,7 +208,7 @@ bool LibJoynrMessageRouter::isParentMessageRouterSet()
     if (!parentRouter) {
         JOYNR_LOG_TRACE(logger(),
                         "Parent message router not set. Discard this message if it appears "
-                        "during libJoynr initlization. It can be related to a configuration "
+                        "during libJoynr initialization. It can be related to a configuration "
                         "problem. Check setting file.");
         return false;
     }
@@ -456,11 +456,17 @@ void LibJoynrMessageRouter::addMulticastReceiver(
         return;
     }
 
-    parentRouter->addMulticastReceiverAsync(multicastId,
-                                            subscriberParticipantId,
-                                            providerParticipantId,
-                                            std::move(onSuccessWrapper),
-                                            std::move(onErrorWrapper));
+    auto inProcessAddress =
+            std::dynamic_pointer_cast<const joynr::InProcessMessagingAddress>(providerAddress);
+    if (!inProcessAddress) {
+        parentRouter->addMulticastReceiverAsync(multicastId,
+                                                subscriberParticipantId,
+                                                providerParticipantId,
+                                                std::move(onSuccessWrapper),
+                                                std::move(onErrorWrapper));
+    } else {
+        onSuccessWrapper();
+    }
 }
 
 void LibJoynrMessageRouter::removeMulticastReceiver(

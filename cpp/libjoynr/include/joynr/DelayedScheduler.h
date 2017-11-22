@@ -21,6 +21,7 @@
 
 #include <chrono>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <thread>
 #include <unordered_map>
@@ -46,7 +47,7 @@ namespace joynr
  * @class DelayedScheduler
  * @brief Using a @ref Timer and @ref BlockingQueue to execute a runnable delayed
  */
-class JOYNR_EXPORT DelayedScheduler
+class JOYNR_EXPORT DelayedScheduler : public std::enable_shared_from_this<DelayedScheduler>
 {
 public:
     /*! Handle to reference a @ref Runnable scheduled to work */
