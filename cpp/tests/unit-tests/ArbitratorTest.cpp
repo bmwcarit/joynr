@@ -49,10 +49,12 @@ using namespace joynr;
 
 static const std::string domain("unittest-domain");
 static const std::string interfaceName("unittest-interface");
+static const std::string exceptionMsgNoEntriesFound =
+        "No entries found for domain: " + domain + ", interface: " + interfaceName;
+static const std::string exceptionMsgUnableToLookup =
+        "Unable to lookup provider (domain: " + domain + ", interface: " + interfaceName
+        + ") from discovery. Error: ";
 
-MATCHER_P(discoveryException, msg, "") {
-    return arg.getTypeName() == joynr::exceptions::DiscoveryException::TYPE_NAME() && arg.getMessage() == msg;
-}
 class MockArbitrator : public Arbitrator {
 public:
     MockArbitrator(const std::string& domain,
@@ -123,7 +125,10 @@ TEST_F(ArbitratorTest, arbitrationTimeout) {
     };
 
     auto onError = [this](const exceptions::DiscoveryException& exception) {
-        EXPECT_THAT(exception, discoveryException("Arbitration could not be finished in time."));
+        EXPECT_THAT(exception,
+                    joynrException(
+                        joynr::exceptions::DiscoveryException::TYPE_NAME(),
+                        "Arbitration could not be finished in time."));
         semaphore.notify();
     };
 
@@ -972,13 +977,6 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
  * Tests that the arbitrators report the exception from the discoveryProxy if the lookup fails
  * during the last retry
  */
-MATCHER_P(exceptionFromDiscoveryProxy, originalException, "") {
-    std::string expectedErrorMsg = "Unable to lookup provider (domain: " + domain +
-            ", interface: " + interfaceName + ") from discovery. Error: " +
-            originalException.getMessage();
-    return arg.getMessage() == expectedErrorMsg;
-}
-
 void ArbitratorTest::testExceptionFromDiscoveryProxy(std::shared_ptr<Arbitrator> arbitrator, const DiscoveryQos& discoveryQos){
     exceptions::JoynrRuntimeException exception1("first exception");
     exceptions::JoynrRuntimeException expectedException("expected exception");
@@ -996,7 +994,9 @@ void ArbitratorTest::testExceptionFromDiscoveryProxy(std::shared_ptr<Arbitrator>
     };
 
     auto onError = [this, &expectedException](const exceptions::DiscoveryException& exception) {
-        EXPECT_THAT(exception, exceptionFromDiscoveryProxy(expectedException));
+        EXPECT_THAT(exception, joynrException(
+                        exceptions::DiscoveryException::TYPE_NAME(),
+                        exceptionMsgUnableToLookup + expectedException.getMessage()));
         semaphore.notify();
     };
 
@@ -1072,7 +1072,9 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsExceptionFromDiscoveryP
     };
 
     auto onError = [this, &expectedException](const exceptions::DiscoveryException& exception) {
-        EXPECT_THAT(exception, exceptionFromDiscoveryProxy(expectedException));
+        EXPECT_THAT(exception, joynrException(
+                        exceptions::DiscoveryException::TYPE_NAME(),
+                        exceptionMsgUnableToLookup + expectedException.getMessage()));
         semaphore.notify();
     };
 
@@ -1100,13 +1102,6 @@ TEST_F(ArbitratorTest, getLastSeenReturnsExceptionFromDiscoveryProxy) {
 /*
  * Tests that the arbitrators report an exception if no entries were found during the last retry
  */
-
-MATCHER(exceptionEmptyResult, "") {
-    std::string expectedErrorMsg = "No entries found for domain: " + domain +
-            ", interface: " + interfaceName;
-    return arg.getMessage() == expectedErrorMsg;
-}
-
 void ArbitratorTest::testExceptionEmptyResult(std::shared_ptr<Arbitrator> arbitrator, const DiscoveryQos& discoveryQos){
     // discovery entries for first lookup
     types::ProviderQos providerQos(
@@ -1145,7 +1140,9 @@ void ArbitratorTest::testExceptionEmptyResult(std::shared_ptr<Arbitrator> arbitr
     };
 
     auto onError = [this](const exceptions::DiscoveryException& exception) {
-        EXPECT_THAT(exception, exceptionEmptyResult());
+        EXPECT_THAT(exception, joynrException(
+                        exceptions::DiscoveryException::TYPE_NAME(),
+                        exceptionMsgNoEntriesFound));
         semaphore.notify();
     };
 
