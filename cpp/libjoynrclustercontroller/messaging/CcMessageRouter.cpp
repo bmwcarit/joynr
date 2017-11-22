@@ -377,10 +377,10 @@ void CcMessageRouter::addNextHop(
         bool isGloballyVisible,
         const std::int64_t expiryDateMs,
         const bool isSticky,
+        const bool allowUpdate,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    const bool allowUpdate = true;
     std::ignore = onError;
     assert(address);
     addToRoutingTable(
@@ -409,6 +409,7 @@ void CcMessageRouter::addNextHop(
                isGloballyVisible,
                expiryDateMs,
                isSticky,
+               false,
                std::move(onSuccess));
 }
 
@@ -429,6 +430,7 @@ void CcMessageRouter::addNextHop(
                isGloballyVisible,
                expiryDateMs,
                isSticky,
+               false,
                std::move(onSuccess));
 }
 
@@ -450,6 +452,7 @@ void CcMessageRouter::addNextHop(
                isGloballyVisible,
                expiryDateMs,
                isSticky,
+               false,
                std::move(onSuccess));
 }
 
@@ -471,6 +474,7 @@ void CcMessageRouter::addNextHop(
                isGloballyVisible,
                expiryDateMs,
                isSticky,
+               false,
                std::move(onSuccess));
 }
 
@@ -492,6 +496,7 @@ void CcMessageRouter::addNextHop(
                isGloballyVisible,
                expiryDateMs,
                isSticky,
+               false,
                std::move(onSuccess));
 }
 
@@ -513,6 +518,7 @@ void CcMessageRouter::addNextHop(
                isGloballyVisible,
                expiryDateMs,
                isSticky,
+               false,
                std::move(onSuccess));
 }
 

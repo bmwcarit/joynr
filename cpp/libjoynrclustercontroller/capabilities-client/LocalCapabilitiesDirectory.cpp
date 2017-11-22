@@ -580,7 +580,8 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
                                                    address,
                                                    isGloballyVisible,
                                                    expiryDateMs,
-                                                   isSticky);
+                                                   isSticky,
+                                                   true);
             } else {
                 JOYNR_LOG_FATAL(
                         logger(),
