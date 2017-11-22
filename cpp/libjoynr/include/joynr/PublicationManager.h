@@ -502,18 +502,11 @@ void PublicationManager::broadcastOccurred(const std::string& subscriptionId, co
             sendPublication(
                     publication, subscriptionRequest, subscriptionRequest, std::move(replyValues));
         } else {
-            if (timeUntilNextPublication > 0) {
-                JOYNR_LOG_DEBUG(logger(),
-                                "Omitting broadcast publication for subscription {} because of too "
-                                "short interval. Next publication possible in {} ms",
-                                subscriptionId,
-                                timeUntilNextPublication);
-            } else {
-                JOYNR_LOG_DEBUG(
-                        logger(),
-                        "Omitting broadcast publication for subscription {} because of error.",
-                        subscriptionId);
-            }
+            JOYNR_LOG_DEBUG(logger(),
+                            "Omitting broadcast publication for subscription {} because of too "
+                            "short interval. Next publication possible in {} ms",
+                            subscriptionId,
+                            timeUntilNextPublication);
         }
     }
 }
