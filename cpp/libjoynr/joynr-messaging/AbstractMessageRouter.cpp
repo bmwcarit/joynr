@@ -475,20 +475,30 @@ void AbstractMessageRouter::addToRoutingTable(
         bool isGloballyVisible,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
         std::int64_t expiryDateMs,
-        bool isSticky)
+        bool isSticky,
+        bool allowUpdate)
 {
     {
         WriteLocker lock(routingTableLock);
         auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
         if (routingEntry) {
+
             if ((*(routingEntry->address) != *address) ||
                 (routingEntry->isGloballyVisible != isGloballyVisible)) {
-                JOYNR_LOG_WARN(logger(),
-                               "unable to update participantId={} in routing table, since "
-                               "the participantId is already associated with routing entry {}",
-                               participantId,
-                               routingEntry->toString());
-                return;
+                if (!allowUpdate) {
+                    JOYNR_LOG_WARN(logger(),
+                                   "unable to update participantId={} in routing table, since "
+                                   "the participantId is already associated with routing entry {}",
+                                   participantId,
+                                   routingEntry->toString());
+                    return;
+                }
+                JOYNR_LOG_DEBUG(logger(),
+                                "updating participantId={} in routing table, because we trust "
+                                "the globalDiscovery although the participantId is already "
+                                "associated with routing entry {}",
+                                participantId,
+                                routingEntry->toString());
             }
             // keep longest lifetime
             if (routingEntry->expiryDateMs > expiryDateMs) {

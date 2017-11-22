@@ -380,9 +380,11 @@ void CcMessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    const bool allowUpdate = true;
     std::ignore = onError;
     assert(address);
-    addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
+    addToRoutingTable(
+            participantId, isGloballyVisible, address, expiryDateMs, isSticky, allowUpdate);
     sendMessages(participantId, address);
     if (onSuccess) {
         onSuccess();
