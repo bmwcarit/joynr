@@ -34,6 +34,7 @@ public:
             const bool& isGloballyVisible,
             const std::int64_t expiryDateMs,
             const bool isSticky,
+            const bool allowUpdate,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         if (onSuccess) {
@@ -54,7 +55,7 @@ public:
         using ::testing::_;
         EXPECT_CALL(
                 *this,
-                addNextHop(_,_,_,_,_,_,_)
+                addNextHop(_,_,_,_,_,_,_,_)
         )
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeAddNextHopOnSuccessFct));
         EXPECT_CALL(
@@ -75,12 +76,13 @@ public:
                                                  std::function<void()> onSuccess,
                                                  std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError));
 
-    MOCK_METHOD7(addNextHop, void(
+    MOCK_METHOD8(addNextHop, void(
             const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
             bool isGloballyVisible,
             const std::int64_t expiryDateMs,
             const bool isSticky,
+            const bool allowUpdate,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 
