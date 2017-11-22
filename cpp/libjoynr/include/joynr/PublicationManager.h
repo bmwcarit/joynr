@@ -310,12 +310,11 @@ private:
 
     /**
      * @brief getTimeUntilNextPublication determines the time to wait until the next publication
-     * can be sent base on the QOS information.
-     * @param subscriptionId
+     * can be sent based on the QOS information.
+     * @param publication
      * @param qos
      * @return  0 if publication can immediately be sent;
-     *          amount of ms to wait, if interval was too short;
-     *          -1 on error
+     *          amount of ms to wait, if interval was too short
      */
     std::int64_t getTimeUntilNextPublication(std::shared_ptr<Publication> publication,
                                              const std::shared_ptr<SubscriptionQos> qos);
