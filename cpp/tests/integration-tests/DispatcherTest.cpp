@@ -59,8 +59,8 @@ using namespace joynr;
 class DispatcherTest : public ::testing::Test {
 public:
     DispatcherTest() :
-        singleThreadIOService(),
-        mockMessageRouter(new MockMessageRouter(singleThreadIOService.getIOService())),
+        singleThreadIOService(std::make_shared<SingleThreadedIOService>()),
+        mockMessageRouter(new MockMessageRouter(singleThreadIOService->getIOService())),
         mockCallback(new MockCallbackWithJoynrException<types::Localisation::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::Localisation::GpsLocation>(
@@ -77,13 +77,17 @@ public:
         requestReplyId("TEST-requestReplyId"),
         messageFactory(),
         messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
-        dispatcher(messageSender, singleThreadIOService.getIOService()),
+        dispatcher(messageSender, singleThreadIOService->getIOService()),
         callContext(),
         getLocationCalledSemaphore(0),
         isLocalMessage(true)
     {
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
-        singleThreadIOService.start();
+        singleThreadIOService->start();
+    }
+
+    ~DispatcherTest() {
+        singleThreadIOService->stop();
     }
 
     void invokeOnSuccessWithGpsLocation(
@@ -104,7 +108,7 @@ public:
 
 protected:
     ADD_LOGGER(DispatcherTest)
-    SingleThreadedIOService singleThreadIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::shared_ptr<MockCallbackWithJoynrException<types::Localisation::GpsLocation> > mockCallback;
 
@@ -285,7 +289,7 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
                 reply
     );
 
-    auto mockSubscriptionManager = std::make_shared<MockSubscriptionManager>(singleThreadIOService.getIOService(), mockMessageRouter);
+    auto mockSubscriptionManager = std::make_shared<MockSubscriptionManager>(singleThreadIOService->getIOService(), mockMessageRouter);
     auto mockSubscriptionCallback = std::make_shared<MockSubscriptionCallback>();
     EXPECT_CALL(*mockSubscriptionManager, getSubscriptionCallback(Eq(subscriptionId))).WillOnce(Return(mockSubscriptionCallback));
 
@@ -302,7 +306,7 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
 
 TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback) {
     auto mockSubscriptionManager = std::make_shared<MockSubscriptionManager>(
-                singleThreadIOService.getIOService(), mockMessageRouter);
+                singleThreadIOService->getIOService(), mockMessageRouter);
     dispatcher.registerSubscriptionManager(mockSubscriptionManager);
 
     const std::string senderParticipantId("senderParticipantId");

@@ -351,7 +351,7 @@ public:
         exceptions::ProviderRuntimeException expected("setterCallReturnsProviderRuntimeExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
 
-        std::int32_t value;
+        std::int32_t value = 0;
         try {
             testFixture->setAttributeWithProviderRuntimeException(value);
             ADD_FAILURE()<< "setterCallReturnsProviderRuntimeException was not successful (expected ProviderRuntimeException)";
@@ -393,7 +393,7 @@ public:
         exceptions::MethodInvocationException expected("setterCallReturnsMethodInvocationExceptionError");
         setExpectedExceptionForSendRequestCall(expected);
 
-        std::int32_t value;
+        std::int32_t value = 0;
         try {
             testFixture->setAttributeWithProviderRuntimeException(value);
             ADD_FAILURE()<< "setterCallReturnsMethodInvocationException was not successful (expected MethodInvocationException)";

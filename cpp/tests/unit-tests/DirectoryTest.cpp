@@ -64,14 +64,18 @@ class DirectoryTest : public ::testing::Test
 {
 public:
     DirectoryTest()
-        : singleThreadedIOService(),
-          directory("Directory", singleThreadedIOService.getIOService()),
+        : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+          directory("Directory", singleThreadedIOService->getIOService()),
           testValue(nullptr),
           secondTestValue(nullptr),
           firstKey(""),
           secondKey("")
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
+    }
+
+    ~DirectoryTest() {
+        singleThreadedIOService->stop();
     }
 
     void SetUp(){
@@ -82,7 +86,7 @@ public:
     }
 
 protected:
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     Directory<std::string, std::string> directory;
     std::shared_ptr<std::string> testValue;
     std::shared_ptr<std::string> secondTestValue;
@@ -136,7 +140,7 @@ TEST_F(DirectoryTest, scheduledRemove)
 
 TEST_F(DirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
 {
-    Directory<std::string, TrackableObject> directory("Directory",  singleThreadedIOService.getIOService());
+    Directory<std::string, TrackableObject> directory("Directory", singleThreadedIOService->getIOService());
     {
         auto tp = std::make_shared<TrackableObject>();
         ASSERT_EQ(TrackableObject::getInstances(), 1);
@@ -150,7 +154,7 @@ TEST_F(DirectoryTest, ObjectsAreDeletedByDirectoryAfterTtl)
 TEST_F(DirectoryTest, ObjectsAreDeletedIfDirectoryIsDeleted)
 {
     {
-        Directory<std::string, TrackableObject> directory("Directory",  singleThreadedIOService.getIOService());
+        Directory<std::string, TrackableObject> directory("Directory", singleThreadedIOService->getIOService());
         auto tp = std::make_shared<TrackableObject>();
         ASSERT_EQ(TrackableObject::getInstances(), 1);
         directory.add("key", tp, 100);
@@ -162,7 +166,7 @@ TEST_F(DirectoryTest, useStdStringKeys)
 {
     std::string key = "key";
     auto value = std::make_shared<std::string>("value");
-    Directory<std::string, std::string> directory("Directory",  singleThreadedIOService.getIOService());
+    Directory<std::string, std::string> directory("Directory", singleThreadedIOService->getIOService());
     ASSERT_FALSE(directory.contains(key)) << "Empty directory contains entry.";
     directory.add(key, value);
     ASSERT_TRUE(directory.contains(key));

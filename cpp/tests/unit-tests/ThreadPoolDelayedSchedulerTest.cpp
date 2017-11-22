@@ -26,6 +26,7 @@
 #include "joynr/SingleThreadedIOService.h"
 
 #include "tests/mock/MockRunnable.h"
+#include "tests/utils/PtrUtils.h"
 #include "tests/utils/TestRunnable.h"
 #include "tests/mock/MockRunnableWithAccuracy.h"
 
@@ -39,139 +40,151 @@ using ::testing::StrictMock;
 class ThreadPoolDelayedSchedulerTest : public testing::Test
 {
 public:
-    ThreadPoolDelayedSchedulerTest() : singleThreadedIOService()
+    ThreadPoolDelayedSchedulerTest() : singleThreadedIOService(std::make_shared<SingleThreadedIOService>())
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
+    }
+
+    ~ThreadPoolDelayedSchedulerTest() {
+        singleThreadedIOService->stop();
     }
 protected:
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
 };
 
 TEST_F(ThreadPoolDelayedSchedulerTest, startAndShutdownWithoutWork)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
+    auto scheduler = std::make_shared<ThreadPoolDelayedScheduler>(1, "ThreadPoolDelayedScheduler", singleThreadedIOService->getIOService(), std::chrono::milliseconds::zero());
 
-    scheduler.shutdown();
+    scheduler->shutdown();
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCorrect)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
+    auto scheduler = std::make_shared<ThreadPoolDelayedScheduler>(1, "ThreadPoolDelayedScheduler", singleThreadedIOService->getIOService(), std::chrono::milliseconds::zero());
 
     // Dtor should be called
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
-    scheduler.schedule(runnable1, std::chrono::milliseconds(100));
+    scheduler->schedule(runnable1, std::chrono::milliseconds(100));
 
     // Dtor called after scheduler was cleaned
     auto runnable2 = std::make_shared<StrictMock<MockRunnable>>();
-    scheduler.schedule(runnable2, std::chrono::milliseconds(100));
+    scheduler->schedule(runnable2, std::chrono::milliseconds(100));
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-    scheduler.shutdown();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
     EXPECT_CALL(*runnable2, dtorCalled()).Times(1);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    scheduler->shutdown();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    test::util::resetAndWaitUntilDestroyed(runnable1);
+    test::util::resetAndWaitUntilDestroyed(runnable2);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, testAccuracyOfDelayedScheduler)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
+    auto scheduler = std::make_shared<ThreadPoolDelayedScheduler>(1, "ThreadPoolDelayedScheduler", singleThreadedIOService->getIOService(), std::chrono::milliseconds::zero());
 
     auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(5);
 
-    scheduler.schedule(runnable1, std::chrono::milliseconds(5));
+    scheduler->schedule(runnable1, std::chrono::milliseconds(5));
 
     EXPECT_CALL(*runnable1, runCalled()).Times(1);
     EXPECT_CALL(*runnable1, runCalledInTime()).Times(1);
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    scheduler.shutdown();
+    scheduler->shutdown();
 
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExpired)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
+    auto scheduler = std::make_shared<ThreadPoolDelayedScheduler>(1, "ThreadPoolDelayedScheduler", singleThreadedIOService->getIOService(), std::chrono::milliseconds::zero());
 
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
 
-    scheduler.schedule(runnable1, std::chrono::milliseconds(5));
+    scheduler->schedule(runnable1, std::chrono::milliseconds(5));
 
     EXPECT_CALL(*runnable1, run()).Times(1);
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    scheduler.shutdown();
+    scheduler->shutdown();
+    test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
+    auto scheduler = std::make_shared<ThreadPoolDelayedScheduler>(1, "ThreadPoolDelayedScheduler", singleThreadedIOService->getIOService(), std::chrono::milliseconds::zero());
 
     auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(5);
 
-    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
+    joynr::DelayedScheduler::RunnableHandle handle = scheduler->schedule(runnable1, std::chrono::milliseconds(5));
+
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-    scheduler.unschedule(handle);
+    scheduler->unschedule(handle);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    scheduler.shutdown();
+    scheduler->shutdown();
 
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds::zero());
+    auto scheduler = std::make_shared<ThreadPoolDelayedScheduler>(1, "ThreadPoolDelayedScheduler", singleThreadedIOService->getIOService(), std::chrono::milliseconds::zero());
 
     auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(5);
 
-    joynr::DelayedScheduler::RunnableHandle handle = scheduler.schedule(runnable1, std::chrono::milliseconds(5));
+    joynr::DelayedScheduler::RunnableHandle handle = scheduler->schedule(runnable1, std::chrono::milliseconds(5));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
 
-    scheduler.unschedule(handle);
+    scheduler->unschedule(handle);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    scheduler.shutdown();
+    scheduler->shutdown();
+    test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, useDefaultDelay)
 {
-    ThreadPoolDelayedScheduler scheduler(1, "ThreadPoolDelayedScheduler", singleThreadedIOService.getIOService(), std::chrono::milliseconds(10));
+    auto scheduler = std::make_shared<ThreadPoolDelayedScheduler>(1, "ThreadPoolDelayedScheduler", singleThreadedIOService->getIOService(), std::chrono::milliseconds(10));
 
     auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(10);
 
-    scheduler.schedule(runnable1);
+    scheduler->schedule(runnable1);
 
     EXPECT_CALL(*runnable1, runCalled()).Times(1);
     EXPECT_CALL(*runnable1, runCalledInTime()).Times(1);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(15));
 
-    scheduler.shutdown();
+    scheduler->shutdown();
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, schedule_deletingRunnablesCorrectly)
 {
-    ThreadPoolDelayedScheduler scheduler(3, "ThreadPool", singleThreadedIOService.getIOService());
+    auto scheduler = std::make_shared<ThreadPoolDelayedScheduler>(3, "ThreadPool", singleThreadedIOService->getIOService());
     auto runnable = std::make_shared<TestRunnable>();
-    scheduler.schedule(runnable, std::chrono::milliseconds(1));
+    scheduler->schedule(runnable, std::chrono::milliseconds(1));
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    scheduler.shutdown();
+    scheduler->shutdown();
 }

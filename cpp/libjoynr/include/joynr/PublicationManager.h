@@ -228,7 +228,7 @@ private:
 
     std::mutex fileWriteLock;
     // Publications are scheduled to run on a thread pool
-    std::unique_ptr<DelayedScheduler> delayedScheduler;
+    std::shared_ptr<DelayedScheduler> delayedScheduler;
 
     // Support for clean shutdowns
     std::mutex shutDownMutex;

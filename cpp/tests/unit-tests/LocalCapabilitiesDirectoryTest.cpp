@@ -61,8 +61,8 @@ public:
               settings(settingsFileName),
               clusterControllerSettings(settings),
               capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
-              singleThreadedIOService(),
-              mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
+              singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
               clusterControllerId("clusterControllerId"),
               localCapabilitiesDirectory(),
               lastSeenDateMs(std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -75,7 +75,7 @@ public:
               defaultOnError([](const joynr::exceptions::ProviderRuntimeException&){}),
               defaultProviderVersion(26, 05)
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
         clusterControllerSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(100);
         settings.set(ClusterControllerSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(), 200);
         localCapabilitiesDirectory =
@@ -83,13 +83,13 @@ public:
                                                              capabilitiesClient,
                                                              LOCAL_ADDRESS,
                                                              mockMessageRouter,
-                                                             singleThreadedIOService.getIOService(),
+                                                             singleThreadedIOService->getIOService(),
                                                              clusterControllerId);
     }
 
     ~LocalCapabilitiesDirectoryTest()
     {
-        singleThreadedIOService.stop();
+        singleThreadedIOService->stop();
         localCapabilitiesDirectory.reset();
 
         joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
@@ -271,7 +271,7 @@ protected:
     Settings settings;
     ClusterControllerSettings clusterControllerSettings;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::string clusterControllerId;
     std::unique_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
@@ -1606,7 +1606,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                                                               capabilitiesClient,
                                                                               LOCAL_ADDRESS,
                                                                               mockMessageRouter,
-                                                                              singleThreadedIOService.getIOService(),
+                                                                              singleThreadedIOService->getIOService(),
                                                                               "clusterControllerId");
 
     // load persistency

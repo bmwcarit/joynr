@@ -110,24 +110,24 @@ public:
     AccessControllerTest() :
         emptySettings(),
         clusterControllerSettings(emptySettings),
-        singleThreadedIOService(),
+        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
         localDomainAccessControllerMock(std::make_shared<MockLocalDomainAccessController>(std::make_unique<LocalDomainAccessStore>(), false)),
         accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
-        messageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService.getIOService())),
-        localCapabilitiesDirectoryMock(std::make_shared<MockLocalCapabilitiesDirectory>(clusterControllerSettings, messageRouter, singleThreadedIOService.getIOService())),
+        messageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
+        localCapabilitiesDirectoryMock(std::make_shared<MockLocalCapabilitiesDirectory>(clusterControllerSettings, messageRouter, singleThreadedIOService->getIOService())),
         accessController(
                 localCapabilitiesDirectoryMock,
                 localDomainAccessControllerMock
         ),
         messagingQos(MessagingQos(5000))
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
     }
 
     ~AccessControllerTest()
     {
         localCapabilitiesDirectoryMock->shutdown();
-        singleThreadedIOService.stop();
+        singleThreadedIOService->stop();
     }
 
     void invokeOnSuccessCallbackFct (std::string participantId,
@@ -203,7 +203,7 @@ public:
 protected:
     Settings emptySettings;
     ClusterControllerSettings clusterControllerSettings;
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockLocalDomainAccessController> localDomainAccessControllerMock;
     std::shared_ptr<MockConsumerPermissionCallback> accessControllerCallback;
     std::shared_ptr<MockMessageRouter> messageRouter;

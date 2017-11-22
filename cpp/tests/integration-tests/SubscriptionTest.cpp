@@ -58,8 +58,8 @@ using namespace joynr;
 class SubscriptionTest : public ::testing::Test {
 public:
     SubscriptionTest() :
-        singleThreadedIOService(),
-        mockMessageRouter(new MockMessageRouter(singleThreadedIOService.getIOService())),
+        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+        mockMessageRouter(new MockMessageRouter(singleThreadedIOService->getIOService())),
         mockCallback(new MockCallbackWithJoynrException<types::Localisation::GpsLocation>()),
         mockRequestCaller(new MockTestRequestCaller()),
         mockReplyCaller(new MockReplyCaller<types::Localisation::GpsLocation>(
@@ -77,19 +77,19 @@ public:
         requestReplyId("requestReplyId"),
         messageFactory(),
         messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
-        dispatcher(messageSender, singleThreadedIOService.getIOService()),
+        dispatcher(messageSender, singleThreadedIOService->getIOService()),
         subscriptionManager(),
         provider(new MockTestProvider),
-        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService.getIOService(), messageSender)),
+        publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender)),
         requestCaller(new joynr::tests::testRequestCaller(provider)),
         isLocalMessage(true)
     {
-        singleThreadedIOService.start();
+        singleThreadedIOService->start();
     }
 
     void SetUp(){
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored subscriptions
-        subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadedIOService.getIOService(), mockMessageRouter);
+        subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadedIOService->getIOService(), mockMessageRouter);
         dispatcher.registerPublicationManager(publicationManager);
         dispatcher.registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
@@ -98,11 +98,11 @@ public:
     ~SubscriptionTest()
     {
         publicationManager->shutdown();
-        singleThreadedIOService.stop();
+        singleThreadedIOService->stop();
     }
 
 protected:
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::shared_ptr<MockCallbackWithJoynrException<types::Localisation::GpsLocation> > mockCallback;
 

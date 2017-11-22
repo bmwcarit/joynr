@@ -46,6 +46,7 @@ void WebSocketMessagingStub::transmit(
                        message->toLogMessage());
         onFailure(exceptions::JoynrDelayMessageException(
                 "WebSocket not ready. Unable to send message"));
+        return;
     }
 
     JOYNR_LOG_DEBUG(logger(), ">>> OUTGOING >>> {}", message->toLogMessage());

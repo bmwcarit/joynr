@@ -23,6 +23,7 @@
 
 #include <boost/asio/io_service.hpp>
 
+#include "joynr/DispatcherUtils.h"
 #include "joynr/IMessagingStub.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/ImmutableMessage.h"
@@ -60,7 +61,9 @@ AbstractMessageRouter::AbstractMessageRouter(
           multicastReceiverDirectory(),
           messagingSettings(messagingSettings),
           messagingStubFactory(std::move(messagingStubFactory)),
-          messageScheduler(maxThreads, "AbstractMessageRouter", ioService),
+          messageScheduler(std::make_shared<ThreadPoolDelayedScheduler>(maxThreads,
+                                                                        "AbstractMessageRouter",
+                                                                        ioService)),
           messageQueue(std::move(messageQueue)),
           transportNotAvailableQueue(std::move(transportNotAvailableQueue)),
           routingTableFileName(),
@@ -90,7 +93,7 @@ void AbstractMessageRouter::shutdown()
 {
     messageQueueCleanerTimer.cancel();
     routingTableCleanerTimer.cancel();
-    messageScheduler.shutdown();
+    messageScheduler->shutdown();
     if (messagingStubFactory) {
         messagingStubFactory->shutdown();
     }
@@ -162,6 +165,12 @@ void AbstractMessageRouter::checkExpiryDate(const ImmutableMessage& message)
 {
     JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now());
+    JOYNR_LOG_TRACE(
+            logger(),
+            "now: {} --- expiryDate: {}",
+            std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count(),
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    message.getExpiryDate().time_since_epoch()).count());
     if (now > message.getExpiryDate()) {
         std::string errorMessage("Received expired message. Dropping the message (ID: " +
                                  message.getId() + ").");
@@ -270,12 +279,12 @@ void AbstractMessageRouter::sendMessages(
 
         try {
             const std::uint32_t tryCount = 0;
-            messageScheduler.schedule(std::make_shared<MessageRunnable>(item->getContent(),
-                                                                        std::move(messagingStub),
-                                                                        address,
-                                                                        shared_from_this(),
-                                                                        tryCount),
-                                      std::chrono::milliseconds(0));
+            messageScheduler->schedule(std::make_shared<MessageRunnable>(item->getContent(),
+                                                                         std::move(messagingStub),
+                                                                         address,
+                                                                         shared_from_this(),
+                                                                         tryCount),
+                                       std::chrono::milliseconds(0));
         } catch (const exceptions::JoynrMessageNotSentException& e) {
             JOYNR_LOG_ERROR(logger(),
                             "Message with Id {} could not be sent. Error: {}",
@@ -306,12 +315,12 @@ void AbstractMessageRouter::scheduleMessage(
 
     auto stub = messagingStubFactory->create(destAddress);
     if (stub) {
-        messageScheduler.schedule(std::make_shared<MessageRunnable>(std::move(message),
-                                                                    std::move(stub),
-                                                                    std::move(destAddress),
-                                                                    shared_from_this(),
-                                                                    tryCount),
-                                  delay);
+        messageScheduler->schedule(std::make_shared<MessageRunnable>(std::move(message),
+                                                                     std::move(stub),
+                                                                     std::move(destAddress),
+                                                                     shared_from_this(),
+                                                                     tryCount),
+                                   delay);
     } else {
         JOYNR_LOG_WARN(
                 logger(),

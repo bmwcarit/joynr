@@ -33,7 +33,6 @@ void InProcessMessagingSkeleton::transmit(
         std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    std::ignore = onFailure;
     if (auto dispatcherSharedPtr = dispatcher.lock()) {
         dispatcherSharedPtr->receive(message);
     } else {

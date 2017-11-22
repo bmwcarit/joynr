@@ -293,19 +293,7 @@ target_include_directories(
         "$<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>" # necessary, because requirements are not propagated properly in cmake 2.8.x
 )
 
-if(JOYNR_ENABLE_STDOUT_LOGGING)
-    target_compile_definitions(
-        Joynr
-        PUBLIC
-        JOYNR_ENABLE_STDOUT_LOGGING)
-endif(JOYNR_ENABLE_STDOUT_LOGGING)
-
 if(JOYNR_ENABLE_DLT_LOGGING)
-    target_compile_definitions(
-        Joynr
-        PUBLIC
-        JOYNR_ENABLE_DLT_LOGGING)
-
     target_include_directories(
         Joynr
         SYSTEM PUBLIC

@@ -72,7 +72,7 @@ public:
     std::shared_ptr<MockTransportMessageReceiver> mockMessageReceiver;
     std::shared_ptr<MockTransportMessageSender> mockMessageSender;
     std::shared_ptr<MessagingStubFactory> messagingStubFactory;
-    SingleThreadedIOService singleThreadedIOService;
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<CcMessageRouter> messageRouter;
     AbstractMessagingTest() :
         settingsFileName("MessagingTest.settings"),
@@ -93,7 +93,7 @@ public:
         mockMessageReceiver(new MockTransportMessageReceiver()),
         mockMessageSender(new MockTransportMessageSender()),
         messagingStubFactory(std::make_shared<MessagingStubFactory>()),
-        singleThreadedIOService(),
+        singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
         messageRouter()
     {
         const std::string globalCCAddress("globalAddress");
@@ -105,7 +105,7 @@ public:
                                                           messagingStubFactory,
                                                           std::make_shared<MulticastMessagingSkeletonDirectory>(),
                                                           nullptr,
-                                                          singleThreadedIOService.getIOService(),
+                                                          singleThreadedIOService->getIOService(),
                                                           nullptr,
                                                           globalCCAddress,
                                                           messageNotificationProviderParticipantId);

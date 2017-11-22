@@ -134,6 +134,18 @@ set(
     @JOYNR_ENABLE_STDOUT_LOGGING@
 )
 
+if(JOYNR_ENABLE_DLT_LOGGING)
+    include(FindPkgConfig)
+    pkg_check_modules(DLT REQUIRED automotive-dlt)
+    set(DLT_LIBRARIES "${DLT_LIBRARY_DIRS}/${CMAKE_SHARED_LIBRARY_PREFIX}dlt${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    include(${JOYNR_CMAKE_DIR}/CheckDltImportTargets.cmake)
+    add_definitions(-DJOYNR_ENABLE_DLT_LOGGING)
+endif(JOYNR_ENABLE_DLT_LOGGING)
+
+if(JOYNR_ENABLE_STDOUT_LOGGING)
+    add_definitions(-DJOYNR_ENABLE_STDOUT_LOGGING)
+endif(JOYNR_ENABLE_STDOUT_LOGGING)
+
 # Dbus configuration
 if(${USE_DBUS_COMMONAPI_COMMUNICATION})
     set(
