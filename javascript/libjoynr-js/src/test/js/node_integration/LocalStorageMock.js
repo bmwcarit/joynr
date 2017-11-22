@@ -39,4 +39,4 @@ var localStorage = (function() {
     };
 
     return pub;
-}());
+})();

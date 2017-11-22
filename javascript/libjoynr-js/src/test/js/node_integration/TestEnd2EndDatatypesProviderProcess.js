@@ -43,7 +43,8 @@ var Promise = Promise.Promise;
 var providerDomain;
 
 // attribute values for provider
-var currentAttributeValue, isOn = true;
+var currentAttributeValue,
+    isOn = true;
 
 var datatypesProvider;
 var runtime;
@@ -56,7 +57,7 @@ function getObjectType(obj) {
     }
     var funcNameRegex = /function ([$\w]+)\(/;
     var results = funcNameRegex.exec(obj.constructor.toString());
-    return (results && results.length > 1) ? results[1] : "";
+    return results && results.length > 1 ? results[1] : "";
 }
 
 function getter() {
@@ -69,27 +70,27 @@ function setter(value) {
 
 function initializeTest(provisioningSuffix, providedDomain) {
     return new Promise(function(resolve, reject) {
-
-        providerDomain = (providedDomain !== undefined ? providedDomain : domain);
+        providerDomain = providedDomain !== undefined ? providedDomain : domain;
 
         // set joynr provisioning
         localStorage.setItem(
-        "joynr.participants." + providerDomain + interfaceNameDatatypes,
-        providerParticipantIdDatatypes + provisioningSuffix);
+            "joynr.participants." + providerDomain + interfaceNameDatatypes,
+            providerParticipantIdDatatypes + provisioningSuffix
+        );
         joynr.provisioning.channelId = providerChannelIdDatatypes + provisioningSuffix;
         joynr.provisioning.logging = {
-            configuration : {
-                name : "TestEnd2EndCommProviderWorkLogging",
-                appenders : {
-                    WebWorker : {
-                        name : "WEBWORKER"
+            configuration: {
+                name: "TestEnd2EndCommProviderWorkLogging",
+                appenders: {
+                    WebWorker: {
+                        name: "WEBWORKER"
                     }
                 },
-                loggers : {
-                    root : {
-                        level : "debug",
-                        AppenderRef : {
-                            ref : "WEBWORKER"
+                loggers: {
+                    root: {
+                        level: "debug",
+                        AppenderRef: {
+                            ref: "WEBWORKER"
                         }
                     }
                 }
@@ -98,58 +99,63 @@ function initializeTest(provisioningSuffix, providedDomain) {
 
         joynr.provisioning.persistency = "localStorage";
 
-        joynr.load(joynr.provisioning).then(function(newJoynr){
-            joynr = newJoynr;
-            providerQos = new joynr.types.ProviderQos({
-                customParameters : [],
-                priority : Date.now(),
-                scope : joynr.types.ProviderScope.GLOBAL,
-                supportsOnChangeSubscriptions : true
-            });
+        joynr
+            .load(joynr.provisioning)
+            .then(function(newJoynr) {
+                joynr = newJoynr;
+                providerQos = new joynr.types.ProviderQos({
+                    customParameters: [],
+                    priority: Date.now(),
+                    scope: joynr.types.ProviderScope.GLOBAL,
+                    supportsOnChangeSubscriptions: true
+                });
 
-            // build the provider
-            datatypesProvider = joynr.providerBuilder.build(DatatypesProvider, {});
+                // build the provider
+                datatypesProvider = joynr.providerBuilder.build(DatatypesProvider, {});
 
-            var i;
-            // there are so many attributes for testing different datatypes => register them
-            // all by cycling over their names in the attribute
-            for (i = 0; i < TestEnd2EndDatatypesTestData.length; ++i) {
-                var attribute = datatypesProvider[TestEnd2EndDatatypesTestData[i].attribute];
-                attribute.registerGetter(getter);
-                attribute.registerSetter(setter);
-            }
+                var i;
+                // there are so many attributes for testing different datatypes => register them
+                // all by cycling over their names in the attribute
+                for (i = 0; i < TestEnd2EndDatatypesTestData.length; ++i) {
+                    var attribute = datatypesProvider[TestEnd2EndDatatypesTestData[i].attribute];
+                    attribute.registerGetter(getter);
+                    attribute.registerSetter(setter);
+                }
 
-            // registering operation functions
-            datatypesProvider.getJavascriptType.registerOperation(function(opArgs) {
-                return {
-                    javascriptType: getObjectType(opArgs.arg)
-                };
-            });
-            datatypesProvider.getArgumentBack.registerOperation(function(opArgs) {
-                return {
-                    returnValue : opArgs.arg
-                };
-            });
-            datatypesProvider.multipleArguments.registerOperation(function(opArgs) {
-                return {
-                    serialized : JSON.stringify(opArgs)
-                };
-            });
+                // registering operation functions
+                datatypesProvider.getJavascriptType.registerOperation(function(opArgs) {
+                    return {
+                        javascriptType: getObjectType(opArgs.arg)
+                    };
+                });
+                datatypesProvider.getArgumentBack.registerOperation(function(opArgs) {
+                    return {
+                        returnValue: opArgs.arg
+                    };
+                });
+                datatypesProvider.multipleArguments.registerOperation(function(opArgs) {
+                    return {
+                        serialized: JSON.stringify(opArgs)
+                    };
+                });
 
-            // register provider at the given domain
-            joynr.registration.registerProvider(providerDomain, datatypesProvider, providerQos).then(
-            function() {
-                // signal test driver that we are ready
-                resolve(joynr);
-                return;
-            }).catch(function(error) {
-                reject(error);
-                throw new Error("error registering provider: " + error);
+                // register provider at the given domain
+                joynr.registration
+                    .registerProvider(providerDomain, datatypesProvider, providerQos)
+                    .then(function() {
+                        // signal test driver that we are ready
+                        resolve(joynr);
+                        return;
+                    })
+                    .catch(function(error) {
+                        reject(error);
+                        throw new Error("error registering provider: " + error);
+                    });
+                return joynr;
+            })
+            .catch(function(error) {
+                throw error;
             });
-            return joynr;
-        }).catch(function(error){
-            throw error;
-        });
     });
 }
 
@@ -160,5 +166,4 @@ function startTest() {
 
 function terminateTest() {
     return joynr.registration.unregisterProvider(providerDomain, datatypesProvider);
-
 }

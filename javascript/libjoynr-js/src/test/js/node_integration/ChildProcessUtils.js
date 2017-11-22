@@ -20,7 +20,11 @@
  * #L%
  */
 
-var self = this, ownWindow, parentWindow, listener, workerId;
+var self = this,
+    ownWindow,
+    parentWindow,
+    listener,
+    workerId;
 var runtime;
 
 var WorkerUtils = (function() {
@@ -28,13 +32,13 @@ var WorkerUtils = (function() {
 
     pub.postReady = function() {
         postMessage({
-            type : "ready"
+            type: "ready"
         });
     };
 
     pub.postStarted = function(argument) {
         var object = {
-            type : "started"
+            type: "started"
         };
         if (argument !== undefined) {
             object.argument = argument;
@@ -44,20 +48,20 @@ var WorkerUtils = (function() {
 
     pub.postLog = function(msg) {
         postMessage({
-            type : "log",
-            level : "info",
-            message : msg
+            type: "log",
+            level: "info",
+            message: msg
         });
     };
 
     pub.postFinished = function() {
         postMessage({
-            type : "finished"
+            type: "finished"
         });
     };
 
     return pub;
-}());
+})();
 
 /*
  * The ownWindow is used by the web worker to listen to incoming messages in case of intertab communication
@@ -65,12 +69,12 @@ var WorkerUtils = (function() {
  * Next, wenn the main frame communicates joynr messages through the web worker postMessage API, these messages will be forwarded to registered event listeners
  */
 ownWindow = {
-    addEventListener : function(type, callback) {
+    addEventListener: function(type, callback) {
         if (type === "message") {
             listener = callback;
         }
     },
-    removeEventListener : function(type, callback) {
+    removeEventListener: function(type, callback) {
         if (type === "message" && listener === callback) {
             listener = undefined;
         }
@@ -85,25 +89,22 @@ ownWindow = {
  * messages from the web worker to its own window object
  */
 parentWindow = {
-    postMessage : function(message, origin) {
+    postMessage: function(message, origin) {
         postMessage({
-            type : "message",
-            data : message.message
+            type: "message",
+            data: message.message
         });
     }
 };
 
-onmessage =
-function(event) {
+onmessage = function(event) {
     var msg = event.data;
     if (msg.type === "initialize") {
         if (!initializeTest) {
-            throw new Error(
-            "cannot initialize test, worker does not define an initializeTest method");
+            throw new Error("cannot initialize test, worker does not define an initializeTest method");
         }
         workerId = msg.workerId;
-        initializeTest(msg.provisioningSuffix, msg.domain, ownWindow, parentWindow).then(
-        function(providedRuntime) {
+        initializeTest(msg.provisioningSuffix, msg.domain, ownWindow, parentWindow).then(function(providedRuntime) {
             runtime = providedRuntime;
             WorkerUtils.postReady();
         });
@@ -115,10 +116,8 @@ function(event) {
             WorkerUtils.postStarted(argument);
         });
     } else if (msg.type === "terminate") {
-
         if (!terminateTest) {
-            throw new Error(
-            "cannot terminate test, worker does not define a terminate method");
+            throw new Error("cannot terminate test, worker does not define a terminate method");
         }
         var workerFinished = function() {
             WorkerUtils.postFinished();
@@ -131,7 +130,7 @@ function(event) {
     } else if (msg.type === "message") {
         if (listener !== undefined) {
             listener({
-                data : msg.message
+                data: msg.message
             });
         }
     }

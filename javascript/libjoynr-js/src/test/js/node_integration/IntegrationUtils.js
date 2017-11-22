@@ -18,16 +18,20 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../classes/global/Promise');
-var provisioning_root = require('../../test-classes/joynr/provisioning/provisioning_root');
-var provisioning_end2end = require('./provisioning_end2end_common');
-var defaultInterTabSettings = require('../../classes/joynr/start/settings/defaultInterTabSettings');
-var waitsFor = require('../../test-classes/global/WaitsFor');
+var Promise = require("../../classes/global/Promise");
+var provisioning_root = require("../../test-classes/joynr/provisioning/provisioning_root");
+var provisioning_end2end = require("./provisioning_end2end_common");
+var defaultInterTabSettings = require("../../classes/joynr/start/settings/defaultInterTabSettings");
+var waitsFor = require("../../test-classes/global/WaitsFor");
 
 var IntegrationUtils = {};
 var currentlyRunningWebWorkerCC;
-var workerReady = {}, workerStarted = {}, workerFinished = {}, worker = {}, workerId =
-0, queuedLogs = {};
+var workerReady = {},
+    workerStarted = {},
+    workerFinished = {},
+    worker = {},
+    workerId = 0,
+    queuedLogs = {};
 var joynr;
 
 IntegrationUtils.log = function log(msg, id) {
@@ -45,7 +49,7 @@ IntegrationUtils.log = function log(msg, id) {
 IntegrationUtils.initialize = function initialize(asynclib) {
     joynr = asynclib;
     IntegrationUtils.messagingQos = new joynr.messaging.MessagingQos({
-        ttl : provisioning_root.ttl
+        ttl: provisioning_root.ttl
     });
 
     var queuedMsgs, id, msg;
@@ -71,15 +75,13 @@ IntegrationUtils.getObjectType = function getObjectType(obj) {
     }
     var funcNameRegex = /function ([$\w]+)\(/;
     var results = funcNameRegex.exec(obj.constructor.toString());
-    return (results && results.length > 1) ? results[1] : "";
+    return results && results.length > 1 ? results[1] : "";
 };
 
-IntegrationUtils.checkValueAndType =
-function checkValueAndType(arg1, arg2) {
+IntegrationUtils.checkValueAndType = function checkValueAndType(arg1, arg2) {
     expect(arg1).toEqual(arg2);
     expect(typeof arg1).toEqual(typeof arg2);
-    expect(IntegrationUtils.getObjectType(arg1)).toEqual(
-    IntegrationUtils.getObjectType(arg2));
+    expect(IntegrationUtils.getObjectType(arg1)).toEqual(IntegrationUtils.getObjectType(arg2));
 };
 
 IntegrationUtils.newWebWorker = function newWebWorker(workerName, onmessage) {
@@ -93,8 +95,7 @@ IntegrationUtils.newWebWorker = function newWebWorker(workerName, onmessage) {
     return worker;
 };
 
-IntegrationUtils.createPromise =
-function createPromise() {
+IntegrationUtils.createPromise = function createPromise() {
     var map = {};
     map.promise = new Promise(function(resolve, reject) {
         map.resolve = resolve;
@@ -107,8 +108,7 @@ function createPromise() {
     return map;
 };
 
-IntegrationUtils.initializeWebWorker =
-function initializeWebWorker(workerName, provisioningSuffix, domain, cc) {
+IntegrationUtils.initializeWebWorker = function initializeWebWorker(workerName, provisioningSuffix, domain, cc) {
     // initialize web worker
     workerId++;
     var newWorkerId = workerId;
@@ -116,22 +116,14 @@ function initializeWebWorker(workerName, provisioningSuffix, domain, cc) {
         currentlyRunningWebWorkerCC = newWorkerId;
     }
     workerReady[workerId] = IntegrationUtils.createPromise();
-    workerStarted[workerId] =
-    IntegrationUtils.createPromise();
-    workerFinished[workerId] =
-    IntegrationUtils.createPromise();
-    worker[workerId] =
-    IntegrationUtils.newWebWorker(workerName, function(event) {
+    workerStarted[workerId] = IntegrationUtils.createPromise();
+    workerFinished[workerId] = IntegrationUtils.createPromise();
+    worker[workerId] = IntegrationUtils.newWebWorker(workerName, function(event) {
         var msg = event.data;
         if (msg.type === "ready") {
             workerReady[newWorkerId].resolve(newWorkerId);
         } else if (msg.type === "log") {
-            var id =
-            workerName
-            + "."
-            + provisioningSuffix
-            + "."
-            + domain;
+            var id = workerName + "." + provisioningSuffix + "." + domain;
             IntegrationUtils.log(msg, "joynr.webworker." + workerName, provisioningSuffix, domain);
         } else if (msg.type === "started") {
             workerStarted[newWorkerId].resolve(msg.argument);
@@ -144,38 +136,31 @@ function initializeWebWorker(workerName, provisioningSuffix, domain, cc) {
              * window object In this case, event listeners for the local
              * window object get notified about the incoming message
              */
-            window
-            .postMessage(
-            msg.data,
-            defaultInterTabSettings.parentOrigin);
+            window.postMessage(msg.data, defaultInterTabSettings.parentOrigin);
         }
     });
     worker[newWorkerId].postMessage({
-        type : "initialize",
-        workerId : newWorkerId,
-        provisioningSuffix : provisioningSuffix,
-        domain : domain
+        type: "initialize",
+        workerId: newWorkerId,
+        provisioningSuffix: provisioningSuffix,
+        domain: domain
     });
 
     return workerReady[newWorkerId].promise;
 };
 
-IntegrationUtils.initializeWebWorkerCC =
-function(workerName, provisioningSuffix, domain) {
+IntegrationUtils.initializeWebWorkerCC = function(workerName, provisioningSuffix, domain) {
     if (currentlyRunningWebWorkerCC !== undefined) {
         throw new Error(
-        "trying to start new web worker for cluster controller despite old cluster controller has not been terminated");
+            "trying to start new web worker for cluster controller despite old cluster controller has not been terminated"
+        );
     } else {
-        return IntegrationUtils.initializeWebWorker(
-        workerName,
-        provisioningSuffix,
-        domain,
-        true);
+        return IntegrationUtils.initializeWebWorker(workerName, provisioningSuffix, domain, true);
     }
 };
 IntegrationUtils.startWebWorker = function startWebWorker(newWorkerId) {
     worker[newWorkerId].postMessage({
-        type : "start"
+        type: "start"
     });
     return workerStarted[newWorkerId].promise;
 };
@@ -194,8 +179,7 @@ IntegrationUtils.getCCWorker = function getCCWorker() {
     return worker[currentlyRunningWebWorkerCC];
 };
 
-IntegrationUtils.getProvisioning =
-function getProvisioning(provisioning, identifier) {
+IntegrationUtils.getProvisioning = function getProvisioning(provisioning, identifier) {
     var window = provisioning.window;
     var parentWindow = provisioning.parentWindow;
 
@@ -220,10 +204,12 @@ IntegrationUtils.buildProxy = function buildProxy(ProxyConstructor, domain) {
     if (domain === undefined) {
         throw new Error("specify domain");
     }
-    return joynr.proxyBuilder.build(ProxyConstructor, {
-        domain : domain,
-        messagingQos : IntegrationUtils.messagingQos
-    }).catch(IntegrationUtils.outputPromiseError);
+    return joynr.proxyBuilder
+        .build(ProxyConstructor, {
+            domain: domain,
+            messagingQos: IntegrationUtils.messagingQos
+        })
+        .catch(IntegrationUtils.outputPromiseError);
 };
 
 IntegrationUtils.shutdownWebWorker = function shutdownWebWorker(newWorkerId) {
@@ -231,7 +217,7 @@ IntegrationUtils.shutdownWebWorker = function shutdownWebWorker(newWorkerId) {
     var promise = null;
     if (worker[newWorkerId]) {
         worker[newWorkerId].postMessage({
-            type : "terminate"
+            type: "terminate"
         });
 
         // wait for worker to be shut down
@@ -270,9 +256,13 @@ IntegrationUtils.waitALittle = function waitALittle(time) {
     start = Date.now();
 
     // wait for worker to be shut down
-    return waitsFor(function() {
-        return Date.now() - start > time;
-    }, time + " ms to elapse", time);
+    return waitsFor(
+        function() {
+            return Date.now() - start > time;
+        },
+        time + " ms to elapse",
+        time
+    );
 };
 
 module.exports = IntegrationUtils;
