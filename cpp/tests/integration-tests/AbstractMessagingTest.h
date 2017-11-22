@@ -33,10 +33,11 @@
 #include "joynr/Request.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
-#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/IPlatformSecurityManager.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
+#include "tests/JoynrTest.h"
 #include "tests/mock/MockMessageSender.h"
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
 #include "tests/mock/MockTransportMessageSender.h"
@@ -45,11 +46,6 @@
 
 using namespace ::testing;
 using namespace joynr;
-
-ACTION_P(ReleaseSemaphore,semaphore)
-{
-    semaphore->notify();
-}
 
 class AbstractMessagingTest : public ::testing::Test {
 public:
