@@ -348,15 +348,19 @@ void AbstractMessageRouter::activateRoutingTableCleanerTimer()
 void AbstractMessageRouter::registerTransportStatusCallbacks()
 {
     for (auto& transportStatus : _transportStatuses) {
-        transportStatus->setAvailabilityChangedCallback(
-                [ thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()), transportStatus ](
-                        bool isAvailable) {
-                    if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                        if (isAvailable) {
-                            thisSharedPtr->rescheduleQueuedMessagesForTransport(transportStatus);
-                        }
+        transportStatus->setAvailabilityChangedCallback([
+            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+            transportStatusWeakPtr = joynr::util::as_weak_ptr(transportStatus)
+        ](bool isAvailable) {
+            if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                if (isAvailable) {
+                    if (auto transportStatusSharedPtr = transportStatusWeakPtr.lock()) {
+                        thisSharedPtr->rescheduleQueuedMessagesForTransport(
+                                transportStatusSharedPtr);
                     }
-                });
+                }
+            }
+        });
     }
 }
 
