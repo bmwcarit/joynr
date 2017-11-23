@@ -174,6 +174,14 @@ protected:
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
     std::shared_ptr<ThreadPoolDelayedScheduler> messageScheduler;
     std::unique_ptr<MessageQueue<std::string>> messageQueue;
+    // MessageQueue ReadLocker is required to protect calls to queueMessage and
+    // getDestinationAddresses:
+    // The routing table must not be modified between getDestinationAddresses and queueMessage.
+    // MessageQueue WriterLocker is required to protect calls to addNextHop/addProvisionedNextHop
+    // and sendMessages:
+    // Routing table look ups and insertions to the messageQueue must not be done between addNextHop
+    // and sendMessages calls.
+    ReadWriteLock messageQueueRetryLock;
     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue;
     std::mutex transportAvailabilityMutex;
     std::string routingTableFileName;

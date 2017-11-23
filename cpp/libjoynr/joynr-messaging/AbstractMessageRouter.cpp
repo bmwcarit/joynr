@@ -66,6 +66,7 @@ AbstractMessageRouter::AbstractMessageRouter(
                                                                         "AbstractMessageRouter",
                                                                         ioService)),
           messageQueue(std::move(messageQueue)),
+          messageQueueRetryLock(),
           transportNotAvailableQueue(std::move(transportNotAvailableQueue)),
           transportAvailabilityMutex(),
           routingTableFileName(),
@@ -249,6 +250,7 @@ void AbstractMessageRouter::sendMessages(
         participantIdSet = routingTable.lookupParticipantIdsByAddress(address);
     }
     if (participantIdSet.size() > 0) {
+        WriteLocker lock(messageQueueRetryLock);
         for (const auto& participantId : participantIdSet) {
             sendMessages(participantId, address);
         }
@@ -334,6 +336,7 @@ void AbstractMessageRouter::scheduleMessage(
                 "message.",
                 message->getId(),
                 destAddress->toString());
+        ReadLocker lock(messageQueueRetryLock);
         // save the message for later delivery
         queueMessage(std::move(message));
     }
@@ -402,6 +405,7 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(
         const boost::system::error_code& errorCode)
 {
     if (!errorCode) {
+        WriteLocker lock(messageQueueRetryLock);
         thisSharedPtr->messageQueue->removeOutdatedMessages();
         thisSharedPtr->transportNotAvailableQueue->removeOutdatedMessages();
         thisSharedPtr->activateMessageCleanerTimer();

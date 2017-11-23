@@ -300,24 +300,28 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
     registerGlobalRoutingEntryIfRequired(*message);
 
     JOYNR_LOG_TRACE(logger(), "Route message with Id {}", message->getId());
-    // search for the destination addresses
-    AbstractMessageRouter::AddressUnorderedSet destAddresses = getDestinationAddresses(*message);
-    // if destination address is not known
-    if (destAddresses.empty()) {
-        if (message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
-            // Do not queue multicast messages for future multicast receivers.
+    AbstractMessageRouter::AddressUnorderedSet destAddresses;
+    {
+        ReadLocker lock(messageQueueRetryLock);
+        // search for the destination addresses
+        destAddresses = getDestinationAddresses(*message);
+        // if destination address is not known
+        if (destAddresses.empty()) {
+            if (message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
+                // Do not queue multicast messages for future multicast receivers.
+                return;
+            }
+
+            // save the message for later delivery
+            JOYNR_LOG_WARN(logger(),
+                           "No routing information found for destination participant ID \"{}\" "
+                           "so far. Waiting for participant registration. "
+                           "Queueing message (ID : {})",
+                           message->getRecipient(),
+                           message->getId());
+            queueMessage(std::move(message));
             return;
         }
-
-        // save the message for later delivery
-        JOYNR_LOG_WARN(logger(),
-                       "No routing information found for destination participant ID \"{}\" "
-                       "so far. Waiting for participant registration. "
-                       "Queueing message (ID : {})",
-                       message->getRecipient(),
-                       message->getId());
-        queueMessage(std::move(message));
-        return;
     }
 
     for (std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress : destAddresses) {
@@ -382,9 +386,11 @@ void CcMessageRouter::addNextHop(
 {
     std::ignore = onError;
     assert(address);
+    WriteLocker lock(messageQueueRetryLock);
     addToRoutingTable(
             participantId, isGloballyVisible, address, expiryDateMs, isSticky, allowUpdate);
     sendMessages(participantId, address);
+    lock.unlock();
     if (onSuccess) {
         onSuccess();
     }
