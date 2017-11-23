@@ -117,8 +117,6 @@ public:
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;
 
-    void queueMessage(std::shared_ptr<ImmutableMessage> message) final;
-
     /*
      * Implement methods from RoutingAbstractProvider
      */
@@ -213,6 +211,8 @@ private:
             std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
+
+    void queueMessage(std::shared_ptr<ImmutableMessage> message) final;
 
     DISALLOW_COPY_AND_ASSIGN(CcMessageRouter);
     ADD_LOGGER(CcMessageRouter)

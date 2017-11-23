@@ -166,6 +166,8 @@ protected:
                                       const boost::system::error_code& errorCode);
     void onRoutingTableCleanerTimerExpired(const boost::system::error_code& errorCode);
 
+    virtual void queueMessage(std::shared_ptr<ImmutableMessage> message);
+
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
@@ -182,8 +184,6 @@ protected:
     const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
     SteadyTimer routingTableCleanerTimer;
     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
-
-    void queueMessage(std::shared_ptr<ImmutableMessage> message) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessageRouter);
