@@ -34,6 +34,7 @@
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -41,8 +42,8 @@ using namespace joynr;
 class End2EndAccessControlTest : public testing::Test {
 public:
     End2EndAccessControlTest() :
-        runtimeAcON(nullptr),
-        runtimeAcOFF(nullptr),
+        runtimeAcON(),
+        runtimeAcOFF(),
         testProvider(nullptr),
         testProxy(nullptr),
         domain("End2EndAccessControlTest"),
@@ -86,13 +87,11 @@ public:
     ~End2EndAccessControlTest() override {
         runtimeAcON->unregisterProvider(providerParticipantId);
 
-        runtimeAcON.reset();
-        runtimeAcOFF.reset();
+        test::util::resetAndWaitUntilDestroyed(runtimeAcON);
+        test::util::resetAndWaitUntilDestroyed(runtimeAcOFF);
 
         // Delete test specific files
-        joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
-        joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
-        joynr::test::util::removeFileInCurrentDirectory(".*\\.entries");
+        test::util::removeAllCreatedSettingsAndPersistencyFiles();
     }
 
 protected:
