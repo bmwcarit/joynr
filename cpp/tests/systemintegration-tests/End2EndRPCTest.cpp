@@ -37,9 +37,9 @@
 #include "tests/mock/MockGpsProvider.h"
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
-
 
 using namespace joynr;
 
@@ -71,14 +71,10 @@ public:
     void TearDown(){
         bool deleteChannel = true;
         runtime->stop(deleteChannel);
-        runtime.reset();
+        test::util::resetAndWaitUntilDestroyed(runtime);
 
         // Delete persisted files
-        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
-
+        test::util::removeAllCreatedSettingsAndPersistencyFiles();
         std::this_thread::sleep_for(std::chrono::milliseconds(550));
     }
 
