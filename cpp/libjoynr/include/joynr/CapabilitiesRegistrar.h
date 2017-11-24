@@ -104,34 +104,20 @@ public:
             onError
         ]() mutable
         {
-            auto onSuccessAddNextHop = [
-                domain,
-                interfaceName,
-                dispatcherList,
-                caller,
-                participantIdStorage,
-                participantId,
-                onSuccess = std::move(onSuccess),
-                onError
-            ]() mutable
-            {
-                for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
-                    // TODO will the provider be registered at all dispatchers or
-                    //     should it be configurable which ones are used to contact it.
-                    assert(currentDispatcher != nullptr);
-                    currentDispatcher->addRequestCaller(participantId, caller);
-                }
-                // Sync persistency to disk now that registration is done.
-                if (auto participantIdStoragePtr = participantIdStorage.lock()) {
-                    participantIdStoragePtr->setProviderParticipantId(
-                            domain, interfaceName, participantId);
-                }
-                if (onSuccess) {
-                    onSuccess();
-                }
-            };
+            for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
+                // TODO will the provider be registered at all dispatchers or
+                //     should it be configurable which ones are used to contact it.
+                assert(currentDispatcher != nullptr);
+                currentDispatcher->addRequestCaller(participantId, caller);
+            }
 
-            // add next hop to dispatcher
+            // Sync persistency to disk now that registration is done.
+            if (auto participantIdStoragePtr = participantIdStorage.lock()) {
+                participantIdStoragePtr->setProviderParticipantId(
+                        domain, interfaceName, participantId);
+            }
+
+            // add next hop
             if (auto ptr = messageRouter.lock()) {
                 constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
                 const bool isSticky = false;
@@ -142,7 +128,7 @@ public:
                                 expiryDateMs,
                                 isSticky,
                                 allowUpdate,
-                                std::move(onSuccessAddNextHop),
+                                std::move(onSuccess),
                                 std::move(onError));
             }
         };
