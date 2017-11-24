@@ -31,6 +31,7 @@
 #include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
 
 #include "tests/JoynrTest.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -72,13 +73,10 @@ public:
     ~CapabilitiesClientTest() {
         bool deleteChannel = true;
         runtime->stop(deleteChannel);
-        runtime.reset();
+        test::util::resetAndWaitUntilDestroyed(runtime);
 
         // Delete persisted files
-        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
+        test::util::removeAllCreatedSettingsAndPersistencyFiles();
     }
 
 private:
