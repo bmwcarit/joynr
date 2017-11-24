@@ -41,6 +41,7 @@
 #include "tests/mock/MockLocationUpdatedSelectiveFilter.h"
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/utils/MyTestProvider.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -149,37 +150,22 @@ public:
 
         filterParameters.setCountry("Germany");
         filterParameters.setStartTime("4.00 pm");
-    }
-
-    void SetUp() {
         runtime1->start();
         runtime2->start();
     }
 
-    void TearDown() {
+    ~End2EndBroadcastTestBase(){
         if (!providerParticipantId.empty()) {
             unregisterProvider();
         }
         bool deleteChannel = true;
         runtime1->stop(deleteChannel);
         runtime2->stop(deleteChannel);
+        test::util::resetAndWaitUntilDestroyed(runtime1);
+        test::util::resetAndWaitUntilDestroyed(runtime2);
 
         // Delete persisted files
-        std::remove(messagingPropertiesPersistenceFileName1.c_str());
-        std::remove(messagingPropertiesPersistenceFileName2.c_str());
-        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
-        std::remove(integration1Settings.get<std::string>(LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()).c_str());
-        std::remove(integration2Settings.get<std::string>(LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()).c_str());
-        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
-    }
-
-    ~End2EndBroadcastTestBase(){
-        runtime1.reset();
-        runtime2.reset();
-        // because the destructor of PublicationManager persists the active subscriptions
-        // the persistence files have to be removed after calling delete runtime
-        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
+        test::util::removeAllCreatedSettingsAndPersistencyFiles();
     }
 
 private:
