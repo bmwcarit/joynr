@@ -57,8 +57,7 @@ class LocalCapabilitiesDirectoryTest : public ::testing::Test
 {
 public:
     LocalCapabilitiesDirectoryTest()
-            : settingsFileName("LocalCapabilitiesDirectoryTest.settings"),
-              settings(settingsFileName),
+            : settings(),
               clusterControllerSettings(settings),
               capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
               singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
@@ -268,7 +267,6 @@ public:
     }
 
 protected:
-    std::string settingsFileName;
     Settings settings;
     ClusterControllerSettings clusterControllerSettings;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
