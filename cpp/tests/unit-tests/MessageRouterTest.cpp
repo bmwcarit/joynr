@@ -229,6 +229,30 @@ TYPED_TEST(MessageRouterTest, routeMessageToMqttAddress) {
     this->routeMessageToAddress();
 }
 
+template <class T>
+void MessageRouterTest<T>::checkAllowUpdate(bool allowUpdate, bool updateExpected){
+    const std::string destinationParticipantId = "TEST_routeMessageToMqttAddress";
+    const std::string oldDestinationChannelId = "TEST_routeMessageToMqttAddress_old_channelId";
+    const std::string newDestinationChannelId = "TEST_routeMessageToMqttAddress_new_channelId";
+    const std::string brokerUri = "brokerUri";
+    auto oldAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, oldDestinationChannelId);
+    auto newAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, newDestinationChannelId);
+    const bool isGloballyVisible = true;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+
+    this->messageRouter->addNextHop(destinationParticipantId, oldAddress, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+    this->messageRouter->addNextHop(destinationParticipantId, newAddress, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+    this->mutableMessage.setRecipient(destinationParticipantId);
+
+    auto expectedAddress = updateExpected ? newDestinationChannelId : oldDestinationChannelId;
+    EXPECT_CALL(*(this->messagingStubFactory),
+            create(addressWithChannelId("mqtt", expectedAddress))
+            ).Times(1);
+
+    this->routeMessageToAddress();
+}
+
 TYPED_TEST(MessageRouterTest, routedMessageQueuedIfTransportIsNotAvailable) {
     auto mockTransportStatus = std::make_shared<MockTransportStatus>();
 

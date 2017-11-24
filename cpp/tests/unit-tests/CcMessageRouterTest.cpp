@@ -546,3 +546,14 @@ TEST_F(CcMessageRouterTest, routingTableGetsCleaned) {
     );
     EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(3000)));
 }
+
+TEST_F(CcMessageRouterTest, checkAllowUpdateTrue){
+    const bool allowUpdate = true;
+    const bool updateExpected = true;
+    this->checkAllowUpdate(allowUpdate, updateExpected);
+}
+TEST_F(CcMessageRouterTest, checkAllowUpdateFalse){
+    const bool allowUpdate = false;
+    const bool updateExpected = false;
+    this->checkAllowUpdate(allowUpdate, updateExpected);
+}

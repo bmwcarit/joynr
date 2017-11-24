@@ -378,3 +378,14 @@ TEST_F(LibJoynrMessageRouterTest, addNextHop_callsAddNextHopInRoutingProxy) {
     isGloballyVisible = true;
     testAddNextHopCallsRoutingProxyCorrectly(isGloballyVisible, providerAddress2);
 }
+
+TEST_F(LibJoynrMessageRouterTest, checkAllowUpdateTrue){
+    const bool allowUpdate = true;
+    const bool updateExpected = false;
+    this->checkAllowUpdate(allowUpdate, updateExpected);
+}
+TEST_F(LibJoynrMessageRouterTest, checkAllowUpdateFalse){
+    const bool allowUpdate = false;
+    const bool updateExpected = false;
+    this->checkAllowUpdate(allowUpdate, updateExpected);
+}

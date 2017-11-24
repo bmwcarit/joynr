@@ -190,6 +190,7 @@ protected:
         messageRouter->route(immutableMessage);
         EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
     }
+    virtual void checkAllowUpdate(bool allowUpdate, bool updateExpected);
 };
 
 typedef ::testing::Types<
