@@ -139,8 +139,6 @@ protected:
     virtual void routeInternal(std::shared_ptr<ImmutableMessage> message,
                                std::uint32_t tryCount) = 0;
 
-    AddressUnorderedSet lookupAddresses(const std::unordered_set<std::string>& participantIds);
-
     void sendMessages(const std::string& destinationPartId,
                       std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
@@ -190,6 +188,7 @@ private:
     ADD_LOGGER(AbstractMessageRouter)
 
     void checkExpiryDate(const ImmutableMessage& message);
+    AddressUnorderedSet lookupAddresses(const std::unordered_set<std::string>& participantIds);
 };
 
 /**
