@@ -58,7 +58,6 @@ var DiscoveryScope = require("../../joynr/types/DiscoveryScope");
 var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 var Util = require("../util/UtilInternal");
 var CapabilitiesUtil = require("../util/CapabilitiesUtil");
-var DistributedLoggingAppenderConstructorFactory = require("../system/DistributedLoggingAppenderConstructorFactory");
 var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 var LoggingManager = require("../system/LoggingManager");
 var uuid = require("../../lib/uuid-annotated");
@@ -506,10 +505,6 @@ function InProcessRuntime(provisioning) {
         providerBuilder = Object.freeze(new ProviderBuilder());
 
         loggingManager.registerAppenderClass("WebWorker", WebWorkerMessagingAppender);
-        loggingManager.registerAppenderClass(
-            "Distributed",
-            DistributedLoggingAppenderConstructorFactory.build(proxyBuilder, loggingMessagingQos)
-        );
 
         if (provisioning.logging) {
             loggingManager.configure(provisioning.logging);

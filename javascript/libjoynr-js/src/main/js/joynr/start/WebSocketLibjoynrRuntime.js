@@ -57,8 +57,6 @@ var DiscoveryEntryWithMetaInfo = require("../types/DiscoveryEntryWithMetaInfo");
 var Util = require("../util/UtilInternal");
 var CapabilitiesUtil = require("../util/CapabilitiesUtil");
 var Typing = require("../util/Typing");
-var DistributedLoggingAppenderConstructorFactory = require("../system/DistributedLoggingAppenderConstructorFactory");
-var DistributedLoggingAppender = require("../system/DistributedLoggingAppender");
 var WebWorkerMessagingAppender = require("../system/WebWorkerMessagingAppender");
 var uuid = require("../../lib/uuid-annotated");
 var LoggingManager = require("../system/LoggingManager");
@@ -270,10 +268,6 @@ function WebSocketLibjoynrRuntime(provisioning) {
         // initialize Logger with external logging configuration or default
         // values
         loggingManager.registerAppenderClass("WebWorker", WebWorkerMessagingAppender);
-        loggingManager.registerAppenderClass(
-            "Distributed",
-            DistributedLoggingAppenderConstructorFactory.build(proxyBuilder, loggingMessagingQos)
-        );
 
         if (provisioning.logging) {
             loggingManager.configure(provisioning.logging);
