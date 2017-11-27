@@ -53,12 +53,14 @@ public:
         clusterControllerRuntime = std::make_shared<JoynrClusterControllerRuntime>(std::make_unique<Settings>(settingsPath));
         clusterControllerRuntime->init();
         clusterControllerRuntime->start();
+    }
 
+    void SetUp() {
         libjoynrProviderRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"));
-        EXPECT_TRUE(libjoynrProviderRuntime->connect(std::chrono::milliseconds(2000)));
+        ASSERT_TRUE(libjoynrProviderRuntime->connect(std::chrono::milliseconds(2000)));
 
         libjoynrProxyRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::make_unique<Settings>("test-resources/libjoynrSystemIntegration2.settings"));
-        EXPECT_TRUE(libjoynrProxyRuntime->connect(std::chrono::milliseconds(2000)));
+        ASSERT_TRUE(libjoynrProxyRuntime->connect(std::chrono::milliseconds(2000)));
     }
 
     ~MessageNotificationTest() override
