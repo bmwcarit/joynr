@@ -194,17 +194,6 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>distributedLogging</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<model>system/LoggingService.fidl</model>
-							<outputPath>${basedir}/src/main/generated</outputPath>
-						</configuration>
-					</execution>
-					<execution>
 						<id>types</id>
 						<phase>generate-sources</phase>
 						<goals>
