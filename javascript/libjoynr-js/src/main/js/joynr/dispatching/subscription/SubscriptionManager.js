@@ -693,10 +693,28 @@ function SubscriptionManager(dispatcher) {
     };
 
     /**
+     * This method is meant to be called by the runtime before shutdown is called.
+     * It turns out that there is a necessary shutdown order and Subscriptionmanager can't be shutdown first.
+     *
+     * @function
+     * @param {number} clearSubscriptionsTimeoutMs
+     */
+    this.terminateSubscriptions = function(clearSubscriptionsTimeoutMs) {
+        var cleanUpPromises = [];
+        var activeSubscriptionId;
+        for (activeSubscriptionId in subscriptionInfos) {
+            if (Object.prototype.hasOwnProperty.call(subscriptionInfos, activeSubscriptionId)) {
+                var promise = this.unregisterSubscription({ subscriptionId: activeSubscriptionId });
+                cleanUpPromises.push(promise);
+            }
+        }
+        return Util.timeoutPromise(Promise.all(cleanUpPromises), clearSubscriptionsTimeoutMs);
+    };
+
+    /**
      * Shutdown the subscription manager
      *
      * @function
-     * @name SubscriptionManager#shutdown
      */
     this.shutdown = function shutdown() {
         var subscriptionId;
