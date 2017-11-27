@@ -120,7 +120,7 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
     {
         ReadLocker lock(messageQueueRetryLock);
         // search for the destination addresses
-        destAddresses = getDestinationAddresses(*message);
+        destAddresses = getDestinationAddresses(*message, lock);
 
         // if destination address is not known
         if (destAddresses.empty()) {
@@ -131,7 +131,7 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
 
             // save the message for later delivery
             const std::string destinationPartId = message->getRecipient();
-            queueMessage(std::move(message));
+            queueMessage(std::move(message), lock);
 
             lock.unlock();
             // and try to resolve destination address via parent message router
@@ -159,7 +159,7 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
                                     thisSharedPtr->parentAddress,
                                     thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE);
                             thisSharedPtr->sendMessages(
-                                    destinationPartId, thisSharedPtr->parentAddress);
+                                    destinationPartId, thisSharedPtr->parentAddress, lock);
                         } else {
                             JOYNR_LOG_ERROR(logger(),
                                             "Failed to resolve next hop for participant {}",
@@ -301,7 +301,7 @@ void LibJoynrMessageRouter::addNextHop(
     assert(address);
     WriteLocker lock(messageQueueRetryLock);
     addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
-    sendMessages(participantId, address);
+    sendMessages(participantId, address, lock);
     lock.unlock();
     addNextHopToParent(participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
 }

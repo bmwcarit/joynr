@@ -304,7 +304,7 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
     {
         ReadLocker lock(messageQueueRetryLock);
         // search for the destination addresses
-        destAddresses = getDestinationAddresses(*message);
+        destAddresses = getDestinationAddresses(*message, lock);
         // if destination address is not known
         if (destAddresses.empty()) {
             if (message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
@@ -319,7 +319,7 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
                            "Queueing message (ID : {})",
                            message->getRecipient(),
                            message->getId());
-            queueMessage(std::move(message));
+            queueMessage(std::move(message), lock);
             return;
         }
     }
@@ -389,7 +389,7 @@ void CcMessageRouter::addNextHop(
     WriteLocker lock(messageQueueRetryLock);
     addToRoutingTable(
             participantId, isGloballyVisible, address, expiryDateMs, isSticky, allowUpdate);
-    sendMessages(participantId, address);
+    sendMessages(participantId, address, lock);
     lock.unlock();
     if (onSuccess) {
         onSuccess();
@@ -665,8 +665,10 @@ void CcMessageRouter::removeMulticastReceiver(
     }
 }
 
-void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
+void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message,
+                                   const ReadLocker& messageQueueRetryReadLock)
 {
+    assert(messageQueueRetryReadLock.owns_lock());
     JOYNR_LOG_TRACE(logger(), "message queued: {}", message->toLogMessage());
     // do not fire a broadcast for an undeliverable message sent by
     // messageNotificationProvider (e.g. messageQueueForDelivery publication)

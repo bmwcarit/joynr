@@ -133,14 +133,16 @@ protected:
                                           MessageQueue<std::shared_ptr<ITransportStatus>>>());
 
     virtual bool publishToGlobal(const ImmutableMessage& message) = 0;
-    AddressUnorderedSet getDestinationAddresses(const ImmutableMessage& message);
+    AddressUnorderedSet getDestinationAddresses(const ImmutableMessage& message,
+                                                const ReadLocker& messageQueueRetryReadLock);
 
     void registerGlobalRoutingEntryIfRequired(const ImmutableMessage& message);
     virtual void routeInternal(std::shared_ptr<ImmutableMessage> message,
                                std::uint32_t tryCount) = 0;
 
     void sendMessages(const std::string& destinationPartId,
-                      std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
+                      std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                      const WriteLocker& messageQueueRetryWriteLock);
 
     void sendMessages(std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
 
@@ -164,7 +166,8 @@ protected:
                                       const boost::system::error_code& errorCode);
     void onRoutingTableCleanerTimerExpired(const boost::system::error_code& errorCode);
 
-    virtual void queueMessage(std::shared_ptr<ImmutableMessage> message);
+    virtual void queueMessage(std::shared_ptr<ImmutableMessage> message,
+                              const ReadLocker& messageQueueRetryReadLock);
 
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;

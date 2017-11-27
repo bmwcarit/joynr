@@ -212,7 +212,8 @@ private:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
-    void queueMessage(std::shared_ptr<ImmutableMessage> message) final;
+    void queueMessage(std::shared_ptr<ImmutableMessage> message,
+                      const ReadLocker& messageQueueRetryReadLock) final;
 
     DISALLOW_COPY_AND_ASSIGN(CcMessageRouter);
     ADD_LOGGER(CcMessageRouter)

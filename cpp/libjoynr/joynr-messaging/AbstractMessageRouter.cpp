@@ -133,8 +133,10 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::lookupAddresse
 }
 
 AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestinationAddresses(
-        const ImmutableMessage& message)
+        const ImmutableMessage& message,
+        const ReadLocker& messageQueueRetryReadLock)
 {
+    assert(messageQueueRetryReadLock.owns_lock());
     ReadLocker lock(routingTableLock);
     AbstractMessageRouter::AddressUnorderedSet addresses;
     if (message.getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
@@ -252,15 +254,17 @@ void AbstractMessageRouter::sendMessages(
     if (participantIdSet.size() > 0) {
         WriteLocker lock(messageQueueRetryLock);
         for (const auto& participantId : participantIdSet) {
-            sendMessages(participantId, address);
+            sendMessages(participantId, address, lock);
         }
     }
 }
 
 void AbstractMessageRouter::sendMessages(
         const std::string& destinationPartId,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+        const WriteLocker& messageQueueRetryWriteLock)
 {
+    assert(messageQueueRetryWriteLock.owns_lock());
     JOYNR_LOG_TRACE(logger(),
                     "sendMessages: sending messages for destinationPartId {} and {}",
                     destinationPartId,
@@ -338,7 +342,7 @@ void AbstractMessageRouter::scheduleMessage(
                 destAddress->toString());
         ReadLocker lock(messageQueueRetryLock);
         // save the message for later delivery
-        queueMessage(std::move(message));
+        queueMessage(std::move(message), lock);
     }
 }
 
@@ -405,7 +409,7 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(
         const boost::system::error_code& errorCode)
 {
     if (!errorCode) {
-        WriteLocker lock(messageQueueRetryLock);
+        WriteLocker lock(thisSharedPtr->messageQueueRetryLock);
         thisSharedPtr->messageQueue->removeOutdatedMessages();
         thisSharedPtr->transportNotAvailableQueue->removeOutdatedMessages();
         thisSharedPtr->activateMessageCleanerTimer();
@@ -432,8 +436,10 @@ void AbstractMessageRouter::onRoutingTableCleanerTimerExpired(
     }
 }
 
-void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message)
+void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message,
+                                         const ReadLocker& messageQueueRetryReadLock)
 {
+    assert(messageQueueRetryReadLock.owns_lock());
     JOYNR_LOG_TRACE(logger(), "message queued: {}", message->toLogMessage());
     std::string recipient = message->getRecipient();
     messageQueue->queueMessage(std::move(recipient), std::move(message));
