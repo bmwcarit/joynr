@@ -20,7 +20,7 @@ echo "PARAM is: $1"
 done
 
 asadmin start-domain
-asadmin start-database
+asadmin start-database --jvmoptions="-Dderby.storage.useDefaultFilePermissions=true"
 
 for warFile in $(echo $warFileList | tr "," "\n")
 do
