@@ -91,6 +91,10 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
             return Promise.resolve();
         });
 
+        dispatcherSpy.sendSubscriptionStop.and.callFake(function() {
+            return Promise.resolve();
+        });
+
         subscriptionManager = new SubscriptionManager(dispatcherSpy);
 
         dispatcherSpyOnError = jasmine.createSpyObj("DispatcherSpyOnError", [
@@ -523,6 +527,23 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
         };
     }
 
+    function createDummySubscriptionRequest() {
+        var onReceiveSpy = jasmine.createSpy("onReceiveSpy");
+        var onErrorSpy = jasmine.createSpy("onErrorSpy");
+
+        return {
+            proxyId: "subscriber",
+            providerDiscoveryEntry: providerDiscoveryEntry,
+            attributeName: "testAttribute",
+            attributeType: "String",
+            qos: new OnChangeSubscriptionQos({
+                expiryDateMs: Date.now() + 250
+            }),
+            onReceive: onReceiveSpy,
+            onError: onErrorSpy
+        };
+    }
+
     it("register multicast subscription request", function(done) {
         var request = createDummyBroadcastSubscriptionRequest({
             broadcastName: "broadcastName",
@@ -931,5 +952,26 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", funct
                 }).toThrow();
                 done();
             });
+    });
+
+    it(" it unsubscribes all Subscriptions when terminateSubscriptions is being called", function(done) {
+        var subscriptionSettings = createDummySubscriptionRequest();
+        var broadcastSettings = createDummyBroadcastSubscriptionRequest({
+            broadcastName: "broadcastName",
+            selective: false
+        });
+        var clearSubscriptionsTimeoutMs = 1000;
+
+        subscriptionManager
+            .registerSubscription(subscriptionSettings)
+            .then(subscriptionManager.registerBroadcastSubscription.bind(this, broadcastSettings))
+            .then(subscriptionManager.terminateSubscriptions.bind(subscriptionManager, clearSubscriptionsTimeoutMs))
+            .then(subscriptionManager.shutdown)
+            .then(function() {
+                expect(dispatcherSpy.sendSubscriptionStop).toHaveBeenCalled();
+                expect(dispatcherSpy.sendMulticastSubscriptionStop).toHaveBeenCalled();
+                done();
+            })
+            .catch(fail);
     });
 });
