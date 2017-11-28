@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.mqtt.paho.client;
 
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
@@ -55,6 +56,7 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
@@ -132,7 +134,9 @@ public class MqttPahoClientTest {
 
     @After
     public void tearDown() {
-        joynrMqttClient.shutdown();
+        if (joynrMqttClient != null) {
+            joynrMqttClient.shutdown();
+        }
     }
 
     private void createJoynrMqttClient() {
@@ -149,7 +153,7 @@ public class MqttPahoClientTest {
         return resource.getPath();
     }
 
-    private void createJoynrMqttClient(boolean isSecureConnection) throws Exception {
+    private void createJoynrMqttClient(boolean isSecureConnection) {
         joynrMqttClient = createMqttClientWithoutSubscription(isSecureConnection);
 
         ownTopic = injector.getInstance((Key.get(MqttAddress.class,
@@ -157,20 +161,12 @@ public class MqttPahoClientTest {
         joynrMqttClient.subscribe(ownTopic.getTopic());
     }
 
-    private JoynrMqttClient createMqttClientWithoutSubscription() throws Exception {
+    private JoynrMqttClient createMqttClientWithoutSubscription() {
         return createMqttClientWithoutSubscription(NON_SECURE_CONNECTION);
     }
 
-    private JoynrMqttClient createMqttClientWithoutSubscription(boolean isSecureConnection) throws Exception {
+    private JoynrMqttClient createMqttClientWithoutSubscription(boolean isSecureConnection) {
         if (isSecureConnection) {
-            final String keyStorePath = getResourcePath("clientkeystore.jks");
-            final String trustStorePath = getResourcePath("catruststore.jks");
-            final String keyStorePWD = KEYSTORE_PASSWORD;
-            final String trustStorePWD = KEYSTORE_PASSWORD;
-            properties.put(SSLSocketFactoryFactory.SYSKEYSTORE, keyStorePath);
-            properties.put(SSLSocketFactoryFactory.SYSTRUSTSTORE, trustStorePath);
-            properties.put(SSLSocketFactoryFactory.SYSKEYSTOREPWD, keyStorePWD);
-            properties.put(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD, trustStorePWD);
             properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "ssl://localhost:8883");
         } else {
             properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
@@ -240,10 +236,18 @@ public class MqttPahoClientTest {
     }
 
     @Test
-    public void mqttClientSSLTestWithDisabledMessageSizeCheck() throws Exception {
+    public void mqttClientTLSTestWithDisabledMessageSizeCheck() throws URISyntaxException {
         final int initialMessageSize = 100;
         final boolean isSecureConnection = true;
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
+
+        final String keyStorePath = getResourcePath("clientkeystore.jks");
+        final String trustStorePath = getResourcePath("catruststore.jks");
+        properties.put(SSLSocketFactoryFactory.SYSKEYSTORE, keyStorePath);
+        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTORE, trustStorePath);
+        properties.put(SSLSocketFactoryFactory.SYSKEYSTOREPWD, KEYSTORE_PASSWORD);
+        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD, KEYSTORE_PASSWORD);
+
         createJoynrMqttClient(isSecureConnection);
 
         byte[] shortSerializedMessage = new byte[initialMessageSize];
@@ -251,6 +255,56 @@ public class MqttPahoClientTest {
 
         byte[] largeSerializedMessage = new byte[initialMessageSize + 1];
         joynrMqttClientPublishAndVerifyReceivedMessage(largeSerializedMessage);
+    }
+
+    private void testCreateMqttClientFailsWithJoynrIllegalArgumentException() {
+        final boolean isSecureConnection = true;
+        try {
+            createJoynrMqttClient(isSecureConnection);
+            fail("Expected JoynrIllegalStateException");
+        } catch (JoynrIllegalStateException e) {
+            // expected behaviour
+        }
+    }
+
+    @Test
+    public void mqttClientTLSCreationFailsIfKeystorePasswordIsWrongOrMissing() throws URISyntaxException {
+        final String wrongPassword = "wrongPassword";
+
+        final String keyStorePath = getResourcePath("clientkeystore.jks");
+        final String trustStorePath = getResourcePath("catruststore.jks");
+        properties.put(SSLSocketFactoryFactory.SYSKEYSTORE, keyStorePath);
+        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTORE, trustStorePath);
+
+        // test missing keystore password
+        properties.remove(SSLSocketFactoryFactory.SYSKEYSTOREPWD);
+        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD, KEYSTORE_PASSWORD);
+
+        testCreateMqttClientFailsWithJoynrIllegalArgumentException();
+
+        // test wrong keystore password
+        properties.put(SSLSocketFactoryFactory.SYSKEYSTOREPWD, wrongPassword);
+        testCreateMqttClientFailsWithJoynrIllegalArgumentException();
+    }
+
+    @Test
+    public void mqttClientTLSCreationFailsIfTrustorePasswordIsWrongOrMissing() throws URISyntaxException {
+        final String wrongPassword = "wrongPassword";
+
+        final String keyStorePath = getResourcePath("clientkeystore.jks");
+        final String trustStorePath = getResourcePath("catruststore.jks");
+        properties.put(SSLSocketFactoryFactory.SYSKEYSTORE, keyStorePath);
+        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTORE, trustStorePath);
+
+        // test missing truststore password
+        properties.put(SSLSocketFactoryFactory.SYSKEYSTOREPWD, KEYSTORE_PASSWORD);
+        properties.remove(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD);
+
+        testCreateMqttClientFailsWithJoynrIllegalArgumentException();
+
+        // test wrong truststore password
+        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD, wrongPassword);
+        testCreateMqttClientFailsWithJoynrIllegalArgumentException();
     }
 
     @Test
