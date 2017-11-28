@@ -68,6 +68,7 @@ AbstractMessageRouter::AbstractMessageRouter(
                                                                         ioService)),
           messageQueue(std::move(messageQueue)),
           transportNotAvailableQueue(std::move(transportNotAvailableQueue)),
+          transportAvailabilityMutex(),
           routingTableFileName(),
           addressCalculator(std::move(addressCalculator)),
           messageQueueCleanerTimer(ioService),
@@ -305,12 +306,16 @@ void AbstractMessageRouter::scheduleMessage(
     for (const auto& transportStatus : transportStatuses) {
         if (transportStatus->isReponsibleFor(destAddress)) {
             if (!transportStatus->isAvailable()) {
-                JOYNR_LOG_TRACE(logger(),
-                                "Transport not available. Message queued: {}",
-                                message->toLogMessage());
+                // We need to lock the mutex to ensure that the queue isn't processed right now.
+                std::lock_guard<std::mutex> lock(transportAvailabilityMutex);
+                if (!transportStatus->isAvailable()) {
+                    JOYNR_LOG_TRACE(logger(),
+                                    "Transport not available. Message queued: {}",
+                                    message->toLogMessage());
 
-                transportNotAvailableQueue->queueMessage(transportStatus, std::move(message));
-                return;
+                    transportNotAvailableQueue->queueMessage(transportStatus, std::move(message));
+                    return;
+                }
             }
         }
     }
@@ -374,6 +379,9 @@ void AbstractMessageRouter::registerTransportStatusCallbacks()
 void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
         std::shared_ptr<ITransportStatus> transportStatus)
 {
+    // We need to lock the mutex to prevent other threads from adding new content for the queue
+    // while we process it.
+    std::lock_guard<std::mutex> lock(transportAvailabilityMutex);
     while (auto nextImmutableMessage =
                    transportNotAvailableQueue->getNextMessageFor(transportStatus)) {
         std::shared_ptr<ImmutableMessage> message = nextImmutableMessage->getContent();

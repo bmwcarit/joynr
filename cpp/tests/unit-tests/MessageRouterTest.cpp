@@ -275,7 +275,8 @@ TYPED_TEST(MessageRouterTest, routedMessageQueuedIfTransportIsNotAvailable) {
     ON_CALL(*mockTransportStatus, isReponsibleFor(address)).
             WillByDefault(Return(true));
     EXPECT_CALL(*mockTransportStatus, isAvailable()).
-            Times(2).
+            Times(3).
+            WillOnce(Return(false)).
             WillOnce(Return(false)).
             WillOnce(Return(true));
 
