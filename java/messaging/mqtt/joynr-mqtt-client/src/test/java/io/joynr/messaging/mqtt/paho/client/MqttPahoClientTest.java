@@ -308,6 +308,44 @@ public class MqttPahoClientTest {
     }
 
     @Test
+    public void mqttClientTLSCreationFailsIfKeystorePathIsWrongOrMissing() throws URISyntaxException {
+        final String wrongKeyStorePath = getResourcePath("clientkeystore.jks") + "42";
+
+        final String trustStorePath = getResourcePath("catruststore.jks");
+        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTORE, trustStorePath);
+        properties.put(SSLSocketFactoryFactory.SYSKEYSTOREPWD, KEYSTORE_PASSWORD);
+        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD, KEYSTORE_PASSWORD);
+
+        // test missing keystore path
+        properties.remove(SSLSocketFactoryFactory.SYSKEYSTORE);
+
+        testCreateMqttClientFailsWithJoynrIllegalArgumentException();
+
+        // test wrong keystore path
+        properties.put(SSLSocketFactoryFactory.SYSKEYSTORE, wrongKeyStorePath);
+        testCreateMqttClientFailsWithJoynrIllegalArgumentException();
+    }
+
+    @Test
+    public void mqttClientTLSCreationFailsIfTrustorePathIsWrongOrMissing() throws URISyntaxException {
+        final String wrongTrustStorePath = getResourcePath("catruststore.jks") + "42";
+
+        final String keyStorePath = getResourcePath("clientkeystore.jks");
+        properties.put(SSLSocketFactoryFactory.SYSKEYSTORE, keyStorePath);
+        properties.put(SSLSocketFactoryFactory.SYSKEYSTOREPWD, KEYSTORE_PASSWORD);
+        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD, KEYSTORE_PASSWORD);
+
+        // test missing truststore path
+        properties.remove(SSLSocketFactoryFactory.SYSTRUSTSTORE);
+
+        testCreateMqttClientFailsWithJoynrIllegalArgumentException();
+
+        // test wrong truststore path
+        properties.put(SSLSocketFactoryFactory.SYSTRUSTSTORE, wrongTrustStorePath);
+        testCreateMqttClientFailsWithJoynrIllegalArgumentException();
+    }
+
+    @Test
     public void mqttClientTestWithDisabledCleanSession() throws Exception {
         properties.put(MqttModule.PROPERTY_MQTT_CLEAN_SESSION, "false");
         String topic = "otherTopic";
