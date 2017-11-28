@@ -39,7 +39,7 @@ describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", function() {
         uuidSpy.and.returnValue(uuid);
         participantIdStorage = new ParticipantIdStorage(localStorageSpy, uuidSpy);
         key = "joynr.participant." + domain + "." + interfaceNameDotted;
-        generatedParticipantId = domain + "." + interfaceNameDotted + "." + uuid;
+        generatedParticipantId = uuid;
         storedParticipantId = "storedParticipantId";
         done();
     });
