@@ -120,7 +120,7 @@ function ProxyBuilder(proxyDependencies, dependencies) {
         settings.proxyElementTypes = proxyElementTypes;
         var proxy = new ProxyConstructor(settings);
         proxy.domain = settings.domain;
-        proxy.proxyParticipantId = "proxy" + "." + settings.domain + "." + proxy.interfaceName + "." + uuid();
+        proxy.proxyParticipantId = uuid();
         proxy.messagingQos = settings.messagingQos;
 
         var datatypePromises = ProxyConstructor.getUsedDatatypes().map(function(datatype) {
