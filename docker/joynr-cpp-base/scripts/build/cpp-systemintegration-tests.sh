@@ -11,6 +11,12 @@ echo '####################################################'
 echo '# start services'
 echo '####################################################'
 
+mosquitto -c /etc/mosquitto/mosquitto.conf &
+MOSQUITTO_PID=$!
+
+# wait a while to allow mosquitto server to initialize
+sleep 5
+
 (
     cd /data/src/java
     mvn install -DskipTests
@@ -21,8 +27,8 @@ echo '####################################################'
     /data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE,$ACCESS_CTRL_WAR_FILE
 )
 
-mosquitto -c /etc/mosquitto/mosquitto.conf &
-MOSQUITTO_PID=$!
+# wait a while to allow backend service to startup and connect to mosquitto
+sleep 5
 
 echo '####################################################'
 echo '# run system integration test'
