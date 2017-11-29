@@ -50,7 +50,6 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 
 //TODO maybe Connector should not be a dynamic proxy. ProxyInvocationHandler could call execute...Method() directly.
 final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocationHandler {
-    @SuppressWarnings("unused")
     private static final Logger logger = LoggerFactory.getLogger(JoynrMessagingConnectorInvocationHandler.class);
 
     private final Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries;
