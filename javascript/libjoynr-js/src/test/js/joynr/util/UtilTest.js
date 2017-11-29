@@ -1,4 +1,5 @@
 /*jslint es5: true, node: true, nomen: true */
+/*global fail: true */
 /*
  * #%L
  * %%
@@ -271,5 +272,35 @@ describe("libjoynr-js.joynr.Util.forward", function() {
 
         expect(typeof augmentedReceiver.someFunction).toBe("function");
         expect(augmentedReceiver.someObject).toBeUndefined();
+    });
+});
+
+describe("libjoynr-js.joynr.Util.timeoutPromise", function() {
+    beforeEach(function() {
+        jasmine.clock().install();
+    });
+    afterEach(function() {
+        jasmine.clock().uninstall();
+    });
+    it("resolves Promise normally when Promise finished before timeout", function(done) {
+        var promise = new Promise(function(resolve, reject) {
+            setTimeout(resolve, 100);
+        });
+        Util.timeoutPromise(promise, 200)
+            .then(done)
+            .catch(fail);
+        jasmine.clock().tick(101);
+        jasmine.clock().tick(100);
+    });
+
+    it("timeouts after before the promise resolves", function(done) {
+        var promise = new Promise(function(resolve, reject) {
+            setTimeout(resolve, 200);
+        });
+        Util.timeoutPromise(promise, 100)
+            .then(fail)
+            .catch(done);
+        jasmine.clock().tick(101);
+        jasmine.clock().tick(100);
     });
 });
