@@ -29,46 +29,5 @@
         <version>0.33.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-install-plugin</artifactId>
-				<version>2.5</version>
-				<inherited>false</inherited>
-				<executions>
-					<execution>
-						<id>install-common-api-core</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>install-file</goal>
-						</goals>
-						<configuration>
-							<file>${basedir}/common-api/org.genivi.commonapi.core_2.1.4.jar</file>
-							<groupId>org.genivi.commonapi</groupId>
-							<artifactId>core</artifactId>
-							<version>2.1.4</version>
-							<packaging>jar</packaging>
-						</configuration>
-					</execution>
-					<execution>
-						<id>install-common-api-dbus</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>install-file</goal>
-						</goals>
-						<configuration>
-							<file>${basedir}/common-api/org.genivi.commonapi.dbus_2.1.4.jar</file>
-							<groupId>org.genivi.commonapi</groupId>
-							<artifactId>dbus</artifactId>
-							<version>2.1.4</version>
-							<packaging>jar</packaging>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
 </project>
 

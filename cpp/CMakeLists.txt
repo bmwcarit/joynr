@@ -542,9 +542,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # common-api/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for CommonAPI
-    # generated code.
-    # All changes to CMAKE_CXX_FLAGS that are not warnings should be added there as well.
     set(GNU_CXX_FLAGS "-pipe")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wall -Wunused-value -Wunused -Wcast-qual -Wpointer-arith")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wextra -Wcast-align -Wdisabled-optimization -Wformat-y2k")

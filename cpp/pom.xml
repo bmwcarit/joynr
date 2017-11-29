@@ -31,7 +31,6 @@
 
 	<modules>
 		<module>libjoynr</module>
-		<module>common-api</module>
 		<module>tests</module>
 		<module>libs</module>
 	</modules>
