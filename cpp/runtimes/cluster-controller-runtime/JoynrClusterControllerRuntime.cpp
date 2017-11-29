@@ -320,7 +320,7 @@ void JoynrClusterControllerRuntime::init()
             mosquittoConnection = std::make_shared<MosquittoConnection>(
                     messagingSettings, clusterControllerSettings, mqttCliendId);
 
-            auto mqttTransportStatus = std::make_shared<MqttTransportStatus>(mosquittoConnection);
+            auto mqttTransportStatus = std::make_unique<MqttTransportStatus>(mosquittoConnection);
             transportStatuses.emplace_back(std::move(mqttTransportStatus));
         }
         if (!mqttMessageReceiver) {
@@ -473,14 +473,12 @@ void JoynrClusterControllerRuntime::init()
                     clusterControllerSettings.getMqttMulticastTopicPrefix(),
                     messagingSettings.getTtlUpliftMs());
 
-            mqttMessageReceiver->registerReceiveCallback([mqttMessagingSkeletonWeakPtr =
-                                                                  joynr::util::as_weak_ptr(
-                                                                          mqttMessagingSkeleton)](
-                    smrf::ByteVector && msg) {
-                if (auto mqttMessagingSkeletonSharedPtr = mqttMessagingSkeletonWeakPtr.lock()) {
-                    mqttMessagingSkeletonSharedPtr->onMessageReceived(std::move(msg));
-                }
-            });
+            auto mqttMessagingSkeletonCopyForCapturing = mqttMessagingSkeleton;
+            mqttMessageReceiver
+                    ->registerReceiveCallback([mqttMessagingSkeleton =
+                                                       mqttMessagingSkeletonCopyForCapturing](
+                            smrf::ByteVector &&
+                            msg) { mqttMessagingSkeleton->onMessageReceived(std::move(msg)); });
             multicastMessagingSkeletonDirectory
                     ->registerSkeleton<system::RoutingTypes::MqttAddress>(mqttMessagingSkeleton);
         }
@@ -902,7 +900,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     delete ccDbusMessageRouterAdapter;
     delete dbusSettings;
 #endif // USE_DBUS_COMMONAPI_COMMUNICATION
-
     JOYNR_LOG_TRACE(logger(), "leaving ~JoynrClusterControllerRuntime");
 }
 
