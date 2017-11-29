@@ -36,11 +36,6 @@
 #include "joynr/Semaphore.h"
 #include "joynr/WebSocketSettings.h"
 
-#ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-#include "joynr/DBusMessageRouterAdapter.h"
-#include "libjoynr/common/dbus/DbusSettings.h"
-#endif // USE_DBUS_COMMONAPI_COMMUNICATION
-
 class JoynrClusterControllerRuntimeTest;
 
 namespace joynr
@@ -169,10 +164,6 @@ protected:
     std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
     ClusterControllerSettings clusterControllerSettings;
 
-#ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-    DbusSettings* dbusSettings;
-    DBusMessageRouterAdapter* ccDbusMessageRouterAdapter;
-#endif // USE_DBUS_COMMONAPI_COMMUNICATION
     WebSocketSettings wsSettings;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> wsCcMessagingSkeleton;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> wsTLSCcMessagingSkeleton;
