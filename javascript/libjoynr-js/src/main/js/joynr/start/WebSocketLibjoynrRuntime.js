@@ -520,11 +520,20 @@ function WebSocketLibjoynrRuntime(provisioning) {
      * @throws {Error}
      *             if libjoynr is not in the STARTED state
      */
-    internalShutdown = function shutdown() {
+    internalShutdown = function shutdown(settings) {
         if (joynrState !== JoynrStates.STARTED && joynrState !== JoynrStates.STARTING) {
             throw new Error("Cannot shutdown libjoynr because it's currently \"" + joynrState + '"');
         }
         joynrState = JoynrStates.SHUTTINGDOWN;
+
+        var shutdownProvisioning = provisioning.shutdownSettings || {};
+        settings = settings || {};
+        if (settings.clearSubscriptionsEnabled || shutdownProvisioning.clearSubscriptionsEnabled) {
+            var clearSubscriptionTimeoutMs =
+                settings.clearSubscriptionsTimeoutMs || shutdownProvisioning.clearSubscriptionsTimeoutMs || 1000;
+            subscriptionManager.terminateSubscriptions(clearSubscriptionTimeoutMs);
+        }
+
         if (webSocketMessagingSkeleton !== undefined) {
             webSocketMessagingSkeleton.shutdown();
         }
