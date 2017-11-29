@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.mqtt.paho.client;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.internal.security.SSLSocketFactoryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,7 +128,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 case MqttException.REASON_CODE_CLIENT_EXCEPTION:
                     if (isSecureConnection) {
                         logger.error("Failed to establish TLS connection, error: " + mqttError);
-                        if (mqttError.getCause() != null && mqttError.getCause() instanceof SSLHandshakeException) {
+                        if (mqttError instanceof MqttSecurityException
+                                || (mqttError.getCause() != null && mqttError.getCause() instanceof SSLHandshakeException)) {
                             throw new JoynrIllegalStateException("Unable to create TLS MqttPahoClient: " + mqttError);
                         }
                     }
