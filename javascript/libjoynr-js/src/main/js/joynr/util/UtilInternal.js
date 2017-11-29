@@ -287,5 +287,18 @@ UtilInternal.enrichObjectWithSetPrototypeOf = function() {
         };
 };
 
+function timeoutToPromise(time) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(resolve, time);
+    });
+}
+
+UtilInternal.timeoutPromise = function(promise, timeoutMs) {
+    return new Promise(function(resolve, reject) {
+        promise.then(resolve).catch(reject);
+        timeoutToPromise(timeoutMs).then(reject);
+    });
+};
+
 UtilInternal.extend(UtilInternal, UtilExternal);
 module.exports = UtilInternal;
