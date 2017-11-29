@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>0.31.1</version>
+		<version>0.32.0</version>
 	</parent>
 
 	<properties>
@@ -41,7 +41,7 @@
 		<jetty.version>9.2.13.v20150730</jetty.version>
 		<netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
 		<project.build.optimizerResources>${project.build.directory}/build-resources/almond</project.build.optimizerResources>
-		<joynr.provisioning.brokerUri>tcp://127.0.0.1:9001</joynr.provisioning.brokerUri>
+		<joynr.provisioning.brokerUri>tcp://127.0.0.1:1883</joynr.provisioning.brokerUri>
 		<joynr.provisioning.bounceProxyBaseUrl>http://127.0.0.1:8080</joynr.provisioning.bounceProxyBaseUrl>
 		<joynr.provisioning.testTtl>10000</joynr.provisioning.testTtl>
 	</properties>
@@ -194,17 +194,6 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>distributedLogging</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<model>system/LoggingService.fidl</model>
-							<outputPath>${basedir}/src/main/generated</outputPath>
-						</configuration>
-					</execution>
-					<execution>
 						<id>types</id>
 						<phase>generate-sources</phase>
 						<goals>
@@ -316,7 +305,7 @@
 							<artifactId>build-resources</artifactId>
 							<version>${project.version}</version>
 							<outputDirectory>${project.build.directory}/build-resources</outputDirectory>
-							<includes>js-formatter/code-formatter-config.xml</includes>
+							<includes>js-formatter/prettier.config.json</includes>
 						</artifactItem>
 					</artifactItems>
 				</configuration>
@@ -342,8 +331,8 @@
 									<artifactId>build-resources</artifactId>
 									<version>${project.version}</version>
 									<outputDirectory>${project.build.directory}/build-resources</outputDirectory>
-									<includes>js-formatter/code-formatter-config.xml,
-											  almond/almond-0.2.5.js</includes>
+									<includes>js-formatter/prettier.config.json,
+												almond/almond-0.2.5.js</includes>
 								</artifactItem>
 								<artifactItem>
 									<groupId>org.atmosphere.client</groupId>
@@ -381,16 +370,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--
-			  Since the configuration of the maven-java-formatter-plugin is changed
-			  in the plugin management section, we need to add the plugin again in the
-			  plugin section, even it is already configured in the super POM. Otherwise
-			  the configuration is not set correctly on sub modules.
-			-->
-			<plugin>
-				<groupId>com.marvinformatics.formatter</groupId>
-				<artifactId>formatter-maven-plugin</artifactId>
-			</plugin>
 
 			<!-- jslint-ing src/main/js -->
 			<plugin>
@@ -403,6 +382,7 @@
 					</execution>
 				</executions>
 			</plugin>
+
 			<!-- Copy over dependencies to lib -->
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
@@ -612,6 +592,31 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<executions>
+					<!-- maven doesn't keep the execution permission of
+						${project.build.directory}/run_formatter.sh.
+						So we fix it here -->
+					<execution>
+						<configuration>
+							<executable>chmod</executable>
+							<commandlineArgs>+x ${project.build.outputDirectory}/run_formatter.sh</commandlineArgs>
+						</configuration>
+						<id>process-run-formatter-script</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>format-sources</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>${project.build.outputDirectory}/run_formatter.sh</executable>
+						</configuration>
+					</execution>
+
 					<execution>
 						<configuration>
 							<executable>${project.build.directory}/node-classes/node_modules/.bin/browserify</executable>
@@ -810,25 +815,6 @@
 										<ignore></ignore>
 									</action>
 								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											com.marvinformatics.formatter
-										</groupId>
-										<artifactId>
-											formatter-maven-plugin
-										</artifactId>
-										<versionRange>
-											[1.4.0,)
-										</versionRange>
-										<goals>
-											<goal>format</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
@@ -839,7 +825,7 @@
 
 	<profiles>
 		<profile>
-			<id>build-with-skippped-tests</id>
+			<id>npm-install-with-skippped-tests</id>
 			<activation>
 				<property>
 					<!-- Tests are disabled by default
@@ -883,6 +869,7 @@
 										<!-- ignore-scripts speeds the build up a lot -->
 										<argument>--ignore-scripts</argument>
 										<argument>browserify</argument>
+										<argument>prettier</argument>
 									</arguments>
 								</configuration>
 								<goals>
@@ -896,8 +883,43 @@
 		</profile>
 
 		<profile>
-			<id>build-with-tests</id>
+			<id>npm-install-with-enabled-tests</id>
+			<activation>
+				<property>
+					<name>skipTests</name>
+					<value>false</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<!-- configuration options documentation:
+							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
+						<executions>
+							<execution>
+								<id>npm-install</id>
+								<phase>generate-resources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+										<argument>--prefix=${project.build.directory}/node-classes</argument>
+									</arguments>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 
+		<profile>
+			<id>prepare-tests</id>
 			<activation>
 				<property>
 					<name>skipTests</name>
@@ -978,6 +1000,60 @@
 					</plugin>
 					-->
 
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<!-- configuration options documentation:
+							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
+						<executions>
+							<!-- maven doesn't keep the execution permission of
+								${project.build.testOutputDirectory}/node_run_unit_tests.sh.
+								So we fix it here -->
+							<execution>
+								<configuration>
+									<executable>chmod</executable>
+									<commandlineArgs>+x ${project.build.testOutputDirectory}/node_run_tests.sh</commandlineArgs>
+								</configuration>
+								<id>process-tests-nodejs</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+							<!-- maven doesn't keep the execution permission of
+								${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh.
+								So we fix it here -->
+							<execution>
+								<configuration>
+									<executable>chmod</executable>
+									<commandlineArgs>+x ${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh</commandlineArgs>
+								</configuration>
+								<id>process-integration-tests-nodejs</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- To speed up development with "-DskipTests=false", node based test execution during
+			     the maven build can be skipped while still being prepared for execution with maven
+			     option "-P \!run-node-tests" or "-P -run-node-tests"
+			     This allows to run only the required tests manually after the sped up maven build.
+			 -->
+			<id>run-node-tests</id>
+			<activation>
+				<property>
+					<name>skipTests</name>
+					<value>false</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
 					<!-- run the tests -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
@@ -985,40 +1061,10 @@
 						<!-- configuration options documentation:
 							http://mojo.codehaus.org/exec-maven-plugin/exec-mojo.html -->
 						<executions>
-							<execution>
-								<id>npm-install</id>
-								<phase>generate-resources</phase>
-								<configuration>
-									<executable>npm</executable>
-									<arguments>
-										<argument>install</argument>
-										<argument>--prefix=${project.build.directory}/node-classes</argument>
-									</arguments>
-								</configuration>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-
-							<!-- run nodejs based unit tests -->
-
-							<!-- maven doesn't keep the execution permission of
-								${project.build.testOutputDirectory}/node_run_unit_tests.sh.
-								So we fix it here -->
+							<!-- run nodejs based tests -->
 							<execution>
 								<configuration>
-									<executable>chmod</executable>
-									<commandlineArgs>+x ${project.build.testOutputDirectory}/node_run_unit_tests.sh</commandlineArgs>
-								</configuration>
-								<id>process-unit-tests-nodejs</id>
-								<phase>process-test-classes</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-							<execution>
-								<configuration>
-									<executable>${project.build.testOutputDirectory}/node_run_unit_tests.sh</executable>
+									<executable>${project.build.testOutputDirectory}/node_run_tests.sh</executable>
 									<commandlineArgs>node-run-unit-tests.js --captureExceptions --verbose</commandlineArgs>
 									<environmentVariables>
 										<LD_LIBRARY_PATH>
@@ -1034,35 +1080,40 @@
 							</execution>
 
 							<!-- run nodejs based integration tests -->
-
-							<!-- maven doesn't keep the execution permission of
-								${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh.
-								So we fix it here -->
-							<execution>
-								<configuration>
-									<executable>chmod</executable>
-									<commandlineArgs>+x ${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh</commandlineArgs>
-								</configuration>
-								<id>process-integration-tests-nodejs</id>
-								<phase>process-test-classes</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
 							<execution>
 								<configuration>
 									<executable>${project.build.testOutputDirectory}/node/shutdown/node_run_shutdown_test.sh</executable>
 									<commandlineArgs>--captureExceptions --verbose</commandlineArgs>
 								</configuration>
 								<id>run-integration-tests-nodejs</id>
+								<!-- Disable node shutdown test
 								<phase>integration-test</phase>
+								-->
+								<phase>none</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
 							</execution>
 						</executions>
 					</plugin>
-
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- To speed up development with "-DskipTests=false", automatic karma test execution
+			     during the maven build can be skipped while still being prepared for execution with
+			     maven option: "-P \!run-karma-tests" or "-P -run-karma-tests".
+			     This allows to run only the required tests manually after the sped up maven build.
+			 -->
+			<id>run-karma-tests</id>
+			<activation>
+				<property>
+					<name>skipTests</name>
+					<value>false</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
 					<!-- run karma -->
 					<plugin>
 						<groupId>com.kelveden</groupId>

@@ -19,4 +19,4 @@
  * #L%
  */
 
-module.exports = require('./start/WebSocketLibjoynrRuntime');
+module.exports = require("./start/WebSocketLibjoynrRuntime");

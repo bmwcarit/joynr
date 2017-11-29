@@ -18,17 +18,22 @@
  */
 package io.joynr.messaging.mqtt.paho.client;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
-import io.joynr.messaging.mqtt.MqttMessagingStub;
+import javax.net.ssl.SSLHandshakeException;
+
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
-
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttSecurityException;
+import org.eclipse.paho.client.mqttv3.internal.security.SSLSocketFactoryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,10 +47,12 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
+import io.joynr.messaging.mqtt.MqttMessagingStub;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClient.class);
+
     private MqttClient mqttClient;
     private IMqttMessagingSkeleton messagingSkeleton;
     private int reconnectSleepMs;
@@ -54,18 +61,30 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private int timeToWaitMs;
     private int maxMsgsInflight;
     private int maxMsgSizeBytes;
+    private boolean cleanSession;
+    private String keyStorePath;
+    private String trustStorePath;
+    private String keyStorePWD;
+    private String trustStorePWD;
+    private boolean isSecureConnection;
 
     private Set<String> subscribedTopics = new HashSet<>();
 
     private volatile boolean shutdown = false;
 
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttPahoClient(MqttClient mqttClient,
                           int reconnectSleepMS,
                           int keepAliveTimerSec,
                           int connectionTimeoutSec,
                           int timeToWaitMs,
                           int maxMsgsInflight,
-                          int maxMsgSizeBytes) throws MqttException {
+                          int maxMsgSizeBytes,
+                          boolean cleanSession,
+                          String keyStorePath,
+                          String trustStorePath,
+                          String keyStorePWD,
+                          String trustStorePWD) throws MqttException {
         this.mqttClient = mqttClient;
         this.reconnectSleepMs = reconnectSleepMS;
         this.keepAliveTimerSec = keepAliveTimerSec;
@@ -73,6 +92,21 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         this.timeToWaitMs = timeToWaitMs;
         this.maxMsgsInflight = maxMsgsInflight;
         this.maxMsgSizeBytes = maxMsgSizeBytes;
+        this.cleanSession = cleanSession;
+        this.keyStorePath = keyStorePath;
+        this.trustStorePath = trustStorePath;
+        this.keyStorePWD = keyStorePWD;
+        this.trustStorePWD = trustStorePWD;
+
+        String srvURI = mqttClient.getServerURI();
+        URI vURI;
+        try {
+            vURI = new URI(srvURI);
+            this.isSecureConnection = vURI.getScheme().equals("ssl");
+        } catch (URISyntaxException e) {
+            logger.error("Failed to read srvURI, error: ", e);
+            throw new JoynrIllegalStateException("Fail to parse URI server: " + srvURI + " " + ", error: " + e);
+        }
     }
 
     @Override
@@ -80,18 +114,24 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     public synchronized void start() {
         while (!shutdown && !mqttClient.isConnected()) {
             try {
+                logger.debug("Started MqttPahoClient");
                 mqttClient.setCallback(this);
                 mqttClient.setTimeToWait(timeToWaitMs);
                 mqttClient.setManualAcks(true);
                 mqttClient.connect(getConnectOptions());
                 logger.debug("MQTT Connected client");
-                for (String topic : subscribedTopics) {
-                    subscribe(topic);
-                }
+                reestablishSubscriptions();
             } catch (MqttException mqttError) {
                 logger.error("MQTT Connect failed. Error code {}", mqttError.getReasonCode(), mqttError);
                 switch (mqttError.getReasonCode()) {
                 case MqttException.REASON_CODE_CLIENT_EXCEPTION:
+                    if (isSecureConnection) {
+                        logger.error("Failed to establish TLS connection, error: " + mqttError);
+                        if (mqttError instanceof MqttSecurityException
+                                || (mqttError.getCause() != null && mqttError.getCause() instanceof SSLHandshakeException)) {
+                            throw new JoynrIllegalStateException("Unable to create TLS MqttPahoClient: " + mqttError);
+                        }
+                    }
                 case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
                 case MqttException.REASON_CODE_CLIENT_DISCONNECTING:
                 case MqttException.REASON_CODE_CLIENT_NOT_CONNECTED:
@@ -124,13 +164,35 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         }
     }
 
+    private void reestablishSubscriptions() {
+        logger.debug("reestablishing {} Subscriptions for MQTT after restart", subscribedTopics.size());
+        Set<String> oldSubscribedTopics = subscribedTopics;
+        subscribedTopics = new HashSet<>();
+        for (String topic : oldSubscribedTopics) {
+            subscribe(topic);
+        }
+    }
+
     private MqttConnectOptions getConnectOptions() {
         MqttConnectOptions options = new MqttConnectOptions();
         options.setAutomaticReconnect(false);
         options.setConnectionTimeout(connectionTimeoutSec);
         options.setKeepAliveInterval(keepAliveTimerSec);
         options.setMaxInflight(maxMsgsInflight);
-        options.setCleanSession(false);
+        options.setCleanSession(cleanSession);
+
+        if (isSecureConnection) {
+            // Set global SSL properties for all Joynr SSL clients
+            Properties sslClientProperties = new Properties();
+            sslClientProperties.setProperty(SSLSocketFactoryFactory.KEYSTORETYPE, "JKS");
+            sslClientProperties.setProperty(SSLSocketFactoryFactory.KEYSTORE, keyStorePath);
+            sslClientProperties.setProperty(SSLSocketFactoryFactory.KEYSTOREPWD, keyStorePWD);
+            sslClientProperties.setProperty(SSLSocketFactoryFactory.TRUSTSTORETYPE, "JKS");
+            sslClientProperties.setProperty(SSLSocketFactoryFactory.TRUSTSTORE, trustStorePath);
+            sslClientProperties.setProperty(SSLSocketFactoryFactory.TRUSTSTOREPWD, trustStorePWD);
+            options.setSSLProperties(sslClientProperties);
+        }
+
         return options;
     }
 

@@ -18,11 +18,11 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var Typing = require('../util/Typing');
-var Util = require('../util/UtilInternal');
-var JoynrRuntimeException = require('./JoynrRuntimeException');
-var LoggerFactory = require('../system/LoggerFactory');
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+var Typing = require("../util/Typing");
+var Util = require("../util/UtilInternal");
+var JoynrRuntimeException = require("./JoynrRuntimeException");
+var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings;
 
 /**
@@ -71,10 +71,7 @@ function MethodInvocationException(settings) {
      */
     if (settings) {
         Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkPropertyIfDefined(
-                settings.providerVersion,
-                "Version",
-                "settings.providerVersion");
+        Typing.checkPropertyIfDefined(settings.providerVersion, "Version", "settings.providerVersion");
     }
 
     Util.extend(this, defaultSettings, settings, runtimeException);
@@ -82,9 +79,7 @@ function MethodInvocationException(settings) {
 
 defaultSettings = {};
 
-TypeRegistrySingleton.getInstance().addType(
-        "joynr.exceptions.MethodInvocationException",
-        MethodInvocationException);
+TypeRegistrySingleton.getInstance().addType("joynr.exceptions.MethodInvocationException", MethodInvocationException);
 
 MethodInvocationException.prototype = new Error();
 MethodInvocationException.prototype.constructor = MethodInvocationException;

@@ -18,8 +18,7 @@
  * limitations under the License.
  * #L%
  */
-var InProcessMessagingSkeleton =
-        require('../../../../classes/joynr/messaging/inprocess/InProcessMessagingSkeleton');
+var InProcessMessagingSkeleton = require("../../../../classes/joynr/messaging/inprocess/InProcessMessagingSkeleton");
 
 describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingSkeleton", function() {
     var listener, inProcessMessagingSkeleton, joynrMessage;
@@ -29,7 +28,7 @@ describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingSkeleton", fun
         inProcessMessagingSkeleton = new InProcessMessagingSkeleton();
         inProcessMessagingSkeleton.registerListener(listener);
         joynrMessage = {
-            key : "joynrMessage"
+            key: "joynrMessage"
         };
     });
 
@@ -48,5 +47,4 @@ describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingSkeleton", fun
         inProcessMessagingSkeleton.receiveMessage(joynrMessage);
         expect(listener).toHaveBeenCalledWith(joynrMessage);
     });
-
 });

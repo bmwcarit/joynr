@@ -353,8 +353,9 @@ void LibJoynrMessageRouterTest::testAddNextHopCallsRoutingProxyCorrectly(const b
 
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
+    const bool allowUpdate = false;
 
-    messageRouter->addNextHop(providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
+    messageRouter->addNextHop(providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
 }
 
 TEST_F(LibJoynrMessageRouterTest, addNextHop_callsAddNextHopInRoutingProxy) {
@@ -376,4 +377,15 @@ TEST_F(LibJoynrMessageRouterTest, addNextHop_callsAddNextHopInRoutingProxy) {
     testAddNextHopCallsRoutingProxyCorrectly(isGloballyVisible, providerAddress2);
     isGloballyVisible = true;
     testAddNextHopCallsRoutingProxyCorrectly(isGloballyVisible, providerAddress2);
+}
+
+TEST_F(LibJoynrMessageRouterTest, checkAllowUpdateTrue){
+    const bool allowUpdate = true;
+    const bool updateExpected = false;
+    this->checkAllowUpdate(allowUpdate, updateExpected);
+}
+TEST_F(LibJoynrMessageRouterTest, checkAllowUpdateFalse){
+    const bool allowUpdate = false;
+    const bool updateExpected = false;
+    this->checkAllowUpdate(allowUpdate, updateExpected);
 }

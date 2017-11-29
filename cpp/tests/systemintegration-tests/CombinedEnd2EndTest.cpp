@@ -46,6 +46,7 @@
 #include "tests/PrettyPrint.h"
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockTestProvider.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -104,11 +105,14 @@ void CombinedEnd2EndTest::SetUp()
 
 void CombinedEnd2EndTest::TearDown()
 {
-    runtime1.reset();
-    runtime2.reset();
+    test::util::resetAndWaitUntilDestroyed(runtime1);
+
+    if (runtime2) {
+        test::util::resetAndWaitUntilDestroyed(runtime2);
+    }
 
     // Delete the persisted participant ids so that each test uses different participant ids
-    std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
+    test::util::removeAllCreatedSettingsAndPersistencyFiles();
 }
 
 TEST_P(CombinedEnd2EndTest, surviveDestructionOfRuntime)
@@ -122,7 +126,7 @@ TEST_P(CombinedEnd2EndTest, surviveDestructionOfRuntime)
         std::uint64_t qosRoundTripTTL = 40000;
 
         // destroy runtime
-        runtime2.reset();
+        test::util::resetAndWaitUntilDestroyed(runtime2);
 
         // try to build a proxy, it must not run into SIGSEGV
         EXPECT_THROW(std::shared_ptr<tests::testProxy> testProxy(
@@ -1150,22 +1154,24 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
     runtime1->unregisterProvider(testProviderParticipantId);
 }
 
+using namespace std::string_literals;
+
 INSTANTIATE_TEST_CASE_P(
         DISABLED_Http,
         CombinedEnd2EndTest,
-        testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings",
-                                        "test-resources/HttpSystemIntegrationTest2.settings")));
+        testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings"s,
+                                        "test-resources/HttpSystemIntegrationTest2.settings"s)));
 
 INSTANTIATE_TEST_CASE_P(
         Mqtt,
         CombinedEnd2EndTest,
         testing::Values(std::make_tuple(
-                "test-resources/MqttSystemIntegrationTest1.settings",
-                "test-resources/MqttSystemIntegrationTest2.settings")));
+                "test-resources/MqttSystemIntegrationTest1.settings"s,
+                "test-resources/MqttSystemIntegrationTest2.settings"s)));
 
 INSTANTIATE_TEST_CASE_P(
         MqttOverTLS,
         CombinedEnd2EndTest,
         testing::Values(std::make_tuple(
-                "test-resources/MqttOverTLSSystemIntegrationTest1.settings",
-                "test-resources/MqttOverTLSSystemIntegrationTest2.settings")));
+                "test-resources/MqttOverTLSSystemIntegrationTest1.settings"s,
+                "test-resources/MqttOverTLSSystemIntegrationTest2.settings"s)));

@@ -17,68 +17,66 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../../../classes/global/Promise');
-var ChannelAddress = require('../../../../classes/joynr/system/RoutingTypes/ChannelAddress');
-var ChannelMessagingStub = require('../../../../classes/joynr/messaging/channel/ChannelMessagingStub');
+var Promise = require("../../../../classes/global/Promise");
+var ChannelAddress = require("../../../../classes/joynr/system/RoutingTypes/ChannelAddress");
+var ChannelMessagingStub = require("../../../../classes/joynr/messaging/channel/ChannelMessagingStub");
 
-    describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() {
-        var channelMessagingSender, destinationChannelAddress, myChannelAddress;
-        var channelMessagingStub1, channelMessagingStub2, joynrMessage;
-        var url = "http://testurl";
+describe("libjoynr-js.joynr.messaging.channel.ChannelMessagingStub", function() {
+    var channelMessagingSender, destinationChannelAddress, myChannelAddress;
+    var channelMessagingStub1, channelMessagingStub2, joynrMessage;
+    var url = "http://testurl";
 
-        beforeEach(function(done) {
-            channelMessagingSender = jasmine.createSpyObj("channelMessagingSender", [ "send"
-            ]);
-            channelMessagingSender.send.and.returnValue(Promise.resolve());
-            destinationChannelAddress = new ChannelAddress({
-                channelId : "destChannelId",
-                messagingEndpointUrl : url
-            });
-            myChannelAddress = new ChannelAddress({
-                channelId : "myChannelId",
-                messagingEndpointUrl : url
-            });
-
-            channelMessagingStub1 = new ChannelMessagingStub({
-                destinationChannelAddress : destinationChannelAddress,
-                myChannelAddress : myChannelAddress,
-                channelMessagingSender : channelMessagingSender
-            });
-            channelMessagingStub2 = new ChannelMessagingStub({
-                destinationChannelAddress : destinationChannelAddress,
-                myChannelAddress : destinationChannelAddress,
-                channelMessagingSender : channelMessagingSender
-            });
-            joynrMessage = {
-                key : "joynrMessage",
-                type : "request"
-            };
-            done();
+    beforeEach(function(done) {
+        channelMessagingSender = jasmine.createSpyObj("channelMessagingSender", ["send"]);
+        channelMessagingSender.send.and.returnValue(Promise.resolve());
+        destinationChannelAddress = new ChannelAddress({
+            channelId: "destChannelId",
+            messagingEndpointUrl: url
+        });
+        myChannelAddress = new ChannelAddress({
+            channelId: "myChannelId",
+            messagingEndpointUrl: url
         });
 
-        it("is instantiable and of correct type", function(done) {
-            expect(ChannelMessagingStub).toBeDefined();
-            expect(typeof ChannelMessagingStub).toEqual("function");
-            expect(channelMessagingStub1).toBeDefined();
-            expect(channelMessagingStub1 instanceof ChannelMessagingStub).toEqual(true);
-            expect(channelMessagingStub1.transmit).toBeDefined();
-            expect(typeof channelMessagingStub1.transmit).toEqual("function");
-            done();
+        channelMessagingStub1 = new ChannelMessagingStub({
+            destinationChannelAddress: destinationChannelAddress,
+            myChannelAddress: myChannelAddress,
+            channelMessagingSender: channelMessagingSender
         });
-
-        it("drop outgoing message if destChannel = myChannel", function(done) {
-            channelMessagingStub2.transmit(joynrMessage).catch(function() { return null; });
-            expect(channelMessagingSender.send).not.toHaveBeenCalled();
-            expect(joynrMessage.replyChannelId).toBeUndefined();
-            done();
+        channelMessagingStub2 = new ChannelMessagingStub({
+            destinationChannelAddress: destinationChannelAddress,
+            myChannelAddress: destinationChannelAddress,
+            channelMessagingSender: channelMessagingSender
         });
-
-        it("transmits a message", function(done) {
-            channelMessagingStub1.transmit(joynrMessage);
-            expect(channelMessagingSender.send).toHaveBeenCalledWith(
-                    joynrMessage,
-                    destinationChannelAddress);
-            done();
-        });
-
+        joynrMessage = {
+            key: "joynrMessage",
+            type: "request"
+        };
+        done();
     });
+
+    it("is instantiable and of correct type", function(done) {
+        expect(ChannelMessagingStub).toBeDefined();
+        expect(typeof ChannelMessagingStub).toEqual("function");
+        expect(channelMessagingStub1).toBeDefined();
+        expect(channelMessagingStub1 instanceof ChannelMessagingStub).toEqual(true);
+        expect(channelMessagingStub1.transmit).toBeDefined();
+        expect(typeof channelMessagingStub1.transmit).toEqual("function");
+        done();
+    });
+
+    it("drop outgoing message if destChannel = myChannel", function(done) {
+        channelMessagingStub2.transmit(joynrMessage).catch(function() {
+            return null;
+        });
+        expect(channelMessagingSender.send).not.toHaveBeenCalled();
+        expect(joynrMessage.replyChannelId).toBeUndefined();
+        done();
+    });
+
+    it("transmits a message", function(done) {
+        channelMessagingStub1.transmit(joynrMessage);
+        expect(channelMessagingSender.send).toHaveBeenCalledWith(joynrMessage, destinationChannelAddress);
+        done();
+    });
+});

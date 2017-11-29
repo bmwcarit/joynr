@@ -383,10 +383,50 @@ If set to true, the joynr message receiver will not switch to long polling for d
 ### `PROPERTY_KEY_MQTT_BROKER_URI`
 The URI of the MQTT broker backend service the cluster controller connects to.
 
+* `tcp://HOST:PORT`: use insecure connection
+* `ssl://HOST:PORT`: use secure connection, for this you will have to provide keystore and truststore
+
 * **REQUIRED if using the MQTTModule**
 * **Type**: String
 * **User property**: `joynr.messaging.mqtt.brokeruri`
 * **Default value**:
+
+### `PROPERTY_KEY_MQTT_KEYSTORE_PATH`
+Sets the path to a jks keystore file with a client certificate and the corresponding
+private key.
+
+This is used to authenticate the client at the server (mqtt broker) side, if enabled.
+
+* **REQUIRED if using the ssl connection with client authentication enabled**
+* **Type**: String
+* **User property**: `javax.net.ssl.keyStore`
+* **Default value**: ""
+
+### `PROPERTY_KEY_MQTT_TRUSTSTORE_PATH`
+Sets the path to a jks keystore file with a trusted CA certificate.
+
+This certificate will be used by the client to verify the MQTT brokers' certificate.
+
+* **REQUIRED if using ssl connection**
+* **Type**: String
+* **User property**: `javax.net.ssl.truststore`
+* **Default value**: ""
+
+### `PROPERTY_KEY_MQTT_KEYSTORE_PWD`
+Sets the keystore's password
+
+* **REQUIRED if using client authentication**
+* **Type**: String
+* **User property**: `javax.net.ssl.keyStorePassword`
+* **Default value**: ""
+
+### `PROPERTY_KEY_MQTT_TRUSTSTORE_PWD`
+Sets the truststore's password
+
+* **REQUIRED if using ssl connection**
+* **Type**: String
+* **User property**: `javax.net.ssl.trustStorePassword`
+* **Default value**: ""
 
 ### `PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS`
 If an error occurs on the MQTT connection, joynr will wait for this time (in milliseconds) before
@@ -458,6 +498,15 @@ A message larger than this size is discarded. A value of 0 means that the check 
 * **Type**: int
 * **User property**: `joynr.messaging.mqtt.maxmqttmessagesizebytes`
 * **Default value**: `0`
+
+### `PROPERTY_KEY_MQTT_CLEAN_SESSION`
+Configures whether the mqtt client shall establish a clean session to the broker.
+Subscriptions will be reestablished by joynr in any case.
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `messaging/joynr.messaging.mqtt.cleansession`
+* **Default value**: `false`
 
 ## SystemServicesSettings
 

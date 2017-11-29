@@ -18,10 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var Util = require('../../../../classes/joynr/util/UtilInternal');
-var MessageQueue = require('../../../../classes/joynr/messaging/routing/MessageQueue');
-var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
-var Date = require('../../../../test-classes/global/Date');
+var Util = require("../../../../classes/joynr/util/UtilInternal");
+var MessageQueue = require("../../../../classes/joynr/messaging/routing/MessageQueue");
+var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
+var Date = require("../../../../test-classes/global/Date");
 
 var fakeTime;
 
@@ -34,21 +34,21 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
     var messageQueue, joynrMessage, joynrMessage2, receiverParticipantId;
     receiverParticipantId = "TestMessageQueue_participantId_" + Date.now();
     joynrMessage = new JoynrMessage({
-        type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
-        payload : "hello"
+        type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+        payload: "hello"
     });
     joynrMessage.to = receiverParticipantId;
     joynrMessage.from = "senderParticipantId";
     joynrMessage2 = new JoynrMessage({
-        type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
-        payload : "hello2"
+        type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+        payload: "hello2"
     });
     joynrMessage2.to = receiverParticipantId;
     joynrMessage2.from = "senderParticipantId2";
 
     messageQueue = new MessageQueue({
-        maxQueueSizeInKBytes : 0.5
-    // set the qsize to 500 bytes for testing purposes
+        maxQueueSizeInKBytes: 0.5
+        // set the qsize to 500 bytes for testing purposes
     });
 
     beforeEach(function(done) {
@@ -67,12 +67,14 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
     });
 
     it("test message queue limit", function(done) {
-        var newJoynrMessage, i = 0, payload = "hello", oldQueueSize, maxIterations =
-                Math.floor((messageQueue.maxQueueSizeInKBytes * 1024 / Util
-                        .getLengthInBytes(payload)));
+        var newJoynrMessage,
+            i = 0,
+            payload = "hello",
+            oldQueueSize,
+            maxIterations = Math.floor(messageQueue.maxQueueSizeInKBytes * 1024 / Util.getLengthInBytes(payload));
         newJoynrMessage = new JoynrMessage({
-            type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
-            payload : payload
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: payload
         });
         newJoynrMessage.expiryDate = Date.now() + 1000;
 
@@ -83,8 +85,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
             messageQueue.putMessage(joynrMessage);
             i++;
             //until now, all messages shall be in the queue
-            expect(messageQueue.currentQueueSize).toEqual(
-                    oldQueueSize + Util.getLengthInBytes(payload));
+            expect(messageQueue.currentQueueSize).toEqual(oldQueueSize + Util.getLengthInBytes(payload));
         }
         //now, the next message shall lead to a queue overflow
         newJoynrMessage.to = receiverParticipantId + "ExceedsQueueBuffer";
@@ -99,40 +100,36 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
         done();
     });
 
-    it(
-            "put Message adds new queued message, dropped after getAndRemoveMessage call",
-            function(done) {
-                var queuedMessages;
-                joynrMessage.expiryDate = Date.now() + 1000;
-                messageQueue.putMessage(joynrMessage);
+    it("put Message adds new queued message, dropped after getAndRemoveMessage call", function(done) {
+        var queuedMessages;
+        joynrMessage.expiryDate = Date.now() + 1000;
+        messageQueue.putMessage(joynrMessage);
 
-                queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
+        queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
 
-                expect(queuedMessages.length).toEqual(1);
-                expect(queuedMessages[0]).toEqual(joynrMessage);
+        expect(queuedMessages.length).toEqual(1);
+        expect(queuedMessages[0]).toEqual(joynrMessage);
 
-                expect(messageQueue.getAndRemoveMessages(receiverParticipantId).length).toEqual(0);
-                done();
-            });
+        expect(messageQueue.getAndRemoveMessages(receiverParticipantId).length).toEqual(0);
+        done();
+    });
 
-    it(
-            "put Message adds multiple queued messages, dropped after getAndRemoveMessage call",
-            function(done) {
-                var queuedMessages;
-                joynrMessage.expiryDate = Date.now() + 1000;
-                joynrMessage2.expiryDate = Date.now() + 1000;
-                messageQueue.putMessage(joynrMessage);
-                messageQueue.putMessage(joynrMessage2);
+    it("put Message adds multiple queued messages, dropped after getAndRemoveMessage call", function(done) {
+        var queuedMessages;
+        joynrMessage.expiryDate = Date.now() + 1000;
+        joynrMessage2.expiryDate = Date.now() + 1000;
+        messageQueue.putMessage(joynrMessage);
+        messageQueue.putMessage(joynrMessage2);
 
-                queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
+        queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
 
-                expect(queuedMessages.length).toEqual(2);
-                expect(queuedMessages[0]).toEqual(joynrMessage);
-                expect(queuedMessages[1]).toEqual(joynrMessage2);
+        expect(queuedMessages.length).toEqual(2);
+        expect(queuedMessages[0]).toEqual(joynrMessage);
+        expect(queuedMessages[1]).toEqual(joynrMessage2);
 
-                expect(messageQueue.getAndRemoveMessages(receiverParticipantId).length).toEqual(0);
-                done();
-            });
+        expect(messageQueue.getAndRemoveMessages(receiverParticipantId).length).toEqual(0);
+        done();
+    });
 
     it("put Message adds new queued message, dropped after timeout", function(done) {
         var queuedMessages;
@@ -147,24 +144,22 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
         done();
     });
 
-    it(
-            "put Message adds multiple queued messages, dropped first one after timeout",
-            function(done) {
-                var queuedMessages;
-                joynrMessage.expiryDate = Date.now() + 1000;
-                joynrMessage2.expiryDate = Date.now() + 2000;
-                messageQueue.putMessage(joynrMessage);
-                messageQueue.putMessage(joynrMessage2);
+    it("put Message adds multiple queued messages, dropped first one after timeout", function(done) {
+        var queuedMessages;
+        joynrMessage.expiryDate = Date.now() + 1000;
+        joynrMessage2.expiryDate = Date.now() + 2000;
+        messageQueue.putMessage(joynrMessage);
+        messageQueue.putMessage(joynrMessage2);
 
-                increaseFakeTime(1000 + 1);
+        increaseFakeTime(1000 + 1);
 
-                queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
+        queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
 
-                expect(queuedMessages.length).toEqual(1);
-                expect(queuedMessages[0]).toEqual(joynrMessage2);
-                expect(messageQueue.getAndRemoveMessages(receiverParticipantId).length).toEqual(0);
-                done();
-            });
+        expect(queuedMessages.length).toEqual(1);
+        expect(queuedMessages[0]).toEqual(joynrMessage2);
+        expect(messageQueue.getAndRemoveMessages(receiverParticipantId).length).toEqual(0);
+        done();
+    });
     it(" empty message queue when shut down", function() {
         expect(messageQueue.currentQueueSize).toEqual(0);
         messageQueue.putMessage(joynrMessage);
@@ -173,5 +168,4 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
         messageQueue.shutdown();
         expect(messageQueue.currentQueueSize).toEqual(0);
     });
-
 });

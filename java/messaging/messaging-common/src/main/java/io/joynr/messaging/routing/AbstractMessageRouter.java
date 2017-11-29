@@ -18,16 +18,13 @@
  */
 package io.joynr.messaging.routing;
 
-import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Singleton;
@@ -53,13 +50,16 @@ import joynr.Message;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class AbstractMessageRouter implements MessageRouter, ShutdownListener {
-    private Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
+    private static final FastDateFormat dateFormatter = FastDateFormat.getInstance("dd/MM/yyyy HH:mm:ss:sss z",
+                                                                                   TimeZone.getTimeZone("UTC"));
+
     private final RoutingTable routingTable;
-    private static final DateFormat DateFormatter = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss:sss z");
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
     private long routingTableGracePeriodMs;
@@ -75,10 +75,10 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     private AddressManager addressManager;
     protected final MulticastReceiverRegistry multicastReceiverRegistry;
 
-    private DelayQueue<DelayableImmutableMessage> messageQueue;
+    private final DelayQueue<DelayableImmutableMessage> messageQueue;
 
     private List<MessageProcessedListener> messageProcessedListeners;
-    private List<ScheduledFuture<?>> workerFutures;
+    private List<MessageWorker> messageWorkers;
 
     @Inject
     @Singleton
@@ -106,7 +106,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         this.addressManager = addressManager;
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
-        DateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         shutdownNotifier.registerForShutdown(this);
         messageProcessedListeners = new ArrayList<MessageProcessedListener>();
         startMessageWorkerThreads(maxParallelSends);
@@ -114,14 +113,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     }
 
     private void startMessageWorkerThreads(int numberOfWorkThreads) {
-        workerFutures = new ArrayList<ScheduledFuture<?>>(numberOfWorkThreads);
+        messageWorkers = new ArrayList<MessageWorker>(numberOfWorkThreads);
         for (int i = 0; i < numberOfWorkThreads; i++) {
-            ScheduledFuture<?> messageWorkerFuture = scheduler.schedule(new MessageWorker(i), 0, TimeUnit.MILLISECONDS);
-            if (messageWorkerFuture == null) {
-                logger.warn("scheduling messageWorker-" + i + "returned a null future. Cancel at shutdown not possible");
-                continue;
-            }
-            workerFutures.add(messageWorkerFuture);
+            MessageWorker messageWorker = new MessageWorker(i);
+            scheduler.schedule(messageWorker, 0, TimeUnit.MILLISECONDS);
+            messageWorkers.add(messageWorker);
         }
     }
 
@@ -291,9 +287,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         long ttlExpirationDateMs = message.getTtlMs();
 
         if (ttlExpirationDateMs <= currentTimeMillis) {
-            String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} abs_ttl: {1} msg_id: {2}",
+            String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} ({1}) abs_ttl: {2} ({3}) msg_id: {4}",
                                                        currentTimeMillis,
+                                                       dateFormatter.format(currentTimeMillis),
                                                        ttlExpirationDateMs,
+                                                       dateFormatter.format(ttlExpirationDateMs),
                                                        message.getId());
             logger.error(errorMessage);
             callMessageProcessedListeners(message.getId());
@@ -335,9 +333,10 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                     delayMs = createDelayWithExponentialBackoff(sendMsgRetryIntervalMs, retriesCount);
                 }
 
-                logger.error("Rescheduling messageId: {} with delay " + delayMs + " ms, TTL is: {} ms",
+                logger.error("Rescheduling messageId: {} with delay {} ms, TTL is: {}",
                              messageId,
-                             DateFormatter.format(message.getTtlMs()));
+                             delayMs,
+                             dateFormatter.format(message.getTtlMs()));
                 try {
                     routeInternal(message, delayMs, retriesCount + 1);
                 } catch (Exception e) {
@@ -375,8 +374,8 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
 
     @Override
     public void shutdown() {
-        for (ScheduledFuture<?> workerFuture : workerFutures) {
-            workerFuture.cancel(true);
+        for (MessageWorker worker : messageWorkers) {
+            worker.stopWorker();
         }
     }
 
@@ -391,65 +390,77 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         return millis;
     }
 
-    private void checkFoundAddresses(Set<Address> foundAddresses, ImmutableMessage message) {
-        if (foundAddresses.isEmpty()) {
-            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-                throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
-                        + message);
-            } else if (message.isReply()) {
-                throw new JoynrMessageNotSentException("Failed to send Reply: No address found for given message: "
-                        + message);
-            } else {
-                throw new JoynrIllegalStateException("Unable to find address for recipient with participant ID "
-                        + message.getRecipient());
-            }
-        }
-    }
-
     class MessageWorker implements Runnable {
+        private Logger logger = LoggerFactory.getLogger(MessageWorker.class);
         private int number;
+        private volatile boolean stopped;
 
         public MessageWorker(int number) {
             this.number = number;
+            stopped = false;
+        }
+
+        void stopWorker() {
+            stopped = true;
+        }
+
+        private void checkFoundAddresses(Set<Address> foundAddresses, ImmutableMessage message) {
+            if (foundAddresses.isEmpty()) {
+                if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+                    throw new JoynrMessageNotSentException("Failed to send Request: No address for given message: "
+                            + message);
+                } else if (message.isReply()) {
+                    throw new JoynrMessageNotSentException("Failed to send Reply: No address found for given message: "
+                            + message);
+                } else {
+                    throw new JoynrIllegalStateException("Unable to find address for recipient with participant ID "
+                            + message.getRecipient());
+                }
+            }
         }
 
         @Override
         public void run() {
-            while (!Thread.interrupted()) {
-                Thread.currentThread().setName("joynrMessageWorker-" + number);
+            Thread.currentThread().setName("joynrMessageWorker-" + number);
+
+            while (!stopped) {
                 ImmutableMessage message = null;
                 DelayableImmutableMessage delayableMessage;
                 int retriesCount = 0;
+
                 try {
-                    delayableMessage = messageQueue.take();
-                    retriesCount = delayableMessage.getRetriesCount();
-                    message = delayableMessage.getMessage();
-                    logger.trace("Starting processing of message {}", message);
-                    checkExpiry(message);
+                    delayableMessage = messageQueue.poll(1000, TimeUnit.MILLISECONDS);
 
-                    Set<Address> addresses = getAddresses(message);
-                    checkFoundAddresses(addresses, message);
+                    if (delayableMessage != null) {
+                        retriesCount = delayableMessage.getRetriesCount();
+                        message = delayableMessage.getMessage();
+                        logger.trace("Starting processing of message {}", message);
+                        checkExpiry(message);
 
-                    if (addresses.isEmpty()) {
-                        throw new JoynrMessageNotSentException("Failed to send Message: No route for given participantId: "
-                                + message.getRecipient());
-                    }
-                    SuccessAction messageProcessedAction = createMessageProcessedAction(message.getId(),
-                                                                                        addresses.size());
-                    // If multiple stub calls for a multicast to multiple destination addresses fail, the failure
-                    // action is called for each failing stub call. Hence, the same failureAction has to be used.
-                    // Otherwise, the message is rescheduled multiple times and the message queue is flooded with
-                    // entries for the same message until the transmission of every entry is successful for all
-                    // recipients. Also the recipients are flooded with the same message.
-                    // Open issue:
-                    // If only some stub calls fail, the rescheduled message will be sent to all its recipients again,
-                    // no matter if an earlier transmission attempt was already successful or not.
-                    FailureAction failureAction = createFailureAction(message, retriesCount);
-                    for (Address address : addresses) {
-                        logger.trace(">>>>> SEND  {} to address {}", message, address);
+                        Set<Address> addresses = getAddresses(message);
+                        checkFoundAddresses(addresses, message);
 
-                        IMessagingStub messagingStub = messagingStubFactory.create(address);
-                        messagingStub.transmit(message, messageProcessedAction, failureAction);
+                        if (addresses.isEmpty()) {
+                            throw new JoynrMessageNotSentException("Failed to send Message: No route for given participantId: "
+                                    + message.getRecipient());
+                        }
+                        SuccessAction messageProcessedAction = createMessageProcessedAction(message.getId(),
+                                                                                            addresses.size());
+                        // If multiple stub calls for a multicast to multiple destination addresses fail, the failure
+                        // action is called for each failing stub call. Hence, the same failureAction has to be used.
+                        // Otherwise, the message is rescheduled multiple times and the message queue is flooded with
+                        // entries for the same message until the transmission of every entry is successful for all
+                        // recipients. Also the recipients are flooded with the same message.
+                        // Open issue:
+                        // If only some stub calls fail, the rescheduled message will be sent to all its recipients again,
+                        // no matter if an earlier transmission attempt was already successful or not.
+                        FailureAction failureAction = createFailureAction(message, retriesCount);
+                        for (Address address : addresses) {
+                            logger.trace(">>>>> SEND  {} to address {}", message, address);
+
+                            IMessagingStub messagingStub = messagingStubFactory.create(address);
+                            messagingStub.transmit(message, messageProcessedAction, failureAction);
+                        }
                     }
                 } catch (InterruptedException e) {
                     logger.trace("Message Worker interrupted. Stopping.");

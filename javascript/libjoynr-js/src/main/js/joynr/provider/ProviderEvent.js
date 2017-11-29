@@ -18,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var BroadcastOutputParameters = require('./BroadcastOutputParameters');
-var Util = require('../util/UtilInternal');
-var SubscriptionUtil = require('../dispatching/subscription/util/SubscriptionUtil');
+var BroadcastOutputParameters = require("./BroadcastOutputParameters");
+var Util = require("../util/UtilInternal");
+var SubscriptionUtil = require("../dispatching/subscription/util/SubscriptionUtil");
 
 /**
  * Constructor of ProviderEvent object that is used in the generation of provider objects
@@ -53,16 +53,16 @@ function ProviderEvent(settings) {
      * @name ProviderEvent#checkFilterParameters
      * @param {BroadcastFilterParameters} filterParameters
      * @param {Object} filterParameters.filterParameters an object containing a map filterParameters
-     * 
+     *
      */
-    this.checkFilterParameters =
-            function checkFilterParameters(filterParametersInput) {
-                var filterParameters = filterParametersInput || {};
-                return SubscriptionUtil.checkFilterParameters(
-                        settings.filterSettings,
-                        filterParameters.filterParameters,
-                        settings.eventName);
-            };
+    this.checkFilterParameters = function checkFilterParameters(filterParametersInput) {
+        var filterParameters = filterParametersInput || {};
+        return SubscriptionUtil.checkFilterParameters(
+            settings.filterSettings,
+            filterParameters.filterParameters,
+            settings.eventName
+        );
+    };
 
     this.createBroadcastOutputParameters = function createBroadcastOutputParameters() {
         return new BroadcastOutputParameters(settings.outputParameterProperties);
@@ -86,9 +86,9 @@ function ProviderEvent(settings) {
         SubscriptionUtil.validatePartitions(partitions);
         // the Util.fire method accepts exactly one argument for the callback
         var data = {
-            broadcastOutputParameters : broadcastOutputParameters,
-            filters : filters,
-            partitions : partitions || []
+            broadcastOutputParameters: broadcastOutputParameters,
+            filters: filters,
+            partitions: partitions || []
         };
         Util.fire(callbacks, data);
     };

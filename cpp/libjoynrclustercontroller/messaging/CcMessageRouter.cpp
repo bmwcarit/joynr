@@ -123,6 +123,7 @@ CcMessageRouter::CcMessageRouter(
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         const std::string& globalClusterControllerAddress,
         const std::string& messageNotificationProviderParticipantId,
+        bool persistRoutingTable,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         int maxThreads,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
@@ -131,6 +132,7 @@ CcMessageRouter::CcMessageRouter(
                                 std::move(messagingStubFactory),
                                 ioService,
                                 std::move(addressCalculator),
+                                persistRoutingTable,
                                 maxThreads,
                                 std::move(transportStatuses),
                                 std::move(messageQueue),
@@ -143,7 +145,9 @@ CcMessageRouter::CcMessageRouter(
           globalClusterControllerAddress(globalClusterControllerAddress),
           messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>()),
           messageNotificationProviderParticipantId(messageNotificationProviderParticipantId),
-          clusterControllerSettings(clusterControllerSettings)
+          clusterControllerSettings(clusterControllerSettings),
+          multicastReceiverDirectoryPersistencyEnabled(
+                  clusterControllerSettings.isMulticastReceiverDirectoryPersistencyEnabled())
 {
     messageNotificationProvider->addBroadcastFilter(
             std::make_shared<MessageQueuedForDeliveryBroadcastFilter>());
@@ -160,6 +164,10 @@ void CcMessageRouter::setAccessController(std::weak_ptr<IAccessController> acces
 
 void CcMessageRouter::saveMulticastReceiverDirectory() const
 {
+    if (!multicastReceiverDirectoryPersistencyEnabled) {
+        return;
+    }
+
     if (multicastReceiverDirectoryFilename.empty()) {
         JOYNR_LOG_INFO(
                 logger(), "Did not save multicast receiver directory: No filename specified");
@@ -177,7 +185,17 @@ void CcMessageRouter::saveMulticastReceiverDirectory() const
 
 void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
 {
+    if (!multicastReceiverDirectoryPersistencyEnabled) {
+        return;
+    }
+
     multicastReceiverDirectoryFilename = std::move(filename);
+
+    if (multicastReceiverDirectoryFilename.empty()) {
+        JOYNR_LOG_INFO(
+                logger(), "Did not load multicast receiver directory: No filename specified");
+        return;
+    }
 
     try {
         joynr::serializer::deserializeFromJson(
@@ -345,6 +363,7 @@ void CcMessageRouter::removeNextHop(
         WriteLocker lock(routingTableLock);
         routingTable.remove(participantId);
     }
+
     saveRoutingTable();
 
     if (onSuccess) {
@@ -358,12 +377,14 @@ void CcMessageRouter::addNextHop(
         bool isGloballyVisible,
         const std::int64_t expiryDateMs,
         const bool isSticky,
+        const bool allowUpdate,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
     assert(address);
-    addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
+    addToRoutingTable(
+            participantId, isGloballyVisible, address, expiryDateMs, isSticky, allowUpdate);
     sendMessages(participantId, address);
     if (onSuccess) {
         onSuccess();
@@ -388,6 +409,7 @@ void CcMessageRouter::addNextHop(
                isGloballyVisible,
                expiryDateMs,
                isSticky,
+               false,
                std::move(onSuccess));
 }
 
@@ -408,6 +430,7 @@ void CcMessageRouter::addNextHop(
                isGloballyVisible,
                expiryDateMs,
                isSticky,
+               false,
                std::move(onSuccess));
 }
 
@@ -429,6 +452,7 @@ void CcMessageRouter::addNextHop(
                isGloballyVisible,
                expiryDateMs,
                isSticky,
+               false,
                std::move(onSuccess));
 }
 
@@ -450,6 +474,7 @@ void CcMessageRouter::addNextHop(
                isGloballyVisible,
                expiryDateMs,
                isSticky,
+               false,
                std::move(onSuccess));
 }
 
@@ -471,6 +496,7 @@ void CcMessageRouter::addNextHop(
                isGloballyVisible,
                expiryDateMs,
                isSticky,
+               false,
                std::move(onSuccess));
 }
 
@@ -492,6 +518,7 @@ void CcMessageRouter::addNextHop(
                isGloballyVisible,
                expiryDateMs,
                isSticky,
+               false,
                std::move(onSuccess));
 }
 

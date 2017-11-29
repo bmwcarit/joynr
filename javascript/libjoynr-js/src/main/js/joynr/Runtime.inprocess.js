@@ -19,4 +19,4 @@
  * #L%
  */
 
-module.exports = require('./start/InProcessRuntime');
+module.exports = require("./start/InProcessRuntime");

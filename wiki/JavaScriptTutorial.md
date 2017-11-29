@@ -155,12 +155,18 @@ var persistencyValue = {
 
 };
 
+var shutdownSettingsValue = {
+    clearSubscriptionsEnabled: <true|false>, // default false
+    clearSubscriptionsTimeoutMs: <number> // default 1000
+};
+
 var websocketLibJoynrProvisioning = {
     capabilities: capabilitiesValue, //optional
     logging: loggingValue, //optional
     internalMessagingQos: internalMessagingQosValue, //optional
     messaging: messagingValue, //optional
     persistency: persistencyValue, //optional
+    shutdownSettings: shutdownSettingsValue, //optional
     ccAddress: <ccAddress>, /*
                              * mandatory input: the address, how the cluster controller
                              * can be reached. For the WebSocketLibjoynrRuntime, the
@@ -183,6 +189,7 @@ var interTabLibjoynrProvisioning = {
     internalMessagingQos: internalMessagingQosValue, //optional
     messaging: messagingValue, //optional
     persistency: persistencyValue, //optional
+    shutdownSettings: shutdownSettingsValue, //optional
     window : <window object>,
     windowId : windowId,
     parentWindow : <parent windows>, // e.g. window.opener || window.top
@@ -195,6 +202,7 @@ var inProcessProvisioning = {
     internalMessagingQos: internalMessagingQosValue, //optional
     messaging: messagingValue, //optional
     persistency: persistencyValue, //optional
+    shutdownSettings: shutdownSettingsValue, //optional
     brokerUrl: <url of the mqtt broker>, // e.g. tcp://127.0.0.1:9001
     bounceProxyBaseUrl: <base url to the bounce proxy>, // e.g. http://127.0.0.1:8080
     bounceProxyUrl: <url to bounce proxy>, // e.g. http://127.0.0.1:8080/bounceproxy/
@@ -215,6 +223,7 @@ var interTabClusterControllerProvisioning = {
     internalMessagingQos: internalMessagingQosValue, //optional
     messaging: messagingValue, //optional
     persistency: persistencyValue, //optional
+    shutdownSettings: shutdownSettingsValue, //optional
     brokerUrl: <url of the mqtt broker>, // e.g. tcp://127.0.0.1:9001
     bounceProxyBaseUrl: <base url to the bounce proxy>, // e.g. http://127.0.0.1:8080
     bounceProxyUrl: <url to bounce proxy>, // e.g. http://127.0.0.1:8080/bounceproxy/

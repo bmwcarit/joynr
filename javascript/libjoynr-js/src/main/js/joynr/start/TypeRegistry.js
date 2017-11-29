@@ -18,8 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var LoggerFactory = require('../system/LoggerFactory');
-var Promise = require('../../global/Promise');
+var LoggerFactory = require("../system/LoggerFactory");
+var Promise = require("../../global/Promise");
 
 /**
  * The <code>TypeRegistry</code> contains a mapping of type names (which are sent on the wire
@@ -105,39 +105,37 @@ function TypeRegistry() {
      *            the returning promise will be rejected
      * @returns {Promise} an A+ promise object
      */
-    this.getTypeRegisteredPromise =
-            function getTypeRegisteredPromise(joynrTypeName, timeout) {
-                if (!registryPromise[joynrTypeName]) {
-                    registryPromise[joynrTypeName] = {
-                        pending : true
-                    };
-                    registryPromise[joynrTypeName].promise = new Promise(function(resolve, reject) {
-                        registryPromise[joynrTypeName].resolve = resolve;
-                        registryPromise[joynrTypeName].reject = reject;
-                    });
-                    if (registry[joynrTypeName]) {
-                        registryPromise[joynrTypeName].pending = false;
-                        registryPromise[joynrTypeName].resolve(registry[joynrTypeName]);
-                    }
-                }
-                if (registryPromise[joynrTypeName].pending && timeout && timeout > 0) {
-                    registryPromise[joynrTypeName].timeoutTimer =
-                            setTimeout(
-                                    function() {
-                                        if (registryPromise[joynrTypeName].pending) {
-                                            delete registryPromise[joynrTypeName].timeoutTimer;
-                                            registryPromise[joynrTypeName].pending = false;
-                                            registryPromise[joynrTypeName]
-                                                    .reject(new Error(
-                                                            "joynr/start/TypeRegistry: "
-                                                                + joynrTypeName
-                                                                + " is not registered in the joynr type registry"));
-                                        }
-                                    },
-                                    timeout);
-                }
-                return registryPromise[joynrTypeName].promise;
+    this.getTypeRegisteredPromise = function getTypeRegisteredPromise(joynrTypeName, timeout) {
+        if (!registryPromise[joynrTypeName]) {
+            registryPromise[joynrTypeName] = {
+                pending: true
             };
+            registryPromise[joynrTypeName].promise = new Promise(function(resolve, reject) {
+                registryPromise[joynrTypeName].resolve = resolve;
+                registryPromise[joynrTypeName].reject = reject;
+            });
+            if (registry[joynrTypeName]) {
+                registryPromise[joynrTypeName].pending = false;
+                registryPromise[joynrTypeName].resolve(registry[joynrTypeName]);
+            }
+        }
+        if (registryPromise[joynrTypeName].pending && timeout && timeout > 0) {
+            registryPromise[joynrTypeName].timeoutTimer = setTimeout(function() {
+                if (registryPromise[joynrTypeName].pending) {
+                    delete registryPromise[joynrTypeName].timeoutTimer;
+                    registryPromise[joynrTypeName].pending = false;
+                    registryPromise[joynrTypeName].reject(
+                        new Error(
+                            "joynr/start/TypeRegistry: " +
+                                joynrTypeName +
+                                " is not registered in the joynr type registry"
+                        )
+                    );
+                }
+            }, timeout);
+        }
+        return registryPromise[joynrTypeName].promise;
+    };
 
     /**
      * Shutdown the type registry
@@ -155,7 +153,6 @@ function TypeRegistry() {
             }
         }
     };
-
 }
 
 module.exports = TypeRegistry;

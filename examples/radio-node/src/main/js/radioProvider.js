@@ -149,7 +149,9 @@ joynr.load(provisioning).then(function(loadedJoynr) {
         log("provider registered successfully");
         runInteractiveConsole(radioProviderImpl, function() {
             return joynr.registration.unregisterProvider(domain, radioProvider)
-            .finally(function() {
+            .then(function() {
+                joynr.shutdown();
+            }).catch(function() {
                 joynr.shutdown();
             });
         });

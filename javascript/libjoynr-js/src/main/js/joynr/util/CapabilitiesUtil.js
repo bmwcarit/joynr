@@ -18,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var DiscoveryEntry = require('../../joynr/types/DiscoveryEntry');
-var GlobalDiscoveryEntry = require('../../joynr/types/GlobalDiscoveryEntry');
-var DiscoveryEntryWithMetaInfo = require('../../joynr/types/DiscoveryEntryWithMetaInfo');
+var DiscoveryEntry = require("../../joynr/types/DiscoveryEntry");
+var GlobalDiscoveryEntry = require("../../joynr/types/GlobalDiscoveryEntry");
+var DiscoveryEntryWithMetaInfo = require("../../joynr/types/DiscoveryEntryWithMetaInfo");
 
 /**
  * @name CapabilitiesUtil
@@ -42,13 +42,13 @@ var CapabilitiesUtil = {};
  */
 CapabilitiesUtil.toDiscoveryEntry = function toDiscoveryEntry(capabilityInformation) {
     return new DiscoveryEntry({
-        providerVersion : capabilityInformation.providerVersion,
-        domain : capabilityInformation.domain,
-        interfaceName : capabilityInformation.interfaceName,
-        qos : capabilityInformation.providerQos,
-        participantId : capabilityInformation.participantId,
-        publicKeyId : capabilityInformation.publicKeyId,
-        lastSeenDateMs : Date.now()
+        providerVersion: capabilityInformation.providerVersion,
+        domain: capabilityInformation.domain,
+        interfaceName: capabilityInformation.interfaceName,
+        qos: capabilityInformation.providerQos,
+        participantId: capabilityInformation.participantId,
+        publicKeyId: capabilityInformation.publicKeyId,
+        lastSeenDateMs: Date.now()
     });
 };
 
@@ -65,7 +65,8 @@ CapabilitiesUtil.toDiscoveryEntry = function toDiscoveryEntry(capabilityInformat
  * @returns {Array} array of transformed objects of type DiscoveryEntry
  */
 CapabilitiesUtil.toDiscoveryEntries = function toDiscoveryEntries(capabilityInformations) {
-    var discoveryEntries = [], i;
+    var discoveryEntries = [],
+        i;
     if (capabilityInformations) {
         for (i = 0; i < capabilityInformations.length; i++) {
             discoveryEntries.push(CapabilitiesUtil.toDiscoveryEntry(capabilityInformations[i]));
@@ -88,20 +89,22 @@ CapabilitiesUtil.toDiscoveryEntries = function toDiscoveryEntries(capabilityInfo
  *
  * @returns {GlobalDiscoveryEntry} global DiscoveryEntry with provided address
  */
-CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry =
-        function discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, address) {
-            return new GlobalDiscoveryEntry({
-                providerVersion : discoveryEntry.providerVersion,
-                domain : discoveryEntry.domain,
-                interfaceName : discoveryEntry.interfaceName,
-                participantId : discoveryEntry.participantId,
-                qos : discoveryEntry.qos,
-                lastSeenDateMs : discoveryEntry.lastSeenDateMs,
-                expiryDateMs : discoveryEntry.expiryDateMs,
-                publicKeyId : discoveryEntry.publicKeyId,
-                address : JSON.stringify(address)
-            });
-        };
+CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry = function discoveryEntry2GlobalDiscoveryEntry(
+    discoveryEntry,
+    address
+) {
+    return new GlobalDiscoveryEntry({
+        providerVersion: discoveryEntry.providerVersion,
+        domain: discoveryEntry.domain,
+        interfaceName: discoveryEntry.interfaceName,
+        participantId: discoveryEntry.participantId,
+        qos: discoveryEntry.qos,
+        lastSeenDateMs: discoveryEntry.lastSeenDateMs,
+        expiryDateMs: discoveryEntry.expiryDateMs,
+        publicKeyId: discoveryEntry.publicKeyId,
+        address: JSON.stringify(address)
+    });
+};
 
 /**
  * This method transforms a DiscoveryEntry into a DiscoveryEntryWithMetaInfo
@@ -117,11 +120,13 @@ CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry =
  *
  * @returns {DiscoveryEntryWithMetaInfo} DiscoveryEntryWithMetaInfo with the given isLocal value
  */
-CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo =
-        function convertToDiscoveryEntryWithMetaInfo(isLocal, discoveryEntry) {
-            discoveryEntry.isLocal = isLocal;
-            return new DiscoveryEntryWithMetaInfo(discoveryEntry);
-        };
+CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo = function convertToDiscoveryEntryWithMetaInfo(
+    isLocal,
+    discoveryEntry
+) {
+    discoveryEntry.isLocal = isLocal;
+    return new DiscoveryEntryWithMetaInfo(discoveryEntry);
+};
 
 /**
  * This method transforms an array of DiscoveryEntries into an array of objects
@@ -137,17 +142,18 @@ CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo =
  *
  * @returns {Array} array of transformed objects of type DiscoveryEntryWithMetaInfo with the given isLocal value
  */
-CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray =
-        function convertToDiscoveryEntryWithMetaInfoArray(isLocal, discoveryEntries) {
-            var result = [], i;
-            if (discoveryEntries) {
-                for (i = 0; i < discoveryEntries.length; i++) {
-                    result.push(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(
-                            isLocal,
-                            discoveryEntries[i]));
-                }
-            }
-            return result;
-        };
+CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray = function convertToDiscoveryEntryWithMetaInfoArray(
+    isLocal,
+    discoveryEntries
+) {
+    var result = [],
+        i;
+    if (discoveryEntries) {
+        for (i = 0; i < discoveryEntries.length; i++) {
+            result.push(CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(isLocal, discoveryEntries[i]));
+        }
+    }
+    return result;
+};
 
 module.exports = CapabilitiesUtil;

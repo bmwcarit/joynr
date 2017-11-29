@@ -29,9 +29,7 @@
  *            messageType the message type as defined by
  *            [JoynrMessage.JOYNRMESSAGE_TYPE_*]{@link JoynrMessage}
  */
-function PlatformSecurityManager() {
-
-}
+function PlatformSecurityManager() {}
 
 /**
  * @name PlatformSecurityManager(2)#getCurrentProcessUserId

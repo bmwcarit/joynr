@@ -123,6 +123,7 @@ protected:
                           std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                           boost::asio::io_service& ioService,
                           std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+                          bool persistRoutingTable,
                           int maxThreads = 1,
                           std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
                           std::unique_ptr<MessageQueue<std::string>> messageQueue =
@@ -149,7 +150,8 @@ protected:
                            bool isGloballyVisible,
                            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
                            const std::int64_t expiryDateMs,
-                           const bool isSticky);
+                           const bool isSticky,
+                           const bool allowUpdate = false);
 
     void scheduleMessage(std::shared_ptr<ImmutableMessage> message,
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
@@ -168,6 +170,7 @@ protected:
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
     MessagingSettings messagingSettings;
+    bool persistRoutingTable;
     std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
     std::shared_ptr<ThreadPoolDelayedScheduler> messageScheduler;
     std::unique_ptr<MessageQueue<std::string>> messageQueue;

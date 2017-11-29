@@ -19,17 +19,14 @@
  * limitations under the License.
  * #L%
  */
-var WebSocketMessagingSkeleton =
-        require('../../../../classes/joynr/messaging/websocket/WebSocketMessagingSkeleton');
-var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
-var WebSocketAddress = require('../../../../classes/joynr/system/RoutingTypes/WebSocketAddress');
-var WebSocketClientAddress =
-        require('../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress');
-var SharedWebSocket = require('../../../../classes/joynr/messaging/websocket/SharedWebSocket');
-var WebSocket = require('../../../../test-classes/global/WebSocketMock');
+var WebSocketMessagingSkeleton = require("../../../../classes/joynr/messaging/websocket/WebSocketMessagingSkeleton");
+var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
+var WebSocketAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketAddress");
+var WebSocketClientAddress = require("../../../../classes/joynr/system/RoutingTypes/WebSocketClientAddress");
+var SharedWebSocket = require("../../../../classes/joynr/messaging/websocket/SharedWebSocket");
+var WebSocket = require("../../../../test-classes/global/WebSocketMock");
 
 describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", function() {
-
     var window = null;
     var sharedWebSocket = null;
     var webSocketMessagingSkeleton = null;
@@ -38,13 +35,13 @@ describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", fun
     var event = null;
     var multicastEvent;
     var ccAddress = new WebSocketAddress({
-        protocol : "ws",
-        host : "host",
-        port : 1234,
-        path : "/test"
+        protocol: "ws",
+        host: "host",
+        port: 1234,
+        path: "/test"
     });
     var localAddress = new WebSocketClientAddress({
-        id : "1234"
+        id: "1234"
     });
 
     beforeEach(function(done) {
@@ -53,43 +50,51 @@ describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", fun
         window.addEventListener = jasmine.createSpy("addEventListener");
 
         sharedWebSocket = new SharedWebSocket({
-            remoteAddress : ccAddress,
-            localAddress : localAddress
+            remoteAddress: ccAddress,
+            localAddress: localAddress
         });
 
         spyOn(sharedWebSocket, "send").and.callThrough();
 
         webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-            sharedWebSocket : sharedWebSocket,
-            mainTransport : true
+            sharedWebSocket: sharedWebSocket,
+            mainTransport: true
         });
 
         listener = jasmine.createSpy("listener");
         function MessageEvent() {}
         event = new MessageEvent();
         data = new JoynrMessage({
-            type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         multicastEvent = new MessageEvent();
         if (typeof Buffer === "function") {
             // node environment
             event.data = Buffer.from(JSON.stringify(data));
             event.target = {
-                binaryType : "arraybuffer"
+                binaryType: "arraybuffer"
             };
-            multicastEvent.data = Buffer.from(JSON.stringify(new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
-            })));
+            multicastEvent.data = Buffer.from(
+                JSON.stringify(
+                    new JoynrMessage({
+                        type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+                    })
+                )
+            );
         } else if (typeof TextEncoder === "function") {
             // browser
             var textEncoder = new TextEncoder();
             event.data = textEncoder.encode(JSON.stringify(data));
             event.target = {
-                binaryType : "arraybuffer"
+                binaryType: "arraybuffer"
             };
-            multicastEvent.data = textEncoder.encode(JSON.stringify(new JoynrMessage({
-                type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
-            })));
+            multicastEvent.data = textEncoder.encode(
+                JSON.stringify(
+                    new JoynrMessage({
+                        type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+                    })
+                )
+            );
         } else {
             // browser without TextDecoder
             done.fail("error in beforeEach: Buffer/TextEncoder not supported");
@@ -112,13 +117,13 @@ describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", fun
     it("throws if arguments are missing or of wrong type", function(done) {
         expect(function() {
             webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-                sharedWebSocket : sharedWebSocket,
-                mainTransport : true
+                sharedWebSocket: sharedWebSocket,
+                mainTransport: true
             });
         }).not.toThrow(); // correct call
         expect(function() {
             webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-                sharedWebSocket : sharedWebSocket
+                sharedWebSocket: sharedWebSocket
             });
         }).toThrow(); // mainTransport missing
         expect(function() {
@@ -183,11 +188,10 @@ describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", fun
 
     it("does not set isReceivedFromGlobal if web socket is NOT main transport", function() {
         webSocketMessagingSkeleton = new WebSocketMessagingSkeleton({
-            sharedWebSocket : sharedWebSocket,
-            mainTransport : false
+            sharedWebSocket: sharedWebSocket,
+            mainTransport: false
         });
 
         receiveMessageAndCheckForIsReceivedFromGlobalFlag(false);
     });
-
 });

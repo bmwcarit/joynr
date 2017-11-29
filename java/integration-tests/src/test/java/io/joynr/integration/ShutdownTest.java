@@ -34,19 +34,24 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
+import joynr.exceptions.ApplicationException;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
 import joynr.types.ProviderQos;
+import joynr.types.ProviderScope;
 
 public class ShutdownTest {
 
@@ -70,6 +75,7 @@ public class ShutdownTest {
 
         provider = new DefaulttestProvider();
         providerQos = new ProviderQos();
+        providerQos.setScope(ProviderScope.LOCAL);
         providerQos.setPriority(System.currentTimeMillis());
     }
 
@@ -77,6 +83,34 @@ public class ShutdownTest {
     public void testRegisterAfterShutdown() {
         dummyApplication.shutdown();
         dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider, providerQos);
+    }
+
+    @Test(expected = JoynrShutdownException.class)
+    public void testUnregisterProviderAfterShutdown() {
+        dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider, providerQos);
+        dummyApplication.shutdown();
+        dummyApplication.getRuntime().unregisterProvider("ShutdownTestdomain", provider);
+    }
+
+    @Test
+    public void unregisterMultibleProvidersBeforeShutdown() throws JoynrWaitExpiredException, JoynrRuntimeException,
+                                                           InterruptedException, ApplicationException {
+        int providercount = 10;
+        JoynrProvider[] providers = new JoynrProvider[providercount];
+        for (int i = 0; i < providers.length; i++) {
+            providerQos = new ProviderQos();
+            providerQos.setScope(ProviderScope.LOCAL);
+            providerQos.setPriority(System.currentTimeMillis());
+            providers[i] = new DefaulttestProvider();
+            Future<Void> registerFinished = dummyApplication.getRuntime().registerProvider("ShutdownTestdomain" + i,
+                                                                                           providers[i],
+                                                                                           providerQos);
+            registerFinished.get();
+        }
+        for (int i = 0; i < providers.length; i++) {
+            dummyApplication.getRuntime().unregisterProvider("ShutdownTestdomain" + i, providers[i]);
+        }
+        dummyApplication.shutdown();
     }
 
     @Test(expected = JoynrShutdownException.class)

@@ -17,30 +17,30 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../global/Promise');
-var Util = require('../util/UtilInternal');
-var Typing = require('../util/Typing');
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var Promise = require("../../global/Promise");
+var Util = require("../util/UtilInternal");
+var Typing = require("../util/Typing");
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 
 var typeRegistry = TypeRegistrySingleton.getInstance();
 
+// prettier-ignore
 var asNotify = (function() {
-
     /**
-     * If this attribute is changed the application should call this function with the new value, whereafter the new value gets
-     * published
+     * If this attribute is changed the application should call this function with the new value,
+     * whereafter the new value gets published
      *
      * @name ProviderAttribute#valueChanged
      * @function
      *
      * @param {?}
-     *            value the new value of the attribute
+     *      value - the new value of the attribute
+     *
      * @see ProviderAttribute#registerObserver
      * @see ProviderAttribute#unregisterObserver
      */
     function valueChanged(value) {
-        Util.fire(this.callbacks, [ value
-        ]);
+        Util.fire(this.callbacks, [value]);
     }
 
     /**
@@ -48,8 +48,10 @@ var asNotify = (function() {
      *
      * @name ProviderAttribute#registerObserver
      * @function
+     *
      * @param {Function}
-     *            observer the callback function with the signature "function(value){..}"
+     *      observer - the callback function with the signature "function(value){..}"
+     *
      * @see ProviderAttribute#valueChanged
      * @see ProviderAttribute#unregisterObserver
      */
@@ -62,8 +64,10 @@ var asNotify = (function() {
      *
      * @name ProviderAttribute#unregisterObserver
      * @function
+     *
      * @param {Function}
-     *            observer the callback function with the signature "function(value){..}"
+     *      observer - the callback function with the signature "function(value){..}"
+     *
      * @see ProviderAttribute#valueChanged
      * @see ProviderAttribute#registerObserver
      */
@@ -77,70 +81,69 @@ var asNotify = (function() {
         this.unregisterObserver = unregisterObserver;
         this.callbacks = [];
     };
-
 }());
 
-var asWrite =
-        (function() {
+// prettier-ignore
+var asWrite = (function() {
+    /**
+     * Registers the setter function for this attribute
+     *
+     * @name ProviderAttribute#registerSetter
+     * @function
+     *
+     * @param {Function}
+     *      setterFunc - the setter function with the signature
+     *          'void setterFunc({?}value) {..}'
+     * @returns {ProviderAttribute} fluent interface to call multiple methods
+     */
+    function registerSetter(setterFunc) {
+        this.privateSetterFunc = setterFunc;
+        return this;
+    }
 
-            /**
-             * Registers the setter function for this attribute
-             *
-             * @name ProviderAttribute#registerSetter
-             * @function
-             *
-             * @param {Function}
-             *            setterFunc the setter function with the signature 'void setterFunc({?}value) {..}'
-             * @returns {ProviderAttribute} fluent interface to call multiple methods
-             */
-            function registerSetter(setterFunc) {
-                this.privateSetterFunc = setterFunc;
-                return this;
-            }
-
-            /**
-             * Calls through the setter registered with registerSetter with the same arguments as this function
-             *
-             * @name ProviderAttribute#set
-             * @function
-             *
-             * @param {?}
-             *            value the new value of the attribute
-             *
-             * @throws {Error} if no setter function was registered before calling it
-             * @see ProviderAttribute#registerSetter
-             */
-            function set(value) {
-                var originalValue;
-                var that = this;
-                if (!this.privateSetterFunc) {
-                    throw new Error("no setter function registered for provider attribute");
+    /**
+     * Calls through the setter registered with registerSetter with the same arguments as this
+     * function
+     *
+     * @name ProviderAttribute#set
+     * @function
+     *
+     * @param {?}
+     *      value - the new value of the attribute
+     *
+     * @throws {Error} if no setter function was registered before calling it
+     *
+     * @see ProviderAttribute#registerSetter
+     */
+    function set(value) {
+        var originalValue;
+        var that = this;
+        if (!this.privateSetterFunc) {
+            throw new Error("no setter function registered for provider attribute");
+        }
+        return Promise.resolve(this.privateGetterFunc())
+            .then(
+                function(getterValue) {
+                    originalValue = getterValue;
+                    return this.privateSetterFunc(Typing.augmentTypes(value, typeRegistry, this.attributeType));
+                }.bind(this)
+            )
+            .then(function() {
+                if (originalValue !== value && that.valueChanged instanceof Function) {
+                    that.valueChanged(value);
                 }
-                return Promise.resolve(this.privateGetterFunc()).then(
-                        function(getterValue) {
-                            originalValue = getterValue;
-                            return this.privateSetterFunc(Typing.augmentTypes(
-                                    value,
-                                    typeRegistry,
-                                    this.attributeType));
+                return [];
+            });
+    }
 
-                        }.bind(this)).then(function() {
-                    if (originalValue !== value && that.valueChanged instanceof Function) {
-                        that.valueChanged(value);
-                    }
-                    return [];
-                });
-            }
+    return function() {
+        this.set = set;
+        this.registerSetter = registerSetter;
+    };
+}());
 
-            return function() {
-                this.set = set;
-                this.registerSetter = registerSetter;
-            };
-
-        }());
-
+// prettier-ignore
 var asRead = (function() {
-
     /**
      * Registers the getter function for this attribute
      *
@@ -148,7 +151,7 @@ var asRead = (function() {
      * @function
      *
      * @param {Function}
-     *            getterFunc the getter function with the signature '{?} getterFunc() {..}'
+     *      getterFunc - the getter function with the signature '{?} getterFunc() {..}'
      * @returns {ProviderAttribute} fluent interface to call multiple methods
      */
     function registerGetter(getterFunc) {
@@ -156,7 +159,8 @@ var asRead = (function() {
     }
 
     /**
-     * Calls through the getter registered with registerGetter with the same arguments as this function
+     * Calls through the getter registered with registerGetter with the same arguments as this
+     * function
      *
      * @name ProviderAttribute#get
      * @function
@@ -165,6 +169,7 @@ var asRead = (function() {
      *
      * @throws {Error} if no getter function was registered before calling it
      * @throws {Error} if registered getter returns a compound type with incorrect values
+     *
      * @see ProviderAttribute#registerGetter
      */
     function get() {
@@ -176,15 +181,13 @@ var asRead = (function() {
         value = this.privateGetterFunc();
 
         function toArray(returnValue) {
-            return [ returnValue
-            ];
+            return [returnValue];
         }
 
         if (Util.isPromise(value)) {
             return value.then(toArray);
         }
-        return [ value
-        ];
+        return [value];
     }
 
     return function() {
@@ -193,26 +196,27 @@ var asRead = (function() {
     };
 }());
 
-var asReadOrWrite =
-        (function() {
+// prettier-ignore
+var asReadOrWrite = (function() {
+    /**
+     * Check Getter and Setter functions.
+     *
+     * @name ProviderAttribute#check
+     * @function
+     *
+     * @returns {Boolean}
+     */
+    function check() {
+        return (
+            (!this.hasRead || typeof this.privateGetterFunc === "function") &&
+            (!this.hasWrite || typeof this.privateSetterFunc === "function")
+        );
+    }
 
-            /**
-             * Check Getter and Setter functions.
-             *
-             * @function ProviderAttributeNotifyReadWrite#check
-             *
-             * @returns {Boolean}
-             */
-            function check() {
-                return (!this.hasRead || (typeof this.privateGetterFunc === "function"))
-                    && (!this.hasWrite || (typeof this.privateSetterFunc === "function"));
-            }
-
-            return function() {
-                this.check = check;
-            };
-
-        }());
+    return function() {
+        this.check = check;
+    };
+}());
 
 /**
  * Constructor of ProviderAttribute object that is used in the generation of provider attributes
@@ -221,34 +225,31 @@ var asReadOrWrite =
  * @constructor
  *
  * @param {Provider}
- *            parent is the provider object that contains this attribute
+ *      parent - the provider object that contains this attribute
  * @param {Object}
- *            [implementation] the definition of attribute implementation
+ *      [implementation] - the definition of attribute implementation
  * @param {Function}
- *            [implementation.set] the getter function with the signature "function(value){}" that stores the given
- *            attribute value
+ *      [implementation.set] - the getter function with the signature "function(value){}" that
+ *          stores the given attribute value
  * @param {Function}
- *            [implementation.get] the getter function with the signature "function(){}" that returns the current attribute
- *            value
+ *      [implementation.get] the getter function with the signature "function(){}" that returns the
+ *          current attribute value
  * @param {String}
- *            attributeName the name of the attribute
+ *      attributeName - the name of the attribute
  * @param {String}
- *            attributeType the type of the attribute
+ *      attributeType - the type of the attribute
  * @param {String}
- *            attributeCaps the capabilities of the attribute: [NOTIFY][READWRITE|READONLY|WRITEONLY], e.g. NOTIFYREADWRITE, if the
- *            string contains 'NOTIFY' this attribute receives the valueChanged functions, if the string contains 'READ' or 'WRITE' this
- *            attribute receives the registration functions for getter and setters respectively
+ *      attributeCaps - the capabilities of the attribute:
+ *          [NOTIFY][READWRITE|READONLY|WRITEONLY], e.g. NOTIFYREADWRITE, if the string contains
+ *          'NOTIFY' this attribute receives the valueChanged functions, if the string contains
+ *          'READ' or 'WRITE' this attribute receives the registration functions for getter and
+ *          setters respectively
  */
 function ProviderAttribute(parent, implementation, attributeName, attributeType, attributeCaps) {
     // a function from the publication manager to be called when the attribute value changes
     if (!(this instanceof ProviderAttribute)) {
         // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-        return new ProviderAttribute(
-                parent,
-                implementation,
-                attributeName,
-                attributeType,
-                attributeCaps);
+        return new ProviderAttribute(parent, implementation, attributeName, attributeType, attributeCaps);
     }
 
     this.parent = parent;
@@ -283,7 +284,6 @@ function ProviderAttribute(parent, implementation, attributeName, attributeType,
     this.privateSetterFunc = implementation ? implementation.set : undefined;
 
     return Object.freeze(publicProviderAttribute);
-
 }
 
 ProviderAttribute.prototype.isNotifiable = function() {

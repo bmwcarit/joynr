@@ -67,6 +67,7 @@ public:
     std::shared_ptr<MockInProcessMessagingSkeleton> inProcessMessagingSkeleton;
     Semaphore semaphore;
     const bool isLocalMessage;
+    const bool enablePersistency;
 
     MutableMessageFactory messageFactory;
     std::shared_ptr<MockTransportMessageReceiver> mockMessageReceiver;
@@ -89,6 +90,7 @@ public:
         inProcessMessagingSkeleton(std::make_shared<MockInProcessMessagingSkeleton>(dispatcher)),
         semaphore(0),
         isLocalMessage(false),
+        enablePersistency(true),
         messageFactory(),
         mockMessageReceiver(new MockTransportMessageReceiver()),
         mockMessageSender(new MockTransportMessageSender()),
@@ -108,7 +110,8 @@ public:
                                                           singleThreadedIOService->getIOService(),
                                                           nullptr,
                                                           globalCCAddress,
-                                                          messageNotificationProviderParticipantId);
+                                                          messageNotificationProviderParticipantId,
+                                                          enablePersistency);
         messageRouter->init();
         qos.setTtl(10000);
     }

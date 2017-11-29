@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-var MessagingStubFactory = require('../../../classes/joynr/messaging/MessagingStubFactory');
+var MessagingStubFactory = require("../../../classes/joynr/messaging/MessagingStubFactory");
 
 describe("libjoynr-js.joynr.messaging.MessagingStubFactory", function() {
     var messagingStub1, messagingStub2, factory1, factory2;
@@ -32,24 +32,22 @@ describe("libjoynr-js.joynr.messaging.MessagingStubFactory", function() {
 
     beforeEach(function(done) {
         messagingStub1 = {
-            key : "messagingStub1"
+            key: "messagingStub1"
         };
         messagingStub2 = {
-            key : "messagingStub2"
+            key: "messagingStub2"
         };
 
-        factory1 = jasmine.createSpyObj("factory1", [ "build"
-        ]);
-        factory2 = jasmine.createSpyObj("factory1", [ "build"
-        ]);
+        factory1 = jasmine.createSpyObj("factory1", ["build"]);
+        factory2 = jasmine.createSpyObj("factory1", ["build"]);
 
         factory1.build.and.returnValue(messagingStub1);
         factory2.build.and.returnValue(messagingStub2);
 
         messagingStubFactory = new MessagingStubFactory({
-            messagingStubFactories : {
-                Address1 : factory1,
-                Address2 : factory2
+            messagingStubFactories: {
+                Address1: factory1,
+                Address2: factory2
             }
         });
 
@@ -97,5 +95,4 @@ describe("libjoynr-js.joynr.messaging.MessagingStubFactory", function() {
         }).toThrow();
         done();
     });
-
 });

@@ -18,11 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var WebMessagingSkeleton =
-        require('../../../../classes/joynr/messaging/webmessaging/WebMessagingSkeleton');
+var WebMessagingSkeleton = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingSkeleton");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingSkeleton", function() {
-
     var window, webMessagingSkeleton, listener1, listener2, data, event;
 
     beforeEach(function(done) {
@@ -32,17 +30,17 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingSkeleton", functi
         window.removeEventListener = jasmine.createSpy("removeEventListener");
 
         webMessagingSkeleton = new WebMessagingSkeleton({
-            window : window
+            window: window
         });
 
         listener1 = jasmine.createSpy();
         listener2 = jasmine.createSpy();
 
         data = {
-            key : "myData"
+            key: "myData"
         };
         event = {
-            data : data
+            data: data
         };
         done();
     });
@@ -62,7 +60,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingSkeleton", functi
     it("throws if arguments are missing or of wrong type", function(done) {
         expect(function() {
             webMessagingSkeleton = new WebMessagingSkeleton({
-                window : window
+                window: window
             });
         }).not.toThrow(); // correct call
         expect(function() {
@@ -70,29 +68,29 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingSkeleton", functi
         }).toThrow(); // window is missing
         expect(function() {
             webMessagingSkeleton = new WebMessagingSkeleton({
-                window : ""
+                window: ""
             });
         }).toThrow(); // window is of wrong type
 
         expect(function() {
             webMessagingSkeleton = new WebMessagingSkeleton({
-                window : {}
+                window: {}
             });
         }).toThrow(); // window does not provide the expected functions
 
         expect(function() {
             webMessagingSkeleton = new WebMessagingSkeleton({
-                window : {
-                    addEventListener : function() {}
+                window: {
+                    addEventListener: function() {}
                 }
             });
         }).toThrow(); // window does not provide the expected functions
 
         expect(function() {
             webMessagingSkeleton = new WebMessagingSkeleton({
-                window : {
-                    addEventListener : function() {},
-                    removeEventListener : function() {}
+                window: {
+                    addEventListener: function() {},
+                    removeEventListener: function() {}
                 }
             });
         }).not.toThrow(); // window does not provide the expected functions
@@ -153,5 +151,4 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingSkeleton", functi
         expect(listener2.calls.count()).toBe(1);
         done();
     });
-
 });

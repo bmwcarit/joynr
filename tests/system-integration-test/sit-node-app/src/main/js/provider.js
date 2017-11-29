@@ -21,6 +21,7 @@
 
 var joynr = require("joynr");
 var testbase = require("test-base");
+var fs = require("fs");
 var log = testbase.logging.log;
 var provisioning = testbase.provisioning_common;
 
@@ -42,10 +43,31 @@ if (process.env.ccport === undefined) {
 log("domain: " + process.env.domain);
 log("cchost: " + process.env.cchost);
 log("ccport: " + process.env.ccport);
+log("ccprotocol: " + process.env.ccprotocol);
+log("tlsCertPath: " + process.env.tlsCertPath);
+log("tlsKeyPath: " + process.env.tlsKeyPath);
+log("tlsCaPath: " + process.env.tlsCaPath);
+log("ownerId: " + process.env.ownerId);
 
 var domain = process.env.domain;
 provisioning.ccAddress.host = process.env.cchost;
 provisioning.ccAddress.port = process.env.ccport;
+provisioning.ccAddress.protocol = process.env.ccprotocol;
+
+if (process.env.tlsCertPath || process.env.tlsKeyPath || process.env.tlsCertPath || process.env.ownerId) {
+    provisioning.keychain = {};
+
+    if (process.env.tlsCertPath) {
+        provisioning.keychain.tlsCert = fs.readFileSync(process.env.tlsCertPath, 'utf8');
+    }
+    if (process.env.tlsKeyPath) {
+        provisioning.keychain.tlsKey = fs.readFileSync(process.env.tlsKeyPath, 'utf8');
+    }
+    if (process.env.tlsCaPath) {
+        provisioning.keychain.tlsCa = fs.readFileSync(process.env.tlsCaPath, 'utf8');
+    }
+    provisioning.keychain.ownerId = process.env.ownerId;
+}
 
 joynr.load(testbase.provisioning_common).then(function(loadedJoynr) {
     log("joynr started");

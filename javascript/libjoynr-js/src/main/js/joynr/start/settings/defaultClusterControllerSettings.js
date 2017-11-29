@@ -17,49 +17,43 @@
  * limitations under the License.
  * #L%
  */
-var ProviderScope = require('../../../joynr/types/ProviderScope');
-var Util = require('../../util/UtilInternal');
-var defaultClusterControllerSettings =
-        function(settings) {
-            var defaultSettings = {};
-            defaultSettings.discoveryChannel = "discoverydirectory_channelid";
+var ProviderScope = require("../../../joynr/types/ProviderScope");
+var Util = require("../../util/UtilInternal");
+var defaultClusterControllerSettings = function(settings) {
+    var defaultSettings = {};
+    defaultSettings.discoveryChannel = "discoverydirectory_channelid";
 
-            defaultSettings.getDefaultDiscoveryChannelUrl =
-                    function() {
-                        return settings.bounceProxyBaseUrl
-                            + "/discovery/channels/"
-                            + defaultSettings.discoveryChannel
-                            + "/";
-                    };
+    defaultSettings.getDefaultDiscoveryChannelUrl = function() {
+        return settings.bounceProxyBaseUrl + "/discovery/channels/" + defaultSettings.discoveryChannel + "/";
+    };
 
-            var globalCapDirCapability = {
-                providerVersion : {
-                    majorVersion : 0,
-                    minorVersion : 1
-                },
-                domain : "io.joynr",
-                interfaceName : "infrastructure/GlobalCapabilitiesDirectory",
-                participantId : "capabilitiesdirectory_participantid",
-                qos : {
-                    customParameters : [],
-                    priority : 1,
-                    scope : ProviderScope.GLOBAL,
-                    supportsOnChangeSubscriptions : true
-                },
-                lastSeenDateMs : Date.now(),
-                expiryDateMs : Util.getMaxLongValue(),
-                publicKeyId : "",
-                address : JSON.stringify({
-                    _typeName : "joynr.system.RoutingTypes.MqttAddress",
-                    topic : defaultSettings.discoveryChannel,
-                    brokerUri : settings.brokerUri
-                })
-            };
+    var globalCapDirCapability = {
+        providerVersion: {
+            majorVersion: 0,
+            minorVersion: 1
+        },
+        domain: "io.joynr",
+        interfaceName: "infrastructure/GlobalCapabilitiesDirectory",
+        participantId: "capabilitiesdirectory_participantid",
+        qos: {
+            customParameters: [],
+            priority: 1,
+            scope: ProviderScope.GLOBAL,
+            supportsOnChangeSubscriptions: true
+        },
+        lastSeenDateMs: Date.now(),
+        expiryDateMs: Util.getMaxLongValue(),
+        publicKeyId: "",
+        address: JSON.stringify({
+            _typeName: "joynr.system.RoutingTypes.MqttAddress",
+            topic: defaultSettings.discoveryChannel,
+            brokerUri: settings.brokerUri
+        })
+    };
 
-            defaultSettings.capabilities = [ globalCapDirCapability
-            ];
-            return defaultSettings;
-        };
+    defaultSettings.capabilities = [globalCapDirCapability];
+    return defaultSettings;
+};
 module.exports = function(settings) {
     return defaultClusterControllerSettings(settings);
 };

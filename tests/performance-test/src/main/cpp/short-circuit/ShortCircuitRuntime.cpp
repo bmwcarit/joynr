@@ -44,7 +44,8 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
                                          std::shared_ptr<IKeychain> keyChain)
         : JoynrRuntime(*settings),
           keyChain(std::move(keyChain)),
-          clusterControllerSettings(*settings)
+          clusterControllerSettings(*settings),
+          enablePersistency(true)
 {
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
     requestCallerDirectory = std::make_shared<DummyRequestCallerDirectory>();
@@ -68,7 +69,8 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
                                                       singleThreadedIOService.getIOService(),
                                                       std::move(addressCalculator),
                                                       globalClusterControllerAddress,
-                                                      messageNotificationProviderParticipantId);
+                                                      messageNotificationProviderParticipantId,
+                                                      enablePersistency);
 
     messageSender = std::make_shared<MessageSender>(messageRouter, keyChain);
     joynrDispatcher =
@@ -79,7 +81,7 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
     dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
 
     publicationManager = std::make_shared<PublicationManager>(
-            singleThreadedIOService.getIOService(), messageSender);
+            singleThreadedIOService.getIOService(), messageSender, enablePersistency);
     subscriptionManager = std::make_shared<SubscriptionManager>(
             singleThreadedIOService.getIOService(), messageRouter);
     inProcessDispatcher =

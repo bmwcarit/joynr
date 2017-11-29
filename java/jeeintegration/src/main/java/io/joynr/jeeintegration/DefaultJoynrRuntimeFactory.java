@@ -123,13 +123,16 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                                       @JoynrRawMessagingPreprocessor Instance<RawMessagingPreprocessor> rawMessagePreprocessor,
                                       @JoynrMqttClientIdProvider Instance<MqttClientIdProvider> mqttClientIdProvider,
                                       BeanManager beanManager) {
-        if (!joynrLocalDomain.isUnsatisfied() && !joynrLocalDomain.isAmbiguous()) {
-            this.joynrLocalDomain = joynrLocalDomain.get();
-        } else {
+        if (joynrLocalDomain.isUnsatisfied()) {
             String message = "No local domain name specified. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.";
             LOG.error(message);
             throw new JoynrIllegalStateException(message);
+        } else if (joynrLocalDomain.isAmbiguous()) {
+            String message = "Multiple local domain names specified. Please provide only one configuration EJB containing a value for the local domain via @JoynrLocalDomain.";
+            LOG.error(message);
+            throw new JoynrIllegalStateException(message);
         }
+        this.joynrLocalDomain = joynrLocalDomain.get();
 
         if (!rawMessagePreprocessor.isUnsatisfied()) {
             if (!rawMessagePreprocessor.isAmbiguous()) {
@@ -156,8 +159,14 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         }
 
         Properties configuredProperties;
-        if (!joynrProperties.isUnsatisfied() && !joynrProperties.isAmbiguous()) {
-            configuredProperties = joynrProperties.get();
+        if (!joynrProperties.isUnsatisfied()) {
+            if (!joynrProperties.isAmbiguous()) {
+                configuredProperties = joynrProperties.get();
+            } else {
+                String message = "Multiple joynrProperties specified. Please provide only one configuration EJB containing a value for the joynrProperties via @JoynrProperties.";
+                LOG.error(message);
+                throw new JoynrIllegalStateException(message);
+            }
         } else {
             LOG.info("No custom joynr properties provided. Will use default properties.");
             configuredProperties = new Properties();

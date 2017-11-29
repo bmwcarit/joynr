@@ -40,7 +40,6 @@ import joynr.types.ProviderScope;
 public class ClusterControllerRuntime extends JoynrRuntimeImpl {
 
     public static final Logger logger = LoggerFactory.getLogger(ClusterControllerRuntime.class);
-    private LocalCapabilitiesDirectory localCapabilitiesDirectory;
 
     // CHECKSTYLE:OFF
     @Inject
@@ -70,14 +69,7 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
-        this.localCapabilitiesDirectory = localCapabilitiesDirectory;
         capabilitiesRegistrar.registerProvider(systemServicesDomain, localCapabilitiesDirectory, providerQos);
         capabilitiesRegistrar.registerProvider(systemServicesDomain, routingProvider, providerQos);
-    }
-
-    @Override
-    public void shutdown(boolean clear) {
-        localCapabilitiesDirectory.shutdown(false);
-        super.shutdown(clear);
     }
 }

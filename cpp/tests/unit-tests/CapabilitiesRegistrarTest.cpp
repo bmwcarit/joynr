@@ -59,11 +59,12 @@ public:
             mockProvider(new MockProvider()),
             domain("testDomain"),
             expectedParticipantId("testParticipantId"),
+            enablePersistency(true),
             singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
             mockMessageRouter(new MockMessageRouter(singleThreadedIOService->getIOService())),
             expectedProviderVersion(mockProvider->MAJOR_VERSION, mockProvider->MINOR_VERSION),
             mockMessageSender(std::make_shared<MockMessageSender>()),
-            pubManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), mockMessageSender))
+            pubManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), mockMessageSender, enablePersistency))
     {
         singleThreadedIOService->start();
     }
@@ -105,6 +106,7 @@ protected:
     std::shared_ptr<MockProvider> mockProvider;
     std::string domain;
     std::string expectedParticipantId;
+    const bool enablePersistency;
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     const types::Version expectedProviderVersion;
@@ -183,9 +185,9 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders){
                       )
                 );
 
-    ON_CALL(*mockMessageRouter, addNextHop(_,_,_,_,_,_,_)).WillByDefault(InvokeArgument<5>());
+    ON_CALL(*mockMessageRouter, addNextHop(_,_,_,_,_,_,_,_)).WillByDefault(InvokeArgument<6>());
     bool expectedIsGloballyVisible = true;
-    EXPECT_CALL(*mockMessageRouter, addNextHop(Eq(expectedParticipantId),Eq(dispatcherAddress),Eq(expectedIsGloballyVisible),_,_,_,_));
+    EXPECT_CALL(*mockMessageRouter, addNextHop(Eq(expectedParticipantId),Eq(dispatcherAddress),Eq(expectedIsGloballyVisible),_,_,_,_,_));
 
     Future<void> future;
     auto onSuccess = [&future]() { future.onSuccess(); };
@@ -201,7 +203,7 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders){
     testQos.setScope(types::ProviderScope::LOCAL);
 
     expectedIsGloballyVisible = false;
-    EXPECT_CALL(*mockMessageRouter, addNextHop(Eq(expectedParticipantId),Eq(dispatcherAddress),Eq(expectedIsGloballyVisible),_,_,_,_));
+    EXPECT_CALL(*mockMessageRouter, addNextHop(Eq(expectedParticipantId),Eq(dispatcherAddress),Eq(expectedIsGloballyVisible),_,_,_,_,_));
 
     Future<void> future1;
     auto onSuccess1 = [&future1]() { future1.onSuccess(); };

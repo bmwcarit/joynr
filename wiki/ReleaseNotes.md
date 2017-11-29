@@ -1,4 +1,42 @@
+# joynr 0.32.0
+
+## API relevant changes
+None.
+
+## Configuration property changes
+* **[Java]** See the [Java Configuration Reference](JavaSettings.md) for
+  details about the newly introduced property:
+  * `PROPERTY_KEY_MQTT_CLEAN_SESSION`
+  * `PROPERTY_KEY_MQTT_KEYSTORE_PATH`
+  * `PROPERTY_KEY_MQTT_TRUSTSTORE_PATH`
+  * `PROPERTY_KEY_MQTT_KEYSTORE_PWD`
+  * `PROPERTY_KEY_MQTT_TRUSTSTORE_PWD`
+* **[JS]** See the [Javascript Configuration Reference](JavaScriptTutorial.md) for
+  details about the newly introduced properties:
+  * `shutdownSettings`
+    * `clearSubscriptionsEnabled`
+    * `clearSubscriptionsTimeoutMs`
+
+## Other changes
+* **[Java]** added support for MQTT via TLS
+* **[C++]** Disabled persistency for the routing table, local discovery cache and multicast
+  receiver directory by default. Persistency for subscriptions is still enabled. The
+  corresponding properties are called `lib-joynr/message-router-persistency`,
+  `lib-joynr/local-capabilities-directory-persistency-enabled`,
+  `cluster-controller/multicast-receiver-directory-persistency-enabled` and
+  `lib-joynr/subscription-persistency`.
+* **[C++]** Update spdlog to interim version >> 0.14.0
+  [Git commit 799ba2a57bb16b921099bd9ab64a513e4ebe4217]
+
 # joynr 0.31.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Fixed provider reregistration trigger call
+
+# joynr 0.29.3
 
 ## API relevant changes
 None.

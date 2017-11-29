@@ -49,6 +49,14 @@ void LibjoynrSettings::checkSettings()
         setSubscriptionRequestPersistenceFilename(
                 DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME());
     }
+
+    if (!settings.contains(SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED())) {
+        setMessageRouterPersistencyEnabled(DEFAULT_MESSAGE_ROUTER_PERSISTENCY_ENABLED());
+    }
+
+    if (!settings.contains(SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED())) {
+        setSubscriptionPersistencyEnabled(DEFAULT_SUBSCRIPTION_PERSISTENCY_ENABLED());
+    }
 }
 
 const std::string& LibjoynrSettings::SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
@@ -74,6 +82,7 @@ const std::string& LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME
     static const std::string value("MessageRouter.persist");
     return value;
 }
+
 const std::string& LibjoynrSettings::SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()
 {
     static const std::string value("lib-joynr/participant-ids-persistence-file");
@@ -96,6 +105,28 @@ const std::string& LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FIL
 {
     static const std::string value("SubscriptionRequests.persist");
     return value;
+}
+
+const std::string& LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED()
+{
+    static const std::string value("lib-joynr/message-router-persistency");
+    return value;
+}
+
+bool LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCY_ENABLED()
+{
+    return false;
+}
+
+const std::string& LibjoynrSettings::SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED()
+{
+    static const std::string value("lib-joynr/subscription-persistency");
+    return value;
+}
+
+bool LibjoynrSettings::DEFAULT_SUBSCRIPTION_PERSISTENCY_ENABLED()
+{
+    return true;
 }
 
 std::string LibjoynrSettings::getBroadcastSubscriptionRequestPersistenceFilename() const
@@ -139,12 +170,56 @@ void LibjoynrSettings::setSubscriptionRequestPersistenceFilename(const std::stri
     settings.set(SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME(), filename);
 }
 
+bool LibjoynrSettings::isMessageRouterPersistencyEnabled() const
+{
+    return settings.get<bool>(SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED());
+}
+
+void LibjoynrSettings::setMessageRouterPersistencyEnabled(bool enable)
+{
+    settings.set(SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED(), enable);
+}
+
+bool LibjoynrSettings::isSubscriptionPersistencyEnabled() const
+{
+    return settings.get<bool>(SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED());
+}
+
+void LibjoynrSettings::setSubscriptionPersistencyEnabled(bool enable)
+{
+    settings.set(SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED(), enable);
+}
+
 void LibjoynrSettings::printSettings() const
 {
     JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
-                    SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME(),
-                    settings.get<std::string>(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()));
+                    SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED(),
+                    isMessageRouterPersistencyEnabled());
+
+    if (isMessageRouterPersistencyEnabled()) {
+        JOYNR_LOG_DEBUG(logger(),
+                        "SETTING: {}  = {}",
+                        SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME(),
+                        getMessageRouterPersistenceFilename());
+    }
+
+    JOYNR_LOG_DEBUG(logger(),
+                    "SETTING: {}  = {}",
+                    SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED(),
+                    isSubscriptionPersistencyEnabled());
+
+    if (isSubscriptionPersistencyEnabled()) {
+        JOYNR_LOG_DEBUG(logger(),
+                        "SETTING: {}  = {}",
+                        SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME(),
+                        getSubscriptionRequestPersistenceFilename());
+
+        JOYNR_LOG_DEBUG(logger(),
+                        "SETTING: {}  = {}",
+                        SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME(),
+                        getBroadcastSubscriptionRequestPersistenceFilename());
+    }
 
     JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",

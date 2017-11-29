@@ -18,19 +18,16 @@
  * limitations under the License.
  * #L%
  */
-var SubscriptionRequest =
-        require('../../../../classes/joynr/dispatching/types/SubscriptionRequest');
-var PeriodicSubscriptionQos = require('../../../../classes/joynr/proxy/PeriodicSubscriptionQos');
-var OnChangeWithKeepAliveSubscriptionQos =
-        require('../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
+var SubscriptionRequest = require("../../../../classes/joynr/dispatching/types/SubscriptionRequest");
+var PeriodicSubscriptionQos = require("../../../../classes/joynr/proxy/PeriodicSubscriptionQos");
+var OnChangeWithKeepAliveSubscriptionQos = require("../../../../classes/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
 
 describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
-
     var qosSettings = {
-        periodMs : 50,
-        expiryDateMs : 3,
-        alertAfterIntervalMs : 80,
-        publicationTtlMs : 100
+        periodMs: 50,
+        expiryDateMs: 3,
+        alertAfterIntervalMs: 80,
+        publicationTtlMs: 100
     };
 
     it("is defined", function() {
@@ -39,8 +36,8 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
 
     it("is instantiable", function() {
         var subscriptionRequest = new SubscriptionRequest({
-            subscribedToName : "attributeName",
-            subscriptionId : "testSubscriptionId"
+            subscribedToName: "attributeName",
+            subscriptionId: "testSubscriptionId"
         });
         expect(subscriptionRequest).toBeDefined();
         expect(subscriptionRequest).not.toBeNull();
@@ -52,40 +49,40 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
         // does not throw, with qos
         expect(function() {
             var subReq = new SubscriptionRequest({
-                subscribedToName : "attributeName",
-                subscriptionId : "testSubscriptionId",
-                subscriptionQos : new PeriodicSubscriptionQos(qosSettings)
+                subscribedToName: "attributeName",
+                subscriptionId: "testSubscriptionId",
+                subscriptionQos: new PeriodicSubscriptionQos(qosSettings)
             });
         }).not.toThrow();
 
         // does not throw, without qos
         expect(function() {
             var subReq = new SubscriptionRequest({
-                subscribedToName : "attributeName",
-                subscriptionId : "testSubscriptionId"
+                subscribedToName: "attributeName",
+                subscriptionId: "testSubscriptionId"
             });
         }).not.toThrow();
 
         // throws on wrongly typed attributeName
         expect(function() {
             var subReq = new SubscriptionRequest({
-                subscribedToName : {},
-                subscriptionId : "testSubscriptionId"
+                subscribedToName: {},
+                subscriptionId: "testSubscriptionId"
             });
         }).toThrow();
 
         // throws on missing attributeName
         expect(function() {
             var subReq = new SubscriptionRequest({
-                subscriptionId : "testSubscriptionId"
+                subscriptionId: "testSubscriptionId"
             });
         }).toThrow();
 
         // throws on missing subscriptionId
         expect(function() {
             var subReq = new SubscriptionRequest({
-                subscribedToName : "attributeName",
-                subscriptionQos : new PeriodicSubscriptionQos(qosSettings)
+                subscribedToName: "attributeName",
+                subscriptionQos: new PeriodicSubscriptionQos(qosSettings)
             });
         }).toThrow();
 
@@ -115,14 +112,13 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionRequest", function() {
         var subscriptionId = "testSubscriptionId";
 
         var subscriptionRequest = new SubscriptionRequest({
-            subscribedToName : subscribedToName,
-            subscriptionQos : subscriptionQos,
-            subscriptionId : subscriptionId
+            subscribedToName: subscribedToName,
+            subscriptionQos: subscriptionQos,
+            subscriptionId: subscriptionId
         });
 
         expect(subscriptionRequest.subscribedToName).toEqual(subscribedToName);
         expect(subscriptionRequest.subscriptionQos).toEqual(subscriptionQos);
         expect(subscriptionRequest.subscriptionId).toEqual(subscriptionId);
     });
-
 });

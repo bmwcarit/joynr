@@ -29,9 +29,10 @@
 #include "joynr/DispatcherUtils.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/PrivateCopyAssign.h"
-
+#include "tests/JoynrTest.h"
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
 
@@ -69,32 +70,25 @@ public:
         Settings::merge(integration1Settings, *settings1, false);
         runtime1 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings1));
         runtime1->init();
+        runtime1->start();
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings2, false);
         runtime2 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings2));
         runtime2->init();
-    }
-
-    void SetUp() {
-        runtime1->start();
         runtime2->start();
     }
 
-    void TearDown() {
+    ~End2EndPerformanceTest()
+    {
         bool deleteChannel = true;
         runtime1->stop(deleteChannel);
-        runtime1.reset();
         runtime2->stop(deleteChannel);
-        runtime2.reset();
+        test::util::resetAndWaitUntilDestroyed(runtime1);
+        test::util::resetAndWaitUntilDestroyed(runtime2);
 
         // Delete persisted files
-        std::remove(ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
-        std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
+        test::util::removeAllCreatedSettingsAndPersistencyFiles();
     }
-
-    ~End2EndPerformanceTest() = default;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(End2EndPerformanceTest);
@@ -160,16 +154,19 @@ TEST_P(End2EndPerformanceTest, sendManyRequests) {
     std::ignore = stopTime;
     std::ignore = logger;
 }
+
+using namespace std::string_literals;
+
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         End2EndPerformanceTest,
         testing::Values(
-            std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings","test-resources/HttpSystemIntegrationTest2.settings")
+            std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings"s, "test-resources/HttpSystemIntegrationTest2.settings"s)
         )
 );
 
 INSTANTIATE_TEST_CASE_P(Mqtt,
         End2EndPerformanceTest,
         testing::Values(
-            std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings","test-resources/MqttSystemIntegrationTest2.settings")
+            std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings"s, "test-resources/MqttSystemIntegrationTest2.settings"s)
         )
 );

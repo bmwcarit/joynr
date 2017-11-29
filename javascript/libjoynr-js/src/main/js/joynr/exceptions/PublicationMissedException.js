@@ -18,11 +18,11 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var Typing = require('../util/Typing');
-var Util = require('../util/UtilInternal');
-var JoynrRuntimeException = require('./JoynrRuntimeException');
-var LoggerFactory = require('../system/LoggerFactory');
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+var Typing = require("../util/Typing");
+var Util = require("../util/UtilInternal");
+var JoynrRuntimeException = require("./JoynrRuntimeException");
+var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings;
 
 /**
@@ -70,9 +70,7 @@ function PublicationMissedException(settings) {
 
 defaultSettings = {};
 
-TypeRegistrySingleton.getInstance().addType(
-        "joynr.exceptions.PublicationMissedException",
-        PublicationMissedException);
+TypeRegistrySingleton.getInstance().addType("joynr.exceptions.PublicationMissedException", PublicationMissedException);
 
 PublicationMissedException.prototype = new Error();
 PublicationMissedException.prototype.constructor = PublicationMissedException;

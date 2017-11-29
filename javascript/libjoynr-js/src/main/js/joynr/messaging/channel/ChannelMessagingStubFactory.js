@@ -18,8 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../../util/Typing');
-var ChannelMessagingStub = require('./ChannelMessagingStub');
+var Typing = require("../../util/Typing");
+var ChannelMessagingStub = require("./ChannelMessagingStub");
 
 /**
  * @constructor
@@ -29,12 +29,8 @@ var ChannelMessagingStub = require('./ChannelMessagingStub');
  * @param {ChannelMessagingSender|Object} settings.channelMessagingSender
  */
 function ChannelMessagingStubFactory(settings) {
-
     Typing.checkProperty(settings, "Object", "settings");
-    Typing.checkProperty(
-            settings.channelMessagingSender,
-            "ChannelMessagingSender",
-            "channelMessagingSender");
+    Typing.checkProperty(settings.channelMessagingSender, "ChannelMessagingSender", "channelMessagingSender");
     this._globalAddress = null;
     this._settings = settings;
 }
@@ -48,10 +44,9 @@ function ChannelMessagingStubFactory(settings) {
  * @param {Address}
  *            globalAddress the address used to register discovery entries globally
  */
-ChannelMessagingStubFactory.prototype.globalAddressReady =
-        function globalAddressReady(newGlobalAddress) {
-            this._globalAddress = newGlobalAddress;
-        };
+ChannelMessagingStubFactory.prototype.globalAddressReady = function globalAddressReady(newGlobalAddress) {
+    this._globalAddress = newGlobalAddress;
+};
 
 /**
  * @name ChannelMessagingStubFactory#build
@@ -67,9 +62,9 @@ ChannelMessagingStubFactory.prototype.build = function build(address) {
         throw error;
     }
     return new ChannelMessagingStub({
-        destinationChannelAddress : address,
-        channelMessagingSender : this._settings.channelMessagingSender,
-        myChannelAddress : this._globalAddress
+        destinationChannelAddress: address,
+        channelMessagingSender: this._settings.channelMessagingSender,
+        myChannelAddress: this._globalAddress
     });
 };
 

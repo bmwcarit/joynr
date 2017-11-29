@@ -18,11 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var WebMessagingStub = require('../../../../classes/joynr/messaging/webmessaging/WebMessagingStub');
-var JSONSerializer = require('../../../../classes/joynr/util/JSONSerializer');
+var WebMessagingStub = require("../../../../classes/joynr/messaging/webmessaging/WebMessagingStub");
+var JSONSerializer = require("../../../../classes/joynr/util/JSONSerializer");
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", function() {
-
     var window, origin, webMessagingStub, joynrMessage;
 
     beforeEach(function(done) {
@@ -32,8 +31,8 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", function()
         origin = "defaultOrigin";
 
         webMessagingStub = new WebMessagingStub({
-            window : window,
-            origin : origin
+            window: window,
+            origin: origin
         });
 
         function JoynrMessage() {}
@@ -57,20 +56,17 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", function()
         }).toThrow();
         expect(function() {
             webMessagingStub.transmit({
-                message : joynrMessage
+                message: joynrMessage
             });
         }).not.toThrow();
     });
 
     it("calls window.postMessage correctly", function(done) {
         var param = {
-            message : joynrMessage
+            message: joynrMessage
         };
         webMessagingStub.transmit(param);
-        expect(window.postMessage).toHaveBeenCalledWith(
-                JSON.parse(JSONSerializer.stringify(param)),
-                origin);
+        expect(window.postMessage).toHaveBeenCalledWith(JSON.parse(JSONSerializer.stringify(param)), origin);
         done();
     });
-
 });

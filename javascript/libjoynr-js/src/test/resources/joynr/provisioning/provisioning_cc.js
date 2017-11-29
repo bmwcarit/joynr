@@ -48,8 +48,6 @@
                 }
             }
         };
-        localStorage.setItem("joynr.participant.io.joynr.system.Discovery", "CC.DiscoveryProvider.ParticipantId");
-        localStorage.setItem("joynr.participant.io.joynr.system.Routing", "CC.RoutingProvider.ParticipantId");
         return provisioning;
     };
 

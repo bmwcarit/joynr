@@ -1,4 +1,5 @@
 /*jslint es5: true, node: true, nomen: true */
+/*global fail: true */
 /*
  * #%L
  * %%
@@ -17,15 +18,15 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../../classes/global/Promise');
-var Util = require('../../../classes/joynr/util/UtilInternal');
-var JoynrMessage = require('../../../classes/joynr/messaging/JoynrMessage');
-var LoggerFactory = require('../../../classes/joynr/system/LoggerFactory');
-var TypeRegistry = require('../../../classes/joynr/start/TypeRegistry');
-var RadioStation = require('../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+var Promise = require("../../../classes/global/Promise");
+var Util = require("../../../classes/joynr/util/UtilInternal");
+var JoynrMessage = require("../../../classes/joynr/messaging/JoynrMessage");
+var LoggerFactory = require("../../../classes/joynr/system/LoggerFactory");
+var TypeRegistry = require("../../../classes/joynr/start/TypeRegistry");
+var RadioStation = require("../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
 
 var argument = {
-    someObjectKey : "andValue"
+    someObjectKey: "andValue"
 };
 
 describe("libjoynr-js.joynr.Util", function() {
@@ -37,42 +38,35 @@ describe("libjoynr-js.joynr.Util", function() {
 });
 
 describe("libjoynr-js.joynr.Util.extend", function() {
-
     it("extends objects", function() {
         var merged, message, subobject, object1, object2, object3;
         merged = {};
 
         message = new JoynrMessage({
-            type : JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
         });
         message.payload = {
-            payload1 : 1,
-            payload2 : 2
+            payload1: 1,
+            payload2: 2
         };
         subobject = {
-            sublevel20 : "sublevel20",
-            sublevel21 : "sublevel21"
+            sublevel20: "sublevel20",
+            sublevel21: "sublevel21"
         };
 
         object1 = {
-            originalField : "originalField"
+            originalField: "originalField"
         };
         object2 = {
-            message : message,
-            number : 2.0,
-            array : [
-                1,
-                2,
-                3,
-                4,
-                5
-            ],
-            string : "string",
-            bool : true
+            message: message,
+            number: 2.0,
+            array: [1, 2, 3, 4, 5],
+            string: "string",
+            bool: true
         };
         object3 = {
-            level11 : "level11",
-            level12 : subobject
+            level11: "level11",
+            level12: subobject
         };
 
         Util.extend(merged, object1, object2, object3);
@@ -86,24 +80,17 @@ describe("libjoynr-js.joynr.Util.extend", function() {
         expect(Util.isArray(merged.array)).toBeTruthy();
         expect(typeof merged.string === "string").toBeTruthy();
         expect(typeof merged.bool === "boolean").toBeTruthy();
-
     });
     it("deep extends objects", function() {
         var merged, from;
         merged = {};
 
         from = {
-            subobject : {
-                number : 2.0,
-                array : [
-                    0,
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                string : "string",
-                bool : true
+            subobject: {
+                number: 2.0,
+                array: [0, 1, 2, 3, 4],
+                string: "string",
+                bool: true
             }
         };
 
@@ -133,19 +120,20 @@ describe("libjoynr-js.joynr.Util.extend", function() {
 });
 
 describe("libjoynr-js.joynr.Util.transform", function() {
-
     it("transform array", function() {
         var origin, element, transformed, postFix;
         postFix = "_transformed";
         origin = [];
         element = {
-            a : "a"
+            a: "a"
         };
         origin.push(element);
 
         // now, let's transform
         transformed = Util.transform(origin, function(element, key) {
-            var id, member, result = {};
+            var id,
+                member,
+                result = {};
             for (id in element) {
                 if (element.hasOwnProperty(id)) {
                     member = element[id];
@@ -160,63 +148,53 @@ describe("libjoynr-js.joynr.Util.transform", function() {
     });
 });
 
-describe(
-        "libjoynr-js.joynr.Util.firstLower",
-        function() {
-            it(
-                    "decapitalizes first character correctly",
-                    function() {
-                        expect(Util.firstLower("")).toEqual("");
-                        expect(Util.firstLower("asdf")).toEqual("asdf");
-                        expect(Util.firstLower("b")).toEqual("b");
-                        expect(Util.firstLower("Csdf")).toEqual("csdf");
-                        expect(Util.firstLower("D")).toEqual("d");
-                        expect(Util.firstLower("ESDFASDF")).toEqual("eSDFASDF");
-                        expect(Util.firstLower("FsDfAsDf")).toEqual("fsDfAsDf");
-                        var rettyLongString =
-                                "RETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRING";
-                        expect(Util.firstLower("P" + rettyLongString)).toEqual(
-                                "p" + rettyLongString);
-                    });
+describe("libjoynr-js.joynr.Util.firstLower", function() {
+    it("decapitalizes first character correctly", function() {
+        expect(Util.firstLower("")).toEqual("");
+        expect(Util.firstLower("asdf")).toEqual("asdf");
+        expect(Util.firstLower("b")).toEqual("b");
+        expect(Util.firstLower("Csdf")).toEqual("csdf");
+        expect(Util.firstLower("D")).toEqual("d");
+        expect(Util.firstLower("ESDFASDF")).toEqual("eSDFASDF");
+        expect(Util.firstLower("FsDfAsDf")).toEqual("fsDfAsDf");
+        var rettyLongString =
+            "RETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRING";
+        expect(Util.firstLower("P" + rettyLongString)).toEqual("p" + rettyLongString);
+    });
 
-            it("throws on nullable input", function() {
-                expect(function() {
-                    Util.firstLower(null);
-                }).toThrow();
-                expect(function() {
-                    Util.firstLower(undefined);
-                }).toThrow();
-            });
-        });
+    it("throws on nullable input", function() {
+        expect(function() {
+            Util.firstLower(null);
+        }).toThrow();
+        expect(function() {
+            Util.firstLower(undefined);
+        }).toThrow();
+    });
+});
 
-describe(
-        "libjoynr-js.joynr.Util.firstUpper",
-        function() {
-            it(
-                    "capitalizes first character correctly",
-                    function() {
-                        expect(Util.firstUpper("")).toEqual("");
-                        expect(Util.firstUpper("asdf")).toEqual("Asdf");
-                        expect(Util.firstUpper("b")).toEqual("B");
-                        expect(Util.firstUpper("Csdf")).toEqual("Csdf");
-                        expect(Util.firstUpper("D")).toEqual("D");
-                        expect(Util.firstUpper("esdfasdf")).toEqual("Esdfasdf");
-                        expect(Util.firstUpper("fSdFaSdF")).toEqual("FSdFaSdF");
-                        var rettyLongString =
-                                "rettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstring";
-                        expect(Util.firstUpper("p" + rettyLongString)).toEqual(
-                                "P" + rettyLongString);
-                    });
+describe("libjoynr-js.joynr.Util.firstUpper", function() {
+    it("capitalizes first character correctly", function() {
+        expect(Util.firstUpper("")).toEqual("");
+        expect(Util.firstUpper("asdf")).toEqual("Asdf");
+        expect(Util.firstUpper("b")).toEqual("B");
+        expect(Util.firstUpper("Csdf")).toEqual("Csdf");
+        expect(Util.firstUpper("D")).toEqual("D");
+        expect(Util.firstUpper("esdfasdf")).toEqual("Esdfasdf");
+        expect(Util.firstUpper("fSdFaSdF")).toEqual("FSdFaSdF");
+        var rettyLongString =
+            "rettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstringPRETTYLONGSTRINGprettylongstring";
+        expect(Util.firstUpper("p" + rettyLongString)).toEqual("P" + rettyLongString);
+    });
 
-            it("throws on nullable input", function() {
-                expect(function() {
-                    Util.firstLower(null);
-                }).toThrow();
-                expect(function() {
-                    Util.firstLower(undefined);
-                }).toThrow();
-            });
-        });
+    it("throws on nullable input", function() {
+        expect(function() {
+            Util.firstLower(null);
+        }).toThrow();
+        expect(function() {
+            Util.firstLower(undefined);
+        }).toThrow();
+    });
+});
 
 describe("libjoynr-js.joynr.Util.isPromise", function() {
     it("returns only true if param is promis", function() {
@@ -225,7 +203,6 @@ describe("libjoynr-js.joynr.Util.isPromise", function() {
         expect(Util.isPromise(true)).toBe(false);
         expect(Util.isPromise()).toBe(false);
     });
-
 });
 
 describe("libjoynr-js.joynr.Util.ensureTypedValues", function() {
@@ -233,11 +210,10 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", function() {
     typeRegistry.addType("joynr.vehicle.radiotypes.RadioStation", RadioStation);
 
     it("types untyped objects", function() {
-
         var returnValue = null;
         var untypedValue = {
-            name : "radioStationName",
-            _typeName : "joynr.vehicle.radiotypes.RadioStation"
+            name: "radioStationName",
+            _typeName: "joynr.vehicle.radiotypes.RadioStation"
         };
 
         returnValue = Util.ensureTypedValues(untypedValue, typeRegistry);
@@ -249,12 +225,12 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", function() {
         var returnValue = null;
         var untypedArray = [
             {
-                name : "radioStationName1",
-                _typeName : "joynr.vehicle.radiotypes.RadioStation"
+                name: "radioStationName1",
+                _typeName: "joynr.vehicle.radiotypes.RadioStation"
             },
             {
-                name : "radioStationName2",
-                _typeName : "joynr.vehicle.radiotypes.RadioStation"
+                name: "radioStationName2",
+                _typeName: "joynr.vehicle.radiotypes.RadioStation"
             }
         ];
 
@@ -283,20 +259,48 @@ describe("libjoynr-js.joynr.Util.ensureTypedValues", function() {
 });
 
 describe("libjoynr-js.joynr.Util.forward", function() {
-
     it("forwards methods to another object", function() {
-
         var receiver = {};
         var producer = {
-            someFunction : function() {
+            someFunction: function() {
                 return "some result";
             },
-            someObject : "some Value"
+            someObject: "some Value"
         };
 
         var augmentedReceiver = Util.forward(receiver, producer);
 
         expect(typeof augmentedReceiver.someFunction).toBe("function");
         expect(augmentedReceiver.someObject).toBeUndefined();
+    });
+});
+
+describe("libjoynr-js.joynr.Util.timeoutPromise", function() {
+    beforeEach(function() {
+        jasmine.clock().install();
+    });
+    afterEach(function() {
+        jasmine.clock().uninstall();
+    });
+    it("resolves Promise normally when Promise finished before timeout", function(done) {
+        var promise = new Promise(function(resolve, reject) {
+            setTimeout(resolve, 100);
+        });
+        Util.timeoutPromise(promise, 200)
+            .then(done)
+            .catch(fail);
+        jasmine.clock().tick(101);
+        jasmine.clock().tick(100);
+    });
+
+    it("timeouts after before the promise resolves", function(done) {
+        var promise = new Promise(function(resolve, reject) {
+            setTimeout(resolve, 200);
+        });
+        Util.timeoutPromise(promise, 100)
+            .then(fail)
+            .catch(done);
+        jasmine.clock().tick(101);
+        jasmine.clock().tick(100);
     });
 });

@@ -62,6 +62,7 @@ import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.RoutingTypes.ChannelAddress;
@@ -120,6 +121,8 @@ public class LocalCapabilitiesDirectoryTest {
     private CapabilitiesProvisioning capabilitiesProvisioning;
     @Mock
     private ScheduledExecutorService capabilitiesFreshnessUpdateExecutor;
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
 
     @Captor
     private ArgumentCaptor<Collection<DiscoveryEntryWithMetaInfo>> capabilitiesCaptor;
@@ -218,7 +221,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         expiredDiscoveryEntryCacheCleaner,
                                                                         3600000,
                                                                         capabilitiesFreshnessUpdateExecutor,
-                                                                        defaultDiscoveryRetryIntervalMs);
+                                                                        defaultDiscoveryRetryIntervalMs,
+                                                                        shutdownNotifier);
         verify(expiredDiscoveryEntryCacheCleaner).scheduleCleanUpForCaches(Mockito.<ExpiredDiscoveryEntryCacheCleaner.CleanupAction> any(),
                                                                            argThat(new DiscoveryEntryStoreVarargMatcher(globalDiscoveryEntryCacheMock,
                                                                                                                         localDiscoveryEntryStoreMock)));

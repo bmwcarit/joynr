@@ -78,7 +78,7 @@ TYPED_TEST(CapabilitiesStorageTest, insertThenLookup)
     ASSERT_EQ(1, storage.size());
 
     auto optionalEntry = storage.lookupByParticipantId(this->participantId);
-    ASSERT_TRUE(optionalEntry);
+    ASSERT_TRUE(optionalEntry.is_initialized());
     EXPECT_EQ(this->entry, *optionalEntry);
 }
 
@@ -107,7 +107,7 @@ TYPED_TEST(CapabilitiesStorageTest, insertWithSameParticipantIdOverwritesExistin
     storage.insert(this->entry);
     ASSERT_EQ(1, storage.size());
     auto optionalEntry = storage.lookupByParticipantId(this->participantId);
-    ASSERT_TRUE(optionalEntry);
+    ASSERT_TRUE(optionalEntry.is_initialized());
     EXPECT_EQ(this->entry, *optionalEntry);
 }
 

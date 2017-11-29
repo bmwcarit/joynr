@@ -19,4 +19,4 @@
  * #L%
  */
 
-module.exports = require('./start/InterTabLibjoynrRuntime');
+module.exports = require("./start/InterTabLibjoynrRuntime");

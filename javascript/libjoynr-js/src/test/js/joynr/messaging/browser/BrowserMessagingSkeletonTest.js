@@ -18,21 +18,18 @@
  * limitations under the License.
  * #L%
  */
-var BrowserMessagingSkeleton =
-        require('../../../../classes/joynr/messaging/browser/BrowserMessagingSkeleton');
-var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
+var BrowserMessagingSkeleton = require("../../../../classes/joynr/messaging/browser/BrowserMessagingSkeleton");
+var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
 
 describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", function() {
-
     var webMessagingSkeleton, browserMessagingSkeleton, listener1, listener2;
     var windowId, joynrMessage, untypedJoynrMessage, browserMessage;
 
     beforeEach(function(done) {
-        webMessagingSkeleton = jasmine.createSpyObj("webMessagingSkeleton", [ "registerListener"
-        ]);
+        webMessagingSkeleton = jasmine.createSpyObj("webMessagingSkeleton", ["registerListener"]);
 
         browserMessagingSkeleton = new BrowserMessagingSkeleton({
-            webMessagingSkeleton : webMessagingSkeleton
+            webMessagingSkeleton: webMessagingSkeleton
         });
 
         listener1 = jasmine.createSpy("listener1");
@@ -44,8 +41,8 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", functio
         joynrMessage = new JoynrMessage();
         untypedJoynrMessage = JSON.parse(JSON.stringify(joynrMessage));
         browserMessage = {
-            windowId : windowId,
-            message : untypedJoynrMessage
+            windowId: windowId,
+            message: untypedJoynrMessage
         };
         done();
     });
@@ -65,7 +62,7 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", functio
     it("throws if arguments are missing or of wrong type", function(done) {
         expect(function() {
             browserMessagingSkeleton = new BrowserMessagingSkeleton({
-                webMessagingSkeleton : webMessagingSkeleton
+                webMessagingSkeleton: webMessagingSkeleton
             });
         }).not.toThrow(); // correct call
         expect(function() {
@@ -73,7 +70,7 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", functio
         }).toThrow(); // webMessagingSkeleton is missing
         expect(function() {
             browserMessagingSkeleton = new BrowserMessagingSkeleton({
-                webMessagingSkeleton : ""
+                webMessagingSkeleton: ""
             });
         }).toThrow(); // webMessagingSkeleton is of wrong type
 
@@ -133,5 +130,4 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", functio
         expect(listener2.calls.count()).toBe(1);
         done();
     });
-
 });

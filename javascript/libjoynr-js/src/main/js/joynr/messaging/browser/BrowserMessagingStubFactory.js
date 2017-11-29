@@ -18,8 +18,8 @@
  * #L%
  */
 
-var Typing = require('../../util/Typing');
-var BrowserMessagingStub = require('./BrowserMessagingStub');
+var Typing = require("../../util/Typing");
+var BrowserMessagingStub = require("./BrowserMessagingStub");
 
 /**
  * @constructor
@@ -30,11 +30,7 @@ var BrowserMessagingStub = require('./BrowserMessagingStub');
  */
 function BrowserMessagingStubFactory(settings) {
     Typing.checkProperty(settings, "Object", "settings");
-    Typing
-            .checkProperty(
-                    settings.webMessagingStub,
-                    "WebMessagingStub",
-                    "settings.webMessagingStub");
+    Typing.checkProperty(settings.webMessagingStub, "WebMessagingStub", "settings.webMessagingStub");
 
     this._settings = settings;
 }
@@ -47,8 +43,8 @@ function BrowserMessagingStubFactory(settings) {
  */
 BrowserMessagingStubFactory.prototype.build = function build(address) {
     return new BrowserMessagingStub({
-        windowId : address.windowId,
-        webMessagingStub : this._settings.webMessagingStub
+        windowId: address.windowId,
+        webMessagingStub: this._settings.webMessagingStub
     });
 };
 

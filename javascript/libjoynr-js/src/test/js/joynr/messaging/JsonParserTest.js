@@ -17,17 +17,13 @@
  * #L%
  */
 
-define([
-    "JsonParser",
-    "joynr/system/LoggerFactory"
-], function(JsonParser, LoggerFactory) {
-
+define(["JsonParser", "joynr/system/LoggerFactory"], function(JsonParser, LoggerFactory) {
     describe("libjoynr-js.joynr.messaging.JsonParserTest", function() {
         var log = LoggerFactory.getLogger("JsonParserTest");
 
         it("testSimpleObject", function() {
             var object1 = {
-                x : "xü/"
+                x: "xü/"
             };
 
             var json = JSON.stringify(object1);
@@ -39,10 +35,10 @@ define([
 
         it("testParseMultipleObjects", function() {
             var object1 = {
-                x : "x"
+                x: "x"
             };
             var object2 = {
-                y : "y"
+                y: "y"
             };
 
             var concatenatedJson = JSON.stringify(object1) + JSON.stringify(object2);
@@ -55,51 +51,42 @@ define([
         it("testParseMultipleComplexObjects", function() {
             var objs = [
                 {
-                    dog : "dog",
-                    cat : "cat",
-                    mouse : {
-                        giraffe : "tall",
-                        pigeon : {
-                            snake : "(/Z(bjkljbslkjw78sjk()?H(2ä#"
+                    dog: "dog",
+                    cat: "cat",
+                    mouse: {
+                        giraffe: "tall",
+                        pigeon: {
+                            snake: "(/Z(bjkljbslkjw78sjk()?H(2ä#"
                         },
-                        snail : [ {
-                            a : "slow"
-                        }
+                        snail: [
+                            {
+                                a: "slow"
+                            }
                         ]
                     },
-                    lion : "roar",
-                    zoo : [
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9
-                    ]
+                    lion: "roar",
+                    zoo: [1, 2, 3, 4, 5, 6, 7, 8, 9]
                 },
                 {
-                    car : "BMW",
-                    truck : "big",
-                    plane : {
-                        wings : 2.0
+                    car: "BMW",
+                    truck: "big",
+                    plane: {
+                        wings: 2.0
                     }
                 },
                 {
-                    red : "red",
-                    green : "green",
-                    yellow : {
-                        purple : "purple"
+                    red: "red",
+                    green: "green",
+                    yellow: {
+                        purple: "purple"
                     }
                 },
                 {
-                    1 : 1,
-                    2 : 2,
-                    3 : {
-                        33 : "33333333333333",
-                        44 : "4444444444444444"
+                    1: 1,
+                    2: 2,
+                    3: {
+                        33: "33333333333333",
+                        44: "4444444444444444"
                     }
                 }
             ];
@@ -120,9 +107,8 @@ define([
         });
 
         it("testParseInvalidObjects", function() {
-
             var object1 = {
-                x : "x"
+                x: "x"
             };
             var object2 = "a";
 

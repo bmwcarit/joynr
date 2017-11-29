@@ -41,11 +41,14 @@ mod.prototype.require = function (md) {
     if (md === 'joynr') {
         return joynr;
     }
+    if (md.endsWith("SmrfNode")) {
+        return req("../test-classes/global/SmrfMock");
+    }
     if (md.endsWith('WebSocketNode')) {
         return req('../test-classes/global/WebSocketMock');
     }
     return req.apply(this, arguments);
-}
+};
 console.log('require config setup');
 var ProviderOperationTest = require('../test-classes/joynr/provider/ProviderOperationTest');
 var ProviderTest = require('../test-classes/joynr/provider/ProviderTest');
@@ -83,8 +86,6 @@ var MessagingStubFactoryTest = require('../test-classes/joynr/messaging/Messagin
 var JoynrMessageTest = require('../test-classes/joynr/messaging/JoynrMessageTest');
 var MessagingQosTest = require('../test-classes/joynr/messaging/MessagingQosTest');
 var MessageReplyToAddressCalculatorTest = require('../test-classes/joynr/messaging/MessageReplyToAddressCalculatorTest');
-var DistributedLoggingAppenderFactoryTest = require('../test-classes/joynr/system/DistributedLoggingAppenderFactoryTest');
-var DistributedLoggingAppenderTest = require('../test-classes/joynr/system/DistributedLoggingAppenderTest');
 var ProxyAttributeTest = require('../test-classes/joynr/proxy/ProxyAttributeTest');
 var ProxyOperationTest = require('../test-classes/joynr/proxy/ProxyOperationTest');
 var ProxyTest = require('../test-classes/joynr/proxy/ProxyTest');
@@ -123,4 +124,4 @@ var WebSocketNodeTest = require('../test-classes/global/WebSocketNodeTest');
     console.log("all tests modules loaded");
     loadingFinished = true;
     jasmine.execute();
-}(ProviderOperationTest, ProviderTest, BroadcastOutputParametersTest, ProviderAttributeTest, ProviderQosTest, ProviderBuilderTest, ProviderEventTest, WebMessagingSkeletonTest, WebMessagingStubFactoryTest, WebMessagingAddressTest, WebMessagingStubTest, ChannelMessagingStubTest, ChannelMessagingStubFactoryTest, LongPollingChannelMessageReceiverTest, ChannelMessagingSkeletonTest, ChannelMessagingSenderTest, MqttMessagingSkeletonTest, MqttMessagingStubFactoryTest, MqttMessagingStubTest, MessageQueueTest, MessageRouterTest, InProcessMessagingStubFactoryTest, InProcessMessagingSkeletonTest, InProcessAddressTest, InProcessMessagingStubTest, BrowserMessagingStubFactoryTest, BrowserMessagingSkeletonTest, BrowserMessagingStubTest, WebSocketMessagingSkeletonTest, SharedWebSocketTest, WebSocketMessagingStubFactoryTest, WebSocketMessagingStubTest, MessagingStubFactoryTest, JoynrMessageTest, MessagingQosTest, MessageReplyToAddressCalculatorTest, DistributedLoggingAppenderFactoryTest, DistributedLoggingAppenderTest, ProxyAttributeTest, ProxyOperationTest, ProxyTest, ProxyEventTest, SubscriptionQosTest, ProxyBuilderTest, CapabilitiesUtilTest, InProcessStubAndSkeletonTest, UtilTest, JsonSerializerTest, TypingTest, LongTimerTest, TypeGeneratorTest, DiscoveryQosTest, CapabilityDiscoveryTest, CapabilityInformationTest, ArbitrationStrategiesTest, ArbitratorTest, CapabilitiesRegistrarTest, CapabilitiesStoreTest, ParticipantIdStorageTest, MulticastPublicationTest, SubscriptionPublicationTest, RequestTest, SubscriptionRequestTest, ReplyTest, SubscriptionUtilTest, PublicationManagerTest, SubscriptionManagerTest, DispatcherTest, TtlUpliftTest, RequestReplyManagerTest, LocalStorageNodeTest, WebSocketNodeTest));
+}(ProviderOperationTest, ProviderTest, BroadcastOutputParametersTest, ProviderAttributeTest, ProviderQosTest, ProviderBuilderTest, ProviderEventTest, WebMessagingSkeletonTest, WebMessagingStubFactoryTest, WebMessagingAddressTest, WebMessagingStubTest, ChannelMessagingStubTest, ChannelMessagingStubFactoryTest, LongPollingChannelMessageReceiverTest, ChannelMessagingSkeletonTest, ChannelMessagingSenderTest, MqttMessagingSkeletonTest, MqttMessagingStubFactoryTest, MqttMessagingStubTest, MessageQueueTest, MessageRouterTest, InProcessMessagingStubFactoryTest, InProcessMessagingSkeletonTest, InProcessAddressTest, InProcessMessagingStubTest, BrowserMessagingStubFactoryTest, BrowserMessagingSkeletonTest, BrowserMessagingStubTest, WebSocketMessagingSkeletonTest, SharedWebSocketTest, WebSocketMessagingStubFactoryTest, WebSocketMessagingStubTest, MessagingStubFactoryTest, JoynrMessageTest, MessagingQosTest, MessageReplyToAddressCalculatorTest, ProxyAttributeTest, ProxyOperationTest, ProxyTest, ProxyEventTest, SubscriptionQosTest, ProxyBuilderTest, CapabilitiesUtilTest, InProcessStubAndSkeletonTest, UtilTest, JsonSerializerTest, TypingTest, LongTimerTest, TypeGeneratorTest, DiscoveryQosTest, CapabilityDiscoveryTest, CapabilityInformationTest, ArbitrationStrategiesTest, ArbitratorTest, CapabilitiesRegistrarTest, CapabilitiesStoreTest, ParticipantIdStorageTest, MulticastPublicationTest, SubscriptionPublicationTest, RequestTest, SubscriptionRequestTest, ReplyTest, SubscriptionUtilTest, PublicationManagerTest, SubscriptionManagerTest, DispatcherTest, TtlUpliftTest, RequestReplyManagerTest, LocalStorageNodeTest, WebSocketNodeTest));

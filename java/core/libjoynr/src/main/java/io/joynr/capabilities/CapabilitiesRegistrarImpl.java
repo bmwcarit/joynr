@@ -120,7 +120,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     }
 
     @Override
-    public void unregisterProvider(String domain, Object provider) {
+    public Future<Void> unregisterProvider(String domain, Object provider) {
 
         final String participantId = participantIdStorage.getProviderParticipantId(domain,
                                                                                    ProviderAnnotations.getInterfaceName(provider));
@@ -134,7 +134,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                 logger.error("Error while unregistering provider: ", error);
             }
         };
-        localDiscoveryAggregator.remove(callback, participantId);
         providerDirectory.remove(participantId);
+        return localDiscoveryAggregator.remove(callback, participantId);
     }
 }

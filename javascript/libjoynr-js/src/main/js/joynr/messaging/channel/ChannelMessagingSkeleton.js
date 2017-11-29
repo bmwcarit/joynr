@@ -18,11 +18,11 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../../util/Typing');
-var LoggerFactory = require('../../system/LoggerFactory');
-var DiagnosticTags = require('../../system/DiagnosticTags');
-var JoynrException = require('../../exceptions/JoynrException');
-var JoynrMessage = require('../JoynrMessage');
+var Typing = require("../../util/Typing");
+var LoggerFactory = require("../../system/LoggerFactory");
+var DiagnosticTags = require("../../system/DiagnosticTags");
+var JoynrException = require("../../exceptions/JoynrException");
+var JoynrMessage = require("../JoynrMessage");
 
 var log = LoggerFactory.getLogger("joynr/messaging/channel/ChannelMessagingSkeleton");
 /**
@@ -33,14 +33,12 @@ var log = LoggerFactory.getLogger("joynr/messaging/channel/ChannelMessagingSkele
  *            receiveFunction
  */
 function ChannelMessagingSkeleton(settings) {
-
     Typing.checkProperty(settings, "Object", "settings");
     if (settings.messageRouter === undefined) {
         throw new Error("messageRouter is undefined");
     }
 
     this._messageRouter = settings.messageRouter;
-
 }
 
 /**
@@ -51,27 +49,29 @@ function ChannelMessagingSkeleton(settings) {
  *
  * @param {JoynrMessage} joynrMessage
  */
-ChannelMessagingSkeleton.prototype.receiveMessage =
-        function receiveMessage(joynrMessage) {
-            joynrMessage = new JoynrMessage(joynrMessage);
-            joynrMessage.setReceivedFromGlobal(true);
-            try {
-                this._messageRouter.route(joynrMessage)
-                .catch (function(e) {
-                    log.error("unable to process message: "
-                        + e
-                        + (e instanceof JoynrException ? " " + e.detailMessage : "")
-                        + " \nmessage: "
-                        + DiagnosticTags.forJoynrMessage(joynrMessage));
-                });
-            } catch(e) {
-                // Errors should be returned via the Promise
-                log.fatal("unable to process message: "
-                    + e
-                    + (e instanceof JoynrException ? " " + e.detailMessage : "")
-                    + " \nmessage: "
-                    + DiagnosticTags.forJoynrMessage(joynrMessage));
-            }
-        };
+ChannelMessagingSkeleton.prototype.receiveMessage = function receiveMessage(joynrMessage) {
+    joynrMessage = new JoynrMessage(joynrMessage);
+    joynrMessage.setReceivedFromGlobal(true);
+    try {
+        this._messageRouter.route(joynrMessage).catch(function(e) {
+            log.error(
+                "unable to process message: " +
+                    e +
+                    (e instanceof JoynrException ? " " + e.detailMessage : "") +
+                    " \nmessage: " +
+                    DiagnosticTags.forJoynrMessage(joynrMessage)
+            );
+        });
+    } catch (e) {
+        // Errors should be returned via the Promise
+        log.fatal(
+            "unable to process message: " +
+                e +
+                (e instanceof JoynrException ? " " + e.detailMessage : "") +
+                " \nmessage: " +
+                DiagnosticTags.forJoynrMessage(joynrMessage)
+        );
+    }
+};
 
 module.exports = ChannelMessagingSkeleton;

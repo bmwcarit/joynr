@@ -18,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var RadioProvider = require('../../../test-classes/joynr/vehicle/RadioProvider');
-var ProviderBuilder = require('../../../classes/joynr/provider/ProviderBuilder');
-var ProviderOperation = require('../../../classes/joynr/provider/ProviderOperation');
+var RadioProvider = require("../../../test-classes/joynr/vehicle/RadioProvider");
+var ProviderBuilder = require("../../../classes/joynr/provider/ProviderBuilder");
+var ProviderOperation = require("../../../classes/joynr/provider/ProviderOperation");
 
 describe("libjoynr-js.joynr.provider.ProviderBuilder", function() {
     var providerBuilder = null;
@@ -29,50 +29,50 @@ describe("libjoynr-js.joynr.provider.ProviderBuilder", function() {
     beforeEach(function() {
         providerBuilder = new ProviderBuilder();
         implementation = {
-            isOn : {
-                value : false,
-                get : function() {
+            isOn: {
+                value: false,
+                get: function() {
                     return this.value;
                 },
-                set : function(newValue) {
+                set: function(newValue) {
                     this.value = newValue;
                 }
             },
-            numberOfStations : {
-                value : 0,
-                get : function() {
+            numberOfStations: {
+                value: 0,
+                get: function() {
                     return this.value;
                 },
-                set : function(newValue) {
+                set: function(newValue) {
                     this.value = newValue;
                 }
             },
-            mixedSubscriptions : {
-                value : "testvalue",
-                get : function() {
+            mixedSubscriptions: {
+                value: "testvalue",
+                get: function() {
                     return this.value;
                 },
-                set : function(newValue) {
+                set: function(newValue) {
                     this.value = newValue;
                 }
             },
-            attrProvidedImpl : {
-                value : "testValue2",
-                get : function() {
+            attrProvidedImpl: {
+                value: "testValue2",
+                get: function() {
                     return this.value;
                 },
-                set : function(newValue) {
+                set: function(newValue) {
                     this.value = newValue;
                 }
             },
-            attributeTestingProviderInterface : {
-                get : function() {
+            attributeTestingProviderInterface: {
+                get: function() {
                     return undefined;
                 }
             },
-            addFavoriteStation : jasmine.createSpy("addFavoriteStation"),
-            weakSignal : jasmine.createSpy("weakSignal"),
-            methodProvidedImpl : jasmine.createSpy("methodProvidedImpl")
+            addFavoriteStation: jasmine.createSpy("addFavoriteStation"),
+            weakSignal: jasmine.createSpy("weakSignal"),
+            methodProvidedImpl: jasmine.createSpy("methodProvidedImpl")
         };
     });
 
@@ -90,7 +90,5 @@ describe("libjoynr-js.joynr.provider.ProviderBuilder", function() {
         expect(radioProvider.isOn).toBeDefined();
         expect(radioProvider.addFavoriteStation).toBeDefined();
         expect(radioProvider.addFavoriteStation instanceof ProviderOperation).toBeTruthy();
-
     });
-
 });

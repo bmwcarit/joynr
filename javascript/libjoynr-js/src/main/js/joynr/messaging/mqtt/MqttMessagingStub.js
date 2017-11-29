@@ -18,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var JoynrMessage = require('../JoynrMessage');
-var JSONSerializer = require('../../util/JSONSerializer');
-var LoggerFactory = require('../../system/LoggerFactory');
+var JoynrMessage = require("../JoynrMessage");
+var JSONSerializer = require("../../util/JSONSerializer");
+var LoggerFactory = require("../../system/LoggerFactory");
 
 var log = LoggerFactory.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
 /**
@@ -42,7 +42,7 @@ function MqttMessagingStub(settings) {
  * @param {Object|JoynrMessage} message the message to transmit
  */
 MqttMessagingStub.prototype.transmit = function transmit(message) {
-    log.debug("transmit message: \"" + JSONSerializer.stringify(message) + "\"");
+    log.debug('transmit message: "' + JSONSerializer.stringify(message) + '"');
     var topic = this._settings.address.topic;
     if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
         topic += MqttMessagingStub.PRIORITY_LOW + message.to;

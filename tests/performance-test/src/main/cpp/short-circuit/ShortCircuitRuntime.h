@@ -23,14 +23,14 @@
 #include <memory>
 #include <tuple> // for std::ignore
 
-#include "joynr/JoynrRuntime.h"
-#include "joynr/IMessageRouter.h"
-#include "joynr/InProcessPublicationSender.h"
-#include "joynr/types/ProviderQos.h"
-#include "joynr/SingleThreadedIOService.h"
 #include "joynr/CapabilityUtils.h"
 #include "joynr/ClusterControllerSettings.h"
+#include "joynr/IMessageRouter.h"
+#include "joynr/InProcessPublicationSender.h"
 #include "joynr/IPlatformSecurityManager.h"
+#include "joynr/JoynrRuntime.h"
+#include "joynr/SingleThreadedIOService.h"
+#include "joynr/types/ProviderQos.h"
 
 namespace joynr
 {
@@ -207,6 +207,8 @@ private:
     std::shared_ptr<IKeychain> keyChain;
     std::shared_ptr<DummyRequestCallerDirectory> requestCallerDirectory;
     ClusterControllerSettings clusterControllerSettings;
+
+    const bool enablePersistency;
 };
 
 } // namespace joynr

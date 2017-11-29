@@ -18,13 +18,13 @@
  * limitations under the License.
  * #L%
  */
-var Util = require('../../util/UtilInternal');
-var Typing = require('../../util/Typing');
-var OnChangeSubscriptionQos = require('../../proxy/OnChangeSubscriptionQos');
-var BroadcastFilterParameters = require('../../proxy/BroadcastFilterParameters');
+var Util = require("../../util/UtilInternal");
+var Typing = require("../../util/Typing");
+var OnChangeSubscriptionQos = require("../../proxy/OnChangeSubscriptionQos");
+var BroadcastFilterParameters = require("../../proxy/BroadcastFilterParameters");
 
 var defaultSettings = {
-    qos : new OnChangeSubscriptionQos()
+    qos: new OnChangeSubscriptionQos()
 };
 
 /**
@@ -41,14 +41,12 @@ function BroadcastSubscriptionRequest(settings) {
     Typing.checkProperty(settings, "Object", "settings");
     Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
     Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
-    Typing.checkPropertyIfDefined(settings.qos, [
-        "Object",
-        "OnChangeSubscriptionQos"
-    ], "settings.qos");
-    Typing.checkPropertyIfDefined(settings.filterParameters, [
-        "Object",
-        "BroadcastFilterParameters"
-    ], "settings.filterParameters");
+    Typing.checkPropertyIfDefined(settings.qos, ["Object", "OnChangeSubscriptionQos"], "settings.qos");
+    Typing.checkPropertyIfDefined(
+        settings.filterParameters,
+        ["Object", "BroadcastFilterParameters"],
+        "settings.filterParameters"
+    );
 
     /**
      * @name BroadcastSubscriptionRequest#subscriptionId
@@ -81,11 +79,11 @@ function BroadcastSubscriptionRequest(settings) {
     Typing.augmentTypeName(this, "joynr");
 
     Object.defineProperty(this, "_typeName", {
-        value : "joynr.BroadcastSubscriptionRequest",
-        readable : true,
-        writable : false,
-        enumerable : true,
-        configurable : false
+        value: "joynr.BroadcastSubscriptionRequest",
+        readable: true,
+        writable: false,
+        enumerable: true,
+        configurable: false
     });
 
     return Object.freeze(this);
@@ -98,10 +96,10 @@ function BroadcastSubscriptionRequest(settings) {
  * @type String
  */
 Object.defineProperty(BroadcastSubscriptionRequest, "_typeName", {
-    value : "joynr.BroadcastSubscriptionRequest",
-    readable : true,
-    writable : false,
-    enumerable : true,
-    configurable : false
+    value: "joynr.BroadcastSubscriptionRequest",
+    readable: true,
+    writable: false,
+    enumerable: true,
+    configurable: false
 });
 module.exports = BroadcastSubscriptionRequest;

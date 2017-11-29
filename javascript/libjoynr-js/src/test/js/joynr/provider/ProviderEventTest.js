@@ -18,28 +18,28 @@
  * limitations under the License.
  * #L%
  */
-var ProviderEvent = require('../../../classes/joynr/provider/ProviderEvent');
-var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
-var BroadcastFilterParameters = require('../../../classes/joynr/proxy/BroadcastFilterParameters');
+var ProviderEvent = require("../../../classes/joynr/provider/ProviderEvent");
+var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
+var BroadcastFilterParameters = require("../../../classes/joynr/proxy/BroadcastFilterParameters");
 
 var safetyTimeoutDelta = 100;
 
 describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
-
     var weakSignal;
 
     beforeEach(function() {
         weakSignal = new ProviderEvent({
-            eventName : "weakSignal",
-            outputParameterProperties : [ {
-                name : "weakSignalStation",
-                type : "String"
-            }
+            eventName: "weakSignal",
+            outputParameterProperties: [
+                {
+                    name: "weakSignalStation",
+                    type: "String"
+                }
             ],
-            filterSettings : {
-                "a" : "reservedForTypeInfo",
-                "b" : "reservedForTypeInfo",
-                "c" : "reservedForTypeInfo"
+            filterSettings: {
+                a: "reservedForTypeInfo",
+                b: "reservedForTypeInfo",
+                c: "reservedForTypeInfo"
             }
         });
     });
@@ -70,11 +70,17 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
     }
 
     it("implements the observer concept correctly", function(done) {
-        var i, spy1, spy2, attribute, func1, func2, value = {
-            key : "value",
-            1 : 2,
-            object : {}
-        };
+        var i,
+            spy1,
+            spy2,
+            attribute,
+            func1,
+            func2,
+            value = {
+                key: "value",
+                1: 2,
+                object: {}
+            };
 
         spy1 = jasmine.createSpy("spy1");
         spy2 = jasmine.createSpy("spy2");
@@ -91,9 +97,9 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
         weakSignal.fire(value);
 
         var data = {
-            broadcastOutputParameters : value,
-            filters : [],
-            partitions : []
+            broadcastOutputParameters: value,
+            filters: [],
+            partitions: []
         };
 
         expect(spy1).toHaveBeenCalled();
@@ -144,9 +150,9 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
     it("implements the broadcast filter list correctly", function(done) {
         var i, spy1, spy2, attribute, observerFunc, filterFunc;
         var value = {
-            key : "value",
-            1 : 2,
-            object : {}
+            key: "value",
+            1: 2,
+            object: {}
         };
         var spy3;
 
@@ -163,10 +169,9 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
         expect(spy2).not.toHaveBeenCalled();
 
         var data = {
-            broadcastOutputParameters : value,
-            filters : [ filterFunc
-            ],
-            partitions : []
+            broadcastOutputParameters: value,
+            filters: [filterFunc],
+            partitions: []
         };
         var filterParameters = {};
 
@@ -190,24 +195,24 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
 
     it("checkFilterParameters works", function(done) {
         var correctFilterParameters = new BroadcastFilterParameters({
-            a : "String",
-            b : "String",
-            c : "String"
+            a: "String",
+            b: "String",
+            c: "String"
         });
         correctFilterParameters.setA("a");
         correctFilterParameters.setB("b");
         correctFilterParameters.setC("c");
         var missingOnefilterParameters = new BroadcastFilterParameters({
-            a : "String",
-            b : "String",
-            c : "String"
+            a: "String",
+            b: "String",
+            c: "String"
         });
         missingOnefilterParameters.setA("a");
         missingOnefilterParameters.setB("b");
         var missingTwofilterParameters = new BroadcastFilterParameters({
-            a : "String",
-            b : "String",
-            c : "String"
+            a: "String",
+            b: "String",
+            c: "String"
         });
         missingTwofilterParameters.setA("a");
 
@@ -218,22 +223,17 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", function() {
         expect(weakSignal.checkFilterParameters().caughtErrors.length).toBe(0);
         expect(weakSignal.checkFilterParameters(null).caughtErrors.length).toBe(0);
 
-        expect(weakSignal.checkFilterParameters(correctFilterParameters).caughtErrors.length).toBe(
-                0);
-        expect(weakSignal.checkFilterParameters(missingOnefilterParameters).caughtErrors.length)
-                .toBe(1);
-        expect(weakSignal.checkFilterParameters(missingTwofilterParameters).caughtErrors.length)
-                .toBe(2);
+        expect(weakSignal.checkFilterParameters(correctFilterParameters).caughtErrors.length).toBe(0);
+        expect(weakSignal.checkFilterParameters(missingOnefilterParameters).caughtErrors.length).toBe(1);
+        expect(weakSignal.checkFilterParameters(missingTwofilterParameters).caughtErrors.length).toBe(2);
         done();
     });
     it("throws error if fire is invoked with invalid partitions", function() {
         expect(function() {
-            weakSignal.fire(weakSignal.createBroadcastOutputParameters(), [ "_"
-            ]);
+            weakSignal.fire(weakSignal.createBroadcastOutputParameters(), ["_"]);
         }).toThrow();
         expect(function() {
-            weakSignal.fire(weakSignal.createBroadcastOutputParameters(), [ "./$"
-            ]);
+            weakSignal.fire(weakSignal.createBroadcastOutputParameters(), ["./$"]);
         }).toThrow();
     });
 });

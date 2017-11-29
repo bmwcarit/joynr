@@ -149,7 +149,7 @@ function start_services {
 	echo '####################################################'
 
 	echo "Starting mosquitto"
-	mosquitto -c /etc/mosquitto/mosquitto.conf > $ILT_RESULTS_DIR/mosquitto-$1.log 2>&1 &
+	mosquitto -c /etc/mosquitto/mosquitto.conf > $ROBUSTNESS_RESULTS_DIR/mosquitto-$1.log 2>&1 &
 	MOSQUITTO_PID=$!
 	echo "Mosquitto started with PID $MOSQUITTO_PID"
 

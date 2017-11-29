@@ -57,6 +57,7 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+        bool persistRoutingTable,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         int maxThreads,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
@@ -65,6 +66,7 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
                                 std::move(messagingStubFactory),
                                 ioService,
                                 std::move(addressCalculator),
+                                persistRoutingTable,
                                 maxThreads,
                                 std::move(transportStatuses),
                                 std::move(messageQueue),
@@ -292,9 +294,11 @@ void LibJoynrMessageRouter::addNextHop(
         bool isGloballyVisible,
         const std::int64_t expiryDateMs,
         const bool isSticky,
+        const bool allowUpdate,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    std::ignore = allowUpdate;
     assert(address);
     addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
     addNextHopToParent(participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
@@ -310,6 +314,7 @@ void LibJoynrMessageRouter::removeNextHop(
         WriteLocker lock(routingTableLock);
         routingTable.remove(participantId);
     }
+
     saveRoutingTable();
 
     if (!isParentMessageRouterSet()) {

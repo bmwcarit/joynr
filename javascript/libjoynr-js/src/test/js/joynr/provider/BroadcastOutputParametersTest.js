@@ -18,32 +18,33 @@
  * limitations under the License.
  * #L%
  */
-var BroadcastOutputParameters =
-        require('../../../classes/joynr/provider/BroadcastOutputParameters');
+var BroadcastOutputParameters = require("../../../classes/joynr/provider/BroadcastOutputParameters");
 
 describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
     it("is instantiable", function() {
-        expect(new BroadcastOutputParameters([
-            {
-                name : "param1",
-                type : "String"
-            },
-            {
-                name : "param2",
-                type : "String"
-            }
-        ])).toBeDefined();
+        expect(
+            new BroadcastOutputParameters([
+                {
+                    name: "param1",
+                    type: "String"
+                },
+                {
+                    name: "param2",
+                    type: "String"
+                }
+            ])
+        ).toBeDefined();
     });
 
     it("is of correct type", function() {
         var broadcastOutputParameters = new BroadcastOutputParameters([
             {
-                name : "param1",
-                type : "String"
+                name: "param1",
+                type: "String"
             },
             {
-                name : "param2",
-                type : "String"
+                name: "param2",
+                type: "String"
             }
         ]);
         expect(broadcastOutputParameters).toBeDefined();
@@ -63,12 +64,12 @@ describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
     it("has setters and getters for each output parameter", function() {
         var broadcastOutputParameters = new BroadcastOutputParameters([
             {
-                name : "param1",
-                type : "String"
+                name: "param1",
+                type: "String"
             },
             {
-                name : "param2",
-                type : "String"
+                name: "param2",
+                type: "String"
             }
         ]);
         expect(broadcastOutputParameters.setParam1).toBeDefined();
@@ -84,12 +85,12 @@ describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
     it("setters and getters store and retrieve correct values", function() {
         var broadcastOutputParameters = new BroadcastOutputParameters([
             {
-                name : "param1",
-                type : "String"
+                name: "param1",
+                type: "String"
             },
             {
-                name : "param2",
-                type : "String"
+                name: "param2",
+                type: "String"
             }
         ]);
         broadcastOutputParameters.setParam1("Hello");
@@ -101,12 +102,12 @@ describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
     it("array outputParameters contains correct values", function() {
         var broadcastOutputParameters = new BroadcastOutputParameters([
             {
-                name : "param1",
-                type : "String"
+                name: "param1",
+                type: "String"
             },
             {
-                name : "param2",
-                type : "String"
+                name: "param2",
+                type: "String"
             }
         ]);
         broadcastOutputParameters.setParam2("world");
@@ -114,5 +115,4 @@ describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", function() {
         expect(broadcastOutputParameters.outputParameters[0]).toEqual("Hello");
         expect(broadcastOutputParameters.outputParameters[1]).toEqual("world");
     });
-
 });

@@ -20,6 +20,5 @@ This project has dependencies to:
   io.joynr.javascript.inter-tab:inter-tab-comm under The Apache Software License, Version 2.0
   io.joynr.javascript:inter-tab under The Apache Software License, Version 2.0
   jquery under MIT License
-  js-test-driver under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
 

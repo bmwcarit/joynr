@@ -1,27 +1,28 @@
 {
   "name": "joynr",
-  "version": "0.31.1",
+  "version": "0.32.0",
   "description": "Web-based communication framework for applications wanting to interact with other applications, no matter whether they're deployed on consumer devices, vehicles, or backend infrastructure",
   "license": "Apache-2.0",
   "homepage": "http://joynr.io",
   "bugs": "https://github.com/bmwcarit/joynr/issues",
   "main": "joynr.js",
   "devDependencies": {
-    "exit-hook": "1.1.1",
-    "jasmine-node": ">=2.0.0",
-    "jasmine-core" : "2.4.1",
-    "phantomjs-prebuilt" : "2.1.12",
-    "karma-jasmine" : "0.3.8",
-    "karma-phantomjs-launcher" : "1.0.0",
-    "karma-chrome-launcher" : "0.2.3",
-    "karma-spec-reporter" : "0.0.23",
-    "karma-junit-reporter" : "0.3.8",
-    "karma-verbose-reporter" : "0.0.3",
-    "karma-coverage" : "0.5.3",
-    "karma" : "0.13.22",
     "browserify": "14.4.0",
-    "jasmine" : "2.4.1",
-    "jasmine-reporters" : "2.1.1"
+    "exit-hook": "1.1.1",
+    "jasmine": "2.4.1",
+    "jasmine-core": "2.4.1",
+    "jasmine-node": ">=2.0.0",
+    "jasmine-reporters": "2.1.1",
+    "karma": "0.13.22",
+    "karma-chrome-launcher": "0.2.3",
+    "karma-coverage": "0.5.3",
+    "karma-jasmine": "0.3.8",
+    "karma-junit-reporter": "0.3.8",
+    "karma-phantomjs-launcher": "1.0.0",
+    "karma-spec-reporter": "0.0.23",
+    "karma-verbose-reporter": "0.0.3",
+    "phantomjs-prebuilt": "2.1.12",
+    "prettier": "1.8.2"
   },
   "dependencies": {
     "log4javascript": "1.4.15",
@@ -31,13 +32,15 @@
     "ws" : "1.0.1",
     "mqtt" : "2.0.1",
     "bluebird" : "3.3.5",
-    "promise": ">=7.1.1",
     "smrf-native": "0.2.2",
-    "wscpp" : "0.2.5"
+    "wscpp" : "0.2.6"
   },
   "engines": {
     "node": ">=0.10.40",
     "npm" : ">=1.3.5"
+  },
+  "scripts": {
+    "postinstall": "echo 'module.exports = require(\"..\");' > node_modules/joynr.js"
   },
   "repository": {
     "type" : "git",

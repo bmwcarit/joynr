@@ -21,7 +21,7 @@
  */
 
 if (global.window !== undefined) {
-    console.warn('smrf-native is not available in browser environment');
+    console.warn("smrf-native is not available in browser environment");
 }
 
-module.exports = global.window !== undefined ? {} : require('smrf-native');
+module.exports = global.window !== undefined ? {} : require("smrf-native");

@@ -21,6 +21,7 @@ package io.joynr.capabilities;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
+import io.joynr.runtime.ShutdownListener;
 import joynr.system.DiscoveryProvider;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
@@ -29,7 +30,7 @@ import java.util.Set;
 
 import javax.annotation.CheckForNull;
 
-public interface LocalCapabilitiesDirectory extends DiscoveryProvider {
+public interface LocalCapabilitiesDirectory extends DiscoveryProvider, ShutdownListener {
     public static final String JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS = "joynr.scheduler.capabilities.freshness";
 
     /**

@@ -50,6 +50,7 @@ AbstractMessageRouter::AbstractMessageRouter(
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+        bool persistRoutingTable,
         int maxThreads,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
@@ -60,6 +61,7 @@ AbstractMessageRouter::AbstractMessageRouter(
           routingTableLock(),
           multicastReceiverDirectory(),
           messagingSettings(messagingSettings),
+          persistRoutingTable(persistRoutingTable),
           messagingStubFactory(std::move(messagingStubFactory)),
           messageScheduler(std::make_shared<ThreadPoolDelayedScheduler>(maxThreads,
                                                                         "AbstractMessageRouter",
@@ -425,7 +427,12 @@ void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> messa
 
 void AbstractMessageRouter::loadRoutingTable(std::string fileName)
 {
-    // always update reference file
+
+    if (!persistRoutingTable) {
+        return;
+    }
+
+    // update reference file
     if (fileName != routingTableFileName) {
         routingTableFileName = std::move(fileName);
     }
@@ -447,6 +454,9 @@ void AbstractMessageRouter::loadRoutingTable(std::string fileName)
 
 void AbstractMessageRouter::saveRoutingTable()
 {
+    if (!persistRoutingTable) {
+        return;
+    }
     WriteLocker lock(routingTableLock);
     try {
         joynr::util::saveStringToFile(
@@ -461,20 +471,30 @@ void AbstractMessageRouter::addToRoutingTable(
         bool isGloballyVisible,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
         std::int64_t expiryDateMs,
-        bool isSticky)
+        bool isSticky,
+        bool allowUpdate)
 {
     {
         WriteLocker lock(routingTableLock);
         auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
         if (routingEntry) {
+
             if ((*(routingEntry->address) != *address) ||
                 (routingEntry->isGloballyVisible != isGloballyVisible)) {
-                JOYNR_LOG_WARN(logger(),
-                               "unable to update participantId={} in routing table, since "
-                               "the participantId is already associated with routing entry {}",
-                               participantId,
-                               routingEntry->toString());
-                return;
+                if (!allowUpdate) {
+                    JOYNR_LOG_WARN(logger(),
+                                   "unable to update participantId={} in routing table, since "
+                                   "the participantId is already associated with routing entry {}",
+                                   participantId,
+                                   routingEntry->toString());
+                    return;
+                }
+                JOYNR_LOG_DEBUG(logger(),
+                                "updating participantId={} in routing table, because we trust "
+                                "the globalDiscovery although the participantId is already "
+                                "associated with routing entry {}",
+                                participantId,
+                                routingEntry->toString());
             }
             // keep longest lifetime
             if (routingEntry->expiryDateMs > expiryDateMs) {

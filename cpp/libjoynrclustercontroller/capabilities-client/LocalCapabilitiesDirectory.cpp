@@ -55,6 +55,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         boost::asio::io_service& ioService,
         const std::string clusterControllerId)
         : joynr::system::DiscoveryAbstractProvider(),
+          joynr::system::ProviderReregistrationControllerProvider(),
+          std::enable_shared_from_this<LocalCapabilitiesDirectory>(),
           clusterControllerSettings(clusterControllerSettings),
           capabilitiesClient(std::move(capabilitiesClientPtr)),
           localAddress(localAddress),
@@ -66,8 +68,14 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           pendingLookups(),
           accessController(),
           checkExpiredDiscoveryEntriesTimer(ioService),
+          isLocalCapabilitiesDirectoryPersistencyEnabled(
+                  clusterControllerSettings.isLocalCapabilitiesDirectoryPersistencyEnabled()),
           freshnessUpdateTimer(ioService),
           clusterControllerId(clusterControllerId)
+{
+}
+
+void LocalCapabilitiesDirectory::init()
 {
     scheduleCleanupTimer();
     scheduleFreshnessUpdate();
@@ -90,10 +98,12 @@ void LocalCapabilitiesDirectory::scheduleFreshnessUpdate()
                         timerError.value(),
                         timerError.message());
     }
-    freshnessUpdateTimer.async_wait(
-            std::bind(&LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate,
-                      this,
-                      std::placeholders::_1));
+    freshnessUpdateTimer.async_wait([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
+            const boost::system::error_code& timerError) {
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            thisSharedPtr->sendAndRescheduleFreshnessUpdate(timerError);
+        }
+    });
 }
 
 void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
@@ -132,7 +142,7 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
     const bool isGloballyVisible = isGlobal(discoveryEntry);
 
     // register locally
-    this->insertInCache(discoveryEntry, true, isGloballyVisible);
+    insertInCache(discoveryEntry, true, isGloballyVisible);
 
     // Inform observers
     informObserversOnAdd(discoveryEntry);
@@ -153,11 +163,17 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
                         error.getMessage());
             };
 
-            std::function<void()> onSuccess = [this, globalDiscoveryEntry]() {
-                JOYNR_LOG_TRACE(logger(),
-                                "Global capability addedd successfully, adding it to list "
-                                "of registered capabilities.");
-                this->registeredGlobalCapabilities.push_back(globalDiscoveryEntry);
+            std::function<void()> onSuccess = [
+                thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+                globalDiscoveryEntry
+            ]()
+            {
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    JOYNR_LOG_TRACE(logger(),
+                                    "Global capability addedd successfully, adding it to list "
+                                    "of registered capabilities.");
+                    thisSharedPtr->registeredGlobalCapabilities.push_back(globalDiscoveryEntry);
+                }
             };
 
             // Add globally
@@ -404,18 +420,25 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
     // if no receiver is called, use the global capabilities directory
     if (!receiverCalled) {
         // search for global entires in the global capabilities directory
-        auto onSuccess = [this, participantId, callback](
-                const std::vector<joynr::types::GlobalDiscoveryEntry>& result) {
-            this->capabilitiesReceived(result,
-                                       getCachedLocalCapabilities(participantId),
-                                       callback,
-                                       joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+        auto onSuccess = [
+            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+            participantId,
+            callback
+        ](const std::vector<joynr::types::GlobalDiscoveryEntry>& result)
+        {
+            if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                thisSharedPtr->capabilitiesReceived(
+                        result,
+                        thisSharedPtr->getCachedLocalCapabilities(participantId),
+                        callback,
+                        joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+            }
         };
-        this->capabilitiesClient->lookup(participantId,
-                                         std::move(onSuccess),
-                                         std::bind(&ILocalCapabilitiesCallback::onError,
-                                                   std::move(callback),
-                                                   std::placeholders::_1));
+        capabilitiesClient->lookup(participantId,
+                                   std::move(onSuccess),
+                                   std::bind(&ILocalCapabilitiesCallback::onError,
+                                             std::move(callback),
+                                             std::placeholders::_1));
     }
 }
 
@@ -436,36 +459,53 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
     // if no receiver is called, use the global capabilities directory
     if (!receiverCalled) {
         // search for global entires in the global capabilities directory
-        auto onSuccess = [this, interfaceAddresses, callback, discoveryQos](
-                std::vector<joynr::types::GlobalDiscoveryEntry> capabilities) {
-            std::lock_guard<std::mutex> lock(pendingLookupsLock);
-            if (!(isCallbackCalled(interfaceAddresses, callback, discoveryQos))) {
-                this->capabilitiesReceived(capabilities,
-                                           getCachedLocalCapabilities(interfaceAddresses),
-                                           callback,
-                                           discoveryQos.getDiscoveryScope());
+        auto onSuccess = [
+            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+            interfaceAddresses,
+            callback,
+            discoveryQos
+        ](std::vector<joynr::types::GlobalDiscoveryEntry> capabilities)
+        {
+            if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                std::lock_guard<std::mutex> lock(thisSharedPtr->pendingLookupsLock);
+                if (!(thisSharedPtr->isCallbackCalled(
+                            interfaceAddresses, callback, discoveryQos))) {
+                    thisSharedPtr->capabilitiesReceived(
+                            capabilities,
+                            thisSharedPtr->getCachedLocalCapabilities(interfaceAddresses),
+                            callback,
+                            discoveryQos.getDiscoveryScope());
+                }
+                thisSharedPtr->callbackCalled(interfaceAddresses, callback);
             }
-            callbackCalled(interfaceAddresses, callback);
         };
 
-        auto onError = [this, interfaceAddresses, callback, discoveryQos](
-                const exceptions::JoynrRuntimeException& error) {
-            std::lock_guard<std::mutex> lock(pendingLookupsLock);
-            if (!(isCallbackCalled(interfaceAddresses, callback, discoveryQos))) {
-                callback->onError(error);
+        auto onError = [
+            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+            interfaceAddresses,
+            callback,
+            discoveryQos
+        ](const exceptions::JoynrRuntimeException& error)
+        {
+            if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                std::lock_guard<std::mutex> lock(thisSharedPtr->pendingLookupsLock);
+                if (!(thisSharedPtr->isCallbackCalled(
+                            interfaceAddresses, callback, discoveryQos))) {
+                    callback->onError(error);
+                }
+                thisSharedPtr->callbackCalled(interfaceAddresses, callback);
             }
-            callbackCalled(interfaceAddresses, callback);
         };
 
         if (discoveryQos.getDiscoveryScope() == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL) {
             std::lock_guard<std::mutex> lock(pendingLookupsLock);
             registerPendingLookup(interfaceAddresses, callback);
         }
-        this->capabilitiesClient->lookup(domains,
-                                         interfaceName,
-                                         discoveryQos.getDiscoveryTimeout(),
-                                         std::move(onSuccess),
-                                         std::move(onError));
+        capabilitiesClient->lookup(domains,
+                                   interfaceName,
+                                   discoveryQos.getDiscoveryTimeout(),
+                                   std::move(onSuccess),
+                                   std::move(onError));
     }
 }
 
@@ -578,7 +618,8 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
                                                    address,
                                                    isGloballyVisible,
                                                    expiryDateMs,
-                                                   isSticky);
+                                                   isSticky,
+                                                   true);
             } else {
                 JOYNR_LOG_FATAL(
                         logger(),
@@ -586,7 +627,7 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
                         currentEntry.getParticipantId(),
                         serializedAddress);
             }
-            this->insertInCache(currentEntry, false, true);
+            insertInCache(currentEntry, false, true);
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger(),
                             "could not deserialize Address from {} - error: {}",
@@ -692,24 +733,30 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    auto callback = [ onSuccess = std::move(onSuccess), onError, this, participantId ](
-            const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities)
+    auto callback = [
+        thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+        onSuccess = std::move(onSuccess),
+        onError,
+        participantId
+    ](const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities)
     {
-        if (capabilities.size() == 0) {
-            joynr::exceptions::ProviderRuntimeException exception(
-                    "No capabilities found for participandId \"" + participantId + "\"");
-            onError(exception);
-            return;
-        }
-        if (capabilities.size() > 1) {
-            JOYNR_LOG_ERROR(this->logger(),
-                            "participantId {} has more than 1 capability entry:\n {}\n {}",
-                            participantId,
-                            capabilities[0].toString(),
-                            capabilities[1].toString());
-        }
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            if (capabilities.size() == 0) {
+                joynr::exceptions::ProviderRuntimeException exception(
+                        "No capabilities found for participandId \"" + participantId + "\"");
+                onError(exception);
+                return;
+            }
+            if (capabilities.size() > 1) {
+                JOYNR_LOG_ERROR(thisSharedPtr->logger(),
+                                "participantId {} has more than 1 capability entry:\n {}\n {}",
+                                participantId,
+                                capabilities[0].toString(),
+                                capabilities[1].toString());
+            }
 
-        onSuccess(capabilities[0]);
+            onSuccess(capabilities[0]);
+        }
     };
 
     auto localCapabilitiesCallback =
@@ -748,6 +795,14 @@ void LocalCapabilitiesDirectory::updatePersistedFile()
 
 void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& fileName)
 {
+    if (!isLocalCapabilitiesDirectoryPersistencyEnabled) {
+        return;
+    }
+
+    if (fileName.empty()) {
+        return;
+    }
+
     try {
         joynr::util::saveStringToFile(
                 fileName, joynr::serializer::serializeToJson(localCapabilities));
@@ -758,8 +813,17 @@ void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& 
 
 void LocalCapabilitiesDirectory::loadPersistedFile()
 {
+    if (!isLocalCapabilitiesDirectoryPersistencyEnabled) {
+        return;
+    }
+
     const std::string persistencyFile =
             clusterControllerSettings.getLocalCapabilitiesDirectoryPersistenceFilename();
+
+    if (persistencyFile.empty()) { // Persistency disabled
+        return;
+    }
+
     std::string jsonString;
     try {
         jsonString = joynr::util::loadStringFromFile(persistencyFile);
@@ -923,10 +987,13 @@ void LocalCapabilitiesDirectory::scheduleCleanupTimer()
                         timerError.value(),
                         timerError.message());
     } else {
-        checkExpiredDiscoveryEntriesTimer.async_wait(
-                std::bind(&LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries,
-                          this,
-                          std::placeholders::_1));
+        checkExpiredDiscoveryEntriesTimer
+                .async_wait([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
+                        const boost::system::error_code& errorCode) {
+                    if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                        thisSharedPtr->checkExpiredDiscoveryEntries(errorCode);
+                    }
+                });
     }
 }
 

@@ -21,7 +21,7 @@
 var exitHook = require('exit-hook');
 var joynr = require('joynr');
 var Promise = require('bluebird').Promise;
-var provisioning = { ccAddress: {} };
+var provisioning = { ccAddress: { host : "localhost", port : 4242 } };
 
 var timeStart;
 var SHUTDOWN_MAX_TIME = 5000;
@@ -44,5 +44,8 @@ joynr.load(provisioning).then(function(loadedJoynr) {
             }).catch(reject);
         }, 100);
     });
+}).catch(function(error) {
+    console.log("Error from joynr.load: " + error);
+    process.exit(-1);
 });
 

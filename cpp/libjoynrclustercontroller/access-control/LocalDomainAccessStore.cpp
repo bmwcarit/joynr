@@ -287,9 +287,7 @@ bool LocalDomainAccessStore::updateMediatorAccessControlEntry(
                                         updatedMediatorAce.getDomain(),
                                         updatedMediatorAce.getInterfaceName(),
                                         updatedMediatorAce.getOperation());
-    AceValidator aceValidator(masterAceOptional,
-                              boost::optional<MasterAccessControlEntry>(updatedMediatorAce),
-                              boost::optional<OwnerAccessControlEntry>());
+    AceValidator aceValidator(masterAceOptional, updatedMediatorAce, boost::none);
 
     if (aceValidator.isMediatorValid()) {
         // Add/update a mediator ACE
@@ -386,9 +384,7 @@ bool LocalDomainAccessStore::updateOwnerAccessControlEntry(
                                           updatedOwnerAce.getDomain(),
                                           updatedOwnerAce.getInterfaceName(),
                                           updatedOwnerAce.getOperation());
-    AceValidator aceValidator(masterAceOptional,
-                              mediatorAceOptional,
-                              boost::optional<OwnerAccessControlEntry>(updatedOwnerAce));
+    AceValidator aceValidator(masterAceOptional, mediatorAceOptional, updatedOwnerAce);
 
     if (aceValidator.isOwnerValid()) {
         updateSuccess = insertOrReplace(ownerAccessTable, updatedOwnerAce);
@@ -519,7 +515,20 @@ bool LocalDomainAccessStore::updateMediatorRegistrationControlEntry(
                     updatedMediatorRce.getUid(),
                     updatedMediatorRce.getDomain(),
                     updatedMediatorRce.getInterfaceName());
-    return insertOrReplace(mediatorRegistrationTable, updatedMediatorRce);
+    bool updateSuccess = false;
+
+    boost::optional<MasterRegistrationControlEntry> masterRceOptional =
+            getMasterRegistrationControlEntry(updatedMediatorRce.getUid(),
+                                              updatedMediatorRce.getDomain(),
+                                              updatedMediatorRce.getInterfaceName());
+    RceValidator rceValidator(masterRceOptional, updatedMediatorRce, boost::none);
+
+    if (rceValidator.isMediatorValid()) {
+        // Add/update a mediator RCE
+        updateSuccess = insertOrReplace(mediatorRegistrationTable, updatedMediatorRce);
+    }
+
+    return updateSuccess;
 }
 
 bool LocalDomainAccessStore::removeMediatorRegistrationControlEntry(
@@ -580,7 +589,24 @@ bool LocalDomainAccessStore::updateOwnerRegistrationControlEntry(
                     updatedOwnerRce.getDomain(),
                     updatedOwnerRce.getInterfaceName());
 
-    return insertOrReplace(ownerRegistrationTable, updatedOwnerRce);
+    bool updateSuccess = false;
+
+    boost::optional<MasterRegistrationControlEntry> masterRceOptional =
+            getMasterRegistrationControlEntry(updatedOwnerRce.getUid(),
+                                              updatedOwnerRce.getDomain(),
+                                              updatedOwnerRce.getInterfaceName());
+    boost::optional<MasterRegistrationControlEntry> mediatorRceOptional =
+            getMediatorRegistrationControlEntry(updatedOwnerRce.getUid(),
+                                                updatedOwnerRce.getDomain(),
+                                                updatedOwnerRce.getInterfaceName());
+    RceValidator rceValidator(masterRceOptional, mediatorRceOptional, updatedOwnerRce);
+
+    if (rceValidator.isOwnerValid()) {
+        // Add/update a mediator RCE
+        updateSuccess = insertOrReplace(ownerRegistrationTable, updatedOwnerRce);
+    }
+
+    return updateSuccess;
 }
 
 bool LocalDomainAccessStore::removeOwnerRegistrationControlEntry(const std::string& uid,
@@ -608,6 +634,7 @@ bool LocalDomainAccessStore::onlyWildcardOperations(const std::string& userId,
 void LocalDomainAccessStore::persistToFile() const
 {
     if (persistenceFileName.empty()) {
+        JOYNR_LOG_TRACE(logger(), "No persistency specified");
         return;
     }
     try {

@@ -19,4 +19,4 @@
  * #L%
  */
 
-module.exports = require('./start/InterTabClusterControllerRuntime');
+module.exports = require("./start/InterTabClusterControllerRuntime");

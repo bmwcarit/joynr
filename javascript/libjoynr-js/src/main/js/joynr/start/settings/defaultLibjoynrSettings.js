@@ -18,51 +18,48 @@
  * limitations under the License.
  * #L%
  */
-var ProviderScope = require('../../../joynr/types/ProviderScope');
-var Util = require('../../util/UtilInternal');
+var ProviderScope = require("../../../joynr/types/ProviderScope");
+var Util = require("../../util/UtilInternal");
 var defaultSettings = {};
 var discoveryCapability = {
-    providerVersion : {
-        majorVersion : 0,
-        minorVersion : 1
+    providerVersion: {
+        majorVersion: 0,
+        minorVersion: 1
     },
-    domain : "io.joynr",
-    interfaceName : "system/Discovery",
-    participantId : "CC.DiscoveryProvider.ParticipantId",
-    qos : {
-        customParameters : [],
-        priority : 1,
-        scope : ProviderScope.LOCAL,
-        supportsOnChangeSubscriptions : true
+    domain: "io.joynr",
+    interfaceName: "system/Discovery",
+    participantId: "CC.DiscoveryProvider.ParticipantId",
+    qos: {
+        customParameters: [],
+        priority: 1,
+        scope: ProviderScope.LOCAL,
+        supportsOnChangeSubscriptions: true
     },
-    lastSeenDateMs : Date.now(),
-    expiryDateMs : Util.getMaxLongValue(),
-    publicKeyId : "",
-    isLocal : true
+    lastSeenDateMs: Date.now(),
+    expiryDateMs: Util.getMaxLongValue(),
+    publicKeyId: "",
+    isLocal: true
 };
 
 var routingCapability = {
-    providerVersion : {
-        majorVersion : 0,
-        minorVersion : 1
+    providerVersion: {
+        majorVersion: 0,
+        minorVersion: 1
     },
-    domain : "io.joynr",
-    interfaceName : "system/Routing",
-    participantId : "CC.RoutingProvider.ParticipantId",
-    qos : {
-        customParameters : [],
-        priority : 1,
-        scope : ProviderScope.LOCAL,
-        supportsOnChangeSubscriptions : true
+    domain: "io.joynr",
+    interfaceName: "system/Routing",
+    participantId: "CC.RoutingProvider.ParticipantId",
+    qos: {
+        customParameters: [],
+        priority: 1,
+        scope: ProviderScope.LOCAL,
+        supportsOnChangeSubscriptions: true
     },
-    lastSeenDateMs : Date.now(),
-    expiryDateMs : Util.getMaxLongValue(),
-    publicKeyId : "",
-    isLocal : true
+    lastSeenDateMs: Date.now(),
+    expiryDateMs: Util.getMaxLongValue(),
+    publicKeyId: "",
+    isLocal: true
 };
 
-defaultSettings.capabilities = [
-    discoveryCapability,
-    routingCapability
-];
+defaultSettings.capabilities = [discoveryCapability, routingCapability];
 module.exports = defaultSettings;

@@ -18,15 +18,13 @@
  * limitations under the License.
  * #L%
  */
-var WebMessagingStub = require('./WebMessagingStub');
+var WebMessagingStub = require("./WebMessagingStub");
 
 /**
  * @constructor
  * @name WebMessagingStubFactory
  */
-function WebMessagingStubFactory() {
-
-}
+function WebMessagingStubFactory() {}
 
 /**
  * @name WebMessagingStubFactory#build
@@ -36,8 +34,8 @@ function WebMessagingStubFactory() {
  */
 WebMessagingStubFactory.prototype.build = function build(address) {
     return new WebMessagingStub({
-        window : address.getWindow(),
-        origin : address.getOrigin()
+        window: address.getWindow(),
+        origin: address.getOrigin()
     });
 };
 

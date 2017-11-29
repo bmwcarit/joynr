@@ -18,12 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var MulticastPublication =
-        require('../../../../classes/joynr/dispatching/types/MulticastPublication');
-var RadioStation = require('../../../../test-classes/joynr/vehicle/radiotypes/RadioStation');
+var MulticastPublication = require("../../../../classes/joynr/dispatching/types/MulticastPublication");
+var RadioStation = require("../../../../test-classes/joynr/vehicle/radiotypes/RadioStation");
 
 describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", function() {
-
     it("is defined", function() {
         expect(MulticastPublication).toBeDefined();
     });
@@ -31,14 +29,13 @@ describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", function() 
     it("is instantiable", function() {
         var response = "response";
         var publication = new MulticastPublication({
-            multicastId : "testMulticastId",
-            response : response
+            multicastId: "testMulticastId",
+            response: response
         });
         expect(publication).toBeDefined();
         expect(publication).not.toBeNull();
         expect(typeof publication === "object").toBeTruthy();
         expect(publication instanceof MulticastPublication).toBeTruthy();
-
     });
 
     it("is constructs with correct member values", function() {
@@ -46,12 +43,11 @@ describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", function() 
         var response = "response";
 
         var publication = new MulticastPublication({
-            multicastId : multicastId,
-            response : response
+            multicastId: multicastId,
+            response: response
         });
 
         expect(publication.multicastId).toEqual(multicastId);
         expect(publication.response).toEqual(response);
     });
-
 });

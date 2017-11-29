@@ -17,8 +17,8 @@
  * limitations under the License.
  * #L%
  */
-var joynr = require('joynr');
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
+var joynr = require("joynr");
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 
 /**
  * @name Typing
@@ -26,34 +26,31 @@ var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
  */
 var Typing = {};
 
-Typing.checkProperty =
-        function(obj, type, description) {
-            if (obj === undefined) {
-                throw new Error(description + " is undefined");
-            }
-            if (typeof type === "string" && Typing.getObjectType(obj) !== type) {
-                throw new Error(description
-                    + " is not of type "
-                    + type
-                    + ". Actual type is "
-                    + Typing.getObjectType(obj));
-            }
-            if (Object.prototype.toString.call(type) === "[object Array]"
-                && !Typing.getObjectType(obj).match("^" + type.join("$|^") + "$")) {
-                throw new Error(description
-                    + " is not of a type from "
-                    + type
-                    + ". Actual type is "
-                    + Typing.getObjectType(obj));
-            }
-            if (typeof type === "function" && !(obj instanceof type)) {
-                throw new Error(description
-                    + " is not of type "
-                    + Typing.getObjectType(type)
-                    + ". Actual type is "
-                    + Typing.getObjectType(obj));
-            }
-        };
+Typing.checkProperty = function(obj, type, description) {
+    if (obj === undefined) {
+        throw new Error(description + " is undefined");
+    }
+    if (typeof type === "string" && Typing.getObjectType(obj) !== type) {
+        throw new Error(description + " is not of type " + type + ". Actual type is " + Typing.getObjectType(obj));
+    }
+    if (
+        Object.prototype.toString.call(type) === "[object Array]" &&
+        !Typing.getObjectType(obj).match("^" + type.join("$|^") + "$")
+    ) {
+        throw new Error(
+            description + " is not of a type from " + type + ". Actual type is " + Typing.getObjectType(obj)
+        );
+    }
+    if (typeof type === "function" && !(obj instanceof type)) {
+        throw new Error(
+            description +
+                " is not of type " +
+                Typing.getObjectType(type) +
+                ". Actual type is " +
+                Typing.getObjectType(obj)
+        );
+    }
+};
 
 /**
  * Checks if the variable is of specified type
@@ -109,96 +106,83 @@ Typing.getObjectType = function(obj) {
  *             if in any of the objects contains a member of type "Function" or the type of the
  *             untyped object is not (Boolean|Number|String|Array|Object)
  */
-Typing.augmentTypes =
-        function(untyped, typeRegistry, typeHint) {
-            var i, typedObj, typeName;
+Typing.augmentTypes = function(untyped, typeRegistry, typeHint) {
+    var i, typedObj, typeName;
 
-            // return nullable values immediately
-            if (untyped === null || untyped === undefined) {
-                return untyped;
-            }
+    // return nullable values immediately
+    if (untyped === null || untyped === undefined) {
+        return untyped;
+    }
 
-            // return already typed objects immediately
-            if (Typing.isComplexJoynrObject(untyped)) {
-                return untyped;
-            }
+    // return already typed objects immediately
+    if (Typing.isComplexJoynrObject(untyped)) {
+        return untyped;
+    }
 
-            // retrieve the javascript runtime type info
-            var type = Typing.getObjectType(untyped);
+    // retrieve the javascript runtime type info
+    var type = Typing.getObjectType(untyped);
 
-            // what should we do with a function?
-            if (type === "Function") {
-                // functions should not at all appear here!!!
-                throw new Error("cannot augment object type \"" + type + "\"");
-            }
+    // what should we do with a function?
+    if (type === "Function") {
+        // functions should not at all appear here!!!
+        throw new Error('cannot augment object type "' + type + '"');
+    }
 
-            // try to type each single element of an array
-            if (type === "Array") {
-                typedObj = [];
-                for (i = 0; i < untyped.length; ++i) {
-                    var filteredTypeHint =
-                            (typeHint !== undefined && typeHint.length > 2 && typeHint.substr(
-                                    typeHint.length - 2,
-                                    2) === "[]")
-                                    ? typeHint.substring(0, typeHint.length - 2)
-                                    : typeHint;
-                    typedObj.push(Typing.augmentTypes(untyped[i], typeRegistry, filteredTypeHint));
-                }
-            }
-            //check if provisioned type name is given. In this case, check for special considerations
-            else if (typeHint !== undefined && typeRegistry.isEnumType(typeHint)) {
-                typedObj = typeRegistry.getConstructor(typeHint)[untyped];
-            }
-            // leave integral data types untyped
-            else if (type === "Boolean" || type === "Number" || type === "String") {
-                typedObj = untyped;
-            }
-            // try to type each single member of an object, and use registered constructor if
-            // available
-            else if (type === "Object") {
-                /*jslint nomen: true */
-                var Constructor = typeRegistry.getConstructor(untyped._typeName);
-                var isEnumType = typeRegistry.isEnumType(untyped._typeName);
-                /*jslint nomen: false */
+    // try to type each single element of an array
+    if (type === "Array") {
+        typedObj = [];
+        for (i = 0; i < untyped.length; ++i) {
+            var filteredTypeHint =
+                typeHint !== undefined && typeHint.length > 2 && typeHint.substr(typeHint.length - 2, 2) === "[]"
+                    ? typeHint.substring(0, typeHint.length - 2)
+                    : typeHint;
+            typedObj.push(Typing.augmentTypes(untyped[i], typeRegistry, filteredTypeHint));
+        }
+    } else if (typeHint !== undefined && typeRegistry.isEnumType(typeHint)) {
+        //check if provisioned type name is given. In this case, check for special considerations
+        typedObj = typeRegistry.getConstructor(typeHint)[untyped];
+    } else if (type === "Boolean" || type === "Number" || type === "String") {
+        // leave integral data types untyped
+        typedObj = untyped;
+    } else if (type === "Object") {
+        // try to type each single member of an object, and use registered constructor if available
+        /*jslint nomen: true */
+        var Constructor = typeRegistry.getConstructor(untyped._typeName);
+        var isEnumType = typeRegistry.isEnumType(untyped._typeName);
+        /*jslint nomen: false */
 
-                // if object has joynr type name and corresponding constructor is found in the
-                // type registry, construct it, otherwise throw an error
-                if (Constructor) {
-                    if (isEnumType && untyped.name !== undefined) {
-                        typedObj = Constructor[untyped.name];
-                    } else {
-                        typedObj = new Constructor();
-                        // copy over and type each single member
-                        for (i in untyped) {
-                            if (untyped.hasOwnProperty(i)) {
-                                if (Constructor.getMemberType !== undefined) {
-                                    typedObj[i] =
-                                            Typing.augmentTypes(
-                                                    untyped[i],
-                                                    typeRegistry,
-                                                    Constructor.getMemberType(i));
-                                } else {
-                                    typedObj[i] = Typing.augmentTypes(untyped[i], typeRegistry);
-                                }
-                            }
+        // if object has joynr type name and corresponding constructor is found in the
+        // type registry, construct it, otherwise throw an error
+        if (Constructor) {
+            if (isEnumType && untyped.name !== undefined) {
+                typedObj = Constructor[untyped.name];
+            } else {
+                typedObj = new Constructor();
+                // copy over and type each single member
+                for (i in untyped) {
+                    if (untyped.hasOwnProperty(i)) {
+                        if (Constructor.getMemberType !== undefined) {
+                            typedObj[i] = Typing.augmentTypes(untyped[i], typeRegistry, Constructor.getMemberType(i));
+                        } else {
+                            typedObj[i] = Typing.augmentTypes(untyped[i], typeRegistry);
                         }
                     }
-                } else {
-                    throw new Error(
-                            "type must contain a _typeName that is registered in the type registry: "
-                                + JSON.stringify(untyped));
                 }
-            } else {
-                // encountered an unknown object type, that should not appear here
-                throw new Error("encountered unknown object \""
-                    + JSON.stringify(untyped)
-                    + "\" of type \""
-                    + type
-                    + "\" while augmenting types");
             }
+        } else {
+            throw new Error(
+                "type must contain a _typeName that is registered in the type registry: " + JSON.stringify(untyped)
+            );
+        }
+    } else {
+        // encountered an unknown object type, that should not appear here
+        throw new Error(
+            'encountered unknown object "' + JSON.stringify(untyped) + '" of type "' + type + '" while augmenting types'
+        );
+    }
 
-            return typedObj;
-        };
+    return typedObj;
+};
 
 /**
  * Augments the javascript runtime type into the member "_typeName"
@@ -224,7 +208,7 @@ Typing.augmentTypeName = function(obj, packageName, memberName) {
 Typing.isComplexJoynrObject = function isComplexJoynrObject(value) {
     try {
         var valuePrototype = Object.getPrototypeOf(value);
-        return (valuePrototype && valuePrototype instanceof joynr.JoynrObject);
+        return valuePrototype && valuePrototype instanceof joynr.JoynrObject;
     } catch (error) {
         // This can be the case when the value is a primitive type
     }
@@ -240,20 +224,18 @@ Typing.isComplexJoynrObject = function isComplexJoynrObject(value) {
  *                  joynr object type
  * @returns {Boolean} true if the provided value is an enum type
  */
-Typing.isEnumType =
-        function isEnumType(value, checkForJoynrObject) {
-            var isJoynrObject =
-                    checkForJoynrObject === undefined
-                        || (!checkForJoynrObject || Typing.isComplexJoynrObject(value));
-            /*jslint nomen: true */
-            var result =
-                    value !== undefined
-                        && value !== null
-                        && typeof value === "object"
-                        && isJoynrObject
-                        && TypeRegistrySingleton.getInstance().isEnumType(value._typeName);
-            /*jslint nomen: false */
-            return result;
-        };
+Typing.isEnumType = function isEnumType(value, checkForJoynrObject) {
+    var isJoynrObject =
+        checkForJoynrObject === undefined || (!checkForJoynrObject || Typing.isComplexJoynrObject(value));
+    /*jslint nomen: true */
+    var result =
+        value !== undefined &&
+        value !== null &&
+        typeof value === "object" &&
+        isJoynrObject &&
+        TypeRegistrySingleton.getInstance().isEnumType(value._typeName);
+    /*jslint nomen: false */
+    return result;
+};
 
 module.exports = Typing;

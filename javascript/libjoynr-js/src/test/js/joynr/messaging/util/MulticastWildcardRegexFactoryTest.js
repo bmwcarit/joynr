@@ -17,9 +17,7 @@
  * #L%
  */
 
-define([ "joynr/messaging/util/MulticastWildcardRegexFactory"
-], function(MulticastWildcardRegexFactory) {
-
+define(["joynr/messaging/util/MulticastWildcardRegexFactory"], function(MulticastWildcardRegexFactory) {
     describe("libjoynr-js.joynr.messaging.util.MulticastWildcardRegexFactory", function() {
         var multicastWildcardRegexFactory;
         beforeEach(function() {
@@ -141,5 +139,4 @@ define([ "joynr/messaging/util/MulticastWildcardRegexFactory"
             });
         });
     });
-
 }); // require

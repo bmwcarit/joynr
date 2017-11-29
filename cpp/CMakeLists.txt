@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-0.31.1)
+project(joynr-0.32.0)
 set(JOYNR_MAJOR_VERSION 0)
-set(JOYNR_MINOR_VERSION 31)
-set(JOYNR_PATCH_VERSION 1)
+set(JOYNR_MINOR_VERSION 32)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -561,6 +561,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Winvalid-pch -Wunsafe-loop-optimizations -Wmissing-include-dirs")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wmissing-braces -Wpacked -Wredundant-decls -Wstack-protector")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wswitch-enum -Wuninitialized -Wformat-security")
+    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wfatal-errors")
     if(${WIN32})
             # This setting does not work in linux:
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX_FLAGS} -enable-auto-import")
@@ -634,7 +635,7 @@ else(USE_PLATFORM_SPDLOG)
     AddExternalProject(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog
-        GIT_TAG 4fcde3b # there are no version tags, hence a SHA is used
+        GIT_TAG 799ba2a57bb16b921099bd9ab64a513e4ebe4217
         TIMEOUT 10
         # Disable configure step
         CONFIGURE_COMMAND ""
@@ -1014,4 +1015,3 @@ install(
     FILES "${CMAKE_CURRENT_SOURCE_DIR}/NOTICE-CPP"
     DESTINATION "${CMAKE_INSTALL_DOCDIR}"
 )
-

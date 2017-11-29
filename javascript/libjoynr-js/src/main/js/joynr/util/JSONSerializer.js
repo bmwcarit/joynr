@@ -18,7 +18,7 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('./Typing');
+var Typing = require("./Typing");
 
 /**
  * @name JSONSerializer

@@ -27,37 +27,36 @@ var libjoynrClusterControllerExports;
 // for exporting
 
 libjoynrClusterControllerExports = [
-    './joynr/Runtime',
-    './joynr/buildSignature',
-    './joynr/messaging/MessagingQos',
-    './joynr/proxy/PeriodicSubscriptionQos',
-    './joynr/proxy/OnChangeSubscriptionQos',
-    './joynr/proxy/MulticastSubscriptionQos',
-    './joynr/proxy/OnChangeWithKeepAliveSubscriptionQos',
-    './joynr/types/ArbitrationStrategyCollection',
-    './joynr/system/RoutingTypes/BrowserAddress',
-    './joynr/system/RoutingTypes/ChannelAddress',
-    './joynr/system/RoutingTypes/CommonApiDbusAddress',
-    './joynr/system/RoutingTypes/WebSocketAddress',
-    './joynr/system/RoutingTypes/WebSocketClientAddress',
-    './joynr/util/Util'
+    "./joynr/Runtime",
+    "./joynr/buildSignature",
+    "./joynr/messaging/MessagingQos",
+    "./joynr/proxy/PeriodicSubscriptionQos",
+    "./joynr/proxy/OnChangeSubscriptionQos",
+    "./joynr/proxy/MulticastSubscriptionQos",
+    "./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos",
+    "./joynr/types/ArbitrationStrategyCollection",
+    "./joynr/system/RoutingTypes/BrowserAddress",
+    "./joynr/system/RoutingTypes/ChannelAddress",
+    "./joynr/system/RoutingTypes/CommonApiDbusAddress",
+    "./joynr/system/RoutingTypes/WebSocketAddress",
+    "./joynr/system/RoutingTypes/WebSocketClientAddress",
+    "./joynr/util/Util"
 ];
 
-var Runtime = require('./joynr/Runtime');
-var buildSignature = require('./joynr/buildSignature');
-var MessagingQos = require('./joynr/messaging/MessagingQos');
-var PeriodicSubscriptionQos = require('./joynr/proxy/PeriodicSubscriptionQos');
-var OnChangeSubscriptionQos = require('./joynr/proxy/OnChangeSubscriptionQos');
-var MulticastSubscriptionQos = require('./joynr/proxy/MulticastSubscriptionQos');
-var OnChangeWithKeepAliveSubscriptionQos =
-        require('./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos');
-var ArbitrationStrategyCollection = require('./joynr/types/ArbitrationStrategyCollection');
-var BrowserAddress = require('./joynr/system/RoutingTypes/BrowserAddress');
-var ChannelAddress = require('./joynr/system/RoutingTypes/ChannelAddress');
-var CommonApiDbusAddress = require('./joynr/system/RoutingTypes/CommonApiDbusAddress');
-var WebSocketAddress = require('./joynr/system/RoutingTypes/WebSocketAddress');
-var WebSocketClientAddress = require('./joynr/system/RoutingTypes/WebSocketClientAddress');
-var Util = require('./joynr/util/Util');
+var Runtime = require("./joynr/Runtime");
+var buildSignature = require("./joynr/buildSignature");
+var MessagingQos = require("./joynr/messaging/MessagingQos");
+var PeriodicSubscriptionQos = require("./joynr/proxy/PeriodicSubscriptionQos");
+var OnChangeSubscriptionQos = require("./joynr/proxy/OnChangeSubscriptionQos");
+var MulticastSubscriptionQos = require("./joynr/proxy/MulticastSubscriptionQos");
+var OnChangeWithKeepAliveSubscriptionQos = require("./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
+var ArbitrationStrategyCollection = require("./joynr/types/ArbitrationStrategyCollection");
+var BrowserAddress = require("./joynr/system/RoutingTypes/BrowserAddress");
+var ChannelAddress = require("./joynr/system/RoutingTypes/ChannelAddress");
+var CommonApiDbusAddress = require("./joynr/system/RoutingTypes/CommonApiDbusAddress");
+var WebSocketAddress = require("./joynr/system/RoutingTypes/WebSocketAddress");
+var WebSocketClientAddress = require("./joynr/system/RoutingTypes/WebSocketClientAddress");
+var Util = require("./joynr/util/Util");
 
 // load all external modules
 var nsContext, nsElem, nsElems, i, value;
@@ -66,7 +65,10 @@ var root = {};
 for (i = 0; i < libjoynrClusterControllerExports.length; ++i) {
     // Window in case of a Browser or DedicatedWebWorkerContext in a WebWorker Environment
     nsContext = root;
-    nsElems = libjoynrClusterControllerExports[i].replace(/^\.\/joynr\//, '').split('/').reverse();
+    nsElems = libjoynrClusterControllerExports[i]
+        .replace(/^\.\/joynr\//, "")
+        .split("/")
+        .reverse();
     // go through namespace elements of require.js namespace, i.e. "some/namespace/NameSpaceTest"
     while (nsElems.length) {
         // translate namespace elements to objects on window or the current WebWorkerContext,
@@ -85,11 +87,11 @@ for (i = 0; i < libjoynrClusterControllerExports.length; ++i) {
         }
         // export namespace fragment or module read-only to the parent namespace
         Object.defineProperty(nsContext, nsElem, {
-            readable : true,
-            enumerable : true,
-            configurable : false,
-            writable : false,
-            value : value
+            readable: true,
+            enumerable: true,
+            configurable: false,
+            writable: false,
+            value: value
         });
         nsContext = value;
     }

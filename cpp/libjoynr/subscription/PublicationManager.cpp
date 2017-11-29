@@ -131,6 +131,7 @@ void PublicationManager::shutdown()
 
 PublicationManager::PublicationManager(boost::asio::io_service& ioService,
                                        std::weak_ptr<IMessageSender> messageSender,
+                                       bool enableSubscriptionStorage,
                                        std::uint64_t ttlUplift,
                                        int maxThreads)
         : messageSender(messageSender),
@@ -152,7 +153,8 @@ PublicationManager::PublicationManager(boost::asio::io_service& ioService,
           currentScheduledPublications(),
           currentScheduledPublicationsMutex(),
           broadcastFilterLock(),
-          ttlUplift(ttlUplift)
+          ttlUplift(ttlUplift),
+          enableSubscriptionStorage(enableSubscriptionStorage)
 {
 }
 
@@ -640,8 +642,17 @@ template <typename Map>
 void PublicationManager::saveSubscriptionRequestsMap(const Map& map,
                                                      const std::string& storageFilename)
 {
+    if (!enableSubscriptionStorage) {
+        return;
+    }
+
     if (isShuttingDown()) {
         JOYNR_LOG_TRACE(logger(), "Abort saving, because we are already shutting down.");
+        return;
+    }
+
+    if (storageFilename.empty()) {
+        JOYNR_LOG_TRACE(logger(), "Won't save since no storage file was specified.");
         return;
     }
 
@@ -675,6 +686,15 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
     static_assert(std::is_base_of<SubscriptionRequest, RequestInformationType>::value,
                   "loadSavedSubscriptionRequestsMap can only be used for subclasses of "
                   "SubscriptionRequest");
+
+    if (!enableSubscriptionStorage) {
+        return;
+    }
+
+    if (storageFilename.empty()) {
+        JOYNR_LOG_TRACE(logger(), "Won't load since no file was specified for loading.");
+        return;
+    }
 
     std::string jsonString;
     try {

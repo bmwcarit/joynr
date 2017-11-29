@@ -18,8 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var Util = require('../../util/UtilInternal');
-var Typing = require('../../util/Typing');
+var Util = require("../../util/UtilInternal");
+var Typing = require("../../util/Typing");
 
 /**
  * @name Reply
@@ -72,11 +72,11 @@ function Reply(settings) {
      * @type String
      */
     Object.defineProperty(this, "_typeName", {
-        value : "joynr.Reply",
-        readable : true,
-        writable : false,
-        enumerable : true,
-        configurable : false
+        value: "joynr.Reply",
+        readable: true,
+        writable: false,
+        enumerable: true,
+        configurable: false
     });
 
     return Object.freeze(this);

@@ -18,29 +18,29 @@
  * limitations under the License.
  * #L%
  */
-var GlobalDiscoveryEntry = require('../../../classes/joynr/types/GlobalDiscoveryEntry');
-var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
-var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
-var Version = require('../../../classes/joynr/types/Version');
+var GlobalDiscoveryEntry = require("../../../classes/joynr/types/GlobalDiscoveryEntry");
+var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
+var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
+var Version = require("../../../classes/joynr/types/Version");
 
 var capInfo;
 beforeEach(function() {
     capInfo = new GlobalDiscoveryEntry({
-        providerVersion : new Version({
-            majorVersion : 47,
-            minorVersion : 11
+        providerVersion: new Version({
+            majorVersion: 47,
+            minorVersion: 11
         }),
-        domain : "vehicleADomain",
-        interfaceName : "vehicle/cdsnavigation",
-        qos : new ProviderQos({
-            customParameters : [],
-            priority : 1,
-            scope : ProviderScope.GLOBAL,
-            supportsOnChangeSubscriptions : true
+        domain: "vehicleADomain",
+        interfaceName: "vehicle/cdsnavigation",
+        qos: new ProviderQos({
+            customParameters: [],
+            priority: 1,
+            scope: ProviderScope.GLOBAL,
+            supportsOnChangeSubscriptions: true
         }),
-        address : "address",
-        publicKeyId : "",
-        participantId : "CDSNavigationParticipantId_vehicleA"
+        address: "address",
+        publicKeyId: "",
+        participantId: "CDSNavigationParticipantId_vehicleA"
     });
 });
 

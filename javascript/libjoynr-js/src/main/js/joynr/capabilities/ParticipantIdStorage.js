@@ -27,10 +27,8 @@
  * @param {Function} uuid - a function generating a uuid string
  */
 function ParticipantIdStorage(persistency, uuid) {
-
     this._persistency = persistency;
     this._uuid = uuid;
-
 }
 
 /**
@@ -51,7 +49,7 @@ ParticipantIdStorage.prototype.getParticipantId = function getParticipantId(doma
     var key = "joynr.participant." + domain + "." + interfaceNameDotted;
     var participantId = this._persistency.getItem(key);
     if (!participantId) {
-        participantId = domain + "." + interfaceNameDotted + "." + this._uuid();
+        participantId = this._uuid();
         this._persistency.setItem(key, participantId);
     }
     return participantId;

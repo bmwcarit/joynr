@@ -41,6 +41,11 @@ public abstract class AbstractLocalCapabilitiesDirectory extends DiscoveryAbstra
         capabilityListeners.remove(listener);
     }
 
+    @Override
+    public void shutdown() {
+        shutdown(false);
+    }
+
     /**
      * Notifies all capability listeners about a newly added capability entry.
      * @param addedCapability the added entry.

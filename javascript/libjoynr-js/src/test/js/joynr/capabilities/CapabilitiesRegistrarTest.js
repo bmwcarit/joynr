@@ -18,410 +18,369 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../../classes/global/Promise');
-var CapabilitiesRegistrar = require('../../../classes/joynr/capabilities/CapabilitiesRegistrar');
-var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
-var GlobalDiscoveryEntry = require('../../../classes/joynr/types/GlobalDiscoveryEntry');
-var ProviderAttribute = require('../../../classes/joynr/provider/ProviderAttribute');
-var DiscoveryEntry = require('../../../classes/joynr/types/DiscoveryEntry');
-var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
-var Version = require('../../../classes/joynr/types/Version');
-var uuid = require('../../../classes/lib/uuid-annotated');
-            describe(
-                    "libjoynr-js.joynr.capabilities.CapabilitiesRegistrar",
-                    function() {
-                        var capabilitiesRegistrar;
-                        var requestReplyManagerSpy;
-                        var publicationManagerSpy;
-                        var participantId;
-                        var domain;
-                        var participantIdStorageSpy;
-                        var discoveryStubSpy;
-                        var messageRouterSpy;
-                        var loggingManagerSpy;
-                        var libjoynrMessagingAddress;
-                        var provider;
-                        var capability;
-                        var localChannelId;
-                        var providerQos;
-                        var address;
-                        var checkImplementation;
-                        var TestProvider;
+var Promise = require("../../../classes/global/Promise");
+var CapabilitiesRegistrar = require("../../../classes/joynr/capabilities/CapabilitiesRegistrar");
+var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
+var GlobalDiscoveryEntry = require("../../../classes/joynr/types/GlobalDiscoveryEntry");
+var ProviderAttribute = require("../../../classes/joynr/provider/ProviderAttribute");
+var DiscoveryEntry = require("../../../classes/joynr/types/DiscoveryEntry");
+var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
+var Version = require("../../../classes/joynr/types/Version");
+var uuid = require("../../../classes/lib/uuid-annotated");
+describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", function() {
+    var capabilitiesRegistrar;
+    var requestReplyManagerSpy;
+    var publicationManagerSpy;
+    var participantId;
+    var domain;
+    var participantIdStorageSpy;
+    var discoveryStubSpy;
+    var messageRouterSpy;
+    var loggingManagerSpy;
+    var libjoynrMessagingAddress;
+    var provider;
+    var capability;
+    var localChannelId;
+    var providerQos;
+    var address;
+    var checkImplementation;
+    var TestProvider;
 
-                        beforeEach(function(done) {
+    beforeEach(function(done) {
+        // default checkImplemenation, can be overwritten by individual tests as
+        // needed
+        checkImplementation = function checkImplementationDefault() {
+            return [];
+        };
 
-                            // default checkImplemenation, can be overwritten by individual tests as
-                            // needed
-                            checkImplementation = function checkImplementationDefault() {
-                                return [];
-                            };
+        publicationManagerSpy = jasmine.createSpyObj("PublicationManager", [
+            "addPublicationProvider",
+            "registerOnChangedProvider"
+        ]);
 
-                            publicationManagerSpy = jasmine.createSpyObj("PublicationManager", [
-                                "addPublicationProvider",
-                                "registerOnChangedProvider"
-                            ]);
+        TestProvider = function() {
+            this.id = uuid();
+            this.interfaceName = "myInterfaceName";
+            this.checkImplementation = checkImplementation;
+        };
 
-                            TestProvider = function() {
-                                this.id = uuid();
-                                this.interfaceName = "myInterfaceName";
-                                this.checkImplementation = checkImplementation;
-                            };
+        TestProvider.MAJOR_VERSION = 47;
+        TestProvider.MINOR_VERSION = 11;
+        provider = new TestProvider();
 
-                            TestProvider.MAJOR_VERSION = 47;
-                            TestProvider.MINOR_VERSION = 11;
-                            provider = new TestProvider();
+        spyOn(provider, "checkImplementation").and.callThrough();
 
-                            spyOn(provider, "checkImplementation").and.callThrough();
+        providerQos = new ProviderQos({
+            customParameters: [],
+            priority: Date.now(),
+            scope: ProviderScope.GLOBAL,
+            supportsOnChangeSubscriptions: true
+        });
 
-                            providerQos =
-                                    new ProviderQos({
-                                        customParameters : [],
-                                        priority : Date.now(),
-                                        scope : ProviderScope.GLOBAL,
-                                        supportsOnChangeSubscriptions : true
-                                    });
+        provider.myAttribute = new ProviderAttribute(
+            provider,
+            {
+                dependencies: {
+                    publicationManager: publicationManagerSpy
+                }
+            },
+            "myAttribute",
+            "Boolean",
+            "NOTIFYREADWRITE"
+        );
 
-                            provider.myAttribute = new ProviderAttribute(provider, {
-                                dependencies : {
-                                    publicationManager : publicationManagerSpy
-                                }
-                            }, "myAttribute", "Boolean", "NOTIFYREADWRITE");
+        localChannelId = "localChannelId";
+        domain = "testdomain";
+        address = "address";
+        participantId = "myParticipantId";
+        participantIdStorageSpy = jasmine.createSpyObj("participantIdStorage", ["getParticipantId"]);
+        participantIdStorageSpy.getParticipantId.and.returnValue(participantId);
+        requestReplyManagerSpy = jasmine.createSpyObj("RequestReplyManager", ["addRequestCaller"]);
+        discoveryStubSpy = jasmine.createSpyObj("discoveryStub", ["add"]);
+        discoveryStubSpy.add.and.returnValue(Promise.resolve());
+        messageRouterSpy = jasmine.createSpyObj("messageRouter", ["addNextHop"]);
 
-                            localChannelId = "localChannelId";
-                            domain = "testdomain";
-                            address = "address";
-                            participantId = "myParticipantId";
-                            participantIdStorageSpy =
-                                    jasmine.createSpyObj(
-                                            "participantIdStorage",
-                                            [ "getParticipantId"
-                                            ]);
-                            participantIdStorageSpy.getParticipantId.and.returnValue(participantId);
-                            requestReplyManagerSpy =
-                                    jasmine.createSpyObj(
-                                            "RequestReplyManager",
-                                            [ "addRequestCaller"
-                                            ]);
-                            discoveryStubSpy = jasmine.createSpyObj("discoveryStub", [ "add"
-                            ]);
-                            discoveryStubSpy.add.and.returnValue(Promise.resolve());
-                            messageRouterSpy = jasmine.createSpyObj("messageRouter", [ "addNextHop"
-                            ]);
+        messageRouterSpy.addNextHop.and.returnValue(Promise.resolve());
+        libjoynrMessagingAddress = {
+            someKey: "someValue",
+            toBe: "a",
+            object: {}
+        };
+        loggingManagerSpy = jasmine.createSpyObj("loggingManager", ["setLoggingContext"]);
 
-                            messageRouterSpy.addNextHop.and.returnValue(Promise.resolve());
-                            libjoynrMessagingAddress = {
-                                "someKey" : "someValue",
-                                "toBe" : "a",
-                                "object" : {}
-                            };
-                            loggingManagerSpy =
-                                    jasmine.createSpyObj("loggingManager", [ "setLoggingContext"
-                                    ]);
+        capabilitiesRegistrar = new CapabilitiesRegistrar({
+            discoveryStub: discoveryStubSpy,
+            messageRouter: messageRouterSpy,
+            participantIdStorage: participantIdStorageSpy,
+            libjoynrMessagingAddress: libjoynrMessagingAddress,
+            requestReplyManager: requestReplyManagerSpy,
+            publicationManager: publicationManagerSpy,
+            loggingManager: loggingManagerSpy
+        });
 
-                            capabilitiesRegistrar = new CapabilitiesRegistrar({
-                                discoveryStub : discoveryStubSpy,
-                                messageRouter : messageRouterSpy,
-                                participantIdStorage : participantIdStorageSpy,
-                                libjoynrMessagingAddress : libjoynrMessagingAddress,
-                                requestReplyManager : requestReplyManagerSpy,
-                                publicationManager : publicationManagerSpy,
-                                loggingManager : loggingManagerSpy
-                            });
+        capability = new GlobalDiscoveryEntry({
+            providerVersion: new Version({ majorVersion: 47, minorVersion: 11 }),
+            domain: domain,
+            interfaceName: provider.interfaceName,
+            qos: providerQos,
+            channelId: localChannelId,
+            participantId: participantId,
+            publicKeyId: "",
+            address: address
+        });
+        done();
+    });
 
-                            capability = new GlobalDiscoveryEntry({
-                                providerVersion : new Version({ majorVersion: 47, minorVersion: 11}),
-                                domain : domain,
-                                interfaceName : provider.interfaceName,
-                                qos : providerQos,
-                                channelId : localChannelId,
-                                participantId : participantId,
-                                publicKeyId: "",
-                                address : address
-                            });
-                            done();
-                        });
+    it("is instantiable", function(done) {
+        expect(capabilitiesRegistrar).toBeDefined();
+        expect(capabilitiesRegistrar instanceof CapabilitiesRegistrar).toBeTruthy();
+        done();
+    });
 
-                        it("is instantiable", function(done) {
-                            expect(capabilitiesRegistrar).toBeDefined();
-                            expect(capabilitiesRegistrar instanceof CapabilitiesRegistrar)
-                                    .toBeTruthy();
-                            done();
-                        });
+    it("is has all members", function(done) {
+        expect(capabilitiesRegistrar.registerProvider).toBeDefined();
+        expect(typeof capabilitiesRegistrar.registerProvider === "function").toBeTruthy();
+        expect(typeof capabilitiesRegistrar.register === "function").toBeTruthy();
+        done();
+    });
 
-                        it("is has all members", function(done) {
-                            expect(capabilitiesRegistrar.registerProvider).toBeDefined();
-                            expect(typeof capabilitiesRegistrar.registerProvider === "function")
-                                    .toBeTruthy();
-                            expect(typeof capabilitiesRegistrar.register === "function")
-                            .toBeTruthy();
-                            done();
-                        });
+    it("is checks the provider's implementation", function(done) {
+        capabilitiesRegistrar
+            .registerProvider(domain, provider, providerQos)
+            .then(function() {
+                return null;
+            })
+            .catch(function() {
+                return null;
+            });
+        expect(provider.checkImplementation).toHaveBeenCalled();
+        done();
+    });
 
-                        it("is checks the provider's implementation", function(done) {
-                            capabilitiesRegistrar.registerProvider(
-                                    domain,
-                                    provider,
-                                    providerQos).then(function() {
-                                return null;
-                            }).catch(function() {
-                                return null;
-                            });
-                            expect(provider.checkImplementation).toHaveBeenCalled();
-                            done();
-                        });
+    it("defaultDelayMs can be configured", function(done) {
+        var overwrittenDelay = 100000;
 
-                        it("defaultDelayMs can be configured", function(done) {
+        jasmine.clock().install();
+        var baseTime = new Date();
+        jasmine.clock().mockDate(baseTime);
 
-                            var overwrittenDelay = 100000;
+        CapabilitiesRegistrar.setDefaultExpiryIntervalMs(overwrittenDelay);
 
-                            jasmine.clock().install();
-                            var baseTime = new Date();
-                            jasmine.clock().mockDate(baseTime);
+        capabilitiesRegistrar
+            .registerProvider(domain, provider, providerQos)
+            .then(function() {
+                return null;
+            })
+            .catch(function() {
+                return null;
+            });
 
-                            CapabilitiesRegistrar.setDefaultExpiryIntervalMs(overwrittenDelay);
+        expect(discoveryStubSpy.add).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                expiryDateMs: baseTime.getTime() + overwrittenDelay
+            })
+        );
 
-                            capabilitiesRegistrar.registerProvider(
-                            domain,
-                            provider,
-                            providerQos).then(function() {
-                                return null;
-                            }).catch(function() {
-                                return null;
-                            });
+        jasmine.clock().uninstall();
+        done();
+    });
 
-                            expect(discoveryStubSpy.add).toHaveBeenCalledWith(jasmine.objectContaining({
-                                expiryDateMs: baseTime.getTime() + overwrittenDelay
-                            }));
+    it("is checks the provider's implementation, and throws if incomplete", function(done) {
+        provider.checkImplementation = function() {
+            return ["Operation:addFavoriteStation"];
+        };
 
-                            jasmine.clock().uninstall();
-                            done();
+        expect(function() {
+            capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
+        }).toThrow(
+            new Error(
+                "provider: " + domain + "/" + provider.interfaceName + " is missing: Operation:addFavoriteStation"
+            )
+        );
+        done();
+    });
 
-                        });
+    it("fetches participantId from the participantIdStorage", function(done) {
+        capabilitiesRegistrar
+            .registerProvider(domain, provider, providerQos)
+            .then(function() {
+                return null;
+            })
+            .catch(function() {
+                return null;
+            });
+        expect(participantIdStorageSpy.getParticipantId).toHaveBeenCalled();
+        expect(participantIdStorageSpy.getParticipantId).toHaveBeenCalledWith(domain, provider);
+        done();
+    });
 
-                        it(
-                                "is checks the provider's implementation, and throws if incomplete",
-                                function(done) {
-                                    provider.checkImplementation = function() {
-                                        return [ "Operation:addFavoriteStation"
-                                        ];
-                                    };
+    it("registers next hop with routing table", function(done) {
+        capabilitiesRegistrar
+            .registerProvider(domain, provider, providerQos)
+            .then(function() {
+                return null;
+            })
+            .catch(function() {
+                return null;
+            });
+        var isGloballyVisible = providerQos.scope === ProviderScope.GLOBAL;
+        expect(messageRouterSpy.addNextHop).toHaveBeenCalled();
+        expect(messageRouterSpy.addNextHop).toHaveBeenCalledWith(
+            participantId,
+            libjoynrMessagingAddress,
+            isGloballyVisible
+        );
+        done();
+    });
 
-                                    expect(
-                                            function() {
-                                                capabilitiesRegistrar.registerProvider(
-                                                        domain,
-                                                        provider,
-                                                        providerQos);
-                                            }).toThrow(
-                                            new Error("provider: "
-                                                + domain
-                                                + "/"
-                                                + provider.interfaceName
-                                                + " is missing: Operation:addFavoriteStation"));
-                                    done();
-                                });
+    it("registers provider at RequestReplyManager", function(done) {
+        capabilitiesRegistrar
+            .registerProvider(domain, provider, providerQos)
+            .then(function() {
+                return null;
+            })
+            .catch(function() {
+                return null;
+            });
+        expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
+        expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(participantId, provider);
+        done();
+    });
 
-                        it("fetches participantId from the participantIdStorage", function(done) {
-                            capabilitiesRegistrar.registerProvider(
-                                    domain,
-                                    provider,
-                                    providerQos).then(function() {
-                               return null;
-                            }).catch(function() {
-                               return null;
-                            });
-                            expect(participantIdStorageSpy.getParticipantId).toHaveBeenCalled();
-                            expect(participantIdStorageSpy.getParticipantId).toHaveBeenCalledWith(
-                                    domain,
-                                    provider);
-                            done();
-                        });
+    it("handles calls to function register", function(done) {
+        capabilitiesRegistrar
+            .register({
+                domain: "domain",
+                provider: provider,
+                providerQos: providerQos
+            })
+            .then(function() {
+                return null;
+            })
+            .catch(function() {
+                return null;
+            });
+        expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
+        expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(participantId, provider);
+        done();
+    });
 
-                        it("registers next hop with routing table", function(done) {
-                            capabilitiesRegistrar.registerProvider(
-                                    domain,
-                                    provider,
-                                    providerQos).then(function() {
-                               return null;
-                            }).catch(function() {
-                               return null;
-                            });
-                            var isGloballyVisible = (providerQos.scope === ProviderScope.GLOBAL);
-                            expect(messageRouterSpy.addNextHop).toHaveBeenCalled();
-                            expect(messageRouterSpy.addNextHop).toHaveBeenCalledWith(
-                                    participantId,
-                                    libjoynrMessagingAddress,
-                                    isGloballyVisible);
-                            done();
-                        });
+    it("uses passed-in participantId", function(done) {
+        var myParticipantId = "myParticipantId";
+        capabilitiesRegistrar
+            .register({
+                domain: "domain",
+                provider: provider,
+                providerQos: providerQos,
+                participantId: myParticipantId
+            })
+            .then(function() {
+                return null;
+            })
+            .catch(function() {
+                return null;
+            });
+        expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
+        expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(myParticipantId, provider);
+        done();
+    });
 
-                        it("registers provider at RequestReplyManager", function(done) {
-                            capabilitiesRegistrar.registerProvider(
-                                    domain,
-                                    provider,
-                                    providerQos).then(function() {
-                               return null;
-                            }).catch(function() {
-                               return null;
-                            });
-                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
-                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(
-                                    participantId,
-                                    provider);
-                            done();
-                        });
+    it("registers a provider with PublicationManager if it has an attribute", function(done) {
+        capabilitiesRegistrar
+            .registerProvider(domain, provider, providerQos)
+            .then(function() {
+                return null;
+            })
+            .catch(function() {
+                return null;
+            });
+        expect(publicationManagerSpy.addPublicationProvider).toHaveBeenCalled();
+        expect(publicationManagerSpy.addPublicationProvider).toHaveBeenCalledWith(participantId, provider);
+        done();
+    });
 
-                        it("handles calls to function register", function(done) {
-                            capabilitiesRegistrar.register({
-                                domain: "domain",
-                                provider: provider,
-                                providerQos : providerQos
-                            }).then(function() {
-                               return null;
-                            }).catch(function() {
-                               return null;
-                            });
-                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
-                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(
-                                    participantId,
-                                    provider);
-                            done();
-                        });
+    it("registers capability at capabilities stub", function(done) {
+        var actualDiscoveryEntry;
+        var upperBound;
+        var lowerBound = Date.now();
+        capabilitiesRegistrar
+            .registerProvider(domain, provider, providerQos)
+            .then(function() {
+                return null;
+            })
+            .catch(function() {
+                return null;
+            });
+        upperBound = Date.now();
+        expect(discoveryStubSpy.add).toHaveBeenCalled();
+        actualDiscoveryEntry = discoveryStubSpy.add.calls.argsFor(0)[0];
+        expect(actualDiscoveryEntry.domain).toEqual(domain);
+        expect(actualDiscoveryEntry.interfaceName).toEqual(provider.interfaceName);
+        expect(actualDiscoveryEntry.participantId).toEqual(participantId);
+        expect(actualDiscoveryEntry.qos).toEqual(providerQos);
+        expect(actualDiscoveryEntry.lastSeenDateMs).not.toBeLessThan(lowerBound);
+        expect(actualDiscoveryEntry.lastSeenDateMs).not.toBeGreaterThan(upperBound);
+        expect(actualDiscoveryEntry.providerVersion.majorVersion).toEqual(provider.constructor.MAJOR_VERSION);
+        expect(actualDiscoveryEntry.providerVersion.minorVersion).toEqual(provider.constructor.MINOR_VERSION);
+        done();
+    });
 
-                        it("uses passed-in participantId", function(done) {
-                            var myParticipantId = "myParticipantId";
-                            capabilitiesRegistrar.register({
-                                domain: "domain",
-                                provider: provider,
-                                providerQos : providerQos,
-                                participantId : myParticipantId
-                            }).then(function() {
-                               return null;
-                            }).catch(function() {
-                               return null;
-                            });
-                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
-                            expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(
-                                    myParticipantId,
-                                    provider);
-                            done();
-                        });
+    it("registers logging context with the ContextManager", function(done) {
+        var expiryDateMs = -1;
+        var loggingContext = {
+            myContext: "myContext"
+        };
+        capabilitiesRegistrar
+            .registerProvider(domain, provider, providerQos, expiryDateMs, loggingContext)
+            .then(function() {
+                return null;
+            })
+            .catch(function() {
+                return null;
+            });
+        expect(loggingManagerSpy.setLoggingContext).toHaveBeenCalled();
+        expect(loggingManagerSpy.setLoggingContext).toHaveBeenCalledWith(participantId, loggingContext);
+        done();
+    });
 
-                        it(
-                                "registers a provider with PublicationManager if it has an attribute",
-                                function(done) {
-                                    capabilitiesRegistrar.registerProvider(
-                                            domain,
-                                            provider,
-                                            providerQos).then(function() {
-                                        return null;
-                                    }).catch(function() {
-                                        return null;
-                                    });
-                                    expect(publicationManagerSpy.addPublicationProvider)
-                                            .toHaveBeenCalled();
-                                    expect(publicationManagerSpy.addPublicationProvider)
-                                            .toHaveBeenCalledWith(participantId, provider);
-                                    done();
-                                });
+    it("returns the provider participant ID", function(done) {
+        capabilitiesRegistrar
+            .registerProvider(domain, provider, providerQos)
+            .then(function(result) {
+                expect(result).toEqual(participantId);
+                done();
+                return null;
+            })
+            .catch(function(error) {
+                fail("unexpected error: " + error);
+                return null;
+            });
+    });
 
-                        it("registers capability at capabilities stub", function(done) {
-                            var actualDiscoveryEntry;
-                            var upperBound;
-                            var lowerBound = Date.now();
-                            capabilitiesRegistrar.registerProvider(
-                                    domain,
-                                    provider,
-                                    providerQos).then(function() {
-                                return null;
-                            }).catch(function() {
-                                return null;
-                            });
-                            upperBound = Date.now();
-                            expect(discoveryStubSpy.add).toHaveBeenCalled();
-                            actualDiscoveryEntry = discoveryStubSpy.add.calls.argsFor(0)[0];
-                            expect(actualDiscoveryEntry.domain).toEqual(domain);
-                            expect(actualDiscoveryEntry.interfaceName).toEqual(provider.interfaceName);
-                            expect(actualDiscoveryEntry.participantId).toEqual(participantId);
-                            expect(actualDiscoveryEntry.qos).toEqual(providerQos);
-                            expect(actualDiscoveryEntry.lastSeenDateMs).not.toBeLessThan(lowerBound);
-                            expect(actualDiscoveryEntry.lastSeenDateMs).not.toBeGreaterThan(upperBound);
-                            expect(actualDiscoveryEntry.providerVersion.majorVersion).toEqual(provider.constructor.MAJOR_VERSION);
-                            expect(actualDiscoveryEntry.providerVersion.minorVersion).toEqual(provider.constructor.MINOR_VERSION);
-                            done();
-                        });
+    it("returns the promise onRejected from capabilites stub", function(done) {
+        discoveryStubSpy.add.and.returnValue(Promise.reject(new Error("Some error.")));
 
-                        it("registers logging context with the ContextManager", function(done) {
-                            var expiryDateMs = -1;
-                            var loggingContext = {
-                                myContext : "myContext"
-                            };
-                            capabilitiesRegistrar.registerProvider(
-                                    domain,
-                                    provider,
-                                    providerQos,
-                                    expiryDateMs,
-                                    loggingContext).then(function() {
-                                return null;
-                            }).catch(function() {
-                                return null;
-                            });
-                            expect(loggingManagerSpy.setLoggingContext).toHaveBeenCalled();
-                            expect(loggingManagerSpy.setLoggingContext).toHaveBeenCalledWith(
-                                    participantId,
-                                    loggingContext);
-                            done();
-                        });
+        capabilitiesRegistrar
+            .registerProvider(domain, provider, providerQos)
+            .then(function() {
+                fail("expected an error");
+                return null;
+            })
+            .catch(function(error) {
+                expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
+                done();
+                return null;
+            });
+    });
 
-                        it("returns the provider participant ID", function(done) {
-                            capabilitiesRegistrar.registerProvider(
-                                    domain,
-                                    provider,
-                                    providerQos).then(function(result) {
-                                        expect(result).toEqual(participantId);
-                                        done();
-                                        return null;
-                                    }).catch(function(error) {
-                                        fail("unexpected error: " + error);
-                                        return null;
-                                    });
-                        });
-
-                        it(
-                                "returns the promise onRejected from capabilites stub",
-                                function(done) {
-                                    discoveryStubSpy.add.and.returnValue(Promise.reject(new Error("Some error.")));
-
-                                    capabilitiesRegistrar.registerProvider(
-                                            domain,
-                                            provider,
-                                            providerQos).then(function() {
-                                                fail("expected an error");
-                                                return null;
-                                            }).catch(function(error) {
-                                                expect(
-                                                        Object.prototype.toString
-                                                        .call(error) === "[object Error]")
-                                                        .toBeTruthy();
-                                                done();
-                                                return null;
-                                            });
-                        });
-
-                        it(
-                                "CapabilitiesRegistrar throws exception when called while shut down",
-                                function(done) {
-                                    capabilitiesRegistrar.shutdown();
-                                    expect(function() {
-                                        capabilitiesRegistrar.registerProvider(
-                                                domain,
-                                                provider,
-                                                providerQos);
-                                    }).toThrow();
-                                    expect(function() {
-                                        capabilitiesRegistrar.unregisterProvider(domain, provider);
-                                    }).toThrow();
-                                    done();
-                                });
-
-                    });
+    it("CapabilitiesRegistrar throws exception when called while shut down", function(done) {
+        capabilitiesRegistrar.shutdown();
+        expect(function() {
+            capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
+        }).toThrow();
+        expect(function() {
+            capabilitiesRegistrar.unregisterProvider(domain, provider);
+        }).toThrow();
+        done();
+    });
+});

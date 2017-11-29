@@ -18,14 +18,14 @@
  * limitations under the License.
  * #L%
  */
-var ProviderAttribute = require('./ProviderAttribute');
-var ProviderOperation = require('./ProviderOperation');
-var ProviderEvent = require('./ProviderEvent');
+var ProviderAttribute = require("./ProviderAttribute");
+var ProviderOperation = require("./ProviderOperation");
+var ProviderEvent = require("./ProviderEvent");
 
 var dependencies = {
-    ProviderAttribute : ProviderAttribute,
-    ProviderOperation : ProviderOperation,
-    ProviderEvent : ProviderEvent
+    ProviderAttribute: ProviderAttribute,
+    ProviderOperation: ProviderOperation,
+    ProviderEvent: ProviderEvent
 };
 /**
  * @name ProviderBuilder

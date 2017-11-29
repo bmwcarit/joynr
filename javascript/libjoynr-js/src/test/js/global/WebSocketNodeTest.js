@@ -20,27 +20,12 @@
  * #L%
  */
 
-var mod = require('module');
+var mod = require("module");
 
 var wscppSpy = jasmine.createSpy("wscppSyp");
 var overriddenRequire = mod.prototype.require;
 mod.prototype.require = function(md) {
-    if (md.endsWith('SmrfNode')) {
-        return {
-            serialize : function(message) {
-                var msg;
-                var callback = message.signingCallback;
-                if (callback && (typeof callback === "function")) {
-                    msg = "callback was called";
-                } else {
-                    msg = "callback wasn't called";
-                }
-                return msg;
-            }
-        };
-    }
-    if (md.endsWith('wscpp')) {
-
+    if (md.endsWith("wscpp")) {
         return wscppSpy;
     }
 
@@ -48,38 +33,34 @@ mod.prototype.require = function(md) {
 };
 
 // req path starting at: node-run-unit-tests
-var WebsocketNode = req('../classes/global/WebSocketNode');
+var WebsocketNode = req("../classes/global/WebSocketNode");
 
 describe("websocket node", function() {
-
     var websocketNode;
     var remoteUrl = "url";
     var keychain = {
-        ownerId : "ownerId"
+        ownerId: "ownerId"
     };
     var keychainWithCerts = {
-        tlsCert : "tlsCert",
-        tlsKey : "tlsKey",
-        tlsCa : "tlsCa",
-        ownerId : "ownerID"
+        tlsCert: "tlsCert",
+        tlsKey: "tlsKey",
+        tlsCa: "tlsCa",
+        ownerId: "ownerID"
     };
 
     var joynrMessage = {
-        header : {},
-        payload : "somePayload"
+        header: {},
+        payload: "somePayload"
     };
 
     it("can be used without ownerId", function() {
-
         websocketNode = new WebsocketNode(remoteUrl);
 
         var serializedMessage = websocketNode.marshalJoynrMessage(joynrMessage);
         expect(serializedMessage).toBe("callback wasn't called");
-
     });
 
     it("can be used with ownerID", function() {
-
         websocketNode = new WebsocketNode(remoteUrl, keychain);
 
         var serializedMessage = websocketNode.marshalJoynrMessage(joynrMessage);
@@ -87,32 +68,28 @@ describe("websocket node", function() {
     });
 
     it("calls the wscpp constructor with certs for unencrypted Tls communication", function() {
-
         var useUnencryptedTls = true;
         websocketNode = new WebsocketNode(remoteUrl, keychainWithCerts, useUnencryptedTls);
 
         expect(wscppSpy).toHaveBeenCalledWith(remoteUrl, {
-            cert : keychainWithCerts.tlsCert,
-            key : keychainWithCerts.tlsKey,
-            ca : keychainWithCerts.tlsCa,
-            rejectUnauthorized : true,
-            useUnencryptedTls : useUnencryptedTls
+            cert: keychainWithCerts.tlsCert,
+            key: keychainWithCerts.tlsKey,
+            ca: keychainWithCerts.tlsCa,
+            rejectUnauthorized: true,
+            useUnencryptedTls: useUnencryptedTls
         });
-
     });
 
     it("calls the wscpp constructor with certs  for encrypted Tls communication", function() {
-
         var useUnencryptedTls = false;
         websocketNode = new WebsocketNode(remoteUrl, keychainWithCerts, useUnencryptedTls);
 
         expect(wscppSpy).toHaveBeenCalledWith(remoteUrl, {
-            cert : keychainWithCerts.tlsCert,
-            key : keychainWithCerts.tlsKey,
-            ca : keychainWithCerts.tlsCa,
-            rejectUnauthorized : true,
-            useUnencryptedTls : useUnencryptedTls
+            cert: keychainWithCerts.tlsCert,
+            key: keychainWithCerts.tlsKey,
+            ca: keychainWithCerts.tlsCa,
+            rejectUnauthorized: true,
+            useUnencryptedTls: useUnencryptedTls
         });
-
     });
 });

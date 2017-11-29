@@ -73,7 +73,8 @@ class IMessageRouter;
   */
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
         : public joynr::system::DiscoveryAbstractProvider,
-          public joynr::system::ProviderReregistrationControllerProvider
+          public joynr::system::ProviderReregistrationControllerProvider,
+          public std::enable_shared_from_this<LocalCapabilitiesDirectory>
 {
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
@@ -85,6 +86,8 @@ public:
                                const std::string clusterControllerId);
 
     ~LocalCapabilitiesDirectory() override;
+
+    void init();
 
     void shutdown();
 
@@ -260,6 +263,7 @@ private:
     std::weak_ptr<IAccessController> accessController;
 
     boost::asio::steady_timer checkExpiredDiscoveryEntriesTimer;
+    const bool isLocalCapabilitiesDirectoryPersistencyEnabled;
 
     void scheduleCleanupTimer();
     void checkExpiredDiscoveryEntries(const boost::system::error_code& errorCode);

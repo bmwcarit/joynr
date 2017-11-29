@@ -18,8 +18,8 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../../util/Typing');
-var MqttAddress = require('../../system/RoutingTypes/MqttAddress');
+var Typing = require("../../util/Typing");
+var MqttAddress = require("../../system/RoutingTypes/MqttAddress");
 
 /**
  * @constructor MqttMulticastAddressCalculator
@@ -44,8 +44,8 @@ var MqttMulticastAddressCalculator = function MqttMulticastAddressCalculator(set
  */
 MqttMulticastAddressCalculator.prototype.calculate = function calculate(message) {
     return new MqttAddress({
-        brokerUri : this._settings.globalAddress,
-        topic : message.to
+        brokerUri: this._settings.globalAddress,
+        topic: message.to
     });
 };
 

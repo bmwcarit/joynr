@@ -30,7 +30,7 @@
 var LongTimer = {};
 
 LongTimer.maxTime = Math.pow(2, 31) - 1;
-LongTimer.idPrefix = 'lt';
+LongTimer.idPrefix = "lt";
 
 var highestTimeoutId = 0;
 LongTimer.timeoutMap = {};
@@ -77,14 +77,15 @@ LongTimer.setTimeout = function(func, timeout) {
 
     // get next timeout id and prefix it to avoid possible collisions in environents
     // where setTimeout returns a number (e.g. in browsers).
-    var timeoutId = LongTimer.idPrefix + (++highestTimeoutId);
+    highestTimeoutId++;
+    var timeoutId = LongTimer.idPrefix + highestTimeoutId;
 
     // put timeout object into map
     LongTimer.timeoutMap[timeoutId] = {
-        func : func,
-        remainingTimeout : timeout,
-        args : Array.prototype.slice.call(arguments, 2)
-    // get the arbitrary arguments
+        func: func,
+        remainingTimeout: timeout,
+        args: Array.prototype.slice.call(arguments, 2)
+        // get the arbitrary arguments
     };
 
     // start timeout
@@ -163,9 +164,9 @@ LongTimer.setInterval = function(func, interval) {
 
     // put interval object into map
     intervalMap[intervalId] = {
-        func : func,
-        remainingInterval : interval,
-        interval : interval
+        func: func,
+        remainingInterval: interval,
+        interval: interval
     };
 
     // start interval
@@ -185,7 +186,6 @@ LongTimer.setInterval = function(func, interval) {
  *             if parameters are nullable or not of documented type
  */
 LongTimer.clearInterval = function(intervalId) {
-
     // retrieve interval object
     var interval = intervalMap[intervalId];
 

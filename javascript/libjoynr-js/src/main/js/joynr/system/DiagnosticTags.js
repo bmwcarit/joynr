@@ -22,7 +22,7 @@
 /**
  * @exports DiagnosticTags
  */
-var LoggerFactory = require('./LoggerFactory');
+var LoggerFactory = require("./LoggerFactory");
 var log = LoggerFactory.getLogger("joynr.system.DiagnosticTags");
 var DiagnosticTags = {};
 
@@ -32,10 +32,10 @@ var DiagnosticTags = {};
  */
 DiagnosticTags.forJoynrMessage = function forJoynrMessage(joynrMessage) {
     return {
-        diagnosticTag : "JoynrMessage",
-        from : joynrMessage.from,
-        to : joynrMessage.to,
-        type : joynrMessage.type
+        diagnosticTag: "JoynrMessage",
+        from: joynrMessage.from,
+        to: joynrMessage.to,
+        type: joynrMessage.type
     };
 };
 
@@ -51,11 +51,11 @@ DiagnosticTags.forJoynrMessage = function forJoynrMessage(joynrMessage) {
  */
 DiagnosticTags.forChannel = function forChannel(channelInfo) {
     return {
-        diagnosticTag : "ChannelInfo",
-        channelUrl : channelInfo.channelUrl,
-        channelId : channelInfo.channelId,
-        status : channelInfo.status,
-        responseText : channelInfo.responseText
+        diagnosticTag: "ChannelInfo",
+        channelUrl: channelInfo.channelUrl,
+        channelId: channelInfo.channelId,
+        status: channelInfo.status,
+        responseText: channelInfo.responseText
     };
 };
 
@@ -64,10 +64,10 @@ DiagnosticTags.forChannel = function forChannel(channelInfo) {
  */
 DiagnosticTags.forRequest = function forRequest(requestInfo) {
     var tagsForRequest = {
-        diagnosticTag : "Request",
-        requestReplyId : requestInfo.request.requestReplyId,
-        to : requestInfo.to,
-        from : requestInfo.from
+        diagnosticTag: "Request",
+        requestReplyId: requestInfo.request.requestReplyId,
+        to: requestInfo.to,
+        from: requestInfo.from
     };
     if (log.isDebugEnabled() && requestInfo.request.params) {
         tagsForRequest.params = JSON.stringify(requestInfo.request.params);
@@ -80,9 +80,9 @@ DiagnosticTags.forRequest = function forRequest(requestInfo) {
  */
 DiagnosticTags.forOneWayRequest = function forOneWayRequest(requestInfo) {
     var tagsForOneWayRequest = {
-        diagnosticTag : "OneWayRequest",
-        to : requestInfo.to,
-        from : requestInfo.from
+        diagnosticTag: "OneWayRequest",
+        to: requestInfo.to,
+        from: requestInfo.from
     };
     if (log.isDebugEnabled() && requestInfo.request.params) {
         tagsForOneWayRequest.params = JSON.stringify(requestInfo.request.params);
@@ -95,10 +95,10 @@ DiagnosticTags.forOneWayRequest = function forOneWayRequest(requestInfo) {
  */
 DiagnosticTags.forReply = function forReply(replyInfo) {
     var tagsForReply = {
-        diagnosticTag : "Reply",
-        requestReplyId : replyInfo.reply.requestReplyId,
-        to : replyInfo.to,
-        from : replyInfo.from
+        diagnosticTag: "Reply",
+        requestReplyId: replyInfo.reply.requestReplyId,
+        to: replyInfo.to,
+        from: replyInfo.from
     };
     if (log.isDebugEnabled()) {
         if (replyInfo.reply.error) {
@@ -115,52 +115,50 @@ DiagnosticTags.forReply = function forReply(replyInfo) {
  */
 DiagnosticTags.forSubscriptionReply = function forSubscriptionReply(subscriptionReplyInfo) {
     return {
-        diagnosticTag : "SubscriptionReply",
-        subscriptionId : subscriptionReplyInfo.subscriptionReply.subscriptionId,
-        to : subscriptionReplyInfo.to,
-        from : subscriptionReplyInfo.from
+        diagnosticTag: "SubscriptionReply",
+        subscriptionId: subscriptionReplyInfo.subscriptionReply.subscriptionId,
+        to: subscriptionReplyInfo.to,
+        from: subscriptionReplyInfo.from
     };
 };
 
 /**
  * @param {Object} subscriptionRequestInfo
  */
-DiagnosticTags.forMulticastSubscriptionRequest =
-        function forMulticastSubscriptionRequest(subscriptionRequestInfo) {
-            return {
-                diagnosticTag : "MulticastSubscriptionRequest",
-                eventName : subscriptionRequestInfo.subscriptionRequest.subscribedToName,
-                subscriptionId : subscriptionRequestInfo.subscriptionRequest.subscriptionId,
-                multicastId : subscriptionRequestInfo.subscriptionRequest.multicastId,
-                to : subscriptionRequestInfo.to,
-                from : subscriptionRequestInfo.from
-            };
-        };
+DiagnosticTags.forMulticastSubscriptionRequest = function forMulticastSubscriptionRequest(subscriptionRequestInfo) {
+    return {
+        diagnosticTag: "MulticastSubscriptionRequest",
+        eventName: subscriptionRequestInfo.subscriptionRequest.subscribedToName,
+        subscriptionId: subscriptionRequestInfo.subscriptionRequest.subscriptionId,
+        multicastId: subscriptionRequestInfo.subscriptionRequest.multicastId,
+        to: subscriptionRequestInfo.to,
+        from: subscriptionRequestInfo.from
+    };
+};
 
 /**
  * @param {Object} subscriptionRequestInfo
  */
-DiagnosticTags.forBroadcastSubscriptionRequest =
-        function forBroadcastSubscriptionRequest(subscriptionRequestInfo) {
-            return {
-                diagnosticTag : "BroadcastSubscriptionRequest",
-                eventName : subscriptionRequestInfo.subscriptionRequest.subscribedToName,
-                subscriptionId : subscriptionRequestInfo.subscriptionRequest.subscriptionId,
-                to : subscriptionRequestInfo.to,
-                from : subscriptionRequestInfo.from
-            };
-        };
+DiagnosticTags.forBroadcastSubscriptionRequest = function forBroadcastSubscriptionRequest(subscriptionRequestInfo) {
+    return {
+        diagnosticTag: "BroadcastSubscriptionRequest",
+        eventName: subscriptionRequestInfo.subscriptionRequest.subscribedToName,
+        subscriptionId: subscriptionRequestInfo.subscriptionRequest.subscriptionId,
+        to: subscriptionRequestInfo.to,
+        from: subscriptionRequestInfo.from
+    };
+};
 
 /**
  * @param {Object} subscriptionRequestInfo
  */
 DiagnosticTags.forSubscriptionRequest = function forSubscriptionRequest(subscriptionRequestInfo) {
     return {
-        diagnosticTag : "SubscriptionRequest",
-        attributeName : subscriptionRequestInfo.subscriptionRequest.subscribedToName,
-        subscriptionId : subscriptionRequestInfo.subscriptionRequest.subscriptionId,
-        to : subscriptionRequestInfo.to,
-        from : subscriptionRequestInfo.from
+        diagnosticTag: "SubscriptionRequest",
+        attributeName: subscriptionRequestInfo.subscriptionRequest.subscribedToName,
+        subscriptionId: subscriptionRequestInfo.subscriptionRequest.subscriptionId,
+        to: subscriptionRequestInfo.to,
+        from: subscriptionRequestInfo.from
     };
 };
 
@@ -169,10 +167,10 @@ DiagnosticTags.forSubscriptionRequest = function forSubscriptionRequest(subscrip
  */
 DiagnosticTags.forSubscriptionStop = function forSubscriptionStop(subscriptionStopInfo) {
     return {
-        diagnosticTag : "SubscriptionStop",
-        subscriptionId : subscriptionStopInfo.subscriptionId,
-        to : subscriptionStopInfo.to,
-        from : subscriptionStopInfo.from
+        diagnosticTag: "SubscriptionStop",
+        subscriptionId: subscriptionStopInfo.subscriptionId,
+        to: subscriptionStopInfo.to,
+        from: subscriptionStopInfo.from
     };
 };
 
@@ -181,10 +179,10 @@ DiagnosticTags.forSubscriptionStop = function forSubscriptionStop(subscriptionSt
  */
 DiagnosticTags.forPublication = function forPublication(publicationInfo) {
     var tagsForPublication = {
-        diagnosticTag : "Publication",
-        subscriptionId : publicationInfo.publication.subscriptionId,
-        to : publicationInfo.to,
-        from : publicationInfo.from
+        diagnosticTag: "Publication",
+        subscriptionId: publicationInfo.publication.subscriptionId,
+        to: publicationInfo.to,
+        from: publicationInfo.from
     };
     if (log.isDebugEnabled()) {
         tagsForPublication.response = JSON.stringify(publicationInfo.publication.response);
@@ -195,18 +193,16 @@ DiagnosticTags.forPublication = function forPublication(publicationInfo) {
 /**
  * @param {Object} publicationInfo - multicast publication info
  */
-DiagnosticTags.forMulticastPublication =
-        function forMulticastPublication(publicationInfo) {
-            var tagsForMulticastPublication = {
-                diagnosticTag : "MulticastPublication",
-                multicastId : publicationInfo.publication.multicastId,
-                from : publicationInfo.from
-            };
-            if (log.isDebugEnabled()) {
-                tagsForMulticastPublication.response =
-                        JSON.stringify(publicationInfo.publication.response);
-            }
-            return tagsForMulticastPublication;
-        };
+DiagnosticTags.forMulticastPublication = function forMulticastPublication(publicationInfo) {
+    var tagsForMulticastPublication = {
+        diagnosticTag: "MulticastPublication",
+        multicastId: publicationInfo.publication.multicastId,
+        from: publicationInfo.from
+    };
+    if (log.isDebugEnabled()) {
+        tagsForMulticastPublication.response = JSON.stringify(publicationInfo.publication.response);
+    }
+    return tagsForMulticastPublication;
+};
 
 module.exports = DiagnosticTags;

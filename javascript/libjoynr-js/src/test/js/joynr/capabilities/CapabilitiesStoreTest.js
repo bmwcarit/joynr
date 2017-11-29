@@ -18,39 +18,44 @@
  * limitations under the License.
  * #L%
  */
-var CapabilitiesStore = require('../../../classes/joynr/capabilities/CapabilitiesStore');
-var DiscoveryEntry = require('../../../classes/joynr/types/DiscoveryEntry');
-var DiscoveryQos = require('../../../classes/joynr/types/DiscoveryQos');
-var DiscoveryScope = require('../../../classes/joynr/types/DiscoveryScope');
-var ProviderScope = require('../../../classes/joynr/types/ProviderScope');
-var ProviderQos = require('../../../classes/joynr/types/ProviderQos');
-var CustomParameter = require('../../../classes/joynr/types/CustomParameter');
-var Version = require('../../../classes/joynr/types/Version');
-var Date = require('../../../test-classes/global/Date');
+var CapabilitiesStore = require("../../../classes/joynr/capabilities/CapabilitiesStore");
+var DiscoveryEntry = require("../../../classes/joynr/types/DiscoveryEntry");
+var DiscoveryQos = require("../../../classes/joynr/types/DiscoveryQos");
+var DiscoveryScope = require("../../../classes/joynr/types/DiscoveryScope");
+var ProviderScope = require("../../../classes/joynr/types/ProviderScope");
+var ProviderQos = require("../../../classes/joynr/types/ProviderQos");
+var CustomParameter = require("../../../classes/joynr/types/CustomParameter");
+var Version = require("../../../classes/joynr/types/Version");
+var Date = require("../../../test-classes/global/Date");
 
 describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
-    var fakeTime = 0, cacheMaxAge, directory, discoveryQos, discoveryEntry1;
+    var fakeTime = 0,
+        cacheMaxAge,
+        directory,
+        discoveryQos,
+        discoveryEntry1;
     var discoveryEntry2, discoveryEntry3, discoveryEntry4;
     var settings = {
-        providerVersion : new Version({
-            majorVersion : 47,
-            minorVersion : 11
+        providerVersion: new Version({
+            majorVersion: 47,
+            minorVersion: 11
         }),
-        domain : "myDomain",
-        interfaceName : "radio",
-        qos : new ProviderQos({
-            customParameters : [ new CustomParameter({
-                name : "theName",
-                value : "theValue"
-            })
+        domain: "myDomain",
+        interfaceName: "radio",
+        qos: new ProviderQos({
+            customParameters: [
+                new CustomParameter({
+                    name: "theName",
+                    value: "theValue"
+                })
             ],
-            priority : 1234,
-            scope : ProviderScope.LOCAL,
-            supportsOnChangeSubscriptions : true
+            priority: 1234,
+            scope: ProviderScope.LOCAL,
+            supportsOnChangeSubscriptions: true
         }),
-        channelId : "0001",
-        publicKeyId : "",
-        participantId : "700"
+        channelId: "0001",
+        publicKeyId: "",
+        participantId: "700"
     };
 
     function increaseFakeTime(time_ms) {
@@ -70,8 +75,8 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         discoveryEntry4 = new DiscoveryEntry(settings);
         cacheMaxAge = 100;
         discoveryQos = new DiscoveryQos({
-            cacheMaxAge : cacheMaxAge,
-            discoveryScope : DiscoveryScope.LOCAL_ONLY
+            cacheMaxAge: cacheMaxAge,
+            discoveryScope: DiscoveryScope.LOCAL_ONLY
         });
 
         spyOn(Date, "now").and.callFake(function() {
@@ -87,36 +92,31 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         discoveryEntry2.participantId = "701";
         discoveryEntry3.participantId = "702";
         directory.add({
-            discoveryEntries : [
-                discoveryEntry1,
-                discoveryEntry2,
-                discoveryEntry3
-            ]
+            discoveryEntries: [discoveryEntry1, discoveryEntry2, discoveryEntry3]
         });
 
         // unregister one capability
         directory.remove({
-            participantId : discoveryEntry4.participantId
+            participantId: discoveryEntry4.participantId
         });
 
         var result = directory.lookup({
-            participantId : discoveryEntry1.participantId,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            participantId: discoveryEntry1.participantId,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result).toBeUndefined();
 
         // check that it does not unregister other capabilities
         result = directory.lookup({
-            participantId : discoveryEntry2.participantId,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            participantId: discoveryEntry2.participantId,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result).toBeDefined();
 
         result = directory.lookup({
-            domains : [ discoveryEntry1.domain
-            ],
-            interfaceName : discoveryEntry1.interfaceName,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            domains: [discoveryEntry1.domain],
+            interfaceName: discoveryEntry1.interfaceName,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result.length).toBe(2);
     }
@@ -127,11 +127,11 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
 
     it("can register a capability", function() {
         directory.add({
-            discoveryEntry : discoveryEntry1
+            discoveryEntry: discoveryEntry1
         });
         var result = directory.lookup({
-            participantId : discoveryEntry1.participantId,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            participantId: discoveryEntry1.participantId,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result).toBeDefined();
         expect(result.length).toBe(1);
@@ -141,15 +141,14 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
     it("register global entry, returned when looking for global entries", function() {
         discoveryEntry2.participantId = "701";
         directory.add({
-            discoveryEntry : discoveryEntry1,
-            remote : true
+            discoveryEntry: discoveryEntry1,
+            remote: true
         });
 
         var result = directory.lookup({
-            domains : [ settings.domain
-            ],
-            interfaceName : settings.interfaceName,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            domains: [settings.domain],
+            interfaceName: settings.interfaceName,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
 
         expect(result).toBeDefined();
@@ -158,10 +157,9 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
 
         increaseFakeTime(discoveryQos.cacheMaxAge + 1);
         result = directory.lookup({
-            domains : [ settings.domain
-            ],
-            interfaceName : settings.interfaceName,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            domains: [settings.domain],
+            interfaceName: settings.interfaceName,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
 
         expect(result).toBeDefined();
@@ -170,22 +168,22 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
 
     it("does not register duplicate capabilities", function() {
         directory.add({
-            discoveryEntry : discoveryEntry1
+            discoveryEntry: discoveryEntry1
         });
         directory.add({
-            discoveryEntry : discoveryEntry1
+            discoveryEntry: discoveryEntry1
         }); // register exact duplicate
         discoveryEntry2.qos.customParameters.blah = {
-            value : "lala",
-            type : "QosString"
+            value: "lala",
+            type: "QosString"
         };
         directory.add({
-            discoveryEntry : discoveryEntry2
+            discoveryEntry: discoveryEntry2
         }); // register cap with different qos, this should be a duplicate
 
         var result = directory.lookup({
-            participantId : discoveryEntry1.participantId,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            participantId: discoveryEntry1.participantId,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result).toBeDefined();
     });
@@ -197,20 +195,17 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         discoveryEntry2.participantId = "701";
 
         directory.add({
-            discoveryEntries : [
-                discoveryEntry1,
-                discoveryEntry2
-            ]
+            discoveryEntries: [discoveryEntry1, discoveryEntry2]
         });
 
         var result = directory.lookup({
-            participantId : discoveryEntry1.participantId,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            participantId: discoveryEntry1.participantId,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result).toBeDefined();
         var result2 = directory.lookup({
-            participantId : discoveryEntry2.participantId,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            participantId: discoveryEntry2.participantId,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result2).toBeDefined();
         expect(result[0].domain).not.toBe(result2[0].domain);
@@ -225,26 +220,18 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         discoveryEntry2.interfaceName = "music";
 
         directory.remove({
-            participantIds : [
-                "700",
-                "701",
-                "702"
-            ]
+            participantIds: ["700", "701", "702"]
         });
 
         // different participant id
         discoveryEntry3.participantId = "702";
 
         directory.add({
-            discoveryEntries : [
-                discoveryEntry1,
-                discoveryEntry2,
-                discoveryEntry3
-            ]
+            discoveryEntries: [discoveryEntry1, discoveryEntry2, discoveryEntry3]
         });
         var result = directory.lookup({
-            participantId : discoveryEntry2.participantId,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            participantId: discoveryEntry2.participantId,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result).toBeDefined();
         expect(result.length).toBe(1);
@@ -254,7 +241,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
     it("gets capabilities for domain/interface", function() {
         // different provider qos
         discoveryEntry2.qos = {
-            blah : "lala"
+            blah: "lala"
         };
 
         // different domain
@@ -264,18 +251,12 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         discoveryEntry4.participantId = "701";
 
         directory.add({
-            discoveryEntries : [
-                discoveryEntry1,
-                discoveryEntry2,
-                discoveryEntry3,
-                discoveryEntry4
-            ]
+            discoveryEntries: [discoveryEntry1, discoveryEntry2, discoveryEntry3, discoveryEntry4]
         });
         var result = directory.lookup({
-            domains : [ discoveryEntry1.domain
-            ],
-            interfaceName : discoveryEntry1.interfaceName,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            domains: [discoveryEntry1.domain],
+            interfaceName: discoveryEntry1.interfaceName,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result.length).toBe(2);
         expect(result[0].participantId).not.toBe(result[1].participantId);
@@ -293,26 +274,19 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesStore", function() {
         discoveryEntry2.participantId = "701";
         discoveryEntry3.participantId = "702";
         directory.add({
-            discoveryEntries : [
-                discoveryEntry1,
-                discoveryEntry2,
-                discoveryEntry3
-            ]
+            discoveryEntries: [discoveryEntry1, discoveryEntry2, discoveryEntry3]
         });
         directory.remove({
-            participantIds : [
-                discoveryEntry2.participantId,
-                discoveryEntry3.participantId
-            ]
+            participantIds: [discoveryEntry2.participantId, discoveryEntry3.participantId]
         });
         var result = directory.lookup({
-            participantId : discoveryEntry2.participantId,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            participantId: discoveryEntry2.participantId,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result).toBeUndefined();
         result = directory.lookup({
-            participantId : discoveryEntry3.participantId,
-            cacheMaxAge : discoveryQos.cacheMaxAge
+            participantId: discoveryEntry3.participantId,
+            cacheMaxAge: discoveryQos.cacheMaxAge
         });
         expect(result).toBeUndefined();
     });

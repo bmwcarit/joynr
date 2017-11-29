@@ -57,8 +57,7 @@ class LocalCapabilitiesDirectoryTest : public ::testing::Test
 {
 public:
     LocalCapabilitiesDirectoryTest()
-            : settingsFileName("LocalCapabilitiesDirectoryTest.settings"),
-              settings(settingsFileName),
+            : settings(),
               clusterControllerSettings(settings),
               capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
               singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
@@ -78,13 +77,15 @@ public:
         singleThreadedIOService->start();
         clusterControllerSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(100);
         settings.set(ClusterControllerSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(), 200);
+        settings.set(ClusterControllerSettings::SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(), true);
         localCapabilitiesDirectory =
-                std::make_unique<LocalCapabilitiesDirectory>(clusterControllerSettings,
+                std::make_shared<LocalCapabilitiesDirectory>(clusterControllerSettings,
                                                              capabilitiesClient,
                                                              LOCAL_ADDRESS,
                                                              mockMessageRouter,
                                                              singleThreadedIOService->getIOService(),
                                                              clusterControllerId);
+        localCapabilitiesDirectory->init();
     }
 
     ~LocalCapabilitiesDirectoryTest()
@@ -267,14 +268,13 @@ public:
     }
 
 protected:
-    std::string settingsFileName;
     Settings settings;
     ClusterControllerSettings clusterControllerSettings;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::string clusterControllerId;
-    std::unique_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
+    std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
     std::string dummyParticipantId1;
@@ -1517,13 +1517,13 @@ void LocalCapabilitiesDirectoryTest::registerReceivedCapabilities(
             addNextHop(participantId,
                        AllOf(Pointee(A<const joynr::system::RoutingTypes::Address>()),
                              pointerToAddressWithSerializedAddress(addressType, serializedAddress)),
-                       _,_,_,_,_)).Times(1);
+                       _,_,_,_,_,_)).Times(1);
     EXPECT_CALL(*mockMessageRouter,
                 addNextHop(participantId,
                            AnyOf(Not(Pointee(A<const joynr::system::RoutingTypes::Address>())),
                                  Not(pointerToAddressWithSerializedAddress(
                                          addressType, serializedAddress))),
-                           _,_,_,_,_)).Times(0);
+                           _,_,_,_,_,_)).Times(0);
 
     std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
     types::DiscoveryEntry capEntry;
@@ -1602,12 +1602,13 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                     defaultOnError);
 
     // create a new object
-    auto localCapabilitiesDirectory2 = std::make_unique<LocalCapabilitiesDirectory>(clusterControllerSettings,
+    auto localCapabilitiesDirectory2 = std::make_shared<LocalCapabilitiesDirectory>(clusterControllerSettings,
                                                                               capabilitiesClient,
                                                                               LOCAL_ADDRESS,
                                                                               mockMessageRouter,
                                                                               singleThreadedIOService->getIOService(),
                                                                               "clusterControllerId");
+    localCapabilitiesDirectory2->init();
 
     // load persistency
     localCapabilitiesDirectory2->loadPersistedFile();

@@ -19,24 +19,19 @@
  * #L%
  */
 
-requirejs.onError =
-        function(err) {
+requirejs.onError = function(err) {
+    // report the error as a failing jasmine test
+    describe("requirejs", function() {
+        it("global.errback", function() {
+            expect(
+                "a " +
+                    err.requireType +
+                    " was thrown to the global requirejs error handler, required modules: " +
+                    JSON.stringify(err.requireModules)
+            ).toBeFalsy();
+        });
+    });
 
-            // report the error as a failing jasmine test
-            describe(
-                    "requirejs",
-                    function() {
-                        it(
-                                "global.errback",
-                                function() {
-                                    expect(
-                                            "a "
-                                                + err.requireType
-                                                + " was thrown to the global requirejs error handler, required modules: "
-                                                + JSON.stringify(err.requireModules)).toBeFalsy();
-                                });
-                    });
-
-            // rethrow the caught error to display it in the client browser
-            throw err;
-        };
+    // rethrow the caught error to display it in the client browser
+    throw err;
+};

@@ -18,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../util/Typing');
-var Util = require('../util/UtilInternal');
-var LoggerFactory = require('../system/LoggerFactory');
+var Typing = require("../util/Typing");
+var Util = require("../util/UtilInternal");
+var LoggerFactory = require("../system/LoggerFactory");
 
 var defaultSettings;
 
@@ -99,18 +99,16 @@ function SubscriptionQos(settings) {
     if (settings && !(settings instanceof SubscriptionQos)) {
         if (settings.validityMs !== undefined) {
             if (settings.expiryDateMs !== undefined) {
-                log
-                        .warn("SubscriptionQos has been invoked with settings member \"expiryDateMs\" and \"validityMs\"."
-                            + " Please ensure that only one of these values is set. Using \"validityMs\"");
+                log.warn(
+                    'SubscriptionQos has been invoked with settings member "expiryDateMs" and "validityMs".' +
+                        ' Please ensure that only one of these values is set. Using "validityMs"'
+                );
             }
             settings.expiryDateMs = Date.now() + settings.validityMs;
             settings.validityMs = undefined;
         }
         Typing.checkPropertyIfDefined(settings.expiryDateMs, "Number", "settings.expiryDateMs");
-        Typing.checkPropertyIfDefined(
-                settings.publicationTtlMs,
-                "Number",
-                "settings.publicationTtlMs");
+        Typing.checkPropertyIfDefined(settings.publicationTtlMs, "Number", "settings.publicationTtlMs");
     }
 
     /**
@@ -125,20 +123,23 @@ function SubscriptionQos(settings) {
      */
     Util.extend(this, defaultSettings, settings);
     if (this.publicationTtlMs < SubscriptionQos.MIN_PUBLICATION_TTL_MS) {
-        log.warn("publicationTtlMs < MIN_PUBLICATION_TTL_MS. Using MIN_PUBLICATION_TTL_MS: "
-            + SubscriptionQos.MIN_PUBLICATION_TTL_MS);
+        log.warn(
+            "publicationTtlMs < MIN_PUBLICATION_TTL_MS. Using MIN_PUBLICATION_TTL_MS: " +
+                SubscriptionQos.MIN_PUBLICATION_TTL_MS
+        );
         this.publicationTtlMs = SubscriptionQos.MIN_PUBLICATION_TTL_MS;
     }
 
     if (this.publicationTtlMs > SubscriptionQos.MAX_PUBLICATION_TTL_MS) {
-        log.warn("publicationTtlMs > MAX_PUBLICATION_TTL_MS. Using MAX_PUBLICATION_TTL_MS: "
-            + SubscriptionQos.MAX_PUBLICATION_TTL_MS);
+        log.warn(
+            "publicationTtlMs > MAX_PUBLICATION_TTL_MS. Using MAX_PUBLICATION_TTL_MS: " +
+                SubscriptionQos.MAX_PUBLICATION_TTL_MS
+        );
         this.publicationTtlMs = SubscriptionQos.MAX_PUBLICATION_TTL_MS;
     }
 
     if (this.expiryDateMs < SubscriptionQos.MIN_EXPIRY_MS) {
-        log.warn("expiryDateMs < MIN_EXPIRY_MS. Using MIN_EXPIRY_MS: "
-            + SubscriptionQos.MIN_EXPIRY_MS);
+        log.warn("expiryDateMs < MIN_EXPIRY_MS. Using MIN_EXPIRY_MS: " + SubscriptionQos.MIN_EXPIRY_MS);
         this.expiryDateMs = SubscriptionQos.MIN_EXPIRY_MS;
     }
 
@@ -222,8 +223,8 @@ SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS = 10000;
 SubscriptionQos.DEFAULT_PUBLICATION_TTL = SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS;
 
 defaultSettings = {
-    expiryDateMs : SubscriptionQos.NO_EXPIRY_DATE,
-    publicationTtlMs : SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS
+    expiryDateMs: SubscriptionQos.NO_EXPIRY_DATE,
+    publicationTtlMs: SubscriptionQos.DEFAULT_PUBLICATION_TTL_MS
 };
 
 module.exports = SubscriptionQos;

@@ -18,10 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var Util = require('../util/UtilInternal');
-var DiscoveryException = require('./DiscoveryException');
-var LoggerFactory = require('../system/LoggerFactory');
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+var Util = require("../util/UtilInternal");
+var DiscoveryException = require("./DiscoveryException");
+var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings;
 
 /**
@@ -64,10 +64,7 @@ function NoCompatibleProviderFoundException(settings) {
      * @name NoCompatibleProviderFoundException#_typeName
      * @type String
      */
-    Util.objectDefineProperty(
-            this,
-            "_typeName",
-            "joynr.exceptions.NoCompatibleProviderFoundException");
+    Util.objectDefineProperty(this, "_typeName", "joynr.exceptions.NoCompatibleProviderFoundException");
 
     /**
      * See [constructor description]{@link NoCompatibleProviderFoundException}.
@@ -96,8 +93,9 @@ function NoCompatibleProviderFoundException(settings) {
 defaultSettings = {};
 
 TypeRegistrySingleton.getInstance().addType(
-        "joynr.exceptions.NoCompatibleProviderFoundException",
-        NoCompatibleProviderFoundException);
+    "joynr.exceptions.NoCompatibleProviderFoundException",
+    NoCompatibleProviderFoundException
+);
 
 NoCompatibleProviderFoundException.prototype = new Error();
 NoCompatibleProviderFoundException.prototype.constructor = NoCompatibleProviderFoundException;

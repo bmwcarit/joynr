@@ -36,11 +36,15 @@ public:
     static const std::string& SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME();
     static const std::string& SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
     static const std::string& SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME();
+    static const std::string& SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED();
+    static const std::string& SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED();
 
     static const std::string& DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME();
+    static bool DEFAULT_MESSAGE_ROUTER_PERSISTENCY_ENABLED();
+    static bool DEFAULT_SUBSCRIPTION_PERSISTENCY_ENABLED();
 
     explicit LibjoynrSettings(Settings& settings);
     LibjoynrSettings(const LibjoynrSettings&) = default;
@@ -59,6 +63,12 @@ public:
 
     std::string getSubscriptionRequestPersistenceFilename() const;
     void setSubscriptionRequestPersistenceFilename(const std::string& filename);
+
+    bool isMessageRouterPersistencyEnabled() const;
+    void setMessageRouterPersistencyEnabled(bool enable);
+
+    bool isSubscriptionPersistencyEnabled() const;
+    void setSubscriptionPersistencyEnabled(bool enable);
 
     void printSettings() const;
 

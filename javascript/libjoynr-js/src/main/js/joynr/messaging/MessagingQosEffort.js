@@ -31,8 +31,8 @@ var MessagingQosEffort = {};
  * persisting the message as necessary if the receiver is not currently online. Also known as 'at least once'.
  */
 MessagingQosEffort.NORMAL = {
-    name : "Normal",
-    value : "NORMAL"
+    name: "Normal",
+    value: "NORMAL"
 };
 
 /**
@@ -41,8 +41,8 @@ MessagingQosEffort.NORMAL = {
  * online. Also known as 'at most once' or 'fire and forget'.
  */
 MessagingQosEffort.BEST_EFFORT = {
-    name : "Best effort",
-    value : "BEST_EFFORT"
+    name: "Best effort",
+    value: "BEST_EFFORT"
 };
 
 /**

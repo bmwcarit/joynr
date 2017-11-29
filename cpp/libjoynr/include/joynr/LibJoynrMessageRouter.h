@@ -81,6 +81,7 @@ public:
             std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
             boost::asio::io_service& ioService,
             std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+            bool persistRoutingTable,
             std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
             int maxThreads = 1,
             std::unique_ptr<MessageQueue<std::string>> messageQueue =
@@ -101,6 +102,7 @@ public:
                     bool isGloballyVisible,
                     const std::int64_t expiryDateMs,
                     const bool isSticky,
+                    const bool allowUpdate,
                     std::function<void()> onSuccess = nullptr,
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;

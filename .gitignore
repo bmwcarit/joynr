@@ -22,6 +22,7 @@ javascript/joynr.properties
 javascript/apps/radio/joynr.properties
 java/core/clustercontroller-standalone/joynr.properties
 node_modules
-build-*
+build-*/
+!build-resources
 generated-cpp
 cpp/common/include/joynr/JoynrVersion.h

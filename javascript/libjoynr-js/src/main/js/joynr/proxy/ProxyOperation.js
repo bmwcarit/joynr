@@ -17,15 +17,15 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../global/Promise');
-var Util = require('../util/UtilInternal');
-var JSONSerializer = require('../util/JSONSerializer');
-var Typing = require('../util/Typing');
-var MethodUtil = require('../util/MethodUtil');
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var Request = require('../dispatching/types/Request');
-var OneWayRequest = require('../dispatching/types/OneWayRequest');
-var MessagingQos = require('../messaging/MessagingQos');
+var Promise = require("../../global/Promise");
+var Util = require("../util/UtilInternal");
+var JSONSerializer = require("../util/JSONSerializer");
+var Typing = require("../util/Typing");
+var MethodUtil = require("../util/MethodUtil");
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+var Request = require("../dispatching/types/Request");
+var OneWayRequest = require("../dispatching/types/OneWayRequest");
+var MessagingQos = require("../messaging/MessagingQos");
 
 var typeRegistry = TypeRegistrySingleton.getInstance();
 /**
@@ -60,21 +60,20 @@ var typeRegistry = TypeRegistrySingleton.getInstance();
  *             if an argument value is nullable
  */
 function checkSignatureMatch(operationSignature, operationArguments) {
-
     // if for all operationArguments there is a matching (name and type) parameter found
     // in the operationSignature, this object will hold name, type and value and is
     // qualified to be used for serialization and will be returned
     var result = {};
 
     try {
-        result.signature =
-                {
-                    inputParameter : MethodUtil.transformParameterMapToArray(
-                            operationArguments,
-                            operationSignature.inputParameter),
-                    outputParameter : operationSignature.outputParameter || [],
-                    fireAndForget : operationSignature.fireAndForget
-                };
+        result.signature = {
+            inputParameter: MethodUtil.transformParameterMapToArray(
+                operationArguments,
+                operationSignature.inputParameter
+            ),
+            outputParameter: operationSignature.outputParameter || [],
+            fireAndForget: operationSignature.fireAndForget
+        };
     } catch (error) {
         result.errorMessage = error.message;
     }
@@ -101,7 +100,7 @@ function checkArguments(operationArguments) {
                     errors.push(error.message);
                 }
             } else {
-                errors.push("Argument \"" + argumentName + "\" undefined.");
+                errors.push('Argument "' + argumentName + '" undefined.');
             }
             /*jslint nomen: false */
         }
@@ -158,8 +157,7 @@ function ProxyOperation(parent, settings, operationName, operationSignatures) {
 
     // passed in (right-most) messagingQos have precedence; undefined values are
     // ignored
-    var messagingQos =
-            new MessagingQos(Util.extend({}, parent.messagingQos, settings.messagingQos));
+    var messagingQos = new MessagingQos(Util.extend({}, parent.messagingQos, settings.messagingQos));
 
     /**
      * Generic operation implementation
@@ -206,24 +204,25 @@ function ProxyOperation(parent, settings, operationName, operationSignatures) {
         // ensure operationArguments variable holds a valid object and initialize promise object
         var argumentErrors = checkArguments(operationArguments);
         if (argumentErrors.length > 0) {
-            return Promise.reject(new Error("error calling operation: "
-                + operationName
-                + ": "
-                + argumentErrors.toString()));
+            return Promise.reject(
+                new Error("error calling operation: " + operationName + ": " + argumentErrors.toString())
+            );
         }
 
         try {
-            var foundValidOperationSignature, checkResult, caughtErrors = [];
+            var foundValidOperationSignature,
+                checkResult,
+                caughtErrors = [];
 
             // cycle through multiple available operation signatures
-            for (i = 0; i < proxyOperation.operationSignatures.length
-                && foundValidOperationSignature === undefined; ++i) {
+            for (
+                i = 0;
+                i < proxyOperation.operationSignatures.length && foundValidOperationSignature === undefined;
+                ++i
+            ) {
                 // check if the parameters from the operation signature is valid for
                 // the provided arguments
-                checkResult =
-                        checkSignatureMatch(
-                                proxyOperation.operationSignatures[i],
-                                operationArguments || {});
+                checkResult = checkSignatureMatch(proxyOperation.operationSignatures[i], operationArguments || {});
                 if (checkResult !== undefined) {
                     if (checkResult.errorMessage !== undefined) {
                         caughtErrors.push(checkResult.errorMessage);
@@ -236,75 +235,82 @@ function ProxyOperation(parent, settings, operationName, operationSignatures) {
             // operation was not called because there was no signature found that
             // matches given arguments
             if (foundValidOperationSignature === undefined) {
-                return Promise.reject(new Error("Could not find a valid operation signature in '"
-                    + JSON.stringify(proxyOperation.operationSignatures)
-                    + "' for a call to operation '"
-                    + proxyOperation.operationName
-                    + "' with the arguments: '"
-                    + JSON.stringify(operationArguments)
-                    + "'. The following errors occured during signature check: "
-                    + JSON.stringify(caughtErrors)));
+                return Promise.reject(
+                    new Error(
+                        "Could not find a valid operation signature in '" +
+                            JSON.stringify(proxyOperation.operationSignatures) +
+                            "' for a call to operation '" +
+                            proxyOperation.operationName +
+                            "' with the arguments: '" +
+                            JSON.stringify(operationArguments) +
+                            "'. The following errors occured during signature check: " +
+                            JSON.stringify(caughtErrors)
+                    )
+                );
             }
 
             // send it through request reply manager
             if (foundValidOperationSignature.fireAndForget === true) {
                 // build outgoing request
                 var oneWayRequest = new OneWayRequest({
-                    methodName : proxyOperation.operationName,
-                    paramDatatypes : foundValidOperationSignature.inputParameter.paramDatatypes,
-                    params : foundValidOperationSignature.inputParameter.params
+                    methodName: proxyOperation.operationName,
+                    paramDatatypes: foundValidOperationSignature.inputParameter.paramDatatypes,
+                    params: foundValidOperationSignature.inputParameter.params
                 });
 
                 return settings.dependencies.requestReplyManager.sendOneWayRequest({
-                    toDiscoveryEntry : proxyOperation.parent.providerDiscoveryEntry,
-                    from : proxyOperation.parent.proxyParticipantId,
-                    messagingQos : messagingQos,
-                    request : oneWayRequest
+                    toDiscoveryEntry: proxyOperation.parent.providerDiscoveryEntry,
+                    from: proxyOperation.parent.proxyParticipantId,
+                    messagingQos: messagingQos,
+                    request: oneWayRequest
                 });
             }
             if (foundValidOperationSignature.fireAndForget !== true) {
                 // build outgoing request
                 var request = new Request({
-                    methodName : proxyOperation.operationName,
-                    paramDatatypes : foundValidOperationSignature.inputParameter.paramDatatypes,
-                    params : foundValidOperationSignature.inputParameter.params
+                    methodName: proxyOperation.operationName,
+                    paramDatatypes: foundValidOperationSignature.inputParameter.paramDatatypes,
+                    params: foundValidOperationSignature.inputParameter.params
                 });
 
                 return settings.dependencies.requestReplyManager
-                        .sendRequest({
-                            toDiscoveryEntry : proxyOperation.parent.providerDiscoveryEntry,
-                            from : proxyOperation.parent.proxyParticipantId,
-                            messagingQos : messagingQos,
-                            request : request
-                        })
-                        .then(
-                                function(response) {
-                                    var responseKey, argumentValue;
-                                    if (foundValidOperationSignature.outputParameter
-                                        && foundValidOperationSignature.outputParameter.length > 0) {
-                                        argumentValue = {};
-                                        for (responseKey in response) {
-                                            if (response.hasOwnProperty(responseKey)) {
-                                                if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
-                                                    argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] =
-                                                            Typing
-                                                                    .augmentTypes(
-                                                                            response[responseKey],
-                                                                            typeRegistry,
-                                                                            foundValidOperationSignature.outputParameter[responseKey].type);
-                                                } else {
-                                                    return Promise
-                                                            .reject(new Error(
-                                                                    "Unexpected response: "
-                                                                        + JSONSerializer
-                                                                                .stringify(response[responseKey])));
-                                                }
-                                            }
-                                        }
+                    .sendRequest({
+                        toDiscoveryEntry: proxyOperation.parent.providerDiscoveryEntry,
+                        from: proxyOperation.parent.proxyParticipantId,
+                        messagingQos: messagingQos,
+                        request: request
+                    })
+                    .then(function(response) {
+                        var responseKey, argumentValue;
+                        if (
+                            foundValidOperationSignature.outputParameter &&
+                            foundValidOperationSignature.outputParameter.length > 0
+                        ) {
+                            argumentValue = {};
+                            for (responseKey in response) {
+                                if (response.hasOwnProperty(responseKey)) {
+                                    if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
+                                        argumentValue[
+                                            foundValidOperationSignature.outputParameter[responseKey].name
+                                        ] = Typing.augmentTypes(
+                                            response[responseKey],
+                                            typeRegistry,
+                                            foundValidOperationSignature.outputParameter[responseKey].type
+                                        );
+                                    } else {
+                                        return Promise.reject(
+                                            new Error(
+                                                "Unexpected response: " +
+                                                    JSONSerializer.stringify(response[responseKey])
+                                            )
+                                        );
                                     }
+                                }
+                            }
+                        }
 
-                                    return argumentValue;
-                                });
+                        return argumentValue;
+                    });
             }
         } catch (e) {
             return Promise.reject(new Error("error calling operation: " + e.toString()));

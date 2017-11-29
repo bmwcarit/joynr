@@ -18,10 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var Util = require('../util/UtilInternal');
-var JoynrRuntimeException = require('./JoynrRuntimeException');
-var LoggerFactory = require('../system/LoggerFactory');
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+var Util = require("../util/UtilInternal");
+var JoynrRuntimeException = require("./JoynrRuntimeException");
+var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings;
 
 /**
@@ -71,9 +71,7 @@ function DiscoveryException(settings) {
 
 defaultSettings = {};
 
-TypeRegistrySingleton.getInstance().addType(
-        "joynr.exceptions.DiscoveryException",
-        DiscoveryException);
+TypeRegistrySingleton.getInstance().addType("joynr.exceptions.DiscoveryException", DiscoveryException);
 
 DiscoveryException.prototype = new Error();
 DiscoveryException.prototype.constructor = DiscoveryException;

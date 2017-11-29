@@ -17,11 +17,11 @@
  * limitations under the License.
  * #L%
  */
-var Promise = require('../../../../classes/global/Promise');
-var SharedMqttClient = require('../../../../classes/joynr/messaging/mqtt/SharedMqttClient');
-var MqttAddress = require('../../../../classes/joynr/system/RoutingTypes/MqttAddress');
-var MqttMessagingStub = require('../../../../classes/joynr/messaging/mqtt/MqttMessagingStub');
-var JoynrMessage = require('../../../../classes/joynr/messaging/JoynrMessage');
+var Promise = require("../../../../classes/global/Promise");
+var SharedMqttClient = require("../../../../classes/joynr/messaging/mqtt/SharedMqttClient");
+var MqttAddress = require("../../../../classes/joynr/system/RoutingTypes/MqttAddress");
+var MqttMessagingStub = require("../../../../classes/joynr/messaging/mqtt/MqttMessagingStub");
+var JoynrMessage = require("../../../../classes/joynr/messaging/JoynrMessage");
 
 describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", function() {
     var destinationMqttAddress, topic;
@@ -31,26 +31,25 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", function() {
     beforeEach(function(done) {
         topic = "testTopic";
         destinationMqttAddress = new MqttAddress({
-            brokerUri : "testBrokerUri",
-            topic : topic
+            brokerUri: "testBrokerUri",
+            topic: topic
         });
-        mqttClient = jasmine.createSpyObj("mqttClient", [ "send"
-        ]);
+        mqttClient = jasmine.createSpyObj("mqttClient", ["send"]);
         mqttClient.send.and.returnValue(Promise.resolve());
         mqttMessagingStub = new MqttMessagingStub({
-            address : destinationMqttAddress,
-            client : mqttClient
+            address: destinationMqttAddress,
+            client: mqttClient
         });
 
         joynrMessage = {
-            key : "joynrMessage",
-            to : "toParticipantId",
-            type : "request"
+            key: "joynrMessage",
+            to: "toParticipantId",
+            type: "request"
         };
         multicastMessage = {
-            key : "multicastMessage",
-            to : "toParticipantId",
-            type : JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+            key: "multicastMessage",
+            to: "toParticipantId",
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
         };
 
         done();
@@ -79,5 +78,4 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", function() {
         expect(mqttClient.send).toHaveBeenCalledWith(expectedTopic, multicastMessage);
         done();
     });
-
 });

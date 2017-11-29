@@ -18,9 +18,9 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../../util/Typing');
-var WebSocketMessagingStub = require('./WebSocketMessagingStub');
-var WebSocketAddress = require('../../system/RoutingTypes/WebSocketAddress');
+var Typing = require("../../util/Typing");
+var WebSocketMessagingStub = require("./WebSocketMessagingStub");
+var WebSocketAddress = require("../../system/RoutingTypes/WebSocketAddress");
 
 /**
  * @constructor
@@ -39,7 +39,7 @@ var WebSocketMessagingStubFactory = function WebSocketMessagingStubFactory(setti
 
     var addresses = {};
     addresses[settings.address] = new WebSocketMessagingStub({
-        sharedWebSocket : settings.sharedWebSocket
+        sharedWebSocket: settings.sharedWebSocket
     });
 
     /**

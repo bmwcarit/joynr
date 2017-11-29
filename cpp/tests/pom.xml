@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>0.31.1</version>
+		<version>0.32.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -233,6 +233,10 @@
 					</roots>
                         		<excludes>
         		                    <exclude>resources/ListOfCapabilitiesToInject.json</exclude>
+                                            <exclude>resources/MasterAccessTable.json</exclude>
+                                            <exclude>resources/MasterRegistrationTable.json</exclude>
+                                            <exclude>resources/OwnerAccessTable.json</exclude>
+                                            <exclude>resources/OwnerRegistrationTable.json</exclude>
 	                       		</excludes>
 				</configuration>
 			</plugin>

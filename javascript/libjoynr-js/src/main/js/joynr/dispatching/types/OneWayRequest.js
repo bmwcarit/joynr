@@ -18,12 +18,12 @@
  * limitations under the License.
  * #L%
  */
-var Util = require('../../util/UtilInternal');
-var Typing = require('../../util/Typing');
+var Util = require("../../util/UtilInternal");
+var Typing = require("../../util/Typing");
 
 var defaultSettings = {
-    paramDatatypes : [],
-    params : []
+    paramDatatypes: [],
+    params: []
 };
 
 /**
@@ -80,11 +80,11 @@ function OneWayRequest(settings) {
      * @type String
      */
     Object.defineProperty(this, "_typeName", {
-        value : "joynr.OneWayRequest",
-        readable : true,
-        writable : false,
-        enumerable : true,
-        configurable : false
+        value: "joynr.OneWayRequest",
+        readable: true,
+        writable: false,
+        enumerable: true,
+        configurable: false
     });
     return Object.freeze(this);
 }

@@ -20,6 +20,5 @@ This project has dependencies to:
   io.joynr.javascript:js-dependencies under The Apache Software License, Version 2.0
   io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
   io.joynr:basemodel under The Apache Software License, Version 2.0
-  js-test-driver under The Apache Software License, Version 2.0
   JUnit under Common Public License Version 1.0
 

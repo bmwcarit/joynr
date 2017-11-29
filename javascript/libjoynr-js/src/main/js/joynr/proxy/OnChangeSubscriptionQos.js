@@ -18,10 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var Typing = require('../util/Typing');
-var Util = require('../util/UtilInternal');
-var SubscriptionQos = require('./SubscriptionQos');
-var LoggerFactory = require('../system/LoggerFactory');
+var Typing = require("../util/Typing");
+var Util = require("../util/UtilInternal");
+var SubscriptionQos = require("./SubscriptionQos");
+var LoggerFactory = require("../system/LoggerFactory");
 
 var defaultSettings;
 
@@ -112,13 +112,17 @@ function OnChangeSubscriptionQos(settings) {
      */
     Util.extend(this, defaultSettings, settings, subscriptionQos);
     if (this.minIntervalMs < OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS) {
-        log.warn("minIntervalMs < MIN_MIN_INTERVAL_MS. Using MIN_MIN_INTERVAL_MS: "
-            + OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS);
+        log.warn(
+            "minIntervalMs < MIN_MIN_INTERVAL_MS. Using MIN_MIN_INTERVAL_MS: " +
+                OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS
+        );
         this.minIntervalMs = OnChangeSubscriptionQos.MIN_MIN_INTERVAL_MS;
     }
     if (this.minIntervalMs > OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS) {
-        log.warn("minIntervalMs > MAX_MIN_INTERVAL_MS. Using MAX_MIN_INTERVAL_MS: "
-            + OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS);
+        log.warn(
+            "minIntervalMs > MAX_MIN_INTERVAL_MS. Using MAX_MIN_INTERVAL_MS: " +
+                OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS
+        );
         this.minIntervalMs = OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS;
     }
 }
@@ -160,7 +164,7 @@ OnChangeSubscriptionQos.MAX_MIN_INTERVAL_MS = 2592000000;
 OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS = 1000;
 
 defaultSettings = {
-    minIntervalMs : OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS
+    minIntervalMs: OnChangeSubscriptionQos.DEFAULT_MIN_INTERVAL_MS
 };
 
 module.exports = OnChangeSubscriptionQos;

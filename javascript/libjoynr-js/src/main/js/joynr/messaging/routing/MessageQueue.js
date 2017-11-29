@@ -23,11 +23,11 @@
  * The <code>MessageQueue</code> is a joynr internal data structure. The Message Queue caches incoming messages, which cannot be shipped
  * to the correct participant. Once a participant with the matching participantId is registered, the incoming message is forwarded to him
  */
-var LoggerFactory = require('../../system/LoggerFactory');
-var DiagnosticTags = require('../../system/DiagnosticTags');
-var LongTimer = require('../../util/LongTimer');
-var Util = require('../../util/UtilInternal');
-var JoynrMessage = require('../JoynrMessage');
+var LoggerFactory = require("../../system/LoggerFactory");
+var DiagnosticTags = require("../../system/DiagnosticTags");
+var LongTimer = require("../../util/LongTimer");
+var Util = require("../../util/UtilInternal");
+var JoynrMessage = require("../JoynrMessage");
 
 var log = LoggerFactory.getLogger("joynr/messaging/routing/MessageQueue");
 var defaultSettings;
@@ -46,7 +46,6 @@ var defaultSettings;
  * to the correct participant. Once a participant with the matching participantId is registered, the incoming message is forwarded to him
  */
 function MessageQueue(settings) {
-
     this._messageQueues = {};
     Util.extend(this, defaultSettings, settings);
     this.currentQueueSize = 0;
@@ -56,7 +55,7 @@ MessageQueue.CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS = 5000;
 MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES = 10000;
 
 defaultSettings = {
-    maxQueueSizeInKBytes : MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES
+    maxQueueSizeInKBytes: MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES
 };
 
 /**
@@ -101,26 +100,25 @@ MessageQueue.prototype._removeMessageWhenTtlExpired = function(message) {
  * @param {JoynrMessage}
  *            joynrMessage
  */
-MessageQueue.prototype.putMessage =
-        function putMessage(message) {
-            // drop message if maximum queue size has been reached
-            if (message.payload !== undefined) {
-                var messageSize = Util.getLengthInBytes(message.payload);
-                if ((this.currentQueueSize + messageSize) <= (this.maxQueueSizeInKBytes * 1024)) {
-                    this.currentQueueSize = this.currentQueueSize + messageSize;
-                    if (this._messageQueues[message.to] === undefined) {
-                        this._messageQueues[message.to] = [];
-                    }
-                    this._messageQueues[message.to].push(message);
-                    this._removeMessageWhenTtlExpired(message);
-                } else {
-                    log
-                            .error(
-                                    "message cannot be added to message queue, as the queue buffer size has been exceeded",
-                                    DiagnosticTags.forJoynrMessage(message));
-                }
+MessageQueue.prototype.putMessage = function putMessage(message) {
+    // drop message if maximum queue size has been reached
+    if (message.payload !== undefined) {
+        var messageSize = Util.getLengthInBytes(message.payload);
+        if (this.currentQueueSize + messageSize <= this.maxQueueSizeInKBytes * 1024) {
+            this.currentQueueSize = this.currentQueueSize + messageSize;
+            if (this._messageQueues[message.to] === undefined) {
+                this._messageQueues[message.to] = [];
             }
-        };
+            this._messageQueues[message.to].push(message);
+            this._removeMessageWhenTtlExpired(message);
+        } else {
+            log.error(
+                "message cannot be added to message queue, as the queue buffer size has been exceeded",
+                DiagnosticTags.forJoynrMessage(message)
+            );
+        }
+    }
+};
 
 /**
  * gets the queue messages for the participant

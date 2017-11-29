@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>0.31.1</version>
+		<version>0.32.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -66,6 +66,10 @@
 						</roots>
 					<excludes>
 						<exclude>tests/resources/ListOfCapabilitiesToInject.json</exclude>
+                                                <exclude>tests/resources/MasterAccessTable.json</exclude>
+                                                <exclude>tests/resources/MasterRegistrationTable.json</exclude>
+                                                <exclude>tests/resources/OwnerAccessTable.json</exclude>
+                                                <exclude>tests/resources/OwnerRegistrationTable.json</exclude>
 					</excludes>
 					</configuration>
 				</plugin>

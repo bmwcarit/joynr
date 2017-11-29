@@ -122,6 +122,7 @@ public:
         messagingQos(MessagingQos(5000))
     {
         singleThreadedIOService->start();
+        localCapabilitiesDirectoryMock->init();
     }
 
     ~AccessControllerTest()

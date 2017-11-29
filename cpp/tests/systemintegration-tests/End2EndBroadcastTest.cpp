@@ -903,12 +903,14 @@ TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnS
     JOYNR_ASSERT_NO_THROW(testProxy2->unsubscribeFromLocationUpdateBroadcast(subscriptionId2));
 }
 
+using namespace std::literals;
+
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,
         End2EndBroadcastTest,
         testing::Values(
             std::make_tuple(
-                "test-resources/HttpSystemIntegrationTest1.settings",
-                "test-resources/HttpSystemIntegrationTest2.settings"
+                "test-resources/HttpSystemIntegrationTest1.settings"s,
+                "test-resources/HttpSystemIntegrationTest2.settings"s
             )
         )
 );
@@ -917,8 +919,8 @@ INSTANTIATE_TEST_CASE_P(Mqtt,
         End2EndBroadcastTest,
         testing::Values(
             std::make_tuple(
-                "test-resources/MqttSystemIntegrationTest1.settings",
-                "test-resources/MqttSystemIntegrationTest2.settings"
+                "test-resources/MqttSystemIntegrationTest1.settings"s,
+                "test-resources/MqttSystemIntegrationTest2.settings"s
             )
         )
 );

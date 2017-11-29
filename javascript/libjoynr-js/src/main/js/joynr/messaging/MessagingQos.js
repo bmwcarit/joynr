@@ -18,17 +18,17 @@
  * limitations under the License.
  * #L%
  */
-var defaultMessagingSettings = require('../start/settings/defaultMessagingSettings');
-var LoggerFactory = require('../system/LoggerFactory');
-var Util = require('../util/UtilInternal');
-var MessagingQosEffort = require('./MessagingQosEffort');
+var defaultMessagingSettings = require("../start/settings/defaultMessagingSettings");
+var LoggerFactory = require("../system/LoggerFactory");
+var Util = require("../util/UtilInternal");
+var MessagingQosEffort = require("./MessagingQosEffort");
 
 var log = LoggerFactory.getLogger("joynr/messaging/MessagingQos");
 var defaultSettings = {
-    ttl : 60000,
-    customHeaders : {},
-    encrypt : false,
-    compress : false
+    ttl: 60000,
+    customHeaders: {},
+    encrypt: false,
+    compress: false
 };
 
 /**
@@ -67,10 +67,10 @@ function MessagingQos(settings) {
     if (settings.ttl > defaultMessagingSettings.MAX_MESSAGING_TTL_MS) {
         this.ttl = defaultMessagingSettings.MAX_MESSAGING_TTL_MS;
         errorMsg =
-                "Error in MessageQos. Max allowed ttl: "
-                    + defaultMessagingSettings.MAX_MESSAGING_TTL_MS
-                    + ". Passed ttl: "
-                    + settings.ttl;
+            "Error in MessageQos. Max allowed ttl: " +
+            defaultMessagingSettings.MAX_MESSAGING_TTL_MS +
+            ". Passed ttl: " +
+            settings.ttl;
         log.warn(errorMsg);
     } else {
         this.ttl = settings.ttl;
@@ -115,7 +115,6 @@ function MessagingQos(settings) {
     if (settings.compress !== true && settings.compress !== false) {
         throw new Error("compress may only contain a boolean");
     }
-
 }
 
 /**
@@ -135,8 +134,7 @@ function checkKeyAndValue(key, value) {
         throw new Error("custom header key may only contain alphanumeric characters");
     }
     if (!valueOk) {
-        throw new Error(
-                "custom header value contains illegal character. See JSDoc for allowed characters");
+        throw new Error("custom header value contains illegal character. See JSDoc for allowed characters");
     }
     return true;
 }
@@ -153,10 +151,10 @@ function checkKeyAndValue(key, value) {
  * @returns {JoynrMessage}
  */
 Object.defineProperty(MessagingQos.prototype, "putCustomMessageHeader", {
-    enumerable : false,
-    configurable : false,
-    writable : false,
-    value : function(key, value) {
+    enumerable: false,
+    configurable: false,
+    writable: false,
+    value: function(key, value) {
         checkKeyAndValue(key, value);
         this.customHeaders[key] = value;
     }

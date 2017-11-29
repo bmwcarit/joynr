@@ -18,10 +18,10 @@
  * limitations under the License.
  * #L%
  */
-var TypeRegistrySingleton = require('../../joynr/types/TypeRegistrySingleton');
-var Typing = require('../util/Typing');
-var Util = require('../util/UtilInternal');
-var LoggerFactory = require('../system/LoggerFactory');
+var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+var Typing = require("../util/Typing");
+var Util = require("../util/UtilInternal");
+var LoggerFactory = require("../system/LoggerFactory");
 var defaultSettings;
 
 /**

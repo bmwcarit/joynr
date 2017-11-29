@@ -33,12 +33,14 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "AccessControlNoPermission.entries"
         "AccessControlYesPermission.entries"
         "AccessStoreTest.persist"
+        "AclRclJoynrClusterControllerRuntimeTest.settings"
         "integrationtest.settings"
         "websocket-cc-tls.settings"
         "websocket-libjoynr-tls.settings"
         "websocket-libjoynr-non-tls.settings"
         "CCSettingsWithAccessControlDisabled.settings"
         "CCSettingsWithAccessControlEnabled.settings"
+        "CCSettingsWithAccessControlEnabledAndAclFilePathSet.settings"
         "HttpSystemIntegrationTest1.settings"
         "HttpSystemIntegrationTest2.settings"
         "HttpJoynrClusterControllerRuntimeTest.settings"
@@ -54,6 +56,8 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "MessagingSettingsDiscoveryEntryExpiryIntervalMs.settings"
         "libjoynrSystemIntegration1.settings"
         "libjoynrSystemIntegration2.settings"
+        "persistency-cc-disabled.settings"
+        "persistency-cc-enabled.settings"
         "ca.crt"
         "testclient.pem"
     )
@@ -76,6 +80,18 @@ endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 
 file(COPY "resources/ListOfCapabilitiesToInject.json"
      DESTINATION "${JOYNR_BINARY_DIR}/test-resources/")
+
+set(MULTIPLE_ACL_RCL_TEST_FILES
+    "MasterAccessTable.json"
+    "MasterRegistrationTable.json"
+    "OwnerRegistrationTable.json"
+    "OwnerAccessTable.json"
+)
+
+foreach(testFile ${MULTIPLE_ACL_RCL_TEST_FILES})
+file(COPY "resources/${testFile}"
+     DESTINATION "${JOYNR_BINARY_DIR}/test-resources/multiple-acl-rcl-resources/")
+endforeach()
 
 ### set up stuff common for all test targets ##################################
 

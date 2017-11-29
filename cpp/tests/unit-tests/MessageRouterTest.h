@@ -72,7 +72,8 @@ public:
                          "path")
                        ),
         webSocketClientAddress(std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("testWebSocketClientAddress")),
-        globalTransport(std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerURL, mqttTopic))
+        globalTransport(std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerURL, mqttTopic)),
+        enablePersistency(true)
     {
         singleThreadedIOService->start();
 
@@ -106,6 +107,7 @@ protected:
                     messagingStubFactory,
                     singleThreadedIOService->getIOService(),
                     std::make_unique<WebSocketMulticastAddressCalculator>(localTransport),
+                    enablePersistency,
                     std::move(transportStatuses),
                     6,
                     std::move(messageQueueForMessageRouter),
@@ -123,6 +125,7 @@ protected:
         const std::string globalCcAddress("globalAddress");
         const std::string messageNotificationProviderParticipantId("messageNotificationProviderParticipantId");
         ClusterControllerSettings ccSettings(settings);
+        ccSettings.setMulticastReceiverDirectoryPersistencyEnabled(true);
 
         messagingSettings.setRoutingTableCleanupIntervalMs(5000);
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
@@ -141,6 +144,7 @@ protected:
                     std::make_unique<MqttMulticastAddressCalculator>(globalTransport, ccSettings.getMqttMulticastTopicPrefix()),
                     globalCcAddress,
                     messageNotificationProviderParticipantId,
+                    enablePersistency,
                     std::move(transportStatuses),
                     6,
                     std::move(messageQueueForMessageRouter),
@@ -170,6 +174,8 @@ protected:
     const std::shared_ptr<const joynr::system::RoutingTypes::WebSocketClientAddress> webSocketClientAddress;
     std::shared_ptr<const joynr::system::RoutingTypes::MqttAddress> globalTransport;
 
+    const bool enablePersistency;
+
     void routeMessageToAddress(){
         joynr::Semaphore semaphore(0);
         std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
@@ -184,6 +190,7 @@ protected:
         messageRouter->route(immutableMessage);
         EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
     }
+    virtual void checkAllowUpdate(bool allowUpdate, bool updateExpected);
 };
 
 typedef ::testing::Types<

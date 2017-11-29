@@ -84,28 +84,33 @@ ArbitrationStrategyCollection.HighestPriority = function(capabilities) {
  *            keyword the keyword to search for
  * @returns {Array} an array of capabilities sorted by the highest priority
  */
-ArbitrationStrategyCollection.Keyword =
-        function(keyword, capabilities) {
-            var capId, qosId, qosParam, cap, keywordCaps = [];
+ArbitrationStrategyCollection.Keyword = function(keyword, capabilities) {
+    var capId,
+        qosId,
+        qosParam,
+        cap,
+        keywordCaps = [];
 
-            for (capId in capabilities) {
-                if (capabilities.hasOwnProperty(capId)) {
-                    cap = capabilities[capId];
-                    if (cap.qos.customParameters
-                        && Object.prototype.toString.call(cap.qos.customParameters) === "[object Array]") {
-                        for (qosId in cap.qos.customParameters) {
-                            if (cap.qos.customParameters.hasOwnProperty(qosId)) {
-                                qosParam = cap.qos.customParameters[qosId];
-                                if (qosParam && qosParam.value && qosParam.value === keyword) {
-                                    keywordCaps.push(cap);
-                                }
-                            }
+    for (capId in capabilities) {
+        if (capabilities.hasOwnProperty(capId)) {
+            cap = capabilities[capId];
+            if (
+                cap.qos.customParameters &&
+                Object.prototype.toString.call(cap.qos.customParameters) === "[object Array]"
+            ) {
+                for (qosId in cap.qos.customParameters) {
+                    if (cap.qos.customParameters.hasOwnProperty(qosId)) {
+                        qosParam = cap.qos.customParameters[qosId];
+                        if (qosParam && qosParam.value && qosParam.value === keyword) {
+                            keywordCaps.push(cap);
                         }
                     }
                 }
             }
-            return keywordCaps;
-        };
+        }
+    }
+    return keywordCaps;
+};
 
 /**
  * The ArbitrationStrategyCollection.LastSeen favors latest lastSeenDateMs

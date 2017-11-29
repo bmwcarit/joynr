@@ -19,16 +19,14 @@
  * #L%
  */
 
-define([
-    "joynr/dispatching/types/SubscriptionReply",
-    "joynr/exceptions/SubscriptionException"
-], function(SubscriptionReply, SubscriptionException) {
-
+define(["joynr/dispatching/types/SubscriptionReply", "joynr/exceptions/SubscriptionException"], function(
+    SubscriptionReply,
+    SubscriptionException
+) {
     describe("libjoynr-js.joynr.dispatching.types.SubscriptionReply", function() {
-
         it("is instantiable", function() {
             var subscriptionReply = new SubscriptionReply({
-                subscriptionId : "id"
+                subscriptionId: "id"
             });
             expect(subscriptionReply).toBeDefined();
             expect(subscriptionReply instanceof SubscriptionReply).toBeTruthy();
@@ -38,12 +36,12 @@ define([
 
         it("is instantiable with error", function() {
             var subscriptionException = new SubscriptionException({
-                subscriptionId : "id"
+                subscriptionId: "id"
             });
 
             var subscriptionReply = new SubscriptionReply({
-                subscriptionId : "id",
-                error : subscriptionException
+                subscriptionId: "id",
+                error: subscriptionException
             });
             expect(subscriptionReply).toBeDefined();
             expect(subscriptionReply instanceof SubscriptionReply).toBeTruthy();
@@ -51,7 +49,5 @@ define([
             expect(subscriptionReply.subscriptionId).toEqual("id");
             expect(subscriptionReply.error).toEqual(subscriptionException);
         });
-
     });
-
 }); // require

@@ -113,12 +113,13 @@ void LibJoynrRuntime::init(
     std::string routingProviderParticipantId =
             systemServicesSettings.getCcRoutingProviderParticipantId();
     // create message router
-    libJoynrMessageRouter =
-            std::make_shared<LibJoynrMessageRouter>(messagingSettings,
-                                                    libjoynrMessagingAddress,
-                                                    std::move(messagingStubFactory),
-                                                    singleThreadIOService->getIOService(),
-                                                    std::move(addressCalculator));
+    libJoynrMessageRouter = std::make_shared<LibJoynrMessageRouter>(
+            messagingSettings,
+            libjoynrMessagingAddress,
+            std::move(messagingStubFactory),
+            singleThreadIOService->getIOService(),
+            std::move(addressCalculator),
+            libjoynrSettings->isMessageRouterPersistencyEnabled());
     libJoynrMessageRouter->init();
 
     libJoynrMessageRouter->loadRoutingTable(

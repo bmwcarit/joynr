@@ -40,12 +40,6 @@
           <artifactId>javascript</artifactId>
           <version>2.0.9</version>
 
-* RequireJS (https://github.com/jrburke/requirejs)
-  License: MIT License (https://github.com/jrburke/requirejs/blob/master/LICENSE)
-  Webjar: <groupId>org.webjars</groupId>
-          <artifactId>requirejs</artifactId>
-          <version>2.1.22</version>
-
 * Jasmine (https://github.com/pivotal/jasmine)
   License: MIT License (https://github.com/pivotal/jasmine/blob/master/MIT.LICENSE)
   Webjar: <groupId>org.webjars</groupId>

@@ -1,0 +1,5 @@
+[access-control]
+enable=true
+
+[cluster-controller]
+acl-entries-directory=test-resources
