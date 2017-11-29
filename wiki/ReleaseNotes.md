@@ -7,6 +7,13 @@ None.
 * **[Java]** See the [Java Configuration Reference](JavaSettings.md) for
   details about the newly introduced property:
   * `PROPERTY_KEY_MQTT_CLEAN_SESSION`
+  * `PROPERTY_KEY_MQTT_KEYSTORE_PATH`
+  * `PROPERTY_KEY_MQTT_TRUSTSTORE_PATH`
+  * `PROPERTY_KEY_MQTT_KEYSTORE_PWD`
+  * `PROPERTY_KEY_MQTT_TRUSTSTORE_PWD`
+
+## Other changes
+* **[Java]** added support for MQTT via TLS
 
 ## Other changes
 * **[C++]** Disabled persistency for the routing table, local discovery cache and multicast
