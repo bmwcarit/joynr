@@ -79,12 +79,13 @@ public:
         settings.set(ClusterControllerSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(), 200);
         settings.set(ClusterControllerSettings::SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(), true);
         localCapabilitiesDirectory =
-                std::make_unique<LocalCapabilitiesDirectory>(clusterControllerSettings,
+                std::make_shared<LocalCapabilitiesDirectory>(clusterControllerSettings,
                                                              capabilitiesClient,
                                                              LOCAL_ADDRESS,
                                                              mockMessageRouter,
                                                              singleThreadedIOService->getIOService(),
                                                              clusterControllerId);
+        localCapabilitiesDirectory->init();
     }
 
     ~LocalCapabilitiesDirectoryTest()
@@ -273,7 +274,7 @@ protected:
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::string clusterControllerId;
-    std::unique_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
+    std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
     std::string dummyParticipantId1;
@@ -1601,12 +1602,13 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                     defaultOnError);
 
     // create a new object
-    auto localCapabilitiesDirectory2 = std::make_unique<LocalCapabilitiesDirectory>(clusterControllerSettings,
+    auto localCapabilitiesDirectory2 = std::make_shared<LocalCapabilitiesDirectory>(clusterControllerSettings,
                                                                               capabilitiesClient,
                                                                               LOCAL_ADDRESS,
                                                                               mockMessageRouter,
                                                                               singleThreadedIOService->getIOService(),
                                                                               "clusterControllerId");
+    localCapabilitiesDirectory2->init();
 
     // load persistency
     localCapabilitiesDirectory2->loadPersistedFile();
