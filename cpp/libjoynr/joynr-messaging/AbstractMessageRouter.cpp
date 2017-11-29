@@ -359,19 +359,15 @@ void AbstractMessageRouter::activateRoutingTableCleanerTimer()
 void AbstractMessageRouter::registerTransportStatusCallbacks()
 {
     for (auto& transportStatus : transportStatuses) {
-        transportStatus->setAvailabilityChangedCallback([
-            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-            transportStatusWeakPtr = joynr::util::as_weak_ptr(transportStatus)
-        ](bool isAvailable) {
-            if (isAvailable) {
-                if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                    if (auto transportStatusSharedPtr = transportStatusWeakPtr.lock()) {
-                        thisSharedPtr->rescheduleQueuedMessagesForTransport(
-                                transportStatusSharedPtr);
+        transportStatus->setAvailabilityChangedCallback(
+                [ thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()), transportStatus ](
+                        bool isAvailable) {
+                    if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                        if (isAvailable) {
+                            thisSharedPtr->rescheduleQueuedMessagesForTransport(transportStatus);
+                        }
                     }
-                }
-            }
-        });
+                });
     }
 }
 
@@ -562,13 +558,13 @@ void MessageRunnable::run()
                     std::chrono::milliseconds delay = delayException.getDelayMs();
 
                     if (auto messageRouterSharedPtr = thisSharedPtr->messageRouter.lock()) {
-                        JOYNR_LOG_TRACE(logger(),
-                                        "Rescheduling message after error: messageId: {}, new "
-                                        "delay {}ms, "
-                                        "reason: {}",
-                                        thisSharedPtr->message->getId(),
-                                        delay.count(),
-                                        e.getMessage());
+                        JOYNR_LOG_TRACE(
+                                logger(),
+                                "Rescheduling message after error: messageId: {}, new delay {}ms, "
+                                "reason: {}",
+                                thisSharedPtr->message->getId(),
+                                delay.count(),
+                                e.getMessage());
                         messageRouterSharedPtr->scheduleMessage(thisSharedPtr->message,
                                                                 thisSharedPtr->destAddress,
                                                                 thisSharedPtr->tryCount + 1,
