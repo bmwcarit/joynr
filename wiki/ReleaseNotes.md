@@ -11,11 +11,14 @@ None.
   * `PROPERTY_KEY_MQTT_TRUSTSTORE_PATH`
   * `PROPERTY_KEY_MQTT_KEYSTORE_PWD`
   * `PROPERTY_KEY_MQTT_TRUSTSTORE_PWD`
+* **[JS]** See the [Javascript Configuration Reference](JavaScriptTutorial.md) for
+  details about the newly introduced properties:
+  * `shutdownSettings`
+    * `clearSubscriptionsEnabled`
+    * `clearSubscriptionsTimeoutMs`
 
 ## Other changes
 * **[Java]** added support for MQTT via TLS
-
-## Other changes
 * **[C++]** Disabled persistency for the routing table, local discovery cache and multicast
   receiver directory by default. Persistency for subscriptions is still enabled. The
   corresponding properties are called `lib-joynr/message-router-persistency`,
