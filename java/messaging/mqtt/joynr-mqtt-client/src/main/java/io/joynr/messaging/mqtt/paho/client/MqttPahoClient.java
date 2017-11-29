@@ -18,7 +18,6 @@
  */
 package io.joynr.messaging.mqtt.paho.client;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
