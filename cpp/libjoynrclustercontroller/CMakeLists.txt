@@ -120,46 +120,6 @@ file(
     "ClusterControllerCallContext.cpp"
 )
 
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    file(
-        GLOB_RECURSE JoynrClusterController_DBUS_PRIVATE_HEADERS
-        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        "messaging/dbus/*.h"
-    )
-
-    set(
-        JoynrClusterController_HEADERS
-        ${JoynrClusterController_HEADERS}
-        ${JoynrClusterController_DBUS_PRIVATE_HEADERS}
-    )
-
-    file(
-        GLOB_RECURSE JoynrClusterController_DBUS_SOURCES
-        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        "messaging/dbus/*.cpp"
-    )
-
-    set(
-        JoynrClusterController_SOURCES
-        ${JoynrClusterController_SOURCES}
-        ${JoynrClusterController_DBUS_SOURCES}
-    )
-
-    list(
-        APPEND JoynrClusterController_TARGET_LIBRARIES
-        ${DBUS1_LIBRARIES}
-        ${COMMONAPI_LIBRARIES}
-        ${COMMONAPI_DBUS_LIBRARIES}
-    )
-
-    get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
-    list(
-        APPEND JoynrClusterController_INCLUDE_DIRECTORIES
-        ${common_api_PUBLIC_INCLUDE_DIRECTORY}
-    )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
-
 add_library(
     JoynrClusterController
     # library type is set via BUILD_SHARED_LIBS
@@ -242,16 +202,6 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
         @ONLY
     )
     configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-dbus.settings
-        @ONLY
-    )
-    configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-dbus.settings
-        @ONLY
-    )
-    configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-websocket.settings
         @ONLY
@@ -279,11 +229,6 @@ else()
         @ONLY
     )
     configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-dbus.settings
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-dbus.settings
-        @ONLY
-    )
-    configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
         @ONLY
@@ -297,7 +242,6 @@ else()
     install(
         FILES
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings
-            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-dbus.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-clustercontroller.settings
         DESTINATION ${JOYNR_INSTALL_FULL_SYSCONFDIR}

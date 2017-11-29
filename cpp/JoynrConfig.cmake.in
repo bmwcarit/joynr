@@ -21,13 +21,6 @@
 #   Joynr_LIB_WS_LIBRARIES             - Libraries needed for standalone libJoynr with WebSocket
 #                                        communication.
 #                                        (without cluster controller)
-#
-#   Joynr_LIB_DBUS_INCLUDE_DIRS        - Include directories for standalone libJoynr with DBus
-#                                        communication.
-#                                        (without cluster controller)
-#   Joynr_LIB_DBUS_LIBRARIES           - Libraries needed for standalone libJoynr with DBus
-#                                        communication.
-#                                        (without cluster controller)
 
 # This file is derived from a CMake tutorial (http://www.cmake.org/Wiki/CMake/)
 # that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/).
@@ -35,11 +28,6 @@
 
 # Compute paths
 get_filename_component(JOYNR_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-
-set(
-    USE_DBUS_COMMONAPI_COMMUNICATION
-    @USE_DBUS_COMMONAPI_COMMUNICATION@
-)
 
 if(CMAKE_CXX_VERSION LESS 14)
     if("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
@@ -145,21 +133,6 @@ endif(JOYNR_ENABLE_DLT_LOGGING)
 if(JOYNR_ENABLE_STDOUT_LOGGING)
     add_definitions(-DJOYNR_ENABLE_STDOUT_LOGGING)
 endif(JOYNR_ENABLE_STDOUT_LOGGING)
-
-# Dbus configuration
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    set(
-        Joynr_LIB_DBUS_INCLUDE_DIRS
-        "${Joynr_LIB_COMMON_INCLUDE_DIRS}"
-        @JoynrConfig_LIB_DBUS_INCLUDE_DIRS@
-    )
-
-    set(
-        Joynr_LIB_DBUS_LIBRARIES
-        "${Joynr_LIB_COMMON_LIBRARIES}"
-        @JoynrConfig_LIB_DBUS_LIBRARIES@
-    )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 list(
     APPEND Joynr_EXECUTABLES

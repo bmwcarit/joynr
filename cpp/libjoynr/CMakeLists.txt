@@ -64,19 +64,6 @@ if(JOYNR_ENABLE_DLT_LOGGING)
     )
 endif(JOYNR_ENABLE_DLT_LOGGING)
 
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    list(
-        APPEND JoynrLib_TARGET_LIBRARIES
-        JoynrCommonAPI
-    )
-
-    get_target_property(JoynrCommonAPI_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
-    list(
-        APPEND Joynr_INCLUDE_DIRECTORIES
-        ${JoynrCommonAPI_PUBLIC_INCLUDE_DIRECTORY}
-    )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
 set(
     JoynrLib_EXPORT_HEADER
     "include/joynr/JoynrExport.h"
@@ -236,42 +223,6 @@ set(JoynrLib_SOURCES
     "websocket/WebSocketSettings.cpp"
     ${JoynrLib_GENERATED_SOURCES}
 )
-
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    set(
-        JoynrLib_HEADERS
-        ${JoynrLib_HEADERS}
-        "dbus/DbusMessagingStubAdapter.h"
-        "dbus/DbusMessagingStubFactory.h"
-        "dbus/IDbusStubWrapper.h"
-        "dbus/DbusMessagingUtil.h"
-        "dbus/DbusSettings.h"
-    )
-
-    set(
-        JoynrLib_SOURCES
-        ${JoynrLib_SOURCES}
-        "dbus/DBusMessageRouterAdapter.cpp"
-        "dbus/DbusMessagingSkeleton.cpp"
-        "dbus/DbusMessagingStubAdapter.cpp"
-        "dbus/DbusMessagingStubFactory.cpp"
-        "dbus/DbusMessagingUtil.cpp"
-        "dbus/DbusSettings.cpp"
-    )
-
-    list(
-        APPEND JoynrLib_TARGET_LIBRARIES
-        ${DBUS1_LIBRARIES}
-        ${COMMONAPI_LIBRARIES}
-        ${COMMONAPI_DBUS_LIBRARIES}
-    )
-
-    get_target_property(common_api_PUBLIC_INCLUDE_DIRECTORY JoynrCommonAPI PUBLIC_INCLUDE_DIRECTORY)
-    list(
-        APPEND JoynrLib_INCLUDE_DIRECTORIES
-        ${common_api_PUBLIC_INCLUDE_DIRECTORY}
-    )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 add_library(
     Joynr
