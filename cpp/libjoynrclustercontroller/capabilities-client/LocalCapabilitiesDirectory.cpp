@@ -142,7 +142,7 @@ void LocalCapabilitiesDirectory::addInternal(const types::DiscoveryEntry& discov
     const bool isGloballyVisible = isGlobal(discoveryEntry);
 
     // register locally
-    this->insertInCache(discoveryEntry, true, isGloballyVisible);
+    insertInCache(discoveryEntry, true, isGloballyVisible);
 
     // Inform observers
     informObserversOnAdd(discoveryEntry);
@@ -434,11 +434,11 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                         joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
             }
         };
-        this->capabilitiesClient->lookup(participantId,
-                                         std::move(onSuccess),
-                                         std::bind(&ILocalCapabilitiesCallback::onError,
-                                                   std::move(callback),
-                                                   std::placeholders::_1));
+        capabilitiesClient->lookup(participantId,
+                                   std::move(onSuccess),
+                                   std::bind(&ILocalCapabilitiesCallback::onError,
+                                             std::move(callback),
+                                             std::placeholders::_1));
     }
 }
 
@@ -501,11 +501,11 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
             std::lock_guard<std::mutex> lock(pendingLookupsLock);
             registerPendingLookup(interfaceAddresses, callback);
         }
-        this->capabilitiesClient->lookup(domains,
-                                         interfaceName,
-                                         discoveryQos.getDiscoveryTimeout(),
-                                         std::move(onSuccess),
-                                         std::move(onError));
+        capabilitiesClient->lookup(domains,
+                                   interfaceName,
+                                   discoveryQos.getDiscoveryTimeout(),
+                                   std::move(onSuccess),
+                                   std::move(onError));
     }
 }
 
@@ -627,7 +627,7 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
                         currentEntry.getParticipantId(),
                         serializedAddress);
             }
-            this->insertInCache(currentEntry, false, true);
+            insertInCache(currentEntry, false, true);
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_FATAL(logger(),
                             "could not deserialize Address from {} - error: {}",
