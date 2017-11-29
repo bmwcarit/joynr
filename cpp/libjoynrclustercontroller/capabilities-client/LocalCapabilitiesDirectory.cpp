@@ -55,6 +55,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         boost::asio::io_service& ioService,
         const std::string clusterControllerId)
         : joynr::system::DiscoveryAbstractProvider(),
+          joynr::system::ProviderReregistrationControllerProvider(),
           clusterControllerSettings(clusterControllerSettings),
           capabilitiesClient(std::move(capabilitiesClientPtr)),
           localAddress(localAddress),
