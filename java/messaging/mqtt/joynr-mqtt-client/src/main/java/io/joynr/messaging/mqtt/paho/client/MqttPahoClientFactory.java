@@ -53,6 +53,22 @@ public class MqttPahoClientFactory implements MqttClientFactory {
     private MqttClientIdProvider clientIdProvider;
     private boolean cleanSession;
 
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH)
+    private String keyStorePath = "";
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH)
+    private String trustStorePath = "";
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD)
+    private String keyStorePWD = "";
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD)
+    private String trustStorePWD = "";
+
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
@@ -104,7 +120,11 @@ public class MqttPahoClientFactory implements MqttClientFactory {
                                             timeToWaitMs,
                                             maxMsgsInflight,
                                             maxMsgSizeBytes,
-                                            cleanSession);
+                                            cleanSession,
+                                            keyStorePath,
+                                            trustStorePath,
+                                            keyStorePWD,
+                                            trustStorePWD);
         } catch (MqttException e) {
             logger.error("Create MqttClient failed", e);
         }

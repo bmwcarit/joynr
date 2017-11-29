@@ -58,6 +58,15 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC = "joynr.messaging.mqtt.connectiontimeoutsec";
     public static final String PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS = "joynr.messaging.mqtt.timetowaitms";
     public static final String PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES = "joynr.messaging.mqtt.maxmqttmessagesizebytes";
+    // SSLSocketFactoryFactory.SYSKEYSTORE.toLowerCase() // joynr properties should be in lower case, this is unapplicable as it is const
+    public static final String PROPERTY_KEY_MQTT_KEYSTORE_PATH = "javax.net.ssl.keystore";
+    // SSLSocketFactoryFactory.SYSTRUSTSTORE.toLowerCase()
+    public static final String PROPERTY_KEY_MQTT_TRUSTSTORE_PATH = "javax.net.ssl.truststore";
+    // SSLSocketFactoryFactory.SYSKEYSTOREPWD.toLowerCase()
+    public static final String PROPERTY_KEY_MQTT_KEYSTORE_PWD = "javax.net.ssl.keystorepassword";
+    // SSLSocketFactoryFactory.SYSTRUSTSTOREPWD.toLowerCase()
+    public static final String PROPERTY_KEY_MQTT_TRUSTSTORE_PWD = "javax.net.ssl.truststorepassword";
+
     /**
      * Use this key to activate shared subscription support by setting the property's value to <code>true</code>. Shared
      * subscriptions are a feature of HiveMQ which allow queue semantics to be used for subscribers to MQTT topics. That

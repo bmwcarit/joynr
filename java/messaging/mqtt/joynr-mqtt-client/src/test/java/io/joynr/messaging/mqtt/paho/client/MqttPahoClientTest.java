@@ -18,32 +18,40 @@
  */
 package io.joynr.messaging.mqtt.paho.client;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.internal.security.SSLSocketFactoryFactory;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
-import org.junit.rules.ExpectedException;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
@@ -54,25 +62,20 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
+import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttMessagingStub;
-import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
-import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.atLeast;
-
 public class MqttPahoClientTest {
 
     private static int mqttBrokerPort;
+    private static final String KEYSTORE_PASSWORD = "password";
+    private static final boolean NON_SECURE_CONNECTION = false;
     private static Process mosquittoProcess;
     private Injector injector;
     private MqttClientFactory mqttClientFactory;
@@ -108,7 +111,6 @@ public class MqttPahoClientTest {
         properties = new Properties();
         mqttMessageIdCaptor = ArgumentCaptor.forClass(Integer.class);
 
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS, "100");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC, "60");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC, "30");
@@ -134,15 +136,45 @@ public class MqttPahoClientTest {
     }
 
     private void createJoynrMqttClient() {
+        try {
+            createJoynrMqttClient(NON_SECURE_CONNECTION);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-        joynrMqttClient = createMqttClientWithoutSubscription();
+    // Get the path of the test resources
+    private static String getResourcePath(String filename) throws URISyntaxException {
+        URL resource = ClassLoader.getSystemClassLoader().getResource(filename);
+        return resource.getPath();
+    }
+
+    private void createJoynrMqttClient(boolean isSecureConnection) throws Exception {
+        joynrMqttClient = createMqttClientWithoutSubscription(isSecureConnection);
 
         ownTopic = injector.getInstance((Key.get(MqttAddress.class,
                                                  Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))));
         joynrMqttClient.subscribe(ownTopic.getTopic());
     }
 
-    private JoynrMqttClient createMqttClientWithoutSubscription() {
+    private JoynrMqttClient createMqttClientWithoutSubscription() throws Exception {
+        return createMqttClientWithoutSubscription(NON_SECURE_CONNECTION);
+    }
+
+    private JoynrMqttClient createMqttClientWithoutSubscription(boolean isSecureConnection) throws Exception {
+        if (isSecureConnection) {
+            final String keyStorePath = getResourcePath("clientkeystore.jks");
+            final String trustStorePath = getResourcePath("catruststore.jks");
+            final String keyStorePWD = KEYSTORE_PASSWORD;
+            final String trustStorePWD = KEYSTORE_PASSWORD;
+            properties.put(SSLSocketFactoryFactory.SYSKEYSTORE, keyStorePath);
+            properties.put(SSLSocketFactoryFactory.SYSTRUSTSTORE, trustStorePath);
+            properties.put(SSLSocketFactoryFactory.SYSKEYSTOREPWD, keyStorePWD);
+            properties.put(SSLSocketFactoryFactory.SYSTRUSTSTOREPWD, trustStorePWD);
+            properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "ssl://localhost:8883");
+        } else {
+            properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
+        }
 
         injector = Guice.createInjector(new MqttPahoModule(),
                                         new JoynrPropertiesModule(properties),
@@ -199,6 +231,20 @@ public class MqttPahoClientTest {
         final int initialMessageSize = 100;
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
         createJoynrMqttClient();
+
+        byte[] shortSerializedMessage = new byte[initialMessageSize];
+        joynrMqttClientPublishAndVerifyReceivedMessage(shortSerializedMessage);
+
+        byte[] largeSerializedMessage = new byte[initialMessageSize + 1];
+        joynrMqttClientPublishAndVerifyReceivedMessage(largeSerializedMessage);
+    }
+
+    @Test
+    public void mqttClientSSLTestWithDisabledMessageSizeCheck() throws Exception {
+        final int initialMessageSize = 100;
+        final boolean isSecureConnection = true;
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
+        createJoynrMqttClient(isSecureConnection);
 
         byte[] shortSerializedMessage = new byte[initialMessageSize];
         joynrMqttClientPublishAndVerifyReceivedMessage(shortSerializedMessage);
@@ -268,7 +314,7 @@ public class MqttPahoClientTest {
 
     @Test
     public void mqttClientTestResubscriptionWithCleanRestartEnabled() throws Exception {
-
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         injector = Guice.createInjector(new MqttPahoModule(),
                                         new JoynrPropertiesModule(properties),
                                         new AbstractModule() {
@@ -309,7 +355,11 @@ public class MqttPahoClientTest {
                                              timeToWaitMs,
                                              maxMsgsInflight,
                                              maxMsgSizeBytes,
-                                             cleanSession);
+                                             cleanSession,
+                                             "",
+                                             "",
+                                             "",
+                                             "");
 
         joynrMqttClient.start();
         joynrMqttClient.setMessageListener(mockReceiver);
@@ -323,4 +373,5 @@ public class MqttPahoClientTest {
 
         joynrMqttClientPublishAndVerifyReceivedMessage(serializedMessage);
     }
+
 }
