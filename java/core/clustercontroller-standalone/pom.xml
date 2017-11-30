@@ -20,7 +20,7 @@
 	<parent>
 		<artifactId>core</artifactId>
 		<groupId>io.joynr.java</groupId>
-		<version>0.32.0-SNAPSHOT</version>
+		<version>0.33.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 

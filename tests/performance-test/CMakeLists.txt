@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(performance-test-0.32.0-SNAPSHOT)
+project(performance-test-0.33.0-SNAPSHOT-SNAPSHOT)
 
 # Compile to a bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -17,7 +17,7 @@ include(GNUInstallDirs)
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 0.32.0 REQUIRED)
+find_package(Joynr 0.33.0 REQUIRED)
 
 if(NOT DEFINED JOYNR_SERVER_HOST)
     set(JOYNR_SERVER_HOST "localhost")
