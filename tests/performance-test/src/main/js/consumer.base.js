@@ -218,7 +218,7 @@ var consumerBase = {
             };
         };
         var testProcedure = function(args) {
-            return consumerBase.echoProxy.complexStructAttribute.set(args);
+            return consumerBase.echoProxy.simpleAttribute.set(args);
         };
         return consumerBase.excecuteMultipleBenchmarks("attributeString", generateData, testProcedure);
     },
