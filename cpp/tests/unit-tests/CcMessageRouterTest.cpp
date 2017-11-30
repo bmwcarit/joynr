@@ -17,8 +17,8 @@
  * #L%
  */
 
-#include <cstdint>
 #include <chrono>
+#include <cstdint>
 #include <memory>
 
 #include <gtest/gtest.h>
@@ -26,30 +26,35 @@
 
 #include "MessageRouterTest.h"
 
-#include "joynr/Semaphore.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/InProcessMessagingAddress.h"
+#include "joynr/IPlatformSecurityManager.h"
+#include "joynr/MessageQueue.h"
+#include "joynr/MessagingStubFactory.h"
+#include "joynr/MqttMulticastAddressCalculator.h"
+#include "joynr/MulticastMessagingSkeletonDirectory.h"
+#include "joynr/Semaphore.h"
+#include "joynr/SingleThreadedIOService.h"
+#include "joynr/WebSocketMulticastAddressCalculator.h"
+#include "joynr/access-control/IAccessController.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/MessagingStubFactory.h"
-#include "joynr/MessageQueue.h"
-#include "joynr/MqttMulticastAddressCalculator.h"
-#include "joynr/MulticastMessagingSkeletonDirectory.h"
-#include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
-#include "joynr/SingleThreadedIOService.h"
-#include "joynr/IPlatformSecurityManager.h"
 
+#include "tests/mock/MockAccessController.h"
+#include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
 #include "tests/mock/MockMessagingMulticastSubscriber.h"
-#include "tests/mock/MockDispatcher.h"
 
+using ::testing::_;
+using ::testing::Eq;
+using ::testing::Invoke;
 using ::testing::Pointee;
+using ::testing::Property;
 using ::testing::Return;
 using ::testing::WhenDynamicCastTo;
-using ::testing::Eq;
-using ::testing::Property;
 
 using namespace joynr;
 
@@ -182,7 +187,29 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastRecivers(const bool is
     messageRouter->removeNextHop(providerParticipantId);
 }
 
-TEST_F(CcMessageRouterTest, routeMulticastMessageFromWebSocketProvider_multicastMsgIsSentToAllMulticastRecivers) {
+TEST_F(CcMessageRouterTest,
+       routeMulticastMessageFromWebSocketProvider_withoutAccessController_multicastMsgIsSentToAllMulticastRecivers)
+{
+    bool isGloballyVisible = true;
+    multicastMsgIsSentToAllMulticastRecivers(isGloballyVisible);
+    isGloballyVisible = false;
+    multicastMsgIsSentToAllMulticastRecivers(isGloballyVisible);
+}
+
+void invokeConsumerPermissionCallback(std::shared_ptr<ImmutableMessage> message,
+                                      std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
+{
+    callback->hasConsumerPermission(true);
+}
+
+TEST_F(CcMessageRouterTest,
+       routeMulticastMessageFromWebSocketProvider_withAccessController_multicastMsgIsSentToAllMulticastRecivers)
+{
+    auto mockAccessController = std::make_shared<MockAccessController>();
+    ON_CALL(*mockAccessController, hasConsumerPermission(_,_))
+            .WillByDefault(Invoke(invokeConsumerPermissionCallback));
+    messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
+
     bool isGloballyVisible = true;
     multicastMsgIsSentToAllMulticastRecivers(isGloballyVisible);
     isGloballyVisible = false;
