@@ -103,6 +103,5 @@ COPY scripts /data/scripts
 # setup build environment
 ###################################################
 RUN mkdir -p /home/joynr/
-RUN echo "source /data/scripts/bashrc.sh" >> /home/joynr/.bashrc
 RUN mkdir /home/joynr/build
 RUN date -R > /data/timestamp
