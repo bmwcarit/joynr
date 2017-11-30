@@ -151,7 +151,7 @@ public class AddressManagerTest {
 
     @Test
     public void testGetLocalMulticastParticipantAddresses() {
-        createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT, multicastAddressCalculator);
+        createAddressManager(PRIMARY_GLOBAL_TRANSPORT_MQTT, multicastAddressCalculator);
 
         when(joynrMessage.isReceivedFromGlobal()).thenReturn(true);
         when(joynrMessage.getSender()).thenReturn("from");
