@@ -1,3 +1,12 @@
+# joynr 0.32.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** Fixed routing of multicast publications when access controller is enabled:
+  route message to all recipients instead of routing it to first found address only
+
 # joynr 0.32.0
 
 ## API relevant changes
