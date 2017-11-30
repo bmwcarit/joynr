@@ -104,7 +104,7 @@ public class AddressManagerTest {
         Set<Address> result = subject.getAddresses(joynrMessage);
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertNotNull(result.iterator().next());
+        assertEquals(address, result.iterator().next());
     }
 
     @Test
@@ -119,7 +119,7 @@ public class AddressManagerTest {
         Set<Address> result = subject.getAddresses(joynrMessage);
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertNotNull(result.iterator().next());
+        assertEquals(address, result.iterator().next());
     }
 
     @Test(expected = JoynrIllegalStateException.class)
