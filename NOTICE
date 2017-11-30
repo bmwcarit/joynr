@@ -145,7 +145,6 @@ This project has dependencies to:
   io.joynr.android:robolectric-integration-tests under The Apache Software License, Version 2.0
   io.joynr.android:robolectric-unittests under The Apache Software License, Version 2.0
   io.joynr.cpp:libjoynr under The Apache Software License, Version 2.0
-  io.joynr.cpp:libs under The Apache Software License, Version 2.0
   io.joynr.cpp:tests under The Apache Software License, Version 2.0
   io.joynr.examples.radio-jee:radio-jee-api under The Apache Software License, Version 2.0
   io.joynr.examples.radio-jee:radio-jee-consumer under The Apache Software License, Version 2.0

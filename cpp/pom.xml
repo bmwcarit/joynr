@@ -32,7 +32,6 @@
 	<modules>
 		<module>libjoynr</module>
 		<module>tests</module>
-		<module>libs</module>
 	</modules>
 	<profiles>
 		<profile>
