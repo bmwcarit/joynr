@@ -54,7 +54,7 @@ public:
             mockDispatcher(),
             dispatcherAddress(),
             mockParticipantIdStorage(new MockParticipantIdStorage()),
-            mockDiscovery(),
+            mockDiscovery(std::make_shared<MockDiscovery>()),
             capabilitiesRegistrar(nullptr),
             mockProvider(new MockProvider()),
             domain("testDomain"),
@@ -101,7 +101,7 @@ protected:
     std::shared_ptr<MockDispatcher> mockDispatcher;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<MockParticipantIdStorage> mockParticipantIdStorage;
-    MockDiscovery mockDiscovery;
+    std::shared_ptr<MockDiscovery> mockDiscovery;
     CapabilitiesRegistrar* capabilitiesRegistrar;
     std::shared_ptr<MockProvider> mockProvider;
     std::string domain;
@@ -129,7 +129,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
     EXPECT_CALL(
-                mockDiscovery,
+                *mockDiscovery,
                 addAsync(
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
@@ -173,7 +173,7 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders){
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
     EXPECT_CALL(
-                mockDiscovery,
+                *mockDiscovery,
                 addAsync(
                     _,
                     _,
@@ -226,7 +226,7 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
             .Times(1);
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
-    EXPECT_CALL(mockDiscovery, removeAsync(
+    EXPECT_CALL(*mockDiscovery, removeAsync(
                     expectedParticipantId,
                     _,
                     _
@@ -256,7 +256,7 @@ TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
 
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
-    EXPECT_CALL(mockDiscovery, removeAsync(
+    EXPECT_CALL(*mockDiscovery, removeAsync(
                     expectedParticipantId,
                     _,
                     _
@@ -295,7 +295,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
     mockFuture->onSuccess();
 
     EXPECT_CALL(
-                mockDiscovery,
+                *mockDiscovery,
                 addAsync(
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
@@ -355,7 +355,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
     EXPECT_CALL(
-                mockDiscovery,
+                *mockDiscovery,
                 addAsync(
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),

@@ -109,10 +109,10 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
-    discoveryProxy = std::make_unique<DummyDiscovery>();
+    discoveryProxy = std::make_shared<DummyDiscovery>();
     capabilitiesRegistrar =
             std::make_unique<CapabilitiesRegistrar>(dispatcherList,
-                                                    *discoveryProxy,
+                                                    discoveryProxy,
                                                     participantIdStorage,
                                                     dispatcherAddress,
                                                     messageRouter,

@@ -171,7 +171,7 @@ void LibJoynrRuntime::init(
     joynrDispatcher->registerPublicationManager(publicationManager);
     joynrDispatcher->registerSubscriptionManager(subscriptionManager);
 
-    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(getProvisionedEntries());
+    discoveryProxy = std::make_shared<LocalDiscoveryAggregator>(getProvisionedEntries());
 
     requestCallerDirectory =
             std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher);
@@ -225,7 +225,7 @@ void LibJoynrRuntime::init(
 
         capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
                 dispatcherList,
-                *discoveryProxy,
+                discoveryProxy,
                 participantIdStorage,
                 dispatcherAddress,
                 libJoynrMessageRouter,

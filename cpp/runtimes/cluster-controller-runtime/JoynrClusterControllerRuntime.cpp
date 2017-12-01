@@ -525,7 +525,7 @@ void JoynrClusterControllerRuntime::init()
     participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
 
     auto provisionedDiscoveryEntries = getProvisionedEntries();
-    discoveryProxy = std::make_unique<LocalDiscoveryAggregator>(provisionedDiscoveryEntries);
+    discoveryProxy = std::make_shared<LocalDiscoveryAggregator>(provisionedDiscoveryEntries);
     requestCallerDirectory =
             std::dynamic_pointer_cast<IRequestCallerDirectory>(inProcessDispatcher);
 
@@ -562,7 +562,7 @@ void JoynrClusterControllerRuntime::init()
     }
     capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
             dispatcherList,
-            *discoveryProxy,
+            discoveryProxy,
             participantIdStorage,
             dispatcherAddress,
             ccMessageRouter,

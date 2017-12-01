@@ -24,7 +24,7 @@ namespace joynr
 
 CapabilitiesRegistrar::CapabilitiesRegistrar(
         std::vector<std::shared_ptr<IDispatcher>> dispatcherList,
-        system::IDiscoveryAsync& discoveryProxy,
+        std::shared_ptr<system::IDiscoveryAsync> discoveryProxy,
         std::shared_ptr<ParticipantIdStorage> participantIdStorage,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<IMessageRouter> messageRouter,
@@ -63,7 +63,7 @@ void CapabilitiesRegistrar::removeAsync(
         }
     };
 
-    discoveryProxy.removeAsync(participantId, std::move(onSuccessWrapper), std::move(onError));
+    discoveryProxy->removeAsync(participantId, std::move(onSuccessWrapper), std::move(onError));
 }
 
 void CapabilitiesRegistrar::addDispatcher(std::shared_ptr<IDispatcher> dispatcher)

@@ -51,7 +51,7 @@ class JOYNR_EXPORT CapabilitiesRegistrar
 public:
     CapabilitiesRegistrar(
             std::vector<std::shared_ptr<IDispatcher>> dispatcherList,
-            joynr::system::IDiscoveryAsync& discoveryProxy,
+            std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
             std::shared_ptr<IMessageRouter> messageRouter,
@@ -133,7 +133,7 @@ public:
             }
         };
 
-        discoveryProxy.addAsync(entry, std::move(onSuccessWrapper), std::move(onError));
+        discoveryProxy->addAsync(entry, std::move(onSuccessWrapper), std::move(onError));
         return participantId;
     }
 
@@ -163,7 +163,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
     std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
-    joynr::system::IDiscoveryAsync& discoveryProxy;
+    std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     std::shared_ptr<ParticipantIdStorage> participantIdStorage;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<IMessageRouter> messageRouter;
