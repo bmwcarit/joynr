@@ -94,10 +94,11 @@ void AccessController::LdacConsumerPermissionCallback::permission(Permission::En
 
     if (!hasPermission) {
         JOYNR_LOG_ERROR(owningAccessController.logger(),
-                        "Message {} to domain {}, interface {} failed ACL check",
+                        "Message {} to domain {}, interface {} from creator {} failed ACL check",
                         message->getId(),
                         domain,
-                        interfaceName);
+                        interfaceName,
+                        message->getCreator());
     }
     callback->hasConsumerPermission(hasPermission);
 }
@@ -173,11 +174,13 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
     if (!hasPermission) {
         JOYNR_LOG_ERROR(owningAccessController.logger(),
-                        "Message {} to domain {}, interface/operation {}/{} failed ACL check",
+                        "Message {} to domain {}, interface/operation {}/{} from creator {} failed "
+                        "ACL check",
                         message->getId(),
                         domain,
                         interfaceName,
-                        operation);
+                        operation,
+                        message->getCreator());
     }
 
     callback->hasConsumerPermission(hasPermission);
