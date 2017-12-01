@@ -89,20 +89,21 @@ public:
                                            lastSeenDateMs,
                                            defaultExpiryDateMs,
                                            defaultPublicKeyId);
-        bool isGloballyVisible = entry.getQos().getScope() == types::ProviderScope::GLOBAL;
+        bool isGloballyVisible = providerQos.getScope() == types::ProviderScope::GLOBAL;
+
         auto onSuccessWrapper = [
             domain,
             interfaceName,
             dispatcherList = this->dispatcherList,
             caller,
             participantIdStorage = util::as_weak_ptr(participantIdStorage),
-            isGloballyVisible,
             messageRouter = util::as_weak_ptr(messageRouter),
             participantId,
-            dispatcherAddress = dispatcherAddress,
+            discoveryProxy = util::as_weak_ptr(discoveryProxy),
+            entry = std::move(entry),
             onSuccess = std::move(onSuccess),
             onError
-        ]() mutable
+        ]()
         {
             for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
                 // TODO will the provider be registered at all dispatchers or
@@ -117,23 +118,40 @@ public:
                         domain, interfaceName, participantId);
             }
 
-            // add next hop
-            if (auto ptr = messageRouter.lock()) {
-                constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-                const bool isSticky = false;
-                const bool allowUpdate = false;
-                ptr->addNextHop(participantId,
-                                dispatcherAddress,
-                                isGloballyVisible,
-                                expiryDateMs,
-                                isSticky,
-                                allowUpdate,
-                                std::move(onSuccess),
-                                std::move(onError));
+            auto onErrorWrapper = [
+                participantId,
+                messageRouter = std::move(messageRouter),
+                onError = std::move(onError)
+            ](const joynr::exceptions::JoynrRuntimeException& error)
+            {
+                if (auto ptr = messageRouter.lock()) {
+                    ptr->removeNextHop(participantId);
+                }
+                onError(error);
+            };
+
+            if (auto discoveryProxyPtr = discoveryProxy.lock()) {
+
+                discoveryProxyPtr->addAsync(entry, std::move(onSuccess), std::move(onErrorWrapper));
+            } else {
+                const joynr::exceptions::JoynrRuntimeException error(
+                        "runtime and required discovery proxy have been already destroyed");
+                onErrorWrapper(error);
             }
         };
 
-        discoveryProxy->addAsync(entry, std::move(onSuccessWrapper), std::move(onError));
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
+        const bool allowUpdate = false;
+        messageRouter->addNextHop(participantId,
+                                  dispatcherAddress,
+                                  isGloballyVisible,
+                                  expiryDateMs,
+                                  isSticky,
+                                  allowUpdate,
+                                  std::move(onSuccessWrapper),
+                                  std::move(onError));
+
         return participantId;
     }
 
