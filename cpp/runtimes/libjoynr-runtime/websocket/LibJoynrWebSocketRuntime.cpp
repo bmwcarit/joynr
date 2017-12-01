@@ -93,7 +93,8 @@ void LibJoynrWebSocketRuntime::connect(
     });
 
     auto connectCallback = [
-        this,
+        thisWeakPtr = joynr::util::as_weak_ptr(
+                std::dynamic_pointer_cast<LibJoynrWebSocketRuntime>(this->shared_from_this())),
         onSuccess = std::move(onSuccess),
         onError = std::move(onError),
         factory,
@@ -101,19 +102,28 @@ void LibJoynrWebSocketRuntime::connect(
         ccMessagingAddress
     ]() mutable
     {
-        sendInitializationMsg();
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            thisSharedPtr->sendInitializationMsg();
 
-        std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
-                std::make_unique<joynr::WebSocketMulticastAddressCalculator>(ccMessagingAddress);
-        init(factory,
-             libjoynrMessagingAddress,
-             ccMessagingAddress,
-             std::move(addressCalculator),
-             std::move(onSuccess),
-             std::move(onError));
+            std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
+                    std::make_unique<joynr::WebSocketMulticastAddressCalculator>(
+                            ccMessagingAddress);
+            thisSharedPtr->init(factory,
+                                libjoynrMessagingAddress,
+                                ccMessagingAddress,
+                                std::move(addressCalculator),
+                                std::move(onSuccess),
+                                std::move(onError));
+        }
     };
 
-    auto reconnectCallback = [this]() { sendInitializationMsg(); };
+    auto reconnectCallback = [thisWeakPtr = joynr::util::as_weak_ptr(std::dynamic_pointer_cast<
+                                      LibJoynrWebSocketRuntime>(this->shared_from_this()))]()
+    {
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            thisSharedPtr->sendInitializationMsg();
+        }
+    };
 
     websocket->registerConnectCallback(connectCallback);
     websocket->registerReconnectCallback(reconnectCallback);
@@ -122,9 +132,9 @@ void LibJoynrWebSocketRuntime::connect(
 
 void LibJoynrWebSocketRuntime::sendInitializationMsg()
 {
-    auto onFailure = [this](const exceptions::JoynrRuntimeException& e) {
+    auto onFailure = [](const exceptions::JoynrRuntimeException& e) {
         // initialization message will be sent after reconnect
-        JOYNR_LOG_ERROR(logger(),
+        JOYNR_LOG_ERROR(LibJoynrWebSocketRuntime::logger(),
                         "Sending websocket initialization message failed. Error: {}",
                         e.getMessage());
     };
