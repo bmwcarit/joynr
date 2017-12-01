@@ -1,6 +1,6 @@
 {
   "name": "joynr",
-  "version": "0.32.0",
+  "version": "0.32.1",
   "description": "Web-based communication framework for applications wanting to interact with other applications, no matter whether they're deployed on consumer devices, vehicles, or backend infrastructure",
   "license": "Apache-2.0",
   "homepage": "http://joynr.io",
@@ -40,7 +40,7 @@
     "npm" : ">=1.3.5"
   },
   "scripts": {
-    "postinstall": "echo 'module.exports = require(\"..\");' > node_modules/joynr.js"
+    "fixRequire": "echo 'module.exports = require(\"..\");' > node_modules/joynr.js"
   },
   "repository": {
     "type" : "git",
