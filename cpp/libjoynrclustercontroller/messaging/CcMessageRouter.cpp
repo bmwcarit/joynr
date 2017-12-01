@@ -331,7 +331,7 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
                     destAddress,
                     clusterControllerSettings.aclAudit());
             gotAccessController->hasConsumerPermission(message, callback);
-            return;
+            continue;
         }
 
         // If this point is reached, the message can be sent without delay
