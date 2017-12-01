@@ -1,3 +1,12 @@
+# joynr 0.33.0
+
+## API relevant change
+None.
+
+## Other changes
+* **[[C++,Generator]** Fixed a problem with the generator when empty structures
+  with extends were specified in the FIDL files.
+
 # joynr 0.32.1
 
 ## API relevant changes

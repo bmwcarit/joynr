@@ -112,6 +112,9 @@ typeCollection TestTypes {
 		TypeDefForTStringKeyMap[] arrayOfTypeDefForTStringKeyMap
 		TypeDefForTEnum[] arrayOfTypeDefForTEnum
 	}
+
+	struct emptyStructWithExtends extends TStruct {
+	}
 }
 
 typeCollection TestTypesWithoutVersion {
