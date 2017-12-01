@@ -912,6 +912,21 @@
 									<goal>exec</goal>
 								</goals>
 							</execution>
+							<execution>
+								<id>npm-install-fix-require</id>
+								<phase>generate-resources</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>run</argument>
+										<argument>--prefix=${project.build.directory}/node-classes</argument>
+										<argument>fixRequire</argument>
+									</arguments>
+								</configuration>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
 						</executions>
 					</plugin>
 				</plugins>
