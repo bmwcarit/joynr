@@ -19,6 +19,8 @@
 
 #include "libjoynrclustercontroller/access-control/AccessControlListEditor.h"
 
+#include "joynr/CallContext.h"
+
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 
@@ -43,7 +45,7 @@ void AccessControlListEditor::updateMasterAccessControlEntry(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    if (!hasRoleMaster(updatedMasterAce.getUid(), updatedMasterAce.getDomain())) {
+    if (!hasRoleMaster(updatedMasterAce.getDomain())) {
         onSuccess(false);
     } else {
         bool updateSuccess =
@@ -61,7 +63,7 @@ void AccessControlListEditor::removeMasterAccessControlEntry(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    if (!hasRoleMaster(uid, domain)) {
+    if (!hasRoleMaster(domain)) {
         onSuccess(false);
     } else {
         bool updateSuccess = localDomainAccessStore->removeMasterAccessControlEntry(
@@ -77,7 +79,7 @@ void AccessControlListEditor::updateMediatorAccessControlEntry(
 {
     std::ignore = onError;
     // TODO: which role is required here?
-    if (!hasRoleMaster(updatedMediatorAce.getUid(), updatedMediatorAce.getDomain())) {
+    if (!hasRoleMaster(updatedMediatorAce.getDomain())) {
         onSuccess(false);
     } else {
         bool updateSuccess =
@@ -95,7 +97,7 @@ void AccessControlListEditor::removeMediatorAccessControlEntry(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    if (!hasRoleMaster(uid, domain)) {
+    if (!hasRoleMaster(domain)) {
         onSuccess(false);
     } else {
         bool updateSuccess = localDomainAccessStore->removeMediatorAccessControlEntry(
@@ -110,7 +112,7 @@ void AccessControlListEditor::updateOwnerAccessControlEntry(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    if (!hasRoleOwner(updatedOwnerAce.getUid(), updatedOwnerAce.getDomain())) {
+    if (!hasRoleOwner(updatedOwnerAce.getDomain())) {
         onSuccess(false);
     } else {
         bool updateSuccess = localDomainAccessStore->updateOwnerAccessControlEntry(updatedOwnerAce);
@@ -127,7 +129,7 @@ void AccessControlListEditor::removeOwnerAccessControlEntry(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    if (!hasRoleOwner(uid, domain)) {
+    if (!hasRoleOwner(domain)) {
         onSuccess(false);
     } else {
         bool updateSuccess = localDomainAccessStore->removeOwnerAccessControlEntry(
@@ -142,7 +144,7 @@ void AccessControlListEditor::updateMasterRegistrationControlEntry(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    if (!hasRoleMaster(updatedMasterRce.getUid(), updatedMasterRce.getDomain())) {
+    if (!hasRoleMaster(updatedMasterRce.getDomain())) {
         onSuccess(false);
     } else {
         bool updateSuccess =
@@ -159,7 +161,7 @@ void AccessControlListEditor::removeMasterRegistrationControlEntry(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    if (!hasRoleMaster(uid, domain)) {
+    if (!hasRoleMaster(domain)) {
         onSuccess(false);
     } else {
         bool updateSuccess = localDomainAccessStore->removeMasterRegistrationControlEntry(
@@ -175,7 +177,7 @@ void AccessControlListEditor::updateMediatorRegistrationControlEntry(
 {
     std::ignore = onError;
     // which role is required here?
-    if (!hasRoleMaster(updatedMediatorRce.getUid(), updatedMediatorRce.getDomain())) {
+    if (!hasRoleMaster(updatedMediatorRce.getDomain())) {
         onSuccess(false);
     } else {
         bool updateSuccess =
@@ -192,7 +194,7 @@ void AccessControlListEditor::removeMediatorRegistrationControlEntry(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    if (!hasRoleMaster(uid, domain)) {
+    if (!hasRoleMaster(domain)) {
         onSuccess(false);
     } else {
         bool updateSuccess = localDomainAccessStore->removeMediatorRegistrationControlEntry(
@@ -207,7 +209,7 @@ void AccessControlListEditor::updateOwnerRegistrationControlEntry(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    if (!hasRoleOwner(updatedOwnerRce.getUid(), updatedOwnerRce.getDomain())) {
+    if (!hasRoleOwner(updatedOwnerRce.getDomain())) {
         onSuccess(false);
     } else {
         bool updateSuccess =
@@ -224,7 +226,7 @@ void AccessControlListEditor::removeOwnerRegistrationControlEntry(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     std::ignore = onError;
-    if (!hasRoleOwner(uid, domain)) {
+    if (!hasRoleOwner(domain)) {
         onSuccess(false);
     } else {
         bool updateSuccess = localDomainAccessStore->removeOwnerRegistrationControlEntry(
@@ -233,22 +235,27 @@ void AccessControlListEditor::removeOwnerRegistrationControlEntry(
     }
 }
 
-bool AccessControlListEditor::hasRoleMaster(const std::string& uid, const std::string& domain)
+bool AccessControlListEditor::hasRoleMaster(const std::string& domain)
 {
-    JOYNR_LOG_TRACE(logger(), "Lookup domain {} for userId {} and role MASTER", domain, uid);
-    return hasRoleWorker(uid, domain, Role::MASTER);
+    return hasRoleWorker(domain, Role::MASTER);
 }
 
-bool AccessControlListEditor::hasRoleOwner(const std::string& uid, const std::string& domain)
+bool AccessControlListEditor::hasRoleOwner(const std::string& domain)
 {
-    JOYNR_LOG_TRACE(logger(), "Lookup domain {} for userId {} and role OWNER", domain, uid);
-    return hasRoleWorker(uid, domain, Role::OWNER);
+    return hasRoleWorker(domain, Role::OWNER);
 }
 
-bool AccessControlListEditor::hasRoleWorker(const std::string& uid,
-                                            const std::string& domain,
+bool AccessControlListEditor::hasRoleWorker(const std::string& domain,
                                             joynr::infrastructure::DacTypes::Role::Enum role)
 {
+    const CallContext& callContext = getCallContext();
+    const std::string& uid = callContext.getPrincipal();
+    JOYNR_LOG_TRACE(logger(),
+                    "Lookup domain {} for userId {} and role {}",
+                    domain,
+                    uid,
+                    joynr::infrastructure::DacTypes::Role::getLiteral(role));
+
     bool hasRole = localDomainAccessController->hasRole(uid, domain, role);
 
     if (aclAudit) {
