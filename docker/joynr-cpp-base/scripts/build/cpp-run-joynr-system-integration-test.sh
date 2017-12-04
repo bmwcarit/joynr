@@ -44,8 +44,8 @@ log "ENVIRONMENT"
 env
 
 log "CC_BINDIR" $CC_BINDIR
-# fail on first error
-set -e
+# add debugging output
+set -x
 
 cd $CC_BINDIR
 ./cluster-controller & CLUSTER_CONTROLLER_PID=$!
@@ -56,14 +56,17 @@ cd /data/build/tests/bin
 
 # Run the test
 ./jsit-consumer-ws testDomain
-
-if [ "$?" == "-1" ]
-then
-    echo "ERROR joynr system integration test failed with error code $?"
-else
-    echo "joynr system integration test succeeded"
-fi
+TESTRESULT=$?
 
 # Clean up
 wait $PROVIDER_PID
 kill $CLUSTER_CONTROLLER_PID
+
+if [ $TESTRESULT == 0 ]
+then
+    echo "joynr system integration test succeeded"
+else
+    echo "ERROR joynr system integration test failed with error code $TESTRESULT"
+fi
+
+exit $TESTRESULT
