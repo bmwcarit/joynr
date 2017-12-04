@@ -1,3 +1,11 @@
+# joynr 0.32.2
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** use correct uid in AccessControlListEditor provider
+
 # joynr 0.32.1
 
 ## API relevant changes

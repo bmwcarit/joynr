@@ -350,10 +350,12 @@ void AbstractMessageRouter::activateRoutingTableCleanerTimer()
 {
     routingTableCleanerTimer.expiresFromNow(
             std::chrono::milliseconds(messagingSettings.getRoutingTableCleanupIntervalMs()));
-    routingTableCleanerTimer.asyncWait(
-            std::bind(&AbstractMessageRouter::onRoutingTableCleanerTimerExpired,
-                      this,
-                      std::placeholders::_1));
+    routingTableCleanerTimer.asyncWait([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
+            const boost::system::error_code& errorCode) {
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            thisSharedPtr->onRoutingTableCleanerTimerExpired(errorCode);
+        }
+    });
 }
 
 void AbstractMessageRouter::registerTransportStatusCallbacks()

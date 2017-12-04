@@ -123,11 +123,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(AccessControlListEditor);
     ADD_LOGGER(AccessControlListEditor)
 
-    bool hasRoleMaster(const std::string& uid, const std::string& domain);
-    bool hasRoleOwner(const std::string& uid, const std::string& domain);
-    bool hasRoleWorker(const std::string& uid,
-                       const std::string& domain,
-                       infrastructure::DacTypes::Role::Enum role);
+    bool hasRoleMaster(const std::string& domain);
+    bool hasRoleOwner(const std::string& domain);
+    bool hasRoleWorker(const std::string& domain, infrastructure::DacTypes::Role::Enum role);
 
     std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore;
     std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
