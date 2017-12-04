@@ -85,8 +85,11 @@ public:
 
     /**
      * @brief Sync changes to disk
+     * @return Returns true when new content was written to the disk. Returns false
+     * if an error occured or if the content did not change (therefore, don't
+     * use the return value as an error indication)
      */
-    void sync();
+    bool sync();
 
     /**
      * @brief Merge two settings objects.
@@ -119,6 +122,8 @@ private:
     static void merge(const boost::property_tree::ptree& from,
                       boost::property_tree::ptree& to,
                       bool overwrite);
+    bool contentChanged(const boost::property_tree::ptree& propertyTreeToCompare,
+                        const std::string& iniFilename) const;
 
     static boost::property_tree::path createPath(const std::string& path);
     ADD_LOGGER(Settings)

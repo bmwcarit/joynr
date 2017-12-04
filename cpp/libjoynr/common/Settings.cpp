@@ -18,8 +18,11 @@
  */
 
 #include "joynr/Settings.h"
-#include <boost/property_tree/ini_parser.hpp>
+
 #include <utility>
+#include <boost/property_tree/ini_parser.hpp>
+
+#include "joynr/Util.h"
 
 namespace ptree = boost::property_tree;
 
@@ -60,16 +63,24 @@ bool Settings::contains(const std::string& path) const
     return bool(child);
 }
 
-void Settings::sync()
+bool Settings::sync()
 {
     try {
-        ptree::write_ini(filename, propertyTree);
+        if (contentChanged(propertyTree, filename)) {
+            ptree::write_ini(filename, propertyTree);
+            return true;
+        } else {
+            JOYNR_LOG_DEBUG(logger(),
+                            "Settings file \"{}\" not updated because its content did not change",
+                            filename);
+        }
     } catch (const ptree::ini_parser_error& e) {
         JOYNR_LOG_ERROR(logger(),
                         "settings file \"{}\" cannot be written due to the following error: {})",
                         filename,
                         e.message());
     }
+    return false;
 }
 
 void Settings::merge(const Settings& from, Settings& to, bool overwrite)
@@ -79,6 +90,24 @@ void Settings::merge(const Settings& from, Settings& to, bool overwrite)
 
     merge(fromTree, toTree, overwrite);
     to.loaded = true;
+}
+
+bool Settings::contentChanged(const boost::property_tree::ptree& propertyTreeToCompare,
+                              const std::string& iniFilename) const
+{
+    if (!util::fileExists(iniFilename)) {
+        return true;
+    }
+
+    boost::property_tree::ptree otherPropertyTree;
+
+    try {
+        ptree::read_ini(iniFilename, otherPropertyTree);
+    } catch (const ptree::ini_parser_error&) {
+        return true;
+    }
+
+    return propertyTreeToCompare != otherPropertyTree;
 }
 
 void Settings::fillEmptySettingsWithDefaults(const std::string& defaultsFilename)
