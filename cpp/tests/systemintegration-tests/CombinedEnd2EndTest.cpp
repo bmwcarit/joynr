@@ -76,7 +76,8 @@ CombinedEnd2EndTest::CombinedEnd2EndTest()
     messagingSettings2.setMessagingPropertiesPersistenceFilename(
             messagingPropertiesPersistenceFileName2);
 
-    discoveryQos.setDiscoveryTimeoutMs(3000);
+    discoveryQos.setDiscoveryTimeoutMs(30000);
+    discoveryQos.setRetryIntervalMs(500);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 }
 
@@ -148,8 +149,6 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
     std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
-
-    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     // consumer for testinterface
     // Testing Lists
@@ -605,10 +604,6 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
-    // This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::seconds(5));
-
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
@@ -662,10 +657,6 @@ TEST_P(CombinedEnd2EndTest, callFireAndForgetMethod)
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
-    // This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::seconds(5));
-
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
@@ -703,10 +694,6 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
-
-    // This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -786,10 +773,6 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute)
             expectedValues, []() {}, [](const joynr::exceptions::JoynrRuntimeException&) {});
     std::string providerParticipantId =
             runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
-
-    // This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> proxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -903,10 +886,6 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
-    // This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished. See Joynr 805 for details
-    std::this_thread::sleep_for(std::chrono::seconds(5));
-
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
 
@@ -958,11 +937,6 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
     std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
-
-    std::this_thread::sleep_for(std::chrono::seconds(1)); // This wait is necessary, because
-                                                          // registerProvider is async, and a lookup
-                                                          // could occour before the register has
-                                                          // finished.
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -1049,10 +1023,6 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread)
     std::string providerParticipantId =
             runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
 
-    // This wait is necessary, because registerProvider is async, and a lookup could occur
-    // before the register has finished.
-    std::this_thread::sleep_for(std::chrono::seconds(5));
-
     std::shared_ptr<tests::testProxy> testProxy = createTestProxy(*runtime2, domainName, discoveryQos);
     // Subscribe in a background thread
     // subscribeToLocation(subscriptionListener, testProxy, this);
@@ -1076,8 +1046,6 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation)
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     std::string participantId = runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
@@ -1114,8 +1082,6 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
 
     std::string testProviderParticipantId =
             runtime1->registerProvider<tests::testProvider>(domainName, testProvider, providerQos);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(2550));
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(domainName);
