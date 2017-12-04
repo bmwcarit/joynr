@@ -7,6 +7,14 @@ None.
 * **[[C++,Generator]** Fixed a problem with the generator when empty structures
   with extends were specified in the FIDL files.
 
+# joynr 0.32.2
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** use correct uid in AccessControlListEditor provider
+
 # joynr 0.32.1
 
 ## API relevant changes

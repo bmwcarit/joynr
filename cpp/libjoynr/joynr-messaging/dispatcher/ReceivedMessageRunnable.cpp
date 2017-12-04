@@ -20,10 +20,11 @@
 
 #include <cassert>
 
+#include "joynr/CallContext.h"
 #include "joynr/CallContextStorage.h"
 #include "joynr/Dispatcher.h"
-#include "joynr/Message.h"
 #include "joynr/ImmutableMessage.h"
+#include "joynr/Message.h"
 
 namespace joynr
 {

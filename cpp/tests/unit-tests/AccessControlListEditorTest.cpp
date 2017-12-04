@@ -25,9 +25,11 @@
 
 #include "libjoynrclustercontroller/access-control/AccessControlListEditor.h"
 
+#include "joynr/CallContext.h"
+#include "joynr/CallContextStorage.h"
+#include "joynr/Semaphore.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
-#include "joynr/Semaphore.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
 #include "tests/mock/MockLocalDomainAccessController.h"
@@ -108,8 +110,11 @@ public:
 
 protected:
     void setExpectationForCallToHasRole(const infrastructure::DacTypes::Role::Enum& role, const bool returnValue) {
+        CallContext callContext;
+        callContext.setPrincipal(testUidCallContext);
+        CallContextStorage::set(std::move(callContext));
         EXPECT_CALL(*mockLocalDomainAccessController,
-                    hasRole(testUid,
+                    hasRole(testUidCallContext,
                             testDomain,
                             role))
                 .Times(1)
@@ -182,12 +187,14 @@ protected:
     std::function<void(const exceptions::ProviderRuntimeException&)> onErrorFail;
 
     const static std::string testUid;
+    const static std::string testUidCallContext;
     const static std::string testDomain;
     const static std::string testInterfaceName;
     const static std::string testOperation;
 };
 
 const std::string AccessControlListEditorTest::testUid = "testUid";
+const std::string AccessControlListEditorTest::testUidCallContext = "testUidCallContext";
 const std::string AccessControlListEditorTest::testDomain = "testDomain";
 const std::string AccessControlListEditorTest::testInterfaceName = "testInterface";
 const std::string AccessControlListEditorTest::testOperation = "testOperation";
