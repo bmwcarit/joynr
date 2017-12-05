@@ -81,16 +81,6 @@ class JoynrJSGenerator implements IJoynrGenerator {
 				generateTypes(it.types, fsa)
 			]
 		}
-
-//		communicationModelGenerator.doGenerate(directory + File::separator + "communication-model")
-//		providerGenerator.doGenerate(directory + File::separator + "provider")
-	/*
-	 * 		val fModel = francaPersistenceManager.loadModel(input.filePath)
-	 * 		fModel.interfaces.forEach[
-	 * 			generateDBusProxy(fileSystemAccess)
-	 * 			generateDBusStubAdapter(fileSystemAccess)
-	 * 		]
-	 */
 	}
 
 	def Iterable<FInterface> findAllFInterfaces(Resource resource) {
