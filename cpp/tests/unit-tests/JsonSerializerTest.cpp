@@ -36,7 +36,6 @@
 #include "joynr/types/Version.h"
 #include "joynr/Logger.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -646,7 +645,6 @@ TEST_F(JsonSerializerTest, serialize_deserialize_JsonRequestWithLists) {
 
 TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
     joynr::system::RoutingTypes::ChannelAddress joynr("TEST_channelId", "TEST_messagingEndpointUrl");
-    joynr::system::RoutingTypes::CommonApiDbusAddress dbus("domain", "interfacename", "id");
     joynr::system::RoutingTypes::WebSocketAddress wsServer(
                 joynr::system::RoutingTypes::WebSocketProtocol::WS,
                 "localhost",
@@ -657,27 +655,22 @@ TEST_F(JsonSerializerTest, serialize_deserialize_EndpointAddress) {
 
     // serialize
     std::string joynrSerialized = joynr::serializer::serializeToJson(joynr);
-    std::string dbusSerialized = joynr::serializer::serializeToJson(dbus);
     std::string wsServerSerialized = joynr::serializer::serializeToJson(wsServer);
     std::string wsClientSerialized = joynr::serializer::serializeToJson(wsClient);
 
     JOYNR_LOG_DEBUG(logger(), "serialized Joynr address: {}", joynrSerialized);
-    JOYNR_LOG_DEBUG(logger(), "serialized Dbus address: {}", dbusSerialized);
     JOYNR_LOG_DEBUG(logger(), "serialized WS server address: {}", wsServerSerialized);
     JOYNR_LOG_DEBUG(logger(), "serialized WS client address: {}", wsClientSerialized);
 
     // deserialize
     joynr::system::RoutingTypes::ChannelAddress joynrDeserialized;
     joynr::serializer::deserializeFromJson(joynrDeserialized, joynrSerialized);
-    joynr::system::RoutingTypes::CommonApiDbusAddress dbusDeserialized;
-    joynr::serializer::deserializeFromJson(dbusDeserialized, dbusSerialized);
     joynr::system::RoutingTypes::WebSocketAddress wsServerDeserialized;
     joynr::serializer::deserializeFromJson(wsServerDeserialized, wsServerSerialized);
     joynr::system::RoutingTypes::WebSocketClientAddress wsClientDeserialized;
     joynr::serializer::deserializeFromJson(wsClientDeserialized, wsClientSerialized);
 
     EXPECT_EQ(joynr, joynrDeserialized);
-    EXPECT_EQ(dbus, dbusDeserialized);
     EXPECT_EQ(wsServer, wsServerDeserialized);
     EXPECT_EQ(wsClient, wsClientDeserialized);
 }
@@ -821,14 +814,12 @@ TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
     auto ptrToRoutingChannelAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::ChannelAddress>(), isGloballyVisible);
     auto ptrToRoutingMqttAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::MqttAddress>(), isGloballyVisible);
     auto ptrToRoutingBrowserAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::BrowserAddress>(), !isGloballyVisible);
-    auto ptrToRoutingCommonApiDbusAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::CommonApiDbusAddress>(), !isGloballyVisible);
     auto ptrToRoutingWebSocketClientAddressEntry = std::make_shared<RoutingEntry>(std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>(), !isGloballyVisible);
 
     routingTable.add("WebSocketAddress", ptrToRoutingWebSocketEntry);
     routingTable.add("ChannelAddress", ptrToRoutingChannelAddressEntry);
     routingTable.add("MqttAddress", ptrToRoutingMqttAddressEntry);
     routingTable.add("BrowserAddress", ptrToRoutingBrowserAddressEntry);
-    routingTable.add("CommonApiDbusAddress", ptrToRoutingCommonApiDbusAddressEntry);
     routingTable.add("WebSocketClientAddress", ptrToRoutingWebSocketClientAddressEntry);
 
 
@@ -842,14 +833,12 @@ TEST_F(JsonSerializerTest, RoutingTypeAddressesSerializerTest)
     EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("ChannelAddress")->address->toString(), "ChannelAddress"));
     EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("MqttAddress")->address->toString(), "MqttAddress"));
     EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("BrowserAddress")->address->toString(), "BrowserAddress"));
-    EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("CommonApiDbusAddress")->address->toString(), "CommonApiDbusAddress"));
     EXPECT_TRUE(boost::starts_with(deserializedRoutingTable.lookup("WebSocketClientAddress")->address->toString(), "WebSocketClientAddress"));
 
     EXPECT_FALSE(deserializedRoutingTable.lookup("WebSocketAddress")->isGloballyVisible);
     EXPECT_TRUE(deserializedRoutingTable.lookup("ChannelAddress")->isGloballyVisible);
     EXPECT_TRUE(deserializedRoutingTable.lookup("MqttAddress")->isGloballyVisible);
     EXPECT_FALSE(deserializedRoutingTable.lookup("BrowserAddress")->isGloballyVisible);
-    EXPECT_FALSE(deserializedRoutingTable.lookup("CommonApiDbusAddress")->isGloballyVisible);
     EXPECT_FALSE(deserializedRoutingTable.lookup("WebSocketClientAddress")->isGloballyVisible);
 
 }

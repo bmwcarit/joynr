@@ -21,5 +21,5 @@ if [ $# -eq 0 ]; then
 else
         # commands supplied
         export HOME=/home/$USER
-        exec gosu $USER /bin/bash -c "source $HOME/.bashrc; $*"
+        exec gosu $USER /bin/bash -c "$*"
 fi

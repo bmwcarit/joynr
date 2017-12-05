@@ -1,6 +1,5 @@
 CMakeLists.txt.user*
 libjoynrclustercontroller/include/joynr/JoynrClusterControllerExport.h
-libjoynr/include/joynr/RuntimeConfig.h
 libjoynr/include/joynr/JoynrVersion.h
 libjoynr/include/joynr/JoynrExport.h
 libjoynr/include/joynr/infrastructure/
@@ -13,8 +12,6 @@ libjoynr/provider/generated/
 libjoynr/proxy/generated/
 runtimes/include/joynr/JoynrClusterControllerRuntimeExport.h
 runtimes/include/joynr/JoynrRuntimeExport.h
-common-api/joynr/
-common-api/src-gen
 /.project
 /.settings
 tests/gen/

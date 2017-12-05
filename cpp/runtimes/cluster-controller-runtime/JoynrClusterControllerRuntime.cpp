@@ -104,10 +104,6 @@
 #include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
 #include "libjoynrclustercontroller/ClusterControllerCallContext.h"
 
-#ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-#include "libjoynr/dbus/DbusMessagingStubFactory.h"
-#endif // USE_DBUS_COMMONAPI_COMMUNICATION
-
 namespace joynr
 {
 
@@ -140,10 +136,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           libjoynrSettings(*(this->settings)),
           localDomainAccessController(nullptr),
           clusterControllerSettings(*(this->settings)),
-#ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-          dbusSettings(nullptr),
-          ccDbusMessageRouterAdapter(nullptr),
-#endif // USE_DBUS_COMMONAPI_COMMUNICATION
           wsSettings(*(this->settings)),
           wsCcMessagingSkeleton(nullptr),
           wsTLSCcMessagingSkeleton(nullptr),
@@ -279,9 +271,6 @@ void JoynrClusterControllerRuntime::init()
     /* CC */
     // create the messaging stub factory
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
-#ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-    messagingStubFactory->registerStubFactory(std::make_shared<DbusMessagingStubFactory>());
-#endif // USE_DBUS_COMMONAPI_COMMUNICATION
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
     const bool httpMessageReceiverSupplied = httpMessageReceiver != nullptr;
@@ -496,14 +485,6 @@ void JoynrClusterControllerRuntime::init()
         messagingStubFactory->registerStubFactory(
                 std::make_shared<MqttMessagingStubFactory>(mqttMessageSender));
     }
-
-#ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-    dbusSettings = new DbusSettings(*settings);
-    dbusSettings->printSettings();
-    // register dbus skeletons for capabilities and messaging interfaces
-    std::string ccMessagingAddress(dbusSettings->createClusterControllerMessagingAddressString());
-    ccDbusMessageRouterAdapter = new DBusMessageRouterAdapter(*ccMessageRouter, ccMessagingAddress);
-#endif // USE_DBUS_COMMONAPI_COMMUNICATION
 
     /**
       * libJoynr side
@@ -897,10 +878,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 
     inProcessPublicationSender.reset();
 
-#ifdef USE_DBUS_COMMONAPI_COMMUNICATION
-    delete ccDbusMessageRouterAdapter;
-    delete dbusSettings;
-#endif // USE_DBUS_COMMONAPI_COMMUNICATION
     JOYNR_LOG_TRACE(logger(), "leaving ~JoynrClusterControllerRuntime");
 }
 

@@ -204,13 +204,7 @@ function MessageRouter(settings) {
                 isGloballyVisible: isGloballyVisible
             });
         }
-        if (Typing.getObjectType(incomingAddress) === "CommonApiDbusAddress") {
-            return routingProxy.addNextHop({
-                participantId: participantId,
-                commonApiDbusAddress: incomingAddress,
-                isGloballyVisible: isGloballyVisible
-            });
-        }
+
         var errorMsg = "Invalid address type of incomingAddress: " + Typing.getObjectType(incomingAddress);
         log.fatal(errorMsg);
         return Promise.reject(new JoynrRuntimeException({ detailMessage: errorMsg }));

@@ -32,15 +32,12 @@ find_package(Joynr 0.33.0 REQUIRED)
 message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
-message(STATUS "joynr variable Joynr_LIB_DBUS_INCLUDE_DIRS=${Joynr_LIB_DBUS_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_WS_INCLUDE_DIRS=${Joynr_LIB_WS_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_COMMON_LIBRARIES=${Joynr_LIB_COMMON_LIBRARIES}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_LIBRARIES=${Joynr_LIB_INPROCESS_LIBRARIES}")
-message(STATUS "joynr variable Joynr_LIB_DBUS_LIBRARIES=${Joynr_LIB_DBUS_LIBRARIES}")
 message(STATUS "joynr variable Joynr_LIB_WS_LIBRARIES=${Joynr_LIB_WS_LIBRARIES}")
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
-message(STATUS "joynr variable USE_DBUS_COMMONAPI_COMMUNICATION=${USE_DBUS_COMMONAPI_COMMUNICATION}")
 
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
@@ -123,24 +120,6 @@ set(radio-app_LIBRARIES
 
 # Put the generated code into a library and put the library in the bin directory
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    find_package(PkgConfig)
-    pkg_check_modules(DBUS1 REQUIRED dbus-1)
-    message(STATUS "variable DBUS_INCLUDE_DIRS=" ${DBUS1_INCLUDE_DIRS})
-    message(STATUS "variable DBUS1_LIBRARIES=" ${DBUS1_LIBRARIES})
-    message(STATUS "variable DBUS1_LIBRARY_DIRS=" ${DBUS1_LIBRARY_DIRS})
-    pkg_check_modules(COMMONAPI REQUIRED CommonAPI=2.1.4)
-    message(STATUS "variable COMMONAPI_INCLUDE_DIRS=" ${COMMONAPI_INCLUDE_DIRS})
-    message(STATUS "variable COMMONAPI_LIBRARIES=" ${COMMONAPI_LIBRARIES})
-    message(STATUS "variable COMMONAPI_VERSION=" ${COMMONAPI_VERSION})
-    pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus=2.1.4)
-    message(STATUS "variable COMMONAPI_DBUS_INCLUDE_DIRS=" ${COMMONAPI_DBUS_INCLUDE_DIRS})
-    message(STATUS "variable COMMONAPI_DBUS_LIBRARIES=" ${COMMONAPI_DBUS_LIBRARIES})
-    message(STATUS "variable COMMONAPI_DBUS_VERSION=" ${COMMONAPI_DBUS_VERSION})
-
-    link_directories(${DBUS1_LIBRARY_DIRS} ${COMMONAPI_LIBRARY_DIRS} ${COMMONAPI_DBUS_LIBRARY_DIRS})
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 add_library(radio-app SHARED
     ${GENERATED_HEADERS}
@@ -230,45 +209,6 @@ AddClangFormat(radio-app-consumer-ws)
 AddClangFormat(radio-app-provider-cc)
 AddClangFormat(radio-app-consumer-cc)
 
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    # Compile the provider application (requires: Dbus and running cluster controller)
-    # Communicates via Dbus with cluster controller
-    add_executable(radio-app-provider-dbus
-        ${radio-app-provider_HEADERS}
-        ${radio-app-provider_SOURCES}
-    )
-
-    # Link the provider application
-    target_link_libraries(radio-app-provider-dbus
-        radio-app
-        ${radio-app_LIBRARIES}
-        ${Joynr_LIB_DBUS_LIBRARIES}
-    )
-
-    # Compile the consumer application (requires: Dbus and running cluster controller)
-    # Communicates via Dbus with cluster controller
-    add_executable(radio-app-consumer-dbus
-        ${radio-app-consumer_HEADERS}
-        ${radio-app-consumer_SOURCES}
-    )
-
-    # Link the consumer application
-    target_link_libraries(radio-app-consumer-dbus
-        radio-app
-        ${radio-app_LIBRARIES}
-        ${Joynr_LIB_DBUS_LIBRARIES}
-    )
-
-    install(TARGETS
-                radio-app-provider-dbus
-                radio-app-consumer-dbus
-            RUNTIME DESTINATION bin COMPONENT bin
-    )
-
-    AddClangFormat(radio-app-provider-dbus)
-    AddClangFormat(radio-app-provider-dbus)
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
 # Set Visual Studio to do parallel builds
 IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
         set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${MSVCC_AUTO_INCLUDE} /MP")
@@ -282,22 +222,13 @@ ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 # Visual Studio compiles to Debug and Release directories
 IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/radio-app-provider.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/radio-app-provider.dbus.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/radio-app-consumer.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug//resources/radio-app-consumer.dbus.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/cc.messaging.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug//resources/cc.dbus.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/radio-app-provider.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/radio-app-provider.dbus.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/radio-app-consumer.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release//resources/radio-app-consumer.dbus.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/cc.messaging.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release//resources/cc.dbus.settings)
 ELSE()
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-provider.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-provider.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-provider.dbus.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-consumer.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/radio-app-consumer.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/radio-app-consumer.dbus.settings)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.messaging.settings)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/cc.dbus.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/cc.dbus.settings)
 ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio")

@@ -7,13 +7,6 @@ and an exclusion of liability is included in
 tools/generator/dependency-libs/libs/epl-v10.html.
 Source code is included in folder tools/generator/dependency-libs/libs.
 
---- common-api -----------------------------------------------------------------
-
-"Common API" included in cpp/libs/common-api is licensed under "Mozilla Public
-License Version 2.0." A copy of that license in the English original version is
-included in the cpp/libs/common-api/LICENSE document. Source code is included in
-folder cpp/libs/common-api.
-
 --- guava-libraries ------------------------------------------------------------
 
 The “guava” software included in some jar files in cpp/libs/common-api is

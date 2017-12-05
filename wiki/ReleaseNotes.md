@@ -3,9 +3,13 @@
 ## API relevant change
 None.
 
+## Configuration property changes
+None.
+
 ## Other changes
 * **[[C++,Generator]** Fixed a problem with the generator when empty structures
   with extends were specified in the FIDL files.
+* **[C++, JAVA, JS]** Removed DBUS and CommonAPI support
 
 # joynr 0.32.2
 

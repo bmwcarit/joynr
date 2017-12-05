@@ -1,4 +1,0 @@
-[dbus]
-cluster-controller-messaging-domain=local
-cluster-controller-messaging-servicename=io.joynr.clustercontroller.Messaging
-cluster-controller-messaging-participantid=cc.messaging.participantid

@@ -18,7 +18,6 @@ RUN dnf update -y \
     automake \
     cmake \
     corkscrew \
-    dbus-x11 \
     expat-devel \
     file \
     gcc-c++ \

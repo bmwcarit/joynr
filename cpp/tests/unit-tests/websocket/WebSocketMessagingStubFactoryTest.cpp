@@ -26,7 +26,6 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
@@ -45,7 +44,6 @@ public:
         webSocketServerAddress(joynr::system::RoutingTypes::WebSocketProtocol::WS, "localhost", 42, "path"),
         webSocketClientAddress("clientId"),
         channelAddress("endPointUrl", "channelId"),
-        commonApiDbusAddress("domain", "serviceName", "participantId"),
         browserAddress("windowId")
     {
     }
@@ -55,7 +53,6 @@ protected:
     joynr::system::RoutingTypes::WebSocketAddress webSocketServerAddress;
     joynr::system::RoutingTypes::WebSocketClientAddress webSocketClientAddress;
     joynr::system::RoutingTypes::ChannelAddress channelAddress;
-    joynr::system::RoutingTypes::CommonApiDbusAddress commonApiDbusAddress;
     joynr::system::RoutingTypes::BrowserAddress browserAddress;
 };
 
@@ -70,7 +67,6 @@ TEST_F(WebSocketMessagingStubFactoryTest, canOnlyCreateWebSocketAddressses) {
     WebSocketMessagingStubFactory factory;
 
     EXPECT_FALSE(factory.canCreate(channelAddress));
-    EXPECT_FALSE(factory.canCreate(commonApiDbusAddress));
     EXPECT_FALSE(factory.canCreate(browserAddress));
 }
 

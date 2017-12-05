@@ -41,7 +41,6 @@
 #include "joynr/Util.h"
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/system/RoutingProxy.h"
-#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 

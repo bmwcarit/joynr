@@ -43,7 +43,6 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
@@ -425,28 +424,6 @@ void CcMessageRouter::addNextHop(
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
     auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(mqttAddress);
-    addNextHop(participantId,
-               std::move(address),
-               isGloballyVisible,
-               expiryDateMs,
-               isSticky,
-               false,
-               std::move(onSuccess));
-}
-
-// inherited from joynr::system::RoutingProvider
-void CcMessageRouter::addNextHop(
-        const std::string& participantId,
-        const system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
-        const bool& isGloballyVisible,
-        std::function<void()> onSuccess,
-        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-{
-    std::ignore = onError;
-    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    const bool isSticky = false;
-    auto address = std::make_shared<const joynr::system::RoutingTypes::CommonApiDbusAddress>(
-            commonApiDbusAddress);
     addNextHop(participantId,
                std::move(address),
                isGloballyVisible,

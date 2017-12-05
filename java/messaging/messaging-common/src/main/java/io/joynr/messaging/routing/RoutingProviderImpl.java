@@ -32,7 +32,6 @@ import joynr.system.RoutingAbstractProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BrowserAddress;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.CommonApiDbusAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -100,14 +99,6 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
 
     @Override
     public Promise<DeferredVoid> addNextHop(String participantId, MqttAddress address, Boolean isGloballyVisible) {
-        messageRouter.addNextHop(participantId, address, isGloballyVisible);
-        return resolvedDeferred();
-    }
-
-    @Override
-    public Promise<DeferredVoid> addNextHop(String participantId,
-                                            CommonApiDbusAddress address,
-                                            Boolean isGloballyVisible) {
         messageRouter.addNextHop(participantId, address, isGloballyVisible);
         return resolvedDeferred();
     }

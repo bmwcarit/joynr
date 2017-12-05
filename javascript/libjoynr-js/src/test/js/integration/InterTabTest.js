@@ -28,7 +28,6 @@ var RoutingProxy = require('../../classes/joynr/system/RoutingProxy');
 var ChannelAddress = require('../../classes/joynr/system/RoutingTypes/ChannelAddress');
 var BrowserAddress = require('../../classes/joynr/system/RoutingTypes/BrowserAddress');
 var WebSocketAddress = require('../../classes/joynr/system/RoutingTypes/WebSocketAddress');
-var CommonApiDbusAddress = require('../../classes/joynr/system/RoutingTypes/CommonApiDbusAddress');
 var RadioProxy = require('../../test-classes/joynr/vehicle/RadioProxy');
 var RadioProvider = require('../../test-classes/joynr/vehicle/RadioProvider');
 var RadioStation = require('../../test-classes/joynr/vehicle/radiotypes/RadioStation');
@@ -37,7 +36,7 @@ var provisioningLibjoynr = require('../../test-classes/joynr/provisioning/provis
 var provisioningCc = require('../../test-classes/joynr/provisioning/provisioning_cc');
 var MqttAddress = require('../../classes/joynr/system/RoutingTypes/MqttAddress');
 var IntegrationUtils = require('./IntegrationUtils');
-module.exports = (function (Promise, joynr, DiscoveryEntry, DiscoveryScope, DiscoveryQosGen, DiscoveryProxy, RoutingProxy, ChannelAddress, BrowserAddress, WebSocketAddress, CommonApiDbusAddress, RadioProxy, RadioProvider, RadioStation, Country, provisioning, provisioning_cc, MqttAddress, IntegrationUtils) {
+module.exports = (function (Promise, joynr, DiscoveryEntry, DiscoveryScope, DiscoveryQosGen, DiscoveryProxy, RoutingProxy, ChannelAddress, BrowserAddress, WebSocketAddress, RadioProxy, RadioProvider, RadioStation, Country, provisioning, provisioning_cc, MqttAddress, IntegrationUtils) {
             describe(
                     "libjoynr-js.integration.intertab",
                     function() {
@@ -974,24 +973,6 @@ module.exports = (function (Promise, joynr, DiscoveryEntry, DiscoveryScope, Disc
                                             participantId : testParticipantId
                                         });
                                     }).then(function() {
-                                        // test participant as CommonApiDbusAddress to be resolved
-                                        return routingProxy.resolveNextHop({
-                                            participantId : testParticipantId
-                                        });
-                                    }).then(function(opArgs) {
-                                        var commonApiDbusAddress = new CommonApiDbusAddress({
-                                            domain : "domain",
-                                            participantId : "participantId",
-                                            serviceName : "serviceName"
-                                        });
-                                        var success = opArgs.resolved;
-                                        expect(success).toBeFalsy();
-                                        return routingProxy.addNextHop({
-                                            participantId : testParticipantId,
-                                            commonApiDbusAddress : commonApiDbusAddress,
-                                            isGloballyVisible : false
-                                        });
-                                    }).then(function() {
                                         return routingProxy.resolveNextHop({
                                                 participantId : testParticipantId
                                         });
@@ -1039,4 +1020,4 @@ module.exports = (function (Promise, joynr, DiscoveryEntry, DiscoveryScope, Disc
                                     });
                     });
         });
-}(Promise, joynr, DiscoveryEntry, DiscoveryScope, DiscoveryQos, DiscoveryProxy, RoutingProxy, ChannelAddress, BrowserAddress, WebSocketAddress, CommonApiDbusAddress, RadioProxy, RadioProvider, RadioStation, Country, provisioningLibjoynr, provisioningCc, MqttAddress, IntegrationUtils));
+}(Promise, joynr, DiscoveryEntry, DiscoveryScope, DiscoveryQos, DiscoveryProxy, RoutingProxy, ChannelAddress, BrowserAddress, WebSocketAddress, RadioProxy, RadioProvider, RadioStation, Country, provisioningLibjoynr, provisioningCc, MqttAddress, IntegrationUtils));

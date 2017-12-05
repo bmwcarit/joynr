@@ -46,14 +46,6 @@ AddClangFormat(cluster-controller)
 
 AddClangTidy(cluster-controller)
 
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    target_link_libraries(cluster-controller
-        ${DBUS1_LIBRARIES}
-        ${COMMONAPI_DBUS_LIBRARIES}
-        ${COMMONAPI_LIBRARIES}
-    )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
 target_link_libraries(cluster-controller
     JoynrClusterControllerRuntime
 )

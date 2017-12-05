@@ -25,7 +25,6 @@ transport middleware.
 
 * For example, using joynr:
 
- * dbus may be spoken at the device-level
  * Web Sockets may be used between devices
  * HTTP Long Polling may be used to the backend
 
@@ -72,7 +71,7 @@ Full featured communication paradigms mapped to a middleware-agnostic messaging 
 
 **Messaging adaption**
 
-Mapping of middleware-agnostic messaging to a specific transport middleware implementation (Atmosphere-, WebSocket-, Dbus messaging adaption)
+Mapping of middleware-agnostic messaging to a specific transport middleware implementation (Atmosphere- and WebSocket messaging adaption)
 
 **Messaging implementation**
 
@@ -82,7 +81,6 @@ Mapping of middleware-agnostic messaging to a specific transport middleware impl
 
  * Atmosphere-based via HTTP
  * WebSockets
- * dbus
 
 **OSI Transport Layer**
 

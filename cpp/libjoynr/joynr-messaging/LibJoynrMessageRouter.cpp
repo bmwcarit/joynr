@@ -33,7 +33,6 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/system/RoutingTypes/CommonApiDbusAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
@@ -252,13 +251,6 @@ void LibJoynrMessageRouter::addNextHopToParent(
                                incomingAddress)) {
         parentRouter->addNextHopAsync(participantId,
                                       *mqttAddress,
-                                      isGloballyVisible,
-                                      std::move(onSuccess),
-                                      std::move(onErrorWrapper));
-    } else if (auto commonApiDbusAddress = std::dynamic_pointer_cast<
-                       const joynr::system::RoutingTypes::CommonApiDbusAddress>(incomingAddress)) {
-        parentRouter->addNextHopAsync(participantId,
-                                      *commonApiDbusAddress,
                                       isGloballyVisible,
                                       std::move(onSuccess),
                                       std::move(onErrorWrapper));

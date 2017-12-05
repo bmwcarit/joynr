@@ -163,21 +163,12 @@ option(
 )
 message(STATUS "option USE_PLATFORM_SMRF=" ${USE_PLATFORM_SMRF})
 
-# should we use DBUS to communicate between libjoynr and cluster-controller
-option(
-    USE_DBUS_COMMONAPI_COMMUNICATION
-    "Use DBUS and CommonAPI to communicate between libjoynr and cluster-controller?"
-    OFF
-)
-
 option(
     USE_PLATFORM_MOCOCRW
     "Resolve dependency to MOCOCRW from the system?"
     ON
 )
 message(STATUS "option USE_PLATFORM_MOCOCRW=" ${USE_PLATFORM_MOCOCRW})
-
-message(STATUS "option USE_DBUS_COMMONAPI_COMMUNICATION=" ${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 option(
     BUILD_TESTS
@@ -551,9 +542,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # common-api/CMakeLists.txt overwrites CMAKE_CXX_FLAGS to deactivate warnings for CommonAPI
-    # generated code.
-    # All changes to CMAKE_CXX_FLAGS that are not warnings should be added there as well.
     set(GNU_CXX_FLAGS "-pipe")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wall -Wunused-value -Wunused -Wcast-qual -Wpointer-arith")
     set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wextra -Wcast-align -Wdisabled-optimization -Wformat-y2k")
@@ -594,34 +582,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
     add_definitions(-DGTEST_USE_OWN_TR1_TUPLE=1)
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    message(STATUS "### DBUS CommonAPI configuration ###")
-
-    find_package(PkgConfig)
-    pkg_check_modules(DBUS1 REQUIRED dbus-1)
-    message(STATUS "variable DBUS_INCLUDE_DIRS=" ${DBUS1_INCLUDE_DIRS})
-    message(STATUS "variable DBUS1_LIBRARIES=" ${DBUS1_LIBRARIES})
-    message(STATUS "variable DBUS1_LIBRARY_DIRS=" ${DBUS1_LIBRARY_DIRS})
-    pkg_check_modules(COMMONAPI REQUIRED CommonAPI=2.1.4)
-    message(STATUS "variable COMMONAPI_INCLUDE_DIRS=" ${COMMONAPI_INCLUDE_DIRS})
-    message(STATUS "variable COMMONAPI_LIBRARIES=" ${COMMONAPI_LIBRARIES})
-    message(STATUS "variable COMMONAPI_VERSION=" ${COMMONAPI_VERSION})
-    pkg_check_modules(COMMONAPI_DBUS REQUIRED CommonAPI-DBus=2.1.4)
-    message(STATUS "variable COMMONAPI_DBUS_INCLUDE_DIRS=" ${COMMONAPI_DBUS_INCLUDE_DIRS})
-    message(STATUS "variable COMMONAPI_DBUS_LIBRARIES=" ${COMMONAPI_DBUS_LIBRARIES})
-    message(STATUS "variable COMMONAPI_DBUS_VERSION=" ${COMMONAPI_DBUS_VERSION})
-
-    include_directories(
-        SYSTEM
-        ${COMMONAPI_INCLUDE_DIRS}
-        ${DBUS1_INCLUDE_DIRS}
-        ${COMMONAPI_DBUS_INCLUDE_DIRS}
-    )
-
-    link_directories(${DBUS1_LIBRARY_DIRS} ${COMMONAPI_LIBRARY_DIRS} ${COMMONAPI_DBUS_LIBRARY_DIRS})
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
 
 ### Add spdlog ###########################################################
 find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
@@ -672,7 +632,6 @@ if(JOYNR_ENABLE_DLT_LOGGING)
                        "-DWITH_DLT_CONSOLE=OFF"
                        "-DWITH_DLT_EXAMPLES=OFF"
                        "-DWITH_DLT_SYSTEM=OFF"
-                       "-DWITH_DLT_DBUS=OFF"
                        "-DWITH_DLT_TESTS=OFF"
             BUILD_BYPRODUCTS ${DLT_LIBRARIES}
         )
@@ -776,9 +735,6 @@ endif(USE_PLATFORM_SMRF)
 include(CheckSMRFImportTargets)
 
 ######## Add submodules ########
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    add_subdirectory(common-api)
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 add_subdirectory(libjoynr)
 add_subdirectory(libjoynrclustercontroller)
@@ -801,14 +757,6 @@ set(
     JoynrClusterController
     JoynrClusterControllerRuntime
 )
-
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    list(
-        APPEND TARGET_LIBS
-        JoynrDbusRuntime
-        JoynrCommonAPI
-    )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 
 # export all targets from the build tree to use by outside projects
 export(
@@ -856,13 +804,6 @@ set(
     JoynrWsRuntime
 )
 
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    set(
-        JoynrConfig_LIB_DBUS_LIBRARIES
-        JoynrDbusRuntime
-    )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
-
 # ... for the build tree
 
 set(
@@ -880,14 +821,6 @@ set(
     ${muesli_INCLUDE_DIRECTORIES}
 )
 
-if(${USE_DBUS_COMMONAPI_COMMUNICATION})
-    set(
-        JoynrConfig_LIB_DBUS_INCLUDE_DIRS
-        ${Joynr_PUBLIC_INCLUDE_DIRECTORY}
-        ${spdlog_INCLUDE_DIRS}
-        ${muesli_INCLUDE_DIRECTORIES}
-    )
-endif(${USE_DBUS_COMMONAPI_COMMUNICATION})
 set(JoynrConfig_TARGETS_FILE "${JOYNR_BINARY_DIR}/JoynrTargets.cmake")
 set(JoynrConfig_INSTALL_BIN_DIR "${JOYNR_BINARY_DIR}")
 set(JoynrConfig_RESOURCES_DIR "${JoynrConfig_INSTALL_BIN_DIR}/resources")
@@ -971,7 +904,6 @@ file(
 set(JoynrConfig_LIB_COMMON_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
 set(JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
 set(JoynrConfig_LIB_WS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
-set(JoynrConfig_LIB_DBUS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_INCLUDE_DIR}")
 set(JoynrConfig_TARGETS_FILE "\${CMAKE_CURRENT_LIST_DIR}/JoynrTargets.cmake")
 set(JoynrConfig_RESOURCES_DIR "\${CMAKE_CURRENT_LIST_DIR}/${RELATIVE_INSTALL_FULL_SYSCONFDIR}")
 
