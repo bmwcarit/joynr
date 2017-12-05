@@ -22,6 +22,7 @@
 var PerformanceUtilities = require("./performanceutilities");
 
 var options = PerformanceUtilities.getCommandLineOptionsOrDefaults(process.env);
+PerformanceUtilities.overrideRequire();
 
 var domain = options.domain;
 
