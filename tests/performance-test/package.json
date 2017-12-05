@@ -33,6 +33,7 @@
     "skipByteArraySizeTimesK": "false"
   },
   "scripts": {
+    "startPerformance": "export domain=$npm_package_config_domain && export runs=$npm_package_config_runs && export viacc=$npm_package_config_viacc && export skipByteArraySizeTimesK=$npm_package_config_skipByteArraySizeTimesK && export brokerUri=$npm_package_config_brokerUri && node --expose-gc src/main/js/runPerformanceTests.js",
     "startconsumer": "export measureMemory=$npm_package_config_measureMemory export testsTypes=$npm_package_config_testsTypes export domain=$npm_package_config_domain && export testRuns=$npm_package_config_testRuns && export runs=$npm_package_config_runs && export viacc=$npm_package_config_viacc && export skipByteArraySizeTimesK=$npm_package_config_skipByteArraySizeTimesK && export brokerUri=$npm_package_config_brokerUri && node --expose-gc src/main/js/consumer.js",
     "startconsumer-profiling": "export measureMemory=$npm_package_config_measureMemory export testsTypes=$npm_package_config_testsTypes export domain=$npm_package_config_domain && export testRuns=$npm_package_config_testRuns && export runs=$npm_package_config_runs && export viacc=$npm_package_config_viacc && export skipByteArraySizeTimesK=$npm_package_config_skipByteArraySizeTimesK && export brokerUri=$npm_package_config_brokerUri && NODE_ENV=production && node --prof --expose-gc src/main/js/consumer.js",
     "startprovider": "node src/main/js/provider.js $npm_package_config_domain",
