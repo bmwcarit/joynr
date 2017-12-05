@@ -215,10 +215,10 @@ protected:
                 = runtime->createProxyBuilder<tests::testProxy>(domainName);
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeoutMs(3000);
-        discoveryQos.setRetryIntervalMs(250);
+        discoveryQos.setDiscoveryTimeoutMs(30000);
+        discoveryQos.setRetryIntervalMs(500);
 
-        std::int64_t qosRoundTripTTL = 500;
+        std::int64_t qosRoundTripTTL = 40000;
 
         std::shared_ptr<tests::testProxy> testProxy(testProxyBuilder
                                                    ->setMessagingQos(MessagingQos(qosRoundTripTTL))
