@@ -1,3 +1,14 @@
+# joynr 0.33.0
+
+## API relevant changes
+None.
+
+## Configuration property changes
+None.
+
+## Other changes
+* **[C++, JAVA, JS]** Removed DBUS and CommonAPI support
+
 # joynr 0.32.0
 
 ## API relevant changes
