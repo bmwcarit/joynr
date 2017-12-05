@@ -404,6 +404,7 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(
 {
     if (!errorCode) {
         thisSharedPtr->messageQueue->removeOutdatedMessages();
+        thisSharedPtr->transportNotAvailableQueue->removeOutdatedMessages();
         thisSharedPtr->activateMessageCleanerTimer();
     } else if (errorCode != boost::system::errc::operation_canceled) {
         JOYNR_LOG_ERROR(logger(),

@@ -321,3 +321,37 @@ TYPED_TEST(MessageRouterTest, restoreRoutingTable) {
                 create(Pointee(Eq(*address)))).Times(1);
     this->messageRouter->route(this->mutableMessage.getImmutableMessage());
 }
+
+TYPED_TEST(MessageRouterTest, cleanupExpiredMessagesFromTransportNotAvailableQueue) {
+    auto mockTransportStatus  = std::make_shared<MockTransportStatus>();
+    auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
+    auto address = std::dynamic_pointer_cast<const joynr::system::RoutingTypes::Address>(providerAddress);
+    const std::string providerParticipantId("providerParticipantId");
+
+    this->mutableMessage.setRecipient(providerParticipantId);
+    const bool isGloballyVisible = true;
+
+    std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
+    transportStatuses.emplace_back(mockTransportStatus);
+
+    // create a new MessageRouter
+    this->messageRouter = this->createMessageRouter({transportStatuses});
+    this->messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible); // Saves routingTable to the persistence file.
+
+    ON_CALL(*mockTransportStatus, isReponsibleFor(address)).
+            WillByDefault(Return(true));
+
+    std::shared_ptr<ImmutableMessage> immutableMessage1 = this->mutableMessage.getImmutableMessage();
+
+    JoynrTimePoint now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+
+    this->mutableMessage.setExpiryDate(now + std::chrono::milliseconds(10000));
+    std::shared_ptr<ImmutableMessage> immutableMessage2 = this->mutableMessage.getImmutableMessage();
+    this->messageRouter->route(immutableMessage1);
+    this->messageRouter->route(immutableMessage2);
+    EXPECT_EQ(this->transportNotAvailableQueueRef->getQueueLength(), 2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5500));
+    EXPECT_EQ(this->transportNotAvailableQueueRef->getQueueLength(), 1); // it remains immutableMessage2
+    auto queuedMessage2 = this->transportNotAvailableQueueRef->getNextMessageFor(mockTransportStatus);
+    EXPECT_EQ(queuedMessage2->getContent(), immutableMessage2);
+}
