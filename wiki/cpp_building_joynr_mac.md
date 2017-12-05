@@ -28,8 +28,7 @@ This can be placed outside of the joynr directory.
 ```bash
 #!/bin/bash
 
-cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=OFF \
-  -DUSE_PLATFORM_MOSQUITTO=ON \
+cmake -DUSE_PLATFORM_MOSQUITTO=ON \
   -DOPENSSL_ROOT_DIR=[YOUR OPEN SSL ROOT DIR] \
   -DOPENSSL_LIBRARIES=[YOUR OPEN SSL LIB DIR] \
   -DENABLE_GCOV=OFF \
@@ -69,8 +68,7 @@ If you have installed gcc on your mac, then the cmake command will look like the
 ```bash
 #!/bin/bash
 
-cmake -DUSE_DBUS_COMMONAPI_COMMUNICATION=OFF \
-  -DCMAKE_C_COMPILER=/usr/local/gcc-6.2.0/bin/gcc-6.2.0 \
+cmake -DCMAKE_C_COMPILER=/usr/local/gcc-6.2.0/bin/gcc-6.2.0 \
   -DCMAKE_CXX_COMPILER=/usr/local/gcc-6.2.0/bin/g++-6.2.0 \
   -DCMAKE_PREFIX_PATH:UNINITIALIZED=/usr/local/gcc-6.2.0 \
   -DUSE_PLATFORM_MOSQUITTO=ON \
