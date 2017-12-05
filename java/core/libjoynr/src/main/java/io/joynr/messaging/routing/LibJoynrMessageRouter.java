@@ -38,7 +38,6 @@ import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BrowserAddress;
 import joynr.system.RoutingTypes.ChannelAddress;
-import joynr.system.RoutingTypes.CommonApiDbusAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import org.slf4j.Logger;
@@ -133,8 +132,6 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
         logger.trace("Adding next hop with participant id " + participantId + " to parent router");
         if (incomingAddress instanceof ChannelAddress) {
             parentRouter.addNextHop(participantId, (ChannelAddress) incomingAddress, isGloballyVisible);
-        } else if (incomingAddress instanceof CommonApiDbusAddress) {
-            parentRouter.addNextHop(participantId, (CommonApiDbusAddress) incomingAddress, isGloballyVisible);
         } else if (incomingAddress instanceof BrowserAddress) {
             parentRouter.addNextHop(participantId, (BrowserAddress) incomingAddress, isGloballyVisible);
         } else if (incomingAddress instanceof WebSocketAddress) {
