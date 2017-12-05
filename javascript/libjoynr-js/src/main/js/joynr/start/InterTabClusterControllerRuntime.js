@@ -600,8 +600,6 @@ function InterTabClusterControllerRuntime(provisioning) {
                 var address;
                 if (opArgs.channelAddress !== undefined) {
                     address = opArgs.channelAddress;
-                } else if (opArgs.commonApiDbusAddress !== undefined) {
-                    address = opArgs.commonApiDbusAddress;
                 } else if (opArgs.browserAddress !== undefined) {
                     address = opArgs.browserAddress;
                 } else if (opArgs.webSocketAddress !== undefined) {
