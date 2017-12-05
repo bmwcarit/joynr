@@ -33,7 +33,7 @@ set -e -x
   echo "format javascript/libjoynr-js"
   cd javascript/libjoynr-js
   mvn process-sources resources:resources dependency:unpack
-  npm install --prefix=./target/node-classes prettier
+  npm install --prefix=./target/node-classes prettier@1.8.2
   chmod +x target/classes/run_formatter.sh
   target/classes/run_formatter.sh
 )
