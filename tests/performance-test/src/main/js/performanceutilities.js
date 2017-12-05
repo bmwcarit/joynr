@@ -20,7 +20,7 @@
  */
 
 var Promise = require("bluebird").Promise;
-var fs = require("fs");
+var config = require("./config/config");
 
 var PerformanceUtilities = {};
 
@@ -56,32 +56,25 @@ PerformanceUtilities.forceGC = function() {
  * available, a default value will be used.
  */
 PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
-    var bounceProxyBaseUrl,
-        domain,
+    var domain,
         stringLength,
         byteArrayLength,
-        numRuns,
         timeout,
-        brokerUri,
-        viacc,
         cchost,
         ccport,
         skipByteArraySizeTimesK,
         testRuns,
         measureMemory;
 
-    testRuns = environment.testRuns || 100;
-    domain = environment.domain || "performance_test_domain";
-    stringLength = environment.stringlength || 10;
-    byteArrayLength = environment.bytearraylength || 100;
-    numRuns = environment.runs || 1000;
-    timeout = environment.timeout || 3600000;
-    viacc = environment.viacc || "true";
-    brokerUri = environment.brokerUri || "tcp://localhost:1883";
-    bounceProxyBaseUrl = environment.bounceProxyBaseUrl || "http://localhost:8080";
-    cchost = environment.cchost || "localhost";
-    ccport = environment.ccport || 4242;
-    measureMemory = environment.measureMemory || "true";
+    var global = config.global;
+    testRuns = global.testRuns || 100;
+    domain = global.domain || "performance_test_domain";
+    stringLength = global.stringLength || 10;
+    byteArrayLength = global.byteArraySize || 100;
+    timeout = global.timeout || 3600000;
+    measureMemory = "false"; // TODO: broken
+    cchost = global.cc.host || "localhost";
+    ccport = global.cc.port || 4242;
 
     if (environment.skipByteArraySizeTimesK !== undefined) {
         skipByteArraySizeTimesK = environment.skipByteArraySizeTimesK;
@@ -93,14 +86,10 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         stringLength: stringLength,
         byteArrayLength: byteArrayLength,
         testRuns: testRuns,
-        numRuns: numRuns,
         timeout: timeout,
         domain: domain,
-        brokerUri: brokerUri,
-        viacc: viacc,
         cchost: cchost,
         ccport: ccport,
-        bounceProxyBaseUrl: bounceProxyBaseUrl,
         skipByteArraySizeTimesK: skipByteArraySizeTimesK,
         measureMemory: measureMemory
     };
@@ -153,21 +142,7 @@ PerformanceUtilities.createPromise = function createPromise() {
 };
 
 PerformanceUtilities.findBenchmarks = function() {
-    var whichTests = process.env.testsTypes || "csbka";
-    // string explanation: c = complexStruct; s = string; b = byteArray; k = byteArrayWithSizeTimesk; a = attribute
-
-    var benchmarks = [];
-    var pushOptional = function(letter, func) {
-        if (whichTests.indexOf(letter) !== -1) {
-            benchmarks.push(func);
-        }
-    };
-    pushOptional("a", "attributeString");
-    pushOptional("c", "echoComplexStruct");
-    pushOptional("s", "echoString");
-    pushOptional("b", "echoByteArray");
-    pushOptional("k", "echoByteArrayWithSizeTimesK");
-    pushOptional("r", "registerPlentyOfConsumers");
+    var benchmarks = config.benchmarks.filter(item => item.enabled === "true");
 
     return benchmarks;
 };

@@ -69,14 +69,14 @@ ChildProcessStuff.prototype.stopMeasurement = function() {
 ProcessManager.provider = new ChildProcessStuff("provider");
 ProcessManager.proxy = new ChildProcessStuff("proxy");
 
-ProcessManager.proxy.prepareBenchmark = function(benchmarkName) {
-    this.process.send({ msg: "prepareBenchmark", name: benchmarkName });
+ProcessManager.proxy.prepareBenchmark = function(benchmarkConfig) {
+    this.process.send({ msg: "prepareBenchmark", config: benchmarkConfig });
     this.prepareBenchmarkPromise = PerformanceUtilities.createPromise();
     return this.prepareBenchmarkPromise.promise;
 };
 
-ProcessManager.proxy.executeBenchmark = function(benchmarkName) {
-    this.process.send({ msg: "executeBenchmark", name: benchmarkName });
+ProcessManager.proxy.executeBenchmark = function(benchmarkConfig) {
+    this.process.send({ msg: "executeBenchmark", config: benchmarkConfig });
     this.executeBenchmarkPromise = PerformanceUtilities.createPromise();
     return this.executeBenchmarkPromise.promise;
 };

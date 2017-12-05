@@ -46,22 +46,22 @@ var testRunner = {
         }).then(testRunner.displaySummary);
     },
 
-    executeSubRuns: function(benchmarkName, index) {
+    executeSubRuns: function(benchmarkConfig, index) {
         var startTime;
-        var numRuns = Number.parseInt(options.numRuns);
+        var numRuns = benchmarkConfig.numRuns;
 
         return ProcessManager.proxy
-            .prepareBenchmark(benchmarkName)
+            .prepareBenchmark(benchmarkConfig)
             .then(() => {
                 ProcessManager.provider.startMeasurement();
                 ProcessManager.proxy.startMeasurement();
                 startTime = Date.now();
-                return ProcessManager.proxy.executeBenchmark(benchmarkName);
+                return ProcessManager.proxy.executeBenchmark(benchmarkConfig);
             })
             .then(function() {
                 var elapsedTimeMs = Date.now() - startTime;
                 log(
-                    benchmarkName +
+                    benchmarkConfig.name +
                         " " +
                         index +
                         " runs: " +
@@ -80,9 +80,9 @@ var testRunner = {
             });
     },
 
-    executeMultipleSubRuns: function(benchmarkName) {
+    executeMultipleSubRuns: function(benchmarkConfig) {
         console.log("executeMultipleSubRuns");
-        var numRuns = options.numRuns;
+        var numRuns = benchmarkConfig.numRuns;
         var testRuns = options.testRuns ? Number.parseInt(options.testRuns) : 1;
         var totalRuns = numRuns * testRuns;
         var totalLatency = 0;
@@ -111,7 +111,7 @@ var testRunner = {
             dummyArray,
             function() {
                 testIndex++;
-                return testRunner.executeSubRuns(benchmarkName, testIndex).then(function(result) {
+                return testRunner.executeSubRuns(benchmarkConfig, testIndex).then(function(result) {
                     totalLatency += result.time;
                     providerUserTime.push(result.provider.user);
                     providerSystemTime.push(result.provider.system);
@@ -141,7 +141,7 @@ var testRunner = {
                 averageTime: averageMsgPerSecond,
                 deviation,
                 highestMsgPerSecond,
-                benchmarkName,
+                benchmarkName: benchmarkConfig.name,
                 totalLatency
             };
             // cpu usage is in micro seconds -> divide by 1000

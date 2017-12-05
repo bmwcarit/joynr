@@ -32,7 +32,6 @@ var Benchmarks = require("./Benchmarks");
 var benchmarks;
 
 log("Using domain " + options.domain);
-error("Performing " + options.numRuns + " runs");
 error("test runs: " + options.testRuns);
 var provisioning = testbase.provisioning_common;
 provisioning.ccAddress.host = options.cchost;
@@ -70,7 +69,6 @@ joynr
         throw e;
     });
 
-var numRuns = Number.parseInt(options.numRuns);
 var cpuUsage;
 var testData;
 var handler = function(msg) {
@@ -83,15 +81,16 @@ var handler = function(msg) {
         process.send({ msg: "gotMeasurement", data: diff });
     } else if (msg.msg === "prepareBenchmark") {
         testData = [];
+        var numRuns = msg.config.numRuns;
         for (var i = 0; i < numRuns; i++) {
-            testData.push(benchmarks[msg.name].generateData(i));
+            testData.push(benchmarks[msg.config.name].generateData(i));
         }
         process.send({ msg: "prepareBenchmarkFinished" });
     } else if (msg.msg === "executeBenchmark") {
         // TODO: add different types of tests -> one request after another, all parallel, etc.
 
         // burstTest
-        var promiseArray = testData.map(item => benchmarks[msg.name].testProcedure(item));
+        var promiseArray = testData.map(item => benchmarks[msg.config.name].testProcedure(item));
         Promise.all(promiseArray).then(() => process.send({ msg: "executeBenchmarkFinished" }));
     }
 };
