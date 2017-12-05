@@ -893,7 +893,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          common/include/joynr/PrivateCopyAssign.h \
                          common/include/joynr/Reply.h \
                          common/include/joynr/Request.h \
-                         common/include/joynr/RuntimeConfig.h \
                          common/include/joynr/SettingsMerger.h \
                          common/include/joynr/SubscriptionUtil.h \
                          common/include/joynr/SystemServicesSettings.h \

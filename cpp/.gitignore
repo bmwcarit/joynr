@@ -1,6 +1,5 @@
 CMakeLists.txt.user*
 libjoynrclustercontroller/include/joynr/JoynrClusterControllerExport.h
-libjoynr/include/joynr/RuntimeConfig.h
 libjoynr/include/joynr/JoynrVersion.h
 libjoynr/include/joynr/JoynrExport.h
 libjoynr/include/joynr/infrastructure/

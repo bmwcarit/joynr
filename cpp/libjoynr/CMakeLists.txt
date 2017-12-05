@@ -23,12 +23,6 @@ configure_file(
     @ONLY
 )
 
-configure_file(
-    "common/RuntimeConfig.h.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/joynr/RuntimeConfig.h"
-    @ONLY
-)
-
 if(${GENERATE_SOURCES})
     JoynrGenerator(
         OUTPUTPATH "${CMAKE_CURRENT_SOURCE_DIR}"

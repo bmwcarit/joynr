@@ -32,7 +32,6 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/RuntimeConfig.h"
 #include "joynr/Semaphore.h"
 #include "joynr/WebSocketSettings.h"
 
