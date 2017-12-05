@@ -138,13 +138,6 @@ public:
 
     void addNextHop(
             const std::string& participantId,
-            const joynr::system::RoutingTypes::CommonApiDbusAddress& commonApiDbusAddress,
-            const bool& isGloballyVisible,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
-
-    void addNextHop(
-            const std::string& participantId,
             const joynr::system::RoutingTypes::BrowserAddress& browserAddress,
             const bool& isGloballyVisible,
             std::function<void()> onSuccess,
