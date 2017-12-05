@@ -30,6 +30,7 @@
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
+#include "joynr/ReadWriteLock.h"
 #include "joynr/serializer/Serializer.h"
 
 #include "libjoynrclustercontroller/access-control/WildcardStorage.h"
@@ -605,6 +606,8 @@ private:
     bool endsWithWildcard(const std::string& value) const;
 
     std::string persistenceFileName;
+    mutable ReadWriteLock readWriteLock;
+    mutable ReadWriteLock readWriteLockWildcard;
 
     using MasterAccessControlTable =
             access_control::TableMaker<access_control::dac::MasterAccessControlEntry>::Type;
@@ -639,6 +642,8 @@ private:
     template <typename Table, typename Value = typename Table::value_type, typename... Args>
     std::vector<Value> getEqualRange(const Table& table, Args&&... args) const
     {
+        ReadLocker lock(readWriteLock);
+
         auto range = table.equal_range(std::make_tuple(std::forward<Args>(args)...));
         std::vector<Value> result;
         std::copy(range.first, range.second, std::back_inserter(result));
@@ -650,6 +655,9 @@ private:
     {
         bool success = false;
         auto it = lookup(table, std::forward<Args>(args)...);
+
+        WriteLocker lock(readWriteLock);
+
         if (it != table.end()) {
             success = true;
             table.erase(it);
@@ -661,6 +669,7 @@ private:
     template <typename Table, typename Iterator = typename Table::const_iterator, typename... Args>
     typename Table::const_iterator lookup(const Table& table, Args&&... args) const
     {
+        ReadLocker lock(readWriteLock);
         return table.find(std::make_tuple(std::forward<Args>(args)...));
     }
 
@@ -681,6 +690,8 @@ private:
             bool>
     insertOrReplace(Table& table, const Entry& updatedEntry, bool persist = true)
     {
+        WriteLocker lock(readWriteLock);
+
         bool success = true;
         std::pair<typename Table::iterator, bool> result = table.insert(updatedEntry);
         if (!result.second) {
@@ -701,6 +712,8 @@ private:
             bool>
     insertOrReplace(Table& table, const Entry& updatedEntry, bool persist = true)
     {
+        WriteLocker lock(readWriteLock);
+
         bool success = true;
         std::pair<typename Table::iterator, bool> result = table.insert(updatedEntry);
         if (!result.second) {
@@ -752,6 +765,8 @@ private:
     template <typename Entry>
     void addToWildcardStorage(const Entry& updatedEntry)
     {
+        WriteLocker lock(readWriteLockWildcard);
+
         // If entry ends with wildcard, then add it to the corresponding WildcardStorage
         if (endsWithWildcard(updatedEntry.getDomain())) {
             domainWildcardStorage.insert<access_control::wildcards::Domain>(
@@ -860,6 +875,8 @@ private:
                                                              const std::string& domain,
                                                              const std::string& interfaceName) const
     {
+        ReadLocker lock(readWriteLockWildcard);
+
         using OptionalSet = access_control::WildcardStorage::OptionalSet<Value>;
         OptionalSet ifRes = interfaceWildcardStorage.getLongestMatch<Value>(interfaceName);
         OptionalSet dRes = domainWildcardStorage.getLongestMatch<Value>(domain);
@@ -914,6 +931,8 @@ private:
                                      const std::string& domain,
                                      const std::string& interfaceName) const
     {
+        ReadLocker lock(readWriteLock);
+
         auto range = table.equal_range(std::make_tuple(userId, domain, interfaceName));
         std::size_t size = std::distance(range.first, range.second);
 
@@ -933,6 +952,8 @@ private:
                                   const std::string& userId,
                                   access_control::dac::Role::Enum role) const
     {
+        ReadLocker lock(readWriteLock);
+
         std::vector<Value> entries;
         auto it = domainRoleTable.find(std::make_tuple(userId, role));
         if (it != domainRoleTable.end()) {
