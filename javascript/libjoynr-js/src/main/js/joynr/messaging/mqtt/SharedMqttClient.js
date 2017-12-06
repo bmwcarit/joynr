@@ -114,11 +114,7 @@ var SharedMqttClient = function SharedMqttClient(settings) {
     this._queuedMessages = [];
     this._closed = false;
     this._connected = false;
-    this._onConnectedPromise = new Promise(
-        function(resolve, reject) {
-            this._onConnectedPromiseResolve = resolve;
-        }.bind(this)
-    );
+    this._onConnectedDeferred = Util.createDeferred();
 
     this._qosLevel =
         settings.provisioning.qosLevel !== undefined
@@ -163,7 +159,7 @@ SharedMqttClient.prototype._resetConnection = function resetConnection() {
 };
 
 SharedMqttClient.prototype.onConnected = function() {
-    return this._onConnectedPromise;
+    return this._onConnectedDeferred.promise;
 };
 
 // send all queued messages, requeuing to the front in case of a problem
@@ -173,7 +169,7 @@ SharedMqttClient.prototype._onOpen = function onOpen() {
         sendQueuedMessages(this._client, this._queuedMessages);
         sendQueuedUnsubscriptions(this._client, this._queuedUnsubscriptions);
         sendQueuedSubscriptions(this._client, this._queuedSubscriptions, this._qosLevel).then(
-            this._onConnectedPromiseResolve
+            this._onConnectedDeferred.resolve
         );
     } catch (e) {
         this._resetConnection();
