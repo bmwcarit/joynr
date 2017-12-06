@@ -453,6 +453,21 @@ function start_cpp_consumer {
 	else
 	log 'C++ consumer successfully completed.'
 	fi
+
+	log 'Starting C++ consumer.'
+	./ilt-consumer-proxy-provider-interface-mismatch-ws $DOMAIN --gtest_color=yes --gtest_output="xml:$ILT_RESULTS_DIR/consumer-cpp-proxy-provider-mismatch$1.junit.xml" >> $ILT_RESULTS_DIR/consumer-cpp-proxy-provider-mismatch-$1.log 2>&1
+	SUCCESS=$?
+
+	if [ "$SUCCESS" != 0 ]
+	then
+	log 'C++ consumer proxy-provider-mismatch FAILED.'
+		echo "STATUS = $SUCCESS"
+		#test_failed
+		let FAILED_TESTS+=1
+		#stopall
+	else
+	log 'C++ consumer proxy-provider-mismatch successfully completed.'
+	fi
 }
 
 function start_javascript_consumer {

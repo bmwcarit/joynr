@@ -179,6 +179,18 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>generate-cpp-proxy-provider-interface-mismatch</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/src/main/model/proxy-provider-interface-mismatch/</model>
+							<generationLanguage>cpp</generationLanguage>
+							<outputPath>${basedir}/src/main/generated-cpp-proxy-provider-interface-mismatch</outputPath>
+						</configuration>
+					</execution>
+					<execution>
 						<id>generate-javascript</id>
 						<phase>generate-sources</phase>
 						<goals>

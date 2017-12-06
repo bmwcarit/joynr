@@ -64,10 +64,16 @@ set(GENERATED_INCLUDE_DIRS
     "src/main/generated-cpp/include"
 )
 
-# defined in libjoynr
-include_directories(
-    ${GENERATED_INCLUDE_DIRS}
-    ${Joynr_LIB_COMMON_INCLUDE_DIRS}
+file(GLOB_RECURSE GENERATED_HEADERS_PROXY_PROVIDER_INTERFACE_MISMATCH RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "src/main/generated-cpp-proxy-provider-interface-mismatch/include/*.h"
+)
+
+file(GLOB_RECURSE GENERATED_SOURCES_PROXY_PROVIDER_INTERFACE_MISMATCH RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "src/main/generated-cpp-proxy-provider-interface-mismatch/*.cpp"
+)
+
+set(GENERATED_INCLUDE_DIRS_PROXY_PROVIDER_INTERFACE_MISMATCH
+    "src/main/generated-cpp-proxy-provider-interface-mismatch/include"
 )
 
 # Use the generated header files for the consumer application
@@ -87,6 +93,22 @@ set(ilt-consumer_SOURCES
     "src/main/cpp/IltConsumerFireAndForgetMethodTest.cpp"
     "src/main/cpp/IltConsumerGetterSetterTest.cpp"
     "src/main/cpp/IltConsumerSyncMethodTest.cpp"
+    "src/main/cpp/IltAbstractConsumerTest.cpp"
+)
+
+# Use the generated header files for the consumer application
+set(ilt-consumer-proxy-provider-interface-mismatch_HEADERS
+    ${GENERATED_HEADERS_PROXY_PROVIDER_INTERFACE_MISMATCH}
+    "src/main/cpp/IltHelper.h"
+    "src/main/cpp/IltUtil.h"
+    "src/main/cpp/IltAbstractConsumerTest.h"
+)
+
+# Use the generated source files for the consumer application
+set(ilt-consumer-proxy-provider-interface-mismatch_SOURCES
+    ${GENERATED_SOURCES_PROXY_PROVIDER_INTERFACE_MISMATCH}
+    "src/main/cpp/IltHelper.cpp"
+    "src/main/cpp/IltConsumerMethodInvocationExcpetionTest.cpp"
     "src/main/cpp/IltAbstractConsumerTest.cpp"
 )
 
@@ -156,6 +178,12 @@ target_link_libraries(ilt-provider-cc
     ${Joynr_LIB_INPROCESS_LIBRARIES}
 )
 
+target_include_directories(
+    ilt-provider-cc
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
+)
+
 # Compile the provider application (requires: running cluster controller)
 # Communicates via WebSockets with cluster controller
 add_executable(ilt-provider-ws
@@ -193,6 +221,31 @@ target_include_directories(
 
 # Link the consumer application
 target_link_libraries(ilt-consumer-ws
+    ilt
+    ${ilt_LIBRARIES}
+    ${Joynr_LIB_WS_LIBRARIES}
+    ${GTEST_LIBRARIES}
+    ${GMOCK_LIBRARIES}
+)
+
+# Compile the extended test application (requires: running cluster controller)
+# Communicates via WebSockets with cluster controller
+AddTest(
+    ilt-consumer-proxy-provider-interface-mismatch-ws
+    ${ilt-consumer-proxy-provider-interface-mismatch_HEADERS}
+    ${ilt-consumer-proxy-provider-interface-mismatch_SOURCES}
+)
+
+target_include_directories(
+    ilt-consumer-proxy-provider-interface-mismatch-ws
+    PRIVATE ${GENERATED_INCLUDE_DIRS_PROXY_PROVIDER_INTERFACE_MISMATCH}
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/tests
+)
+
+# Link the consumer application
+target_link_libraries(ilt-consumer-proxy-provider-interface-mismatch-ws
     ilt
     ${ilt_LIBRARIES}
     ${Joynr_LIB_WS_LIBRARIES}
