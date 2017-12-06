@@ -50,7 +50,9 @@ namespace joynr
 Dispatcher::Dispatcher(std::shared_ptr<IMessageSender> messageSender,
                        boost::asio::io_service& ioService,
                        int maxThreads)
-        : messageSender(std::move(messageSender)),
+        : std::enable_shared_from_this<Dispatcher>(),
+          IDispatcher(),
+          messageSender(std::move(messageSender)),
           requestCallerDirectory("Dispatcher-RequestCallerDirectory", ioService),
           replyCallerDirectory("Dispatcher-ReplyCallerDirectory", ioService),
           publicationManager(),
@@ -119,7 +121,7 @@ void Dispatcher::receive(std::shared_ptr<ImmutableMessage> message)
     // we only support non-encrypted messages for now
     assert(!message->isEncrypted());
     std::shared_ptr<ReceivedMessageRunnable> receivedMessageRunnable =
-            std::make_shared<ReceivedMessageRunnable>(std::move(message), *this);
+            std::make_shared<ReceivedMessageRunnable>(std::move(message), shared_from_this());
     handleReceivedMessageThreadPool->execute(receivedMessageRunnable);
 }
 

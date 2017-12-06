@@ -68,7 +68,7 @@ public:
         proxyParticipantId("proxyParticipantId"),
         messageFactory(),
         messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
-        dispatcher(messageSender, singleThreadIOService->getIOService()),
+        dispatcher(std::make_shared<Dispatcher>(messageSender, singleThreadIOService->getIOService())),
         subscriptionManager(nullptr)
     {
         singleThreadIOService->start();
@@ -82,7 +82,7 @@ public:
         //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
         subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadIOService->getIOService(), mockMessageRouter);
-        dispatcher.registerSubscriptionManager(subscriptionManager);
+        dispatcher->registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
     }
 
@@ -102,7 +102,7 @@ protected:
 
     MutableMessageFactory messageFactory;
     std::shared_ptr<MessageSender> messageSender;
-    Dispatcher dispatcher;
+    std::shared_ptr<Dispatcher> dispatcher;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
 private:
     DISALLOW_COPY_AND_ASSIGN(BroadcastSubscriptionTest);
@@ -152,7 +152,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter ) {
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(mutableMessage.getImmutableMessage());
+    dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
@@ -203,7 +203,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters )
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(mutableMessage.getImmutableMessage());
+    dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));

@@ -78,7 +78,7 @@ public:
         persistencyEnabled(true),
         messageFactory(),
         messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
-        dispatcher(messageSender, singleThreadedIOService->getIOService()),
+        dispatcher(std::make_shared<Dispatcher>(messageSender, singleThreadedIOService->getIOService())),
         subscriptionManager(),
         provider(new MockTestProvider),
         publicationManager(std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, persistencyEnabled)),
@@ -91,8 +91,8 @@ public:
     void SetUp(){
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored subscriptions
         subscriptionManager = std::make_shared<SubscriptionManager>(singleThreadedIOService->getIOService(), mockMessageRouter);
-        dispatcher.registerPublicationManager(publicationManager);
-        dispatcher.registerSubscriptionManager(subscriptionManager);
+        dispatcher->registerPublicationManager(publicationManager);
+        dispatcher->registerSubscriptionManager(subscriptionManager);
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(tests::ItestBase::INTERFACE_NAME());
     }
 
@@ -123,7 +123,7 @@ protected:
 
     MutableMessageFactory messageFactory;
     std::shared_ptr<MessageSender> messageSender;
-    Dispatcher dispatcher;
+    std::shared_ptr<Dispatcher> dispatcher;
     std::shared_ptr<SubscriptionManager> subscriptionManager;
     std::shared_ptr<MockTestProvider> provider;
     std::shared_ptr<PublicationManager> publicationManager;
@@ -170,8 +170,8 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute) {
                 subscriptionRequest,
                 isLocalMessage);
 
-    dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
-    dispatcher.receive(mutableMessage.getImmutableMessage());
+    dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
+    dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // Wait for a call to be made to the mockRequestCaller
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
@@ -228,7 +228,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(mutableMessage.getImmutableMessage());
+    dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(publicationSemaphore.waitFor(std::chrono::seconds(1)));
@@ -284,7 +284,7 @@ TEST_F(SubscriptionTest, receive_enumPublication ) {
                 qos,
                 subscriptionPublication);
 
-    dispatcher.receive(mutableMessage.getImmutableMessage());
+    dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
@@ -333,8 +333,8 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription) {
                 isLocalMessage);
     // first received message with subscription request
 
-    dispatcher.receive(mutableMessage.getImmutableMessage());
-    dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
+    dispatcher->receive(mutableMessage.getImmutableMessage());
+    dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(15)));
     //Try to acquire a semaphore for up to 15 seconds. Acquireing the semaphore will only work, if the mockRequestCaller has been called
     //and will be much faster than waiting for 1s to make sure it has been called
@@ -421,7 +421,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
-    dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
+    dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 1200, // validity_ms
                 1000, // publication ttl
@@ -443,12 +443,12 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications) {
                 subscriptionRequest,
                 isLocalMessage);
     // first received message with subscription request
-    dispatcher.receive(mutableMessage.getImmutableMessage());
+    dispatcher->receive(mutableMessage.getImmutableMessage());
     // wait for two requests from the subscription
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
     // remove the request caller
-    dispatcher.removeRequestCaller(providerParticipantId);
+    dispatcher->removeRequestCaller(providerParticipantId);
     // assert that less than 2 requests happen in the next 300 milliseconds
     semaphore.waitFor(std::chrono::milliseconds(300));
     ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(300)));
@@ -469,7 +469,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
                     Invoke(mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
                     ReleaseSemaphore(&semaphore)));
 
-    dispatcher.addRequestCaller(providerParticipantId, mockRequestCaller);
+    dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     std::string attributeName = "Location";
     auto subscriptionQos = std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(
                 1200, // validity_ms
@@ -491,7 +491,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
                 subscriptionRequest,
                 isLocalMessage);
     // first received message with subscription request
-    dispatcher.receive(mutableMessage.getImmutableMessage());
+    dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // wait for two requests from the subscription
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
@@ -505,7 +505,7 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications) {
                 providerParticipantId,
                 qos,
                 subscriptionStop);
-    dispatcher.receive(mutableMessage.getImmutableMessage());
+    dispatcher->receive(mutableMessage.getImmutableMessage());
 
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
 }

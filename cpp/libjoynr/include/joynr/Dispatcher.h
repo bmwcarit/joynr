@@ -46,7 +46,7 @@ class MessagingQos;
 class RequestCaller;
 class IMessageSender;
 
-class JOYNR_EXPORT Dispatcher : public IDispatcher
+class JOYNR_EXPORT Dispatcher : public std::enable_shared_from_this<Dispatcher>, public IDispatcher
 {
 
 public:
