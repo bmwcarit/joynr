@@ -300,5 +300,14 @@ UtilInternal.timeoutPromise = function(promise, timeoutMs) {
     });
 };
 
+UtilInternal.createDeferred = function() {
+    var deferred = {};
+    deferred.promise = new Promise(function(resolve, reject) {
+        deferred.resolve = resolve;
+        deferred.reject = reject;
+    });
+    return deferred;
+};
+
 UtilInternal.extend(UtilInternal, UtilExternal);
 module.exports = UtilInternal;
