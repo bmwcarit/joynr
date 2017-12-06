@@ -300,12 +300,14 @@ UtilInternal.timeoutPromise = function(promise, timeoutMs) {
     });
 };
 
+function defer(resolve, reject) {
+    this.resolve = resolve;
+    this.reject = reject;
+}
+
 UtilInternal.createDeferred = function() {
     var deferred = {};
-    deferred.promise = new Promise(function(resolve, reject) {
-        deferred.resolve = resolve;
-        deferred.reject = reject;
-    });
+    deferred.promise = new Promise(defer.bind(deferred));
     return deferred;
 };
 

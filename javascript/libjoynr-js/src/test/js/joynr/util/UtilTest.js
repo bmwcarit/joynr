@@ -304,3 +304,11 @@ describe("libjoynr-js.joynr.Util.timeoutPromise", function() {
         jasmine.clock().tick(100);
     });
 });
+
+describe("libjoynr-js.joynr.Util.createDeferred", function() {
+    it("create a correct Deferred Object", function(done) {
+        var deferred = Util.createDeferred();
+        deferred.resolve();
+        deferred.promise.then(done).catch(fail);
+    });
+});
