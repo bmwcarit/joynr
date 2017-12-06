@@ -90,28 +90,26 @@ function RequestReplyManager(dispatcher, typeRegistry) {
      */
     this.sendRequest = function sendRequest(settings) {
         checkIfReady();
-        var addReplyCaller = this.addReplyCaller;
 
-        function requestResolver(resolve, reject) {
-            addReplyCaller(
-                settings.request.requestReplyId,
-                {
-                    resolve: resolve,
-                    reject: reject
-                },
-                settings.messagingQos.ttl
-            );
-            // resolve will be called upon successful response
+        var deferred = Util.createDeferred();
+        this.addReplyCaller(
+            settings.request.requestReplyId,
+            {
+                resolve: deferred.resolve,
+                reject: deferred.reject
+            },
+            settings.messagingQos.ttl
+        );
+        // resolve will be called upon successful response
 
-            function requestErrorCatcher(error) {
-                delete replyCallers[settings.request.requestReplyId];
-                reject(error);
-            }
-
-            dispatcher.sendRequest(settings).catch(requestErrorCatcher);
+        function requestErrorCatcher(error) {
+            delete replyCallers[settings.request.requestReplyId];
+            deferred.reject(error);
         }
 
-        return new Promise(requestResolver);
+        dispatcher.sendRequest(settings).catch(requestErrorCatcher);
+
+        return deferred.promise;
     };
 
     /**
@@ -132,15 +130,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
      */
     this.sendOneWayRequest = function sendOneWayRequest(settings) {
         checkIfReady();
-
-        function oneWayRequestResolver(resolve, reject) {
-            dispatcher
-                .sendOneWayRequest(settings)
-                .then(resolve)
-                .catch(reject);
-        }
-
-        return new Promise(oneWayRequestResolver);
+        return dispatcher.sendOneWayRequest(settings);
     };
 
     /**

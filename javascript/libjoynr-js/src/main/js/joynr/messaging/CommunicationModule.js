@@ -22,6 +22,7 @@ var Promise = require("../../global/Promise");
 var XMLHttpRequestDependency = require("../../global/XMLHttpRequestNode");
 var atmosphereDependency = require("../../lib/atmosphereNode");
 var LongTimer = require("../util/LongTimer");
+var Util = require("../util/UtilInternal");
 
 /**
  * Constructor of CommunicationModule object that is used to stsub communication with the outer world
@@ -60,32 +61,33 @@ function CommunicationModule() {
  * @param {String} parameters.url - the location
  */
 CommunicationModule.prototype.createXMLHTTPRequest = function(parameters) {
-    return new Promise(function(fulfill, reject) {
-        var xhr = new XMLHttpRequestDependency();
-        var async = true;
+    var deferred = Util.createDeferred();
 
-        xhr.open(parameters.type, parameters.url, async);
-        //xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-        xhr.setRequestHeader("Content-type", "text/plain"); // workaround for TODO # 1174
-        if (parameters.headers) {
-            var headerEntry;
-            for (headerEntry in parameters.headers) {
-                if (parameters.headers.hasOwnProperty(headerEntry)) {
-                    xhr.setRequestHeader(headerEntry, parameters.headers[headerEntry]);
-                }
+    var xhr = new XMLHttpRequestDependency();
+    var async = true;
+
+    xhr.open(parameters.type, parameters.url, async);
+    //xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+    xhr.setRequestHeader("Content-type", "text/plain"); // workaround for TODO # 1174
+    if (parameters.headers) {
+        var headerEntry;
+        for (headerEntry in parameters.headers) {
+            if (parameters.headers.hasOwnProperty(headerEntry)) {
+                xhr.setRequestHeader(headerEntry, parameters.headers[headerEntry]);
             }
         }
+    }
 
-        function postTimeoutHandler() {
-            xhr.onreadystatechange = undefined;
-            xhr.abort();
-            reject(new Error('xhr, "request timed out after " + parameters.timeout + "ms."'));
-        }
+    function postTimeoutHandler() {
+        xhr.onreadystatechange = undefined;
+        xhr.abort();
+        deferred.reject(new Error('xhr, "request timed out after " + parameters.timeout + "ms."'));
+    }
 
-        var postTimeout = LongTimer.setTimeout(postTimeoutHandler, parameters.timeout);
+    var postTimeout = LongTimer.setTimeout(postTimeoutHandler, parameters.timeout);
 
-        function xhrOnReadyStateChange() {
-            /*
+    function xhrOnReadyStateChange() {
+        /*
              * readyState   Holds the status of the XMLHttpRequest. Changes from 0 to 4:
              * 0: request not initialized
              * 1: server connection established
@@ -93,20 +95,20 @@ CommunicationModule.prototype.createXMLHTTPRequest = function(parameters) {
              * 3: processing request
              * 4: request finished and response is ready
              */
-            var isRequestFinishedAndResponseReady = xhr.readyState === 4;
-            if (isRequestFinishedAndResponseReady) {
-                LongTimer.clearTimeout(postTimeout);
-                // Unless stated otherwise, the response status will be 200
-                if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
-                    fulfill(xhr);
-                } else {
-                    reject(new Error("xhr, xhr.status ? 'error' : 'abort'"));
-                }
+        var isRequestFinishedAndResponseReady = xhr.readyState === 4;
+        if (isRequestFinishedAndResponseReady) {
+            LongTimer.clearTimeout(postTimeout);
+            // Unless stated otherwise, the response status will be 200
+            if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+                deferred.resolve(xhr);
+            } else {
+                deferred.reject(new Error("xhr, xhr.status ? 'error' : 'abort'"));
             }
         }
-        xhr.onreadystatechange = xhrOnReadyStateChange;
-        xhr.send(parameters.data);
-    });
+    }
+    xhr.onreadystatechange = xhrOnReadyStateChange;
+    xhr.send(parameters.data);
+    return deferred.promise;
 };
 
 module.exports = CommunicationModule;

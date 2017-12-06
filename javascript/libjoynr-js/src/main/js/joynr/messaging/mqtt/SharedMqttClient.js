@@ -24,6 +24,7 @@ var LongTimer = require("../../util/LongTimer");
 var Typing = require("../../util/Typing");
 var LoggerFactory = require("../../system/LoggerFactory");
 var MessageSerializer = require("../MessageSerializer");
+var Util = require("../../util/UtilInternal");
 var log = LoggerFactory.getLogger("joynr.messaging.mqtt.SharedMqttClient");
 
 /**
@@ -57,45 +58,42 @@ function sendQueuedUnsubscriptions(client, queuedUnsubscriptions) {
 }
 
 function sendQueuedSubscriptions(client, queuedSubscriptions, qosLevel) {
-    function sendQueuedSubscriptionsResolver(resolve, reject) {
-        var i,
-            topic,
-            subscribeObject = {};
-        for (i = 0; i < queuedSubscriptions.length; i++) {
-            topic = queuedSubscriptions[i];
-            subscribeObject[topic] = qosLevel;
-        }
-        client.subscribe(subscribeObject, undefined, function(err, granted) {
-            //TODO error handling
-            queuedSubscriptions = [];
-            resolve();
-        });
+    var deferred = Util.createDeferred();
+    var i,
+        topic,
+        subscribeObject = {};
+    for (i = 0; i < queuedSubscriptions.length; i++) {
+        topic = queuedSubscriptions[i];
+        subscribeObject[topic] = qosLevel;
     }
-
-    return new Promise(sendQueuedSubscriptionsResolver);
+    client.subscribe(subscribeObject, undefined, function(err, granted) {
+        //TODO error handling
+        queuedSubscriptions = [];
+        deferred.resolve();
+    });
+    return deferred.promise;
 }
 
 function sendMessage(client, topic, joynrMessage, sendQosLevel, queuedMessages) {
-    function sendMessageResolver(resolve, reject) {
-        try {
-            client.publish(topic, MessageSerializer.stringify(joynrMessage), { qos: sendQosLevel });
-            resolve();
-            // Error is thrown if the socket is no longer open, so requeue to the front
-        } catch (e) {
-            // add the message back to the front of the queue
-            queuedMessages.unshift({
-                message: joynrMessage,
-                resolve: resolve,
-                options: {
-                    qos: sendQosLevel
-                },
-                topic: topic
-            });
-            throw e;
-        }
+    var deferred = Util.createDeferred();
+    try {
+        client.publish(topic, MessageSerializer.stringify(joynrMessage), { qos: sendQosLevel });
+        deferred.resolve();
+        // Error is thrown if the socket is no longer open, so requeue to the front
+    } catch (e) {
+        // add the message back to the front of the queue
+        queuedMessages.unshift({
+            message: joynrMessage,
+            resolve: deferred.resolve,
+            options: {
+                qos: sendQosLevel
+            },
+            topic: topic
+        });
+        throw e;
     }
 
-    return new Promise(sendMessageResolver);
+    return deferred.promise;
 }
 
 /**

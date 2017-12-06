@@ -146,25 +146,21 @@ function MessageRouter(settings) {
         routingTable[participantId] = undefined;
         persistency.removeItem(that.getStorageKey(participantId));
 
-        function handleParentMessageRouter(resolve, reject) {
-            queuedRemoveNextHopCalls[queuedRemoveNextHopCalls.length] = {
-                participantId: participantId,
-                resolve: resolve,
-                reject: reject
-            };
-        }
-
-        var promise;
         if (routingProxy !== undefined) {
-            promise = routingProxy.removeNextHop({
+            return routingProxy.removeNextHop({
                 participantId: participantId
             });
-        } else if (parentMessageRouterAddress !== undefined) {
-            promise = new Promise(handleParentMessageRouter);
-        } else {
-            promise = Promise.resolve();
         }
-        return promise;
+        if (parentMessageRouterAddress !== undefined) {
+            var deferred = Util.createDeferred();
+            queuedRemoveNextHopCalls[queuedRemoveNextHopCalls.length] = {
+                participantId: participantId,
+                resolve: deferred.resolve,
+                reject: deferred.reject
+            };
+            return deferred.promise;
+        }
+        return Promise.resolve();
     };
 
     /**
@@ -572,20 +568,18 @@ function MessageRouter(settings) {
             persistency.setItem(that.getStorageKey(participantId), serializedAddress);
         }
 
-        function parentResolver(resolve, reject) {
-            queuedAddNextHopCalls[queuedAddNextHopCalls.length] = {
-                participantId: participantId,
-                isGloballyVisible: isGloballyVisible,
-                resolve: resolve,
-                reject: reject
-            };
-        }
-
         if (routingProxy !== undefined) {
             // register remotely
             promise = that.addNextHopToParentRoutingTable(participantId, isGloballyVisible);
         } else if (parentMessageRouterAddress !== undefined) {
-            promise = new Promise(parentResolver);
+            var deferred = Util.createDeferred();
+            queuedAddNextHopCalls[queuedAddNextHopCalls.length] = {
+                participantId: participantId,
+                isGloballyVisible: isGloballyVisible,
+                resolve: deferred.resolve,
+                reject: deferred.reject
+            };
+            promise = deferred.promise;
         } else {
             promise = Promise.resolve();
         }
@@ -639,15 +633,14 @@ function MessageRouter(settings) {
             return routingProxy.addMulticastReceiver(parameters);
         }
 
-        function addMulticastReceiverResolver(resolve, reject) {
-            queuedAddMulticastReceiverCalls[queuedAddMulticastReceiverCalls.length] = {
-                parameters: parameters,
-                resolve: resolve,
-                reject: reject
-            };
-        }
+        var deferred = Util.createDeferred();
+        queuedAddMulticastReceiverCalls[queuedAddMulticastReceiverCalls.length] = {
+            parameters: parameters,
+            resolve: deferred.resolve,
+            reject: deferred.reject
+        };
 
-        return new Promise(addMulticastReceiverResolver);
+        return deferred.promise;
     };
 
     /**
@@ -703,14 +696,14 @@ function MessageRouter(settings) {
             return routingProxy.removeMulticastReceiver(parameters);
         }
 
-        function removeMulticastReceiverResolver(resolve, reject) {
-            queuedRemoveMulticastReceiverCalls[queuedRemoveMulticastReceiverCalls.length] = {
-                parameters: parameters,
-                resolve: resolve,
-                reject: reject
-            };
-        }
-        return new Promise(removeMulticastReceiverResolver);
+        var deferred = Util.createDeferred();
+        queuedRemoveMulticastReceiverCalls[queuedRemoveMulticastReceiverCalls.length] = {
+            parameters: parameters,
+            resolve: deferred.resolve,
+            reject: deferred.reject
+        };
+
+        return deferred.promise;
     };
 
     /**

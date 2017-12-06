@@ -195,16 +195,16 @@ function CapabilityDiscovery(
     function lookupGlobalCapabilities(domains, interfaceName, ttl, capabilities) {
         var promise;
         if (!globalAddressSerialized) {
-            promise = new Promise(function(resolve, reject) {
-                queuedGlobalLookups.push({
-                    domains: domains,
-                    interfaceName: interfaceName,
-                    ttl: ttl,
-                    capabilities: capabilities,
-                    resolve: resolve,
-                    reject: reject
-                });
+            var deferred = Util.createDeferred();
+            queuedGlobalLookups.push({
+                domains: domains,
+                interfaceName: interfaceName,
+                ttl: ttl,
+                capabilities: capabilities,
+                resolve: deferred.resolve,
+                reject: deferred.reject
             });
+            promise = deferred.promise;
         } else {
             promise = lookupGlobal(domains, interfaceName, ttl, capabilities);
         }
@@ -400,13 +400,13 @@ function CapabilityDiscovery(
             promise = Promise.resolve();
         } else if (discoveryEntry.qos.scope === ProviderScope.GLOBAL) {
             if (!globalAddressSerialized) {
-                promise = new Promise(function(resolve, reject) {
-                    queuedGlobalDiscoveryEntries.push({
-                        discoveryEntry: discoveryEntry,
-                        resolve: resolve,
-                        reject: reject
-                    });
+                var deferred = Util.createDeferred();
+                queuedGlobalDiscoveryEntries.push({
+                    discoveryEntry: discoveryEntry,
+                    resolve: deferred.resolve,
+                    reject: deferred.reject
                 });
+                promise = deferred.promise;
             } else {
                 promise = addGlobal(discoveryEntry);
             }

@@ -288,16 +288,16 @@ UtilInternal.enrichObjectWithSetPrototypeOf = function() {
 };
 
 function timeoutToPromise(time) {
-    return new Promise(function(resolve, reject) {
-        setTimeout(resolve, time);
-    });
+    var deferred = UtilInternal.createDeferred();
+    setTimeout(deferred.resolve, time);
+    return deferred.promise;
 }
 
 UtilInternal.timeoutPromise = function(promise, timeoutMs) {
-    return new Promise(function(resolve, reject) {
-        promise.then(resolve).catch(reject);
-        timeoutToPromise(timeoutMs).then(reject);
-    });
+    var deferred = UtilInternal.createDeferred();
+    promise.then(deferred.resolve).catch(deferred.reject);
+    timeoutToPromise(timeoutMs).then(deferred.reject);
+    return deferred.promise;
 };
 
 function defer(resolve, reject) {

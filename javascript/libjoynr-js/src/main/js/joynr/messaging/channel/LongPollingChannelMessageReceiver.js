@@ -297,16 +297,19 @@ LongPollingChannelMessageReceiver.prototype.create = function(theChannelId) {
     this._channelId = theChannelId;
     this._createChannelTimestamp = Date.now();
 
-    function _channelCreationRetryHandler(resolve, reject) {
-        LongTimer.setTimeout(that._createInternal.bind(that), that._channelCreationRetryDelay_ms, resolve, reject);
-    }
-
     function _callCreateOnError(xhr, errorType) {
         that._logChannelCreationError(xhr);
         if (that._createChannelTimestamp + that._channelCreationTimeout_ms <= Date.now()) {
             throw new Error("Error creating channel");
         } else {
-            return new Promise(_channelCreationRetryHandler);
+            var deferred = Util.createDeferred();
+            LongTimer.setTimeout(
+                that._createInternal.bind(that),
+                that._channelCreationRetryDelay_ms,
+                deferred.resolve,
+                deferred.reject
+            );
+            return deferred.promise;
         }
     }
 

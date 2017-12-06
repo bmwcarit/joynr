@@ -208,25 +208,23 @@ function ChannelMessagingSender(settings) {
             );
         }
 
-        function sendResolver(resolve, reject) {
-            if (terminated) {
-                reject(new Error("ChannelMessagingSender is already shut down"));
-                return;
-            }
-            var queuedMessage = {
-                message: joynrMessage,
-                to: toChannelAddress.messagingEndpointUrl + "messageWithoutContentType/",
-                resolve: resolve,
-                reject: reject,
-                pending: true,
-                expiryTimer: undefined
-            };
-            createExpiryTimer(queuedMessage);
-            messageQueue.push(queuedMessage);
-            LongTimer.setTimeout(notify, 0);
+        if (terminated) {
+            return Promise.reject(new Error("ChannelMessagingSender is already shut down"));
         }
+        var deferred = Util.createDeferred();
+        var queuedMessage = {
+            message: joynrMessage,
+            to: toChannelAddress.messagingEndpointUrl + "messageWithoutContentType/",
+            resolve: deferred.resolve,
+            reject: deferred.reject,
+            pending: true,
+            expiryTimer: undefined
+        };
+        createExpiryTimer(queuedMessage);
+        messageQueue.push(queuedMessage);
+        LongTimer.setTimeout(notify, 0);
 
-        return new Promise(sendResolver);
+        return deferred.promise;
     };
 
     /**
