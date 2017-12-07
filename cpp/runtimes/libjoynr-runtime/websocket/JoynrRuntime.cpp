@@ -22,6 +22,7 @@
 #include "joynr/Future.h"
 #include "joynr/IKeychain.h"
 #include "joynr/Settings.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
 namespace joynr
@@ -76,9 +77,17 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         std::shared_ptr<IKeychain> keyChain)
 {
-    auto runtime =
-            std::make_shared<LibJoynrWebSocketRuntime>(std::move(settings), std::move(keyChain));
-    runtime->connect(std::move(onSuccess), std::move(onError));
+    std::shared_ptr<LibJoynrWebSocketRuntime> runtime;
+
+    try {
+        runtime = std::make_shared<LibJoynrWebSocketRuntime>(
+                std::move(settings), std::move(keyChain));
+        runtime->connect(std::move(onSuccess), onError);
+    } catch (exceptions::JoynrRuntimeException& exception) {
+        if (onError) {
+            onError(exception);
+        }
+    }
     return runtime;
 }
 
