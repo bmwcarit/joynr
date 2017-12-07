@@ -661,6 +661,7 @@ bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEnt
     if (auto gotAccessController = accessController.lock()) {
         const CallContext& callContext = CallContextStorage::get();
         const std::string& ownerId = callContext.getPrincipal();
+        JOYNR_LOG_TRACE(logger(), "hasProviderPermission for ownerId={}", ownerId);
         const bool result = gotAccessController->hasProviderPermission(
                 ownerId,
                 infrastructure::DacTypes::TrustLevel::HIGH,
