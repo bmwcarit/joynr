@@ -23,6 +23,7 @@
 #include <string>
 
 #include "joynr/JoynrExport.h"
+#include "joynr/Logger.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr
@@ -76,6 +77,7 @@ private:
     friend void serialize(Archive& archive, CallContext& callContext);
 
     std::string principal;
+    ADD_LOGGER(CallContext)
 };
 
 template <typename Archive>
