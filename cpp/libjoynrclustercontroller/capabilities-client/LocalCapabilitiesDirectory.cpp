@@ -262,9 +262,9 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
 
     {
         std::lock_guard<std::mutex> lock(cacheLock);
-        for (const auto& globalCapability : globalCapabilities) {
-            if (globalCapability.getQos().getScope() == types::ProviderScope::GLOBAL) {
-                capabilitiesClient->add(toGlobalDiscoveryEntry(globalCapability), nullptr, nullptr);
+        for (const auto& capability : localCapabilities) {
+            if (capability.getQos().getScope() == types::ProviderScope::GLOBAL) {
+                capabilitiesClient->add(toGlobalDiscoveryEntry(capability), nullptr, nullptr);
             }
         }
     }
