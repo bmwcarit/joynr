@@ -25,12 +25,12 @@
  */
 var LoggerFactory = require("../../system/LoggerFactory");
 var DiagnosticTags = require("../../system/DiagnosticTags");
-var LongTimer = require("../../util/LongTimer");
 var Util = require("../../util/UtilInternal");
 var JoynrMessage = require("../JoynrMessage");
 
 var log = LoggerFactory.getLogger("joynr/messaging/routing/MessageQueue");
 var defaultSettings;
+var CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS = 10000; // a very loose interval because of a second check on return
 /**
  * MessageQueue caches incoming messages, and cached messages can be retrieved in case the destination participant becomes visible
  *
@@ -49,9 +49,25 @@ function MessageQueue(settings) {
     this._messageQueues = {};
     Util.extend(this, defaultSettings, settings);
     this.currentQueueSize = 0;
+
+    var that = this;
+    this.cleanupInterval = setInterval(function() {
+        var id;
+        for (id in that._messageQueues) {
+            if (that._messageQueues.hasOwnProperty(id)) {
+                that._messageQueues[id] = filterExpiredMessages(that._messageQueues[id]);
+            }
+        }
+    }, CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS);
 }
 
-MessageQueue.CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS = 5000;
+function filterExpiredMessages(queue) {
+    var now = Date.now();
+    return queue.filter(function(message) {
+        return message.expiryDate - now > 0;
+    });
+}
+
 MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES = 10000;
 
 defaultSettings = {
@@ -68,29 +84,6 @@ defaultSettings = {
 MessageQueue.prototype.reset = function reset() {
     this.currentQueueSize = 0;
     this._messageQueues = {};
-};
-
-MessageQueue.prototype._removeExpiredMessage = function(message) {
-    var index, queue;
-    queue = this._messageQueues[message.to];
-
-    if (queue === undefined) {
-        return;
-    }
-
-    index = queue.indexOf(message);
-    if (index !== -1) {
-        queue.splice(index, 1);
-    }
-};
-
-MessageQueue.prototype._removeMessageWhenTtlExpired = function(message) {
-    var ttl;
-    ttl = message.expiryDate - Date.now();
-    // some browsers do not support negative timeout times.
-    ttl = ttl > 0 ? ttl : 0;
-
-    LongTimer.setTimeout(this._removeExpiredMessage.bind(this, message), ttl);
 };
 
 /**
@@ -110,7 +103,6 @@ MessageQueue.prototype.putMessage = function putMessage(message) {
                 this._messageQueues[message.to] = [];
             }
             this._messageQueues[message.to].push(message);
-            this._removeMessageWhenTtlExpired(message);
         } else {
             log.error(
                 "message cannot be added to message queue, as the queue buffer size has been exceeded",
@@ -135,7 +127,7 @@ MessageQueue.prototype.getAndRemoveMessages = function getAndRemoveMessages(part
         result = this._messageQueues[participantId];
         delete this._messageQueues[participantId];
     }
-    return result;
+    return filterExpiredMessages(result);
 };
 
 /**
@@ -147,6 +139,7 @@ MessageQueue.prototype.getAndRemoveMessages = function getAndRemoveMessages(part
 MessageQueue.prototype.shutdown = function shutdown() {
     this._messageQueues = {};
     this.currentQueueSize = 0;
+    clearInterval(this.cleanupInterval);
 };
 
 module.exports = MessageQueue;
