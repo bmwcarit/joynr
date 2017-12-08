@@ -60,12 +60,12 @@ public:
             const std::string& globalAddress);
 
     template <class T>
-    std::string addAsync(
-            const std::string& domain,
-            std::shared_ptr<T> provider,
-            const types::ProviderQos& providerQos,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
+    std::string addAsync(const std::string& domain,
+                         std::shared_ptr<T> provider,
+                         const types::ProviderQos& providerQos,
+                         std::function<void()> onSuccess,
+                         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                                 onError) noexcept
     {
         const std::string interfaceName = T::INTERFACE_NAME();
         const std::string participantId =
@@ -155,17 +155,18 @@ public:
         return participantId;
     }
 
-    void removeAsync(
-            const std::string& participantId,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError);
+    void removeAsync(const std::string& participantId,
+                     std::function<void()> onSuccess,
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                             onError) noexcept;
 
     template <class T>
     std::string removeAsync(
             const std::string& domain,
             std::shared_ptr<T> provider,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onError) noexcept
     {
         std::string interfaceName = T::INTERFACE_NAME();
         // Get the provider participant Id - the persisted provider Id has priority

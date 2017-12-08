@@ -76,7 +76,7 @@ public:
             std::shared_ptr<TIntfProvider> provider,
             const joynr::types::ProviderQos& providerQos,
             std::function<void()> onSuccess,
-            std::function<void(const exceptions::JoynrRuntimeException&)> onError)
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
@@ -125,7 +125,7 @@ public:
     void unregisterProviderAsync(
             const std::string& participantId,
             std::function<void()> onSuccess,
-            std::function<void(const exceptions::JoynrRuntimeException&)> onError)
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
     {
         assert(capabilitiesRegistrar);
         capabilitiesRegistrar->removeAsync(participantId, std::move(onSuccess), std::move(onError));
@@ -149,7 +149,7 @@ public:
             const std::string& domain,
             std::shared_ptr<TIntfProvider> provider,
             std::function<void()> onSuccess,
-            std::function<void(const exceptions::JoynrRuntimeException&)> onError)
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
@@ -271,7 +271,7 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
             const std::string& pathToMessagingSettings = "",
-            std::shared_ptr<IKeychain> keyChain = nullptr);
+            std::shared_ptr<IKeychain> keyChain = nullptr) noexcept;
 
     /**
      * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
@@ -287,7 +287,7 @@ public:
             std::unique_ptr<Settings> settings,
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
-            std::shared_ptr<IKeychain> keyChain = nullptr);
+            std::shared_ptr<IKeychain> keyChain = nullptr) noexcept;
 
 protected:
     // NOTE: The implementation of the constructor and destructor must be inside this

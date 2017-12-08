@@ -45,7 +45,7 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
 void CapabilitiesRegistrar::removeAsync(
         const std::string& participantId,
         std::function<void()> onSuccess,
-        std::function<void(const exceptions::JoynrRuntimeException&)> onError)
+        std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
 {
     for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);

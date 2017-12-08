@@ -63,7 +63,7 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         const std::string& pathToMessagingSettings,
-        std::shared_ptr<IKeychain> keyChain)
+        std::shared_ptr<IKeychain> keyChain) noexcept
 {
     return createRuntimeAsync(createSettings(pathToLibjoynrSettings, pathToMessagingSettings),
                               std::move(onSuccess),
@@ -75,7 +75,7 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::unique_ptr<Settings> settings,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
-        std::shared_ptr<IKeychain> keyChain)
+        std::shared_ptr<IKeychain> keyChain) noexcept
 {
     std::shared_ptr<LibJoynrWebSocketRuntime> runtime;
 
