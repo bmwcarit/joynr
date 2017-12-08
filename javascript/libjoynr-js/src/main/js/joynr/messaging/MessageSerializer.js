@@ -53,21 +53,39 @@ function useSmrf() {
         effort: true
     };
 
+    function serializeSmrfMessage(smrfMsg) {
+        try {
+            return smrf.serialize(smrfMsg);
+        } catch (e) {
+            throw new Error("ws.marshalJoynrMessage: got exception " + e);
+        }
+    }
+
+    function deserializeSmrfMessage(data) {
+        try {
+            return smrf.deserialize(data);
+        } catch (e) {
+            throw new Error("ws.marshalJoynrMessage: got exception " + e);
+        }
+    }
+
     MessageSerializer.stringify = function(joynrMessage, signingCallback) {
-        var smrfMsg = {};
-        var headerKey;
-        smrfMsg.sender = joynrMessage.header.from;
-        smrfMsg.recipient = joynrMessage.header.to;
-        smrfMsg.ttlMs = joynrMessage.header.expiryDate;
-        smrfMsg.isTtlAbsolute = true;
-        smrfMsg.isCompressed = joynrMessage.compress;
-        smrfMsg.body = new Buffer(joynrMessage.payload);
-        smrfMsg.encryptionCert = null;
-        smrfMsg.signingCert = null;
-        smrfMsg.signingKey = null;
-        smrfMsg.headers = {};
-        smrfMsg.headers.t = joynrMessage.type;
-        smrfMsg.headers.id = joynrMessage.header.msgId;
+        var smrfMsg = {
+            sender: joynrMessage.header.from,
+            recipient: joynrMessage.header.to,
+            ttlMs: joynrMessage.header.expiryDate,
+            isTtlAbsolute: true,
+            isCompressed: joynrMessage.compress,
+            body: new Buffer(joynrMessage.payload),
+            encryptionCert: null,
+            signingCert: null,
+            signingKey: null,
+            headers: {
+                t: joynrMessage.type,
+                id: joynrMessage.header.msgId
+            }
+        };
+
         if (signingCallback) {
             smrfMsg.signingCallback = signingCallback;
         }
@@ -77,6 +95,7 @@ function useSmrf() {
         if (joynrMessage.header.effort) {
             smrfMsg.headers.ef = joynrMessage.header.effort;
         }
+        var headerKey;
         for (headerKey in joynrMessage.header) {
             if (joynrMessage.header.hasOwnProperty(headerKey)) {
                 if (!skipJoynrHeaderKeys[headerKey]) {
@@ -84,13 +103,8 @@ function useSmrf() {
                 }
             }
         }
-        var serializedMsg;
-        try {
-            serializedMsg = smrf.serialize(smrfMsg);
-        } catch (e) {
-            throw new Error("ws.marshalJoynrMessage: got exception " + e);
-        }
-        return serializedMsg;
+
+        return serializeSmrfMessage(smrfMsg);
     };
 
     MessageSerializer.parse = function(data) {
@@ -98,33 +112,31 @@ function useSmrf() {
             log.error("MessageSerializer received unsupported message.");
         } else {
             var headerKey;
-            var smrfMsg;
-            try {
-                smrfMsg = smrf.deserialize(data);
-            } catch (e) {
-                throw new Error("ws.marshalJoynrMessage: got exception " + e);
-            }
-            var convertedMsg = {};
-            convertedMsg.header = {};
-            convertedMsg.header.from = smrfMsg.sender;
-            convertedMsg.header.to = smrfMsg.recipient;
-            convertedMsg.header.msgId = smrfMsg.headers.id;
+
+            var smrfMsg = deserializeSmrfMessage(data);
+            var expiryDate = smrfMsg.isTtlAbsolute === true ? smrfMsg.ttlMs : smrfMsg.ttlMs + Date.now();
+
+            var convertedMsg = {
+                header: {
+                    from: smrfMsg.sender,
+                    to: smrfMsg.recipient,
+                    msgId: smrfMsg.headers.id,
+                    effort: smrfMsg.headers.ef,
+                    expiryDate: expiryDate
+                },
+                type: smrfMsg.headers.t,
+                payload: smrfMsg.body.toString()
+            };
+
             if (smrfMsg.headers.re) {
                 convertedMsg.header.replyChannelId = smrfMsg.headers.re;
             }
-            convertedMsg.type = smrfMsg.headers.t;
             // ignore for now:
             //   smrfMsg.headers.isCompressed
             //   smrfMsg.headers.encryptionCert
             //   smrfMsg.headers.signingKey
             //   smrfMsg.headers.signingCert
-            if (smrfMsg.isTtlAbsolute === true) {
-                convertedMsg.header.expiryDate = smrfMsg.ttlMs;
-            } else {
-                convertedMsg.header.expiryDate = smrfMsg.ttlMs + Date.now();
-            }
-            convertedMsg.header.effort = smrfMsg.headers.ef;
-            convertedMsg.payload = smrfMsg.body.toString();
+
             for (headerKey in smrfMsg.headers) {
                 if (smrfMsg.headers.hasOwnProperty(headerKey)) {
                     if (!skipSmrfHeaderKeys[headerKey]) {
