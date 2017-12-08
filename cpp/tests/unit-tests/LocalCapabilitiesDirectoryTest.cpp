@@ -404,6 +404,50 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities) {
     EXPECT_TRUE(onSuccessCalled);
 }
 
+TEST_F(LocalCapabilitiesDirectoryTest, doNotReregisterDiscoveryEntriesFromGlobalCapabilitiesDirectory) {
+    joynr::types::DiscoveryEntry entry1(defaultProviderVersion,
+                                       DOMAIN_1_NAME,
+                                       INTERFACE_1_NAME,
+                                       dummyParticipantId1,
+                                       types::ProviderQos(),
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    EXPECT_CALL(*capabilitiesClient,
+             add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry1)),_,_))
+            .Times(1);
+
+    localCapabilitiesDirectory->add(entry1,
+                                    defaultOnSuccess,
+                                    defaultOnError);
+
+    joynr::types::DiscoveryEntry entry2(defaultProviderVersion,
+                                       DOMAIN_2_NAME,
+                                       INTERFACE_2_NAME,
+                                       dummyParticipantId2,
+                                       types::ProviderQos(),
+                                       lastSeenDateMs,
+                                       expiryDateMs,
+                                       PUBLIC_KEY_ID);
+
+    localCapabilitiesDirectory->registerReceivedCapabilities({ {EXTERNAL_ADDRESS, entry2 } });
+
+    Mock::VerifyAndClearExpectations(capabilitiesClient.get());
+
+    EXPECT_CALL(*capabilitiesClient,
+             add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry1)),_,_))
+            .Times(1);
+
+    bool onSuccessCalled = false;
+    localCapabilitiesDirectory->triggerGlobalProviderReregistration(
+            [&onSuccessCalled]() { onSuccessCalled=true; },
+            [](const joynr::exceptions::ProviderRuntimeException&) { FAIL(); }
+    );
+
+    EXPECT_TRUE(onSuccessCalled);
+}
+
 TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities_BackendNotCalledIfNoGlobalProvidersArePresent) {
     types::ProviderQos localProviderQos({}, 1, joynr::types::ProviderScope::LOCAL, false);
     joynr::types::DiscoveryEntry entry(defaultProviderVersion,
