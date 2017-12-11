@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
         po::notify(variablesMap);
     } catch (const std::exception& e) {
         std::cerr << e.what();
-        return -1;
+        return EXIT_FAILURE;
     }
 
     JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
@@ -101,37 +101,44 @@ int main(int argc, char* argv[])
                 sslCertFilename, sslPrivateKeyFilename, sslCaCertFilename);
     } catch (const std::invalid_argument& e) {
         JOYNR_LOG_FATAL(logger, e.what());
-        return -1;
+        return EXIT_FAILURE;
     }
 
-    std::shared_ptr<JoynrRuntime> runtime =
-            JoynrRuntime::createRuntime(pathToSettings, pathToMessagingSettingsDefault, keychain);
+    try {
+        std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(
+                pathToSettings, pathToMessagingSettingsDefault, keychain);
 
-    joynr::Semaphore semaphore;
+        joynr::Semaphore semaphore;
 
-    auto provider = std::make_shared<SystemIntegrationTestProvider>([&]() { semaphore.notify(); });
+        auto provider =
+                std::make_shared<SystemIntegrationTestProvider>([&]() { semaphore.notify(); });
 
-    joynr::types::ProviderQos providerQos;
-    std::chrono::milliseconds millisSinceEpoch =
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch());
-    providerQos.setPriority(millisSinceEpoch.count());
-    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+        joynr::types::ProviderQos providerQos;
+        std::chrono::milliseconds millisSinceEpoch =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch());
+        providerQos.setPriority(millisSinceEpoch.count());
+        providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
 
-    // Register the provider
-    runtime->registerProvider<test::SystemIntegrationTestProvider>(
-            providerDomain, provider, providerQos);
+        // Register the provider
+        runtime->registerProvider<test::SystemIntegrationTestProvider>(
+                providerDomain, provider, providerQos);
 
-    if (runForever) {
-        while (true) {
-            semaphore.wait();
+        if (runForever) {
+            while (true) {
+                semaphore.wait();
+            }
+        } else {
+            bool successful = semaphore.waitFor(std::chrono::milliseconds(30000));
+
+            // Unregister the provider
+            runtime->unregisterProvider<test::SystemIntegrationTestProvider>(
+                    providerDomain, provider);
+
+            return successful ? EXIT_SUCCESS : EXIT_FAILURE;
         }
-    } else {
-        bool successful = semaphore.waitFor(std::chrono::milliseconds(30000));
-
-        // Unregister the provider
-        runtime->unregisterProvider<test::SystemIntegrationTestProvider>(providerDomain, provider);
-
-        return successful ? 0 : -1;
+    } catch (exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_FATAL(logger, e.what());
+        return EXIT_FAILURE;
     }
 }
