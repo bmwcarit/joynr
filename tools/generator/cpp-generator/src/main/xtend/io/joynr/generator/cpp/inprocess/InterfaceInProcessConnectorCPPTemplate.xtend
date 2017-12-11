@@ -71,7 +71,6 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 #include "joynr/Util.h"
 #include "joynr/Future.h"
 #include "joynr/SubscriptionUtil.h"
-#include "joynr/CallContext.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/exceptions/JoynrException.h"
 «IF !francaIntf.attributes.empty»
@@ -264,9 +263,6 @@ class InterfaceInProcessConnectorCPPTemplate extends InterfaceTemplate{
 				std::shared_ptr<joynr::RequestCaller> caller = address->getRequestCaller();
 				assert(caller);
 				std::shared_ptr<«interfaceName»RequestCaller> requestCaller = std::dynamic_pointer_cast<«interfaceName»RequestCaller>(caller);
-
-				joynr::CallContext callContext;
-				callContext.setPrincipal(securityManager->getCurrentProcessUserId());
 
 				auto publicationManagerSharedPtr = publicationManager.lock();
 				if (publicationManagerSharedPtr) {
