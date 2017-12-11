@@ -90,6 +90,18 @@ RUN export FLATBUFFERS_VERSION=v1.6.0 \
         && make install -j"$(nproc)" \
         && rm -rf /tmp/flatbuffers
 
+###################################################
+# install valgrind
+###################################################
+
+RUN export VALGRIND_VERSION=3.13.0 \
+        && cd /tmp \
+        && wget https://sourceware.org/pub/valgrind/valgrind-$VALGRIND_VERSION.tar.bz2 \
+        && tar xf valgrind-$VALGRIND_VERSION.tar.bz2 \
+        && cd valgrind-$VALGRIND_VERSION \
+        && ./configure \
+        && make install -j"$(nproc)" \
+        && rm -rf /tmp/valgrind-$VALGRIND_VERSION /tmp/valgrind-$VALGRIND_VERSION.tar.bz2
 
 # DLT installs itself in /usr/local/lib64
 ENV PKG_CONFIG_PATH $PKG_CONFIG_PATH:/usr/local/lib64/pkgconfig
