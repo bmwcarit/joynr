@@ -64,6 +64,7 @@ public:
         multicastBroadcastListener(std::make_shared<MulticastBroadcastListener>(providerParticipantId, publicationManager)),
         provider(std::make_shared<MockTestProvider>()),
         requestCaller(std::make_shared<testRequestCaller>(provider)),
+        filterParameters(),
         filter1(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
         filter2(std::make_shared<MockLocationUpdatedSelectiveFilter>())
     {
