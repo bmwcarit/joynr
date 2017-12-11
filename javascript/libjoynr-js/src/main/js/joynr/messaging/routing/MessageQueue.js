@@ -26,7 +26,7 @@
 var LoggerFactory = require("../../system/LoggerFactory");
 var DiagnosticTags = require("../../system/DiagnosticTags");
 var Util = require("../../util/UtilInternal");
-var JoynrMessage = require("../JoynrMessage");
+var ParticipantQueue = require("./ParticipantQueue");
 
 var log = LoggerFactory.getLogger("joynr/messaging/routing/MessageQueue");
 var defaultSettings;
@@ -46,26 +46,23 @@ var CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS = 10000; // a very loose interval b
  * to the correct participant. Once a participant with the matching participantId is registered, the incoming message is forwarded to him
  */
 function MessageQueue(settings) {
-    this._messageQueues = {};
+    this._participantQueues = {};
     Util.extend(this, defaultSettings, settings);
     this.currentQueueSize = 0;
 
     var that = this;
     this.cleanupInterval = setInterval(function() {
+        // TODO: we could call this way more lazy -> make an if and only call this if this.currentQueueSize > 100
+        var newSize = 0;
         var id;
-        for (id in that._messageQueues) {
-            if (that._messageQueues.hasOwnProperty(id)) {
-                that._messageQueues[id] = filterExpiredMessages(that._messageQueues[id]);
+        for (id in that._participantQueues) {
+            if (that._participantQueues.hasOwnProperty(id)) {
+                that._participantQueues[id].filterExpiredMessages();
+                newSize += that._participantQueues[id].getSize();
             }
         }
+        that.currentQueueSize = newSize;
     }, CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS);
-}
-
-function filterExpiredMessages(queue) {
-    var now = Date.now();
-    return queue.filter(function(message) {
-        return message.expiryDate - now > 0;
-    });
 }
 
 MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES = 10000;
@@ -83,7 +80,7 @@ defaultSettings = {
  */
 MessageQueue.prototype.reset = function reset() {
     this.currentQueueSize = 0;
-    this._messageQueues = {};
+    this._participantQueues = {};
 };
 
 /**
@@ -99,10 +96,10 @@ MessageQueue.prototype.putMessage = function putMessage(message) {
         var messageSize = Util.getLengthInBytes(message.payload);
         if (this.currentQueueSize + messageSize <= this.maxQueueSizeInKBytes * 1024) {
             this.currentQueueSize = this.currentQueueSize + messageSize;
-            if (this._messageQueues[message.to] === undefined) {
-                this._messageQueues[message.to] = [];
+            if (this._participantQueues[message.to] === undefined) {
+                this._participantQueues[message.to] = new ParticipantQueue();
             }
-            this._messageQueues[message.to].push(message);
+            this._participantQueues[message.to].putMessage(message, messageSize);
         } else {
             log.error(
                 "message cannot be added to message queue, as the queue buffer size has been exceeded",
@@ -123,11 +120,14 @@ MessageQueue.prototype.putMessage = function putMessage(message) {
  */
 MessageQueue.prototype.getAndRemoveMessages = function getAndRemoveMessages(participantId) {
     var result = [];
-    if (this._messageQueues[participantId] !== undefined) {
-        result = this._messageQueues[participantId];
-        delete this._messageQueues[participantId];
+    if (this._participantQueues[participantId] !== undefined) {
+        var participantQueue = this._participantQueues[participantId];
+        this.currentQueueSize -= participantQueue.getSize();
+        participantQueue.filterExpiredMessages();
+        result = participantQueue.getMessages();
+        delete this._participantQueues[participantId];
     }
-    return filterExpiredMessages(result);
+    return result;
 };
 
 /**
@@ -137,7 +137,7 @@ MessageQueue.prototype.getAndRemoveMessages = function getAndRemoveMessages(part
  * @name MessageQueue#shutdown
  */
 MessageQueue.prototype.shutdown = function shutdown() {
-    this._messageQueues = {};
+    this._participantQueues = {};
     this.currentQueueSize = 0;
     clearInterval(this.cleanupInterval);
 };
