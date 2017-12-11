@@ -37,6 +37,25 @@ SubscriptionReply& SubscriptionReply::operator=(const SubscriptionReply& other)
     return *this;
 }
 
+std::string SubscriptionReply::toString() const
+{
+    std::ostringstream typeAsString;
+    typeAsString << "SubscriptionReply{";
+    typeAsString << "subscriptionId:" + subscriptionId;
+    if (error) {
+        typeAsString << ", ";
+        typeAsString << "error: SubscriptionException: " + error->getMessage();
+    }
+    typeAsString << "}";
+    return typeAsString.str();
+}
+
+// printing SubscriptionReply with google-test and google-mock
+void PrintTo(const SubscriptionReply& subscriptionReply, ::std::ostream* os)
+{
+    *os << "SubscriptionReply::" << subscriptionReply.toString();
+}
+
 const std::string& SubscriptionReply::getSubscriptionId() const
 {
     return subscriptionId;
