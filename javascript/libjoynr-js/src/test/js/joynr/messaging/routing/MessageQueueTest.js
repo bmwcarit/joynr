@@ -100,6 +100,25 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
         done();
     });
 
+    it("decreases currentQueueSize upon removing a participantQueue", function(done) {
+        var payload = new Array(10).join("a");
+
+        var joynrMessage = new JoynrMessage({
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: payload
+        });
+        joynrMessage.to = receiverParticipantId;
+        joynrMessage.from = "senderParticipantId";
+        var initialQueueSize = messageQueue.currentQueueSize;
+        messageQueue.putMessage(joynrMessage);
+        expect(messageQueue.currentQueueSize).toBe(initialQueueSize + payload.length);
+
+        messageQueue.getAndRemoveMessages(receiverParticipantId);
+        expect(messageQueue.currentQueueSize).toEqual(initialQueueSize);
+
+        done();
+    });
+
     it("put Message adds new queued message, dropped after getAndRemoveMessage call", function(done) {
         var queuedMessages;
         joynrMessage.expiryDate = Date.now() + 1000;
@@ -134,12 +153,14 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
     it("put Message adds new queued message, dropped after timeout", function(done) {
         var queuedMessages;
         joynrMessage.expiryDate = Date.now() + 1000;
+        var initialQueueSize = messageQueue.currentQueueSize;
         messageQueue.putMessage(joynrMessage);
+        expect(messageQueue.currentQueueSize).toBeGreaterThan(initialQueueSize);
 
         increaseFakeTime(1000 + 1);
 
         queuedMessages = messageQueue.getAndRemoveMessages(receiverParticipantId);
-
+        expect(messageQueue.currentQueueSize).toEqual(initialQueueSize);
         expect(queuedMessages.length).toEqual(0);
         done();
     });

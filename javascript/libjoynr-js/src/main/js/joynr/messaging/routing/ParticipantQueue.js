@@ -38,7 +38,7 @@ function ParticipantQueue() {
 /**
  * filters expired messages
  *
- * @name ParticipantQueue#filterExpiredMessages()
+ * @name ParticipantQueue#filterExpiredMessages
  * @function
  *
  */
@@ -63,7 +63,7 @@ ParticipantQueue.prototype.filterExpiredMessages = function() {
 /**
  * puts messages in queue
  *
- * @name ParticipantQueue#putMessage()
+ * @name ParticipantQueue#putMessage
  * @function
  *
  */
