@@ -199,7 +199,8 @@ void ProxyBuilder<T>::buildAsync(
 {
     auto runtimeSharedPtr = runtime.lock();
     if (runtimeSharedPtr == nullptr) {
-        throw exceptions::DiscoveryException(runtimeAlreadyDestroyed);
+        const exceptions::DiscoveryException error(runtimeAlreadyDestroyed);
+        onError(error);
     }
     joynr::types::Version interfaceVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
     arbitrator = ArbitratorFactory::createArbitrator(
