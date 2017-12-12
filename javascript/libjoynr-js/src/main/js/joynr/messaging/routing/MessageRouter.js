@@ -422,6 +422,16 @@ function MessageRouter(settings) {
         return result;
     }
 
+    function routeInternalTransmitOnError(error) {
+        //error while transmitting message
+        log.debug(
+            "Error while transmitting message: " +
+                error +
+                (error instanceof JoynrException ? " " + error.detailMessage : "")
+        );
+        //TODO queue message and retry later
+    }
+
     /**
      * Helper function to route a message once the address is known
      */
@@ -451,17 +461,6 @@ function MessageRouter(settings) {
             }
         }
 
-        function transmitOnError(error) {
-            //error while transmitting message
-            log.debug(
-                "Error while transmitting message: " +
-                    error +
-                    (error instanceof JoynrException ? " " + error.detailMessage : "")
-            );
-            //TODO queue message and retry later
-            return null;
-        }
-
         messagingStub = settings.messagingStubFactory.createMessagingStub(address);
         if (messagingStub === undefined) {
             errorMsg = "No message receiver found for participantId: " + joynrMessage.to + " queuing message.";
@@ -469,7 +468,7 @@ function MessageRouter(settings) {
             // TODO queue message and retry later
             return Promise.resolve();
         }
-        return messagingStub.transmit(joynrMessage).catch(transmitOnError);
+        return messagingStub.transmit(joynrMessage).catch(routeInternalTransmitOnError);
     }
 
     function registerGlobalRoutingEntryIfRequired(joynrMessage) {
@@ -521,6 +520,7 @@ function MessageRouter(settings) {
         function forwardToRouteInternal(address) {
             return routeInternal(address, joynrMessage);
         }
+
         if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST) {
             return Promise.all(getAddressesForMulticast(joynrMessage).map(forwardToRouteInternal));
         }
