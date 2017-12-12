@@ -45,7 +45,7 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
 
     Semaphore finishedSemaphore;
     providerReregistrationControllerProxy->triggerGlobalProviderReregistrationAsync([&finishedSemaphore]() { finishedSemaphore.notify(); }, nullptr);
-    finishedSemaphore.waitFor(std::chrono::seconds(2));
+    EXPECT_TRUE(finishedSemaphore.waitFor(std::chrono::seconds(10)));
 
     runtime->stop();
     runtime = nullptr;
@@ -63,14 +63,14 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
 
     auto wsRuntimeSettings = std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
     auto wsRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(wsRuntimeSettings), nullptr);
-    wsRuntime->connect(std::chrono::seconds(2));
+    ASSERT_TRUE(wsRuntime->connect(std::chrono::seconds(2)));
 
     auto providerReregistrationControllerProxyBuilder = wsRuntime->createProxyBuilder<joynr::system::ProviderReregistrationControllerProxy>(domain);
     auto providerReregistrationControllerProxy = providerReregistrationControllerProxyBuilder->build();
 
     Semaphore finishedSemaphore;
     providerReregistrationControllerProxy->triggerGlobalProviderReregistrationAsync([&finishedSemaphore]() { finishedSemaphore.notify(); }, [](const joynr::exceptions::JoynrRuntimeException&) { FAIL(); });
-    finishedSemaphore.waitFor(std::chrono::seconds(2));
+    EXPECT_TRUE(finishedSemaphore.waitFor(std::chrono::seconds(10)));
 
     wsRuntime = nullptr;
     ccRuntime->stop();
