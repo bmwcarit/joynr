@@ -31,15 +31,29 @@ public:
         using ::testing::_;
         using ::testing::Return;
         ON_CALL(*this, setCached(_)).WillByDefault(Return(this));
-        ON_CALL(*this, setMessagingQos(_)).WillByDefault(Return(this));
-        ON_CALL(*this, setDiscoveryQos(_)).WillByDefault(Return(this));
+        ON_CALL(*this, setMessagingQosMock(_)).WillByDefault(Return(this));
+        ON_CALL(*this, setDiscoveryQosMock(_)).WillByDefault(Return(this));
     }
 
     MOCK_METHOD1_T(setCached, joynr::IProxyBuilder<T>*(const bool cached));
-    MOCK_METHOD1_T(setMessagingQos, joynr::IProxyBuilder<T>*(const joynr::MessagingQos& cached));
-    MOCK_METHOD1_T(setDiscoveryQos, joynr::IProxyBuilder<T>*(const joynr::DiscoveryQos& cached));
+    joynr::IProxyBuilder<T>* setMessagingQos(const joynr::MessagingQos& cached) noexcept override
+    {
+        return setMessagingQosMock(cached);
+    }
+    MOCK_METHOD1_T(setMessagingQosMock, joynr::IProxyBuilder<T>*(const joynr::MessagingQos& cached));
+    joynr::IProxyBuilder<T>* setDiscoveryQos(const joynr::DiscoveryQos& cached) noexcept override
+    {
+        return setDiscoveryQosMock(cached);
+    }
+    MOCK_METHOD1_T(setDiscoveryQosMock, joynr::IProxyBuilder<T>*(const joynr::DiscoveryQos& cached));
     MOCK_METHOD0_T(build, std::shared_ptr<T>());
-    MOCK_METHOD2_T(buildAsync, void(std::function<void(std::shared_ptr<T> proxy)> onSuccess,
+    void buildAsync(std::function<void(std::shared_ptr<T> proxy)> onSuccess,
+                    std::function<void(const joynr::exceptions::DiscoveryException&)> onError)
+                    noexcept override
+    {
+        return buildAsyncMock(std::move(onSuccess), std::move(onError));
+    }
+    MOCK_METHOD2_T(buildAsyncMock, void(std::function<void(std::shared_ptr<T> proxy)>,
                                     std::function<void(const joynr::exceptions::DiscoveryException&)>));
 };
 

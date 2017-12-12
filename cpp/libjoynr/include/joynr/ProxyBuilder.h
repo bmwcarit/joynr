@@ -99,22 +99,23 @@ public:
      * @param onError: Will be invoked when the proxy could not be created. An exception, which
      * describes the error, is passed as the parameter.
      */
-    void buildAsync(std::function<void(std::shared_ptr<T> proxy)> onSuccess,
-                    std::function<void(const exceptions::DiscoveryException&)> onError) override;
+    void buildAsync(
+            std::function<void(std::shared_ptr<T> proxy)> onSuccess,
+            std::function<void(const exceptions::DiscoveryException&)> onError) noexcept override;
 
     /**
      * @brief Sets the messaging qos settings
      * @param messagingQos The message quality of service settings
      * @return The ProxyBuilder object
      */
-    ProxyBuilder* setMessagingQos(const MessagingQos& messagingQos) override;
+    ProxyBuilder* setMessagingQos(const MessagingQos& messagingQos) noexcept override;
 
     /**
      * @brief Sets the discovery qos settings
      * @param discoveryQos The discovery quality of service settings
      * @return The ProxyBuilder object
      */
-    ProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos) override;
+    ProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos) noexcept override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
@@ -195,7 +196,7 @@ std::shared_ptr<T> ProxyBuilder<T>::build()
 template <class T>
 void ProxyBuilder<T>::buildAsync(
         std::function<void(std::shared_ptr<T> proxy)> onSuccess,
-        std::function<void(const exceptions::DiscoveryException& exception)> onError)
+        std::function<void(const exceptions::DiscoveryException& exception)> onError) noexcept
 {
     auto runtimeSharedPtr = runtime.lock();
     if (runtimeSharedPtr == nullptr) {
@@ -262,7 +263,7 @@ void ProxyBuilder<T>::buildAsync(
 }
 
 template <class T>
-ProxyBuilder<T>* ProxyBuilder<T>::setMessagingQos(const MessagingQos& messagingQos)
+ProxyBuilder<T>* ProxyBuilder<T>::setMessagingQos(const MessagingQos& messagingQos) noexcept
 {
     this->messagingQos = messagingQos;
     // check validity of messaging maximum TTL
@@ -277,7 +278,7 @@ template <class T>
    ->build() is called on the proxy Builder.
    All parameter that are needed for arbitration should be set, before setDiscoveryQos is called.
 */
-ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQos)
+ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQos) noexcept
 {
     this->discoveryQos = discoveryQos;
     if (this->discoveryQos.getDiscoveryTimeoutMs() == DiscoveryQos::NO_VALUE()) {
