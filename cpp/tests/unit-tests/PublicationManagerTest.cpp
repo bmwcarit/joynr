@@ -1129,7 +1129,7 @@ TEST_F(PublicationManagerTest, restorePersistedAttributeSubscriptions) {
     const std::string attributeName ="Location";
     //SubscriptionQos
     const std::int64_t period_ms = 100;
-    const std::int64_t validity_ms = 1000;
+    const std::int64_t validity_ms = 3000;
     const std::int64_t alertInterval_ms = 1000;
     const std::int64_t publicationTtlMs = 2000;
     const auto qos = std::make_shared<PeriodicSubscriptionQos>(
