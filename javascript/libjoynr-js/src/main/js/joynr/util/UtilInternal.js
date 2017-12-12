@@ -20,6 +20,7 @@
  */
 var Promise = require("../../global/Promise");
 var UtilExternal = require("./Util");
+var LongTimer = require("./LongTimer");
 
 /**
  * @name UtilInternal
@@ -289,7 +290,7 @@ UtilInternal.enrichObjectWithSetPrototypeOf = function() {
 
 function timeoutToPromise(time) {
     var deferred = UtilInternal.createDeferred();
-    setTimeout(deferred.resolve, time);
+    LongTimer.setTimeout(deferred.resolve, time);
     return deferred.promise;
 }
 
