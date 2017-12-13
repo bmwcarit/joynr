@@ -191,7 +191,7 @@ request.setParams(
 
 			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper = [
 					future,
-					onError = std::move(onError),
+					onError = onError,
 					requestReplyId = request.getRequestReplyId(),
 					methodName = request.getMethodName()
 			] (const std::shared_ptr<exceptions::JoynrException>& error) {
@@ -218,9 +218,19 @@ request.setParams(
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<«returnType»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 				operationRequest(std::move(replyCaller), std::move(request));
 			} catch (const std::invalid_argument& exception) {
-				throw joynr::exceptions::MethodInvocationException(exception.what());
+				auto joynrException = std::make_shared<joynr::exceptions::MethodInvocationException>(exception.what());
+				future->onError(joynrException);
+				if (onError){
+					onError(*joynrException);
+				}
+			} catch (const joynr::exceptions::JoynrRuntimeException& exception) {
+				std::shared_ptr<joynr::exceptions::JoynrRuntimeException> exceptionPtr;
+				exceptionPtr.reset(exception.clone());
+				future->onError(exceptionPtr);
+				if (onError){
+					onError(exception);
+				}
 			}
-
 			return future;
 		}
 
@@ -254,7 +264,7 @@ request.setParams(
 
 			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper = [
 					future,
-					onError = std::move(onError),
+					onError = onError,
 					requestReplyId = request.getRequestReplyId(),
 					methodName = request.getMethodName()
 			] (const std::shared_ptr<exceptions::JoynrException>& error) {
@@ -282,7 +292,18 @@ request.setParams(
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<void>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 				operationRequest(std::move(replyCaller), std::move(request));
 			} catch (const std::invalid_argument& exception) {
-				throw joynr::exceptions::MethodInvocationException(exception.what());
+				auto joynrException = std::make_shared<joynr::exceptions::MethodInvocationException>(exception.what());
+				future->onError(joynrException);
+				if (onError){
+					onError(*joynrException);
+				}
+			} catch (const joynr::exceptions::JoynrRuntimeException& exception) {
+				std::shared_ptr<joynr::exceptions::JoynrRuntimeException> exceptionPtr;
+				exceptionPtr.reset(exception.clone());
+				future->onError(exceptionPtr);
+				if (onError){
+					onError(exception);
+				}
 			}
 			return future;
 		}
@@ -401,7 +422,7 @@ request.setParams(
 
 			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper = [
 					future,
-					onRuntimeError = std::move(onRuntimeError),
+					onRuntimeError = onRuntimeError,
 					«IF method.hasErrorEnum»onApplicationError = std::move(onApplicationError),«ENDIF»
 					requestReplyId = request.getRequestReplyId(),
 					methodName = request.getMethodName()
@@ -423,7 +444,18 @@ request.setParams(
 				auto replyCaller = std::make_shared<joynr::ReplyCaller<«outputParameters»>>(std::move(onSuccessWrapper), std::move(onErrorWrapper));
 				operationRequest(std::move(replyCaller), std::move(request));
 			} catch (const std::invalid_argument& exception) {
-				throw joynr::exceptions::MethodInvocationException(exception.what());
+				auto joynrException = std::make_shared<joynr::exceptions::MethodInvocationException>(exception.what());
+				future->onError(joynrException);
+				if (onRuntimeError){
+					onRuntimeError(*joynrException);
+				}
+			} catch (const joynr::exceptions::JoynrRuntimeException& exception) {
+				std::shared_ptr<joynr::exceptions::JoynrRuntimeException> exceptionPtr;
+				exceptionPtr.reset(exception.clone());
+				future->onError(exceptionPtr);
+				if (onRuntimeError){
+					onRuntimeError(exception);
+				}
 			}
 			return future;
 		}
