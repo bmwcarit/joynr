@@ -54,8 +54,20 @@ public:
     {
     }
 
+    std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>>>
+            getMasterAccessControlEntriesAsync(
+                const std::string& domain,
+                const std::string& interfaceName,
+                std::function<void(
+                    const std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>& masterAces
+                )> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+            ) noexcept override
+    {
+        return getMasterAccessControlEntriesAsyncMock(domain, interfaceName, std::move(onSuccess), std::move(onError));
+    }
     MOCK_METHOD4(
-            getMasterAccessControlEntriesAsync,
+            getMasterAccessControlEntriesAsyncMock,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>>>(
                 const std::string& domain,
                 const std::string& interfaceName,
@@ -66,8 +78,20 @@ public:
             )
     );
 
+    std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>>>
+            getMediatorAccessControlEntriesAsync(
+                const std::string& domain,
+                const std::string& interfaceName,
+                std::function<void(
+                    const std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>& mediatorAces
+                )> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+            ) noexcept override
+    {
+        return getMediatorAccessControlEntriesAsyncMock(domain, interfaceName, std::move(onSuccess), std::move(onError));
+    }
     MOCK_METHOD4(
-            getMediatorAccessControlEntriesAsync,
+            getMediatorAccessControlEntriesAsyncMock,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>>>(
                 const std::string& domain,
                 const std::string& interfaceName,
@@ -78,8 +102,20 @@ public:
             )
     );
 
+    std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::OwnerAccessControlEntry>>>
+            getOwnerAccessControlEntriesAsync(
+                const std::string& domain,
+                const std::string& interfaceName,
+                std::function<void(
+                    const std::vector<joynr::infrastructure::DacTypes::OwnerAccessControlEntry>& ownerAces
+                )> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+            ) noexcept override
+    {
+        return getOwnerAccessControlEntriesAsyncMock(domain, interfaceName, std::move(onSuccess), std::move(onError));
+    }
     MOCK_METHOD4(
-            getOwnerAccessControlEntriesAsync,
+            getOwnerAccessControlEntriesAsyncMock,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::OwnerAccessControlEntry>>>(
                 const std::string& domain,
                 const std::string& interfaceName,
@@ -131,8 +167,19 @@ public:
 
     // Registration control
 
+    std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>>>
+            getMasterRegistrationControlEntriesAsync(
+                const std::string& uid,
+                std::function<void(
+                    const std::vector<joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>& masterAces
+                )> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+            ) noexcept override
+    {
+        return getMasterRegistrationControlEntriesAsyncMock(uid, std::move(onSuccess), std::move(onError));
+    }
     MOCK_METHOD3(
-            getMasterRegistrationControlEntriesAsync,
+            getMasterRegistrationControlEntriesAsyncMock,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>>>(
                 const std::string& uid,
                 std::function<void(
@@ -142,8 +189,19 @@ public:
             )
     );
 
+    std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>>>
+            getMediatorRegistrationControlEntriesAsync(
+                const std::string& uid,
+                std::function<void(
+                    const std::vector<joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>& mediatorAces
+                )> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+            ) noexcept override
+    {
+        return getMediatorRegistrationControlEntriesAsyncMock(uid, std::move(onSuccess), std::move(onError));
+    }
     MOCK_METHOD3(
-            getMediatorRegistrationControlEntriesAsync,
+            getMediatorRegistrationControlEntriesAsyncMock,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterRegistrationControlEntry>>>(
                 const std::string& uid,
                 std::function<void(
@@ -153,8 +211,19 @@ public:
             )
     );
 
+    std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry>>>
+            getOwnerRegistrationControlEntriesAsync(
+                const std::string& uid,
+                std::function<void(
+                    const std::vector<joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry>& ownerAces
+                )> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError
+            ) noexcept override
+    {
+        return getOwnerRegistrationControlEntriesAsyncMock(uid, std::move(onSuccess), std::move(onError));
+    }
     MOCK_METHOD3(
-            getOwnerRegistrationControlEntriesAsync,
+            getOwnerRegistrationControlEntriesAsyncMock,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::OwnerRegistrationControlEntry>>>(
                 const std::string& uid,
                 std::function<void(

@@ -130,7 +130,7 @@ TEST_F(CapabilitiesRegistrarTest, add){
     mockFuture->onSuccess();
     EXPECT_CALL(
                 *mockDiscovery,
-                addAsync(
+                addAsyncMock(
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
                         Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(MockProvider::INTERFACE_NAME())),
@@ -174,7 +174,7 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders){
     mockFuture->onSuccess();
     EXPECT_CALL(
                 *mockDiscovery,
-                addAsync(
+                addAsyncMock(
                     _,
                     _,
                     _
@@ -226,7 +226,7 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject){
             .Times(1);
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
-    EXPECT_CALL(*mockDiscovery, removeAsync(
+    EXPECT_CALL(*mockDiscovery, removeAsyncMock(
                     expectedParticipantId,
                     _,
                     _
@@ -256,7 +256,7 @@ TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId){
 
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
-    EXPECT_CALL(*mockDiscovery, removeAsync(
+    EXPECT_CALL(*mockDiscovery, removeAsyncMock(
                     expectedParticipantId,
                     _,
                     _
@@ -296,7 +296,7 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
 
     EXPECT_CALL(
                 *mockDiscovery,
-                addAsync(
+                addAsyncMock(
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
                         Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(MockProvider::INTERFACE_NAME())),
@@ -356,7 +356,7 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher){
     mockFuture->onSuccess();
     EXPECT_CALL(
                 *mockDiscovery,
-                addAsync(
+                addAsyncMock(
                     AllOf(
                         Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
                         Property(&joynr::types::DiscoveryEntry::getInterfaceName, Eq(MockProvider::INTERFACE_NAME())),

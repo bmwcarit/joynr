@@ -46,7 +46,7 @@ void LocalDiscoveryAggregator::setDiscoveryProxy(std::shared_ptr<IDiscoveryAsync
 std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
         const types::DiscoveryEntry& discoveryEntry,
         std::function<void()> onSuccess,
-        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError) noexcept
 {
     assert(discoveryProxy);
     return discoveryProxy->addAsync(
@@ -59,7 +59,7 @@ LocalDiscoveryAggregator::lookupAsync(
         const std::string& interfaceName,
         const types::DiscoveryQos& discoveryQos,
         std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)> onSuccess,
-        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError) noexcept
 {
     assert(discoveryProxy);
     return discoveryProxy->lookupAsync(
@@ -69,7 +69,8 @@ LocalDiscoveryAggregator::lookupAsync(
 std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> LocalDiscoveryAggregator::
         lookupAsync(const std::string& participantId,
                     std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess,
-                    std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
+                    std::function<void(const exceptions::JoynrRuntimeException&)>
+                            onRuntimeError) noexcept
 {
     auto entry = provisionedDiscoveryEntries.find(participantId);
     if (entry != provisionedDiscoveryEntries.cend()) {
@@ -89,7 +90,7 @@ std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> LocalDiscovery
 std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::removeAsync(
         const std::string& participantId,
         std::function<void()> onSuccess,
-        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError) noexcept
 {
     assert(discoveryProxy);
     return discoveryProxy->removeAsync(

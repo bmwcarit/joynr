@@ -91,7 +91,7 @@ TEST_F(LocalDiscoveryAggregatorTest, addAsync_callsProxy) {
 
     types::DiscoveryEntryWithMetaInfo discoveryEntry;
     discoveryEntry.setParticipantId("testParticipantId");
-    EXPECT_CALL(*discoveryMock, addAsync(Eq(discoveryEntry), Eq(nullptr), Eq(nullptr)));
+    EXPECT_CALL(*discoveryMock, addAsyncMock(Eq(discoveryEntry), Eq(nullptr), Eq(nullptr)));
     localDiscoveryAggregator.addAsync(discoveryEntry, nullptr, nullptr);
 }
 
@@ -102,7 +102,7 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_callsProxy) {
     const std::string interfaceName("testInterfaceName");
     types::DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryTimeout(42421);
-    EXPECT_CALL(*discoveryMock, lookupAsync(Eq(domains),
+    EXPECT_CALL(*discoveryMock, lookupAsyncMock(Eq(domains),
                                            Eq(interfaceName),
                                            Eq(discoveryQos),
                                            Eq(nullptr),
@@ -115,7 +115,7 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_callsProxy) {
     localDiscoveryAggregator.setDiscoveryProxy(discoveryMock);
 
     const std::string participantId("testParticipantId");
-    EXPECT_CALL(*discoveryMock, lookupAsync(Eq(participantId),
+    EXPECT_CALL(*discoveryMock, lookupAsyncMock(Eq(participantId),
                                             Eq(nullptr),
                                             Eq(nullptr))
                 );
@@ -126,7 +126,7 @@ TEST_F(LocalDiscoveryAggregatorTest, removeAsync_callsProxy) {
     localDiscoveryAggregator.setDiscoveryProxy(discoveryMock);
 
     const std::string participantId("testParticipantId");
-    EXPECT_CALL(*discoveryMock, removeAsync(Eq(participantId),
+    EXPECT_CALL(*discoveryMock, removeAsyncMock(Eq(participantId),
                                             Eq(nullptr),
                                             Eq(nullptr))
                 );
@@ -143,7 +143,7 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_provisionedEntry_d
     LocalDiscoveryAggregator localDiscoveryAggregator(provisionedDiscoveryEntries);
     localDiscoveryAggregator.setDiscoveryProxy(discoveryMock);
 
-    EXPECT_CALL(*discoveryMock, lookupAsync(_,_,_)).Times(0);
+    EXPECT_CALL(*discoveryMock, lookupAsyncMock(_,_,_)).Times(0);
 
     auto onSuccess = [&semaphore, &provisionedDiscoveryEntry]
             (const types::DiscoveryEntryWithMetaInfo& entry) {
