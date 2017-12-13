@@ -55,6 +55,7 @@ module.exports = {
         measureMemory: "false",
         stringLength: 10,
         timeout: 3600000,
-        byteArraySize: 1000
+        byteArraySize: 1000,
+        testType: "burst" // burst, concurrency, single
     }
 };

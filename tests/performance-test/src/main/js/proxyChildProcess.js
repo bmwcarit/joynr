@@ -31,8 +31,11 @@ var timeout = 600000;
 var Benchmarks = require("./Benchmarks");
 var benchmarks;
 
+var testType = options.testType;
+
 log("Using domain " + options.domain);
 error("test runs: " + options.testRuns);
+error("Using testType: " + testType);
 var provisioning = testbase.provisioning_common;
 provisioning.ccAddress.host = options.cchost;
 provisioning.ccAddress.port = options.ccport;
@@ -89,9 +92,20 @@ var handler = function(msg) {
     } else if (msg.msg === "executeBenchmark") {
         // TODO: add different types of tests -> one request after another, all parallel, etc.
 
-        // burstTest
-        var promiseArray = testData.map(item => benchmarks[msg.config.name].testProcedure(item));
-        Promise.all(promiseArray).then(() => process.send({ msg: "executeBenchmarkFinished" }));
+        if (testType === "burst") {
+            var promiseArray = testData.map(item => benchmarks[msg.config.name].testProcedure(item));
+            Promise.all(promiseArray).then(() => process.send({ msg: "executeBenchmarkFinished" }));
+        } else if (testType === "concurrency") {
+            Promise.map(testData, item => benchmarks[msg.config.name].testProcedure(item), {
+                concurrency: 500
+            }).then(() => process.send({ msg: "executeBenchmarkFinished" }));
+        } else if (testType === "single") {
+            Promise.map(testData, item => benchmarks[msg.config.name].testProcedure(item), {
+                concurrency: 1
+            }).then(() => process.send({ msg: "executeBenchmarkFinished" }));
+        } else {
+            throw new Error("unknown testType");
+        }
     }
 };
 process.on("message", handler);

@@ -64,7 +64,8 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         ccport,
         skipByteArraySizeTimesK,
         testRuns,
-        measureMemory;
+        measureMemory,
+        testType;
 
     var global = config.global;
     testRuns = global.testRuns || 100;
@@ -75,6 +76,7 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
     measureMemory = "false"; // TODO: broken
     cchost = global.cc.host || "localhost";
     ccport = global.cc.port || 4242;
+    testType = global.testType || "burst";
 
     if (environment.skipByteArraySizeTimesK !== undefined) {
         skipByteArraySizeTimesK = environment.skipByteArraySizeTimesK;
@@ -91,7 +93,8 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function(environment) {
         cchost: cchost,
         ccport: ccport,
         skipByteArraySizeTimesK: skipByteArraySizeTimesK,
-        measureMemory: measureMemory
+        measureMemory: measureMemory,
+        testType
     };
 };
 
