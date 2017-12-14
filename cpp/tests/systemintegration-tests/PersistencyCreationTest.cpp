@@ -34,6 +34,7 @@
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockTestProvider.h"
 #include "tests/mock/MockSubscriptionListener.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -88,8 +89,8 @@ public:
         testProxy.reset();
         ccRuntime->unregisterProvider(providerParticipantId);
 
-        testProvider.reset();
-        ccRuntime.reset();
+        test::util::resetAndWaitUntilDestroyed(testProvider);
+        test::util::resetAndWaitUntilDestroyed(ccRuntime);
 
         // Delete test specific files
         joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
