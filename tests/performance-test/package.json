@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "bluebird": "3.3.5",
+    "exit-hook": "^1.1.1",
     "joynr": "file:../../javascript/libjoynr-js/target/node-classes",
     "mqtt": "2.0.1",
     "test-base": "file:../test-base/target/classes"
