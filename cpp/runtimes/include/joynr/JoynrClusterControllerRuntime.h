@@ -195,7 +195,7 @@ private:
 
     void registerInternalSystemServiceProviders();
     void unregisterInternalSystemServiceProviders();
-    void createWsCCMessagingSkeletons();
+    void startLocalCommunication();
     std::shared_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
     createGlobalDomainAccessControllerProxy();
 

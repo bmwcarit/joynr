@@ -389,7 +389,7 @@ void JoynrClusterControllerRuntime::init()
         messagingStubFactory->remove(destinationAddress);
     });
 
-    createWsCCMessagingSkeletons();
+    startLocalCommunication();
 
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
 
@@ -790,7 +790,7 @@ void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProviders()
     unregisterProvider(routingProviderParticipantId);
 }
 
-void JoynrClusterControllerRuntime::createWsCCMessagingSkeletons()
+void JoynrClusterControllerRuntime::startLocalCommunication()
 {
     if (clusterControllerSettings.isWsTLSPortSet()) {
         std::string certificateAuthorityPemFilename =
