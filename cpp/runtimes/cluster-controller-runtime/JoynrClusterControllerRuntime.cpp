@@ -389,8 +389,6 @@ void JoynrClusterControllerRuntime::init()
         messagingStubFactory->remove(destinationAddress);
     });
 
-    startLocalCommunication();
-
     messagingStubFactory->registerStubFactory(wsMessagingStubFactory);
 
     /* LibJoynr */
@@ -950,6 +948,7 @@ void JoynrClusterControllerRuntime::start()
 {
     singleThreadIOService->start();
     startExternalCommunication();
+    startLocalCommunication();
 }
 
 void JoynrClusterControllerRuntime::stop(bool deleteChannel)
