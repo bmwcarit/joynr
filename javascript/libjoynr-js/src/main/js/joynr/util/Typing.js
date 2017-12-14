@@ -206,13 +206,7 @@ Typing.augmentTypeName = function(obj, packageName, memberName) {
  * @function Typing#isComplexJoynrObject
  */
 Typing.isComplexJoynrObject = function isComplexJoynrObject(value) {
-    try {
-        var valuePrototype = Object.getPrototypeOf(value);
-        return valuePrototype && valuePrototype instanceof joynr.JoynrObject;
-    } catch (error) {
-        // This can be the case when the value is a primitive type
-    }
-    return false;
+    return value instanceof joynr.JoynrObject;
 };
 
 /**
