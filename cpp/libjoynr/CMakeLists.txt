@@ -123,7 +123,6 @@ set(JoynrLib_SOURCES
     "common/concurrency/DelayedScheduler.cpp"
     "common/concurrency/Runnable.cpp"
     "common/concurrency/Semaphore.cpp"
-    "common/concurrency/SingleThreadedDelayedScheduler.cpp"
     "common/concurrency/Thread.cpp"
     "common/concurrency/ThreadPool.cpp"
     "common/concurrency/ThreadPoolDelayedScheduler.cpp"
