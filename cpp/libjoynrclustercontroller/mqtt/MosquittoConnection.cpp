@@ -192,11 +192,9 @@ void MosquittoConnection::stop()
                             std::to_string(rc),
                             mosqpp::strerror(rc));
             stopLoop(true);
-            mosqpp::lib_cleanup();
         }
     } else if (isRunning) {
         stopLoop(true);
-        mosqpp::lib_cleanup();
     }
     setReadyToSend(false);
 }
