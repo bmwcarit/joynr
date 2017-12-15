@@ -87,7 +87,9 @@ SubscriptionManager::SubscriptionManager(boost::asio::io_service& ioService,
 
 SubscriptionManager::SubscriptionManager(std::shared_ptr<DelayedScheduler> scheduler,
                                          std::shared_ptr<IMessageRouter> messageRouter)
-        : subscriptions(),
+        : ISubscriptionManager(),
+          enable_shared_from_this<SubscriptionManager>(),
+          subscriptions(),
           multicastSubscribers(),
           multicastSubscribersMutex(),
           messageRouter(messageRouter),
