@@ -103,7 +103,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
         joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
         joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
         joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, parameters.expiryDate);
-        dispatcher.receive(joynrMessage);
+        return dispatcher.receive(joynrMessage);
     }
 
     function receiveJoynrMessageTtlUplift(parameters) {
@@ -114,7 +114,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
         joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
         joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
         joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, parameters.expiryDate);
-        dispatcherWithTtlUplift.receive(joynrMessage);
+        return dispatcherWithTtlUplift.receive(joynrMessage);
     }
 
     function checkMessageFromProxyWithTolerance(messageType, expectedExpiryDate) {
@@ -146,8 +146,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
     beforeEach(function() {
         jasmine.addMatchers(customMatchers);
 
-        var sendRequestReply = function(providerParticipantId, request, callbackDispatcher) {
-            callbackDispatcher(
+        var sendRequestReply = function(providerParticipantId, request) {
+            return Promise.resolve(
                 new Reply({
                     response: "response",
                     requestReplyId: request.requestReplyId
@@ -370,7 +370,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             expect(msg.header.expiryDate).toEqualWithPositiveTolerance(expiryDateMs);
         });
 
-        it("request and reply", function() {
+        it("request and reply", function(done) {
             var payload = {
                 methodName: "methodName"
             };
@@ -379,16 +379,13 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
                 payload: payload,
                 expiryDate: expiryDateMs
+            }).then(function() {
+                expect(requestReplyManager.handleRequest).toHaveBeenCalled();
+                expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(providerId, jasmine.any(Request));
+
+                checkRequestReplyMessage(expiryDateMs);
+                done();
             });
-
-            expect(requestReplyManager.handleRequest).toHaveBeenCalled();
-            expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
-                providerId,
-                jasmine.any(Request),
-                jasmine.any(Function)
-            );
-
-            checkRequestReplyMessage(expiryDateMs);
         });
 
         it("subscription expiry date and subscription reply", function() {
@@ -641,7 +638,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             expect(msg.header.expiryDate).toEqualWithPositiveTolerance(expiryDateWithTtlUplift);
         });
 
-        it("request and reply", function() {
+        it("request and reply", function(done) {
             var payload = {
                 methodName: "methodName"
             };
@@ -650,16 +647,13 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
                 payload: payload,
                 expiryDate: expiryDateMs + ttlUpliftMs
+            }).then(function() {
+                expect(requestReplyManager.handleRequest).toHaveBeenCalled();
+                expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(providerId, jasmine.any(Request));
+
+                checkRequestReplyMessage(expiryDateWithTtlUplift);
+                done();
             });
-
-            expect(requestReplyManager.handleRequest).toHaveBeenCalled();
-            expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
-                providerId,
-                jasmine.any(Request),
-                jasmine.any(Function)
-            );
-
-            checkRequestReplyMessage(expiryDateWithTtlUplift);
         });
 
         it("subscription expiry date and subscription reply", function() {

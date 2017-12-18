@@ -296,7 +296,6 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         expect(requestReplyManager.handleRequest).toHaveBeenCalled();
         expect(requestReplyManager.handleRequest.calls.mostRecent().args[0]).toEqual(providerId);
         expect(requestReplyManager.handleRequest.calls.mostRecent().args[1]).toEqual(request);
-        expect(typeof requestReplyManager.handleRequest.calls.mostRecent().args[2] === "function").toBeTruthy();
         done();
     });
 
@@ -558,16 +557,21 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
         });
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
         sentRequestMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+        var clusterControllerMessagingStubTransmitCallsCount = clusterControllerMessagingStub.transmit.calls.count();
         // get ready for an incoming request: when handleRequest is called, pass an empty reply back.
-        requestReplyManager.handleRequest.and.callFake(function(to, request, callback) {
-            callback(new Reply());
+        requestReplyManager.handleRequest.and.callFake(function(to, request) {
+            return Promise.resolve(request);
         });
         // now simulate receiving the request message, as if it had been transmitted
         // this will be passed on to the mock requestReplyManager
-        dispatcher.receive(sentRequestMessage);
-        sentReplyMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
-        expect(sentReplyMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
-        done();
+        dispatcher.receive(sentRequestMessage).then(function() {
+            sentReplyMessage = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+            expect(clusterControllerMessagingStub.transmit.calls.count()).toBe(
+                clusterControllerMessagingStubTransmitCallsCount + 1
+            );
+            expect(sentReplyMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
+            done();
+        });
     });
 
     it("sends subscription reply on subscription request", function(done) {
