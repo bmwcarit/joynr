@@ -753,7 +753,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                             from: joynrMessage.from
                         })
                     );
-                    requestReplyManager.handleRequest(joynrMessage.to, request, function(reply) {
+                    requestReplyManager.handleRequest(joynrMessage.to, request).then(function(reply) {
                         sendRequestReply(
                             {
                                 from: joynrMessage.to,

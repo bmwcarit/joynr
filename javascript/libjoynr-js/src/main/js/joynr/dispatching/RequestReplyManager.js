@@ -199,8 +199,23 @@ function RequestReplyManager(dispatcher, typeRegistry) {
      * @param {Request}
      *            request
      */
-    this.handleRequest = function handleRequest(providerParticipantId, request, callbackDispatcher) {
+    this.handleRequest = function handleRequest(providerParticipantId, request) {
         var exception;
+
+        function createReplyFromError(exception) {
+            return new Reply({
+                error: exception,
+                requestReplyId: request.requestReplyId
+            });
+        }
+
+        function createReplyFromSuccess(response) {
+            return new Reply({
+                response: response,
+                requestReplyId: request.requestReplyId
+            });
+        }
+
         try {
             checkIfReady();
         } catch (error) {
@@ -212,13 +227,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
                     providerParticipantId +
                     ". Joynr runtime already shut down."
             });
-            callbackDispatcher(
-                new Reply({
-                    error: exception,
-                    requestReplyId: request.requestReplyId
-                })
-            );
-            return;
+            return Promise.resolve(createReplyFromError(exception));
         }
         var provider = providers[providerParticipantId];
         if (!provider) {
@@ -232,13 +241,7 @@ function RequestReplyManager(dispatcher, typeRegistry) {
                     " for providerParticipantId " +
                     providerParticipantId
             });
-            callbackDispatcher(
-                new Reply({
-                    error: exception,
-                    requestReplyId: request.requestReplyId
-                })
-            );
-            return;
+            return Promise.resolve(createReplyFromError(exception));
         }
 
         // if there's an operation available to call
@@ -317,53 +320,14 @@ function RequestReplyManager(dispatcher, typeRegistry) {
          * object. In this case, we wait until the promise object is resolved
          * and call then the callbackDispatcher
          */
-        function resultSuccess(response) {
-            callbackDispatcher(
-                new Reply({
-                    response: response,
-                    requestReplyId: request.requestReplyId
-                })
-            );
-            return response;
-        }
-
-        function resultFailure(internalException) {
-            callbackDispatcher(
-                new Reply({
-                    error: internalException,
-                    requestReplyId: request.requestReplyId
-                })
-            );
-            return internalException;
-        }
-
-        function asyncCallbackDispatcherOnError() {
-            callbackDispatcher(
-                new Reply({
-                    error: exception,
-                    requestReplyId: request.requestReplyId
-                })
-            );
-        }
-
-        function asyncCallbackDispatcherOnSuccess() {
-            callbackDispatcher(
-                new Reply({
-                    response: result,
-                    requestReplyId: request.requestReplyId
-                })
-            );
-        }
 
         if (!exception && Util.isPromise(result)) {
-            result.then(resultSuccess).catch(resultFailure);
-        } else if (exception) {
-            // return stored exception
-            LongTimer.setTimeout(asyncCallbackDispatcherOnError, 0);
-        } else {
-            // return result of call
-            LongTimer.setTimeout(asyncCallbackDispatcherOnSuccess, 0);
+            return result.then(createReplyFromSuccess).catch(createReplyFromError);
         }
+        if (exception) {
+            return Promise.resolve(createReplyFromError(exception));
+        }
+        return Promise.resolve(createReplyFromSuccess(result));
     };
 
     /**
