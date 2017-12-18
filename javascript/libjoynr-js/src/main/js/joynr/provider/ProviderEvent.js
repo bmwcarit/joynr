@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -45,111 +45,113 @@ function ProviderEvent(settings) {
         return new ProviderEvent(settings);
     }
 
-    var callbacks = [];
-    var filters = [];
+    this._callbacks = [];
+    this._filters = [];
+    this._settings = settings;
 
-    this.selective = settings.selective;
-    /**
-     * @name ProviderEvent#checkFilterParameters
-     * @param {BroadcastFilterParameters} filterParameters
-     * @param {Object} filterParameters.filterParameters an object containing a map filterParameters
-     *
-     */
-    this.checkFilterParameters = function checkFilterParameters(filterParametersInput) {
-        var filterParameters = filterParametersInput || {};
-        return SubscriptionUtil.checkFilterParameters(
-            settings.filterSettings,
-            filterParameters.filterParameters,
-            settings.eventName
-        );
-    };
-
-    this.createBroadcastOutputParameters = function createBroadcastOutputParameters() {
-        return new BroadcastOutputParameters(settings.outputParameterProperties);
-    };
-
-    /**
-     * if this event is fired the applications should call this function with the new
-     * output parameters which causes the publication containing the values to be
-     * sent to all subscribers.
-     *
-     * @name ProviderEvent#fire
-     * @function
-     *
-     * @param {BroadcastOutputParameters}
-     *     broadcastOutputParameters the broadcast output parameters
-     * @param {String[]}
-     *     [partitions] - the partitions to be used for multicasts
-     * @throws {Error} if partitions contains invalid characters
-     */
-    this.fire = function fire(broadcastOutputParameters, partitions) {
-        SubscriptionUtil.validatePartitions(partitions);
-        // the Util.fire method accepts exactly one argument for the callback
-        var data = {
-            broadcastOutputParameters: broadcastOutputParameters,
-            filters: filters,
-            partitions: partitions || []
-        };
-        Util.fire(callbacks, data);
-    };
-
-    /**
-     * Registers an Observer for value changes
-     *
-     * @name ProviderAttribute#registerObserver
-     * @function
-     *
-     * @param {Function}
-     *            observer the callback function with the signature "function(value){..}"
-     * @see ProviderEvent#unregisterObserver
-     */
-    this.registerObserver = function registerObserver(observer) {
-        callbacks.push(observer);
-    };
-
-    /**
-     * Unregisters an Observer for value changes
-     *
-     * @name ProviderAttribute#unregisterObserver
-     * @function
-     *
-     * @param {Function}
-     *            observer the callback function with the signature "function(value){..}"
-     * @see ProviderEvent#registerObserver
-     */
-    this.unregisterObserver = function unregisterObserver(observer) {
-        Util.removeElementFromArray(callbacks, observer);
-    };
-
-    /**
-     * Registers a filter
-     *
-     * @name ProviderEvent#addBroadcastFilter
-     * @function
-     *
-     * @param {Function}
-     *            filter the callback object that executes the filtering
-     * @see ProviderEvent#deleteBroadcastFilter
-     */
-    this.addBroadcastFilter = function addBroadcastFilter(filter) {
-        filters.push(filter);
-    };
-
-    /**
-     * Unregisters an Observer for value changes
-     *
-     * @name ProviderAttribute#deleteBroadcastFilter
-     * @function
-     *
-     * @param {Function}
-     *            filter the callback object that executes the filtering
-     * @see ProviderEvent#addBroadcastFilter
-     */
-    this.deleteBroadcastFilter = function deleteBroadcastFilter(filter) {
-        Util.removeElementFromArray(filters, filter);
-    };
-
-    return Object.freeze(this);
+    var privateProviderEvent = Util.forwardPrototype(this);
+    privateProviderEvent.selective = settings.selective; // TODO: create a getter for this.selective instead
+    return Object.freeze(privateProviderEvent);
 }
+
+/**
+ * @name ProviderEvent#checkFilterParameters
+ * @param {BroadcastFilterParameters} filterParameters
+ * @param {Object} filterParameters.filterParameters an object containing a map filterParameters
+ *
+ */
+ProviderEvent.prototype.checkFilterParameters = function checkFilterParameters(filterParametersInput) {
+    var filterParameters = filterParametersInput || {};
+    return SubscriptionUtil.checkFilterParameters(
+        this._settings.filterSettings,
+        filterParameters.filterParameters,
+        this._settings.eventName
+    );
+};
+
+ProviderEvent.prototype.createBroadcastOutputParameters = function createBroadcastOutputParameters() {
+    return new BroadcastOutputParameters(this._settings.outputParameterProperties);
+};
+
+/**
+ * if this event is fired the applications should call this function with the new
+ * output parameters which causes the publication containing the values to be
+ * sent to all subscribers.
+ *
+ * @name ProviderEvent#fire
+ * @function
+ *
+ * @param {BroadcastOutputParameters}
+ *     broadcastOutputParameters the broadcast output parameters
+ * @param {String[]}
+ *     [partitions] - the partitions to be used for multicasts
+ * @throws {Error} if partitions contains invalid characters
+ */
+ProviderEvent.prototype.fire = function fire(broadcastOutputParameters, partitions) {
+    SubscriptionUtil.validatePartitions(partitions);
+    // the Util.fire method accepts exactly one argument for the callback
+    var data = {
+        broadcastOutputParameters: broadcastOutputParameters,
+        filters: this._filters,
+        partitions: partitions || []
+    };
+    Util.fire(this._callbacks, data);
+};
+
+/**
+ * Registers an Observer for value changes
+ *
+ * @name ProviderAttribute#registerObserver
+ * @function
+ *
+ * @param {Function}
+ *            observer the callback function with the signature "function(value){..}"
+ * @see ProviderEvent#unregisterObserver
+ */
+ProviderEvent.prototype.registerObserver = function registerObserver(observer) {
+    this._callbacks.push(observer);
+};
+
+/**
+ * Unregisters an Observer for value changes
+ *
+ * @name ProviderAttribute#unregisterObserver
+ * @function
+ *
+ * @param {Function}
+ *            observer the callback function with the signature "function(value){..}"
+ * @see ProviderEvent#registerObserver
+ */
+ProviderEvent.prototype.unregisterObserver = function unregisterObserver(observer) {
+    Util.removeElementFromArray(this._callbacks, observer);
+};
+
+/**
+ * Registers a filter
+ *
+ * @name ProviderEvent#addBroadcastFilter
+ * @function
+ *
+ * @param {Function}
+ *            filter the callback object that executes the filtering
+ * @see ProviderEvent#deleteBroadcastFilter
+ */
+ProviderEvent.prototype.addBroadcastFilter = function addBroadcastFilter(filter) {
+    this._filters.push(filter);
+};
+
+/**
+ * Unregisters an Observer for value changes
+ *
+ * @name ProviderAttribute#deleteBroadcastFilter
+ * @function
+ *
+ * @param {Function}
+ *            filter the callback object that executes the filtering
+ * @see ProviderEvent#addBroadcastFilter
+ */
+ProviderEvent.prototype.deleteBroadcastFilter = function deleteBroadcastFilter(filter) {
+    Util.removeElementFromArray(this._filters, filter);
+};
 
 module.exports = ProviderEvent;
