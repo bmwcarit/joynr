@@ -1,4 +1,4 @@
-/*jslint es5: true, node: true, node: true */
+/*jslint es5: true, nomen: true, node: true */
 /*
  * #%L
  * %%
@@ -127,59 +127,118 @@ function ProviderOperation(parent, implementation, operationName, operationSigna
         return new ProviderOperation(parent, implementation, operationName, operationSignatures);
     }
 
-    var privateOperationFunc = implementation;
+    this._privateOperationFunc = implementation;
+    this._operationName = operationName;
+    this._operationSignatures = operationSignatures;
 
-    /**
-     * Registers the operation function
-     *
-     * @name ProviderOperation#registerOperation
-     * @function
-     *
-     * @param {Function}
-     *            operationFunc registers the operation function
-     */
-    this.registerOperation = function registerOperation(operationFunc) {
-        privateOperationFunc = operationFunc;
-    };
+    return Object.freeze(Util.forwardPrototype(this));
+}
 
-    /**
-     * Calls the operation function.
-     *
-     * @name ProviderOperation#callOperation
-     * @function
-     *
-     * @param {Array}
-     *            operationArguments the operation arguments as an array
-     * @param {?}
-     *            operationArguments the operation argument value, e.g. 1
-     * @param {Array}
-     *            operationArgumentTypes the operation argument types as an array
-     * @param {String}
-     *            operationArgumentTypes the operation argument type in String form
-     *            e.g. "Integer"
-     *
-     * @returns {?} the return type of the called operation function
-     */
-    this.callOperation = function callOperation(operationArguments, operationArgumentTypes) {
-        var i, j;
-        var argument, namedArguments, signature;
-        var result;
-        var errorEnumType;
-        var exception;
+/**
+ * Registers the operation function
+ *
+ * @name ProviderOperation#registerOperation
+ * @function
+ *
+ * @param {Function}
+ *            operationFunc registers the operation function
+ */
+ProviderOperation.prototype.registerOperation = function registerOperation(operationFunc) {
+    this._privateOperationFunc = operationFunc;
+};
 
-        // cycle through multiple available operation signatures
-        for (i = 0; i < operationSignatures.length && namedArguments === undefined; ++i) {
-            signature = operationSignatures[i];
-            // check if the parameters from the operation signature is valid for
-            // the provided arguments
-            namedArguments = getNamedArguments(operationArguments, operationArgumentTypes, signature);
+/**
+ * Calls the operation function.
+ *
+ * @name ProviderOperation#callOperation
+ * @function
+ *
+ * @param {Array}
+ *            operationArguments the operation arguments as an array
+ * @param {?}
+ *            operationArguments the operation argument value, e.g. 1
+ * @param {Array}
+ *            operationArgumentTypes the operation argument types as an array
+ * @param {String}
+ *            operationArgumentTypes the operation argument type in String form
+ *            e.g. "Integer"
+ *
+ * @returns {?} the return type of the called operation function
+ */
+ProviderOperation.prototype.callOperation = function callOperation(operationArguments, operationArgumentTypes) {
+    var i, j;
+    var argument, namedArguments, signature;
+    var result;
+    var errorEnumType;
+    var exception;
+
+    // cycle through multiple available operation signatures
+    for (i = 0; i < this._operationSignatures.length && namedArguments === undefined; ++i) {
+        signature = this._operationSignatures[i];
+        // check if the parameters from the operation signature is valid for
+        // the provided arguments
+        namedArguments = getNamedArguments(operationArguments, operationArgumentTypes, signature);
+    }
+
+    function privateOperationOnSuccess(returnValue) {
+        return returnValueToResponseArray(returnValue, signature.outputParameter || []);
+    }
+
+    function privateOperationOnError(exceptionOrErrorEnumValue) {
+        if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
+            exception = exceptionOrErrorEnumValue;
+        } else if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
+            exception = new ApplicationException({
+                detailMessage: "Application exception, details see error enum",
+                error: exceptionOrErrorEnumValue
+            });
+        } else if (exceptionOrErrorEnumValue instanceof Error) {
+            exception = new ProviderRuntimeException({
+                detailMessage: "Implementation causes unknown error: " + exceptionOrErrorEnumValue.message
+            });
+        } else {
+            exception = new ProviderRuntimeException({
+                detailMessage: "Implementation causes unknown error"
+            });
+        }
+        throw exception;
+    }
+
+    if (namedArguments) {
+        if (signature.error && signature.error.type) {
+            errorEnumType = signature.error.type;
+        }
+        // augment types
+        for (j = 0; j < signature.inputParameter.length; ++j) {
+            argument = signature.inputParameter[j];
+            namedArguments[argument.name] = Typing.augmentTypes(
+                namedArguments[argument.name],
+                typeRegistry,
+                argument.type
+            );
         }
 
-        function privateOperationOnSuccess(returnValue) {
-            return returnValueToResponseArray(returnValue, signature.outputParameter || []);
-        }
+        try {
+            /*
+             * call the operation function
+             * may return either promise (preferred) or direct result
+             * and may possibly also throw exception in the latter case.
+             */
+            result = this._privateOperationFunc(namedArguments);
+            if (Util.isPromise(result)) {
+                // return promise
+                return result.then(privateOperationOnSuccess).catch(privateOperationOnError);
+            }
 
-        function privateOperationOnError(exceptionOrErrorEnumValue) {
+            // return direct result
+            return returnValueToResponseArray(result, signature.outputParameter || []);
+        } catch (exceptionOrErrorEnumValue) {
+            /*
+             * If the method was implemented synchronously, we can get an
+             * exception. The content of the exception is either an instance
+             * of ProviderRuntimeException or an error enumeration value. In
+             * the latter case, it must be wrapped into an ApplicationException.
+             */
             if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
                 exception = exceptionOrErrorEnumValue;
             } else if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
@@ -187,91 +246,34 @@ function ProviderOperation(parent, implementation, operationName, operationSigna
                     detailMessage: "Application exception, details see error enum",
                     error: exceptionOrErrorEnumValue
                 });
-            } else if (exceptionOrErrorEnumValue instanceof Error) {
-                exception = new ProviderRuntimeException({
-                    detailMessage: "Implementation causes unknown error: " + exceptionOrErrorEnumValue.message
-                });
             } else {
                 exception = new ProviderRuntimeException({
-                    detailMessage: "Implementation causes unknown error"
+                    detailMessage: "Implementation references unknown error enum value"
                 });
             }
             throw exception;
         }
+    }
 
-        if (namedArguments) {
-            if (signature.error && signature.error.type) {
-                errorEnumType = signature.error.type;
-            }
-            // augment types
-            for (j = 0; j < signature.inputParameter.length; ++j) {
-                argument = signature.inputParameter[j];
-                namedArguments[argument.name] = Typing.augmentTypes(
-                    namedArguments[argument.name],
-                    typeRegistry,
-                    argument.type
-                );
-            }
+    // TODO: proper error handling
+    throw new Error(
+        "Could not find a valid operation signature in '" +
+            JSON.stringify(this._operationSignatures) +
+            "' for a call to operation '" +
+            this._operationName +
+            "' with the arguments: '" +
+            JSON.stringify(operationArguments) +
+            "'"
+    );
+};
 
-            try {
-                /*
-                 * call the operation function
-                 * may return either promise (preferred) or direct result
-                 * and may possibly also throw exception in the latter case.
-                 */
-                result = privateOperationFunc(namedArguments);
-                if (Util.isPromise(result)) {
-                    // return promise
-                    return result.then(privateOperationOnSuccess).catch(privateOperationOnError);
-                }
-
-                // return direct result
-                return returnValueToResponseArray(result, signature.outputParameter || []);
-            } catch (exceptionOrErrorEnumValue) {
-                /*
-                 * If the method was implemented synchronously, we can get an
-                 * exception. The content of the exception is either an instance
-                 * of ProviderRuntimeException or an error enumeration value. In
-                 * the latter case, it must be wrapped into an ApplicationException.
-                 */
-                if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
-                    exception = exceptionOrErrorEnumValue;
-                } else if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
-                    exception = new ApplicationException({
-                        detailMessage: "Application exception, details see error enum",
-                        error: exceptionOrErrorEnumValue
-                    });
-                } else {
-                    exception = new ProviderRuntimeException({
-                        detailMessage: "Implementation references unknown error enum value"
-                    });
-                }
-                throw exception;
-            }
-        }
-
-        // TODO: proper error handling
-        throw new Error(
-            "Could not find a valid operation signature in '" +
-                JSON.stringify(operationSignatures) +
-                "' for a call to operation '" +
-                operationName +
-                "' with the arguments: '" +
-                JSON.stringify(operationArguments) +
-                "'"
-        );
-    };
-
-    /**
-     * Check if the registered operation is defined.
-     * @function ProviderOperation#checkOperation
-     * @returns {Boolean}
-     */
-    this.checkOperation = function checkOperation() {
-        return typeof privateOperationFunc === "function";
-    };
-
-    return Object.freeze(this);
-}
+/**
+ * Check if the registered operation is defined.
+ * @function ProviderOperation#checkOperation
+ * @returns {Boolean}
+ */
+ProviderOperation.prototype.checkOperation = function checkOperation() {
+    return typeof this._privateOperationFunc === "function";
+};
 
 module.exports = ProviderOperation;
