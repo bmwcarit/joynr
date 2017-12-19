@@ -147,6 +147,27 @@ ProviderOperation.prototype.registerOperation = function registerOperation(opera
     this._privateOperationFunc = operationFunc;
 };
 
+function privateOperationOnError(exceptionOrErrorEnumValue) {
+    var exception;
+    if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
+        exception = exceptionOrErrorEnumValue;
+    } else if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
+        exception = new ApplicationException({
+            detailMessage: "Application exception, details see error enum",
+            error: exceptionOrErrorEnumValue
+        });
+    } else if (exceptionOrErrorEnumValue instanceof Error) {
+        exception = new ProviderRuntimeException({
+            detailMessage: "Implementation causes unknown error: " + exceptionOrErrorEnumValue.message
+        });
+    } else {
+        exception = new ProviderRuntimeException({
+            detailMessage: "Implementation causes unknown error"
+        });
+    }
+    throw exception;
+}
+
 /**
  * Calls the operation function.
  *
@@ -182,26 +203,6 @@ ProviderOperation.prototype.callOperation = function callOperation(operationArgu
 
     function privateOperationOnSuccess(returnValue) {
         return returnValueToResponseArray(returnValue, signature.outputParameter || []);
-    }
-
-    function privateOperationOnError(exceptionOrErrorEnumValue) {
-        if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
-            exception = exceptionOrErrorEnumValue;
-        } else if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
-            exception = new ApplicationException({
-                detailMessage: "Application exception, details see error enum",
-                error: exceptionOrErrorEnumValue
-            });
-        } else if (exceptionOrErrorEnumValue instanceof Error) {
-            exception = new ProviderRuntimeException({
-                detailMessage: "Implementation causes unknown error: " + exceptionOrErrorEnumValue.message
-            });
-        } else {
-            exception = new ProviderRuntimeException({
-                detailMessage: "Implementation causes unknown error"
-            });
-        }
-        throw exception;
     }
 
     if (namedArguments) {
