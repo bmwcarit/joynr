@@ -24,6 +24,7 @@ import java.util.List;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
@@ -38,9 +39,9 @@ import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
 import joynr.types.GlobalDiscoveryEntry;
 
 public class GlobalCapabilitiesDirectoryClient {
-
-    private static final long TTL_30_DAYS_IN_MS = 30L * 24L * 60L * 60L * 1000L;
+    private static final long DEFAULT_TTL_ADD_AND_REMOVE = 30L * 24L * 60L * 60L * 1000L;
     private final String domain;
+    private final DiscoveryQos discoveryQos;
     private final ProxyBuilderFactory proxyBuilderFactory;
     @Inject
     @Named(MessagingPropertyKeys.CHANNELID)
@@ -48,49 +49,47 @@ public class GlobalCapabilitiesDirectoryClient {
 
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS)
-    private long ttlDelayMs = TTL_30_DAYS_IN_MS;
+    private long ttlAddAndRemoveMs = DEFAULT_TTL_ADD_AND_REMOVE;
 
     @Inject
     public GlobalCapabilitiesDirectoryClient(ProxyBuilderFactory proxyBuilderFactory,
                                              @Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry) {
         this.proxyBuilderFactory = proxyBuilderFactory;
         this.domain = capabilitiesDirectoryEntry.getDomain();
+        this.discoveryQos = new DiscoveryQos(30000,
+                                             ArbitrationStrategy.HighestPriority,
+                                             DiscoveryQos.NO_MAX_AGE,
+                                             DiscoveryScope.GLOBAL_ONLY);
     }
 
     private GlobalCapabilitiesDirectoryProxy getProxy(long ttl) {
         ProxyBuilder<GlobalCapabilitiesDirectoryProxy> capabilitiesProxyBuilder = proxyBuilderFactory.get(domain,
                                                                                                           GlobalCapabilitiesDirectoryProxy.class);
-        DiscoveryQos discoveryQos = new DiscoveryQos(30000,
-                                                     ArbitrationStrategy.HighestPriority,
-                                                     DiscoveryQos.NO_MAX_AGE,
-                                                     DiscoveryScope.GLOBAL_ONLY);
         MessagingQos messagingQos = new MessagingQos(ttl);
         return capabilitiesProxyBuilder.setDiscoveryQos(discoveryQos).setMessagingQos(messagingQos).build();
     }
 
     public void add(Callback<Void> callback, GlobalDiscoveryEntry globalDiscoveryEntry) {
-        getProxy(ttlDelayMs).add(callback, globalDiscoveryEntry);
+        getProxy(ttlAddAndRemoveMs).add(callback, globalDiscoveryEntry);
     }
 
     public void remove(Callback<Void> callback, String participantId) {
-        getProxy(ttlDelayMs).remove(callback, participantId);
-
+        getProxy(ttlAddAndRemoveMs).remove(callback, participantId);
     }
 
     public void remove(Callback<Void> callback, List<String> participantIds) {
-        getProxy(ttlDelayMs).remove(callback, participantIds.toArray(new String[participantIds.size()]));
-
+        getProxy(ttlAddAndRemoveMs).remove(callback, participantIds.toArray(new String[participantIds.size()]));
     }
 
-    public void lookup(Callback<GlobalDiscoveryEntry> callback, String participantId, long timeout) {
-        getProxy(timeout).lookup(callback, participantId);
+    public void lookup(Callback<GlobalDiscoveryEntry> callback, String participantId, long ttl) {
+        getProxy(ttl).lookup(callback, participantId);
     }
 
     public void lookup(final Callback<List<GlobalDiscoveryEntry>> callback,
                        String[] domains,
                        String interfaceName,
-                       long timeout) {
-        getProxy(timeout).lookup(new Callback<GlobalDiscoveryEntry[]>() {
+                       long ttl) {
+        getProxy(ttl).lookup(new Callback<GlobalDiscoveryEntry[]>() {
             @Override
             public void onFailure(JoynrRuntimeException error) {
                 callback.onFailure(error);
