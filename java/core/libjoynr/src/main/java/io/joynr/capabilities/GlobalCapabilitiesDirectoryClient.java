@@ -22,13 +22,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.inject.Inject;
-
+import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
@@ -39,13 +39,16 @@ import joynr.types.GlobalDiscoveryEntry;
 
 public class GlobalCapabilitiesDirectoryClient {
 
-    // TODO define a proper max messaging ttl
     private static final long TTL_30_DAYS_IN_MS = 30L * 24L * 60L * 60L * 1000L;
     private final String domain;
     private final ProxyBuilderFactory proxyBuilderFactory;
     @Inject
     @Named(MessagingPropertyKeys.CHANNELID)
     private String localChannelId;
+
+    @Inject(optional = true)
+    @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS)
+    private long ttlDelayMs = TTL_30_DAYS_IN_MS;
 
     @Inject
     public GlobalCapabilitiesDirectoryClient(ProxyBuilderFactory proxyBuilderFactory,
@@ -66,16 +69,16 @@ public class GlobalCapabilitiesDirectoryClient {
     }
 
     public void add(Callback<Void> callback, GlobalDiscoveryEntry globalDiscoveryEntry) {
-        getProxy(TTL_30_DAYS_IN_MS).add(callback, globalDiscoveryEntry);
+        getProxy(ttlDelayMs).add(callback, globalDiscoveryEntry);
     }
 
     public void remove(Callback<Void> callback, String participantId) {
-        getProxy(TTL_30_DAYS_IN_MS).remove(callback, participantId);
+        getProxy(ttlDelayMs).remove(callback, participantId);
 
     }
 
     public void remove(Callback<Void> callback, List<String> participantIds) {
-        getProxy(TTL_30_DAYS_IN_MS).remove(callback, participantIds.toArray(new String[participantIds.size()]));
+        getProxy(ttlDelayMs).remove(callback, participantIds.toArray(new String[participantIds.size()]));
 
     }
 
