@@ -18,8 +18,10 @@
  */
 #include "joynr/LocalDiscoveryAggregator.h"
 
+#include <cassert>
 #include <chrono>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "joynr/Future.h"
@@ -46,12 +48,7 @@ std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
 {
-    if (!discoveryProxy) {
-        throw exceptions::JoynrRuntimeException(
-                "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                "local capabilitites directory.");
-    }
-
+    assert(discoveryProxy);
     return discoveryProxy->addAsync(
             discoveryEntry, std::move(onSuccess), std::move(onRuntimeError));
 }
@@ -64,11 +61,7 @@ LocalDiscoveryAggregator::lookupAsync(
         std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
 {
-    if (!discoveryProxy) {
-        throw exceptions::JoynrRuntimeException(
-                "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                "local capabilitites directory.");
-    }
+    assert(discoveryProxy);
     return discoveryProxy->lookupAsync(
             domains, interfaceName, discoveryQos, std::move(onSuccess), std::move(onRuntimeError));
 }
@@ -87,11 +80,7 @@ std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> LocalDiscovery
         future->onSuccess(entry->second);
         return future;
     } else {
-        if (!discoveryProxy) {
-            throw exceptions::JoynrRuntimeException(
-                    "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                    "local capabilitites directory.");
-        }
+        assert(discoveryProxy);
         return discoveryProxy->lookupAsync(
                 participantId, std::move(onSuccess), std::move(onRuntimeError));
     }
@@ -102,11 +91,7 @@ std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::removeAsync(
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
 {
-    if (!discoveryProxy) {
-        throw exceptions::JoynrRuntimeException(
-                "LocalDiscoveryAggregator: discoveryProxy not set. Couldn't reach "
-                "local capabilitites directory.");
-    }
+    assert(discoveryProxy);
     return discoveryProxy->removeAsync(
             participantId, std::move(onSuccess), std::move(onRuntimeError));
 }
