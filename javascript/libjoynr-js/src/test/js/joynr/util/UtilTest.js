@@ -275,6 +275,24 @@ describe("libjoynr-js.joynr.Util.forward", function() {
     });
 });
 
+describe("libjoynr-js.joynr.Util.forwardPrototype", function() {
+    it("forwards methods to another object", function() {
+        var someValue = "some Value";
+        var ObjectWithPrivateVars = function() {
+            this.someObject = someValue;
+            return Util.forwardPrototype(this);
+        };
+        ObjectWithPrivateVars.prototype.someFunction = function() {
+            return this.someObject;
+        };
+        var privateObject = new ObjectWithPrivateVars();
+
+        expect(typeof privateObject.someFunction).toBe("function");
+        expect(privateObject.someObject).toBeUndefined();
+        expect(privateObject.someFunction()).toBe(someValue);
+    });
+});
+
 describe("libjoynr-js.joynr.Util.timeoutPromise", function() {
     beforeEach(function() {
         jasmine.clock().install();

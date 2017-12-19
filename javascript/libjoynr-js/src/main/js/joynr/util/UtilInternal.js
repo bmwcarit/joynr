@@ -88,6 +88,27 @@ UtilInternal.forward = function forward(receiver, provider) {
 };
 
 /**
+ * Create a wrapper which has all functions of the provider prototype and is frozen and thus creating privacy
+ * @param provider
+ * @returns {Readonly<{}>}
+ */
+UtilInternal.forwardPrototype = function(provider) {
+    var providerWrapper = {};
+    /*jslint sub: true*/
+    var proto = provider["__proto__"];
+    providerWrapper["__proto__"] = proto;
+    /*jslint sub: false*/
+    var key;
+    for (key in proto) {
+        if (proto.hasOwnProperty(key)) {
+            var func = proto[key];
+            providerWrapper[key] = func.bind(provider);
+        }
+    }
+    return providerWrapper;
+};
+
+/**
  * @function UtilInternal#isArray
  * @param {?} object
  */
