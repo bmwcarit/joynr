@@ -4,7 +4,9 @@
 None.
 
 ## Configuration property changes
-None.
+* **[Java]** See the [Java Configuration Reference](JavaSettings.md) for
+  details about the newly introduced property:
+  * `PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS`
 
 ## Other changes
 * **[[C++,Generator]** Fixed a problem with the generator when empty structures
