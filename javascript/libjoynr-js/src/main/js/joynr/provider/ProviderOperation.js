@@ -23,6 +23,7 @@ var TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 var ApplicationException = require("../exceptions/ApplicationException");
 var ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
 var Util = require("../util/UtilInternal");
+var Promise = require("../../global/Promise");
 
 var typeRegistry = TypeRegistrySingleton.getInstance();
 /**
@@ -219,41 +220,11 @@ ProviderOperation.prototype.callOperation = function callOperation(operationArgu
             );
         }
 
-        try {
-            /*
-             * call the operation function
-             * may return either promise (preferred) or direct result
-             * and may possibly also throw exception in the latter case.
-             */
-            result = this._privateOperationFunc(namedArguments);
-            if (Util.isPromise(result)) {
-                // return promise
-                return result.then(privateOperationOnSuccess).catch(privateOperationOnError);
-            }
-
-            // return direct result
-            return returnValueToResponseArray(result, signature.outputParameter || []);
-        } catch (exceptionOrErrorEnumValue) {
-            /*
-             * If the method was implemented synchronously, we can get an
-             * exception. The content of the exception is either an instance
-             * of ProviderRuntimeException or an error enumeration value. In
-             * the latter case, it must be wrapped into an ApplicationException.
-             */
-            if (exceptionOrErrorEnumValue instanceof ProviderRuntimeException) {
-                exception = exceptionOrErrorEnumValue;
-            } else if (Typing.isComplexJoynrObject(exceptionOrErrorEnumValue)) {
-                exception = new ApplicationException({
-                    detailMessage: "Application exception, details see error enum",
-                    error: exceptionOrErrorEnumValue
-                });
-            } else {
-                exception = new ProviderRuntimeException({
-                    detailMessage: "Implementation references unknown error enum value"
-                });
-            }
-            throw exception;
-        }
+        // By starting a promise chain, privateOperationFunc will be converted into a promise as well
+        return Promise.resolve(namedArguments)
+            .then(this._privateOperationFunc)
+            .then(privateOperationOnSuccess)
+            .catch(privateOperationOnError);
     }
 
     // TODO: proper error handling
