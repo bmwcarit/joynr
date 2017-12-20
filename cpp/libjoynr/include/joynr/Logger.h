@@ -85,7 +85,7 @@ enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
 #endif // JOYNR_DEFAULT_RUNTIME_LOG_LEVEL_DEBUG
 
 #ifndef JOYNR_DEFAULT_RUNTIME_LOG_LEVEL
-#define JOYNR_DEFAULT_RUNTIME_LOG_LEVEL spdlog::level::trace
+#define JOYNR_DEFAULT_RUNTIME_LOG_LEVEL spdlog::level::err
 #endif
 
 #define JOYNR_CONDITIONAL_SPDLOG(level, method, logger, ...)                                       \
