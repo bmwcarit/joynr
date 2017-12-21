@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint es5: true, nomen: true, node: true */
 
 /*
  * #%L
@@ -21,6 +21,7 @@
 var Promise = require("../../global/Promise");
 var BroadcastFilterParameters = require("./BroadcastFilterParameters");
 var SubscriptionUtil = require("../dispatching/subscription/util/SubscriptionUtil");
+var Util = require("../util/UtilInternal");
 
 /**
  * Checks if the given datatypes and values match the given broadcast parameters
@@ -96,95 +97,98 @@ function ProxyEvent(parent, settings) {
         // Constructor({..}))
         return new ProxyEvent(parent, settings);
     }
+    this._settings = settings;
+    this._parent = parent;
 
-    /**
-     * @name ProxyEvent#subscribe
-     * @function
-     * @param {Object}
-     *            subscribeParameters the settings object for this function call
-     * @param {SubscriptionQos}
-     *            subscribeParameters.subscriptionQos the subscription quality of service object
-     * @param {String}
-     *            [subscribeParameters.subscriptionId] optional subscriptionId. Used to refresh or
-     *            reinstate an existing subscription.
-     * @param {String[]}
-     *            [subscribeParameters.partitions] optional parameter for multicast subscriptions.
-     *            This parameter becomes relevant for non selective broadcasts and specifies the interested partitions
-     *            of publications. It is interpreted hierarchically.
-     * @param {Function}
-     *            subscribeParameters.onReceive this function is called when an event as been
-     *            received. method signature: "void onReceive({?}value)"
-     * @param {Function}
-     *            subscribeParameters.onError this function is called when an error occurs with
-     *            a subscribed event. method signature: "void onError({Error} error)"
-     * @param {Function}
-     *            subscribeParameters.onSubscribed the callback to inform once the subscription request has
-     *            been delivered successfully
-     * @returns {Object} returns a promise that is resolved with the subscriptionId, which is to
-     *          be used to unsubscribe from this subscription later.
-     * @throws {Error} if subscribeParameters.partitions contains invalid characters
-     */
-    this.subscribe = function subscribe(subscribeParameters) {
-        SubscriptionUtil.validatePartitions(subscribeParameters.partitions);
-        if (subscribeParameters.filterParameters !== undefined && subscribeParameters.filterParameters !== null) {
-            var checkResult = SubscriptionUtil.checkFilterParameters(
-                settings.filterParameters,
-                subscribeParameters.filterParameters.filterParameters,
-                settings.broadcastName
-            );
-            if (checkResult.caughtErrors.length !== 0) {
-                var errorMessage = JSON.stringify(checkResult.caughtErrors);
-                return Promise.reject(
-                    new Error(
-                        'SubscriptionRequest could not be processed, as the filterParameters "' +
-                            JSON.stringify(subscribeParameters.filterParameters) +
-                            '" are wrong: ' +
-                            errorMessage
-                    )
-                );
-            }
-        }
-        return settings.dependencies.subscriptionManager.registerBroadcastSubscription({
-            proxyId: parent.proxyParticipantId,
-            providerDiscoveryEntry: parent.providerDiscoveryEntry,
-            broadcastName: settings.broadcastName,
-            broadcastParameter: settings.broadcastParameter,
-            subscriptionQos: subscribeParameters.subscriptionQos,
-            subscriptionId: subscribeParameters.subscriptionId,
-            onReceive: function(response) {
-                subscribeParameters.onReceive(getNamedParameters(response, settings.broadcastParameter));
-            },
-            selective: settings.selective,
-            partitions: subscribeParameters.partitions || [],
-            onError: subscribeParameters.onError,
-            onSubscribed: subscribeParameters.onSubscribed,
-            filterParameters: subscribeParameters.filterParameters
-        });
-    };
-
-    this.createFilterParameters = function createFilterParameters() {
-        return new BroadcastFilterParameters(settings.filterParameters);
-    };
-
-    /**
-     * @name ProxyEvent#unsubscribe
-     * @function
-     * @param {Object}
-     *            unsubscribeParameters the settings object for this function call
-     * @param {Object}
-     *            unsubscribeParameters.subscriptionId the subscription token retrieved from the
-     *            subscribe function
-     * @returns {Object} returns a promise that is resolved when unsubscribe has been executed.
-     * @see ProxyEvent#subscribe
-     */
-    this.unsubscribe = function unsubscribe(unsubscribeParameters) {
-        return settings.dependencies.subscriptionManager.unregisterSubscription({
-            messagingQos: settings.messagingQos,
-            subscriptionId: unsubscribeParameters.subscriptionId
-        });
-    };
-
-    return Object.freeze(this);
+    return Object.freeze(Util.forwardPrototype(this));
 }
+
+/**git
+ * @name ProxyEvent#subscribe
+ * @function
+ * @param {Object}
+ *            subscribeParameters the settings object for this function call
+ * @param {SubscriptionQos}
+ *            subscribeParameters.subscriptionQos the subscription quality of service object
+ * @param {String}
+ *            [subscribeParameters.subscriptionId] optional subscriptionId. Used to refresh or
+ *            reinstate an existing subscription.
+ * @param {String[]}
+ *            [subscribeParameters.partitions] optional parameter for multicast subscriptions.
+ *            This parameter becomes relevant for non selective broadcasts and specifies the interested partitions
+ *            of publications. It is interpreted hierarchically.
+ * @param {Function}
+ *            subscribeParameters.onReceive this function is called when an event as been
+ *            received. method signature: "void onReceive({?}value)"
+ * @param {Function}
+ *            subscribeParameters.onError this function is called when an error occurs with
+ *            a subscribed event. method signature: "void onError({Error} error)"
+ * @param {Function}
+ *            subscribeParameters.onSubscribed the callback to inform once the subscription request has
+ *            been delivered successfully
+ * @returns {Object} returns a promise that is resolved with the subscriptionId, which is to
+ *          be used to unsubscribe from this subscription later.
+ * @throws {Error} if subscribeParameters.partitions contains invalid characters
+ */
+ProxyEvent.prototype.subscribe = function subscribe(subscribeParameters) {
+    SubscriptionUtil.validatePartitions(subscribeParameters.partitions);
+    if (subscribeParameters.filterParameters !== undefined && subscribeParameters.filterParameters !== null) {
+        var checkResult = SubscriptionUtil.checkFilterParameters(
+            this._settings.filterParameters,
+            subscribeParameters.filterParameters.filterParameters,
+            this._settings.broadcastName
+        );
+        if (checkResult.caughtErrors.length !== 0) {
+            var errorMessage = JSON.stringify(checkResult.caughtErrors);
+            return Promise.reject(
+                new Error(
+                    'SubscriptionRequest could not be processed, as the filterParameters "' +
+                        JSON.stringify(subscribeParameters.filterParameters) +
+                        '" are wrong: ' +
+                        errorMessage
+                )
+            );
+        }
+    }
+    var that = this;
+    return this._settings.dependencies.subscriptionManager.registerBroadcastSubscription({
+        proxyId: this._parent.proxyParticipantId,
+        providerDiscoveryEntry: this._parent.providerDiscoveryEntry,
+        broadcastName: this._settings.broadcastName,
+        broadcastParameter: this._settings.broadcastParameter,
+        subscriptionQos: subscribeParameters.subscriptionQos,
+        subscriptionId: subscribeParameters.subscriptionId,
+        onReceive: function(response) {
+            subscribeParameters.onReceive(getNamedParameters(response, that._settings.broadcastParameter));
+        },
+        selective: this._settings.selective,
+        partitions: subscribeParameters.partitions || [],
+        onError: subscribeParameters.onError,
+        onSubscribed: subscribeParameters.onSubscribed,
+        filterParameters: subscribeParameters.filterParameters
+    });
+};
+
+ProxyEvent.prototype.createFilterParameters = function createFilterParameters() {
+    return new BroadcastFilterParameters(this._settings.filterParameters);
+};
+
+/**
+ * @name ProxyEvent#unsubscribe
+ * @function
+ * @param {Object}
+ *            unsubscribeParameters the settings object for this function call
+ * @param {Object}
+ *            unsubscribeParameters.subscriptionId the subscription token retrieved from the
+ *            subscribe function
+ * @returns {Object} returns a promise that is resolved when unsubscribe has been executed.
+ * @see ProxyEvent#subscribe
+ */
+ProxyEvent.prototype.unsubscribe = function unsubscribe(unsubscribeParameters) {
+    return this._settings.dependencies.subscriptionManager.unregisterSubscription({
+        messagingQos: this._settings.messagingQos,
+        subscriptionId: unsubscribeParameters.subscriptionId
+    });
+};
 
 module.exports = ProxyEvent;
