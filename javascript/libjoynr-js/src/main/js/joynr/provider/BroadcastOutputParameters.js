@@ -23,6 +23,18 @@ var Typing = require("../util/Typing");
 var Util = require("../util/UtilInternal");
 var LoggerFactory = require("../system/LoggerFactory");
 
+function makeSetterFunction(obj, pos) {
+    return function(arg) {
+        obj.outputParameters[pos] = arg;
+        return obj;
+    };
+}
+function makeGetterFunction(obj, pos) {
+    return function() {
+        return obj.outputParameters[pos];
+    };
+}
+
 /**
  * Constructor of BroadcastOutputParameters object used for subscriptions in generated provider objects
  *
@@ -49,18 +61,6 @@ function BroadcastOutputParameters(outputParameterProperties) {
      */
     Util.objectDefineProperty(this, "_typeName", "joynr.BroadcastOutputParameters");
     Typing.checkPropertyIfDefined(outputParameterProperties, "Array", "outputParameters");
-
-    function makeSetterFunction(obj, pos) {
-        return function(arg) {
-            obj.outputParameters[pos] = arg;
-            return obj;
-        };
-    }
-    function makeGetterFunction(obj, pos) {
-        return function() {
-            return obj.outputParameters[pos];
-        };
-    }
 
     var parameterName;
     var setterFuncName;
