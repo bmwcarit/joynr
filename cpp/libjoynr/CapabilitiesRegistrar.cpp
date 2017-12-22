@@ -47,17 +47,18 @@ void CapabilitiesRegistrar::removeAsync(
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
 {
-    for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
-        currentDispatcher->removeRequestCaller(participantId);
-    }
-
     auto onSuccessWrapper = [
+        dispatcherList = this->dispatcherList,
         messageRouter = util::as_weak_ptr(messageRouter),
         participantId,
         onSuccess = std::move(onSuccess),
         onError
-    ]() mutable
+    ]()
     {
+        for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
+            currentDispatcher->removeRequestCaller(participantId);
+        }
+
         if (auto ptr = messageRouter.lock()) {
             ptr->removeNextHop(participantId, std::move(onSuccess), std::move(onError));
         }
