@@ -87,7 +87,7 @@ function ChannelMessagingSender(settings) {
             queuedMessage.reject(new Error("ChannelMessagingSender is already shut down"));
             return;
         }
-        var timeout = getRelativeExpiryDate(queuedMessage);
+        var timeout = getRelativeExpiryDate(queuedMessage.message);
 
         // XMLHttpRequest uses a timeout of 0 to mean that there is no timeout.
         // ttl = 0 means the opposite (is already expired)

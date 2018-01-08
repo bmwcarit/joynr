@@ -171,8 +171,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             type: parameters.type,
             payload: JSON.stringify(parameters.payload)
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
+        joynrMessage.from = proxyId;
+        joynrMessage.to = providerId;
         dispatcher.receive(joynrMessage);
     }
 
@@ -290,8 +290,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
             payload: JSON.stringify(request)
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
+        joynrMessage.to = providerId;
+        joynrMessage.from = proxyId;
         dispatcher.receive(joynrMessage);
         expect(requestReplyManager.handleRequest).toHaveBeenCalled();
         expect(requestReplyManager.handleRequest.calls.mostRecent().args[0]).toEqual(providerId);
@@ -307,8 +307,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             type: JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY,
             payload: JSON.stringify(oneWayRequest)
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
+        joynrMessage.to = providerId;
+        joynrMessage.from = proxyId;
         dispatcher.receive(joynrMessage);
         expect(requestReplyManager.handleOneWayRequest).toHaveBeenCalled();
         expect(requestReplyManager.handleOneWayRequest.calls.mostRecent().args[0]).toEqual(providerId);
@@ -583,8 +583,8 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", function() {
             type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST,
             payload: JSON.stringify(payload)
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
+        joynrMessage.from = proxyId;
+        joynrMessage.to = providerId;
 
         var subscriptionReplyPayload = {
             subscriptionId: subscriptionId

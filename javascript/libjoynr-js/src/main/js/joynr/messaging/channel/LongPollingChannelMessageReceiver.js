@@ -247,7 +247,7 @@ LongPollingChannelMessageReceiver.prototype.start = function start(onMessageCall
                     jsonParser = new JsonParser(data);
                     while (jsonParser.hasNext) {
                         // pass the message on
-                        joynrMessage = new JoynrMessage(jsonParser.next);
+                        joynrMessage = JoynrMessage.parseMessage(jsonParser.next);
 
                         log.info(
                             "received message with id " + joynrMessage.msgId + ": ",

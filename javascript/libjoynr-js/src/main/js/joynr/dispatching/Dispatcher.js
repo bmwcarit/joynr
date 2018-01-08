@@ -143,10 +143,10 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
             joynrMessage.effort = effort.value;
         }
         if (settings.messagingQos.compress === true) {
-            joynrMessage.setCompress(true);
+            joynrMessage.compress = true;
         }
 
-        joynrMessage.setIsLocalMessage(settings.toDiscoveryEntry.isLocal);
+        joynrMessage.isLocalMessage = settings.toDiscoveryEntry.isLocal;
 
         if (log.isDebugEnabled()) {
             log.debug("sendJoynrMessage, message = " + JSON.stringify(joynrMessage));
@@ -459,13 +459,12 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         // reply with the result in a JoynrMessage
         var joynrMessage = new JoynrMessage({
             type: settings.messageType,
-            payload: settings.reply,
-            header: {
-                from: settings.from,
-                to: settings.to,
-                expiryDate: settings.expiryDate
-            }
+            payload: settings.reply
         });
+        joynrMessage.from = settings.from;
+        joynrMessage.to = settings.to;
+
+        joynrMessage.expiryDate = settings.expiryDate;
 
         // set custom headers
         joynrMessage.setCustomHeaders(settings.customHeaders);
@@ -694,13 +693,11 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         // Reply with the result in a JoynrMessage
         var publicationMessage = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST,
-            payload: JSONSerializer.stringify(publication),
-            header: {
-                from: settings.from,
-                to: multicastId,
-                expiryDate: upLiftTtl(settings.expiryDate).toString()
-            }
+            payload: JSONSerializer.stringify(publication)
         });
+        publicationMessage.from = settings.from;
+        publicationMessage.to = multicastId;
+        publicationMessage.expiryDate = upLiftTtl(settings.expiryDate).toString();
 
         if (log.isDebugEnabled()) {
             log.debug("sendMulticastPublication, message = " + JSON.stringify(publicationMessage));

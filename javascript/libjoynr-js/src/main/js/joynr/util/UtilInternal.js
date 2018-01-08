@@ -288,6 +288,12 @@ UtilInternal.enrichObjectWithSetPrototypeOf = function() {
         };
 };
 
+UtilInternal.setPrototypeOf = function(object, prototype) {
+    /*jslint sub: true*/
+    object["__proto__"] = prototype;
+    /*jslint sub: false*/
+};
+
 function timeoutToPromise(time) {
     var deferred = UtilInternal.createDeferred();
     LongTimer.setTimeout(deferred.resolve, time);

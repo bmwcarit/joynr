@@ -27,32 +27,6 @@ var MessageSerializer = {};
 function useSmrf() {
     var smrf = require("../../global/SmrfNode");
 
-    var skipJoynrHeaderKeys = {
-        contentType: true,
-        creator: true,
-        effort: true,
-        from: true,
-        msgId: true,
-        replyChannelId: true,
-        to: true,
-        expiryDate: true
-    };
-
-    var skipSmrfHeaderKeys = {
-        // headers already converted manually
-        t: true,
-        id: true,
-        re: true,
-        ef: true,
-        // reserved headers, prevent overwriting
-        from: true,
-        to: true,
-        msgId: true,
-        replyChannelId: true,
-        expiryDate: true,
-        effort: true
-    };
-
     function serializeSmrfMessage(smrfMsg) {
         try {
             return smrf.serialize(smrfMsg);
@@ -70,81 +44,24 @@ function useSmrf() {
     }
 
     MessageSerializer.stringify = function(joynrMessage, signingCallback) {
-        var smrfMsg = {
-            sender: joynrMessage.header.from,
-            recipient: joynrMessage.header.to,
-            ttlMs: joynrMessage.header.expiryDate,
-            isTtlAbsolute: true,
-            isCompressed: joynrMessage.compress,
-            body: new Buffer(joynrMessage.payload),
-            encryptionCert: null,
-            signingCert: null,
-            signingKey: null,
-            headers: {
-                t: joynrMessage.type,
-                id: joynrMessage.header.msgId
-            }
-        };
+        joynrMessage.body = joynrMessage.body || new Buffer(joynrMessage.payload);
 
         if (signingCallback) {
-            smrfMsg.signingCallback = signingCallback;
-        }
-        if (joynrMessage.header.replyChannelId) {
-            smrfMsg.headers.re = joynrMessage.header.replyChannelId;
-        }
-        if (joynrMessage.header.effort) {
-            smrfMsg.headers.ef = joynrMessage.header.effort;
-        }
-        var headerKey;
-        for (headerKey in joynrMessage.header) {
-            if (joynrMessage.header.hasOwnProperty(headerKey)) {
-                if (!skipJoynrHeaderKeys[headerKey]) {
-                    smrfMsg.headers[headerKey] = joynrMessage.header[headerKey];
-                }
-            }
+            joynrMessage.signingCallback = signingCallback;
         }
 
-        return serializeSmrfMessage(smrfMsg);
+        return serializeSmrfMessage(joynrMessage);
     };
 
     MessageSerializer.parse = function(data) {
         if (typeof data !== "object") {
             log.error("MessageSerializer received unsupported message.");
         } else {
-            var headerKey;
-
             var smrfMsg = deserializeSmrfMessage(data);
-            var expiryDate = smrfMsg.isTtlAbsolute === true ? smrfMsg.ttlMs : smrfMsg.ttlMs + Date.now();
+            smrfMsg.ttlMs = smrfMsg.isTtlAbsolute === true ? smrfMsg.ttlMs : smrfMsg.ttlMs + Date.now();
+            smrfMsg.payload = smrfMsg.body.toString(); // TODO refactor
 
-            var convertedMsg = {
-                header: {
-                    from: smrfMsg.sender,
-                    to: smrfMsg.recipient,
-                    msgId: smrfMsg.headers.id,
-                    effort: smrfMsg.headers.ef,
-                    expiryDate: expiryDate
-                },
-                type: smrfMsg.headers.t,
-                payload: smrfMsg.body.toString()
-            };
-
-            if (smrfMsg.headers.re) {
-                convertedMsg.header.replyChannelId = smrfMsg.headers.re;
-            }
-            // ignore for now:
-            //   smrfMsg.headers.isCompressed
-            //   smrfMsg.headers.encryptionCert
-            //   smrfMsg.headers.signingKey
-            //   smrfMsg.headers.signingCert
-
-            for (headerKey in smrfMsg.headers) {
-                if (smrfMsg.headers.hasOwnProperty(headerKey)) {
-                    if (!skipSmrfHeaderKeys[headerKey]) {
-                        convertedMsg.header[headerKey] = smrfMsg.headers[headerKey];
-                    }
-                }
-            }
-            return new JoynrMessage(convertedMsg);
+            return JoynrMessage.parseMessage(smrfMsg);
         }
     };
 }

@@ -49,11 +49,11 @@ describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", function() {
         };
 
         joynrMessage = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: "hello"
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, 9360686108031);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_REPLY_CHANNELID, "me");
-        joynrMessage.payload = "hello";
+        joynrMessage.expiryDate = 9360686108031;
+        joynrMessage.replyChannelId = "me";
 
         // instantiate spies
         communicationModuleSpy = jasmine.createSpyObj("communicationModule", ["createXMLHTTPRequest"]);
@@ -91,16 +91,14 @@ describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", function() {
                     "errorStatus"
                 )
             );
-            joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] = Date.now() + relativeExpiryDate;
+            joynrMessage.expiryDate = Date.now() + relativeExpiryDate;
             channelMessageSender.start();
             timeStamp = Date.now();
             channelMessageSender
                 .send(joynrMessage, channelAddress)
                 .then(fail)
                 .catch(function(error) {
-                    expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE]).toBeLessThan(
-                        Date.now() + 1
-                    );
+                    expect(joynrMessage.expiryDate).toBeLessThan(Date.now() + 1);
                     expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
                     expect(communicationModuleSpy.createXMLHTTPRequest).toHaveBeenCalled();
                     done();
@@ -111,12 +109,12 @@ describe("libjoynr-js.joynr.messaging.ChannelMessagingSender", function() {
     );
 
     it("if channelMessageSender.send fails after expiryDate, if ChannelMessagingSender is not started", function(done) {
-        joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE] = Date.now() + resendDelay_ms;
+        joynrMessage.expiryDate = Date.now() + resendDelay_ms;
         channelMessageSender
             .send(joynrMessage, channelAddress)
             .then(fail)
             .catch(function(error) {
-                expect(joynrMessage.header[JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE]).toBeLessThan(Date.now() + 1);
+                expect(joynrMessage.expiryDate).toBeLessThan(Date.now() + 1);
                 expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
                 expect(communicationModuleSpy.createXMLHTTPRequest).not.toHaveBeenCalled();
                 done();

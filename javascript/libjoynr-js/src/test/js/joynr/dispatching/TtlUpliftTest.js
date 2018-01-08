@@ -100,9 +100,9 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             type: parameters.type,
             payload: JSON.stringify(parameters.payload)
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, parameters.expiryDate);
+        joynrMessage.from = proxyId;
+        joynrMessage.to = providerId;
+        joynrMessage.expiryDate = parameters.expiryDate;
         return dispatcher.receive(joynrMessage);
     }
 
@@ -111,9 +111,9 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             type: parameters.type,
             payload: JSON.stringify(parameters.payload)
         });
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_FROM_PARTICIPANT_ID, proxyId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_TO_PARTICIPANT_ID, providerId);
-        joynrMessage.setHeader(JoynrMessage.JOYNRMESSAGE_HEADER_EXPIRYDATE, parameters.expiryDate);
+        joynrMessage.from = proxyId;
+        joynrMessage.to = providerId;
+        joynrMessage.expiryDate = parameters.expiryDate;
         return dispatcherWithTtlUplift.receive(joynrMessage);
     }
 
@@ -121,18 +121,18 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
         var msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         expect(msg.type).toEqual(messageType);
-        expect(msg.header.from).toEqual(proxyId);
-        expect(msg.header.to).toEqual(providerId);
-        expect(msg.header.expiryDate).toEqualWithPositiveTolerance(expectedExpiryDate);
+        expect(msg.from).toEqual(proxyId);
+        expect(msg.to).toEqual(providerId);
+        expect(msg.expiryDate).toEqualWithPositiveTolerance(expectedExpiryDate);
     }
 
     function checkMessageFromProvider(messageType, expectedExpiryDate) {
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
         var msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
         expect(msg.type).toEqual(messageType);
-        expect(msg.header.from).toEqual(providerId);
-        expect(msg.header.to).toEqual(proxyId);
-        expect(msg.header.expiryDate).toEqual(expectedExpiryDate);
+        expect(msg.from).toEqual(providerId);
+        expect(msg.to).toEqual(proxyId);
+        expect(msg.expiryDate).toEqual(expectedExpiryDate);
     }
 
     function checkRequestReplyMessage(expectedExpiryDate) {
@@ -365,9 +365,9 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
             var msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
             expect(msg.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST);
-            expect(msg.header.from).toEqual(providerId);
-            expect(msg.header.to).toEqual(multicastId);
-            expect(msg.header.expiryDate).toEqualWithPositiveTolerance(expiryDateMs);
+            expect(msg.from).toEqual(providerId);
+            expect(msg.to).toEqual(multicastId);
+            expect(msg.expiryDate).toEqualWithPositiveTolerance(expiryDateMs);
         });
 
         it("request and reply", function(done) {
@@ -633,9 +633,9 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
             expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
             var msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
             expect(msg.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST);
-            expect(msg.header.from).toEqual(providerId);
-            expect(msg.header.to).toEqual(multicastId);
-            expect(msg.header.expiryDate).toEqualWithPositiveTolerance(expiryDateWithTtlUplift);
+            expect(msg.from).toEqual(providerId);
+            expect(msg.to).toEqual(multicastId);
+            expect(msg.expiryDate).toEqualWithPositiveTolerance(expiryDateWithTtlUplift);
         });
 
         it("request and reply", function(done) {

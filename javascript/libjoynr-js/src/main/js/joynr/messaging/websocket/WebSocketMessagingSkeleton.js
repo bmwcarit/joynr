@@ -40,7 +40,7 @@ var WebSocketMessagingSkeleton = function WebSocketMessagingSkeleton(settings) {
     settings.sharedWebSocket.onmessage = function(joynrMessage) {
         if (listener !== undefined) {
             if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST && settings.mainTransport) {
-                joynrMessage.setReceivedFromGlobal(true);
+                joynrMessage.isReceivedFromGlobal = true;
             }
             listener(joynrMessage);
         }
