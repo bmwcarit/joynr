@@ -73,14 +73,29 @@ joynr
     });
 
 var cpuUsage;
+var memoryIntervalId;
+var measureMemory = options.measureMemory == "true";
+var totalMemory = 0;
+var totalMemoryMeasurements = 0;
 var testData;
 var handler = function(msg) {
     if (msg.msg === "terminate") {
         joynr.shutdown();
     } else if (msg.msg === "startMeasurement") {
+        if (measureMemory) {
+            memoryIntervalId = setInterval(function() {
+                var memoryUsage = process.memoryUsage();
+                totalMemory += memoryUsage.rss;
+                totalMemoryMeasurements++;
+            }, 1000);
+        }
         cpuUsage = process.cpuUsage();
     } else if (msg.msg === "stopMeasurement") {
         var diff = process.cpuUsage(cpuUsage);
+        if (measureMemory) {
+            diff.averageMemory = totalMemory / totalMemoryMeasurements;
+            clearInterval(memoryIntervalId);
+        }
         process.send({ msg: "gotMeasurement", data: diff });
     } else if (msg.msg === "prepareBenchmark") {
         testData = [];

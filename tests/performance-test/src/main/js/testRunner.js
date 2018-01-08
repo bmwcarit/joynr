@@ -26,6 +26,7 @@ var Promise = require("bluebird").Promise;
 var error = testbase.logging.error;
 var log = testbase.logging.log;
 var options = PerformanceUtilities.getCommandLineOptionsOrDefaults(process.env);
+var measureMemory = options.measureMemory == "true";
 var summary = [];
 var benchmarks = null;
 var Benchmarks = require("./Benchmarks");
@@ -92,20 +93,13 @@ var testRunner = {
         var proxySystemTime = [];
         var providerUserTime = [];
         var providerSystemTime = [];
+        var proxyMemory = [];
+        var providerMemory = [];
         var latency = [];
 
-        var measureMemory = options.measureMemory == "true";
         var memInterval;
         var memSum = 0;
         var memTests = 0;
-
-        if (measureMemory) {
-            memInterval = setInterval(function() {
-                var memoryUsage = process.memoryUsage();
-                memSum += memoryUsage.rss;
-                memTests++;
-            }, 1000);
-        }
 
         return Promise.map(
             dummyArray,
@@ -118,6 +112,10 @@ var testRunner = {
                     proxyUserTime.push(result.proxy.user);
                     proxySystemTime.push(result.proxy.system);
                     latency.push(result.time);
+                    if (measureMemory) {
+                        providerMemory.push(result.provider.averageMemory);
+                        proxyMemory.push(result.proxy.averageMemory);
+                    }
                 });
             },
             { concurrency: 1 }
@@ -156,15 +154,13 @@ var testRunner = {
             result.percentage.providerPercentage = result.time.totalProviderTime / totalLatency;
             result.percentage.proxyPercentage = result.time.totalProxyTime / totalLatency;
 
-            testRunner.logResults(result);
-
+            result.memory = {};
             if (measureMemory) {
-                var averageMemory = memSum / memTests;
-                var mb = (averageMemory / 1048576.0).toFixed(2);
-                error("test used on average: " + mb + " MB memory");
-                clearInterval(memInterval);
-                result.other.mb = mb;
+                result.memory.providerMemory = providerMemory.reduce((acc, curr) => acc + curr) / providerMemory.length;
+                result.memory.proxyMemory = proxyMemory.reduce((acc, curr) => acc + curr) / proxyMemory.length;
             }
+
+            testRunner.logResults(result);
             summary.push(result);
         });
     },
@@ -184,6 +180,12 @@ var testRunner = {
         for (let key in result.percentage) {
             if (Object.prototype.hasOwnProperty.call(result.percentage, key)) {
                 error(key + ": " + (result.percentage[key] * 100).toFixed(1) + "%");
+            }
+        }
+
+        for (let key in result.memory) {
+            if (Object.prototype.hasOwnProperty.call(result.memory, key)) {
+                error(key + ": " + (result.memory[key] / 1048576.0).toFixed(2) + "MB");
             }
         }
     }
