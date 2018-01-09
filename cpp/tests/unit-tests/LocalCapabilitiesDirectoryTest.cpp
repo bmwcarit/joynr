@@ -59,6 +59,7 @@ public:
     LocalCapabilitiesDirectoryTest()
             : settings(),
               clusterControllerSettings(settings),
+              purgeExpiredDiscoveryEntriesIntervalMs(100),
               capabilitiesClient(std::make_shared<MockCapabilitiesClient>()),
               singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               mockMessageRouter(std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
@@ -75,7 +76,7 @@ public:
               defaultProviderVersion(26, 05)
     {
         singleThreadedIOService->start();
-        clusterControllerSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(100);
+        clusterControllerSettings.setPurgeExpiredDiscoveryEntriesIntervalMs(purgeExpiredDiscoveryEntriesIntervalMs);
         settings.set(ClusterControllerSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(), 200);
         settings.set(ClusterControllerSettings::SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(), true);
         localCapabilitiesDirectory =
@@ -270,6 +271,7 @@ public:
 protected:
     Settings settings;
     ClusterControllerSettings clusterControllerSettings;
+    const int purgeExpiredDiscoveryEntriesIntervalMs;
     std::shared_ptr<MockCapabilitiesClient> capabilitiesClient;
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
@@ -1474,7 +1476,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    // wait for cleanup timer to run
+    std::this_thread::sleep_for(std::chrono::milliseconds(purgeExpiredDiscoveryEntriesIntervalMs * 2));
 
     // get the global, but timeout occured
     EXPECT_CALL(*capabilitiesClient, lookup(_, _, _, _, _)).Times(1).WillOnce(
@@ -1808,7 +1811,8 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope, purgeTimedOutEntries)
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    // wait for cleanup timer to run
+    std::this_thread::sleep_for(std::chrono::milliseconds(purgeExpiredDiscoveryEntriesIntervalMs * 2));
 
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(0, callback->getResults(10).size());
