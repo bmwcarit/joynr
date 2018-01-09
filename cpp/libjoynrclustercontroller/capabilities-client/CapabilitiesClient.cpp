@@ -88,18 +88,6 @@ void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
     defaultCapabilitiesProxy->removeAsync(participantIdList);
 }
 
-std::vector<types::GlobalDiscoveryEntry> CapabilitiesClient::lookup(
-        const std::vector<std::string>& domains,
-        const std::string& interfaceName,
-        std::int64_t messagingTtl)
-{
-    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> proxy =
-            getGlobalCapabilitiesDirectoryProxy(messagingTtl);
-    std::vector<types::GlobalDiscoveryEntry> result;
-    proxy->lookup(result, domains, interfaceName);
-    return result;
-}
-
 void CapabilitiesClient::lookup(
         const std::vector<std::string>& domains,
         const std::string& interfaceName,

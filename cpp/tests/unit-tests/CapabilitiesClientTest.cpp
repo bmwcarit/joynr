@@ -68,7 +68,6 @@ TEST_F(CapabilitiesClientTestFixture, callWithoutSetProxyBuilder)
                  "Assertion.*");
     EXPECT_DEATH(capClient->remove("aParticipantID"), "Assertion.*");
     EXPECT_DEATH(capClient->remove(participantIds), "Assertion.*");
-    EXPECT_DEATH(capClient->lookup({"domain"}, "interface", 0), "Assertion.*");
     EXPECT_DEATH(capClient->lookup({"domain"}, "interface", 0, onSuccess), "Assertion.*");
     EXPECT_DEATH(capClient->lookup("aParticipantID", onSuccess), "Assertion.*");
 }

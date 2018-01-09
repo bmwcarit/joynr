@@ -80,13 +80,6 @@ public:
     void remove(const std::string& participantId) override;
 
     /*
-      Synchronous lookup of capabilities for domain and interface.
-      */
-    std::vector<types::GlobalDiscoveryEntry> lookup(const std::vector<std::string>& domains,
-                                                    const std::string& interfaceName,
-                                                    std::int64_t messagingTtl) override;
-
-    /*
       Asynchronous lookup of capabilities for domain and interface.
       */
     void lookup(const std::vector<std::string>& domains,
