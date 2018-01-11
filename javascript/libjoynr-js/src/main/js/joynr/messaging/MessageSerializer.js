@@ -58,10 +58,17 @@ function useSmrf() {
             log.error("MessageSerializer received unsupported message.");
         } else {
             var smrfMsg = deserializeSmrfMessage(data);
-            smrfMsg.ttlMs = smrfMsg.isTtlAbsolute === true ? smrfMsg.ttlMs : smrfMsg.ttlMs + Date.now();
-            smrfMsg.payload = smrfMsg.body.toString(); // TODO refactor
+            var expiryDate = smrfMsg.isTtlAbsolute === true ? smrfMsg.ttlMs : smrfMsg.ttlMs + Date.now();
 
-            return JoynrMessage.parseMessage(smrfMsg);
+            // smrfMsg has two attributes we need to throw away -> create new Object
+            var messageWithoutRest = {
+                headers: smrfMsg.headers,
+                sender: smrfMsg.sender,
+                recipient: smrfMsg.recipient,
+                ttlMs: expiryDate,
+                payload: smrfMsg.body.toString()
+            };
+            return JoynrMessage.parseMessage(messageWithoutRest);
         }
     };
 }
