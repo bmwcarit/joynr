@@ -108,7 +108,7 @@ void MosquittoConnection::on_disconnect(int rc)
     isConnected = false;
 
     if (rc == 0) {
-        JOYNR_LOG_DEBUG(logger(), "Disconnected from tcp://{}:{}", host, port);
+        JOYNR_LOG_INFO(logger(), "Disconnected from tcp://{}:{}", host, port);
         stopLoop();
     } else {
         JOYNR_LOG_ERROR(logger(),
@@ -155,7 +155,7 @@ void MosquittoConnection::start()
     JOYNR_LOG_TRACE(
             logger(), "Start called with isRunning: {}, isConnected: {}", isRunning, isConnected);
 
-    JOYNR_LOG_DEBUG(logger(), "Try to connect to tcp://{}:{}", host, port);
+    JOYNR_LOG_INFO(logger(), "Try to connect to tcp://{}:{}", host, port);
     connect_async(host.c_str(), port, messagingSettings.getMqttKeepAliveTimeSeconds().count());
 
     reconnect_delay_set(messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
@@ -169,7 +169,7 @@ void MosquittoConnection::startLoop()
 {
     int rc = loop_start();
     if (rc == MOSQ_ERR_SUCCESS) {
-        JOYNR_LOG_TRACE(logger(), "Mosquitto loop started");
+        JOYNR_LOG_INFO(logger(), "Mosquitto loop started");
         isRunning = true;
     } else {
         JOYNR_LOG_ERROR(logger(),
@@ -185,7 +185,7 @@ void MosquittoConnection::stop()
         int rc = disconnect();
 
         if (rc == MOSQ_ERR_SUCCESS) {
-            JOYNR_LOG_TRACE(logger(), "Mosquitto Connection disconnected");
+            JOYNR_LOG_INFO(logger(), "Mosquitto Connection disconnected");
         } else {
             JOYNR_LOG_ERROR(logger(),
                             "Mosquitto disconnect failed: error: {} ({})",
@@ -205,7 +205,7 @@ void MosquittoConnection::stopLoop(bool force)
 
     if (rc == MOSQ_ERR_SUCCESS) {
         isRunning = false;
-        JOYNR_LOG_TRACE(logger(), "Mosquitto loop stopped");
+        JOYNR_LOG_INFO(logger(), "Mosquitto loop stopped");
     } else {
         JOYNR_LOG_ERROR(logger(),
                         "Mosquitto loop stop failed: error: {} ({})",
@@ -222,7 +222,7 @@ void MosquittoConnection::on_connect(int rc)
                         std::to_string(rc),
                         mosqpp::strerror(rc));
     } else {
-        JOYNR_LOG_DEBUG(logger(), "Mosquitto Connection established");
+        JOYNR_LOG_INFO(logger(), "Mosquitto Connection established");
         isConnected = true;
 
         createSubscriptions();
@@ -255,7 +255,7 @@ void MosquittoConnection::subscribeToTopicInternal(const std::string& topic,
     int rc = subscribe(mid, topic.c_str(), getMqttQos());
     switch (rc) {
     case (MOSQ_ERR_SUCCESS):
-        JOYNR_LOG_DEBUG(logger(), "Subscribed to {}", topic);
+        JOYNR_LOG_INFO(logger(), "Subscribed to {}", topic);
         break;
     case (MOSQ_ERR_NO_CONN):
         JOYNR_LOG_DEBUG(logger(),
@@ -304,7 +304,7 @@ void MosquittoConnection::unsubscribeFromTopic(const std::string& topic)
         if (isConnected && isRunning) {
             int rc = unsubscribe(nullptr, topic.c_str());
             if (rc == MOSQ_ERR_SUCCESS) {
-                JOYNR_LOG_DEBUG(logger(), "Unsubscribed from {}", topic);
+                JOYNR_LOG_INFO(logger(), "Unsubscribed from {}", topic);
             } else {
                 // MOSQ_ERR_INVAL || MOSQ_ERR_NOMEM || MOSQ_ERR_NO_CONN
                 JOYNR_LOG_ERROR(logger(),
