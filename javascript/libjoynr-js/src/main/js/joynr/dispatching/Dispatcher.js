@@ -741,10 +741,18 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
         if (log.isDebugEnabled()) {
             log.debug("receive, message = " + JSON.stringify(joynrMessage));
         }
+        var payload;
+        try {
+            payload = parsePayload(joynrMessage);
+        } catch (error) {
+            log.error("error parsing joynrMessage: " + error);
+            return Promise.resolve();
+        }
+
         switch (joynrMessage.type) {
             case JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST:
                 try {
-                    var request = new Request(parsePayload(joynrMessage));
+                    var request = new Request(payload);
                     log.info(
                         "received request for " + request.methodName + ".",
                         DiagnosticTags.forRequest({
@@ -772,7 +780,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_REPLY:
                 try {
-                    var reply = new Reply(parsePayload(joynrMessage));
+                    var reply = new Reply(payload);
                     log.info(
                         "received reply ",
                         DiagnosticTags.forReply({
@@ -790,7 +798,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY:
                 try {
-                    var oneWayRequest = new OneWayRequest(parsePayload(joynrMessage));
+                    var oneWayRequest = new OneWayRequest(payload);
                     log.info(
                         "received one way request for " + oneWayRequest.methodName + ".",
                         DiagnosticTags.forOneWayRequest({
@@ -912,7 +920,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY:
                 try {
-                    var subscriptionReply = new SubscriptionReply(parsePayload(joynrMessage));
+                    var subscriptionReply = new SubscriptionReply(payload);
                     log.info(
                         "received subscription reply",
                         DiagnosticTags.forSubscriptionReply({
@@ -930,7 +938,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP:
                 try {
-                    var subscriptionStop = new SubscriptionStop(parsePayload(joynrMessage));
+                    var subscriptionStop = new SubscriptionStop(payload);
                     log.info(
                         "subscription stop " + subscriptionStop.subscriptionId,
                         DiagnosticTags.forSubscriptionStop({
@@ -948,7 +956,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION:
                 try {
-                    var subscriptionPublication = new SubscriptionPublication(parsePayload(joynrMessage));
+                    var subscriptionPublication = new SubscriptionPublication(payload);
                     log.info(
                         "received publication",
                         DiagnosticTags.forPublication({
@@ -966,7 +974,7 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
 
             case JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST:
                 try {
-                    var multicastPublication = new MulticastPublication(parsePayload(joynrMessage));
+                    var multicastPublication = new MulticastPublication(payload);
                     log.info(
                         "received publication",
                         DiagnosticTags.forMulticastPublication({
