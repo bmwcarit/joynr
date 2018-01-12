@@ -758,17 +758,17 @@ function Dispatcher(clusterControllerMessagingStub, securityManager, ttlUpLiftMs
                             from: joynrMessage.from
                         })
                     );
-                    return requestReplyManager.handleRequest(joynrMessage.to, request).then(function(reply) {
-                        sendRequestReply(
-                            {
-                                from: joynrMessage.to,
-                                to: joynrMessage.from,
-                                expiryDate: joynrMessage.expiryDate,
-                                customHeaders: joynrMessage.getCustomHeaders()
-                            },
-                            reply
-                        );
-                    });
+
+                    var handleReplySettings = {
+                        from: joynrMessage.to,
+                        to: joynrMessage.from,
+                        expiryDate: joynrMessage.expiryDate,
+                        customHeaders: joynrMessage.getCustomHeaders()
+                    };
+
+                    return requestReplyManager
+                        .handleRequest(joynrMessage.to, request)
+                        .then(sendRequestReply.bind(this, handleReplySettings));
                 } catch (errorInRequest) {
                     // TODO handle error in handling the request
                     log.error("error handling request: " + errorInRequest);
