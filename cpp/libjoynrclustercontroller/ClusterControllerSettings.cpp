@@ -62,6 +62,11 @@ void ClusterControllerSettings::checkSettings()
         setLocalDomainAccessStorePersistenceFilename(
                 DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
     }
+
+    if (!settings.contains(SETTING_MESSAGE_QUEUE_LIMIT())) {
+        setMessageQueueLimit(DEFAULT_MESSAGE_QUEUE_LIMIT());
+    }
+
     if (!settings.contains(SETTING_MQTT_MULTICAST_TOPIC_PREFIX())) {
         setMqttMulticastTopicPrefix(DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX());
     }
@@ -89,6 +94,10 @@ void ClusterControllerSettings::checkSettings()
 
     if (!settings.contains(SETTING_ACCESS_CONTROL_AUDIT())) {
         settings.set(SETTING_ACCESS_CONTROL_AUDIT(), DEFAULT_ACCESS_CONTROL_AUDIT());
+    }
+
+    if (!settings.contains(SETTING_MESSAGE_QUEUE_LIMIT())) {
+        settings.set(SETTING_MESSAGE_QUEUE_LIMIT(), DEFAULT_MESSAGE_QUEUE_LIMIT());
     }
 
     if (isMqttTlsEnabled()) {
@@ -315,6 +324,11 @@ bool ClusterControllerSettings::DEFAULT_ACCESS_CONTROL_AUDIT()
     return false;
 }
 
+std::uint64_t ClusterControllerSettings::DEFAULT_MESSAGE_QUEUE_LIMIT()
+{
+    return 0;
+}
+
 const std::string& ClusterControllerSettings::DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX()
 {
     static const std::string value("");
@@ -516,6 +530,12 @@ bool ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY
     return false;
 }
 
+const std::string& ClusterControllerSettings::SETTING_MESSAGE_QUEUE_LIMIT()
+{
+    static const std::string value("cluster-controller/message-queue-limit");
+    return value;
+}
+
 const std::string& ClusterControllerSettings::
         SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME()
 {
@@ -538,6 +558,16 @@ void ClusterControllerSettings::setLocalDomainAccessStorePersistenceFilename(
         const std::string& filename)
 {
     settings.set(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME(), filename);
+}
+
+std::uint64_t ClusterControllerSettings::getMessageQueueLimit() const
+{
+    return settings.get<std::uint64_t>(SETTING_MESSAGE_QUEUE_LIMIT());
+}
+
+void ClusterControllerSettings::setMessageQueueLimit(std::uint64_t limit)
+{
+    settings.set(SETTING_MESSAGE_QUEUE_LIMIT(), limit);
 }
 
 void ClusterControllerSettings::setAclEntriesDirectory(const std::string& directoryPath)
@@ -648,6 +678,9 @@ void ClusterControllerSettings::printSettings() const
                     "SETTING: {}  = {}",
                     SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(),
                     getLocalCapabilitiesDirectoryPersistenceFilename());
+
+    JOYNR_LOG_DEBUG(
+            logger(), "SETTING: {}  = {}", SETTING_MESSAGE_QUEUE_LIMIT(), getMessageQueueLimit());
 
     JOYNR_LOG_DEBUG(logger(),
                     "SETTING: {}  = {}",
