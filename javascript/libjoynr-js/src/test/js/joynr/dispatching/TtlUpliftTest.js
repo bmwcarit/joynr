@@ -381,7 +381,12 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 expiryDate: expiryDateMs
             }).then(function() {
                 expect(requestReplyManager.handleRequest).toHaveBeenCalled();
-                expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(providerId, jasmine.any(Request));
+                expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
+                    providerId,
+                    jasmine.objectContaining({
+                        _typeName: "joynr.Request"
+                    })
+                );
 
                 checkRequestReplyMessage(expiryDateMs);
                 done();
@@ -649,7 +654,12 @@ describe("libjoynr-js.joynr.ttlUpliftTest", function() {
                 expiryDate: expiryDateMs + ttlUpliftMs
             }).then(function() {
                 expect(requestReplyManager.handleRequest).toHaveBeenCalled();
-                expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(providerId, jasmine.any(Request));
+                expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
+                    providerId,
+                    jasmine.objectContaining({
+                        _typeName: "joynr.Request"
+                    })
+                );
 
                 checkRequestReplyMessage(expiryDateWithTtlUplift);
                 done();
