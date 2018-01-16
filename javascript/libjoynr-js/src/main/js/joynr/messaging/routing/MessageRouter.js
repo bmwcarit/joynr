@@ -163,6 +163,15 @@ function MessageRouter(settings) {
         return Promise.resolve();
     };
 
+    // helper functions for setRoutingProxy
+    function getReplyToAddressOnError(error) {
+        throw new Error(
+            "Failed to get replyToAddress from parent router: " +
+                error +
+                (error instanceof JoynrException ? " " + error.detailMessage : "")
+        );
+    }
+
     /**
      * @function MessageRouter#addNextHopToParentRoutingTable
      *
@@ -206,14 +215,6 @@ function MessageRouter(settings) {
         return Promise.reject(new JoynrRuntimeException({ detailMessage: errorMsg }));
     };
 
-    // helper functions for setRoutingProxy
-    function getReplyToAddressOnError(error) {
-        throw new Error(
-            "Failed to get replyToAddress from parent router: " +
-                error +
-                (error instanceof JoynrException ? " " + error.detailMessage : "")
-        );
-    }
     function handleAddNextHopToParentError(error) {
         if (!isReady()) {
             //in this case, the error is expected, e.g. during shut down
@@ -371,6 +372,20 @@ function MessageRouter(settings) {
         return Promise.resolve(address);
     };
 
+    function containsAddress(array, address) {
+        //each address class provides an equals method, e.g. InProcessAddress
+        var j;
+        if (array === undefined) {
+            return false;
+        }
+        for (j = 0; j < array.length; j++) {
+            if (array[j].equals(address)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Get the address to which the passed in message should be sent to.
      * This is a multicast address calculated from the header content of the message.
@@ -387,20 +402,6 @@ function MessageRouter(settings) {
             if (address !== undefined) {
                 result.push(address);
             }
-        }
-
-        function containsAddress(array, address) {
-            //each address class provides an equals method, e.g. InProcessAddress
-            var j;
-            if (array === undefined) {
-                return false;
-            }
-            for (j = 0; j < array.length; j++) {
-                if (array[j].equals(address)) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         var multicastIdPattern, receivers;
