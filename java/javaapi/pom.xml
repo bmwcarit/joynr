@@ -132,6 +132,21 @@
 							<outputPath>${basedir}/src/test/generated</outputPath>
 						</configuration>
 					</execution>
+					<execution>
+						<id>testSources2</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/../../basemodel/src/test/franca2</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+							<parameter>>
+								<ignoreInvalidNullClassMembers>true</ignoreInvalidNullClassMembers>
+							</parameter>>
+						</configuration>
+					</execution>
 				</executions>
 				<dependencies>
 					<dependency>
