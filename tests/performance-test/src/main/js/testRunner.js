@@ -41,9 +41,14 @@ var testRunner = {
 
     executeBenchmarks: function() {
         benchmarks = PerformanceUtilities.findBenchmarks(new Benchmarks(testRunner));
-        return Promise.map(benchmarks, benchmark => testRunner.executeMultipleSubRuns(benchmark), {
-            concurrency: 1
-        }).then(testRunner.displaySummary);
+        var final = [];
+        return benchmarks
+            .reduce((promise, benchmark) => {
+                return promise.then(() =>
+                    testRunner.executeMultipleSubRuns(benchmark).then(result => final.push(result))
+                );
+            }, Promise.resolve())
+            .then(testRunner.displaySummary);
     },
 
     executeSubRuns: function(benchmarkConfig, index) {
@@ -81,13 +86,13 @@ var testRunner = {
     },
 
     executeMultipleSubRuns: function(benchmarkConfig) {
-        console.log("executeMultipleSubRuns");
         var numRuns = benchmarkConfig.numRuns;
         var testRuns = options.testRuns ? Number.parseInt(options.testRuns) : 1;
         var totalRuns = numRuns * testRuns;
         var totalLatency = 0;
         var testIndex = 0;
         var dummyArray = new Array(testRuns);
+        dummyArray.fill(0);
         var proxyUserTime = [];
         var proxySystemTime = [];
         var providerUserTime = [];
@@ -96,72 +101,70 @@ var testRunner = {
         var providerMemory = [];
         var latency = [];
 
-        var memInterval;
-        var memSum = 0;
-        var memTests = 0;
-
-        return Promise.map(
-            dummyArray,
-            function() {
-                testIndex++;
-                return testRunner.executeSubRuns(benchmarkConfig, testIndex).then(function(result) {
-                    totalLatency += result.time;
-                    providerUserTime.push(result.provider.user);
-                    providerSystemTime.push(result.provider.system);
-                    proxyUserTime.push(result.proxy.user);
-                    proxySystemTime.push(result.proxy.system);
-                    latency.push(result.time);
-                    if (measureMemory) {
-                        providerMemory.push(result.provider.averageMemory);
-                        proxyMemory.push(result.proxy.averageMemory);
-                    }
+        return dummyArray
+            .reduce(accumulator => {
+                return accumulator.then(() => {
+                    testIndex++;
+                    return testRunner.executeSubRuns(benchmarkConfig, testIndex).then(function(result) {
+                        totalLatency += result.time;
+                        providerUserTime.push(result.provider.user);
+                        providerSystemTime.push(result.provider.system);
+                        proxyUserTime.push(result.proxy.user);
+                        proxySystemTime.push(result.proxy.system);
+                        latency.push(result.time);
+                        if (measureMemory) {
+                            providerMemory.push(result.provider.averageMemory);
+                            proxyMemory.push(result.proxy.averageMemory);
+                        }
+                    });
                 });
-            },
-            { concurrency: 1 }
-        ).then(function() {
-            totalLatency = latency.reduce((acc, curr) => acc + curr);
-            var averageMsgPerSecond = totalRuns / (totalLatency / 1000);
-            var variance = 0;
-            var highestMsgPerSecond = -1;
-            latency.map(time => numRuns / (time / 1000)).forEach(runMsgPerSecond => {
-                variance += Math.pow(runMsgPerSecond - averageMsgPerSecond, 2);
-                highestMsgPerSecond = Math.max(runMsgPerSecond, highestMsgPerSecond);
+            }, Promise.resolve())
+            .then(function() {
+                error("summary started");
+                totalLatency = latency.reduce((acc, curr) => acc + curr);
+                var averageMsgPerSecond = totalRuns / (totalLatency / 1000);
+                var variance = 0;
+                var highestMsgPerSecond = -1;
+                latency.map(time => numRuns / (time / 1000)).forEach(runMsgPerSecond => {
+                    variance += Math.pow(runMsgPerSecond - averageMsgPerSecond, 2);
+                    highestMsgPerSecond = Math.max(runMsgPerSecond, highestMsgPerSecond);
+                });
+                variance /= proxyUserTime.length;
+                var deviation = Math.sqrt(variance).toFixed(2);
+                highestMsgPerSecond = highestMsgPerSecond.toFixed(2);
+                averageMsgPerSecond = averageMsgPerSecond.toFixed(2);
+
+                var result = { time: {}, percentage: {} };
+
+                result.other = {
+                    averageTime: averageMsgPerSecond,
+                    deviation,
+                    highestMsgPerSecond,
+                    benchmarkName: benchmarkConfig.name,
+                    totalLatency
+                };
+                // cpu usage is in micro seconds -> divide by 1000
+                result.time.totalProviderUserTime = providerUserTime.reduce((acc, curr) => acc + curr) / 1000.0;
+                result.time.totalProviderSystemTime = providerSystemTime.reduce((acc, curr) => acc + curr) / 1000.0;
+                result.time.totalProxyUserTime = proxyUserTime.reduce((acc, curr) => acc + curr) / 1000.0;
+                result.time.totalProxySystemTime = proxySystemTime.reduce((acc, curr) => acc + curr) / 1000.0;
+                result.time.totalProviderTime = result.time.totalProviderUserTime + result.time.totalProviderSystemTime;
+                result.time.totalProxyTime = result.time.totalProxyUserTime + result.time.totalProxySystemTime;
+                result.time.totalTime = result.time.totalProviderTime + result.time.totalProxyTime;
+
+                result.percentage.providerPercentage = result.time.totalProviderTime / totalLatency;
+                result.percentage.proxyPercentage = result.time.totalProxyTime / totalLatency;
+
+                result.memory = {};
+                if (measureMemory) {
+                    result.memory.providerMemory =
+                        providerMemory.reduce((acc, curr) => acc + curr) / providerMemory.length;
+                    result.memory.proxyMemory = proxyMemory.reduce((acc, curr) => acc + curr) / proxyMemory.length;
+                }
+
+                testRunner.logResults(result);
+                summary.push(result);
             });
-            variance /= proxyUserTime.length;
-            var deviation = Math.sqrt(variance).toFixed(2);
-            highestMsgPerSecond = highestMsgPerSecond.toFixed(2);
-            averageMsgPerSecond = averageMsgPerSecond.toFixed(2);
-
-            var result = { time: {}, percentage: {} };
-
-            result.other = {
-                averageTime: averageMsgPerSecond,
-                deviation,
-                highestMsgPerSecond,
-                benchmarkName: benchmarkConfig.name,
-                totalLatency
-            };
-            // cpu usage is in micro seconds -> divide by 1000
-            result.time.totalProviderUserTime = providerUserTime.reduce((acc, curr) => acc + curr) / 1000.0;
-            result.time.totalProviderSystemTime = providerSystemTime.reduce((acc, curr) => acc + curr) / 1000.0;
-            result.time.totalProxyUserTime = proxyUserTime.reduce((acc, curr) => acc + curr) / 1000.0;
-            result.time.totalProxySystemTime = proxySystemTime.reduce((acc, curr) => acc + curr) / 1000.0;
-            result.time.totalProviderTime = result.time.totalProviderUserTime + result.time.totalProviderSystemTime;
-            result.time.totalProxyTime = result.time.totalProxyUserTime + result.time.totalProxySystemTime;
-            result.time.totalTime = result.time.totalProviderTime + result.time.totalProxyTime;
-
-            result.percentage.providerPercentage = result.time.totalProviderTime / totalLatency;
-            result.percentage.proxyPercentage = result.time.totalProxyTime / totalLatency;
-
-            result.memory = {};
-            if (measureMemory) {
-                result.memory.providerMemory = providerMemory.reduce((acc, curr) => acc + curr) / providerMemory.length;
-                result.memory.proxyMemory = proxyMemory.reduce((acc, curr) => acc + curr) / proxyMemory.length;
-            }
-
-            testRunner.logResults(result);
-            summary.push(result);
-        });
     },
     logResults: function(result) {
         error("");

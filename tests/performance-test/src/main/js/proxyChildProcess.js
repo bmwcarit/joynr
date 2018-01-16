@@ -110,14 +110,12 @@ var handler = function(msg) {
         if (testType === "burst") {
             var promiseArray = testData.map(item => benchmarks[msg.config.name].testProcedure(item));
             Promise.all(promiseArray).then(() => process.send({ msg: "executeBenchmarkFinished" }));
-        } else if (testType === "concurrency") {
-            Promise.map(testData, item => benchmarks[msg.config.name].testProcedure(item), {
-                concurrency: 500
-            }).then(() => process.send({ msg: "executeBenchmarkFinished" }));
         } else if (testType === "single") {
-            Promise.map(testData, item => benchmarks[msg.config.name].testProcedure(item), {
-                concurrency: 1
-            }).then(() => process.send({ msg: "executeBenchmarkFinished" }));
+            testData
+                .reduce((accumulator, item) => {
+                    return accumulator.then(() => benchmarks[msg.config.name].testProcedure(item));
+                }, Promise.resolve())
+                .then(() => process.send({ msg: "executeBenchmarkFinished" }));
         } else {
             throw new Error("unknown testType");
         }
