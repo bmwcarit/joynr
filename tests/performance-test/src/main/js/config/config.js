@@ -27,7 +27,7 @@ module.exports = {
         {
             name: "echoComplexStruct",
             enabled: "true",
-            numRuns: 1000
+            numRuns: 300
         },
         {
             name: "echoString",
@@ -37,7 +37,7 @@ module.exports = {
         {
             name: "echoByteArray",
             enabled: "true",
-            numRuns: 1000
+            numRuns: 500
         },
         {
             name: "registerPlentyOfConsumers",
@@ -46,7 +46,7 @@ module.exports = {
         }
     ],
     global: {
-        testRuns: 50,
+        testRuns: 30,
         domain: "performance_test_domain",
         cc: {
             host: "localhost",
