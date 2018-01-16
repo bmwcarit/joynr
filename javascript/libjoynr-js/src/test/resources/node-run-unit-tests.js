@@ -49,6 +49,7 @@ mod.prototype.require = function(md) {
     }
     return req.apply(this, arguments);
 };
+
 console.log("require config setup");
 var ProviderOperationTest = require("../test-classes/joynr/provider/ProviderOperationTest");
 var ProviderTest = require("../test-classes/joynr/provider/ProviderTest");
@@ -121,6 +122,7 @@ var TtlUpliftTest = require("../test-classes/joynr/dispatching/TtlUpliftTest");
 var RequestReplyManagerTest = require("../test-classes/joynr/dispatching/RequestReplyManagerTest");
 var LocalStorageNodeTest = require("../test-classes/global/LocalStorageNodeTest");
 var WebSocketNodeTest = require("../test-classes/global/WebSocketNodeTest");
+var MethodUtilTest = require('../test-classes/joynr/util/MethodUtilTest');
 console.log("all tests modules loaded");
 loadingFinished = true;
 jasmine.execute();
