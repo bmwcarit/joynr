@@ -17,14 +17,14 @@
  * #L%
  */
 
-#ifndef THREADLOCALCONTEXTSTORAGE_H
-#define THREADLOCALCONTEXTSTORAGE_H
+#ifndef CONTEXTSTORAGE_H
+#define CONTEXTSTORAGE_H
 
 namespace joynr
 {
 
 template <typename T>
-class ThreadLocalContextStorage
+class ContextStorage
 {
 public:
     static void set(const T& context)
@@ -39,7 +39,7 @@ public:
 
     static T& get()
     {
-        static thread_local T context;
+        static T context;
         return context;
     }
 
@@ -51,4 +51,4 @@ public:
 
 } // namespace joynr
 
-#endif // THREADLOCALCONTEXTSTORAGE_H
+#endif // CONTEXTSTORAGE_H

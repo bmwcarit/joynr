@@ -21,11 +21,11 @@
 #define CLUSTERCONTROLLERCALLCONTEXTSTORAGE_H
 
 #include "ClusterControllerCallContext.h"
-#include "joynr/ThreadLocalContextStorage.h"
+#include "joynr/ContextStorage.h"
 
 namespace joynr
 {
-using ClusterControllerCallContextStorage = ThreadLocalContextStorage<ClusterControllerCallContext>;
+using ClusterControllerCallContextStorage = ContextStorage<ClusterControllerCallContext>;
 } // namespace joynr
 
 #endif

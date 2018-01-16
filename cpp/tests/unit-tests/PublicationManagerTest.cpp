@@ -69,17 +69,18 @@ public:
     PublicationManagerTest() :
         singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
         messageSender(std::make_shared<MockMessageSender>()),
+        getLocationCalledSemaphore(0),
         enablePersistency(true)
     {
         singleThreadedIOService->start();
     }
 
-    ~PublicationManagerTest()
+    ~PublicationManagerTest() override
     {
         singleThreadedIOService->stop();
     }
 
-    void TearDown(){
+    void TearDown() override {
         std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored subscriptions
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str()); //remove stored broadcastsubscriptions
         messageSender.reset();
@@ -1473,34 +1474,3 @@ TEST_F(PublicationManagerTest, broadcast_sendSubscriptionExceptionOnExpiredSubsc
     sendSubscriptionExceptionOnExpiredRegistration(subscriptionRequest);
 }
 
-TEST_F(PublicationManagerTest, attribute_provideCallContextWhenPollingAttribute) {
-    const std::string proxyParticipantId("proxyId");
-    const std::string providerParticipantId("providerId");
-
-    auto mockPublicationSender = std::make_shared<MockPublicationSender>();
-    auto publicationManager = std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(), messageSender, enablePersistency);
-    std::shared_ptr<MockTestRequestCaller> requestCaller = std::make_shared<MockTestRequestCaller>();
-    std::shared_ptr<PeriodicSubscriptionQos> qos = std::make_shared<PeriodicSubscriptionQos>(200, 100, 100, 200);
-
-    SubscriptionRequest subscriptionRequest;
-    subscriptionRequest.setQos(qos);
-    subscriptionRequest.setSubscribeToName("Location");
-
-    CallContext expectedCallContext;
-    expectedCallContext.setPrincipal("principalIdWhichWillNeverCollideWithDefaultValues");
-
-    CallContextStorage::set(expectedCallContext);
-
-    ON_CALL(*requestCaller, getLocationMock(_,_)).
-        WillByDefault(testing::Invoke(this, &PublicationManagerTest::invokeLocationAndSaveCallContext));
-
-    publicationManager->add(proxyParticipantId,
-                           providerParticipantId,
-                           requestCaller,
-                           subscriptionRequest,
-                           mockPublicationSender);
-
-    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(1000)));
-    EXPECT_EQ(expectedCallContext, CallContextStorage::get());
-    publicationManager->shutdown();
-}
