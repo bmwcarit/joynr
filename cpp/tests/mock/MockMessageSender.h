@@ -19,17 +19,25 @@
 #ifndef TESTS_MOCK_MOCKMESSAGESENDER_H
 #define TESTS_MOCK_MOCKMESSAGESENDER_H
 
+#include <memory>
+#include <string>
+
 #include <gmock/gmock.h>
 
+#include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/IDispatcher.h"
 #include "joynr/IMessageSender.h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
-#include "joynr/OneWayRequest.h"
-#include "joynr/SubscriptionRequest.h"
-#include "joynr/MulticastSubscriptionRequest.h"
-#include "joynr/SubscriptionStop.h"
-#include "joynr/SubscriptionReply.h"
+#include "joynr/IReplyCaller.h"
+#include "joynr/MessagingQos.h"
 #include "joynr/MulticastPublication.h"
+#include "joynr/MulticastSubscriptionRequest.h"
+#include "joynr/OneWayRequest.h"
+#include "joynr/Reply.h"
+#include "joynr/Request.h"
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionReply.h"
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/SubscriptionStop.h"
 
 class MockMessageSender : public joynr::IMessageSender {
 public:
