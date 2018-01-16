@@ -74,6 +74,8 @@ function freeze(joynr, capabilitiesWritable) {
     });
 }
 
+var Promise = require("./global/Promise");
+
 /**
  * @name joynr
  * @class
@@ -118,7 +120,7 @@ var joynr = {
                 return joynr;
             })
             .catch(function(error) {
-                return error;
+                return Promise.reject(error);
             });
     },
     /**
