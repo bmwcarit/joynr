@@ -16,32 +16,34 @@
  * limitations under the License.
  * #L%
  */
+#include <chrono>
 #include <memory>
 #include <string>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/MutableMessage.h"
+#include "joynr/Dispatcher.h"
 #include "joynr/ImmutableMessage.h"
-#include "joynr/MutableMessageFactory.h"
+#include "joynr/InterfaceRegistrar.h"
+#include "joynr/LibjoynrSettings.h"
 #include "joynr/Message.h"
 #include "joynr/MessageSender.h"
-#include "joynr/Dispatcher.h"
-#include "joynr/UnicastSubscriptionCallback.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/MutableMessageFactory.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Semaphore.h"
+#include "joynr/SingleThreadedIOService.h"
+#include "joynr/SubscriptionManager.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
-#include "joynr/InterfaceRegistrar.h"
-#include "joynr/tests/testRequestInterpreter.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/LibjoynrSettings.h"
-#include "joynr/tests/testTypes/TestEnum.h"
-#include "joynr/tests/testRequestCaller.h"
-#include "joynr/types/Localisation/GpsLocation.h"
-#include "joynr/SingleThreadedIOService.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/SubscriptionManager.h"
+#include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/tests/testRequestCaller.h"
+#include "joynr/tests/testRequestInterpreter.h"
+#include "joynr/tests/testTypes/TestEnum.h"
+#include "joynr/types/Localisation/GpsLocation.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockMessageRouter.h"
@@ -225,6 +227,7 @@ TEST_F(SubscriptionTest, receive_publication ) {
 
 void SubscriptionTest::receive_publicationWithException(std::shared_ptr<exceptions::JoynrRuntimeException> expectedException)
 {
+    Semaphore semaphore(0);
     auto mockIntListener = std::make_shared<MockSubscriptionListenerOneType<std::int32_t>>();
     EXPECT_CALL(*mockIntListener, onReceive(A<const std::int32_t&>()))
             .Times(0);
@@ -232,7 +235,8 @@ void SubscriptionTest::receive_publicationWithException(std::shared_ptr<exceptio
                     joynrException(
                         expectedException->getTypeName(),
                         expectedException->getMessage())))
-            .Times(1);
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
 
     // register the subscription on the consumer side
     const std::string attributeName = "attributeWithProviderRuntimeException";
@@ -271,6 +275,7 @@ void SubscriptionTest::receive_publicationWithException(std::shared_ptr<exceptio
                 subscriptionPublication);
 
     dispatcher->receive(msg.getImmutableMessage());
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
 }
 
 TEST_F(SubscriptionTest, receive_publicationWithProviderRuntimeException) {
