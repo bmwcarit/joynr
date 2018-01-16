@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
@@ -23,20 +24,23 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrClusterControllerRuntime.h"
+#include "joynr/DiscoveryQos.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/Settings.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/Semaphore.h"
+#include "joynr/Settings.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/types/ProviderQos.h"
+#include "joynr/types/ProviderScope.h"
+#include "joynr/types/Localisation/GpsLocation.h"
 
-#include "joynr/tests/Itest.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/Semaphore.h"
-#include "joynr/serializer/Serializer.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockMqttMessagingSkeleton.h"
