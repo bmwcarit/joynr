@@ -1,4 +1,4 @@
-/*jslint node: true */
+/*jslint node: true, nomen: true */
 
 /*
  * #%L
@@ -46,18 +46,16 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
     joynrMessage2.to = receiverParticipantId;
     joynrMessage2.from = "senderParticipantId2";
 
-    messageQueue = new MessageQueue({
-        maxQueueSizeInKBytes: 0.5
-        // set the qsize to 500 bytes for testing purposes
-    });
-
     beforeEach(function(done) {
         fakeTime = Date.now();
         jasmine.clock().install();
         spyOn(Date, "now").and.callFake(function() {
             return fakeTime;
         });
-        messageQueue.reset();
+        messageQueue = new MessageQueue({
+            maxQueueSizeInKBytes: 0.5
+            // set the qsize to 500 bytes for testing purposes
+        });
         done();
     });
 
@@ -180,6 +178,13 @@ describe("libjoynr-js.joynr.messaging.routing.MessageQueue", function() {
         expect(queuedMessages[0]).toEqual(joynrMessage2);
         expect(messageQueue.getAndRemoveMessages(receiverParticipantId).length).toEqual(0);
         done();
+    });
+
+    it("deletes a participantQueue in the periodic cleanup after the last message expires", function() {
+        joynrMessage.expiryDate = Date.now() + 1000;
+        messageQueue.putMessage(joynrMessage);
+        increaseFakeTime(10000 + 1); // 10000 is the default cleanup interval
+        expect(messageQueue._participantQueues).toEqual({});
     });
     it(" empty message queue when shut down", function() {
         expect(messageQueue.currentQueueSize).toEqual(0);
