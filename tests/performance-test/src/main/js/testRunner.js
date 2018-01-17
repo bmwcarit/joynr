@@ -45,7 +45,7 @@ var testRunner = {
         return benchmarks
             .reduce((promise, benchmark) => {
                 return promise.then(() =>
-                    testRunner.executeMultipleSubRuns(benchmark).then(result => final.push(result))
+                    testRunner.executeSubRunsWithWarmUp(benchmark).then(result => final.push(result))
                 );
             }, Promise.resolve())
             .then(testRunner.displaySummary);
@@ -83,6 +83,13 @@ var testRunner = {
                     return { proxy: values[1], provider: values[0], time: elapsedTimeMs };
                 });
             });
+    },
+
+    executeSubRunsWithWarmUp: function(benchmarkConfig) {
+        error("warming up: " + benchmarkConfig.name);
+        return testRunner
+            .executeSubRuns(benchmarkConfig, -1)
+            .then(() => testRunner.executeMultipleSubRuns(benchmarkConfig));
     },
 
     executeMultipleSubRuns: function(benchmarkConfig) {
