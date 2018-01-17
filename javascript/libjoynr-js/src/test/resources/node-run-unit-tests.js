@@ -70,6 +70,7 @@ var MqttMessagingSkeletonTest = require("../test-classes/joynr/messaging/mqtt/Mq
 var MqttMessagingStubFactoryTest = require("../test-classes/joynr/messaging/mqtt/MqttMessagingStubFactoryTest");
 var MqttMessagingStubTest = require("../test-classes/joynr/messaging/mqtt/MqttMessagingStubTest");
 var MessageQueueTest = require("../test-classes/joynr/messaging/routing/MessageQueueTest");
+var ParticipantQueueTest = require("../test-classes/joynr/messaging/routing/ParticipantQueueTest");
 var MessageRouterTest = require("../test-classes/joynr/messaging/routing/MessageRouterTest");
 var InProcessMessagingStubFactoryTest = require("../test-classes/joynr/messaging/inprocess/InProcessMessagingStubFactoryTest");
 var InProcessMessagingSkeletonTest = require("../test-classes/joynr/messaging/inprocess/InProcessMessagingSkeletonTest");
