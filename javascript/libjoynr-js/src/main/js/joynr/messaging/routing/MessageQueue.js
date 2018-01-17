@@ -58,7 +58,11 @@ function MessageQueue(settings) {
         for (id in that._participantQueues) {
             if (that._participantQueues.hasOwnProperty(id)) {
                 that._participantQueues[id].filterExpiredMessages();
-                newSize += that._participantQueues[id].getSize();
+                var size = that._participantQueues[id].getSize();
+                newSize += size;
+                if (size === 0) {
+                    delete that._participantQueues[id];
+                }
             }
         }
         that.currentQueueSize = newSize;
