@@ -27,6 +27,7 @@
 
 #include "joynr/ContentWithDecayTime.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/ImmutableMessage.h"
 
@@ -38,7 +39,8 @@ template <typename T>
 class JOYNR_EXPORT MessageQueue
 {
 public:
-    MessageQueue() : queue(), queueMutex()
+    MessageQueue(std::uint64_t messageLimit = 0)
+            : queue(), queueMutex(), messageQueueLimit(messageLimit)
     {
     }
 
@@ -52,6 +54,11 @@ public:
     {
         JoynrTimePoint absTtl = message->getExpiryDate();
         auto item = std::make_unique<MessageQueueItem>(std::move(message), absTtl);
+
+        if (messageQueueLimit > 0)
+            if (getQueueLength() == messageQueueLimit) {
+                removeMessageWithLeastTtl();
+            }
 
         std::lock_guard<std::mutex> lock(queueMutex);
         queue.insert(std::make_pair(std::move(key), std::move(item)));
@@ -97,11 +104,36 @@ public:
 
 protected:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
+    ADD_LOGGER(MessageQueue);
 
     // TODO should we replace by std::unordered_multimap?
     // or a boost multi_index table because we need to store the TTL
     std::multimap<T, std::unique_ptr<MessageQueueItem>> queue;
     mutable std::mutex queueMutex;
+
+private:
+    std::uint64_t messageQueueLimit;
+
+    void removeMessageWithLeastTtl()
+    {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        assert(!queue.empty());
+
+        auto queueIteratorHold = queue.begin();
+        for (auto queueIterator = queue.begin(); queueIterator != queue.end(); queueIterator++) {
+            if (queueIterator->second->getDecayTime() < queueIteratorHold->second->getDecayTime()) {
+                queueIteratorHold = queueIterator;
+            }
+        }
+
+        auto message = std::move(queueIteratorHold->second->getContent());
+        JOYNR_LOG_WARN(logger(),
+                       "erasing message with id {} since queue limit of {} was reached",
+                       message->getId(),
+                       messageQueueLimit);
+
+        queue.erase(queueIteratorHold);
+    }
 };
 } // namespace joynr
 
