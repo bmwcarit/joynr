@@ -28,7 +28,6 @@ public:
     MOCK_METHOD3(addReplyCaller, void(const std::string& requestReplyId,
                                       std::shared_ptr<joynr::IReplyCaller> replyCaller,
                                       const joynr::MessagingQos& qosSettings));
-    MOCK_METHOD1(removeReplyCaller, void(const std::string& requestReplyId));
     MOCK_METHOD2(addRequestCaller, void(const std::string& participantId, std::shared_ptr<joynr::RequestCaller> requestCaller));
     MOCK_METHOD1(removeRequestCaller, void(const std::string& participantId));
     MOCK_METHOD1(receive, void(std::shared_ptr<joynr::ImmutableMessage> message));

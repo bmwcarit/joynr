@@ -39,7 +39,7 @@ public:
     virtual void addReplyCaller(const std::string& requestReplyId,
                                 std::shared_ptr<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings) = 0;
-    virtual void removeReplyCaller(const std::string& requestReplyId) = 0;
+
     virtual void addRequestCaller(const std::string& participantId,
                                   std::shared_ptr<RequestCaller> requestCaller) = 0;
     virtual void removeRequestCaller(const std::string& participantId) = 0;

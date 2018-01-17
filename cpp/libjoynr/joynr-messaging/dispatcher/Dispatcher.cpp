@@ -109,12 +109,6 @@ void Dispatcher::addReplyCaller(const std::string& requestReplyId,
     replyCallerDirectory.add(requestReplyId, std::move(replyCaller), qosSettings.getTtl());
 }
 
-void Dispatcher::removeReplyCaller(const std::string& requestReplyId)
-{
-    JOYNR_LOG_TRACE(logger(), "removeReplyCaller id= {}", requestReplyId);
-    replyCallerDirectory.remove(requestReplyId);
-}
-
 void Dispatcher::receive(std::shared_ptr<ImmutableMessage> message)
 {
     JOYNR_LOG_TRACE(logger(), "received message: {}", message->toLogMessage());
