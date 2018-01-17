@@ -192,3 +192,20 @@ TEST_F(DirectoryTest, useLastTTLForKey)
 
     ASSERT_FALSE(directory.contains(key));
 }
+
+TEST_F(DirectoryTest, take)
+{
+    directory.add(firstKey, testValue);
+    directory.add(secondKey,secondTestValue);
+
+    // both keys exist
+    ASSERT_EQ(directory.lookup(firstKey), testValue);
+    ASSERT_EQ(directory.lookup(secondKey), secondTestValue);
+
+    // remove key from the dictionary with take()
+    ASSERT_EQ(directory.take(secondKey), secondTestValue);
+
+    // only one key is left in the dictionary
+    ASSERT_EQ(directory.lookup(firstKey), testValue);
+    ASSERT_FALSE(directory.lookup(secondKey));
+}

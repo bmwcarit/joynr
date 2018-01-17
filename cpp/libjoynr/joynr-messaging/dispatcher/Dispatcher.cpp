@@ -287,8 +287,8 @@ void Dispatcher::handleReplyReceived(std::shared_ptr<ImmutableMessage> message)
     }
 
     std::string requestReplyId = reply.getRequestReplyId();
-    std::shared_ptr<IReplyCaller> caller = replyCallerDirectory.lookup(requestReplyId);
-    if (caller == nullptr) {
+    std::shared_ptr<IReplyCaller> caller = replyCallerDirectory.take(requestReplyId);
+    if (!caller) {
         // This used to be a fatal error, but it is possible that the replyCallerDirectory
         // removed
         // the caller
@@ -300,9 +300,6 @@ void Dispatcher::handleReplyReceived(std::shared_ptr<ImmutableMessage> message)
     }
 
     caller->execute(std::move(reply));
-
-    // Clean up
-    removeReplyCaller(requestReplyId);
 }
 
 void Dispatcher::handleSubscriptionRequestReceived(std::shared_ptr<ImmutableMessage> message)
