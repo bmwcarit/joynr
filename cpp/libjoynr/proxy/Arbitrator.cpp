@@ -161,7 +161,7 @@ void Arbitrator::startArbitration(
 
 void Arbitrator::stopArbitration()
 {
-    JOYNR_LOG_DEBUG(logger(), "StopArbitrator.");
+    JOYNR_LOG_DEBUG(logger(), "StopArbitrator for interface={}", interfaceName);
     keepArbitrationRunning = false;
 
     if (arbitrationThread.joinable()) {
