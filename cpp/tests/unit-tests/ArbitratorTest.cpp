@@ -206,6 +206,7 @@ TEST_F(ArbitratorTest, getLastSeen) {
 
     lastSeenArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs())));
+    lastSeenArbitrator->stopArbitration();
 }
 
 // Test that the Arbitrator selects the provider with the highest priority
@@ -267,6 +268,7 @@ TEST_F(ArbitratorTest, getHighestPriority) {
 
     qosArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
+    qosArbitrator->stopArbitration();
 }
 
 // Test that the Arbitrator selects a provider with compatible version and compatible priority
@@ -337,6 +339,7 @@ TEST_F(ArbitratorTest, getHighestPriorityChecksVersion) {
 
     qosArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
+    qosArbitrator->stopArbitration();
 }
 
 // Test that the Arbitrator selects a provider that supports onChange subscriptions
@@ -404,6 +407,7 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange) {
 
     qosArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
+    qosArbitrator->stopArbitration();
 }
 
 // Test that the Arbitrator selects the provider with the correct keyword
@@ -484,6 +488,7 @@ TEST_F(ArbitratorTest, getKeywordProvider) {
 
     qosArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs())));
+    qosArbitrator->stopArbitration();
 }
 
 // Test that the Arbitrator selects the provider with compatible version
@@ -555,6 +560,7 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion) {
 
     qosArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
+    qosArbitrator->stopArbitration();
 }
 
 TEST_F(ArbitratorTest, retryFiveTimes) {
@@ -595,6 +601,7 @@ TEST_F(ArbitratorTest, retryFiveTimes) {
 
     lastSeenArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
+    lastSeenArbitrator->stopArbitration();
 }
 
 /*
@@ -713,6 +720,7 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
 
     qosArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
+    qosArbitrator->stopArbitration();
 }
 
 // Test that the Arbitrator returns a NoCompatibleProviderFoundException to the listener
@@ -805,6 +813,7 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
 
     keywordArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
+    keywordArbitrator->stopArbitration();
 }
 
 // Test that the Arbitrator reports a NoCompatibleProviderFoundException to the listener
@@ -884,6 +893,7 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
 
     fixedParticipantArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
+    fixedParticipantArbitrator->stopArbitration();
 }
 
 // Test that the lastSeenArbitrator reports a NoCompatibleProviderFoundException to the listener
@@ -970,6 +980,7 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException) {
 
     lastSeenArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
+    lastSeenArbitrator->stopArbitration();
 }
 
 
@@ -1002,6 +1013,7 @@ void ArbitratorTest::testExceptionFromDiscoveryProxy(std::shared_ptr<Arbitrator>
 
     arbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
+    arbitrator->stopArbitration();
 }
 
 TEST_F(ArbitratorTest, getHighestPriorityReturnsExceptionFromDiscoveryProxy) {
@@ -1080,6 +1092,7 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsExceptionFromDiscoveryP
 
     fixedParticipantArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
+    fixedParticipantArbitrator->stopArbitration();
 }
 
 TEST_F(ArbitratorTest, getLastSeenReturnsExceptionFromDiscoveryProxy) {
@@ -1148,6 +1161,7 @@ void ArbitratorTest::testExceptionEmptyResult(std::shared_ptr<Arbitrator> arbitr
 
     arbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs()*10)));
+    arbitrator->stopArbitration();
 }
 
 TEST_F(ArbitratorTest, getHighestPriorityReturnsExceptionEmptyResult) {
