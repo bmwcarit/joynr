@@ -115,6 +115,7 @@ public:
         if (runtime) {
             runtime->deleteChannel();
             runtime->stopExternalCommunication();
+            runtime->shutdown();
             test::util::resetAndWaitUntilDestroyed(runtime);
         }
         test::util::removeAllCreatedSettingsAndPersistencyFiles();
