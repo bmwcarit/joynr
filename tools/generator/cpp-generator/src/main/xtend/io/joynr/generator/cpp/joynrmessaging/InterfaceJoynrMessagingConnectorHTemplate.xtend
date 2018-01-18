@@ -149,8 +149,8 @@ public:
 	 * @param qosSettings The quality of service settings
 	 */
 	«interfaceName»JoynrMessagingConnector(
-		std::shared_ptr<joynr::IMessageSender> messageSender,
-		std::shared_ptr<joynr::ISubscriptionManager> subscriptionManager,
+		std::weak_ptr<joynr::IMessageSender> messageSender,
+		std::weak_ptr<joynr::ISubscriptionManager> subscriptionManager,
 		const std::string& domain,
 		const std::string& proxyParticipantId,
 		const joynr::MessagingQos &qosSettings,
