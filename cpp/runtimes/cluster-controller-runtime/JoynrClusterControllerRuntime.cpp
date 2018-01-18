@@ -875,7 +875,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
     inProcessDispatcher.reset();
 
     inProcessPublicationSender.reset();
-
     JOYNR_LOG_TRACE(logger(), "leaving ~JoynrClusterControllerRuntime");
 }
 
@@ -917,6 +916,10 @@ void JoynrClusterControllerRuntime::stopExternalCommunication()
 }
 
 void JoynrClusterControllerRuntime::shutdown()
+{
+}
+
+void JoynrClusterControllerRuntime::shutdownClusterController()
 {
     JOYNR_LOG_TRACE(logger(), "Shutdown Cluster Controller");
     lifetimeSemaphore.notify();

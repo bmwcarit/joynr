@@ -108,13 +108,13 @@ public:
 
     void start();
     void stop(bool deleteChannel = false);
-
+    void shutdown() final;
     void runForever();
 
     // Implement IClusterControllerSignalHandler
     void startExternalCommunication() final;
     void stopExternalCommunication() final;
-    void shutdown() final;
+    void shutdownClusterController() final;
 
     // Functions used by integration tests
     void deleteChannel();

@@ -48,7 +48,7 @@ public:
     * @brief Shutdown the cluster controller.
     * Triggered on POSIX systems with SIGTERM.
     */
-    virtual void shutdown() = 0;
+    virtual void shutdownClusterController() = 0;
 };
 } // namespace joynr
 
