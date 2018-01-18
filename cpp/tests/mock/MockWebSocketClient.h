@@ -49,6 +49,7 @@ public:
 
     MOCK_METHOD1(connect, void(const joynr::system::RoutingTypes::WebSocketAddress&));
     MOCK_METHOD0(close, void());
+    MOCK_METHOD0(stop, void());
 
     MOCK_CONST_METHOD0(isConnected, bool());
 

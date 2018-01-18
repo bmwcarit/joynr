@@ -55,7 +55,7 @@ LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 void LibJoynrWebSocketRuntime::shutdown()
 {
     assert(websocket);
-    websocket->close();
+    websocket->stop();
 
     // synchronously stop the underlying boost::asio::io_service
     // this ensures all asynchronous operations are stopped now

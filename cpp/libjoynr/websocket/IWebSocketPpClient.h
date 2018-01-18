@@ -57,6 +57,7 @@ public:
 
     virtual void connect(const system::RoutingTypes::WebSocketAddress& address) = 0;
     virtual void close() = 0;
+    virtual void stop() = 0;
 
     virtual bool isConnected() const = 0;
 
