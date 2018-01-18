@@ -66,6 +66,12 @@ LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
 
 LibJoynrRuntime::~LibJoynrRuntime()
 {
+    for (auto proxyBuilder : proxyBuilders) {
+        proxyBuilder->stop();
+        proxyBuilder.reset();
+    }
+    proxyBuilders.clear();
+
     if (inProcessDispatcher) {
         inProcessDispatcher->shutdown();
         inProcessDispatcher.reset();

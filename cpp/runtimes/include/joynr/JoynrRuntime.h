@@ -223,14 +223,17 @@ public:
                     "Exception in JoynrRuntime: Cannot perform arbitration as "
                     "runtime is not yet fully initialized.");
         }
-        return std::make_shared<ProxyBuilder<TIntfProxy>>(shared_from_this(),
-                                                          *proxyFactory,
-                                                          requestCallerDirectory,
-                                                          discoveryProxy,
-                                                          domain,
-                                                          dispatcherAddress,
-                                                          getMessageRouter(),
-                                                          messagingSettings);
+
+        auto proxyBuilder = std::make_shared<ProxyBuilder<TIntfProxy>>(shared_from_this(),
+                                                                       *proxyFactory,
+                                                                       requestCallerDirectory,
+                                                                       discoveryProxy,
+                                                                       domain,
+                                                                       dispatcherAddress,
+                                                                       getMessageRouter(),
+                                                                       messagingSettings);
+        proxyBuilders.push_back(proxyBuilder);
+        return proxyBuilder;
     }
 
     /**
@@ -343,6 +346,7 @@ protected:
      */
     std::shared_ptr<PublicationManager> publicationManager;
     std::shared_ptr<IKeychain> keyChain;
+    std::vector<std::shared_ptr<IProxyBuilderBase>> proxyBuilders;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);
