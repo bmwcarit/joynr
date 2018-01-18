@@ -117,43 +117,6 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
         jasmine.clock().tick(time_ms);
     }
 
-    // have to define our own ProviderAttributeNotifyReadWrite because we need
-    // the phrase "Notify" in the constructor
-    // function name for the SubscriptionPublication Manager to work correctly,
-    // but we can't use the
-    // ProviderAttributeNotifyReadWrite implementation because it freezes its
-    // members for safe public usage => we cannot
-    // spy on functions of a real ProviderAttributeNotifyReadWrite instance
-    function ProviderAttributeNotifyReadWrite(parent, settings, attributeName, attributeType) {
-        var providerAttribute = new ProviderAttribute(
-            parent,
-            settings,
-            attributeName,
-            attributeType,
-            "NOTIFYREADWRITE"
-        );
-        this.registerGetter = providerAttribute.registerGetter;
-        this.get = providerAttribute.get;
-        this.registerSetter = providerAttribute.registerSetter;
-        this.set = providerAttribute.set;
-        this.valueChanged = providerAttribute.valueChanged;
-        this.registerObserver = providerAttribute.registerObserver;
-        this.unregisterObserver = providerAttribute.unregisterObserver;
-        this.isNotifiable = providerAttribute.isNotifiable;
-    }
-
-    function ProviderAttributeReadWrite(parent, settings, attributeName, attributeType) {
-        var providerAttribute = new ProviderAttribute(parent, settings, attributeName, attributeType, "READWRITE");
-        this.registerGetter = providerAttribute.registerGetter;
-        this.get = providerAttribute.get;
-        this.registerSetter = providerAttribute.registerSetter;
-        this.set = providerAttribute.set;
-        this.isNotifiable = providerAttribute.isNotifiable;
-        //this.valueChanged = providerAttribute.valueChanged;
-        //this.registerObserver = providerAttribute.registerObserver;
-        //this.unregisterObserver = providerAttribute.unregisterObserver;
-    }
-
     function stopSubscription(subscriptionInfo) {
         publicationManager.handleSubscriptionStop(
             new SubscriptionStop({
@@ -233,20 +196,28 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", functi
             selective: false
         });
 
-        testAttribute = new ProviderAttributeNotifyReadWrite(provider, providerSettings, testAttributeName, "Boolean");
+        testAttribute = new ProviderAttribute(
+            provider,
+            providerSettings,
+            testAttributeName,
+            "Boolean",
+            "NOTIFYREADWRITE"
+        );
 
-        asyncTestAttribute = new ProviderAttributeNotifyReadWrite(
+        asyncTestAttribute = new ProviderAttribute(
             provider,
             providerSettings,
             asyncTestAttributeName,
-            "Boolean"
+            "Boolean",
+            "NOTIFYREADWRITE"
         );
 
-        testAttributeNotNotifiable = new ProviderAttributeReadWrite(
+        testAttributeNotNotifiable = new ProviderAttribute(
             provider,
             providerSettings,
             testAttributeNotNotifiableName,
-            "Boolean"
+            "Boolean",
+            "READWRITE"
         );
 
         provider[testAttributeName] = testAttribute;

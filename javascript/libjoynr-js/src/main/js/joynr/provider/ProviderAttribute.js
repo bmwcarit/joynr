@@ -77,7 +77,8 @@ var asNotify = (function() {
     }
 
     return function() {
-        this.valueChanged = valueChanged;
+        // since ValueChanged is copied to the implementation bind is necessary here. (or in the generated code)
+        this.valueChanged = valueChanged.bind(this);
         this.registerObserver = registerObserver;
         this.unregisterObserver = unregisterObserver;
         this.callbacks = [];
@@ -291,9 +292,6 @@ function ProviderAttribute(parent, implementation, attributeName, attributeType,
         asReadOrWrite.call(this);
     }
 
-    var publicProviderAttribute = Util.forward({}, this);
-    publicProviderAttribute.isNotifiable = this.isNotifiable.bind(this);
-
     // place these functions after the forwarding we don't want them public
     if (implementation && typeof implementation.get === "function") {
         this.privateGetterFunc = implementation.get;
@@ -301,8 +299,6 @@ function ProviderAttribute(parent, implementation, attributeName, attributeType,
     if (implementation && typeof implementation.set === "function") {
         this.privateSetterFunc = implementation.set;
     }
-
-    return Object.freeze(publicProviderAttribute);
 }
 
 ProviderAttribute.prototype.isNotifiable = function() {
