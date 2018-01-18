@@ -1349,13 +1349,9 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
             }
         }
 
-        function subscriptionReachedEndDate() {
-            removeSubscription(subscriptionId);
-        }
-
         if (timeToEndDate > 0) {
             // schedule to remove subscription from internal maps
-            subscriptionInfo.endDateTimeout = LongTimer.setTimeout(subscriptionReachedEndDate, timeToEndDate);
+            subscriptionInfo.endDateTimeout = LongTimer.setTimeout(removeSubscription, timeToEndDate, subscriptionId);
         }
 
         // save subscriptionInfo to subscriptionId => subscription and
