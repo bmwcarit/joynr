@@ -333,8 +333,6 @@ function ProxyOperation(parent, settings, operationName, operationSignatures) {
      * @type Array
      */
     this.operationSignatures = operationSignatures;
-
-    return Object.freeze(Util.forwardPrototype(this));
 }
 
 /**
@@ -347,10 +345,7 @@ function ProxyOperation(parent, settings, operationName, operationSignatures) {
  *            member of the proxy
  */
 ProxyOperation.prototype.buildFunction = function buildFunction() {
-    var that = this;
-    return function(operationArguments) {
-        return operationFunction.call(that, operationArguments);
-    };
+    return operationFunction.bind(this);
 };
 
 module.exports = ProxyOperation;
