@@ -109,6 +109,8 @@ private:
     std::mutex mutex;
 
     std::uint8_t numberOfThreads;
+
+    std::string name;
 };
 
 } // namespace joynr

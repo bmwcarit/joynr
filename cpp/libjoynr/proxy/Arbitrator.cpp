@@ -161,9 +161,11 @@ void Arbitrator::startArbitration(
 
 void Arbitrator::stopArbitration()
 {
+    JOYNR_LOG_DEBUG(logger(), "StopArbitrator.");
     keepArbitrationRunning = false;
 
     if (arbitrationThread.joinable()) {
+        JOYNR_LOG_DEBUG(logger(), "Thread can be joined. Joining thread...");
         arbitrationThread.join();
     }
 }
