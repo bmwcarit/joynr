@@ -48,6 +48,10 @@ JoynrRuntime::~JoynrRuntime()
 {
 }
 
+void JoynrRuntime::shutdown()
+{
+}
+
 bool JoynrRuntime::checkAndLogCryptoFileExistence(const std::string& caPemFile,
                                                   const std::string& certPemFile,
                                                   const std::string& privateKeyPemFile,

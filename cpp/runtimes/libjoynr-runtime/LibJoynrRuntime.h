@@ -53,6 +53,8 @@ public:
                              std::shared_ptr<IKeychain> keyChain = nullptr);
     ~LibJoynrRuntime() override;
 
+    void shutdown() override;
+
 protected:
     std::shared_ptr<IMessageRouter> getMessageRouter() final;
 

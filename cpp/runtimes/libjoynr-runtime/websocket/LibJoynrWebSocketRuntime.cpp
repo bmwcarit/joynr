@@ -49,6 +49,11 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> set
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 {
+    shutdown();
+}
+
+void LibJoynrWebSocketRuntime::shutdown()
+{
     assert(websocket);
     websocket->close();
 
@@ -57,6 +62,7 @@ LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
     // which allows a safe shutdown
     assert(singleThreadIOService);
     singleThreadIOService->stop();
+    LibJoynrRuntime::shutdown();
 }
 
 void LibJoynrWebSocketRuntime::connect(

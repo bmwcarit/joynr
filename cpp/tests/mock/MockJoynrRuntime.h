@@ -29,6 +29,7 @@ public:
     MockJoynrRuntime(joynr::Settings& settings) : joynr::JoynrRuntime(settings) {}
     MockJoynrRuntime(std::unique_ptr<joynr::Settings> settings) : joynr::JoynrRuntime(*settings) {}
     MOCK_METHOD0(getMessageRouter, std::shared_ptr<joynr::IMessageRouter>());
+    MOCK_METHOD0(shutdown, void());
 };
 
 #endif // TESTS_MOCK_MOCKJOYNRRUNTIME_H

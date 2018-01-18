@@ -55,6 +55,7 @@ public:
      * @brief Destroys a JoynrRuntime instance
      */
     virtual ~JoynrRuntime();
+    virtual void shutdown();
 
     /**
      * @brief Registers a provider with the joynr communication framework asynchronously.
