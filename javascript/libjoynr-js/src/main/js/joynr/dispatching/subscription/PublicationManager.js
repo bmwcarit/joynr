@@ -880,16 +880,16 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         return false;
     };
 
+    function asyncCallbackDispatcher(reply, callbackDispatcher) {
+        callbackDispatcher(new SubscriptionReply(reply));
+    }
+
     /* the parameter "callbackDispatcher" is optional, as in case of restoring
      * subscriptions, no reply must be sent back via the dispatcher
      */
     function callbackDispatcherAsync(reply, callbackDispatcher) {
-        function asyncCallbackDispatcher() {
-            callbackDispatcher(new SubscriptionReply(reply));
-        }
-
         if (callbackDispatcher !== undefined) {
-            LongTimer.setTimeout(asyncCallbackDispatcher, 0);
+            LongTimer.setTimeout(asyncCallbackDispatcher, 0, reply, callbackDispatcher);
         }
     }
 
