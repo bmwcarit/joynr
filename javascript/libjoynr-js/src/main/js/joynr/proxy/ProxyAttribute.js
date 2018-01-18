@@ -44,28 +44,31 @@ function checkArgument(value) {
 
 // prettier-ignore
 var asRead = (function() {
-    /**
-     * Getter for attribute
-     *
-     * @name ProxyAttribute#get
-     * @function
-     *
-     * @param {Object}
-     *      [settings] the settings object for this function call
-     * @returns {Object} returns an A+ promise object
-     */
-    function get(settings) {
-        // ensure settings variable holds a valid object and initialize
-        // deferred object
-        settings = settings || {};
-        var request = new Request({
-            methodName: "get" + Util.firstUpper(this.attributeName)
-        });
-        return this.executeRequest(request, settings);
+
+    function curryGet(context) {
+        /**
+         * Getter for attribute
+         *
+         * @name ProxyAttribute#get
+         * @function
+         *
+         * @param {Object}
+         *      [settings] the settings object for this function call
+         * @returns {Object} returns an A+ promise object
+         */
+        return function get(settings) {
+            // ensure settings variable holds a valid object and initialize
+            // deferred object
+            settings = settings || {};
+            var request = new Request({
+                methodName: "get" + Util.firstUpper(context.attributeName)
+            });
+            return context.executeRequest(request, settings);
+        };
     }
 
     return function() {
-        this.get = get;
+        this.get = curryGet(this);
     };
 }());
 
@@ -243,9 +246,6 @@ function ProxyAttribute(parent, settings, attributeName, attributeType, attribut
     if (attributeCaps.match(/NOTIFY/)) {
         asNotify.call(this);
     }
-
-    var publicProxyAttribute = Util.forward({}, this);
-    return Object.freeze(publicProxyAttribute);
 }
 
 function sendRequestOnSuccess(settings) {
