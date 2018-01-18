@@ -264,7 +264,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         }
     }
 
-    function PublicationTimerCallback(subscriptionInfo, callback) {
+    function triggerPublication(subscriptionInfo, callback) {
         if (callback !== undefined) {
             callback();
         }
@@ -304,10 +304,10 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
      */
     function triggerPublicationTimer(subscriptionInfo, delay, callback) {
         if (!isNaN(delay)) {
-            return LongTimer.setTimeout(PublicationTimerCallback, delay, subscriptionInfo, callback);
-            // the last two arguments get to PublicationTimerCallback
+            return LongTimer.setTimeout(triggerPublication, delay, subscriptionInfo, callback);
+            // the last two arguments get to triggerPublication
         }
-        // TODO: what kind of recursive design is this? PublicationTimerCallback calls triggerPublicationTimer on Success ...
+        // TODO: what kind of recursive design is this? triggerPublication calls triggerPublicationTimer on Success ...
         // why not use Intervals?
 
         // TODO:why is nothing returned here in the else case?
@@ -1120,21 +1120,7 @@ function PublicationManager(dispatcher, persistency, joynrInstanceId) {
         persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
         storeSubscriptions();
 
-        function getAttributeValueSuccess(value) {
-            prepareAttributePublication(subscriptionInfo, value, triggerPublicationTimer);
-            return value;
-        }
-
-        function getAttributeValueException(getValueException) {
-            sendPublication(subscriptionInfo, undefined, getValueException);
-            return getValueException;
-        }
-
-        // publish value immediately
-        getAttributeValue(subscriptionInfo)
-            .then(getAttributeValueSuccess)
-            .catch(getAttributeValueException);
-
+        triggerPublication(subscriptionInfo);
         callbackDispatcherAsync({ subscriptionId: subscriptionId }, callbackDispatcher);
     };
 
