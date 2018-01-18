@@ -64,16 +64,7 @@ Arbitrator::Arbitrator(
 
 Arbitrator::~Arbitrator()
 {
-    keepArbitrationRunning = false;
-
-    if (arbitrationThread.joinable()) {
-        // do not cause an abort waiting for ourselves
-        if (std::this_thread::get_id() == arbitrationThread.get_id()) {
-            arbitrationThread.detach();
-        } else {
-            arbitrationThread.join();
-        }
-    }
+    stopArbitration();
 }
 
 void Arbitrator::startArbitration(
@@ -166,6 +157,15 @@ void Arbitrator::startArbitration(
 
         thisSharedPtr->arbitrationRunning = false;
     });
+}
+
+void Arbitrator::stopArbitration()
+{
+    keepArbitrationRunning = false;
+
+    if (arbitrationThread.joinable()) {
+        arbitrationThread.join();
+    }
 }
 
 void Arbitrator::attemptArbitration()

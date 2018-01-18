@@ -75,6 +75,8 @@ public:
                     onSuccess,
             std::function<void(const exceptions::DiscoveryException& exception)> onError);
 
+    void stopArbitration();
+
 private:
     /*
      *  attemptArbitration() has to be implemented by the concrete arbitration strategy.
