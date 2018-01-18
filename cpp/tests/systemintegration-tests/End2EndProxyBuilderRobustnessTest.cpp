@@ -88,6 +88,9 @@ public:
     {
         bool deleteChannel = true;
         ccRuntime->stop(deleteChannel);
+        ccRuntime->shutdown();
+        consumerRuntime->shutdown();
+        providerRuntime->shutdown();
         test::util::resetAndWaitUntilDestroyed(ccRuntime);
         test::util::resetAndWaitUntilDestroyed(consumerRuntime);
         test::util::resetAndWaitUntilDestroyed(providerRuntime);

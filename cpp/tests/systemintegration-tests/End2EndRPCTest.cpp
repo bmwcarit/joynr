@@ -71,6 +71,7 @@ public:
     void TearDown(){
         bool deleteChannel = true;
         runtime->stop(deleteChannel);
+        runtime->shutdown();        
         test::util::resetAndWaitUntilDestroyed(runtime);
 
         // Delete persisted files

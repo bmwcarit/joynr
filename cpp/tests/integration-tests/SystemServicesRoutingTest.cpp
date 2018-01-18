@@ -99,6 +99,7 @@ public:
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt).get()));
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp).get()));
 
+        runtime->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime);
         test::util::resetAndWaitUntilDestroyed(mockMessageReceiverHttp);
         test::util::resetAndWaitUntilDestroyed(mockMessageReceiverMqtt);
