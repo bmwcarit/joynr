@@ -900,27 +900,40 @@ void JoynrClusterControllerRuntime::shutdown()
 
     unregisterInternalSystemServiceProviders();
 
-    ccMessageRouter->shutdown();
-    inProcessDispatcher->shutdown();
-    publicationManager->shutdown();
-    subscriptionManager->shutdown();
-    localCapabilitiesDirectory->shutdown();
+    if (ccMessageRouter) {
+        ccMessageRouter->shutdown();
+    }
+    if (inProcessDispatcher) {
+        inProcessDispatcher->shutdown();
+    }
+    if (publicationManager) {
+        publicationManager->shutdown();
+    }
+    if (subscriptionManager) {
+        subscriptionManager->shutdown();
+    }
+    if (localCapabilitiesDirectory) {
+        localCapabilitiesDirectory->shutdown();
+    }
 
     stopExternalCommunication();
 
     // synchronously stop the underlying boost::asio::io_service
     // this ensures all asynchronous operations are stopped now
     // which allows a safe shutdown
-    singleThreadIOService->stop();
+    if (singleThreadIOService) {
+        singleThreadIOService->stop();
+    }
 
-    multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
+    if (multicastMessagingSkeletonDirectory) {
+        multicastMessagingSkeletonDirectory
+                ->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
+    }
 
     if (joynrDispatcher != nullptr) {
         joynrDispatcher->shutdown();
         joynrDispatcher.reset();
     }
-
-    inProcessDispatcher.reset();
 
     inProcessPublicationSender.reset();
 }
