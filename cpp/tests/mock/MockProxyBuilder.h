@@ -55,6 +55,7 @@ public:
     }
     MOCK_METHOD2_T(buildAsyncMock, void(std::function<void(std::shared_ptr<T> proxy)>,
                                     std::function<void(const joynr::exceptions::DiscoveryException&)>));
+    MOCK_METHOD0_T(stop, void());
 };
 
 #endif // TESTS_MOCK_MOCKPROXYBUILDER_H

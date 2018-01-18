@@ -91,6 +91,13 @@ public:
      */
     std::shared_ptr<T> build() override;
 
+    void stop() override
+    {
+        if (arbitrator) {
+            arbitrator->stopArbitration();
+        }
+    }
+
     /**
      * @brief Build the proxy object asynchronously
      *

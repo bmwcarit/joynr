@@ -23,6 +23,8 @@
 #include <functional>
 #include <memory>
 
+#include "joynr/IProxyBuilderBase.h"
+
 namespace joynr
 {
 
@@ -37,10 +39,10 @@ class DiscoveryException;
  * @brief Interface to create a proxy object for the given interface T.
  */
 template <class T>
-class IProxyBuilder
+class IProxyBuilder : public IProxyBuilderBase
 {
 public:
-    virtual ~IProxyBuilder() = default;
+    ~IProxyBuilder() override = default;
 
     /**
      * @brief Build the proxy object
