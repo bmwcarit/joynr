@@ -48,7 +48,7 @@ public:
      * @throws JoynrTimeOutException if the request does not finish in the
      * expected time.
      */
-    void wait(std::uint16_t timeOut)
+    void wait(std::int64_t timeOut)
     {
         if (resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
             resultReceived.notify();
@@ -179,7 +179,7 @@ public:
      * @param values The typed return values from the request.
      * @throws JoynrException if the request is not successful
      */
-    void get(std::uint16_t timeOut, Ts&... values)
+    void get(std::int64_t timeOut, Ts&... values)
     {
         this->wait(timeOut);
         this->checkOk();
@@ -234,7 +234,7 @@ public:
      * @param timeOut The maximum number of milliseconds to wait before this request times out
      * @throws JoynrException if the request is not successful
      */
-    void get(std::uint16_t timeOut)
+    void get(std::int64_t timeOut)
     {
         this->wait(timeOut);
         this->checkOk();
@@ -262,7 +262,7 @@ public:
         value = std::move(result);
     }
 
-    void get(std::uint16_t timeOut, std::unique_ptr<T>& value)
+    void get(std::int64_t timeOut, std::unique_ptr<T>& value)
     {
         this->wait(timeOut);
         this->checkOk();
