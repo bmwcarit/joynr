@@ -63,7 +63,7 @@ public:
         discoveryQos.setDiscoveryTimeoutMs(3000);
     }
     // Sets up the test fixture.
-    void SetUp(){
+    void SetUp() override {
        runtime->start();
     }
 
