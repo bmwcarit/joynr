@@ -885,6 +885,7 @@ void JoynrClusterControllerRuntime::stopExternalCommunication()
 
 void JoynrClusterControllerRuntime::shutdown()
 {
+    std::lock_guard<std::mutex> lock(proxyBuildersMutex);
     for (auto proxyBuilder : proxyBuilders) {
         proxyBuilder->stop();
         proxyBuilder.reset();

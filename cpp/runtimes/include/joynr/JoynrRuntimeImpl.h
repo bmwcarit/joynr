@@ -22,6 +22,7 @@
 #include <cassert>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "joynr/CapabilitiesRegistrar.h"
@@ -233,6 +234,7 @@ public:
                                                                        dispatcherAddress,
                                                                        getMessageRouter(),
                                                                        messagingSettings);
+        std::lock_guard<std::mutex> lock(proxyBuildersMutex);
         proxyBuilders.push_back(proxyBuilder);
         return proxyBuilder;
     }
@@ -292,6 +294,7 @@ protected:
     std::shared_ptr<PublicationManager> publicationManager;
     std::shared_ptr<IKeychain> keyChain;
     std::vector<std::shared_ptr<IProxyBuilderBase>> proxyBuilders;
+    std::mutex proxyBuildersMutex;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntimeImpl);

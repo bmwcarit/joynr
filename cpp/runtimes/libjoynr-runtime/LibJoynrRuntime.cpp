@@ -71,6 +71,7 @@ LibJoynrRuntime::~LibJoynrRuntime()
 
 void LibJoynrRuntime::shutdown()
 {
+    std::lock_guard<std::mutex> lock(proxyBuildersMutex);
     for (auto proxyBuilder : proxyBuilders) {
         proxyBuilder->stop();
         proxyBuilder.reset();
