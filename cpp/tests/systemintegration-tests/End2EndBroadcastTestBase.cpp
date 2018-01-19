@@ -154,15 +154,14 @@ public:
         runtime2->start();
     }
 
-    ~End2EndBroadcastTestBase(){
+    ~End2EndBroadcastTestBase() override {
         if (!providerParticipantId.empty()) {
             unregisterProvider();
         }
-        bool deleteChannel = true;
-        runtime1->stop(deleteChannel);
+
         runtime1->shutdown();
-        runtime2->stop(deleteChannel);
         runtime2->shutdown();
+
         test::util::resetAndWaitUntilDestroyed(runtime1);
         test::util::resetAndWaitUntilDestroyed(runtime2);
 

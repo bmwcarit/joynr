@@ -50,10 +50,8 @@ public:
         runtime->start();
     }
 
-    void TearDown()
+    void TearDown() override
     {
-        const bool deleteChannel = true;
-        runtime->stop(deleteChannel);
         runtime->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime);
 

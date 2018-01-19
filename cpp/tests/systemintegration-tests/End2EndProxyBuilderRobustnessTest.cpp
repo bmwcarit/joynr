@@ -84,13 +84,12 @@ public:
         ASSERT_TRUE(providerRuntime->connect(std::chrono::milliseconds(10000)));
     }
 
-    ~End2EndProxyBuilderRobustnessTest()
-    {
-        bool deleteChannel = true;
-        ccRuntime->stop(deleteChannel);
+    ~End2EndProxyBuilderRobustnessTest() override {
+
         ccRuntime->shutdown();
         consumerRuntime->shutdown();
         providerRuntime->shutdown();
+
         test::util::resetAndWaitUntilDestroyed(ccRuntime);
         test::util::resetAndWaitUntilDestroyed(consumerRuntime);
         test::util::resetAndWaitUntilDestroyed(providerRuntime);

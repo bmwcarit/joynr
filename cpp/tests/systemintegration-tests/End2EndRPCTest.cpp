@@ -68,10 +68,8 @@ public:
     }
 
     // Tears down the test fixture.
-    void TearDown(){
-        bool deleteChannel = true;
-        runtime->stop(deleteChannel);
-        runtime->shutdown();        
+    void TearDown() override {
+        runtime->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime);
 
         // Delete persisted files

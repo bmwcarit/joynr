@@ -76,14 +76,12 @@ public:
         messagingQos.setTtl(500);
     }
 
-    ~LocalDiscoveryTest()
-    {
-        const bool deleteChannel = true;
-        runtime1->stop(deleteChannel);
+    ~LocalDiscoveryTest() override {
+
         runtime1->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime1);
-        runtime2->stop(deleteChannel);
-        runtime2->shutdown();        
+
+        runtime2->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime2);
 
         test::util::removeAllCreatedSettingsAndPersistencyFiles();

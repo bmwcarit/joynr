@@ -78,13 +78,10 @@ public:
         runtime2->start();
     }
 
-    ~End2EndPerformanceTest()
-    {
-        bool deleteChannel = true;
-        runtime1->stop(deleteChannel);
+    ~End2EndPerformanceTest() override {
         runtime1->shutdown();
-        runtime2->stop(deleteChannel);
         runtime2->shutdown();
+
         test::util::resetAndWaitUntilDestroyed(runtime1);
         test::util::resetAndWaitUntilDestroyed(runtime2);
 
