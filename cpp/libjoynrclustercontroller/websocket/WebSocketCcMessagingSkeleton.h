@@ -173,9 +173,11 @@ public:
             }
         }
 
-        webSocketPpSingleThreadedIOService->stop();
-        webSocketPpSingleThreadedIOService.reset();
-        webSocketPpSingleThreadedIOServiceDestructed->wait();
+        if (webSocketPpSingleThreadedIOService) {
+            webSocketPpSingleThreadedIOService->stop();
+            webSocketPpSingleThreadedIOService.reset();
+            webSocketPpSingleThreadedIOServiceDestructed->wait();
+        }
     }
 
     void transmit(
