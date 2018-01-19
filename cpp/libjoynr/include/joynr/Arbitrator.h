@@ -17,8 +17,9 @@
  * #L%
  */
 
-#ifndef PROVIDERARBITRATOR_H
-#define PROVIDERARBITRATOR_H
+#ifndef ARBITRATOR_H
+#define ARBITRATOR_H
+
 #include <atomic>
 #include <chrono>
 #include <functional>
@@ -113,4 +114,4 @@ private:
 };
 
 } // namespace joynr
-#endif // PROVIDERARBITRATOR_H
+#endif // ARBITRATOR_H
