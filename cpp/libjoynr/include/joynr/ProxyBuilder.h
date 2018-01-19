@@ -93,9 +93,13 @@ public:
 
     void stop() override
     {
-        if (arbitrator) {
+        std::lock_guard<std::mutex> lock(arbitratorsMutex);
+        shuttingDown = true;
+        for (auto arbitrator : arbitrators) {
             arbitrator->stopArbitration();
+            arbitrator.reset();
         }
+        arbitrators.clear();
     }
 
     /**
@@ -133,7 +137,9 @@ private:
     ProxyFactory& proxyFactory;
     std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
     std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
-    std::shared_ptr<Arbitrator> arbitrator;
+    std::vector<std::shared_ptr<Arbitrator>> arbitrators;
+    std::mutex arbitratorsMutex;
+    bool shuttingDown;
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<IMessageRouter> messageRouter;
@@ -162,7 +168,9 @@ ProxyBuilder<T>::ProxyBuilder(
           proxyFactory(proxyFactory),
           requestCallerDirectory(requestCallerDirectory),
           discoveryProxy(discoveryProxy),
-          arbitrator(),
+          arbitrators(),
+          arbitratorsMutex(),
+          shuttingDown(false),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
           messagingMaximumTtlMs(messagingSettings.getMaximumTtlMs()),
@@ -206,13 +214,14 @@ void ProxyBuilder<T>::buildAsync(
         std::function<void(const exceptions::DiscoveryException& exception)> onError) noexcept
 {
     auto runtimeSharedPtr = runtime.lock();
-    if (runtimeSharedPtr == nullptr) {
+    std::lock_guard<std::mutex> lock(arbitratorsMutex);
+
+    if (runtimeSharedPtr == nullptr || shuttingDown) {
         const exceptions::DiscoveryException error(runtimeAlreadyDestroyed);
         onError(error);
     }
+
     joynr::types::Version interfaceVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
-    arbitrator = ArbitratorFactory::createArbitrator(
-            domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
 
     std::shared_ptr<ProxyBuilder<T>> thisSharedPtr = this->shared_from_this();
     auto arbitrationSucceeds = [
@@ -266,7 +275,10 @@ void ProxyBuilder<T>::buildAsync(
         onSuccess(std::move(proxy));
     };
 
+    auto arbitrator = ArbitratorFactory::createArbitrator(
+            domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
     arbitrator->startArbitration(std::move(arbitrationSucceeds), std::move(onError));
+    arbitrators.push_back(std::move(arbitrator));
 }
 
 template <class T>
